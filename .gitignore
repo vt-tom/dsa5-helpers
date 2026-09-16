@@ -1,0 +1,7 @@
+.DS_Store
+Thumbs.db
+*.log
+node_modules/
+
+# Enthält kopierte DSA5-System-Assets (Fonts/Bilder/PDF), nicht nur Referenzen — nicht ins Repo
+/prototyp/

@@ -1,0 +1,780 @@
+@font-face{font-family:'Andalus';src:url('../../../systems/dsa5/fonts/andlso.woff2') format('woff2');font-weight:normal;font-style:normal;font-display:swap}
+@font-face{font-family:'GentiumBasic';src:url('../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2');font-weight:normal;font-style:normal;font-display:swap}
+@font-face{font-family:'GentiumBasic';src:url('../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+
+:root{
+  --paper:#ece2d2; --ink:#2b2721; --muted:rgba(43,39,33,.66); --line:rgba(43,39,33,.16);
+  --panel:rgba(255,255,255,.4); --field:rgba(255,255,255,.55); --odd:rgba(0,0,0,.045);
+  --title:linear-gradient(90deg,rgba(147,123,72,.9) 0%,rgba(147,123,72,.06) 100%);
+  --head:linear-gradient(180deg,#3a322b,#272320); --accent:#8b6f3f; --headink:#f4e8d6; --headmuted:rgba(244,232,214,.74);
+  --desk:#3a3531; --railidle:rgba(236,226,210,.6); --railon:#ece2d2; --attrband:rgba(0,0,0,.05);
+  /* Unterer Farbton von --head als eigene (nicht-Gradient-)Variable — var(--head) selbst ist ein Gradient und
+     als Farb-Stopp innerhalb eines anderen Gradients (.head-bg-fade) ungültig CSS. */
+  --head-base:#272320;
+}
+[data-theme='dark']{
+  --paper:#241f1c; --ink:#ede3d1; --muted:rgba(237,227,209,.68); --line:rgba(237,227,209,.14);
+  --panel:rgba(255,255,255,.05); --field:rgba(255,255,255,.08); --odd:rgba(255,255,255,.035);
+  --title:linear-gradient(90deg,rgba(185,154,92,.6) 0%,rgba(185,154,92,.04) 100%);
+  --head:linear-gradient(180deg,#2e2823,#1c1917); --accent:#c2a267; --headink:#f4e8d6; --headmuted:rgba(244,232,214,.74); --attrband:rgba(244,232,214,.15);
+  --desk:#161413; --railidle:rgba(60,52,44,.85); --railon:#4a3f33;
+  --head-base:#1c1917;
+}
+
+*{box-sizing:border-box}
+/* UI-UX-REVIEW.md Priorität 3 Punkt 10: einheitliche Tastatur-Fokusmarkierung — bisher nirgends definiert. */
+:focus-visible{outline:2px solid var(--accent,#8b6f3f);outline-offset:2px}
+body{margin:0;background:#151312;font-family:'GentiumBasic',Georgia,serif;-webkit-font-smoothing:antialiased;color:var(--ink)}
+a{color:#a8501a;text-decoration:none}
+input,button{font-family:inherit;color:inherit}
+
+.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px 14px;max-width:818px;margin:0 auto;padding:14px 26px 0;color:#bcb0a0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-family:ui-monospace,Menlo,monospace}
+.toolbar .spacer{flex:1;height:1px;background:rgba(255,255,255,.14)}
+.toolbar button{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#ded2c1;padding:4px 11px;border-radius:4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.toolbar button:hover{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.14)}
+.toolbar button.active{background:var(--accent,#8b6f3f);color:#1c1917;font-weight:bold;border-color:var(--accent,#8b6f3f)}
+/* Steuerungen (Modus-/Tab-Stil-Umschalter, Theme-Button) sollen als Gruppe umbrechen statt einzelne Buttons zu quetschen. */
+.toolbar-group{display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+.mode-switch{display:flex;border:1px solid rgba(255,255,255,.2);border-radius:4px;overflow:hidden;flex-shrink:0}
+.mode-switch button{padding:4px 11px;border:none;background:rgba(255,255,255,.07);color:#ded2c1;font-family:inherit;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.mode-switch button + button{border-left:1px solid rgba(255,255,255,.2)}
+.mode-switch button:hover{background:rgba(255,255,255,.14)}
+.mode-switch button.active{background:var(--accent,#8b6f3f);color:#1c1917;font-weight:bold}
+
+/* Wie .mode-switch, aber für den Einsatz auf hellem Panel-Grund (z.B. im panel-title.flex) statt im dunklen
+   Toolbar-Streifen — siehe renderDiseasePanel() in script.js. */
+.panel-toggle{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;flex-shrink:0;font-family:ui-monospace,Menlo,monospace}
+.panel-toggle button{padding:2px 9px;border:none;background:var(--field);color:var(--ink);font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.panel-toggle button+button{border-left:1px solid var(--line)}
+.panel-toggle button:hover{background:var(--odd)}
+.panel-toggle button.active{background:var(--accent);color:#fff;font-weight:bold}
+
+.sheet-wrap{min-height:100vh;padding:20px 26px 60px;background:var(--desk);display:flex;flex-direction:row-reverse;justify-content:center;align-items:flex-start;gap:8px;font-size:14px}
+@media (max-width:860px){.sheet-wrap{flex-direction:column;align-items:center}}
+
+/* Rail steht im HTML vor dem Bogen, erscheint aber dank row-reverse rechts davon. */
+.rail{flex:0 0 auto;display:flex;flex-direction:column;gap:3px}
+@media (max-width:860px){.rail{flex-direction:row;flex-wrap:wrap;width:100%}}
+.rail button{position:relative;width:40px;height:40px;border:1px solid var(--line);border-radius:4px;background:var(--railidle);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.rail button.active{background:var(--railon);border-color:var(--accent)}
+.rail button:hover{filter:brightness(1.12)}
+.rail img{width:22px;height:22px}
+/* UI-UX-REVIEW.md Priorität 1 Punkt 3: sichtbares Label neben dem aktiven Rail-Icon (renderRail() in script.js).
+   Ausgeblendet unter der 860px-Umbruchgrenze, wo die Rail zu einer umbrechenden Icon-Reihe wird und rechts davon
+   kein verlässlicher Platz mehr für ein ausklappendes Label bleibt. */
+.rail-label{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--railon);border:1px solid var(--accent);border-radius:4px;padding:3px 8px;font-size:12px;color:var(--ink);pointer-events:none;z-index:5}
+@media (max-width:860px){.rail-label{display:none}}
+
+/* Feste Größe wie das echte DSA5-Actor-Sheet-Fenster (systems/dsa5/modules/actor/actor-sheet.js: width 770 / height 740), damit die Platznutzung realistisch geprüft werden kann. */
+.sheet{position:relative;width:770px;max-width:100%;height:740px;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border:16px solid transparent;border-image:url('../../../systems/dsa5/icons/backgrounds/actor.webp') 20 stretch;box-shadow:0 18px 48px rgba(0,0,0,.5)}
+
+/* VORSCHAU 2026-09-15 (Kopf-Redesign-Idee des Nutzers, siehe index.html-Kommentar dort): Nachbau der Foundry-
+   Fenster-Titelzeile als reines Overlay über den obersten ~30px von .head, statt einer eigenen Zeile — dadurch
+   entfällt (im echten Modul) die separate .window-header-Zeilenhöhe komplett, Name steht dann auch nur noch
+   einmal (im echten .dsa5h-name), nicht zusätzlich blass in der Titelzeile. */
+.fake-window-chrome{position:absolute;top:0;left:0;right:0;height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 6px;z-index:5;background:linear-gradient(to bottom,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 100%);pointer-events:none}
+.fake-window-chrome .fwc-left,.fake-window-chrome .fwc-right{display:flex;gap:2px}
+.fake-window-chrome button{background:none;border:none;color:rgba(244,232,214,.85);font-size:12px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;cursor:default;opacity:.9}
+
+.head{position:relative;overflow:hidden;flex:none;background:var(--head);border-bottom:1px solid rgba(224,192,128,.3);padding:15px 16px}
+/* IDEEN.md: optionales Hintergrundbild je Charakter (HEADER_BG_IMG in data.js) — .head-bg-layer trägt das Bild
+   (background-image per JS gesetzt, siehe renderHeader()), .head-bg-fade blendet es nach unten hin zur
+   normalen --head-Farbe aus ("wie eine Art Seiten-Header"). Beide bleiben unsichtbar ohne .has-bg auf .head. */
+.head-bg-layer,.head-bg-fade{position:absolute;inset:0;z-index:0;display:none}
+.head.has-bg .head-bg-layer,.head.has-bg .head-bg-fade{display:block}
+.head-bg-layer{background-repeat:no-repeat;background-position:center;background-size:cover}
+.head-bg-fade{background:linear-gradient(to bottom,transparent 0%,var(--head-base) 92%)}
+.head-inner{position:relative;z-index:1;display:flex;gap:18px;align-items:stretch}
+/* Öffnet den simulierten FilePicker (openHeaderBgPicker()) — nur im Bearbeiten-Modus sichtbar (.edit-only,
+   siehe die globale Spielmodus-Regel weiter unten), Zoom-Effekt bei Hover wie bei den anderen kleinen Buttons
+   (.regen-btn/.row-delete/.chip-delete). */
+.header-bg-btn{position:absolute;top:8px;right:8px;z-index:2;width:28px;height:28px;border-radius:50%;border:1px solid rgba(224,192,128,.5);background:rgba(46,40,35,.75);color:#ecd8b1;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s ease,background .15s ease}
+.header-bg-btn:hover{transform:scale(1.15);background:rgba(224,192,128,.35)}
+.portrait{flex:0 0 118px;height:142px;border:1px solid rgba(224,192,128,.38);background-image:repeating-linear-gradient(135deg,rgba(247,236,224,.1) 0 6px,transparent 6px 12px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:7px}
+.portrait span{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.1em;color:rgba(247,236,224,.66);text-transform:uppercase}
+.head-main{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
+.head-top{display:flex;align-items:flex-start;gap:12px}
+.head-top h1{margin:0;font-family:'Andalus',serif;font-size:39px;font-weight:normal;line-height:1.02;color:var(--headink);text-shadow:0 1px 3px rgba(0,0,0,.65)}
+/* padding-top 4px → 18px (Nutzer-Feedback zur Kopf-Vorschau 2026-09-15: "AP und Schicksalspunkte etwas tiefer
+   platzieren") — .head-top richtet Name und AP-Block per align-items:flex-start auf derselben Oberkante aus; die
+   große Namensüberschrift wirkt trotzdem "tiefer", weil ihre Zeilenhöhe optisch mehr Raum einnimmt, während der
+   kleine AP-Text direkt an dieser Oberkante klebt — dort kollidiert er mit dem darüber schwebenden
+   .fake-window-chrome-Overlay (Menü-/Würfel-/Schließen-Icons). Eigener Versatz nur für den AP-Block, Name bleibt
+   unverändert oben. */
+.ap-block{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding-top:18px}
+.ap-text{font-size:13px;color:var(--headmuted);font-family:'GentiumBasic',Georgia,serif;white-space:nowrap}
+.fate-points{display:flex;gap:3px}
+.fate-points img{width:23px;height:23px;cursor:pointer}
+.fate-points img.dim{opacity:.45}
+
+/* Generischer Inline-Editor (makeEditable() in script.js) — dezente Klick-Andeutung, unabhängig vom Bearbeiten-/
+   Spielmodus-Schalter: LeP/AsP/KaP/Schicksalspunkte sind laut BEARBEITEN.md in BEIDEN Modi editierbar, nur der
+   Charaktername ist auf den Bearbeiten-Modus beschränkt (siehe renderHeader() in script.js). */
+.editable-value{cursor:pointer}
+.editable-value:hover,.editable-value:focus{outline:none;text-decoration:underline dotted}
+.inline-edit-input{font:inherit;border:1px solid var(--accent,#8b6f3f);border-radius:3px;background:#fff;color:#111;padding:0 3px}
+/* LeP/AsP/KaP-Wert sitzt auf einer farbigen Leiste, nicht auf hellem Papier — der generische weiße Input-Kasten
+   (s.o.) wirkt dort wie ein Fremdkörper. Stattdessen halbtransparent auf dem Balken selbst, mit demselben
+   weißen Text/Schlagschatten wie die restliche .bar-label-Beschriftung; die Browser-eigenen Zahlen-Pfeile passen
+   auf der schmalen, runden Leiste ohnehin nicht und fallen daher weg. */
+.bar-label .inline-edit-input{
+  width:2.6em;text-align:center;font-size:16px;
+  border:none;border-bottom:1px solid rgba(255,255,255,.7);border-radius:0;outline:none;
+  background:rgba(0,0,0,.3);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);
+  padding:0 2px;appearance:textfield;-moz-appearance:textfield;
+}
+.bar-label .inline-edit-input:focus{border-bottom-color:var(--accent,#c2a267);background:rgba(0,0,0,.4)}
+.bar-label .inline-edit-input::selection{background:rgba(224,192,128,.55);color:#fff}
+.bar-label .inline-edit-input::-webkit-inner-spin-button,
+.bar-label .inline-edit-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+/* Mehrzeiliger Freitext-Editor (makeEditable() type "textarea", z.B. Notizen-Tab). */
+.inline-edit-textarea{display:block;width:100%;min-height:120px;padding:6px 8px;line-height:1.5;resize:vertical}
+.head-top h1.editable-value{cursor:text}
+.head-top .inline-edit-input{font-family:'Andalus',serif;font-size:32px;width:min(100%,360px)}
+
+.badges{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.badge{padding:2px 11px;border:1px solid rgba(224,192,128,.45);border-radius:3px;background:rgba(224,192,128,.12);color:#ecd8b1;font-size:14px}
+
+/* LeP/AsP/KaP-Ressourcengruppe (Kopfzeile UND Titelblatt-Leiste, siehe resourceGroup() in script.js). Jede
+   Leiste steckt in einer eigenen .res-card mit eigenem goldenem Rahmen, der die Leiste eng umschließt (Nutzer-
+   Feedback 2026-09-14 nach Vergleich dreier Varianten: "Rahmen A gefällt mir am besten, allerdings sollte der
+   Rahmen direkt um das Pillenelement liegen und es einschließen" — daher knapper statt großzügiger Innenabstand).
+   Der Regenerations-Button (wirkt auf alle drei Leisten) ist ein eigenständiger kleiner Knopf am Ende der
+   Gruppe, kein Rahmen-Overlay nötig, da jede Karte schon einzeln gerahmt ist. (Frühere Varianten B/C — ein
+   gemeinsamer Rahmen mit Trennlinien bzw. beschriftete Karten — wurden nach dem Live-Vergleich verworfen.) */
+.resource-frame{display:flex;align-items:center;gap:8px}
+.resource-frame-col{flex-direction:column;align-items:stretch}
+.res-card{display:flex;border:1px solid rgba(224,192,128,.4);border-radius:6px;background:rgba(0,0,0,.18)}
+.res-lep{flex:1.25}
+.res-asp,.res-kap{flex:1}
+.resource-frame-col .res-card{flex:none}
+.res-card .bar{width:100%}
+.bar{position:relative;height:30px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.1)}
+.bar-fill{position:absolute;inset:0 auto 0 0}
+.bar-lep .bar-fill{background:linear-gradient(90deg,#8c1414,#e02020)}
+.bar-asp .bar-fill{background:linear-gradient(90deg,#0e90cf,#3a6bff)}
+.bar-kap .bar-fill{background:linear-gradient(90deg,#93cf0e,#04a236)}
+/* .bar-label-prefix/.bar-label-value als eigene Spans mit Gap statt nur einem Leerzeichen dazwischen —
+   Nutzer-Feedback 2026-09-14: "steht viel zu nah an den Werten". */
+.bar-label{position:relative;height:100%;display:flex;align-items:center;justify-content:center;gap:7px;color:#fff;font-size:16px;letter-spacing:.04em;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+.bar-label-prefix{opacity:.85}
+/* Klein im Ruhezustand, wächst + leuchtet beim Hover statt permanent Platz zu beanspruchen. */
+.regen-btn{position:static;align-self:center;width:22px;height:22px;flex:none;border:1px solid rgba(224,192,128,.5);border-radius:50%;background:#2e2823;color:#ecd8b1;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.5);transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+.regen-btn:hover{transform:scale(1.45);background:rgba(224,192,128,.35);box-shadow:0 0 9px rgba(224,192,128,.65)}
+
+.attr-die{width:46px;height:46px;line-height:46px;text-align:center;font-family:'GentiumBasic',serif;font-weight:700;font-size:19px;color:#fff;background-repeat:no-repeat;background-position:center;background-size:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.35))}
+.attr-key{font-size:12px;letter-spacing:.12em;color:var(--muted)}
+
+/* Eigenschaften-Kacheln: nur auf dem Attribute-Tab, immer eine Reihe (kompakt, nur Würfel+Wert). */
+.attr-tiles{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:16px}
+/* UI-UX-REVIEW.md Priorität 2 Punkt 7: kein cursor:pointer mehr — buildAttrTiles() hängt keinen Klick-Handler an
+   (der Click-Dummy kann noch keine Attributprobe auslösen), der Zeiger täuschte bislang eine Aktion vor. */
+.attr-tile{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:9px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:5px}
+
+/* Eigenschaftenwürfel auf jeder Seite AUSSER dem Eigenschaften-Tab selbst (dort stehen die vollen Kacheln
+   bereits fest, Nutzer-Feedback 2026-09-15: "Baue die Eigenschaftswürfel überall ein, nur auf der
+   Eigenschaftenseite nicht" — Kurskorrektur zur ursprünglichen 2026-09-14-Fassung, die auch dort anzeigte), als
+   kleine Würfel auf der Linie zwischen Header und Inhalt, zentriert in der jeweiligen Spalte. display:none/.show
+   wird per currentTab-Prüfung in renderAttrOverlay() (script.js) gesteuert, kein Toolbar-Schalter mehr.
+   Design nach mehreren Vergleichsrunden (2026-09-15, siehe NOTIZEN.md) entschieden: "Wachssiegel" — der Würfel
+   sitzt auf einer eigenen kleinen, in die Würfelform geschnittenen Fassung in genau demselben Hintergrund wie
+   die Kopfzeile (var(--head)), mit einem Goldrahmen (::before) in derselben Form dahinter, statt lose auf der
+   Trennlinie zu schweben. Frühere Vergleichs-Toggles (Würfel-Sitz A/B/C, Würfel-Rand A/B/C) sind nach der
+   Entscheidung entfernt; nur die gewählte Variante bleibt als feste Regel stehen.
+   Die Fassungsform (clip-path, an der Silhouette der d20-Würfelgrafiken in systems/dsa5/icons/dice/*.svg
+   orientiert — ein gestrecktes Sechseck mit Spitze oben/unten, keine exakte Pfadkopie) sitzt per ::after/::before
+   auf .attr-die-mini, NICHT auf der Icon-Fläche .attr-die-mini-face, damit das Würfel-Icon selbst unklipped
+   bleibt. drop-shadow() statt box-shadow für Kontur/Tiefe, da drop-shadow() der tatsächlichen (geclippten)
+   Silhouette folgt — box-shadow würde an den weggeschnittenen Ecken der rechteckigen Box unschön durchscheinen.
+   position:relative dauerhaft auf .attr-die-mini (nicht nur bei :hover): bei Variante A verschwand das
+   Würfel-Icon anfangs beim Hover-Zoom, weil :hover mit transform+z-index einen NEUEN lokalen Stacking-Context
+   aufmacht — darin malt ein Element zuerst seinen EIGENEN Hintergrund und erst danach seine negativ gestackten
+   Kind-Elemente, wodurch die Fassung beim Hover vor statt hinter dem (damals als Hintergrund gesetzten) Icon
+   landete. Fix: das Icon ist ein echtes Kind-Element (.attr-die-mini-face) statt der eigene Hintergrund von
+   .attr-die-mini — so malt ein z-index:-1/-2-Geschwister in JEDEM Stacking-Context zuverlässig dahinter. */
+.attr-overlay{display:none;position:relative;z-index:5}
+/* gap 16px statt 10px: der Goldrahmen reicht 7px über die Würfel-Box hinaus (siehe ::before unten) — bei nur
+   10px Lücke würden sich die Rahmen benachbarter Würfel überlappen. */
+.attr-overlay.show{display:flex;justify-content:center;gap:16px;margin:-12px 16px 2px}
+/* Abstand nach OBEN (zu Badges/Ressourcen im Header) war zu knapp, nach UNTEN (zum Tab-Titel) zu groß. Oben:
+   der Header bekommt bei sichtbarer Würfelreihe etwas mehr Fuß-Polster (padding-bottom), damit über der
+   Trennlinie mehr Luft bleibt, ohne die Würfel-Position relativ zur Linie selbst zu verschieben (margin-top
+   oben bleibt unverändert) — der Header wird dafür effektiv etwas höher. Unten: das direkt folgende .tab-title
+   bekommt in diesem Fall weniger padding-top als sein normaler Wert (der auf allen anderen Tabs bzw. ohne
+   sichtbare Würfelreihe unverändert bleibt, da hier über den Nachbar-Selektor +.tab-title nur DIESER Fall
+   angepasst wird). */
+.head:has(~ #attrOverlay.show){padding-bottom:23px}
+.attr-overlay.show + .tab-title{padding-top:6px}
+.attr-die-mini{position:relative;width:28px;height:28px;cursor:default;transition:transform .15s ease;transform-origin:center}
+.attr-die-mini:hover{transform:scale(1.7);z-index:6}
+.attr-die-mini-face{display:block;width:100%;height:100%;line-height:28px;text-align:center;font-family:'GentiumBasic',serif;font-weight:700;font-size:12px;color:#fff;background-repeat:no-repeat;background-position:center;background-size:contain;border-radius:50%}
+.attr-die-mini::after{
+  content:"";position:absolute;inset:-5px;z-index:-1;
+  background:var(--head);
+  clip-path:polygon(50% 0%,93% 28%,93% 72%,50% 100%,7% 72%,7% 28%);
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.55));
+}
+/* Goldrahmen um die Fassung — eine zweite, etwas größere Fläche in derselben Würfelform, in Gold, HINTER der
+   eigentlichen (dunklen) Fassung (z-index:-2 < -1). Da beide denselben clip-path (dieselben Prozentwerte) auf
+   einer gleichmäßig größeren Box verwenden, entsteht ein optisch gleichmäßiger Rahmen in Würfelform statt eines
+   rechteckigen. */
+.attr-die-mini::before{
+  content:"";position:absolute;inset:-7px;z-index:-2;
+  background:var(--accent);
+  clip-path:polygon(50% 0%,93% 28%,93% 72%,50% 100%,7% 72%,7% 28%);
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));
+}
+
+/* Aufschlüsselung Start/Fortschritte/Mod: eigene volle-Breite-Tabelle, nur im Bearbeiten-Modus (.edit-only), viel Raum für gut lesbare Werte. */
+.attr-matrix-row{grid-template-columns:90px repeat(8,1fr)}
+.attr-matrix-header{background:var(--odd)}
+.attr-matrix-head{display:flex;align-items:center;justify-content:center;gap:4px;font-family:'Andalus',serif;font-size:16px}
+.attr-matrix-val{font-size:14px}
+.sheet[data-mode="edit"] .attr-matrix-val{display:inline-block;border:1px solid var(--line);background:var(--field);border-radius:3px;padding:1px 6px;margin:0 auto}
+
+.tab-title{flex:none;padding:11px 16px 2px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.tab-title span:first-child{font-family:'Andalus',serif;font-size:22px}
+.tab-title .rule{flex:1;height:1px;background:var(--line)}
+.tab-subnav{align-self:center}
+.tab-subnav:empty{display:none}
+.muted{color:var(--muted);font-size:13px}
+#tabHint:empty{display:none}
+
+.content{padding:8px 16px 20px;flex:1;min-height:0;overflow-y:auto}
+
+.panel{border:1px solid var(--line);background:var(--panel)}
+.panel + .panel{margin-top:16px}
+.panel-title{padding:5px 11px;background:var(--title);font-family:'Andalus',serif;font-size:18px}
+.panel-title.flex{display:flex;align-items:baseline}
+.panel-title.flex span:first-child{flex:1}
+.panel-title small{font-size:13px;font-family:'GentiumBasic',serif;color:var(--muted)}
+
+/* Traditions-Kopfleiste auf Magie/Religion (traditionHeader() in script.js), Nutzer-Entscheidung 2026-09-13 nach
+   Vergleich dreier Optiken: vier gleich breite Spalten mit dünnen Trennlinien statt frei fließender Blöcke mit
+   Lücken (grid statt flex+justify-content:center — sonst wirkt die Leiste bei 4 kurzen Werten auf voller
+   Panel-Breite löchrig/unausgewogen, siehe Nutzer-Feedback "sieht noch nicht so gut aus"). */
+.trad-header{margin-bottom:16px}
+.trad-tiles-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:var(--panel)}
+.trad-tile{text-align:center;padding:10px 8px;border-left:1px solid var(--line)}
+.trad-tile:first-child{border-left:none}
+.trad-tile-label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.trad-tile-val{font-family:'Andalus',serif;font-size:15px}
+.trad-tile-val.trad-tile-val-name{font-size:20px}
+.trad-tile-val.accent{color:var(--accent)}
+.trad-tiles-note{margin-top:8px;padding:8px 11px;border:1px solid var(--line);background:var(--panel);font-size:13px;text-align:center}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.col-gap{display:flex;flex-direction:column;gap:16px}
+
+/* Unter-Tabs (Talente-Kategorien, Kampf/Kampftalente, Magie/Religion): gemeinsames .sub-tabs/.sub-tab-Muster,
+   siehe PLANNING.md "Design-Muster". Kategoriefarben stecken seit 2026-09-13 nur noch in den Panel-Titeln der
+   Tabellen darunter (renderSkillGroupPanel), nicht mehr auf den Tabs selbst — Nutzer-Feedback: passte optisch
+   nicht zum Bogen. UI-UX-REVIEW.md Priorität 3 Punkt 12: vier Optiken standen testweise per Toolbar-Umschalter
+   zur Wahl, Nutzer hat sich am 2026-09-14 für "Unterstrichen" entschieden (reine Andalus-Textlabel ohne
+   Rahmen/Füllung, nur der aktive Tab bekommt Akzentfarbe + Unterstrich, Trenner sind dünne vertikale Linien) —
+   der Umschalter (#subTabStyleSwitch/initSubTabStyleSwitch() in script.js) ist entfernt, das ist jetzt der
+   einzige Stil. */
+.sub-tabs{display:flex;flex-wrap:wrap;gap:0}
+.sub-tab{padding:3px 12px;border:none;border-bottom:2px solid transparent;border-radius:0;background:none;color:var(--muted);font-family:'Andalus',serif;font-size:15px;cursor:pointer}
+.sub-tab + .sub-tab{border-left:1px solid var(--line)}
+.sub-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:bold}
+.sub-tab:hover{color:var(--ink)}
+
+.row{display:grid;gap:8px;align-items:center;padding:5px 11px;font-size:14px;border-top:1px solid var(--line)}
+.row-head{display:grid;gap:8px;padding:4px 11px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:center;border-top:1px solid var(--line)}
+.row-head span:first-child, .row span.left{text-align:left}
+.row span.left{overflow-wrap:break-word}
+.center{text-align:center}
+
+.derived-row{grid-template-columns:1fr 40px 40px 52px 40px}
+.simple-row{grid-template-columns:1fr 50px 50px 56px}
+
+/* Spielmodus vs. Bearbeiten-Modus: .edit-only-Elemente (z.B. hideInPlay-Zeilen, Eigenschaften-Aufschlüsselung) erscheinen nur im Bearbeiten-Modus. */
+.sheet[data-mode="play"] .edit-only{display:none}
+
+/* Generisches "wirkt editierbar"-Feld für einzelne Werte (Mod/Zukauf in Ressourcen/Resistenzen/Grundwerte/Kampfwerte). */
+.sheet[data-mode="edit"] .val-editable{display:inline-block;border:1px solid var(--line);background:var(--field);border-radius:3px;padding:1px 6px}
+.sheet[data-mode="edit"] .val-select{display:inline-block;border:1px solid var(--line);background:var(--field);border-radius:3px;padding:1px 20px 1px 6px;position:relative}
+.sheet[data-mode="edit"] .val-select::after{content:"▾";position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--muted)}
+.derived-name{display:flex;align-items:center;gap:6px}
+.step{font-size:12px;cursor:pointer}
+.step.minus{color:var(--muted)}
+.step.plus{color:var(--accent)}
+/* AP-gekoppelte Stepper (advanceStepper() in script.js) an ihrer Ober-/Untergrenze: aus dem Klickfluss, aber
+   weiterhin sichtbar (kein display:none), damit erkennbar bleibt, dass hier ein Limit erreicht ist. */
+.step.disabled{opacity:.35;cursor:default;pointer-events:none}
+.big{font-family:'Andalus',serif;font-size:18px}
+
+/* Echtes <select> für selectWert-Felder (Trefferzone/Größenkategorie) im Bearbeiten-Modus, siehe selectWertCell()
+   in script.js — eigene Klasse statt .val-select, da .val-select sonst zusätzlich einen ▾-Pfeil einblendet
+   (ein natives <select> hat seinen eigenen). */
+.val-select-input{display:inline-block;border:1px solid var(--line);background:var(--field);border-radius:3px;padding:1px 4px;font:inherit;color:inherit;max-width:100%}
+
+/* Lösch-"×" auf Chips (deletableChip() in script.js) — nur im Bearbeiten-Modus sichtbar (.edit-only).
+   TODOS.md: als kleiner runder Button mit Zoom-Effekt bei Hover/Focus statt nacktem Zeichen, damit er besser
+   sichtbar ist; das Zoomen passiert nur beim Hover (Maus ist ohnehin schon darüber), verdeckt also im
+   Ruhezustand keinen Text. */
+.chip-delete{border:none;background:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:0;margin-left:2px;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;transition:transform .12s ease,color .12s ease,background-color .12s ease}
+.chip-delete:hover,.chip-delete:focus-visible{color:#a8501a;background:var(--field);transform:scale(1.35)}
+
+/* Kurze, sich selbst ausblendende Meldung (flashNotice() in script.js), z.B. "Nicht genug AP verfügbar". */
+.dsa-notice{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#1c1917;color:#f4e8d6;border:1px solid rgba(224,192,128,.4);border-radius:4px;padding:6px 14px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;white-space:nowrap}
+.dsa-notice.show{opacity:1}
+
+.xp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:11px 8px}
+.xp-item{text-align:center}
+.xp-num{font-family:'Andalus',serif;font-size:24px;line-height:1}
+.xp-num.accent{color:var(--accent)}
+.xp-label{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+/* Im Bearbeiten-Modus wirken alle 3 Erfahrungswerte editierbar; im Spielmodus reine Anzeige. */
+.sheet[data-mode="edit"] .xp-field{display:inline-block;border:1px solid var(--line);background:var(--field);border-radius:3px;padding:2px 12px}
+
+.subhead{padding:4px 11px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--odd);border-top:1px solid var(--line)}
+.subhead.flex{display:flex;align-items:center;justify-content:space-between}
+
+/* Info-Knopf für Sonderfertigkeiten-/Vor-Nachteile-Kategorien (specHelpBtn() in script.js) — dezent, da reiner
+   Hilfetext ohne Aktion; im Panel-Titel hell (auf dunklem --title-Grund), im .subhead dunkel (auf hellem --odd). */
+.spec-help-btn{border:none;background:none;padding:0;font-size:13px;line-height:1;color:inherit;opacity:.6;cursor:help}
+.spec-help-btn:hover{opacity:1}
+.subhead .spec-help-btn{color:var(--muted)}
+.list-row{display:flex;align-items:center;gap:9px;padding:4px 11px;font-size:14px;border-top:1px solid var(--line)}
+.list-row img{width:24px;height:24px;border:1px solid var(--line)}
+.list-row .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-row .cost{font-size:13px;color:var(--muted)}
+
+/* TODOS.md: "von {Quelle}" auf eigene Zeile unter Bezeichnung+Dauer, damit die Bezeichnung nicht mehr mit
+   "…" abgeschnitten wird (vorher teilte sie sich die Zeile mit dem Quellentext). */
+.list-row-2line{padding:4px 11px;font-size:14px;border-top:1px solid var(--line)}
+.list-row-2line .list-row-main{display:flex;align-items:center;gap:9px}
+.list-row-2line .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-row-2line .cost{font-size:13px;color:var(--muted)}
+.list-row-2line .source-line{margin-top:2px;font-size:12px;color:var(--muted)}
+
+/* Ursprünglich für "Alle anzeigen"/"Weniger anzeigen"; seit 2026-09-14 auch von buildActiveEffectsSummary()
+   (script.js) als Sprung-Button "N aktive Effekte → Status" auf dem Titelblatt genutzt — dort ohne Liste
+   darunter, damit die linke Leiste unabhängig von der Effekt-Anzahl nie scrollen muss. */
+.show-all-btn{display:block;width:100%;padding:6px 11px;border:none;border-top:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:12px;text-align:center;cursor:pointer}
+.show-all-btn:hover{color:var(--accent)}
+.show-all-btn:disabled{cursor:default;opacity:.6}
+.show-all-btn:disabled:hover{color:var(--muted)}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:11px}
+.chip{display:flex;align-items:center;gap:6px;padding:2px 10px 2px 4px;border:1px solid var(--line);background:var(--field);font-size:13px}
+.chip img{width:20px;height:20px}
+
+/* Traditionsgegenstand-/Kirchengerät-Fähigkeit mit bezahlbaren AsP-Kosten (payTraditionAbilityCost() in
+   script.js) — <button> statt <div>, daher Font/Cursor explizit gesetzt statt vom Chip-Grunddesign geerbt. */
+.chip-pay{font:inherit;color:var(--ink);cursor:pointer}
+.chip-pay:hover:not(.disabled){border-color:var(--accent);color:var(--accent)}
+.chip-pay.disabled{opacity:.5;cursor:default}
+
+.search-bar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.search-bar input{flex:1;padding:5px 10px;border:1px solid var(--line);background:var(--field);font-size:14px}
+
+.skill-row{grid-template-columns:26px 1fr 108px 74px 62px 20px}
+.skill-row img{width:24px;height:24px;border:1px solid var(--line);object-fit:cover}
+.skill-probe{font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,monospace;text-align:center}
+/* Spaltenüberschrift "Talent" linksbündig über dem Talentnamen statt zentriert wie die übrigen Kopfzeilen-
+   Labels (die generische Regel färbt nur den ersten Header-Span links ein, hier ist das die leere Icon-Spalte
+   davor) — Nutzer-Feedback. */
+.row-head.skill-row span:nth-child(2){text-align:left}
+/* Belastung (belastungCell() in script.js): nur bei "Ja"/"Vielleicht" befüllt, sonst leere Zelle — siehe
+   SKILL_GROUPS-Kommentar in data.js. "Ja" etwas auffälliger als "Vielleicht", damit sofort ins Auge fällt, bei
+   welchen Talenten eine Rüstungsbehinderung (BE) die Probe erschwert. */
+.belastung-yes{font-size:12px;color:var(--accent);font-weight:bold}
+.belastung-maybe{font-size:12px;color:var(--muted)}
+/* Feste Breiten für Stepper und FW-Zahl, damit die Werte über alle Zeilen exakt untereinander stehen (unabhängig von 1- vs. 2-stelligen Werten und davon, ob die Stepper im Spielmodus ausgeblendet sind). */
+.skill-fw{display:flex;align-items:center;justify-content:center;gap:5px}
+.skill-fw .step{width:10px;text-align:center}
+.skill-fw .big{font-size:17px;width:22px;text-align:center}
+
+/* 3W20-Probe (drei Attribut-Chips statt einer statischen Qualitätsstufe) */
+.probe-dice{display:flex;gap:3px;justify-content:center}
+.probe-die{width:22px;height:22px;line-height:22px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);background-repeat:no-repeat;background-position:center;background-size:contain}
+
+/* Klickbarer AT/PA-Würfel im Kampf-Reiter (Attacke/Parade) */
+.die-qs.lg{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;font-size:14px;font-weight:700;color:#fff;background-repeat:no-repeat;background-position:center;background-size:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));cursor:pointer}
+
+/* Sammelproben: eine Kopfzeile (Name/Intervall/Versuchsbudget/QS) je Sammelprobe, darunter eingerückt bis zu 3
+   alternative Talente ohne eigenes Bild (daher eine Spalte weniger + kleinere, gedimmte Schrift). */
+.agg-head-row{grid-template-columns:26px 1fr 110px 90px 80px}
+.agg-talent-row{grid-template-columns:1fr 96px 62px;padding-left:37px;font-size:13px}
+
+.actions-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.actions-row button{display:flex;align-items:center;gap:7px;padding:4px 12px;border:1px solid var(--line);background:var(--field);font-size:13px;cursor:pointer;white-space:nowrap}
+.actions-row button:hover{border-color:var(--accent);color:var(--accent)}
+.actions-row img{width:18px;height:18px;border:none}
+.actions-row .glyph{width:18px;text-align:center;font-size:15px;color:var(--muted)}
+
+/* Kampfwerte und Rüstung nebeneinander (WAFFEN-TAB.md); Rüstung bekommt die zweite Spalte, unabhängig von ihrer Zeilenzahl.
+   align-items bewusst auf dem stretch-Default belassen (nicht "start") und beide Panels als Flex-Spalte, damit die
+   Rüstungskachel (.armor-hero, flex:1 unten) auf die Höhe der Kampfwerte-Tabelle mitwächst statt darunter leerzulaufen
+   — Nutzer-Feedback 2026-09-13 (RUECKMELDUNG.md): "Rüstungskachel sollte genauso hoch sein wie die Kampfwerte". */
+.combat-top{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.combat-top .panel{display:flex;flex-direction:column}
+/* .panel + .panel (allgemeiner Abstand zwischen gestapelten Panels) griff hier fälschlich auch auf das zweite,
+   nebeneinanderstehende Panel und schob es 16px nach unten — dadurch wirkte die Rüstungskachel trotz Stretch
+   sichtbar niedriger als die Kampfwerte-Tabelle. */
+.combat-top .panel + .panel{margin-top:0}
+.combat-top .armor-hero{flex:1;height:auto;min-height:118px}
+
+/* Großes Rüstungsbild mit RS/BE als Badges direkt auf dem Bild (unten links/rechts), statt einer schmalen Listenzeile. */
+.armor-hero{position:relative;height:118px;margin:11px 11px 8px;border:1px solid var(--line);background-image:repeating-linear-gradient(135deg,var(--odd) 0 6px,transparent 6px 12px);display:flex;align-items:center;justify-content:center}
+.armor-hero img{width:56px;height:56px;opacity:.7;border:none}
+.armor-hero .item-icon{width:56px;height:56px}
+.armor-hero .item-icon img{width:100%;height:100%;opacity:.7;border:none}
+.armor-hero .badge-rs,.armor-hero .badge-be{position:absolute;bottom:7px;padding:2px 9px;font-family:'Andalus',serif;font-size:15px;background:rgba(0,0,0,.6);color:#f4e8d6;border-radius:3px}
+.armor-hero .badge-rs{left:7px}
+.armor-hero .badge-be{right:7px}
+.armor-name{padding:0 11px 10px;font-size:14px;text-align:center}
+
+/* Reittier-Kachel (Gefährten-Tab): Portrait links, Kennwerte rechts daneben statt untereinander —
+   Nutzer-Feedback 2026-09-13 (RUECKMELDUNG.md). LeP bleibt als Badge auf dem Portrait (.armor-hero .badge-rs).
+   Überarbeitet 2026-09-14: Name steht über dem Portrait statt darunter und ist deutlicher hervorgehoben
+   (.companion-name, gleiche Optik wie .info-value); companion-stats-col rutscht entsprechend um die Namenshöhe
+   nach unten, damit die erste Kennwerte-Zeile auf Höhe des Bildes (nicht des Namens) beginnt. */
+.companion-layout{display:flex;gap:16px;align-items:flex-start}
+.companion-name{font-family:'Andalus',serif;font-size:19px;text-align:center;margin-bottom:6px}
+.companion-portrait-col{flex:0 0 140px}
+.companion-portrait-col .armor-hero{margin:0 0 8px}
+.companion-stats-col{flex:1;margin-top:29px}
+
+/* Vertraute & Begleiter: dieselbe Name-über-Bild-Karte wie beim Reittier — Name in derselben Formatierung
+   (.companion-name bleibt unverändert, Nutzer-Feedback 2026-09-14), nur das Bild ist kompakter (kein LeP-Badge,
+   weniger Kennwerte-Zeilen). Mehrere Einträge bekommen per border-top eine Trennlinie. */
+.companion-card{padding:11px;border-top:1px solid var(--line)}
+.companion-card .companion-portrait-col{flex:0 0 84px}
+.companion-card .armor-hero{height:64px;margin:0}
+
+/* Volle Begleiter-Karte (companionCard() in script.js, 2026-09-15 Gefährten-Umbau): jeder Vertraute/Begleiter/
+   jede beschworene Kreatur ist jetzt ein eigenes Panel mit Titelleiste (Name+Badges, Aktionsknöpfe, Löschen) statt
+   einer Unterzeile in einem gemeinsamen Panel — genug Platz für Hotbar+Trainingstabelle. Kein .companion-name mehr
+   im Portrait (der Name steht im Panel-Titel), daher .companion-portrait-col-flat OHNE das margin-top-Offset, das
+   .companion-stats-col sonst für die frühere Name-über-Bild-Anordnung braucht. */
+.companion-full-card{margin-top:16px}
+.companion-portrait-col-flat{margin-top:0}
+.companion-info-col{flex:0 0 200px}
+.companion-loyalty-row{display:flex;align-items:center;gap:8px;padding:6px 0}
+.companion-loyalty-row .name{flex:1;font-size:13px;color:var(--muted)}
+.companion-badge{font-size:14px;margin-left:6px;cursor:default}
+.companion-nature-btn{border:none;background:none;padding:0;cursor:pointer}
+
+/* Hotbar (14 Slots, 2×7 — companion-card.hbs:134-159). Leere Slots als gepunktetes Feld, gefüllte als Bildkachel
+   mit Tooltip; Klick auf einen gefüllten Slot entfernt ihn (siehe companionHotbar()-Kommentar in script.js). */
+.companion-hotbar{flex:1;display:flex;flex-direction:column;gap:4px;min-width:220px}
+.companion-hotbar-row{display:flex;gap:4px}
+.companion-slot{width:30px;height:30px;border:1px solid var(--line);border-radius:3px;background:var(--field);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;padding:0}
+.companion-slot.empty{cursor:default;border-style:dashed;opacity:.5}
+.companion-slot img{width:100%;height:100%;object-fit:cover;border:none}
+.companion-slot.active{border-color:var(--accent)}
+
+/* Skill-Auswahl-Dialog (openCompanionSkillSelection()) und Beschwörungs-Favoriten (renderCompanions() summonHeader). */
+.companion-skill-grid{display:flex;flex-wrap:wrap;gap:6px;padding:8px 11px}
+
+/* Ausbildungs-Sammelproben-Tabelle (companionTrainingTable()), analog .agg-head-row/.agg-talent-row. */
+.training-row{grid-template-columns:1fr 70px 64px 64px 56px 42px}
+.companion-card .armor-hero img{width:32px;height:32px}
+
+/* AT/PA/TP (Nahkampf) und FK/(Leerspalte)/TP (Fernkampf) sind bewusst die letzten 3 Spalten in BEIDEN Tabellen,
+   mit identischen Breiten (46/46/80) — dadurch sitzt der Angriffswürfel (AT bzw. FK) und TP beim Scannen durch
+   Nah- und Fernkampfwaffen exakt an derselben Bildschirmposition, egal wie breit die Spalten davor (Technik/
+   Reichweite/Munition) jeweils sind: Grid füllt den Rest über die flexible Namensspalte (1fr), nicht über die
+   rechten Spalten. Fernkampf hat keine Parade, die PA-Spalte bleibt dort einfach leer statt wegzufallen.*/
+/* Griff-Spalte auf 74px verbreitert (war 52px), damit bei wurfwaffenfähigen Nahkampftechniken noch der dritte
+   Kontextmenü-Knopf (throwMenuCell()) neben Haupt-/Nebenhand-Knöpfen Platz hat — beide Zeilenarten gleichermaßen
+   verbreitert, damit AT/PA/TP/Griff/Favorit weiterhin exakt auf derselben Breite wie zuvor beschrieben ausgerichtet bleiben. */
+.melee-row{grid-template-columns:48px 1fr 92px 76px 46px 46px 80px 74px 20px}
+.ranged-row{grid-template-columns:48px 1fr 84px 170px 46px 46px 80px 74px 20px}
+.ranged-row .ammo-cell{position:relative;display:flex;align-items:center}
+
+/* "Griff"-Spalte (gripCell() in script.js): zweihändig geführte Waffen zeigen nur ein festes, nicht klickbares
+   Symbol; alles andere zwei umschaltbare Haupthand-/Nebenhand-Knöpfe. In BEIDEN Modi bedienbar. */
+.grip-cell{display:flex;align-items:center;justify-content:center;gap:2px}
+.grip-btn{border:1px solid var(--line);background:var(--field);color:var(--muted);width:20px;height:20px;line-height:1;font-size:11px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.grip-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);cursor:default}
+span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
+
+/* Wurfwaffen-Kontextknopf (throwMenuCell()) neben den Griff-Knöpfen; öffnet dasselbe .ammo-menu-Popover-Muster
+   wie die Munitionsauswahl, hier rechtsbündig verankert, damit es nicht über den Panelrand hinausragt. */
+.throw-cell{position:relative;display:inline-flex}
+.throw-cell .ammo-menu{left:auto;right:0}
+.context-btn{opacity:.75}
+.context-btn:hover,.context-btn.open{opacity:1}
+
+/* Panel-Titel-Aktionen (Handschuh-/Gliedmaßenlimit-Umschalter, "+"-Ausrüsten-Knopf) — helle Umrandung statt der
+   dunklen .grip-btn-Optik, da der Panel-Titel-Hintergrund (--title) selbst schon dunkel/golden ist. */
+.panel-title-actions{display:flex;align-items:center;gap:6px}
+.title-icon-btn{border:1px solid rgba(255,255,255,.45);background:transparent;color:inherit;width:20px;height:20px;line-height:1;font-size:12px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.title-icon-btn:hover{border-color:#fff}
+.title-icon-btn.active{background:rgba(255,255,255,.25)}
+.title-icon-btn:disabled{opacity:.35;cursor:default}
+.title-menu-wrap{position:relative;display:inline-flex}
+.title-menu-wrap .ammo-menu{left:auto;right:0;color:var(--ink)}
+
+/* Gesamtschutz-Zeile unter dem Rüstung-Panel-Titel (siehe renderArmorPanel()). */
+.armor-sum-line{padding:4px 11px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+
+/* Einzeiliger Knopf statt der bisher immer sichtbaren Munitionsart(en)+Magazin+Nachladen-Zeilen — hält die
+   Fernkampfzeile so ruhig wie die Nahkampfzeile. Öffnet/schließt .ammo-menu darunter (siehe renderAmmoCell). */
+.ammo-toggle{display:flex;align-items:center;gap:6px;width:100%;padding:2px 8px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font-size:11px;cursor:pointer;text-align:left}
+.ammo-toggle:hover{border-color:var(--accent)}
+.ammo-toggle.open{border-color:var(--accent)}
+.ammo-toggle.reloading{color:var(--muted)}
+.ammo-toggle-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ammo-toggle-caret{font-size:8px;color:var(--muted);transition:transform .1s}
+.ammo-toggle.open .ammo-toggle-caret{transform:rotate(180deg)}
+
+.ammo-menu{position:absolute;top:calc(100% + 3px);left:0;z-index:30;display:flex;flex-direction:column;gap:6px;width:max-content;min-width:100%;max-width:240px;padding:8px;border:1px solid var(--line);border-radius:4px;background:var(--paper);box-shadow:0 6px 16px rgba(0,0,0,.35)}
+
+.ammo-types{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start}
+.ammo-chip{padding:1px 7px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--muted);font-size:11px;cursor:pointer}
+.ammo-chip.active{border-color:var(--accent);color:var(--ink);font-weight:bold}
+.ammo-chip:hover{border-color:var(--accent)}
+
+.ammo-mag{display:flex;align-items:center;gap:6px}
+.ammo-mag-bar{flex:1;height:6px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--odd)}
+.ammo-mag-fill{display:block;height:100%;background:var(--accent)}
+.ammo-mag-label{font-size:11px;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+
+.reload-btn{padding:2px 8px;border:1px solid var(--line);border-radius:3px;background:var(--field);font-size:11px;cursor:pointer;color:var(--ink)}
+.reload-btn:hover{border-color:var(--accent)}
+.reload-btn.done{color:#3a8f3a;border-color:#3a8f3a;cursor:default;opacity:.8}
+.armor-row{grid-template-columns:28px 1fr 46px 46px}
+/* FW-Spalte breiter als früher (war 40px): muss jetzt Stepper+Zahl fassen (.skill-fw, wie auf dem Talente-Tab). */
+.combatskill-row{grid-template-columns:28px 1fr 44px 60px 40px 40px}
+.row img{width:26px;height:26px;border:1px solid var(--line);object-fit:cover}
+.melee-row img,.ranged-row img{width:44px;height:44px}
+.row .item-icon{width:26px;height:26px}
+.melee-row .item-icon,.ranged-row .item-icon{width:44px;height:44px}
+.row .item-icon img{width:100%;height:100%;border:1px solid var(--line);object-fit:cover}
+
+/* Waffen-/Rüstungsverschleiß (siehe wearLevel()/itemIcon() in script.js): schmaler Balken am unteren Bildrand
+   statt eines separaten vertikalen Streifens wie im System (.item-structure), da unsere Grid-Spalten dafür keinen
+   Platz neben dem Icon lassen; die Rahmenfarbe der jeweiligen Verschleißstufe macht den Zustand zusätzlich auch
+   ohne Hinsehen auf den Balken erkennbar. */
+.item-icon{position:relative;display:inline-block}
+.item-icon.wear1{outline:2px solid #b8942b}
+.item-icon.wear2{outline:2px solid #c9702b}
+.item-icon.wear3,.item-icon.wear4{outline:2px solid #b8402f}
+.item-icon .structure-bar{position:absolute;left:1px;right:1px;bottom:1px;height:3px;background:rgba(0,0,0,.55);border-radius:2px;overflow:hidden;pointer-events:none}
+.item-icon .structure-bar .fill{display:block;height:100%;background:#3a8f3a}
+.item-icon.wear1 .structure-bar .fill{background:#b8942b}
+.item-icon.wear2 .structure-bar .fill{background:#c9702b}
+.item-icon.wear3 .structure-bar .fill,.item-icon.wear4 .structure-bar .fill{background:#b8402f}
+
+/* Zauber-/Liturgie-Erweiterungen-Icon + Mehrrunden-Auflade-Balken (magicIcon() in script.js) — derselbe lineare
+   Fill-Balken wie bei structure-bar oben, statt des runden Conic-Gradient-Balkens aus dem System. */
+.magic-icon{position:relative;display:inline-block;width:26px;height:26px}
+.magic-icon img{width:100%;height:100%;border:1px solid var(--line);object-fit:cover}
+.ext-badge{position:absolute;top:-5px;right:-5px;width:13px;height:13px;line-height:13px;text-align:center;font-size:9px;color:#1c1917;background:#e0c080;border-radius:50%;box-shadow:0 0 0 1px var(--paper)}
+.charge-bar{position:absolute;left:1px;right:1px;bottom:1px;height:3px;background:rgba(0,0,0,.55);border-radius:2px;overflow:hidden;cursor:pointer}
+.charge-bar .charge-fill{display:block;height:100%;background:#4b6585}
+.charge-bar.done{cursor:default}
+.charge-bar.done .charge-fill{background:#3a8f3a}
+
+/* Taschen/Rucksäcke als Kacheln oben im Ausrüstung-Tab (renderInventory) — Klick öffnet den Inhalt im Modal
+   (openBagModal()) statt ihn inline aufzuklappen. Nutzer-Feedback 2026-09-13 (RUECKMELDUNG.md). */
+.bag-tiles{display:flex;gap:12px;flex-wrap:wrap;padding:11px}
+.bag-tile{display:flex;flex-direction:column;align-items:center;gap:4px;width:84px;padding:8px 6px;border:1px solid var(--line);background:var(--field);color:inherit;font:inherit;cursor:pointer}
+.bag-tile:hover{border-color:var(--accent)}
+.bag-tile img{width:36px;height:36px;opacity:.85}
+.bag-tile-name{font-size:12px;text-align:center;line-height:1.2}
+.bag-tile-meta{font-size:11px;color:var(--muted)}
+
+/* Generisches Modal (openModal()/closeModal() in script.js), bisher nur für den Taschen-Inhalt genutzt. */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40}
+/* UI-UX-REVIEW.md: eigene opake background-Deklaration statt der vom .panel geerbten (dort bewusst
+   halbtransparent für den Einsatz auf der Papiertextur) — im freischwebenden Modal sonst kaum lesbar. */
+.modal-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:41;width:min(480px,90vw);max-height:80vh;overflow:auto;background:var(--paper);box-shadow:0 8px 30px rgba(0,0,0,.45)}
+.modal-box:focus{outline:none}
+.modal-close{background:none;border:none;color:inherit;font-size:14px;line-height:1;cursor:pointer;padding:2px 4px}
+.modal-close:hover{color:var(--accent)}
+
+.info-cards{display:flex;gap:14px;margin-bottom:14px}
+.info-card{flex:1;border:1px solid var(--line);background:var(--panel);padding:9px 12px}
+.info-card.wide{flex:1.3}
+.info-label{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.info-value{font-family:'Andalus',serif;font-size:19px;margin-top:2px}
+
+/* Gemeinsame Spalten für Zauber/Rituale/Liturgien/Zeremonien (magicRow/magicTable in script.js). Letzte Spalte
+   (20px) ist der Lösch-"×" (rowDeleteBtn()), nur im Bearbeiten-Modus sichtbar. */
+/* Letzte Spalte 20px→42px verbreitert, da die Aktionen-Zelle jetzt Duplizieren+Löschen nebeneinander fasst
+   (rowActionsCell(), siehe itemContextMenu-Kommentar bei duplicateBtn() in script.js). */
+.magic-row{grid-template-columns:28px 1fr 108px 62px 46px 76px 90px 20px 42px}
+.row-actions-cell{display:flex;align-items:center;justify-content:center;gap:2px}
+
+/* Dämonenmal-Tabelle (renderStatus() in script.js), gleiche 3-Spalten-Aufteilung wie .armor-row. */
+.demonmark-row{grid-template-columns:1fr 90px 140px}
+
+/* Krankheiten-GM-Ansicht: Würfel-Chip + "Zustand anlegen"-Knopf neben dem Subhead (siehe renderDiseasePanel()). */
+.disease-gm-actions{display:flex;align-items:center;gap:6px}
+.disease-gm-actions .die-qs{width:20px;height:20px;background-size:contain;background-repeat:no-repeat;display:inline-block}
+
+/* Favoriten-Stern (Titelblatt-Feature, TITELBLATT.md): letzte Spalte in skill-row/melee-row/ranged-row/magic-row.
+   Klick markiert/entmarkiert direkt am Datenobjekt (favStar() in script.js) — dieselbe Referenz taucht dann in
+   der Favoriten-Übersicht des Titelblatts (renderCover()) wieder auf. */
+.fav-star{border:none;background:none;padding:0;font-size:16px;line-height:1;color:var(--line);cursor:pointer}
+.fav-star:hover{color:var(--accent)}
+.fav-star.active{color:var(--accent)}
+.artifact-row{grid-template-columns:1fr 140px 70px 20px}
+
+/* Zeilen-Lösch-"×" (rowDeleteBtn() in script.js) — wie .chip-delete, aber als eigenständige Grid-Zelle statt
+   Chip-Anhängsel (magicTable/artifactTable-Zeilen). Nur im Bearbeiten-Modus sichtbar (.edit-only).
+   TODOS.md: kleiner runder Button mit Zoom-Effekt bei Hover/Focus statt nacktem Zeichen — bleibt im
+   Ruhezustand kompakt (passt in die bestehenden 20px-Grid-Spalten), verdeckt also keinen Zeilentext. */
+.row-delete{border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;transition:transform .12s ease,color .12s ease,background-color .12s ease}
+.row-delete:hover,.row-delete:focus-visible{color:#a8501a;background:var(--field);transform:scale(1.35)}
+
+.wallet-card{flex:0 0 330px;border:1px solid var(--line);background:var(--panel);padding:9px 12px}
+.wallet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.wallet-item{display:flex;align-items:center;gap:5px}
+.wallet-item img{width:19px;height:19px}
+.carry-card{flex:1;border:1px solid var(--line);background:var(--panel);padding:9px 12px}
+.carry-head{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.carry-bar{height:14px;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--odd)}
+.carry-fill{height:100%;background:linear-gradient(90deg,#b08a5e,var(--accent))}
+
+/* Kategorie steht jetzt im Panel-Titel statt in einer eigenen Typ-Spalte (siehe INVENTORY_CATEGORIES). Letzte
+   Spalte (20px) ist der Lösch-"×" (rowDeleteBtn()), nur im Bearbeiten-Modus sichtbar. */
+/* Letzte Spalte 20px→42px verbreitert (Duplizieren+Löschen nebeneinander, siehe rowActionsCell()). */
+.inv-row{grid-template-columns:30px 1fr 34px 52px 58px 74px 42px}
+.qty-click{cursor:pointer;user-select:none}
+.qty-click:hover{color:var(--accent)}
+.inv-row img{width:28px;height:28px}
+
+.modifier-row{grid-template-columns:1fr 50px 1fr}
+
+.pips{display:flex;gap:4px}
+.pip{width:15px;height:15px;border:1px solid var(--line)}
+.pip.filled{background:var(--accent)}
+.pip.empty{background:transparent}
+
+.wounds-row{display:flex;gap:10px;padding:11px;font-size:14px}
+.wounds-row span{flex:1;padding:6px;border:1px solid var(--line);text-align:center}
+
+.drop-zone{margin:11px;padding:14px;border:2px dashed var(--line);display:flex;flex-direction:column;align-items:center;gap:6px;font-style:italic;font-size:13px;color:var(--muted)}
+.drop-zone img{width:30px;height:30px;opacity:.55}
+
+.notes-grid{display:grid;grid-template-columns:274px 1fr;gap:16px;align-items:start}
+.appearance-row{display:flex;gap:10px;padding:5px 11px;font-size:14px;border-top:1px solid var(--line)}
+.appearance-row .k{flex:1;color:var(--muted)}
+.notes-text{padding:12px;font-size:15px;line-height:1.6}
+.notes-text p{margin:0 0 10px}
+.notes-text p:last-child{margin-bottom:0}
+.bond-row{display:flex;gap:10px;padding:5px 11px;font-size:14px;border-top:1px solid var(--line)}
+.bond-row .role{color:var(--muted);font-size:13px}
+
+/* Titelblatt (renderCover()/renderContent() in script.js, TITELBLATT.md), dritte Iteration 2026-09-14: die
+   Kopfzeile (.head) enthält auf diesem Tab nur noch Name/AP/Badges — Porträt UND LeP/AsP/KaP/Schips ziehen in
+   eine eigene, durchgehend dunkle linke Leiste (#coverSidebar) um, die optisch genau wie die Kopfzeile aussieht
+   (gleiches --head-Gradient, gleiche helle Schrift) und nahtlos darunter anschließt. Nutzer-Feedback: "Die linke
+   Leiste soll genau so aussehen wie der Header und nahtlos darin übergehen. So kann der Header deutlich kleiner
+   sein, da nur der Name dort enthalten ist und das Portrait mit in die linke Leiste integriert wird." Technisch:
+   .sheet wird auf diesem Tab zum 2-Spalten-Grid (Leiste links über die volle Höhe, .head/.tab-title/.content
+   rechts gestapelt) statt der sonstigen Flex-Spalte — nur so kann die Leiste bis ganz nach oben neben die
+   Kopfzeile reichen, ohne dass die (auf allen Tabs volle Breite nutzende) .tab-title-Zeile dazwischenfunkt. Das
+   Porträt-Element (id="portrait" in index.html) wird dafür per JS zwischen .head-inner und #coverSidebar hin-
+   und herverschoben (kein zweites Porträt-Element, keine Duplizierung) — siehe renderContent() in script.js. */
+/* Spaltenbreite 240px→268px erhöht (Nutzer-Feedback 2026-09-14: die LeP/AsP/KaP-Gruppe wirkte auf der schmalen
+   Leiste gestaucht, soll mehr von der Breite einnehmen) — Porträt/Panels skalieren automatisch mit (width:100%). */
+/* Eigene Grid-Zeile "attrbar" zwischen Kopf und Tab-Titel, nur in der rechten Spalte (Nutzer-Feedback
+   2026-09-14: #attrOverlay landete ohne eigene grid-area sonst als zusätzliche Zeile UNTER #coverSidebar in
+   deren eigener Spalte statt auf der Naht zwischen Kopf und Inhalt). */
+.sheet[data-tab="cover"]{display:grid;grid-template-columns:268px 1fr;grid-template-rows:auto auto auto 1fr;grid-template-areas:"sidebar head" "sidebar attrbar" "sidebar tabtitle" "sidebar content"}
+.sheet[data-tab="cover"] .head{grid-area:head;border-bottom:1px solid rgba(224,192,128,.3)}
+.sheet[data-tab="cover"] #attrOverlay{grid-area:attrbar}
+.sheet[data-tab="cover"] .tab-title{grid-area:tabtitle}
+.sheet[data-tab="cover"] .content{grid-area:content}
+.sheet[data-tab="cover"] #coverSidebar{grid-area:sidebar}
+.sheet[data-tab="cover"] .head-top h1{font-size:44px}
+.sheet[data-tab="cover"] .badge{font-size:16px;padding:4px 14px}
+/* LeP/AsP/KaP/Schips leben jetzt nur noch in #coverSidebar (s.u.), nicht mehr zusätzlich in der Kopfzeile. */
+.sheet[data-tab="cover"] .head .bars,
+.sheet[data-tab="cover"] .head .fate-points{display:none}
+
+/* #coverSidebar bleibt auf allen anderen Tabs leer und unsichtbar (kein Platz im normalen Flex-Layout von
+   .sheet); nur [data-tab="cover"] schaltet sie sichtbar. */
+#coverSidebar{display:none}
+.sheet[data-tab="cover"] #coverSidebar{
+  display:flex;flex-direction:column;gap:13px;padding:12px 13px 16px;overflow-y:auto;min-height:0;
+  background:var(--head);border-right:1px solid rgba(224,192,128,.3);
+}
+/* Nutzer-Feedback 2026-09-15: Porträt soll IMMER gleich groß sein, egal ob der Akteur nur LeP oder alle 3
+   Ressourcenleisten (LeP/AsP/KaP) hat — vorher füllte das Porträt als Flex-Item die jeweils verbleibende Höhe
+   zwischen den fix hohen Panels, wurde also bei mehr Leisten sichtbar kleiner (siehe NOTIZEN.md). Jetzt feste
+   Höhe (flex:0 0 auto), unabhängig von Ressourcen-/Panelanzahl. Nimmt in Kauf, dass sehr niedrige Fenster die
+   Leiste wieder scrollen lassen (overflow-y:auto oben bleibt als Sicherheitsnetz dafür) — das war laut altem
+   Kommentar hier der Grund für die bisherige flexible Höhe, wird dem Wunsch nach gleich großem Porträt aber
+   untergeordnet. Höhe 220px→190px reduziert und die Abstände/Innenränder der Leiste gestrafft (Nutzer-Feedback
+   2026-09-15: bei 3 Ressourcenleisten (LeP/AsP/KaP) reichte der Platz nicht mehr aus, die Leiste bekam wieder
+   einen Scrollbalken). */
+.sheet[data-tab="cover"] #coverSidebar .portrait{width:100%;flex:0 0 auto;height:190px}
+.sheet[data-tab="cover"] #coverSidebar .fate-points img{width:28px;height:28px}
+
+/* LeP/AsP/KaP/Schips direkt auf der dunklen Leiste, ohne eigene Panel-Box — .bar/.bar-fill/.bar-label/
+   .resource-frame/.regen-btn sind ursprünglich schon für genau diesen dunklen Untergrund gestaltet (siehe .head
+   weiter oben), brauchen hier also keine Anpassung, nur .resource-frame-col für die Spalten- statt Zeilen-
+   Anordnung in der schmalen Leiste (siehe coverResourcesBlock() in script.js). */
+.cover-resources{display:flex;flex-direction:column;gap:8px}
+.cover-resources .bar{height:34px;width:100%}
+.cover-resources .bar-label{font-size:16px;padding:0 6px}
+.cover-resources .fate-points{justify-content:center;padding-top:2px}
+
+/* Zustände/Aktive Effekte in der Leiste: gleiche .panel-Struktur wie überall, aber hell-auf-dunkel umgefärbt
+   (analog zu .badge/.regen-btn, die schon auf dem dunklen Kopfzeilen-Grund stehen) statt der auf das helle
+   Papier abgestimmten --panel/--line/--ink-Variablen. */
+#coverSidebar .panel{background:rgba(255,255,255,.06);border-color:rgba(224,192,128,.3)}
+#coverSidebar .panel-title{color:var(--headink)}
+#coverSidebar .list-row{color:var(--headink);border-top-color:rgba(224,192,128,.18)}
+#coverSidebar .list-row .cost,
+#coverSidebar .muted{color:var(--headmuted)}
+#coverSidebar .pip{border-color:rgba(224,192,128,.4);background:transparent}
+#coverSidebar .pip.filled{background:var(--accent)}
+#coverSidebar .show-all-btn{color:var(--headmuted);border-top-color:rgba(224,192,128,.18)}
+#coverSidebar .show-all-btn:hover{color:var(--accent)}
+/* .row-delete ("×" zum Entfernen eines Zustands) und .step.minus ("−" zum Reduzieren) sind standardmäßig in
+   --muted gehalten, einer auf helles Papier abgestimmten dunklen Farbe — auf dem dunklen coverSidebar-Grund
+   darum kaum sichtbar. Hier wie die übrigen Sidebar-Texte auf --headmuted/--accent umgefärbt. */
+#coverSidebar .row-delete{color:var(--headmuted)}
+#coverSidebar .row-delete:hover{color:var(--accent)}
+#coverSidebar .step.minus{color:var(--headmuted)}
+#coverSidebar .step.minus:hover{color:var(--accent)}
+
+/* Spezies/Kultur/Profession-Badges in der Kopfzeile sind jetzt anklickbare <button>s (identityBadge() in
+   script.js, ersetzt die früher statischen <span>) statt reiner Anzeige — öffnen eine kurze Item-Vorschau im
+   bestehenden Modal (openIdentityModal(), identity-modal-body unten). .badge selbst überschreibt bereits Rahmen/
+   Hintergrund/Padding, hier nur noch Button-Reset + Zeigercursor/Hover als Klick-Affordanz ergänzt. */
+.badges .badge{appearance:none;-webkit-appearance:none;cursor:pointer}
+.badges .badge:hover{border-color:#f4e8d6;background:rgba(224,192,128,.28)}
+
+.identity-modal-body{display:flex;gap:12px;padding:12px}
+.identity-modal-body img{flex:0 0 46px;width:46px;height:46px;border:1px solid var(--line)}
+.identity-modal-body p{margin:0;font-size:14px;line-height:1.55}
+
+/* Favoriten (favoritesPanel() in script.js) — ein Panel im Stil von "Vor- & Nachteile" (traitsPanel in
+   renderMain()): Unterüberschrift je Kategorie (Talente/Waffen/Zauber/Liturgien), darunter eine .chips-Reihe
+   statt vier einzelner Tabellen — Nutzer-Feedback 2026-09-14. UI-UX-REVIEW.md Priorität 1 Punkt 2 (2026-09-14
+   überarbeitet): .fav-chip ist kein <button> mehr, sondern nur noch der äußere Rahmen — .fav-chip-open (Bild+Name)
+   öffnet die Vorschau (openFavoritePreview()), .fav-chip-star entfernt den Favoriten separat (kein Button-im-
+   Button mehr). */
+.fav-chip{padding-right:6px}
+.fav-chip-open{display:flex;align-items:center;gap:6px;border:none;background:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer}
+.fav-chip-open:hover{text-decoration:underline}
+.fav-chip-open img{width:20px;height:20px}
+.fav-chip-star{border:none;background:none;padding:0 0 0 4px;margin:0;color:var(--accent);font-size:12px;cursor:pointer;line-height:1}
+.fav-chip-star:hover{color:#a8501a}
+
+/* Entfernen-Button in der Favoriten-Vorschau (openFavoritePreview()), volle Breite unter Bild/Werten. Auch von
+   openHeaderBgPicker() für "Kein Hintergrundbild" wiederverwendet. */
+.fav-remove-btn{display:block;width:calc(100% - 24px);margin:0 12px 12px;padding:6px 10px;border:1px solid var(--line);background:var(--field);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+.fav-remove-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Simulierter FilePicker (openHeaderBgPicker(), IDEEN.md): Kachel-Raster der Auswahlbilder (A.bgHeaderOptions
+   in assets-map.js), analog zu .fav-remove-btn im selben Modal. */
+.filepicker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px}
+.filepicker-tile{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font:inherit;color:inherit;transition:transform .12s ease,border-color .12s ease}
+.filepicker-tile:hover{transform:scale(1.03);border-color:var(--accent)}
+.filepicker-tile img{width:100%;height:64px;object-fit:cover;border:1px solid var(--line)}
+.filepicker-tile span{font-size:12px;text-align:center}
+

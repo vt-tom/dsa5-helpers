@@ -1,0 +1,4 @@
+<span class="dsa5h-skill-value">
+{{#if @root.prepare.canAdvance}}<button class="dsa5h-edit-only" type="button" data-action="advanceWrapper" data-fct="_refundItemAdvance" data-attr="{{item._id}}" aria-label="{{localize 'DSA5HELPERS.Refund'}}">−</button>{{/if}}
+<input class="skill-advances" type="number" value="{{item.system.talentValue.value}}" aria-label="{{localize 'Fw'}}: {{item.name}}" {{#unless @root.dsa5h.editMode}}disabled{{/unless}}>
+{{#if @root.prepare.canAdvance}}<button class="dsa5h-edit-only" type="button" data-action="advanceWrapper" data-fct="_advanceItem" data-attr="{{item._id}}" aria-label="{{localize 'DSA5HELPERS.Advance'}}">+</button>{{/if}}</span>

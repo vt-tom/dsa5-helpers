@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
+<link rel="stylesheet" href="style.css?v=46">
+</head>
+<body>
+
+<div class="toolbar">
+  <span>Heldenbogen v2 · Click-Dummy</span>
+  <span class="spacer"></span>
+  <div class="mode-switch" id="modeSwitch">
+    <button type="button" data-mode="play" class="active" aria-pressed="true">Spielmodus</button>
+    <button type="button" data-mode="edit" aria-pressed="false">Bearbeiten</button>
+  </div>
+  <!-- Test-Schalter: Vorschau, wie die Ressourcengruppe aussieht, wenn eine Figur nur Lebenskraft hat (kein
+       Zauberer/Geweihter, kein AsP/KaP) — siehe initOnlyLepToggle(). Rein visuell, ändert data.js nicht. -->
+  <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
+  <button type="button" id="themeToggle">Dunkles Thema</button>
+</div>
+
+<div class="sheet-wrap">
+
+  <nav class="rail" id="rail"></nav>
+
+  <div class="sheet" data-theme="light" data-mode="play">
+
+    <!-- VORSCHAU 2026-09-15 (siehe PLANNING.md-Entscheidungsprotokoll, "Kopfzeile passt nicht richtig, Name
+         doppelt, viel Platz verloren"): Nachbau der ECHTEN Foundry-Fenster-Titelzeile (Augen-/Schloss-Icon links,
+         Menü-/Würfel-/Schließen-Icon rechts) — im echten Modul die native .window-header-Leiste, hier nur zur
+         visuellen Abstimmung nachgebaut (KEINE echte Funktion, nicht klickbar/tabbar: tabindex="-1"). Idee des
+         Nutzers: die Buttons "schweben" über dem Kopf statt eine eigene, oft leere Zeile zu beanspruchen —
+         technisch im echten Modul später per "position:absolute" auf .window-header umsetzbar (füllt dann keine
+         eigene Flex-Zeile mehr, sitzt direkt über .dsa5h-head). Absichtlich NICHT Teil des eigentlichen Bogens,
+         nur ein Overlay über den obersten ~30px von .head — links über dem Porträt, rechts über Name/Badges. -->
+    <div class="fake-window-chrome" aria-hidden="true">
+      <div class="fwc-left">
+        <button type="button" tabindex="-1" title="Grenzenansicht">👁</button>
+        <button type="button" tabindex="-1" title="Sperren">🔒</button>
+      </div>
+      <div class="fwc-right">
+        <button type="button" tabindex="-1" title="Menü">⋮</button>
+        <button type="button" tabindex="-1" title="Kompendium">🎲</button>
+        <button type="button" tabindex="-1" title="Schließen">✕</button>
+      </div>
+    </div>
+
+    <!-- KOPF -->
+    <div class="head">
+      <!-- IDEEN.md: optionales Hintergrundbild, das nach unten hin ausblendet (siehe .head-bg-layer/.head-bg-fade
+           in style.css, nur sichtbar mit .has-bg-Klasse) — Bild+Klasse werden von renderHeader() (script.js) aus
+           HEADER_BG_IMG (data.js) gesetzt. -->
+      <div class="head-bg-layer" id="headBgLayer"></div>
+      <div class="head-bg-fade"></div>
+      <!-- Öffnet einen simulierten Foundry-FilePicker (openHeaderBgPicker() in script.js) — nur im
+           Bearbeiten-Modus sichtbar (.edit-only), da der echte FilePicker auch nur dort Sinn ergibt. -->
+      <button type="button" id="headerBgBtn" class="edit-only header-bg-btn" title="Hintergrundbild wählen">🖼</button>
+      <div class="head-inner">
+        <!-- id="portrait": auf dem Titelblatt wird dieses Element per JS (siehe setCoverActive() in script.js)
+             hierher zurück bzw. in #coverSidebar hinein verschoben — ein einziges Porträt-Element statt einer
+             zweiten Kopie, damit es nicht dupliziert werden muss. -->
+        <div class="portrait" id="portrait">
+          <span>Porträt</span>
+        </div>
+        <div class="head-main">
+          <div class="head-top">
+            <!-- Gefüllt von renderHeader() (script.js) aus CHARACTER_NAME (data.js) — im Bearbeiten-Modus per
+                 Klick editierbar (makeEditable()), im Spielmodus reiner Text. -->
+            <div class="head-name" id="headName"></div>
+            <div class="ap-block">
+              <!-- Gefüllt von renderHeader() aus EXPERIENCE (data.js) — "frei" wird IMMER aus total-spent
+                   berechnet, siehe experienceAvailable() in script.js (BEARBEITEN.md: "AP verfügbar wird immer
+                   berechnet!"). Editierbar sind Gesamt/Ausgegeben nur im Erfahrung-Panel auf dem Eigenschaften-Tab. -->
+              <span class="ap-text" id="apText">AP 1 320 · 205 frei</span>
+              <!-- Gefüllt von renderHeader() aus RESOURCES["Schicksalspunkte"] (data.js) — Klick auf ein Symbol
+                   schaltet es zwischen verfügbar/ausgegeben um, siehe fatePointsRow() in script.js. In BEIDEN
+                   Modi editierbar. -->
+              <div class="fate-points" id="fatePoints"></div>
+            </div>
+          </div>
+
+          <!-- Gefüllt von initHeadBadges() (script.js) aus IDENTITY (data.js) — anklickbar, öffnet eine
+               Item-Vorschau (Spezies/Kultur/Profession), siehe openIdentityModal(). -->
+          <div class="badges" id="headBadges"></div>
+
+          <!-- Gefüllt von renderHeader() aus RESOURCES["Lebenskraft"/"Astralenergie"/"Karmaenergie"] (data.js) —
+               der aktuelle Wert (nicht Max) ist per Klick editierbar (vitalBar()/makeEditable() in script.js), in
+               BEIDEN Modi. Dieselben Bausteine füllen auch coverResourcesBlock() auf dem Titelblatt. -->
+          <div class="bars" id="bars"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nur auf dem Titelblatt sichtbar/befüllt (renderContent() in script.js, siehe [data-tab="cover"] in
+         style.css): eine durchgehend dunkle linke Leiste im selben Stil wie .head, die nahtlos darunter/daneben
+         anschließt (Porträt + LeP/AsP/KaP/Schips + Zustände + Aktive Effekte). Leer/unsichtbar auf allen anderen
+         Tabs. -->
+    <aside class="cover-sidebar" id="coverSidebar"></aside>
+
+    <!-- Eigenschaftenwürfel als kleine Würfel genau auf der Linie zwischen Header und Inhalt (siehe
+         .attr-overlay in style.css: negativer margin-top zieht sie zur Hälfte in den Header hinein). Auf jedem
+         Tab befüllt/sichtbar AUSSER dem Eigenschaften-Tab selbst (dort stehen die vollen Kacheln bereits fest),
+         siehe renderAttrOverlay() in script.js. -->
+    <div class="attr-overlay" id="attrOverlay"></div>
+
+    <!-- REITER-TITEL -->
+    <div class="tab-title">
+      <span id="tabTitle">Eigenschaften</span>
+      <span class="tab-subnav" id="tabSubNav"></span>
+      <span class="rule"></span>
+      <span id="tabHint" class="muted">Grundwerte · Erfahrung</span>
+    </div>
+
+    <!-- INHALT -->
+    <div class="content" id="content"></div>
+
+  </div>
+</div>
+
+<!-- Generisches Modal-Fenster (z.B. Taschen-Inhalt auf dem Ausrüstung-Tab), siehe openModal() in script.js. -->
+<div id="modalRoot"></div>
+
+<!-- ?v=N ist ein reiner Cache-Buster: bei jeder Änderung an einer dieser Dateien die Zahl hochzählen, sonst
+     liefert der Browser bei einem einfachen Reload evtl. eine alte JS-Datei zusammen mit neuem HTML/CSS aus
+     (führt zu einem leeren Content-Bereich, weil script.js dann Datenformen aus data.js erwartet, die die
+     gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
+<script src="assets-map.js?v=10"></script>
+<script src="data.js?v=17"></script>
+<script src="script.js?v=35"></script>
+</body>
+</html>

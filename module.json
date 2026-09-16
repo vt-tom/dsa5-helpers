@@ -1,0 +1,47 @@
+{
+  "id": "dsa5-helpers",
+  "title": "DSA5 Helpers",
+  "description": "Ein alternativer, überarbeiteter Charakterbogen für DSA5 — zusätzlich zum bestehenden Systembogen wählbar.",
+  "version": "0.0.1",
+  "authors": [
+    {
+      "name": "Tom"
+    }
+  ],
+  "compatibility": {
+    "minimum": "14.364",
+    "verified": "14.364"
+  },
+  "esmodules": [
+    "scripts/dsa5-helpers.js"
+  ],
+  "styles": [
+    "styles/dsa5-helpers-character-sheet.css"
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "dsa5",
+        "type": "system",
+        "compatibility": {
+          "minimum": "8.1.5",
+          "verified": "8.1.5"
+        }
+      }
+    ]
+  },
+  "languages": [
+    {
+      "lang": "de",
+      "name": "Deutsch",
+      "path": "lang/de.json"
+    },
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "license": "LICENSE",
+  "readme": "README.md"
+}

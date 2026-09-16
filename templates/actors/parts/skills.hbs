@@ -1,0 +1,32 @@
+      <div class="dsa5h-tab" data-tab-panel="skills" hidden>
+        <input type="search" class="talentSearch" placeholder="{{localize 'searchTalents'}}" aria-label="{{localize 'searchTalents'}}" />
+        <div class="allTalents showAll">
+          {{#each dsa5h.skillGroups as |group|}}
+          <section class="panel dsa5h-skill-panel" data-skill-panel="{{group.id}}" hidden>
+            <div class="panel-title">{{localize (concat "SKILL." group.id)}}</div>
+            <div class="row-head dsa5h-skill-row"><span></span><span>{{localize "TYPES.Item.skill"}}</span><span>{{localize "probe"}}</span><span>{{localize "encumbrance"}}</span><span>{{localize "CHARAbbrev.FW"}}</span><span></span></div>
+            {{#each group.items as |item|}}
+            <div class="row dsa5h-skill-row item" data-item-id="{{item._id}}">
+              <img src="{{item.img}}" alt="" />
+              <span class="withContext"><a class="talentName" data-action="itemEdit">{{item.name}}</a></span>
+              {{> "modules/dsa5-helpers/templates/actors/parts/probe.hbs" item=item}}
+              <span class="center">{{localize item.system.burden.value}}</span>
+              {{> "modules/dsa5-helpers/templates/actors/parts/skill-value.hbs" item=item}}
+              {{> "modules/dsa5-helpers/templates/actors/parts/favorite.hbs" item=item}}
+            </div>
+            {{else}}<p class="muted">{{localize "DSA5HELPERS.NoSkills"}}</p>{{/each}}
+          </section>
+          {{/each}}
+        </div>
+        <section class="panel" data-skill-panel="aggregated" hidden>
+          <div class="panel-title flex"><span>{{localize "aggregatedTests"}}</span>{{#if dsa5h.editMode}}<button type="button" data-action="itemCreate" data-type="aggregatedTest" item-section="aggregatedTest" aria-label="{{localize 'SHEET.addItem'}}">+</button>{{/if}}</div>
+          {{#each prepare.aggregatedtests as |item|}}
+          <div class="item dsa5h-aggregated" data-item-id="{{item._id}}">
+            <div class="row dsa5h-aggregated-head"><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span><span>{{localize "interval"}}: {{item.system.interval.value}}</span><span>{{localize "probes"}}: {{item.system.usedTestCount.value}} / {{item.system.allowedTestCount.value}}</span><span>{{localize "CHARAbbrev.QS"}}: {{item.system.cummulatedQS.value}} / 10</span></div>
+            {{#if item.system.talent.value}}<button type="button" data-action="rollAggregatedProbe" data-which="">{{item.system.talent.value}}</button>{{/if}}
+            {{#if item.system.talent.value2}}<button type="button" data-action="rollAggregatedProbe" data-which="2">{{item.system.talent.value2}}</button>{{/if}}
+            {{#if item.system.talent.value3}}<button type="button" data-action="rollAggregatedProbe" data-which="3">{{item.system.talent.value3}}</button>{{/if}}
+          </div>
+          {{else}}<p class="muted">{{localize "DSA5HELPERS.NoAggregatedTests"}}</p>{{/each}}
+        </section>
+      </div>

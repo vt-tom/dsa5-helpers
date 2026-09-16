@@ -1,0 +1,56 @@
+    <header class="dsa5h-head">
+      
+      <span data-header-slot="portrait" hidden></span><div class="dsa5h-portrait" data-cover-move="portrait">
+        <img class="charimg" data-action="editImage" data-edit="img" src="{{document.img}}" alt="{{document.name}}" />
+      </div>
+      <div class="dsa5h-head-main">
+        <div class="dsa5h-head-top">
+          <h1 class="dsa5h-name">{{formInput fields.name value=document.name placeholder=(localize 'Name') disabled=(not dsa5h.editMode)}}</h1>
+          <div class="dsa5h-ap-block">
+            <span class="dsa5h-ap-text">{{localize "APValue"}} {{dsa5hFormatNum document.system.details.experience.total}} · {{dsa5hFormatNum document.system.details.experience.current}} {{localize "DSA5HELPERS.Free"}}</span>
+            
+            <span data-header-slot="fate" hidden></span><div class="dsa5h-fate-points" data-cover-move="fate">
+              {{#each prepare.schips as |item|}}
+              <button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="schipUpdate" data-val="{{item.value}}" data-tooltip="fatePoints"></button>
+              {{/each}}
+            </div>
+          </div>
+        </div>
+
+        <div class="dsa5h-badges">
+          {{formInput systemFields.details.fields.species.fields.value value=document.system.details.species.value placeholder=(localize 'TYPES.Item.species') readonly=true disabled=(not dsa5h.editMode)}}
+          {{formInput systemFields.details.fields.culture.fields.value value=document.system.details.culture.value placeholder=(localize 'TYPES.Item.culture') disabled=(not dsa5h.editMode)}}
+          {{formInput systemFields.details.fields.career.fields.value value=document.system.details.career.value placeholder=(localize 'TYPES.Item.career') disabled=(not dsa5h.editMode)}}
+        </div>
+
+        
+        
+        <span data-header-slot="resources" hidden></span><div class="dsa5h-resource-frame" data-cover-move="resources">
+          <div class="dsa5h-res-card dsa5h-res-lep">
+            <div class="dsa5h-bar dsa5h-bar-lep">
+              <div class="dsa5h-bar-fill" style="width:{{dsa5hPercent document.system.status.wounds.value document.system.status.wounds.max}}%"></div>
+              <div class="dsa5h-bar-label"><span class="dsa5h-bar-label-prefix">{{localize "CHARAbbrev.LeP"}}</span><span class="dsa5h-bar-label-value">{{formInput systemFields.status.fields.wounds.fields.value value=document.system.status.wounds.value tooltip="Current"}} / {{document.system.status.wounds.max}}</span></div>
+            </div>
+          </div>
+          {{#if prepare.magic.hasSpells}}
+          <div class="dsa5h-res-card dsa5h-res-asp">
+            <div class="dsa5h-bar dsa5h-bar-asp">
+              <div class="dsa5h-bar-fill" style="width:{{dsa5hPercent document.system.status.astralenergy.value document.system.status.astralenergy.max}}%"></div>
+              <div class="dsa5h-bar-label"><span class="dsa5h-bar-label-prefix">{{localize "CHARAbbrev.AsP"}}</span><span class="dsa5h-bar-label-value">{{formInput systemFields.status.fields.astralenergy.fields.value value=document.system.status.astralenergy.value tooltip="Current"}} / {{document.system.status.astralenergy.max}}</span></div>
+            </div>
+          </div>
+          {{/if}}
+          {{#if prepare.magic.hasPrayers}}
+          <div class="dsa5h-res-card dsa5h-res-kap">
+            <div class="dsa5h-bar dsa5h-bar-kap">
+              <div class="dsa5h-bar-fill" style="width:{{dsa5hPercent document.system.status.karmaenergy.value document.system.status.karmaenergy.max}}%"></div>
+              <div class="dsa5h-bar-label"><span class="dsa5h-bar-label-prefix">{{localize "CHARAbbrev.KaP"}}</span><span class="dsa5h-bar-label-value">{{formInput systemFields.status.fields.karmaenergy.fields.value value=document.system.status.karmaenergy.value tooltip="Current"}} / {{document.system.status.karmaenergy.max}}</span></div>
+            </div>
+          </div>
+          {{/if}}
+          <button type="button" class="dsa5h-regen-btn" data-action="chRegenerate" data-char="regenerate" data-mod="regenerate" data-tooltip="regenerate" aria-label="{{localize 'regenerate'}}">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    

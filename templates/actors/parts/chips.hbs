@@ -1,0 +1,5 @@
+<section class="panel"><div class="panel-title">{{localize title}}</div><div class="chips">
+{{#each items as |item|}}<span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt=""><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.maxRank.value}}</a></span>
+{{#if item.OnUseEffect}}<button type="button" data-action="onUseItem" aria-label="{{localize 'SHEET.onUseEffect'}}">▶</button>{{/if}}
+<span class="chip-actions"><button type="button" data-action="postItem" aria-label="{{localize 'SHEET.PostItem'}}">↗</button>{{#if @root.dsa5h.editMode}}<button type="button" data-action="deleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button>{{/if}}</span></span>
+{{else}}<span class="muted">{{localize "DSA5HELPERS.Empty"}}</span>{{/each}}</div></section>

@@ -1,0 +1,10 @@
+<aside class="dsa5h-cover-sidebar" data-cover-sidebar>
+  <div data-cover-slot="portrait"></div>
+  <div class="dsa5h-cover-resources" data-cover-slot="resources"></div>
+  <div class="dsa5h-cover-fate" data-cover-slot="fate"></div>
+  <section class="panel">
+    <div class="panel-title">{{document.name}}</div>
+    {{#each conditions}}<div class="row dsa5h-pair"><span>{{localize name}}</span><strong>{{value}}</strong></div>{{/each}}
+    <div class="row dsa5h-pair"><span>{{localize 'Experience'}}</span><strong>{{document.system.details.experience.current}}</strong></div>
+  </section>
+</aside>

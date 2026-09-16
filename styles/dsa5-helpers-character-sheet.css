@@ -1,0 +1,1108 @@
+/* DSA5 Helpers: frame overrides, header, shared panels and tab layouts.
+   Native frame overrides remain explicit to coexist with the DSA5 immersive theme.
+   No build step — this file is loaded as-is, so sections below are landmarks for manual navigation, not a
+   strict taxonomy: generic building blocks (panel/row/chip/grid) and tab-specific rules are interleaved in
+   roughly the order they were added over many sessions rather than fully regrouped by component — a few
+   related rules therefore still live apart (e.g. attribute-die tiles near "content area", their compact
+   overlay variant further down, and a plain-value roll button near the very end). */
+
+/* ===== FONTS & DESIGN TOKENS ===== */
+
+@font-face {
+   font-family: 'Andalus';
+   src: url('../../../systems/dsa5/fonts/andlso.woff2') format('woff2');
+   font-weight: normal;
+   font-style: normal;
+   font-display: swap
+}
+
+@font-face {
+   font-family: 'GentiumBasic';
+   src: url('../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2');
+   font-weight: normal;
+   font-style: normal;
+   font-display: swap
+}
+
+@font-face {
+   font-family: 'GentiumBasic';
+   src: url('../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2');
+   font-weight: 700;
+   font-style: normal;
+   font-display: swap
+}
+
+.dsa5-helpers-sheet {
+   --paper: #ece2d2;
+   --ink: #2b2721;
+   --muted: rgba(43, 39, 33, .66);
+   --line: rgba(43, 39, 33, .16);
+   --panel: rgba(255, 255, 255, .4);
+   --field: rgba(255, 255, 255, .55);
+   --odd: rgba(0, 0, 0, .045);
+   --title: linear-gradient(90deg, rgba(147, 123, 72, .9) 0%, rgba(147, 123, 72, .06) 100%);
+   --head: linear-gradient(180deg, #3a322b, #272320);
+   --head-base: #272320;
+   --accent: #8b6f3f;
+   --headink: #f4e8d6;
+   --headmuted: rgba(244, 232, 214, .74);
+   --railidle: rgba(236, 226, 210, .6);
+   --railon: #ece2d2;
+}
+
+.dsa5-helpers-sheet {
+   border-style: solid !important;
+   border-color: transparent !important;
+   border-width: 16px !important;
+   border-image: url('../../../systems/dsa5/icons/backgrounds/actor.webp') 20 stretch !important;
+   
+   box-shadow: 0 10px 20px rgba(0, 0, 0, .5) !important;
+   background: var(--paper) !important;
+}
+
+.dsa5-helpers-sheet:after {
+   content: none !important
+}
+
+/* ===== NATIVE FOUNDRY FRAME/WINDOW OVERRIDES ===== */
+
+.dsa5-helpers-sheet .window-header {
+   background: var(--head-base) !important;
+   background-image: none !important;
+   border: none !important;
+   border-radius: 0 !important;
+   margin: 0 !important;
+   box-shadow: none !important;
+   color: var(--headink) !important;
+   flex: 0 0 auto !important;
+   top: 0 !important;
+   padding: 2px 8px !important;
+   min-height: 0 !important;
+   height: auto !important;
+   gap: 4px !important
+}
+
+.dsa5-helpers-sheet .window-header .window-title {
+   visibility: hidden !important
+}
+
+.dsa5-helpers-sheet .window-header .header-button {
+   color: var(--headink) !important
+}
+
+.dsa5-helpers-sheet .window-header .header-button:hover {
+   background: rgba(224, 192, 128, .18) !important;
+   border-radius: 3px !important
+}
+
+.dsa5-helpers-sheet.dsa5-helpers-sheet .window-content {
+   display: flex !important;
+   flex-direction: column !important;
+   padding: 0 !important;
+   margin: 0 !important;
+   background: var(--paper) !important;
+   background-size: auto !important;
+   color: var(--ink) !important;
+   font-family: 'GentiumBasic', Georgia, serif !important;
+   flex: 1 !important;
+   min-height: 0 !important;
+   position: relative !important;
+   
+   border: none !important;
+   border-image: none !important;
+   
+   overflow: visible !important;
+}
+
+.dsa5-helpers-sheet .window-content * {
+   box-sizing: border-box
+}
+
+.dsa5-helpers-sheet .window-content a {
+   text-decoration: none !important
+}
+
+.dsa5-helpers-sheet :where(.window-content input, .window-content select) {
+   font-family: inherit;
+   color: inherit;
+   font-size: 14px
+}
+
+.dsa5-helpers-sheet :where(.window-content button:not(.fas):not(.far):not(.fab):not(.fa-solid):not(.fa-regular)) {
+   font-family: inherit;
+   color: inherit;
+   font-size: 14px
+}
+
+.dsa5-helpers-sheet .window-content button.fas,
+.dsa5-helpers-sheet .window-content button.far,
+.dsa5-helpers-sheet .window-content button.fab {
+   color: inherit
+}
+
+/* ===== RAIL NAVIGATION ===== */
+
+.dsa5-helpers-sheet .window-content nav.dsa5h-rail {
+   position: absolute;
+   left: calc(100% + 10px);
+   top: 70px;
+   z-index: -1;
+   display: flex;
+   flex-direction: column;
+   gap: 3px;
+   padding: 6px;
+   margin: 0;
+   background: rgba(20, 16, 12, .92);
+   border: 1px solid rgba(224, 192, 128, .55);
+   border-radius: 4px;
+}
+
+.dsa5-helpers-sheet .window-content nav.dsa5h-rail button.dsa5h-rail-btn {
+   width: 38px;
+   height: 38px;
+   border: 1px solid var(--line);
+   border-radius: 4px;
+   background: var(--railidle);
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 0;
+   margin: 0
+}
+
+.dsa5-helpers-sheet .window-content nav.dsa5h-rail button.dsa5h-rail-btn.active {
+   background: var(--railon);
+   border-color: var(--accent)
+}
+
+.dsa5-helpers-sheet .window-content nav.dsa5h-rail button.dsa5h-rail-btn:hover {
+   filter: brightness(1.12)
+}
+
+.dsa5-helpers-sheet .window-content nav.dsa5h-rail button.dsa5h-rail-btn img {
+   width: 20px;
+   height: 20px;
+   border: none;
+   margin: 0
+}
+
+.dsa5-helpers-sheet .window-content .dsa5h-main {
+   flex: 1;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   min-height: 0
+}
+
+/* ===== HEADER (portrait, name, badges, LeP/AsP/KaP resource cards, fate points) ===== */
+
+.dsa5-helpers-sheet .dsa5h-head {
+   display: flex;
+   align-items: stretch;
+   gap: 16px;
+   padding: 6px 16px 15px;
+   background: var(--head-base);
+   color: var(--headink);
+   border-bottom: 1px solid rgba(224, 192, 128, .3)
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait {
+   flex: 0 0 118px;
+   border: 1px solid rgba(224, 192, 128, .38);
+   overflow: hidden;
+   background-color: var(--paper);
+   background-image: none
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait img {
+   display: block;
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   margin: 0;
+   border: none
+}
+
+.dsa5-helpers-sheet .dsa5h-head-main {
+   flex: 1;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   justify-content: center
+}
+
+.dsa5-helpers-sheet .dsa5h-head-top {
+   display: flex;
+   align-items: flex-start;
+   gap: 12px
+}
+
+.dsa5-helpers-sheet .dsa5h-name {
+   flex: 1 1 auto;
+   min-width: 0;
+   margin: 0;
+   font-family: 'Andalus', serif;
+   font-size: 24px; 
+   font-weight: normal;
+   line-height: 1.3;
+   color: #f4e8d6
+}
+
+.dsa5-helpers-sheet .dsa5h-name input {
+   display: block;
+   flex: 1 1 auto;
+   background: transparent;
+   border: none;
+   border-bottom: 1px solid rgba(244, 232, 214, .3);
+   color: #f4e8d6;
+   font: inherit;
+   font-size: 24px !important;
+   width: 100%;
+   min-width: 0;
+   padding: 0 0 2px;
+   height: auto
+}
+
+.dsa5-helpers-sheet .dsa5h-ap-block {
+   flex: 0 0 auto;
+   display: flex;
+   flex-direction: column;
+   align-items: flex-end;
+   gap: 6px;
+   padding-top: 4px
+}
+
+.dsa5-helpers-sheet .dsa5h-ap-text {
+   font-size: 13px;
+   color: var(--headmuted);
+   font-family: 'GentiumBasic', Georgia, serif;
+   white-space: nowrap
+}
+
+.dsa5-helpers-sheet .dsa5h-fate-points {
+   display: flex;
+   gap: 3px
+}
+
+.dsa5-helpers-sheet .dsa5h-fatepoint {
+   flex: 0 0 23px;
+   width: 23px;
+   height: 23px;
+   border: none;
+   background-repeat: no-repeat;
+   background-position: center;
+   background-size: contain;
+   cursor: pointer;
+   padding: 0;
+   margin: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-fatepoint.fullSchip {
+   background-image: url('../../../systems/dsa5/icons/schip.webp')
+}
+
+.dsa5-helpers-sheet .dsa5h-fatepoint.emptySchip {
+   background-image: url('../../../systems/dsa5/icons/gray_schip.webp');
+   opacity: .45
+}
+
+.dsa5-helpers-sheet .dsa5h-badges {
+   display: flex;
+   flex-wrap: wrap;
+   align-items: center;
+   gap: 8px
+}
+
+.dsa5-helpers-sheet .dsa5h-badges input {
+   flex: 0 0 auto;
+   background: rgba(224, 192, 128, .12);
+   border: 1px solid rgba(224, 192, 128, .45);
+   color: #ecd8b1;
+   border-radius: 3px;
+   padding: 2px 11px;
+   font-size: 14px;
+   line-height: 1.4;
+   width: auto;
+   max-width: none;
+   height: auto
+}
+
+.dsa5-helpers-sheet .dsa5h-resource-frame {
+   display: flex;
+   align-items: center;
+   gap: 8px
+}
+
+.dsa5-helpers-sheet .dsa5h-res-card {
+   flex: 1 1 140px;
+   display: flex;
+   border: 1px solid rgba(224, 192, 128, .4);
+   border-radius: 6px;
+   background: rgba(0, 0, 0, .18)
+}
+
+.dsa5-helpers-sheet .dsa5h-bar {
+   position: relative;
+   width: 100%;
+   height: 30px;
+   border-radius: 4px;
+   overflow: hidden;
+   background: rgba(255, 255, 255, .1);
+   margin: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-fill {
+   position: absolute;
+   inset: 0 auto 0 0
+}
+
+.dsa5-helpers-sheet .dsa5h-bar-lep .dsa5h-bar-fill {
+   background: linear-gradient(90deg, #8c1414, #e02020)
+}
+
+.dsa5-helpers-sheet .dsa5h-bar-asp .dsa5h-bar-fill {
+   background: linear-gradient(90deg, #0e90cf, #3a6bff)
+}
+
+.dsa5-helpers-sheet .dsa5h-bar-kap .dsa5h-bar-fill {
+   background: linear-gradient(90deg, #93cf0e, #04a236)
+}
+
+.dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-label {
+   position: relative;
+   z-index: 1;
+   height: 100%;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 7px;
+   color: #fff;
+   font-size: 16px;
+   letter-spacing: .04em;
+   text-shadow: 0 1px 2px rgba(0, 0, 0, .55);
+   margin: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-bar-label-prefix {
+   opacity: .85
+}
+
+.dsa5-helpers-sheet .dsa5h-bar-label-value input {
+   background: rgba(0, 0, 0, .3);
+   border: none;
+   border-bottom: 1px solid rgba(255, 255, 255, .7);
+   border-radius: 0;
+   outline: none;
+   color: #fff;
+   font: inherit;
+   font-size: 16px;
+   text-align: center;
+   width: 2.6em;
+   min-width: 0;
+   padding: 0 2px;
+   height: auto;
+   text-shadow: 0 1px 2px rgba(0, 0, 0, .55);
+   appearance: textfield;
+   -moz-appearance: textfield
+}
+
+.dsa5-helpers-sheet .dsa5h-bar-label-value input:focus {
+   border-bottom-color: var(--accent);
+   background: rgba(0, 0, 0, .4)
+}
+
+.dsa5-helpers-sheet .dsa5h-bar-label-value input::-webkit-inner-spin-button,
+.dsa5-helpers-sheet .dsa5h-bar-label-value input::-webkit-outer-spin-button {
+   -webkit-appearance: none;
+   margin: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-regen-btn {
+   flex-grow: 0;
+   flex-shrink: 0;
+   flex-basis: 22px;
+   align-self: center;
+   width: 22px;
+   height: 22px;
+   min-width: 22px;
+   min-height: 22px;
+   max-width: 22px;
+   max-height: 22px;
+   aspect-ratio: 1/1;
+   border: 1px solid rgba(224, 192, 128, .5);
+   border-radius: 50%;
+   background: #2e2823;
+   color: #ecd8b1;
+   font-size: 12px;
+   line-height: 1;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+   padding: 0;
+   margin: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-regen-btn:hover {
+   transform: scale(1.45);
+   background: rgba(224, 192, 128, .35)
+}
+
+/* ===== TAB TITLE + SUB-NAVIGATION ===== */
+
+.dsa5-helpers-sheet .dsa5h-tab-title {
+   flex: none;
+   padding: 11px 16px 2px;
+   display: flex;
+   align-items: baseline;
+   gap: 12px;
+   flex-wrap: wrap
+}
+
+.dsa5-helpers-sheet .dsa5h-tab-title [data-tab-title-label] {
+   font-family: 'Andalus', serif;
+   font-size: 22px
+}
+
+.dsa5-helpers-sheet .dsa5h-rule {
+   flex: 1;
+   height: 1px;
+   background: var(--line)
+}
+
+.dsa5-helpers-sheet .dsa5h-tab-hint {
+   color: var(--muted);
+   font-size: 13px
+}
+
+.dsa5-helpers-sheet .dsa5h-tab-hint:empty {
+   display: none
+}
+
+/* ===== CONTENT AREA — SHARED PRIMITIVES (panel/row/chip/grid, used by every tab) ===== */
+
+.dsa5-helpers-sheet .dsa5h-content {
+   flex: 1;
+   min-height: 0;
+   overflow-y: auto;
+   padding: 0 16px 16px
+}
+
+.dsa5-helpers-sheet .dsa5h-tab[hidden] {
+   display: none
+}
+
+.dsa5-helpers-sheet .dsa5h-placeholder {
+   padding: 24px;
+   text-align: center;
+   color: var(--muted);
+   font-style: italic
+}
+
+/* ===== EIGENSCHAFTEN TAB — full attribute-die tiles (compact overlay variant further down,
+   plain-value roll button near the end of the file — see .dsa5h-attr-overlay / .dsa5h-attr-roll) ===== */
+
+.dsa5-helpers-sheet .dsa5h-attr-tiles {
+   display: grid;
+   grid-template-columns: repeat(8, 1fr);
+   gap: 8px;
+   margin-bottom: 16px
+}
+
+.dsa5-helpers-sheet .dsa5h-attr-tile {
+   border: 1px solid var(--line);
+   background: var(--panel);
+   border-radius: 4px;
+   padding: 9px 6px 8px;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 5px;
+   margin: 0;
+   cursor: pointer;
+   transition: transform .12s ease, background .12s ease
+}
+
+.dsa5-helpers-sheet .dsa5h-attr-tile:hover {
+   background: var(--field);
+   transform: translateY(-1px)
+}
+
+.dsa5-helpers-sheet .dsa5h-attr-die {
+   width: 46px;
+   height: 46px;
+   line-height: 46px;
+   text-align: center;
+   font-family: 'GentiumBasic', serif;
+   font-weight: 700;
+   font-size: 19px;
+   color: #fff;
+   background-repeat: no-repeat;
+   background-position: center;
+   background-size: contain;
+   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, .35))
+}
+
+.dsa5-helpers-sheet .dsa5h-attr-key {
+   font-size: 12px;
+   letter-spacing: .12em;
+   color: var(--muted)
+}
+
+/* ===== ATTRIBUTE-DIE OVERLAY (compact row, all tabs except Eigenschaften) ===== */
+/* Compact attribute-die row shown on every tab except Eigenschaften itself (toggled via [data-attr-overlay],
+   see _applyCurrentTab()). Needs an explicit [hidden] override: an author rule of equal specificity to the
+   UA [hidden]{display:none} wins the cascade by origin, so plain display:flex would leak through otherwise.
+   Sits directly on the seam between header and content (negative margin-top pulls the row half into the
+   header) instead of as its own solid-dark row underneath — only that way does the "Wachssiegel" seal
+   (::before/::after on .dsa5h-attr-die-mini) contrast against the light paper behind it, like the click-dummy
+   (.attr-overlay there has no background of its own either). No extra padding here — header/tab-title get a
+   little more room instead, see below. */
+.dsa5-helpers-sheet .dsa5h-attr-overlay { position: relative; z-index: 5; display: flex; justify-content: center; gap: 10px; margin: -13px 16px 2px; }
+.dsa5-helpers-sheet .dsa5h-attr-overlay[hidden] { display: none; }
+.dsa5-helpers-sheet .dsa5h-head:has(+ .dsa5h-attr-overlay:not([hidden])) { padding-bottom: 26px; }
+.dsa5-helpers-sheet .dsa5h-attr-overlay:not([hidden]) + .dsa5h-tab-title { padding-top: 4px; }
+/* "Wachssiegel"-Fassung wie im Click-Dummy (.attr-die-mini dort): eine kleine, in die Würfelform geschnittene
+   Fassung im Kopfzeilen-Farbton hinter dem Würfel-Icon, mit Goldrahmen dahinter. Der Würfel selbst braucht ein
+   echtes Kind-Element (.dsa5h-attr-die-mini-face) statt eines eigenen background-image auf .dsa5h-attr-die-mini
+   — sonst malt :hover (transform+z-index öffnen einen neuen Stacking-Context) die Fassung beim Hover-Zoom VOR statt
+   HINTER das Icon, siehe [[feedback_hover_stacking_context_zindex_gotcha]]. */
+.dsa5-helpers-sheet .dsa5h-attr-die-mini { position:relative; width:26px; height:26px; cursor:default; transition:transform .15s ease; transform-origin:center; }
+.dsa5-helpers-sheet .dsa5h-attr-die-mini:hover { transform:scale(1.6); z-index:6; }
+.dsa5-helpers-sheet .dsa5h-attr-die-mini-face { display:block; width:100%; height:100%; line-height:26px; text-align:center; font-family:'GentiumBasic',serif; font-weight:700; font-size:11px; color:#fff; background-repeat:no-repeat; background-position:center; background-size:contain; border-radius:50%; }
+.dsa5-helpers-sheet .dsa5h-attr-die-mini::after {
+   content:""; position:absolute; inset:-5px; z-index:-1;
+   background:var(--head-base);
+   clip-path:polygon(50% 0%,93% 28%,93% 72%,50% 100%,7% 72%,7% 28%);
+   filter:drop-shadow(0 1px 2px rgba(0,0,0,.55));
+}
+.dsa5-helpers-sheet .dsa5h-attr-die-mini::before {
+   content:""; position:absolute; inset:-7px; z-index:-2;
+   background:var(--accent);
+   clip-path:polygon(50% 0%,93% 28%,93% 72%,50% 100%,7% 72%,7% 28%);
+   filter:drop-shadow(0 1px 2px rgba(0,0,0,.5));
+}
+
+.dsa5-helpers-sheet .dsa5h-content .grid-2 {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: 16px;
+   align-items: start
+}
+
+.dsa5-helpers-sheet .dsa5h-content .col-gap {
+   display: flex;
+   flex-direction: column;
+   gap: 16px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .panel {
+   border: 1px solid var(--line);
+   background: var(--panel);
+   margin: 0;
+   min-width: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-tab > .panel + .panel,
+.dsa5-helpers-sheet [data-sub-panel] > .panel + .panel {
+   margin-top: 16px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .panel-title {
+   padding: 5px 11px;
+   background: var(--title);
+   font-family: 'Andalus', serif;
+   font-size: 18px;
+   color: var(--ink);
+   margin: 0;
+   border: none
+}
+
+.dsa5-helpers-sheet .dsa5h-content .panel-title.flex {
+   display: flex;
+   align-items: baseline
+}
+
+.dsa5-helpers-sheet .dsa5h-content .panel-title.flex span:first-child {
+   flex: 1
+}
+
+.dsa5-helpers-sheet .dsa5h-content .panel-title small {
+   font-size: 13px;
+   font-family: 'GentiumBasic', serif;
+   color: var(--muted);
+   font-weight: normal
+}
+
+.dsa5-helpers-sheet .dsa5h-content .subhead {
+   padding: 4px 11px;
+   font-size: 12px;
+   letter-spacing: .06em;
+   text-transform: uppercase;
+   color: var(--muted);
+   background: var(--odd);
+   border-top: 1px solid var(--line);
+   margin: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-content .subhead.flex {
+   display: flex;
+   align-items: center;
+   justify-content: space-between
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-spec-help-btn {
+   display: inline-flex;
+   flex: none;
+   align-items: center;
+   justify-content: center;
+   box-sizing: border-box;
+   width: 14px;
+   height: 14px;
+   min-width: 14px;
+   min-height: 14px;
+   max-width: 14px;
+   max-height: 14px;
+   aspect-ratio: 1/1;
+   border: 1px solid var(--accent);
+   border-radius: 50%;
+   background: rgba(255, 255, 255, .6);
+   padding: 0;
+   font-family: 'GentiumBasic', Georgia, serif;
+   font-style: normal;
+   font-weight: 700;
+   font-size: 9px;
+   line-height: 14px;
+   color: var(--accent);
+   opacity: .85;
+   cursor: help;
+   margin: 0;
+   transition: transform .15s ease, opacity .15s ease
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-spec-help-btn:hover {
+   opacity: 1;
+   transform: scale(1.4)
+}
+
+.dsa5-helpers-sheet .dsa5h-content .chips {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 6px;
+   padding: 11px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .chip {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   padding: 2px 10px 2px 4px;
+   border: 1px solid var(--line);
+   background: var(--field);
+   font-size: 13px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .chip img {
+   width: 20px;
+   height: 20px;
+   border: none;
+   margin: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-content .chip-actions {
+   display: none;
+   align-items: center;
+   gap: 2px;
+   margin-left: auto;
+   padding-left: 4px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .chip:is(:hover, :focus-within) .chip-actions {
+   display: flex
+}
+
+.dsa5-helpers-sheet .dsa5h-content .chip-action-btn {
+   border: none;
+   background: none;
+   padding: 0;
+   width: 15px;
+   height: 15px;
+   flex: none;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   font-size: 12px;
+   line-height: 1;
+   color: var(--muted);
+   opacity: .7;
+   cursor: pointer
+}
+
+.dsa5-helpers-sheet .dsa5h-content .chip-action-btn:hover {
+   opacity: 1;
+   color: var(--accent);
+   transform: scale(1.15)
+}
+
+.dsa5-helpers-sheet .dsa5h-content .row {
+   display: grid;
+   gap: 8px;
+   align-items: center;
+   padding: 5px 11px;
+   font-size: 14px;
+   border-top: 1px solid var(--line);
+   border-left: none;
+   border-right: none;
+   border-bottom: none;
+   margin: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-content .row-head {
+   display: grid;
+   gap: 8px;
+   padding: 4px 11px;
+   font-size: 12px;
+   letter-spacing: .05em;
+   text-transform: uppercase;
+   color: var(--muted);
+   text-align: center;
+   border-top: 1px solid var(--line);
+   margin: 0
+}
+
+/* Single long compound words ("Trefferpunkte", "Reichweite", …) have no space to wrap at, so a narrow column
+   let them spill into the next cell instead of wrapping — allow an in-word break as a general safety net. */
+.dsa5-helpers-sheet .dsa5h-content .row-head span {
+   overflow-wrap: break-word
+}
+
+.dsa5-helpers-sheet .dsa5h-content .row-head span:first-child,
+.dsa5-helpers-sheet .dsa5h-content .row span.left {
+   text-align: left
+}
+
+.dsa5-helpers-sheet .dsa5h-content .derived-row {
+   grid-template-columns: 1fr 40px 40px 52px 40px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .simple-row {
+   grid-template-columns: 1fr 50px 50px 56px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .left {
+   text-align: left
+}
+
+.dsa5-helpers-sheet .dsa5h-content .center {
+   text-align: center
+}
+
+.dsa5-helpers-sheet .dsa5h-content .muted {
+   color: var(--muted);
+   font-size: 13px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .big {
+   font-family: 'Andalus', serif;
+   font-size: 18px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .row input,
+.dsa5-helpers-sheet .dsa5h-content .row select {
+   width: 100%;
+   border: 1px solid var(--line);
+   background: var(--field);
+   border-radius: 3px;
+   padding: 1px 4px;
+   text-align: center;
+   font: inherit;
+   color: inherit;
+   height: auto;
+   margin: 0
+}
+
+.dsa5-helpers-sheet .dsa5h-content .xp-grid {
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   gap: 8px;
+   padding: 11px 8px
+}
+
+.dsa5-helpers-sheet .dsa5h-content .xp-item {
+   text-align: center
+}
+
+.dsa5-helpers-sheet .dsa5h-content .xp-num {
+   font-family: 'Andalus', serif;
+   font-size: 24px;
+   line-height: 1
+}
+
+.dsa5-helpers-sheet .dsa5h-content .xp-num.accent {
+   color: var(--accent)
+}
+
+.dsa5-helpers-sheet .dsa5h-content .xp-label {
+   font-size: 12px;
+   letter-spacing: .05em;
+   text-transform: uppercase;
+   color: var(--muted);
+   margin-top: 3px
+}
+
+/* ===== RESPONSIVE: NARROW WINDOW ===== */
+
+@media (max-width:640px) {
+   .dsa5-helpers-sheet.dsa5-helpers-sheet .window-content {
+      flex-direction: column !important;
+      overflow-x: hidden !important
+   }
+
+   .dsa5-helpers-sheet .window-content nav.dsa5h-rail {
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      z-index: auto !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      border: none !important;
+      border-bottom: 1px solid var(--line) !important;
+      border-radius: 0 !important;
+      background: rgba(0, 0, 0, .04) !important
+   }
+
+   .dsa5-helpers-sheet .dsa5h-content .grid-2 {
+      grid-template-columns: 1fr !important
+   }
+
+   .dsa5-helpers-sheet .dsa5h-attr-tiles {
+      grid-template-columns: repeat(4, 1fr) !important
+   }
+}
+
+/* ===== TALENTE TAB ===== */
+
+.dsa5-helpers-sheet [data-skill-panel][hidden],
+.dsa5-helpers-sheet [data-skill-nav][hidden],
+.dsa5-helpers-sheet .dsa5h-skill-row[hidden] { display: none !important; }
+.dsa5-helpers-sheet .dsa5h-sub-tabs { display:flex; flex-wrap:wrap; }
+.dsa5-helpers-sheet .dsa5h-sub-tabs button { width:auto; min-height:0; padding:3px 8px; border:0; border-bottom:2px solid transparent; border-radius:0; background:none; color:var(--muted); font:15px Andalus,serif; }
+.dsa5-helpers-sheet .dsa5h-sub-tabs button.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:bold; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns:26px minmax(120px,1fr) 108px 80px 96px 24px; }
+.dsa5-helpers-sheet .dsa5h-skill-row img { width:24px; height:24px; object-fit:cover; border:1px solid var(--line); }
+/* .dsa5h-content is added to win against the generic button reset below (:where() there carries zero
+   specificity, but same-specificity ties resolve by source order — this rule used to lose because it came
+   first), otherwise every probe button grows the generic border+field background meant for real buttons. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-probe { display:flex; justify-content:center; align-items:center; gap:3px; padding:0; border:0; background:none; min-height:0; }
+.dsa5-helpers-sheet .dsa5h-skill-value { display:flex; align-items:center; gap:2px; }
+.dsa5-helpers-sheet .dsa5h-skill-value button { flex:0 0 20px; width:20px; height:24px; min-height:0; padding:0; color:var(--ink); background:var(--field); border:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-value input { min-width:0; }
+.dsa5-helpers-sheet .talentSearch { margin-bottom:12px; }
+.dsa5-helpers-sheet .dsa5h-skill-panel { --skill-color:#4f6d65; margin-top:0 !important; }
+.dsa5-helpers-sheet [data-skill-panel=social] { --skill-color:#85302e; }
+.dsa5-helpers-sheet [data-skill-panel=nature] { --skill-color:#535829; }
+.dsa5-helpers-sheet [data-skill-panel=knowledge] { --skill-color:#4b6585; }
+.dsa5-helpers-sheet [data-skill-panel=trade] { --skill-color:#cda25e; }
+.dsa5-helpers-sheet .dsa5h-skill-panel .panel-title { color:white; text-shadow:0 1px 2px #0009; background:linear-gradient(90deg,var(--skill-color),transparent); }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-head { grid-template-columns:2fr 1fr 1fr 1fr; }
+.dsa5-helpers-sheet .dsa5h-aggregated > button { width:auto; margin:6px; padding:3px 8px; color:var(--ink); background:var(--field); border:1px solid var(--line); }
+
+/* ===== DARK THEME + GLOBAL INTERACTION STATES ===== */
+/* Theme and interaction states are scoped to this application. */
+.dsa5-helpers-sheet[data-theme="dark"] {
+  --paper:#272320; --ink:#e9dfcd; --muted:#b9ad9b; --line:#ffffff26;
+  --panel:#ffffff08; --field:#ffffff0d; --odd:#ffffff05;
+  --title:linear-gradient(90deg,#75603b99,transparent); --accent:#d0b276;
+  --railidle:#39332c; --railon:#5b4a32;
+  color-scheme:dark;
+}
+.dsa5-helpers-sheet [hidden] { display:none !important; }
+.dsa5-helpers-sheet .dsa5h-main { min-width:0; container-type:inline-size; }
+.dsa5-helpers-sheet .dsa5h-content :where(button:not(.fas):not(.far):not(.fa-solid):not(.icon)) { width:auto; height:auto; min-height:24px; padding:2px 6px; border:1px solid var(--line); background:var(--field); color:var(--ink); line-height:1.2; }
+.dsa5-helpers-sheet :where(button, a, input, select, summary):focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.dsa5-helpers-sheet .dsa5h-content button:disabled { opacity:.55; cursor:default; }
+/* opacity stays 1 so the value itself remains fully legible (a washed-out disabled value is hard to read at a
+   glance) — the "not editable" signal instead comes from dropping the field's box (border/background), which
+   otherwise looked identical to an active input and made play-mode fields impossible to tell apart from
+   edit-mode ones (user report: "nicht bearbeitbaren Felder sind hier nicht deutlich erkennbar"). */
+.dsa5-helpers-sheet .dsa5h-content input:disabled { opacity:1; color:var(--muted); background:transparent; border-color:transparent; cursor:default; }
+/* Play mode: elements only meant for setup/build actions (Sheet: hideable via .dsa5h-edit-only class, e.g. the
+   FW advance/refund steppers in skill-value.hbs) — mirrors the click-dummy's .sheet[data-mode="play"] .edit-only
+   rule. [data-mode] is set in _onRender() from dsa5h.editMode. */
+.dsa5-helpers-sheet[data-mode="play"] .dsa5h-edit-only { display:none; }
+.dsa5-helpers-sheet .dsa5h-content .row > * { min-width:0; }
+.dsa5-helpers-sheet .dsa5h-content .grid-2 > .panel { margin:0; }
+.dsa5-helpers-sheet .dsa5h-empty { padding:14px; color:var(--muted); margin:0; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-pair { grid-template-columns:minmax(0,1fr) auto; }
+.dsa5-helpers-sheet .dsa5h-probe-die { display:inline-block; flex:0 0 28px; width:28px; height:30px; line-height:30px; background:center/contain no-repeat; color:white; text-align:center; font-size:11px; text-shadow:0 1px 2px #000; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-favorite { border:0; background:none; color:var(--muted); font-size:20px; padding:0; width:24px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-favorite[aria-pressed=true] { color:var(--accent); }
+
+/* ===== KAMPF TAB ===== */
+
+.dsa5-helpers-sheet .dsa5h-quick-actions { display:flex; flex-wrap:wrap; gap:8px; padding:10px 0; }
+.dsa5-helpers-sheet .dsa5h-combat-top { align-items:stretch; margin-bottom:16px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-row { grid-template-columns:44px minmax(100px,1fr) 40px 40px 62px 68px 50px 24px 24px; }
+.dsa5-helpers-sheet .dsa5h-weapon-row small { display:block; color:var(--muted); font-size:11px; }
+.dsa5-helpers-sheet .dsa5h-weapon-details { grid-column:2/-1; display:flex; gap:5px; flex-wrap:wrap; align-items:center; font-size:12px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-details button[aria-pressed=true] { outline:1px solid var(--accent); }
+/* AT/PA-Würfel wie im Click-Dummy (.die-qs.lg dort, gleiche MU-/IN-Würfelfarbe wie das echte System für
+   die-attack/die-parry, systems/dsa5/styles/css/dsa5.css) — eigene Klasse statt der System-Klassen .d20/
+   .die-attack selbst, da die auf <a> statt <button> zugeschnitten sind und mit unserem generischen
+   Button-Reset kollidieren könnten; .dsa5h-probe-die (Talentproben) nutzt dasselbe Muster. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-combat-die { flex:0 0 26px; width:26px; height:26px; padding:0; border:0; border-radius:50%; background-repeat:no-repeat; background-position:center; background-size:contain; color:#fff; font-size:11px; text-shadow:0 1px 2px rgba(0,0,0,.6); filter:drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+.dsa5-helpers-sheet .dsa5h-die-attack { background-image:url('../../../systems/dsa5/icons/dice/d20mu.svg'); }
+.dsa5-helpers-sheet .dsa5h-die-parry { background-image:url('../../../systems/dsa5/icons/dice/d20in.svg'); }
+.dsa5-helpers-sheet .dsa5h-grip { display:flex; gap:2px; justify-content:center; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-grip-btn { flex:0 0 22px; width:22px; height:22px; min-height:0; padding:0; font-size:11px; color:var(--muted); background:var(--field); border:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-grip-btn.active { color:var(--ink); border-color:var(--accent); background:var(--panel); font-weight:bold; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-combatskill-row { grid-template-columns:minmax(140px,1fr) 90px 96px 55px 55px; }
+/* Rüstungskachel: größeres Bild, Rüstungsschutz/Belastung als große Andalus-Zahlen mit Mini-Label statt einer
+   kleinen, mit "·" verketteten Fließtextzeile — sonst gehen die beiden wichtigsten Werte der Kachel im
+   Fließtext unter (Nutzer-Feedback: "kommen viel zu wenig zur Geltung"). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor { grid-template-columns:64px 1fr; align-items:start; padding:8px 11px; }
+.dsa5-helpers-sheet .dsa5h-armor > img { width:64px; height:72px; object-fit:contain; }
+.dsa5-helpers-sheet .dsa5h-armor-body { display:flex; flex-direction:column; gap:5px; min-width:0; }
+.dsa5-helpers-sheet .dsa5h-armor-stats { display:flex; gap:20px; }
+.dsa5-helpers-sheet .dsa5h-armor-stat { display:flex; flex-direction:column; }
+.dsa5-helpers-sheet .dsa5h-armor-stat strong { font-family:'Andalus', serif; font-size:22px; line-height:1.1; color:var(--ink); }
+.dsa5-helpers-sheet .dsa5h-armor-stat small { font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+.dsa5-helpers-sheet .dsa5h-armor-body meter { width:100%; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-total { border-top:2px solid var(--line); font-family:'Andalus', serif; }
+.dsa5-helpers-sheet .dsa5h-item-image { position:relative; display:block; width:40px; height:44px; }
+.dsa5-helpers-sheet .dsa5h-item-image img { width:40px; height:40px; object-fit:cover; border:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-item-image meter { position:absolute; bottom:0; left:0; width:40px; height:5px; }
+.dsa5-helpers-sheet .dsa5h-extensions { position:absolute; right:-3px; top:-6px; color:var(--accent); background:var(--paper); border-radius:50%; font-weight:bold; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns:28px minmax(120px,1fr) 98px 90px 55px 80px 75px 24px; }
+.dsa5-helpers-sheet .dsa5h-spell-row > span { overflow-wrap:anywhere; }
+.dsa5-helpers-sheet .dsa5h-tradition-header { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:0 0 14px; background:var(--panel); border:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-tradition-header label { padding:10px; border-right:1px solid var(--line); text-align:center; }
+.dsa5-helpers-sheet .dsa5h-tradition-header label:last-child { border-right:0; }
+.dsa5-helpers-sheet .dsa5h-tradition-header label > span { display:block; color:var(--muted); font-size:12px; margin-bottom:5px; }
+.dsa5-helpers-sheet .dsa5h-tradition-header :is(input,select) { width:100%; background:var(--field); color:var(--ink); }
+.dsa5-helpers-sheet .dsa5h-happy-talents { display:block; margin-bottom:14px; }
+.dsa5-helpers-sheet .dsa5h-happy-talents > span { display:block; color:var(--muted); font-size:12px; margin-bottom:5px; }
+.dsa5-helpers-sheet .dsa5h-happy-talents textarea { display:block; width:100%; min-height:90px; padding:6px 8px; background:var(--field); border:1px solid var(--line); color:var(--ink); font:inherit; line-height:1.5; resize:vertical; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-tradition-row { grid-template-columns:1fr 1fr 80px 24px; }
+.dsa5-helpers-sheet .dsa5h-inventory-summary { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+.dsa5-helpers-sheet .dsa5h-inventory-summary > * { flex:1; min-width:0; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row { grid-template-columns:28px minmax(130px,1fr) 75px 55px 65px 65px; }
+.dsa5-helpers-sheet .dsa5h-inventory-entry details { margin-left:30px; }
+.dsa5-helpers-sheet .dsa5h-coins { display:flex; flex-wrap:wrap; gap:10px; padding:12px; }
+.dsa5-helpers-sheet .dsa5h-coins label { display:flex; align-items:center; gap:5px; }
+.dsa5-helpers-sheet .dsa5h-coins img { width:24px; height:24px; }
+.dsa5-helpers-sheet .dsa5h-coins input { width:65px; }
+.dsa5-helpers-sheet .dsa5h-bag-tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin:14px 0; }
+.dsa5-helpers-sheet .dsa5h-bag { border:1px solid var(--line); padding:8px; text-align:center; background:var(--panel); }
+.dsa5-helpers-sheet .dsa5h-bag > button { display:flex; flex-direction:column; gap:5px; align-items:center; width:100%; border:0; background:none; }
+.dsa5-helpers-sheet .dsa5h-bag img { width:44px; height:44px; object-fit:contain; }
+.dsa5-helpers-sheet .dsa5h-bag-dialog { color:var(--ink); background:var(--paper); border:1px solid var(--accent); padding:12px; width:min(720px,90vw); max-height:80vh; overflow:auto; }
+.dsa5-helpers-sheet .dsa5h-bag-dialog::backdrop { background:#0009; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row { grid-template-columns:28px minmax(100px,1fr) minmax(50px,120px) 35px 24px; }
+.dsa5-helpers-sheet .dsa5h-effect-row img { width:26px; height:26px; }
+.dsa5-helpers-sheet .dsa5h-condition-picker { padding:10px; }
+.dsa5-helpers-sheet .dsa5h-condition-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:6px; padding-top:10px; }
+.dsa5-helpers-sheet .dsa5h-condition-grid button { display:flex; gap:5px; align-items:center; text-align:left; }
+.dsa5-helpers-sheet .dsa5h-condition-grid img { width:24px; height:24px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-modifier-row { grid-template-columns:1fr 55px 2fr; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-disease-row { grid-template-columns:2fr 40px 1fr 1fr 60px; }
+.dsa5-helpers-sheet .dsa5h-details-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; padding:12px; }
+.dsa5-helpers-sheet .dsa5h-details-grid label > span { display:block; color:var(--muted); font-size:12px; }
+.dsa5-helpers-sheet .dsa5h-details-grid :is(input,select) { width:100%; }
+.dsa5-helpers-sheet .dsa5h-richtext { padding:12px; min-height:110px; }
+.dsa5-helpers-sheet .dsa5h-richtext prose-mirror { min-height:110px; }
+/* ===== TITELBLATT TAB — full-height cover sidebar (continues near the end of the file with the resource-card
+   fill-in styles for the moved-in portrait/resources/fate mounts, see .dsa5h-cover-sidebar .dsa5h-portrait) ===== */
+/* Titelblatt: eine durchgehend dunkle linke Leiste (Porträt + LeP/AsP/KaP + Schips + Zustände/Erfahrung), die
+   nahtlos unter der Kopfzeile weiterläuft und über die volle Fensterhöhe reicht — wie im Click-Dummy (#coverSidebar
+   dort). Dafür wird .dsa5h-main auf diesem einen Tab zum 2-Spalten-Grid (Leiste links über alle Zeilen, Kopf/
+   Würfelzeile/Reiter-Titel/Inhalt rechts gestapelt) statt der sonst üblichen Flex-Spalte; nur so kann die Leiste
+   bis ganz nach oben neben die Kopfzeile reichen, ohne dass die (auf allen Tabs volle Breite nutzende)
+   .dsa5h-tab-title-Zeile dazwischenfunkt. [data-tab] wird von _applyCurrentTab() gesetzt. */
+.dsa5-helpers-sheet .dsa5h-cover-sidebar { display:none; }
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
+   display: grid;
+   grid-template-columns: 240px minmax(0, 1fr);
+   grid-template-rows: auto auto auto 1fr;
+   grid-template-areas: "sidebar head" "sidebar attrbar" "sidebar tabtitle" "sidebar content";
+   min-height: 0
+}
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar {
+   display: flex;
+   flex-direction: column;
+   gap: 13px;
+   padding: 12px 13px 16px;
+   overflow-y: auto;
+   min-height: 0;
+   background: var(--head-base);
+   border-right: 1px solid rgba(224, 192, 128, .3);
+   grid-area: sidebar
+}
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-head { grid-area: head; border-bottom: 1px solid rgba(224, 192, 128, .3); }
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-attr-overlay { grid-area: attrbar; }
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-tab-title { grid-area: tabtitle; }
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-content { grid-area: content; }
+/* Die Leiste teilt sich .panel/.row/.dsa5h-pair mit dem hellen Content-Bereich, sitzt aber außerhalb von
+   .dsa5h-content (liegt in .dsa5h-main, nicht darin) — eigene, dunkel-auf-hell umgefärbte Fassung statt der
+   überall sonst auf .dsa5h-content skalierten Basisregeln. */
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .panel { border: 1px solid rgba(224, 192, 128, .3); background: rgba(255, 255, 255, .06); margin: 0; }
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .panel-title { padding: 5px 11px; background: none; font-family: 'Andalus', serif; font-size: 18px; color: var(--headink); margin: 0; border: none; }
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 5px 11px; font-size: 14px; border-top: 1px solid rgba(224, 192, 128, .18); margin: 0; color: var(--headink); }
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .row span { color: var(--headmuted); }
+.dsa5-helpers-sheet .dsa5h-limited { padding:20px; overflow:auto; }
+.dsa5-helpers-sheet .dsa5h-limited > img { max-width:220px; max-height:300px; object-fit:contain; }
+/* ===== GEFÄHRTEN TAB — reused system markup (actor-companion.hbs etc.), styling adapted only ===== */
+/* Keep the companion system's complex controls, adapted to the shared panel styling. */
+.dsa5-helpers-sheet .dsa5h-system-content > .tab { display:block; overflow:visible; }
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox { background:var(--panel); border:1px solid var(--line); box-shadow:none; margin:0 0 16px; }
+.dsa5-helpers-sheet .dsa5h-system-content .table-title { background:var(--title); color:var(--ink); font:18px Andalus,serif; padding:5px 11px; }
+.dsa5-helpers-sheet .dsa5h-system-content .smallHeader { background:var(--panel); color:var(--ink); border:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-system-content .combat-horse { display:grid; grid-template-columns:100px minmax(120px,1fr) repeat(4,60px); gap:8px; padding:12px; align-items:center; }
+.dsa5-helpers-sheet .dsa5h-system-content .combat-horse .combat-item-image { width:100px; height:120px; grid-row:span 2; background-size:contain; background-repeat:no-repeat; background-position:center; }
+.dsa5-helpers-sheet .dsa5h-system-content .combat-horse .col { width:auto; flex:auto; }
+
+/* ===== RESPONSIVE: CONTAINER QUERIES (.dsa5h-main is the query container, see near the top of the file) ===== */
+
+@container (max-width:700px) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns:26px minmax(90px,1fr) 92px 70px 48px 60px 60px 22px; gap:4px; font-size:12px; }
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-row { grid-template-columns:32px minmax(90px,1fr) 34px 34px 54px 56px 42px 20px 20px; gap:4px; }
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns:26px minmax(90px,1fr) 92px 48px 80px 22px; gap:4px; }
+  .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main { grid-template-columns:150px minmax(0,1fr); }
+  .dsa5-helpers-sheet .dsa5h-tradition-header { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@container (max-width:520px) {
+  .dsa5-helpers-sheet .dsa5h-content .grid-2 { grid-template-columns:1fr; }
+  .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main { grid-template-columns:1fr; grid-template-rows:auto auto auto auto 1fr; grid-template-areas:"sidebar" "head" "attrbar" "tabtitle" "content"; }
+  .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar { border-right:none; border-bottom:1px solid rgba(224,192,128,.3); }
+  .dsa5-helpers-sheet .dsa5h-head { flex-wrap:wrap; }
+  .dsa5-helpers-sheet .dsa5h-details-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .dsa5-helpers-sheet .dsa5h-content .panel { overflow-x:auto; }
+  .dsa5-helpers-sheet .dsa5h-content .row, .dsa5-helpers-sheet .dsa5h-content .row-head { min-width:460px; }
+}
+@media (prefers-reduced-motion:reduce) { .dsa5-helpers-sheet * { transition:none !important; } }
+
+/* ===== EIGENSCHAFTEN TAB (continued from near the top — .dsa5h-attr-tiles/.dsa5h-attr-die) ===== */
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-attr-roll { display:flex; flex-direction:column; align-items:center; border:0; background:none; padding:0; gap:5px; }
+.dsa5-helpers-sheet .dsa5h-attribute-edit { display:flex; flex-wrap:wrap; gap:3px; width:100%; justify-content:center; }
+.dsa5-helpers-sheet .dsa5h-attribute-edit label { font-size:10px; width:100%; text-align:center; color:var(--muted); }
+.dsa5-helpers-sheet .dsa5h-attribute-edit input { width:100%; min-width:0; text-align:center; }
+
+/* ===== STATUS TAB ===== */
+
+.dsa5-helpers-sheet .dsa5h-inline-steps { display:inline-flex; gap:2px; margin-left:4px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-inline-steps button { padding:0 3px; min-height:18px; }
+.dsa5-helpers-sheet .dsa5h-effect-disabled { opacity:.5; }
+
+/* ===== TITELBLATT TAB (continued — resource-card fill-in for the moved-in header mounts, see near line 1015) ===== */
+
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-portrait { width:100%; height:190px; min-height:190px; flex:0 0 auto; border:0; border-radius:0; margin:0; }
+.dsa5-helpers-sheet .dsa5h-cover-resources { padding:10px; background:var(--head-base); color:var(--headink); }
+.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-resource-frame { flex-direction:column; gap:8px; }
+.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-res-card { flex:0 0 auto; width:100%; }
+.dsa5-helpers-sheet .dsa5h-cover-fate { padding:8px; background:var(--head-base); }
+.dsa5-helpers-sheet .dsa5h-cover-fate .dsa5h-fate-points { justify-content:center; }
+.dsa5-helpers-sheet .dsa5h-cover-fate .dsa5h-fatepoint { flex:0 0 28px; width:28px; height:28px; }
