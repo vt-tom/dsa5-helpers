@@ -18,6 +18,7 @@
     "Favorites": "Favorites",
     "NoFavorites": "No favorites yet. Star skills, equipped weapons, spells or liturgies to add them here.",
     "Empty": "No entries.",
+    "More": "more",
     "Contents": "Contents",
     "CombatValues": "Combat values",
     "MeleeSkills": "Melee combat techniques",
@@ -25,7 +26,7 @@
     "Grip": "Grip",
     "GripMain": "M",
     "GripOff": "O",
-    "GripBoth": "✋✋",
+    "GripBoth": "B",
     "Tabs": {
       "cover": "Overview",
       "main": "Characteristics",

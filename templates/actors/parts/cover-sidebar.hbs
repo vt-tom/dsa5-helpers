@@ -2,9 +2,19 @@
   <div data-cover-slot="portrait"></div>
   <div class="dsa5h-cover-resources" data-cover-slot="resources"></div>
   <div class="dsa5h-cover-fate" data-cover-slot="fate"></div>
+  {{#if conditions.length}}
   <section class="panel">
-    <div class="panel-title">{{document.name}}</div>
-    {{#each conditions}}<div class="row dsa5h-pair"><span>{{localize name}}</span><strong>{{value}}</strong></div>{{/each}}
-    <div class="row dsa5h-pair"><span>{{localize 'Experience'}}</span><strong>{{document.system.details.experience.current}}</strong></div>
+    <div class="panel-title">{{localize 'statuseffects'}}</div>
+    {{#each dsa5h.coverConditions}}
+    <div class="row dsa5h-cover-condition">
+      <img src="{{img}}" alt="" />
+      <a data-action="conditionShow" data-id="{{_id}}">{{localize name}}</a>
+      <strong>{{value}}</strong>
+    </div>
+    {{/each}}
+    {{#if dsa5h.coverConditionsMore}}
+    <button type="button" class="dsa5h-cover-more" data-action="dsa5hSetTab" data-tab="status">+{{dsa5h.coverConditionsMore}} {{localize 'DSA5HELPERS.More'}} → {{localize 'DSA5HELPERS.Tabs.status'}}</button>
+    {{/if}}
   </section>
+  {{/if}}
 </aside>

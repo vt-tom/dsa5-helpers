@@ -10,8 +10,8 @@
   {{> "modules/dsa5-helpers/templates/actors/parts/cover-sidebar.hbs"}}
   {{> "modules/dsa5-helpers/templates/actors/parts/header.hbs"}}
   <div class="dsa5h-attr-overlay" data-attr-overlay hidden>
-    {{#each prepare.mentalAttrs as |ch|}}<span class="dsa5h-attr-die-mini" data-tooltip="{{concat 'FORMULA.attr.' ch}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></span>{{/each}}
-    {{#each prepare.bodyAttrs as |ch|}}<span class="dsa5h-attr-die-mini" data-tooltip="{{concat 'FORMULA.attr.' ch}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></span>{{/each}}
+    {{#each prepare.mentalAttrs as |ch|}}<span class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></span>{{/each}}
+    {{#each prepare.bodyAttrs as |ch|}}<span class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></span>{{/each}}
   </div>
   <div class="dsa5h-tab-title"><span data-tab-title-label>{{dsa5h.currentTabLabel}}</span>
     {{#each dsa5h.subnav}}<nav class="dsa5h-sub-tabs" data-subnav="{{tab}}" hidden>

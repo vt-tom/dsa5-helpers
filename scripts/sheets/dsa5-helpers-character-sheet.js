@@ -15,6 +15,43 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hCloseBag: this._closeBag,
       postItem: this._postItem,
     },
+    // DSA5's own roll/damage actions (attribute dice, combat rolls, advances, item toggles, …) live in
+    // ownerRollActions/ownerActions, not the plain `actions` table above — a separate permission-gated dispatch
+    // in DSA5's AppV2Mixin#_onClickAction. Re-declaring the subset our own templates call by name here (still
+    // pointing at the same inherited static handlers via `this.<method>`) guarantees they resolve even if
+    // anything about the inheritance chain changes upstream; found live 2026-09-16: attribute-die clicks
+    // (chValue, main.hbs) silently did nothing before this.
+    ownerRollActions: {
+      chValue: this._chValue,
+      chStatus: this._chStatus,
+      chRegenerate: this._chRegenerate,
+      chWeaponless: this._chWeaponless,
+      chFallingDamage: this._chFallingDamage,
+      chRollCombat: this._chRollCombat,
+      rollAggregatedProbe: { handler: this._handleAggregatedProbe, buttons: [0, 2] },
+      rollDisease: this._rollDisease,
+    },
+    ownerActions: {
+      schipUpdate: this._schipUdate,
+      deleteItem: this._deleteItemAction,
+      advanceWrapper: this._advanceWrapper,
+      statusAdd: { handler: this._statusAdd, buttons: [0, 2] },
+      disableRegeneration: this._disableRegeneration,
+      conditionValue: { handler: this._conditionValue, buttons: [0, 2] },
+      itemToggle: this._itemToggle,
+      quantityClick: { handler: this._quantityClick, buttons: [0, 2] },
+      onUseItem: { handler: this._onMacroUseItem, buttons: [0, 2] },
+      chargeSpell: { handler: this._chargeSpell, buttons: [0, 2] },
+      loadWeapon: { handler: this._loadWeapon, buttons: [0, 2] },
+      selectAmmo: this._selectAmmo,
+      itemSwapMag: this._itemSwapMag,
+      swapWeaponHand: this._swapWeaponHand,
+      swapWeaponHandSlot: this._swapWeaponHandSlot,
+      unequippedWeaponMenu: { handler: this._unequippedWeaponMenu, buttons: [0] },
+      traditionPayCost: { handler: this._payAeSpecialAbilityCost, buttons: [0, 2] },
+      traditionItemDelete: this._deleteTraditionItem,
+      selectTraditionItem: this._selectTraditionItem,
+    },
     // Foundry concatenates majorButtons across the inheritance chain (ApplicationV2#_initializeApplicationOptions),
     // so this adds a third header-control icon next to DSA5's own eye/lock buttons instead of replacing them.
     majorButtons: [
@@ -113,6 +150,10 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         return { label: id, value: raw === undefined ? '–' : Math.floor(raw) };
       }),
       regenerations: ['wounds', 'astralenergy', 'karmaenergy'].filter(id => this.actor.system.repeatingEffects?.startOfRound?.[id]?.length).map(id => ({ id, active: !this.actor.system.repeatingEffects.disabled?.[id] })),
+      // Cover tab's compact conditions panel (click-dummy buildConditionsPanel(4)): caps the list so the sidebar
+      // never needs to scroll, with a jump button to the full Status tab for the rest.
+      coverConditions: (context.conditions ?? []).slice(0, 4),
+      coverConditionsMore: Math.max(0, (context.conditions ?? []).length - 4),
     };
     // The original sheet prepares this only for its separate companion part.
     if (!limited) await this.prepareCompanionTab(context);
@@ -150,6 +191,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this._currentTab = target.dataset.tab;
     this._applyCurrentTab();
     this.element.querySelector('.dsa5h-content')?.scrollTo({ top: 0 });
+    // Switching to Talente should let the user start typing a search immediately, no extra click needed.
+    if (this._currentTab === 'skills') this.element.querySelector('.talentSearch')?.focus();
   }
 
   static _setSubTab(_event, target) {

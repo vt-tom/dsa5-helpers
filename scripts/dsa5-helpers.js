@@ -15,6 +15,7 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/cover-sidebar.hbs",
   "modules/dsa5-helpers/templates/actors/parts/favorite.hbs",
   "modules/dsa5-helpers/templates/actors/parts/header.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs",
   "modules/dsa5-helpers/templates/actors/parts/inventory-row.hbs",
   "modules/dsa5-helpers/templates/actors/parts/inventory.hbs",
   "modules/dsa5-helpers/templates/actors/parts/magic.hbs",

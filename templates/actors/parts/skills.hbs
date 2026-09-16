@@ -4,7 +4,7 @@
           {{#each dsa5h.skillGroups as |group|}}
           <section class="panel dsa5h-skill-panel" data-skill-panel="{{group.id}}" hidden>
             <div class="panel-title">{{localize (concat "SKILL." group.id)}}</div>
-            <div class="row-head dsa5h-skill-row"><span></span><span>{{localize "TYPES.Item.skill"}}</span><span>{{localize "probe"}}</span><span>{{localize "encumbrance"}}</span><span>{{localize "CHARAbbrev.FW"}}</span><span></span></div>
+            <div class="row-head dsa5h-skill-row"><span></span><span class="left">{{localize "TYPES.Item.skill"}}</span><span>{{localize "probe"}}</span><span>{{localize "encumbrance"}}</span><span>{{localize "CHARAbbrev.FW"}}</span><span></span></div>
             {{#each group.items as |item|}}
             <div class="row dsa5h-skill-row item" data-item-id="{{item._id}}">
               <img src="{{item.img}}" alt="" />
