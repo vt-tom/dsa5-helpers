@@ -17,12 +17,7 @@ Der Workspace-Root ist der Modul-Ordner selbst:
 d:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers\
 ```
 
-- `prototyp/` — Frühe Prototypen/Experimente für den Charakterbogen (HTML/JS-Spikes, kein Produktionscode).
-  - `*.dc.html` — Standalone-Präsentations-/Layout-Prototypen des Heldenbogens.
-  - `support.js` — **Generierte Datei**, nicht manuell editieren (siehe Kopfzeile: "GENERATED from dc-runtime/src/*.ts").
-  - `assets/` — Icon-, Font-, Bild- und Sound-Assets für Talente, Liturgien, Zauber, Würfel usw.
-  - `uploads/` — Abgelegte Nutzer-Uploads/Referenzmaterial.
-- `clickdummy/` — **Aktueller Arbeitsstand**: funktionsfähiger Click-Dummy des neuen Heldenbogens (reines HTML/CSS/JS, kein Framework, kein Foundry-Datenmodell). Hier findet die laufende Design-Iteration statt.
+- `clickdummy/` — **Design-Referenz**: funktionsfähiger Click-Dummy des neuen Heldenbogens (reines HTML/CSS/JS, kein Framework, kein Foundry-Datenmodell). Hier findet die laufende Design-Iteration statt.
   - `index.html` — Grundgerüst: Toolbar (Theme-Umschalter), Rail-Navigation, Kopf-/Attributbereich, Content-Bereich für Reiter.
   - `style.css` — Sämtliches Styling; CSS-Custom-Properties in `:root`/`[data-theme='dark']` steuern Light/Dark-Theme. Lädt Fonts und das Rahmen-Bild direkt aus `../../../systems/dsa5/`.
   - `data.js` — Statische Demo-/Platzhalterdaten (ein Beispielheld) für alle Reiter; keine echten Actor-Daten.
@@ -63,12 +58,11 @@ Claude Code lädt automatisch `CLAUDE.md` im Projekt-Root, nicht `AGENTS.md`. Da
 - Foundry-Module bestehen aus einem `module.json` Manifest, JavaScript/TypeScript-Code, Handlebars-Templates (`.hbs`) oder ggf. anderen UI-Frameworks, sowie CSS/SCSS.
 - Das DSA5-Systempaket definiert eigene Actor-/Item-Datenmodelle. Ein alternativer Charakterbogen muss sich in `Actors.registerSheet` beim System `dsa5` registrieren und mit den vorhandenen Datenmodellen des Systems kompatibel sein (nicht neu erfinden).
 - Sprache: Die Zielgruppe ist deutschsprachig (Kommentare/Dokumentation in diesem Repo dürfen auf Deutsch sein), UI-Texte sollten i18n-fähig über Foundry's Lokalisierungssystem (`lang/de.json`, `lang/en.json`) eingebunden werden.
-- Der `prototyp/`-Ordner nutzt ein eigenes "dc" (Document Component?) Format mit `<x-dc>`-Tags, React/ReactDOM global (`window.React`, `window.ReactDOM`) und einer generierten Runtime (`dc-runtime`). Diese Prototypen dienen als visuelle/funktionale Referenz für den Look des neuen Charakterbogens, sind aber nicht direkt produktionsreif für ein Foundry-Modul.
 
 ## Arbeitsweise für Agents
 
 1. Vor Änderungen [project/STATUS.md](project/STATUS.md) lesen (aktueller Stand/nächster Schritt), bei Bedarf ergänzt um [project/BUGS.md](project/BUGS.md)/[project/FEATURES.md](project/FEATURES.md). [project/PLANNING.md](project/PLANNING.md) nur für dauerhafte Architektur-Fragen, `project/archive/` nur gezielt bei Bedarf.
-2. Bestehende Prototypen in `prototyp/` und der `clickdummy/`-Ordner sind die Design-Referenz für den echten Modulcode (`scripts/`/`templates/`/`styles/`), aber nicht blind zu übernehmen — Ziel ist ein sauberes, wartbares Foundry-Modul, das echte Systemlogik erbt statt Optik/Funktion neu zu erfinden.
+2. Der `clickdummy/`-Ordner ist die Design-Referenz für den echten Modulcode (`scripts/`/`templates/`/`styles/`), aber nicht blind zu übernehmen — Ziel ist ein sauberes, wartbares Foundry-Modul, das echte Systemlogik erbt statt Optik/Funktion neu zu erfinden.
 3. Generierte Dateien (siehe Kopfkommentare) nicht manuell bearbeiten.
 4. Neue dauerhafte Entscheidungen in [project/PLANNING.md](project/PLANNING.md) nachpflegen; laufender Stand/nächste Schritte in [project/STATUS.md](project/STATUS.md), neue Fehler/Ideen in [project/BUGS.md](project/BUGS.md)/[project/FEATURES.md](project/FEATURES.md).
 5. Foundry- und DSA5-System-Konventionen einhalten (Datenmodelle, Hooks, Sheet-Registrierung) statt eigene Parallelstrukturen zu bauen, wo es vermeidbar ist.

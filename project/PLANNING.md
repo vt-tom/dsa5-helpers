@@ -34,7 +34,7 @@ Ein Foundry-VTT-Modul für DSA5, das als erstes Feature einen neuen, überarbeit
 
 ## Referenzen
 
-- Prototypen: [../prototyp/DSA5 Heldenbogen.dc.html](../prototyp/DSA5%20Heldenbogen.dc.html), [../prototyp/DSA5 Heldenbogen v2.dc.html](../prototyp/DSA5%20Heldenbogen%20v2.dc.html), [../prototyp/DSA5 Heldenbogen Stilrichtungen.dc.html](../prototyp/DSA5%20Heldenbogen%20Stilrichtungen.dc.html)
 - Click-Dummy: [../clickdummy/](../clickdummy/)
+- Prototypen (`prototyp/`, drei `.dc.html`-Dateien) am 2026-09-16 entfernt — enthielten kopierte DSA5-System-Assets und wurden bereits durch den Click-Dummy als Design-Basis abgelöst.
 - Vollständige Entscheidungshistorie: [archive/DECISIONS.md](archive/DECISIONS.md)
 - Abgeschlossene Einzel-Prüfaufträge: [archive/UI-UX-REVIEW.md](archive/UI-UX-REVIEW.md), [archive/DARKMODE-PRUEFUNG.md](archive/DARKMODE-PRUEFUNG.md) (Click-Dummy-Ära, nicht mehr aktiv)
