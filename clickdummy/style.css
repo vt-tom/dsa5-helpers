@@ -91,7 +91,12 @@ input,button{font-family:inherit;color:inherit}
    (.regen-btn/.row-delete/.chip-delete). */
 .header-bg-btn{position:absolute;top:8px;right:8px;z-index:2;width:28px;height:28px;border-radius:50%;border:1px solid rgba(224,192,128,.5);background:rgba(46,40,35,.75);color:#ecd8b1;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s ease,background .15s ease}
 .header-bg-btn:hover{transform:scale(1.15);background:rgba(224,192,128,.35)}
-.portrait{flex:0 0 118px;height:142px;border:1px solid rgba(224,192,128,.38);background-image:repeating-linear-gradient(135deg,rgba(247,236,224,.1) 0 6px,transparent 6px 12px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:7px}
+/* Zierrahmen: "Ecken gekappt" — Nutzer-Entscheidung 2026-09-18 nach drei Vergleichsrunden im Click-Dummy (siehe
+   STATUS.md), am offiziellen "Deluxe Heldendokument"-PDF orientiert (die "Schicksalspunkte"-Box dort nutzt
+   dieselbe dünne Tintenlinie mit diagonal gekappten Ecken statt Gold/Ornamenten). Dazu ein leichter Gold-Saum
+   (Nutzerwunsch: "wie bei den LeP") — dieselbe gedämpfte Randfarbe wie die LeP/AsP/KaP-Ressourcenkarten
+   (rgba(224,192,128,.4), siehe .res-card), nur als dünne innen liegende Linie statt Vollrahmen. */
+.portrait{position:relative;flex:0 0 118px;height:142px;border:3px solid var(--ink);border-radius:0;box-shadow:inset 0 0 0 1px rgba(224,192,128,.5);clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);overflow:hidden;background-color:var(--paper);background-image:repeating-linear-gradient(135deg,rgba(247,236,224,.1) 0 6px,transparent 6px 12px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:7px}
 .portrait span{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.1em;color:rgba(247,236,224,.66);text-transform:uppercase}
 .head-main{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
 .head-top{display:flex;align-items:flex-start;gap:12px}
@@ -257,19 +262,35 @@ input,button{font-family:inherit;color:inherit}
 .panel-title.flex span:first-child{flex:1}
 .panel-title small{font-size:13px;font-family:'GentiumBasic',serif;color:var(--muted)}
 
-/* Traditions-Kopfleiste auf Magie/Religion (traditionHeader() in script.js), Nutzer-Entscheidung 2026-09-13 nach
-   Vergleich dreier Optiken: vier gleich breite Spalten mit dünnen Trennlinien statt frei fließender Blöcke mit
-   Lücken (grid statt flex+justify-content:center — sonst wirkt die Leiste bei 4 kurzen Werten auf voller
-   Panel-Breite löchrig/unausgewogen, siehe Nutzer-Feedback "sieht noch nicht so gut aus"). */
-.trad-header{margin-bottom:16px}
-.trad-tiles-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:var(--panel)}
-.trad-tile{text-align:center;padding:10px 8px;border-left:1px solid var(--line)}
-.trad-tile:first-child{border-left:none}
-.trad-tile-label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-.trad-tile-val{font-family:'Andalus',serif;font-size:15px}
-.trad-tile-val.trad-tile-val-name{font-size:20px}
-.trad-tile-val.accent{color:var(--accent)}
+/* Traditions-Kopfleiste auf Magie/Religion (traditionHeader() in script.js) — "Wappen-Badge"-Layout,
+   Nutzer-Entscheidung 2026-09-18 nach Vergleich dreier Ansätze im Click-Dummy (siehe STATUS.md): Tradition soll
+   klar herausstechen, Leiteigenschaft/Merkmal/Faktor sollen zweitrangig wirken statt gleichrangig nebeneinander
+   zu stehen (die vorherige 4-Spalten-Kachel aus der Runde 2026-09-13 behandelte alle vier gleich). Tradition
+   jetzt als akzentfarbene Pille mit passendem System-Icon (icons/traditionen bzw. icons/months, siehe
+   A.magicTraditionIcon/A.godIcon in assets-map.js — Freitextfeld, daher nur Teilstring-Match, kein exaktes
+   Enum-Match), die drei Nebenwerte als schmale Schlüssel-Wert-Spalte daneben (.trad-tile-meta). */
+/* Nebenwerte als kleine Tabelle (3 Spalten, Label über Wert) statt 3 gestapelter Zeilen — Nutzer-Feedback
+   2026-09-18: "die ganze Zeile nimmt aber sehr viel Platz von der Höhe ein". */
+.trad-header{margin-bottom:12px}
+.trad-tiles-grid{display:flex;align-items:center;flex-wrap:wrap;gap:16px;padding:5px 0}
+.trad-tile-tradition{display:flex;align-items:center;gap:8px;flex:0 0 auto;padding:6px 16px;border-radius:999px;background:linear-gradient(135deg,var(--accent),#8a4a1f)}
+.trad-tile-icon{width:20px;height:20px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
+.trad-tile-tradition .trad-tile-label{display:none}
+.trad-tile-tradition .trad-tile-val{font-family:'Andalus',serif;font-size:17px;color:#fff8ec;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.trad-tile-meta{display:flex;gap:16px;border-left:1px solid var(--line);padding-left:14px}
+.trad-tile-meta .trad-tile{display:flex;flex-direction:column;gap:1px}
+.trad-tile-meta .trad-tile-label{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.trad-tile-meta .trad-tile-val{font-family:inherit;font-size:13px;color:var(--muted)}
+.trad-tile-meta .trad-tile-val.accent{color:var(--accent);font-weight:600}
 .trad-tiles-note{margin-top:8px;padding:8px 11px;border:1px solid var(--line);background:var(--panel);font-size:13px;text-align:center}
+
+/* Wohlgefällige Talente (Religion-Tab, "B · Einklappbar" nach Vergleich gewählt, 2026-09-17): eingeklappt nur
+   eine Zeile mit Anzahl, Klick blendet den vollen Text darunter ein — siehe renderHappyTalentsCollapse()
+   Kommentar in script.js, gleiche Optik wie im echten Modul (.dsa5h-happy-talents-toggle). */
+.happy-talents-note-collapsed{text-align:left;cursor:default}
+.happy-talents-toggle{display:flex;align-items:center;gap:6px;width:100%;border:none;background:none;color:var(--ink);font:inherit;font-size:13px;cursor:pointer;padding:0;text-align:left}
+.happy-talents-caret{color:var(--accent);width:1em;flex-shrink:0}
+.happy-talents-expanded{margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
 
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 .col-gap{display:flex;flex-direction:column;gap:16px}
@@ -414,19 +435,16 @@ input,button{font-family:inherit;color:inherit}
 .actions-row img{width:18px;height:18px;border:none}
 .actions-row .glyph{width:18px;text-align:center;font-size:15px;color:var(--muted)}
 
-/* Kampfwerte und Rüstung nebeneinander (WAFFEN-TAB.md); Rüstung bekommt die zweite Spalte, unabhängig von ihrer Zeilenzahl.
-   align-items bewusst auf dem stretch-Default belassen (nicht "start") und beide Panels als Flex-Spalte, damit die
-   Rüstungskachel (.armor-hero, flex:1 unten) auf die Höhe der Kampfwerte-Tabelle mitwächst statt darunter leerzulaufen
-   — Nutzer-Feedback 2026-09-13 (RUECKMELDUNG.md): "Rüstungskachel sollte genauso hoch sein wie die Kampfwerte". */
+/* Kampfwerte und Rüstung nebeneinander (WAFFEN-TAB.md). */
 .combat-top{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .combat-top .panel{display:flex;flex-direction:column}
 /* .panel + .panel (allgemeiner Abstand zwischen gestapelten Panels) griff hier fälschlich auch auf das zweite,
-   nebeneinanderstehende Panel und schob es 16px nach unten — dadurch wirkte die Rüstungskachel trotz Stretch
-   sichtbar niedriger als die Kampfwerte-Tabelle. */
+   nebeneinanderstehende Panel und schob es 16px nach unten. */
 .combat-top .panel + .panel{margin-top:0}
-.combat-top .armor-hero{flex:1;height:auto;min-height:118px}
 
-/* Großes Rüstungsbild mit RS/BE als Badges direkt auf dem Bild (unten links/rechts), statt einer schmalen Listenzeile. */
+/* .armor-hero/.armor-name/.badge-rs/.badge-be: großes Bild mit RS/BE als Badges direkt aufs Bild gelegt — nicht
+   mehr für den Kampf-Tab (siehe Rüstung als Ausrüstungsreihe unten), aber weiterhin von den Reittier-/Begleiter-
+   Kacheln auf dem Gefährten-Tab genutzt (companionCard()). */
 .armor-hero{position:relative;height:118px;margin:11px 11px 8px;border:1px solid var(--line);background-image:repeating-linear-gradient(135deg,var(--odd) 0 6px,transparent 6px 12px);display:flex;align-items:center;justify-content:center}
 .armor-hero img{width:56px;height:56px;opacity:.7;border:none}
 .armor-hero .item-icon{width:56px;height:56px}
@@ -435,6 +453,24 @@ input,button{font-family:inherit;color:inherit}
 .armor-hero .badge-rs{left:7px}
 .armor-hero .badge-be{right:7px}
 .armor-name{padding:0 11px 10px;font-size:14px;text-align:center}
+
+/* Leerzustand "Keine Rüstung getragen" (0 Rüstungsteile). */
+.armor-empty{padding:8px 11px;font-size:13px;color:var(--muted)}
+
+/* Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich, siehe Git-Historie
+   "UI-Vergleich 2026-09-17, Runde 3"): Wiederverwendung des .companion-slot-Icon-Rasters (companionHotbar()), hier
+   um Name+RS/BE ergänzt, da die Werte hier — anders als bei den reinen Hotbar-Symbolen — auch ohne Hover ablesbar
+   sein müssen. flex-wrap statt fester Spaltenzahl: 0 bis viele Slots passen sich ein. */
+.armor-slots{display:flex;flex-wrap:wrap;gap:10px;margin:11px}
+/* Bildfüllung/Overlay-Badges (Nutzer-Feedback 2026-09-18): das Bild füllt die ganze Kachel, Name als
+   Lesbarkeits-Gradient oben zentriert, RS/BE als kleine Badges unten links/rechts direkt über dem Bild. */
+.armor-slot{position:relative;width:100px;height:100px;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--field)}
+.armor-slot .item-icon,.armor-slot > img{position:absolute;inset:0;width:100%;height:100%}
+.armor-slot .item-icon img{width:100%;height:100%;object-fit:cover;border:none}
+.armor-slot-name{position:absolute;top:0;left:0;right:0;z-index:1;padding:3px 5px;font-size:11px;text-align:center;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85);background:linear-gradient(180deg,rgba(0,0,0,.65),transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.armor-slot-rs,.armor-slot-be{position:absolute;bottom:4px;z-index:1;padding:1px 5px;border-radius:3px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,.85)}
+.armor-slot-rs{left:4px}
+.armor-slot-be{right:4px}
 
 /* Reittier-Kachel (Gefährten-Tab): Portrait links, Kennwerte rechts daneben statt untereinander —
    Nutzer-Feedback 2026-09-13 (RUECKMELDUNG.md). LeP bleibt als Badge auf dem Portrait (.armor-hero .badge-rs).
@@ -761,19 +797,23 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 
 /* Favoriten (favoritesPanel() in script.js) — ein Panel im Stil von "Vor- & Nachteile" (traitsPanel in
    renderMain()): Unterüberschrift je Kategorie (Talente/Waffen/Zauber/Liturgien), darunter eine .chips-Reihe
-   statt vier einzelner Tabellen — Nutzer-Feedback 2026-09-14. UI-UX-REVIEW.md Priorität 1 Punkt 2 (2026-09-14
-   überarbeitet): .fav-chip ist kein <button> mehr, sondern nur noch der äußere Rahmen — .fav-chip-open (Bild+Name)
-   öffnet die Vorschau (openFavoritePreview()), .fav-chip-star entfernt den Favoriten separat (kein Button-im-
-   Button mehr). */
-.fav-chip{padding-right:6px}
-.fav-chip-open{display:flex;align-items:center;gap:6px;border:none;background:none;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer}
-.fav-chip-open:hover{text-decoration:underline}
-.fav-chip-open img{width:20px;height:20px}
-.fav-chip-star{border:none;background:none;padding:0 0 0 4px;margin:0;color:var(--accent);font-size:12px;cursor:pointer;line-height:1}
-.fav-chip-star:hover{color:#a8501a}
+   statt vier einzelner Tabellen — Nutzer-Feedback 2026-09-14.
+   Statischer Chip, revert der zweiten Interaktions-Runde (Nutzer-Feedback 2026-09-18: Klick-Roll-plus-
+   Kontextmenü gefiel trotzdem nicht) — Bild+Name+Stern plus Talentwert+Würfel direkt daneben, kein Klick-Handler
+   auf dem Chip selbst mehr. Die Würfel bleiben aber klickbar (Nutzer-Feedback 2026-09-19: "Favoriten lassen sich
+   aktuell nicht würfeln"), Talentwert steht direkt hinter dem Namen und etwas größer. */
+.fav-chip{padding-right:6px;display:flex;align-items:center;gap:6px}
+.fav-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.fav-chip-icon{width:20px;height:20px}
+.fav-chip-values{display:flex;align-items:center;gap:6px;font-size:12px}
+.fav-chip-value{color:var(--ink);font-weight:bold;font-size:15px}
+.fav-chip-damage{color:var(--muted)}
+.fav-chip-roll{cursor:pointer}
+.fav-chip-roll:hover{filter:brightness(1.2)}
+button.fav-chip-roll{border:0;background:none;padding:0}
 
-/* Entfernen-Button in der Favoriten-Vorschau (openFavoritePreview()), volle Breite unter Bild/Werten. Auch von
-   openHeaderBgPicker() für "Kein Hintergrundbild" wiederverwendet. */
+/* Entfernen-Button, volle Breite unter Bild/Werten — von openHeaderBgPicker() für "Kein Hintergrundbild"
+   wiederverwendet. */
 .fav-remove-btn{display:block;width:calc(100% - 24px);margin:0 12px 12px;padding:6px 10px;border:1px solid var(--line);background:var(--field);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
 .fav-remove-btn:hover{border-color:var(--accent);color:var(--accent)}
 

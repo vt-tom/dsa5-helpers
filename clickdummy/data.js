@@ -181,11 +181,11 @@ const SKILL_GROUPS = [
     { name: "Fliegen", icon: "Fliegen", probe: "MU/IN/GE", fw: 0, belastung: "yes", stf: "B" },
     { name: "Gaukeleien", icon: "Gaukeleien", probe: "MU/CH/FF", fw: 0, belastung: "yes", stf: "A" },
     { name: "Klettern", icon: "Klettern", probe: "MU/GE/KK", fw: 6, belastung: "yes", stf: "B" },
-    { name: "Körperbeherrschung", icon: "Koerperbeherrschung", probe: "GE/GE/KO", fw: 8, belastung: "yes", stf: "D" },
-    { name: "Kraftakt", icon: "Kraftakt", probe: "KO/KK/KK", fw: 0, belastung: "yes", stf: "B" },
+    { name: "Körperbeherrschung", icon: "Koerperbeherrschung", probe: "GE/GE/KO", fw: 8, fav: true, belastung: "yes", stf: "D" },
+    { name: "Kraftakt", icon: "Kraftakt", probe: "KO/KK/KK", fw: 0, fav: true, belastung: "yes", stf: "B" },
     { name: "Reiten", icon: "Reiten", probe: "CH/GE/KK", fw: 0, belastung: "yes", stf: "B" },
     { name: "Schwimmen", icon: "Schwimmen", probe: "GE/KO/KK", fw: 3, belastung: "yes", stf: "B" },
-    { name: "Selbstbeherrschung", icon: "Selbstbeherrschung", probe: "MU/MU/KO", fw: 0, belastung: "no", stf: "D" },
+    { name: "Selbstbeherrschung", icon: "Selbstbeherrschung", probe: "MU/MU/KO", fw: 0, fav: true, belastung: "no", stf: "D" },
     { name: "Singen", icon: "Singen", probe: "KL/CH/KO", fw: 0, belastung: "no", stf: "A" },
     { name: "Sinnesschärfe", icon: "Sinnesschaerfe", probe: "KL/IN/IN", fw: 9, fav: true, belastung: "maybe", stf: "D" },
     { name: "Tanzen", icon: "Tanzen", probe: "KL/CH/GE", fw: 0, belastung: "yes", stf: "A" },
@@ -202,7 +202,7 @@ const SKILL_GROUPS = [
     { name: "Menschenkenntnis", icon: "Menschenkenntins", probe: "KL/IN/CH", fw: 8, belastung: "no", stf: "C" },
     { name: "Überreden", icon: "Ueberreden", probe: "MU/IN/CH", fw: 6, belastung: "no", stf: "C" },
     { name: "Verkleiden", icon: "Verkleiden", probe: "IN/CH/GE", fw: 0, belastung: "no", stf: "B" },
-    { name: "Willenskraft", icon: "Willenskraft", probe: "MU/IN/CH", fw: 5, belastung: "no", stf: "D" },
+    { name: "Willenskraft", icon: "Willenskraft", probe: "MU/IN/CH", fw: 5, fav: true, belastung: "no", stf: "D" },
   ]},
   { name: "Naturtalente", grad: "linear-gradient(90deg,#535829,transparent)", items: [
     { name: "Fährtensuchen", icon: "Faehrtensuchen", probe: "MU/IN/GE", fw: 10, fav: true, belastung: "no", stf: "C" },
@@ -505,7 +505,10 @@ const RELIGION_SPECIALS = [
 // werden kann — "Talente, die der Gottheit wohlgefällig sind").
 const RELIGION_TRADITION = {
   tradition: "Kirche der Peraine", guidevalue: "Charisma", feature: "Heilung, Landwirtschaft", energyfactor: 1,
-  happyTalents: "Pflanzenkunde, Heilkunde Wunden, Tierkunde",
+  // Nutzer-Feedback 2026-09-19: für den Kompakt-/Kachel-Vergleich der wohlgefälligen Talente bewusst eine
+  // realistisch lange Liste statt der ursprünglich kurzen drei Einträge, damit Einklappen/Ellipsis auch wirklich
+  // etwas zu tun haben.
+  happyTalents: "Schwerter, Stangenwaffen, Bögen, Hiebwaffen, Dolche, Lanzen, Raufen, Spießwaffen, Wurfwaffen, Fechtwaffen, Kettenwaffen, Peitschen, Schilde, Zweihandhiebwaffen, Zweihandschwerter, Einschüchtern, Götter & Kulte, Körperbeherrschung, Kraftakt, Kriegskunst, Selbstbeherrschung, Willenskraft",
 };
 
 // Geldbeutel (system.status.money: dukat/silver/heller/kreutzer im echten Datenmodell) — in BEIDEN Modi

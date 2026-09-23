@@ -5,7 +5,15 @@ const MODULE_ID = 'dsa5-helpers';
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
     classes: ['dsa5-helpers-sheet'],
-    position: { width: 880, height: 780 },
+    // War 880×780 — spürbar größer als sowohl der echte DSA5-Bogen (784px) als auch der bewusst kompakt gehaltene
+    // Click-Dummy (770×740, siehe clickdummy/style.css .sheet), Nutzer-Feedback 2026-09-19: sollte dem Click-
+    // Dummy wieder angeglichen werden. Rechnerisch passen die festen Spaltenbreiten der breitesten Tabellen
+    // (Waffen-/Kampftechnik-Zeilen) auch bei dieser Breite noch knapp unter die bestehende @container-Schwelle
+    // von 700px (styles/dsa5-helpers-character-sheet.css) — die dortigen kompakten Varianten sollten also NICHT
+    // ungewollt greifen (z. B. die gerade erst auf 4 Spalten überarbeitete Traditionsleiste würde dort auf 2
+    // Spalten zurückfallen). Reine Rechnung, noch nicht live in Foundry geprüft — bei Bedarf zuerst hier
+    // nachjustieren, bevor an der @container-Schwelle gedreht wird.
+    position: { width: 770, height: 740 },
     actions: {
       dsa5hSetTab: this._setTab,
       dsa5hSetSubTab: this._setSubTab,
@@ -13,6 +21,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hFavorite: this._toggleFavorite,
       dsa5hBag: this._openBag,
       dsa5hCloseBag: this._closeBag,
+      dsa5hToggleHappyTalents: this._toggleHappyTalents,
       postItem: this._postItem,
     },
     // DSA5's own roll/damage actions (attribute dice, combat rolls, advances, item toggles, …) live in
@@ -80,16 +89,34 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { id: "companion", label: "Gefährten", icon: "systems/dsa5/icons/categories/ability_animal.webp", hint: "Reittier · Vertraute · Begleiter" },
     ];
   _currentTab = 'cover';
-  _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells' };
+  _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells', notes: 'biography' };
   _openBagId = null;
   _search = { talent: '', gear: '' };
   _favoritePending = false;
+  // Wohlgefällige Talente (Religion-Tab) starten eingeklappt im Spielmodus, Klick blendet den vollen Text ein —
+  // Nutzerentscheidung 2026-09-19 nach Click-Dummy-Vergleich dreier Varianten ("B · Einklappbar" gewählt, nahm
+  // vorher als volle Textzeile "recht viel Platz weg"). Reine Anzeige, kein Dokument-Feld — wie _currentTab/
+  // _subtabs auf der Instanz gehalten und über _applyCurrentTab() ins DOM übertragen, statt für einen simplen
+  // Auf/Zu-Klick das ganze Sheet neu zu rendern.
+  _happyTalentsExpanded = false;
 
   _toggleDisabled(disabled) {
     super._toggleDisabled(disabled);
     // Observers may navigate and inspect bags even when Foundry disables document edits.
     this.element?.querySelectorAll('[data-action^="dsa5hSet"], [data-action="dsa5hTheme"], [data-action="dsa5hBag"], [data-action="dsa5hCloseBag"]')
       .forEach(button => { button.disabled = false; });
+  }
+
+  // Our single "sheet" PARTS entry renders every tab's markup at once, all but the active one marked `hidden` —
+  // Foundry's own scrollable-part restore (see handlebars-application.mjs _syncPartState) runs right after
+  // _replaceHTML, before _onRender()/_applyCurrentTab() below removes `hidden` from the active tab. With every
+  // panel still hidden, .dsa5h-content has ~0 scrollHeight, so the restored scrollTop gets clamped straight back
+  // to 0 (Nutzer-Feedback 2026-09-17: scrollbar jumps to top on every favorite toggle/item create). DSA5's own
+  // ActorSheetdsa5Character has the same class of bug for a different reason (actor-sheet.js _replaceHTML) —
+  // same fix shape: capture scroll before the render replaces the DOM, re-apply once the right tab is visible.
+  async render(options = {}, _options = {}) {
+    this._pendingScrollTop = this.element?.querySelector('.dsa5h-content')?.scrollTop;
+    return await super.render(options, _options);
   }
 
   async _prepareContext(options) {
@@ -105,6 +132,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       .filter(tab => (tab.id !== 'magic' || magic.hasSpells) && (tab.id !== 'religion' || magic.hasPrayers))
       .map(tab => ({ ...tab, label: localize('DSA5HELPERS.Tabs.' + tab.id), hint: localize('DSA5HELPERS.Hints.' + tab.id) }));
     if (!tabs.some(tab => tab.id === this._currentTab)) this._currentTab = 'cover';
+    // DSA5StatusEffects.prepareActiveEffects() hands us CONFIG.statusEffects in its raw config order (roughly by
+    // severity/category) — the add-condition picker reads better alphabetically (Nutzer-Feedback 2026-09-19).
+    if (Array.isArray(context.manualConditions)) {
+      context.manualConditions = [...context.manualConditions].sort((a, b) => localize(a.name).localeCompare(localize(b.name), game.i18n.lang));
+    }
     const favorites = Object.fromEntries((this.actor.getFlag(MODULE_ID, 'favorites') ?? []).filter(id => this.actor.items.has(id)).map(id => [id, true]));
     const skillGroups = Object.entries({ ...prepare.allSkillsLeft, ...prepare.allSkillsRight }).map(([id, items]) => ({ id, items }));
     const specs = {};
@@ -112,15 +144,18 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       specs[kind] = Array.from(prepare.sortedSpecs?.[kind] ?? []).filter(cat => kind !== 'general' || cat !== 'language')
         .map(cat => ({ cat, items: prepare.specAbs?.[cat] ?? [] })).filter(group => group.items.length);
     }
+    // Own labels ("Nahkampfwaffen"/"Fernkampfwaffen") instead of the system's own 'closeCombatAttacks'/'rangeweapons'
+    // strings ("Nahkampfangriffe") — Nutzer-Feedback 2026-09-19: the panel holds worn weapons, not "attacks", and
+    // the system's own DE/EN wording can't be changed here without touching the vendored dsa5 lang files.
     const weaponGroups = [
-      { label: 'closeCombatAttacks', type: 'meleeweapon', items: [...(prepare.wornMeleeWeapons ?? []), ...(prepare.traits?.meleeAttack ?? [])] },
-      { label: 'rangeweapons', type: 'rangeweapon', ranged: true, items: [...(prepare.wornRangedWeapons ?? []), ...(prepare.traits?.rangeAttack ?? [])] },
+      { label: 'DSA5HELPERS.MeleeWeapons', type: 'meleeweapon', items: [...(prepare.wornMeleeWeapons ?? []), ...(prepare.traits?.meleeAttack ?? [])] },
+      { label: 'DSA5HELPERS.RangedWeapons', type: 'rangeweapon', ranged: true, items: [...(prepare.wornRangedWeapons ?? []), ...(prepare.traits?.rangeAttack ?? [])] },
     ];
     // weapontype 0 == melee (also used further down to decide whether a combat skill shows a parry value) —
     // matches the click-dummy's Nahkampftechniken/Fernkampftechniken split (COMBAT_SKILLS filtered by pa !== "—").
     const combatSkillGroups = [
       { label: 'DSA5HELPERS.MeleeSkills', items: (prepare.combatskills ?? []).filter(item => Number(item.system.weapontype.value) === 0) },
-      { label: 'DSA5HELPERS.RangeSkills', items: (prepare.combatskills ?? []).filter(item => Number(item.system.weapontype.value) !== 0) },
+      { label: 'DSA5HELPERS.RangeSkills', ranged: true, items: (prepare.combatskills ?? []).filter(item => Number(item.system.weapontype.value) !== 0) },
     ];
     const favoriteGroups = [
       { label: 'skills', items: skillGroups.flatMap(group => group.items) },
@@ -128,10 +163,22 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { label: 'spells', items: [...(magic.spellList ?? []), ...(magic.ritualList ?? []), ...(magic.spellActions ?? []).flatMap(group => group.items), ...(magic.ritualActions ?? []).flatMap(group => group.items)] },
       { label: 'liturgies', items: [...(magic.liturgy ?? []), ...(magic.ceremony ?? [])] },
     ].map(group => ({ ...group, items: group.items.filter(item => favorites[item._id]) })).filter(group => group.items.length);
+    // Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen als Unter-Tabs statt vier gestapelter Volltext-Panels
+    // (Nutzer-Feedback 2026-09-19) — Sichtbarkeit der letzten beiden Reiter folgt denselben Bedingungen wie bisher
+    // die Panels selbst ({{#if owner}}/{{#if isGM}} in notes.hbs).
+    const noteSubtabs = [
+      { id: 'biography', label: localize('biography') },
+      { id: 'notes', label: localize('Notes') },
+    ];
+    if (context.owner) noteSubtabs.push({ id: 'ownernotes', label: localize('ownerNotes') });
+    if (context.isGM) noteSubtabs.push({ id: 'gmnotes', label: localize('DSA5HELPERS.GMNotes') });
     const subnav = [
-      { tab: 'skills', items: [...skillGroups.map(group => ({ id: group.id, label: localize('SKILL.' + group.id) })), { id: 'aggregated', label: localize('aggregatedTests') }] },
+      // Own SKILL.* strings ("Körpertalente" etc.) end in "-talente" — dropped here to keep the sub-tabs compact,
+      // matching the click-dummy's buildSkillSubTabs() (the full name still shows in the panel title below).
+      { tab: 'skills', items: [...skillGroups.map(group => ({ id: group.id, label: localize('SKILL.' + group.id).replace(/s?talente$/i, '') })), { id: 'aggregated', label: localize('aggregatedTests') }] },
       { tab: 'combat', items: [{ id: 'combat', label: localize('Combat') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
       ...['magic', 'religion'].map(tab => ({ tab, items: [{ id: 'spells', label: localize(tab === 'magic' ? 'spells' : 'liturgies') }, { id: 'equipment', label: localize('DSA5HELPERS.Tabs.inventory') }] })),
+      { tab: 'notes', items: noteSubtabs },
     ];
     const status = this.actor.system.status;
     context.dsa5h = {
@@ -154,6 +201,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // never needs to scroll, with a jump button to the full Status tab for the rest.
       coverConditions: (context.conditions ?? []).slice(0, 4),
       coverConditionsMore: Math.max(0, (context.conditions ?? []).length - 4),
+      happyTalentsExpanded: this._happyTalentsExpanded,
+      happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
     // The original sheet prepares this only for its separate companion part.
     if (!limited) await this.prepareCompanionTab(context);
@@ -165,6 +214,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this.element.dataset.mode = context.dsa5h.editMode ? 'edit' : 'play';
     this.element.dataset.theme = game.settings.get(MODULE_ID, 'theme');
     this._applyCurrentTab();
+    if (this._pendingScrollTop) this.element.querySelector('.dsa5h-content')?.scrollTo({ top: this._pendingScrollTop });
     if (context.dsa5h.limited) return;
     const companion = this.element.querySelector('[data-tab-panel="companion"]');
     if (companion) this.attachCompanionTabListeners(companion);
@@ -203,6 +253,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this._applyCurrentTab();
   }
 
+  static _toggleHappyTalents() {
+    this._happyTalentsExpanded = !this._happyTalentsExpanded;
+    this._applyCurrentTab();
+  }
+
   _applyCurrentTab() {
     const root = this.element;
     if (!root) return;
@@ -230,6 +285,18 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       el.hidden = this._subtabs[tab] !== id;
     });
     this._applyTalentSearch();
+    // Wohlgefällige Talente (Religion-Tab): im Bearbeiten-Modus immer aufgeklappt (sonst kein Zugriff aufs Feld
+    // ohne Extra-Klick), im Spielmodus per _happyTalentsExpanded gesteuert.
+    const happyExpanded = root.dataset.mode === 'edit' || this._happyTalentsExpanded;
+    const happyToggle = root.querySelector('[data-happy-talents-toggle]');
+    if (happyToggle) {
+      happyToggle.hidden = root.dataset.mode === 'edit';
+      happyToggle.setAttribute('aria-expanded', String(happyExpanded));
+      const caret = happyToggle.querySelector('[data-happy-talents-caret]');
+      if (caret) caret.textContent = happyExpanded ? '▾' : '▸';
+    }
+    const happyField = root.querySelector('[data-happy-talents-field]');
+    if (happyField) happyField.hidden = !happyExpanded;
     root.querySelector('[data-attr-overlay]')?.toggleAttribute('hidden', this._currentTab === 'main');
     // Move the same controls, so the overview never duplicates named form fields.
     root.querySelectorAll('[data-cover-move]').forEach(el => {

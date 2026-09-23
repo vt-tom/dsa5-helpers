@@ -211,9 +211,17 @@
    border-bottom: 1px solid rgba(224, 192, 128, .3)
 }
 
+/* Zierrahmen: "Ecken gekappt" — Nutzer-Entscheidung 2026-09-18 nach drei Vergleichsrunden im Click-Dummy (siehe
+   project/STATUS.md), am offiziellen "Deluxe Heldendokument"-PDF orientiert (die "Schicksalspunkte"-Box dort
+   nutzt dieselbe dünne Tintenlinie mit diagonal gekappten Ecken statt Gold/Ornamenten). Dazu ein leichter
+   Gold-Saum (Nutzerwunsch: "wie bei den LeP") — dieselbe gedämpfte Randfarbe wie die LeP/AsP/KaP-
+   Ressourcenkarten (rgba(224,192,128,.4), siehe .dsa5h-res-card), nur als dünne innen liegende Linie statt
+   Vollrahmen. Löst den bisherigen, zweitverwendeten cite_v45.webp-Rahmen ab — reines CSS, kein Bild-Asset mehr. */
 .dsa5-helpers-sheet .dsa5h-portrait {
    flex: 0 0 118px;
-   border: 1px solid rgba(224, 192, 128, .38);
+   border: 3px solid var(--ink);
+   box-shadow: inset 0 0 0 1px rgba(224, 192, 128, .5);
+   clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
    overflow: hidden;
    background-color: var(--paper);
    background-image: none
@@ -248,9 +256,9 @@
    min-width: 0;
    margin: 0;
    font-family: 'Andalus', serif;
-   font-size: 24px; 
+   font-size: 39px;
    font-weight: normal;
-   line-height: 1.3;
+   line-height: 1.1;
    color: #f4e8d6
 }
 
@@ -262,11 +270,16 @@
    border-bottom: 1px solid rgba(244, 232, 214, .3);
    color: #f4e8d6;
    font: inherit;
-   font-size: 24px !important;
+   font-size: 39px !important;
    width: 100%;
    min-width: 0;
    padding: 0 0 2px;
    height: auto
+}
+
+/* Play mode: read straight as heading text like the click-dummy's plain <h1>, no edit-field affordance. */
+.dsa5-helpers-sheet .dsa5h-name input:disabled {
+   border-bottom-color: transparent
 }
 
 .dsa5-helpers-sheet .dsa5h-ap-block {
@@ -321,6 +334,13 @@
 
 .dsa5-helpers-sheet .dsa5h-badges input {
    flex: 0 0 auto;
+   /* DSA5's own autosizing (actor-sheet.js _onRender) sets an inline `width: Nch` sized purely to fit the text
+      content — but our blanket `.window-content *{box-sizing:border-box}` rule (see near the top of this file)
+      turns that into an OUTER width, so the 22px of left/right padding plus the 2px border get subtracted from
+      the space actually available for text instead of added on top, clipping longer values (Nutzer-Feedback:
+      "Spezies ist im Header abgeschnitten und nicht komplett lesbar"). Reverting to content-box here restores
+      the padding/border as extra room around the autosized text box, exactly as the vanilla DSA5 sheet renders it. */
+   box-sizing: content-box;
    background: rgba(224, 192, 128, .12);
    border: 1px solid rgba(224, 192, 128, .45);
    color: #ecd8b1;
@@ -494,6 +514,11 @@
    flex: 1;
    min-height: 0;
    overflow-y: auto;
+   /* Reserve the scrollbar's width even when content is short enough not to need one — otherwise elements with
+      fixed-column grids (e.g. .dsa5h-tradition-header) visibly shift width by a few pixels when switching to a
+      subtab whose content happens to be shorter/taller (Nutzer-Feedback: Tradition-Zeile "verschiebt sich leicht"
+      beim Wechsel zwischen Liturgien- und Ausrüstung-Unterreiter auf dem Glaube-Tab). */
+   scrollbar-gutter: stable;
    padding: 0 16px 16px
 }
 
@@ -622,6 +647,13 @@
    margin-top: 16px
 }
 
+/* Status-Tab: volle-Breite Zustände-Kachel gefolgt von zwei .grid-2-Reihen (Kumulativ/Transferiert nebeneinander,
+   dann Modifikatoren/Krankheiten/Dämonenmal/Bogenkonfiguration) — dieselbe Zeilenlücke wie zwischen zwei .panel. */
+.dsa5-helpers-sheet .dsa5h-tab > .panel + .grid-2,
+.dsa5-helpers-sheet .dsa5h-tab > .grid-2 + .grid-2 {
+   margin-top: 16px
+}
+
 .dsa5-helpers-sheet .dsa5h-content .panel-title {
    padding: 5px 11px;
    background: var(--title);
@@ -723,16 +755,14 @@
    margin: 0
 }
 
+/* Immer sichtbar statt nur bei Hover/Fokus (Nutzer-Feedback: das plötzliche Einblenden beim Hover ließ die Chip-
+   Breite springen und dadurch die ganze Zeile umbrechen, sobald sie schon fast voll war — "Umbrucheffekt"). */
 .dsa5-helpers-sheet .dsa5h-content .chip-actions {
-   display: none;
+   display: flex;
    align-items: center;
    gap: 2px;
    margin-left: auto;
    padding-left: 4px
-}
-
-.dsa5-helpers-sheet .dsa5h-content .chip:is(:hover, :focus-within) .chip-actions {
-   display: flex
 }
 
 .dsa5-helpers-sheet .dsa5h-content .chip-action-btn {
@@ -757,6 +787,20 @@
    color: var(--accent);
    transform: scale(1.15)
 }
+
+/* Favoriten-Chips (Titelblatt, cover.hbs) — Nutzer-Entscheidung 2026-09-18, revert zu 19. Runde: statischer Chip
+   (Bild+Name+Stern), kein Klick-Roll/Kontextmenü/Hover-Verhalten mehr (Nutzer lehnte den Interaktions-Ansatz der
+   20. Runde komplett ab: "das gefällt mir auch irgendwie nicht"). Würfel/Werte stehen direkt daneben (für
+   Talente: Würfelformel + Talentwert, für Waffen: AT-Würfel + Schaden-Text) — Auslösen einer Probe weiterhin nur
+   über die entsprechenden Tabs (Talente/Kampf/Magie/Religion), nicht vom Titelblatt aus. */
+.dsa5-helpers-sheet .dsa5h-tab[data-tab-panel="cover"] .chip { display:flex; align-items:center; gap:6px; }
+.dsa5-helpers-sheet .dsa5h-tab[data-tab-panel="cover"] .dsa5h-fav-icon { width:20px; height:20px; margin:0; border:none; }
+.dsa5-helpers-sheet .dsa5h-tab[data-tab-panel="cover"] .dsa5h-fav-values { display:flex; align-items:center; gap:6px; font-size:12px; }
+.dsa5-helpers-sheet .dsa5h-tab[data-tab-panel="cover"] .dsa5h-fav-values .dsa5h-probe-die { flex:0 0 22px; width:22px; height:24px; line-height:24px; font-size:9px; }
+.dsa5-helpers-sheet .dsa5h-tab[data-tab-panel="cover"] .dsa5h-fav-values .dsa5h-die-attack { flex:0 0 24px; width:24px; height:24px; font-size:11px; }
+/* Talentwert direkt hinter dem Namen, etwas größer als die übrigen Nebenwerte (Nutzer-Feedback 2026-09-19). */
+.dsa5-helpers-sheet .dsa5h-tab[data-tab-panel="cover"] .dsa5h-fav-value { color:var(--ink); font-weight:bold; font-size:15px; }
+.dsa5-helpers-sheet .dsa5h-tab[data-tab-panel="cover"] .dsa5h-fav-damage { color:var(--muted); }
 
 /* Einfarbiges SVG (fill:currentColor statt fixer Farbe) statt des 💬-Emojis fürs Im-Chat-Posten — folgt damit
    automatisch der button-Textfarbe (var(--muted)/var(--accent) bei Hover) in Hell- UND Dunkelmodus, statt sich
@@ -947,6 +991,10 @@
    otherwise looked identical to an active input and made play-mode fields impossible to tell apart from
    edit-mode ones (user report: "nicht bearbeitbaren Felder sind hier nicht deutlich erkennbar"). */
 .dsa5-helpers-sheet .dsa5h-content input:disabled { opacity:1; color:var(--muted); background:transparent; border-color:transparent; cursor:default; }
+/* Same flattening for disabled <select> fields (Leiteigenschaft etc.) — without this they kept their native
+   dropdown chrome/arrow even though nothing was clickable in play mode (Nutzer-Feedback: "wird trotzdem eine
+   Auswahlliste angezeigt, obwohl diese nicht clickbar ist... gilt auch für andere Auswahllisten auf dem Bogen"). */
+.dsa5-helpers-sheet .dsa5h-content select:disabled { opacity:1; color:var(--muted); background:transparent; border-color:transparent; cursor:default; appearance:none; -webkit-appearance:none; padding-right:4px; }
 /* Play mode: elements only meant for setup/build actions (Sheet: hideable via .dsa5h-edit-only class, e.g. the
    FW advance/refund steppers in skill-value.hbs) — mirrors the click-dummy's .sheet[data-mode="play"] .edit-only
    rule. [data-mode] is set in _onRender() from dsa5h.editMode. */
@@ -966,7 +1014,7 @@
 .dsa5-helpers-sheet .dsa5h-quick-actions img { width:20px; height:20px; object-fit:contain; }
 .dsa5-helpers-sheet .dsa5h-quick-glyph { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; font-size:15px; line-height:1; color:var(--muted); }
 .dsa5-helpers-sheet .dsa5h-combat-top { align-items:stretch; margin-bottom:16px; }
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-row { grid-template-columns:60px minmax(100px,1fr) 44px 44px 62px 68px 50px 24px 24px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-row { grid-template-columns:60px minmax(100px,1fr) 50px 50px 62px 68px 50px 24px 24px; }
 .dsa5-helpers-sheet .dsa5h-weapon-row small { display:block; color:var(--muted); font-size:11px; }
 .dsa5-helpers-sheet .dsa5h-weapon-details { grid-column:2/-1; display:flex; gap:5px; flex-wrap:wrap; align-items:center; font-size:12px; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-details button[aria-pressed=true] { outline:1px solid var(--accent); }
@@ -974,9 +1022,13 @@
    die-attack/die-parry, systems/dsa5/styles/css/dsa5.css) — eigene Klasse statt der System-Klassen .d20/
    .die-attack selbst, da die auf <a> statt <button> zugeschnitten sind und mit unserem generischen
    Button-Reset kollidieren könnten; .dsa5h-probe-die (Talentproben) nutzt dasselbe Muster. */
-/* Bisher 26px/11px — kleiner als das eigentliche Vorbild (Click-Dummy .die-qs.lg: 30px/14px) und laut
-   Nutzer-Feedback 2026-09-16 "zu klein" für Angriff/Parade/Fernkampf. Jetzt auf das Vorbild angeglichen. */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-combat-die { flex:0 0 30px; width:30px; height:30px; padding:0; border:0; border-radius:50%; background-repeat:no-repeat; background-position:center; background-size:contain; color:#fff; font-size:14px; text-shadow:0 1px 2px rgba(0,0,0,.6); filter:drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+/* Bisher 26px/11px, dann 30px/14px (Click-Dummy .die-qs.lg) — laut Nutzer-Feedback 2026-09-19 immer noch "können
+   etwas größer" für Angriff/Parade/Fernkampf; nochmal vergrößert. justify-self:center ist nötig, weil ein Grid-Item
+   mit fester Breite standardmäßig am Zellenanfang (links) sitzt statt zu zentrieren ("stretch" degeneriert bei
+   festen Größen zu "start") — dadurch saßen die Würfel links in ihrer Spalte, während die AT/PA-Kopfzeile
+   text-align:center nutzt (Nutzer-Feedback: Kopfzeilen bei Nahkampfangriffen/Fernkampfwaffen/Kampftechniken
+   "nicht sauber über der Spalte ausgerichtet"). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-combat-die { flex:0 0 34px; width:34px; height:34px; padding:0; border:0; border-radius:50%; background-repeat:no-repeat; background-position:center; background-size:contain; color:#fff; font-size:15px; text-shadow:0 1px 2px rgba(0,0,0,.6); filter:drop-shadow(0 1px 2px rgba(0,0,0,.4)); justify-self:center; }
 .dsa5-helpers-sheet .dsa5h-die-attack { background-image:url('../../../systems/dsa5/icons/dice/d20mu.svg'); }
 .dsa5-helpers-sheet .dsa5h-die-parry { background-image:url('../../../systems/dsa5/icons/dice/d20in.svg'); }
 .dsa5-helpers-sheet .dsa5h-grip { display:flex; gap:2px; justify-content:center; }
@@ -986,22 +1038,23 @@
    Spaltenbreiten (minmax 140px Name + 90/96/55/55px) passten beide Tabellen zusammen nicht mehr in die
    Sheet-Breite und erzeugten horizontales Scrollen (Nutzer-Feedback 2026-09-16). Deutlich schmaler, angelehnt an
    die Click-Dummy-Proportionen (dort: 28px 1fr 44px 60px 40px 40px bei insgesamt schmalerem Sheet). */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-combatskill-row { grid-template-columns:minmax(90px,1fr) 66px 50px 38px 38px; }
-/* Rüstungskachel: größeres Bild, Rüstungsschutz/Belastung als große Andalus-Zahlen mit Mini-Label statt einer
-   kleinen, mit "·" verketteten Fließtextzeile — sonst gehen die beiden wichtigsten Werte der Kachel im
-   Fließtext unter (Nutzer-Feedback: "kommen viel zu wenig zur Geltung"). */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor { grid-template-columns:92px 1fr; align-items:start; padding:8px 11px; }
-/* Zustandsbalken (Verschleiß) liegt als Overlay direkt unter dem Rüstungsbild, nicht mehr als volle-Breite-Leiste
-   in der Textspalte — Nutzer-Feedback 2026-09-16: "Zustandsbalken nicht unter der Rüstung"; gleiches Muster wie
-   .dsa5h-item-image meter bei Waffen/Ausrüstung. Bild gleichzeitig deutlich größer (64→92px). */
-.dsa5-helpers-sheet .dsa5h-armor-image { position:relative; display:block; width:92px; height:100px; }
-.dsa5-helpers-sheet .dsa5h-armor-image img { width:92px; height:100px; object-fit:contain; }
-.dsa5-helpers-sheet .dsa5h-armor-image meter { position:absolute; bottom:0; left:0; width:92px; height:6px; }
-.dsa5-helpers-sheet .dsa5h-armor-body { display:flex; flex-direction:column; gap:5px; min-width:0; }
-.dsa5-helpers-sheet .dsa5h-armor-stats { display:flex; gap:20px; }
-.dsa5-helpers-sheet .dsa5h-armor-stat { display:flex; flex-direction:column; }
-.dsa5-helpers-sheet .dsa5h-armor-stat strong { font-family:'Andalus', serif; font-size:22px; line-height:1.1; color:var(--ink); }
-.dsa5-helpers-sheet .dsa5h-armor-stat small { font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-combatskill-row { grid-template-columns:minmax(90px,1fr) 66px 50px 42px 42px; }
+/* Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich im Click-Dummy,
+   siehe clickdummy/script.js renderArmorSlotsBody()/Konzept 2 "Ausrüstungsreihe"): jedes getragene Rüstungsteil
+   ein gleichwertiger Icon-Slot statt einer Sonderkachel nur fürs erste Teil, flex-wrap statt fester Kachel-/
+   Tabellenhöhe wächst/schrumpft einfach mit der Stückzahl. Bildfüllung/Overlay-Badges (Nutzer-Feedback
+   2026-09-18, siehe NOTIZEN.md): das Bild füllt die ganze Kachel, Name als Lesbarkeits-Gradient oben zentriert,
+   RS/BE als kleine Badges unten links/rechts direkt über dem Bild statt als Textzeile darunter. */
+.dsa5-helpers-sheet .dsa5h-armor-slots { display:flex; flex-wrap:wrap; gap:10px; padding:8px 11px; }
+.dsa5-helpers-sheet .dsa5h-armor-slot { position:relative; width:100px; height:100px; border:1px solid var(--line); border-radius:4px; overflow:hidden; background:var(--field); }
+.dsa5-helpers-sheet .dsa5h-armor-slot-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; margin:0; border:none; }
+.dsa5-helpers-sheet .dsa5h-armor-slot meter { position:absolute; bottom:0; left:0; width:100%; height:3px; z-index:1; }
+.dsa5-helpers-sheet .dsa5h-armor-slot-name { position:absolute; top:0; left:0; right:0; z-index:1; padding:3px 5px; font-size:11px; text-align:center; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.85); background:linear-gradient(180deg, rgba(0,0,0,.65), transparent); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dsa5-helpers-sheet .dsa5h-armor-slot-name a { color:inherit; }
+.dsa5-helpers-sheet .dsa5h-armor-slot-rs,
+.dsa5-helpers-sheet .dsa5h-armor-slot-be { position:absolute; bottom:4px; z-index:1; padding:1px 5px; border-radius:3px; background:rgba(0,0,0,.55); color:#fff; font-size:11px; font-weight:bold; text-shadow:0 1px 2px rgba(0,0,0,.85); }
+.dsa5-helpers-sheet .dsa5h-armor-slot-rs { left:4px; }
+.dsa5-helpers-sheet .dsa5h-armor-slot-be { right:4px; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-total { border-top:2px solid var(--line); font-family:'Andalus', serif; }
 .dsa5-helpers-sheet .dsa5h-item-image { position:relative; display:block; width:40px; height:44px; }
 .dsa5-helpers-sheet .dsa5h-item-image img { width:40px; height:40px; object-fit:cover; border:1px solid var(--line); }
@@ -1020,27 +1073,72 @@
    .dsa5h-inventory-row weiter unten. */
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns:44px minmax(120px,1fr) 98px 90px 55px 80px 75px 24px; }
 .dsa5-helpers-sheet .dsa5h-spell-row > span { overflow-wrap:anywhere; }
-.dsa5-helpers-sheet .dsa5h-tradition-header { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:0 0 14px; background:var(--panel); border:1px solid var(--line); }
-.dsa5-helpers-sheet .dsa5h-tradition-header label { padding:10px; border-right:1px solid var(--line); text-align:center; }
-.dsa5-helpers-sheet .dsa5h-tradition-header label:last-child { border-right:0; }
-.dsa5-helpers-sheet .dsa5h-tradition-header label > span { display:block; color:var(--muted); font-size:12px; margin-bottom:5px; }
-.dsa5-helpers-sheet .dsa5h-tradition-header :is(input,select) { width:100%; background:var(--field); color:var(--ink); }
+/* Niedriger als vorher (war padding:10px rundum + 5px Label-Abstand) — Nutzer-Feedback 2026-09-19: "sollte nicht
+   so hoch sein". Kein eigener Kachel-Hintergrund/Vollrahmen mehr (war eine helle, deutlich vom Papier abgesetzte
+   Box, "sticht noch so heraus") — nur noch obere/untere Trennlinie wie .row/.row-head überall sonst auf dem
+   Bogen, damit die Leiste wie eine normale Zeile wirkt statt wie ein eigenes UI-Element. Werte zentriert (vorher
+   liefen Leiteigenschaft/Tradition trotz zentrierter Kopfzeile links aus) und etwas größer (13px Label/15px Wert
+   statt 12px/geerbter 14px-Basisschrift). */
+/* "Wappen-Badge"-Layout (Nutzer-Entscheidung 2026-09-18 nach Click-Dummy-Vergleich, siehe project/STATUS.md):
+   die bisherige 4-Spalten-Kachel behandelte Tradition/Leiteigenschaft/Merkmal/Faktor gleichrangig, obwohl nur die
+   Tradition selbst wirklich herausstechen soll. Tradition jetzt als akzentfarbene Pille mit Icon (siehe
+   dsa5hTraditionIcon-Helfer, icons/traditionen bzw. icons/months), die drei Nebenwerte als schmale, gedämpfte
+   Schlüssel-Wert-Spalte daneben (.dsa5h-tradition-meta, siehe magic.hbs/religion.hbs). */
+/* Nebenwerte-Spalte als kleine Tabelle (3 Spalten, Label über Wert) statt 3 gestapelter Zeilen — Nutzer-Feedback
+   2026-09-18: "die ganze Zeile nimmt aber sehr viel Platz von der Höhe ein". Reduziert die Kopfleiste von 3 Zeilen
+   Nebenwerten auf eine einzige (zweizeilige) Spaltengruppe rechts neben der Tradition-Pille. */
+.dsa5-helpers-sheet .dsa5h-tradition-header { display:flex; align-items:center; flex-wrap:wrap; gap:14px; margin:0 0 10px; padding:5px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-name { display:flex; align-items:center; gap:8px; flex:0 0 auto; padding:6px 16px; border-radius:999px; background:linear-gradient(135deg, var(--accent), #8a4a1f); }
+.dsa5-helpers-sheet .dsa5h-tradition-icon { width:20px; height:20px; object-fit:contain; filter:drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+.dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-name > span { display:none; }
+.dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-name :is(input,select) { width:auto; min-width:80px; background:none; border:none; color:#fff8ec; text-shadow:0 1px 2px rgba(0,0,0,.4); font-family:'Andalus', serif; font-size:17px; text-align:left; padding:0; }
+.dsa5-helpers-sheet .dsa5h-tradition-meta { display:flex; gap:16px; border-left:1px solid var(--line); padding-left:14px; }
+.dsa5-helpers-sheet .dsa5h-tradition-meta label { display:flex; flex-direction:column; gap:1px; padding:0; border:none; text-align:left; }
+.dsa5-helpers-sheet .dsa5h-tradition-meta label > span { display:inline-block; margin:0; color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.03em; white-space:nowrap; }
+.dsa5-helpers-sheet .dsa5h-tradition-meta :is(input,select) { width:auto; max-width:96px; background:none; border:none; text-align:left; font-size:13px; color:var(--muted); padding:0; }
+.dsa5-helpers-sheet .dsa5h-tradition-meta .dsa5h-tradition-accent :is(input,select) { color:var(--accent); font-weight:bold; }
+/* Eingeklappt im Spielmodus (Klick auf die Zusammenfassungszeile blendet den vollen Text ein) — Nutzerentscheidung
+   2026-09-19 nach Click-Dummy-Vergleich: die vorher immer volle Textzeile nahm "recht viel Platz weg". Im
+   Bearbeiten-Modus blendet _applyCurrentTab() den Umschalter aus und das Feld immer ein (siehe dortigen
+   Kommentar), damit es ohne Extra-Klick editierbar bleibt. */
 .dsa5-helpers-sheet .dsa5h-happy-talents { display:block; margin-bottom:14px; }
-.dsa5-helpers-sheet .dsa5h-happy-talents > span { display:block; color:var(--muted); font-size:12px; margin-bottom:5px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-happy-talents-toggle { display:flex; align-items:center; gap:6px; width:100%; margin:0; padding:5px 0; border:0; background:none; color:var(--muted); font-size:13px; text-align:left; min-height:0; }
+.dsa5-helpers-sheet .dsa5h-happy-talents-toggle:hover { color:var(--ink); }
+.dsa5-helpers-sheet .dsa5h-happy-talents-caret { display:inline-block; width:1em; }
+.dsa5-helpers-sheet .dsa5h-happy-talents-field { display:block; margin-top:5px; }
+.dsa5-helpers-sheet .dsa5h-happy-talents-field > span { display:block; color:var(--muted); font-size:12px; margin-bottom:5px; }
 .dsa5-helpers-sheet .dsa5h-happy-talents textarea { display:block; width:100%; min-height:90px; padding:6px 8px; background:var(--field); border:1px solid var(--line); color:var(--ink); font:inherit; line-height:1.5; resize:vertical; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-tradition-row { grid-template-columns:1fr 1fr 80px 24px; }
 .dsa5-helpers-sheet .dsa5h-inventory-summary { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
-.dsa5-helpers-sheet .dsa5h-inventory-summary > * { flex:1; min-width:0; }
+.dsa5-helpers-sheet .dsa5h-inventory-summary > .gearSearch { flex:1; min-width:0; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row { grid-template-columns:44px minmax(130px,1fr) 75px 55px 65px 65px; }
 .dsa5-helpers-sheet .dsa5h-inventory-entry details { margin-left:30px; }
+/* Ausrüstung-Tab wieder wie im Click-Dummy (Nutzer-Feedback 2026-09-18: "gefällt mir viel besser als der in
+   Foundry"): Geldbeutel und Tragkraft als zwei Karten nebeneinander in einer eigenen Zeile oben (statt Geld in
+   einer schmalen Spalte neben den Behältnissen und Tragkraft als schmale Leiste neben der Suche), Behältnisse
+   als eigenes, vollbreites Kachel-Panel darunter (Kacheln wrappen frei statt einer festen 2-Spalten-Karteikarte). */
+.dsa5-helpers-sheet .dsa5h-inventory-cards { display:flex; gap:14px; align-items:stretch; margin-bottom:12px; }
+.dsa5-helpers-sheet .dsa5h-money-panel { flex:0 0 330px; }
+.dsa5-helpers-sheet .dsa5h-carry-panel { flex:1; min-width:0; padding:9px 11px; }
+.dsa5-helpers-sheet .dsa5h-carry-head { display:flex; justify-content:space-between; gap:8px; font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.dsa5-helpers-sheet .dsa5h-weight-bar { position:relative; height:10px; border-radius:5px; overflow:hidden; background:var(--field); border:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-weight-fill { position:absolute; inset:0 auto 0 0; background:linear-gradient(90deg,#b08a5e,var(--accent)); border-radius:5px 0 0 5px; }
+.dsa5-helpers-sheet .dsa5h-weight-bar.over .dsa5h-weight-fill { background:#c0392b; }
 .dsa5-helpers-sheet .dsa5h-coins { display:flex; flex-wrap:wrap; gap:10px; padding:12px; }
 .dsa5-helpers-sheet .dsa5h-coins label { display:flex; align-items:center; gap:5px; }
-.dsa5-helpers-sheet .dsa5h-coins img { width:24px; height:24px; }
-.dsa5-helpers-sheet .dsa5h-coins input { width:65px; }
-.dsa5-helpers-sheet .dsa5h-bag-tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin:14px 0; }
-.dsa5-helpers-sheet .dsa5h-bag { border:1px solid var(--line); padding:8px; text-align:center; background:var(--panel); }
-.dsa5-helpers-sheet .dsa5h-bag > button { display:flex; flex-direction:column; gap:5px; align-items:center; width:100%; border:0; background:none; }
-.dsa5-helpers-sheet .dsa5h-bag img { width:44px; height:44px; object-fit:contain; }
+.dsa5-helpers-sheet .dsa5h-coins img { width:22px; height:22px; }
+.dsa5-helpers-sheet .dsa5h-coins input { width:56px; }
+.dsa5-helpers-sheet .dsa5h-bag-tiles { display:flex; flex-wrap:wrap; gap:12px; padding:12px; }
+/* Kompakte, vertikale Kachel (Bild oben, Name/Meta darunter) wie im Click-Dummy — Aktions-Icons (Gewicht
+   an/ablegen, bearbeiten, Kontextmenü) bleiben erhalten, da der Click-Dummy diese Funktionen nicht kennt. */
+.dsa5-helpers-sheet .dsa5h-bag { display:flex; flex-direction:column; align-items:center; gap:4px; width:92px; padding:8px 6px; border:1px solid var(--line); background:var(--field); text-align:center; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-bag-open { display:flex; flex-direction:column; align-items:center; gap:4px; width:100%; border:0; background:none; padding:0; }
+.dsa5-helpers-sheet .dsa5h-bag img { width:36px; height:36px; object-fit:contain; }
+.dsa5-helpers-sheet .dsa5h-bag-info { display:flex; flex-direction:column; align-items:center; min-width:0; gap:1px; }
+.dsa5-helpers-sheet .dsa5h-bag-info strong { font-size:12px; line-height:1.2; overflow-wrap:break-word; }
+.dsa5-helpers-sheet .dsa5h-bag-info small { color:var(--muted); font-size:11px; }
+.dsa5-helpers-sheet .dsa5h-bag-actions { display:flex; align-items:center; justify-content:center; gap:4px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-bag-actions button, .dsa5-helpers-sheet .dsa5h-bag-actions a { flex:0 0 auto; min-height:0; padding:1px 5px; font-size:12px; text-decoration:none; color:var(--ink); }
 .dsa5-helpers-sheet .dsa5h-bag-dialog { color:var(--ink); background:var(--paper); border:1px solid var(--accent); padding:12px; width:min(720px,90vw); max-height:80vh; overflow:auto; }
 .dsa5-helpers-sheet .dsa5h-bag-dialog::backdrop { background:#0009; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row { grid-template-columns:28px minmax(100px,1fr) minmax(50px,120px) 35px 24px; }
@@ -1051,8 +1149,12 @@
 .dsa5-helpers-sheet .dsa5h-condition-grid img { width:24px; height:24px; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-modifier-row { grid-template-columns:1fr 55px 2fr; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-disease-row { grid-template-columns:2fr 40px 1fr 1fr 60px; }
-.dsa5-helpers-sheet .dsa5h-details-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; padding:12px; }
-.dsa5-helpers-sheet .dsa5h-details-grid label > span { display:block; color:var(--muted); font-size:12px; }
+/* Mehr, schmalere Spalten (auto-fit statt starrer 3er-Reihe) statt vieler halbleerer Zellen — bei einem frisch
+   angelegten Helden ohne ausgefüllte Werte blieb darüber sonst viel leerer Platz stehen, weil 10 Felder in nur 3
+   Spalten vier hohe Reihen brauchten (Nutzer-Feedback 2026-09-19). Feldbezeichnung von 12px auf 13px angehoben,
+   Andalus wie die übrigen Detail-Zeilen des Bogens ("zu klein"). */
+.dsa5-helpers-sheet .dsa5h-details-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; padding:12px; }
+.dsa5-helpers-sheet .dsa5h-details-grid label > span { display:block; color:var(--muted); font-size:13px; }
 .dsa5-helpers-sheet .dsa5h-details-grid :is(input,select) { width:100%; }
 .dsa5-helpers-sheet .dsa5h-richtext { padding:12px; min-height:110px; }
 .dsa5-helpers-sheet .dsa5h-richtext prose-mirror { min-height:110px; }
@@ -1083,6 +1185,8 @@
    grid-area: sidebar
 }
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-head { grid-area: head; border-bottom: 1px solid rgba(224, 192, 128, .3); }
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-name { font-size: 44px; }
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-name input { font-size: 44px !important; }
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-attr-overlay { grid-area: attrbar; }
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-tab-title { grid-area: tabtitle; }
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-content { grid-area: content; }
@@ -1108,13 +1212,22 @@
 .dsa5-helpers-sheet .dsa5h-system-content .groupbox { background:var(--panel); border:1px solid var(--line); box-shadow:none; margin:0 0 16px; }
 .dsa5-helpers-sheet .dsa5h-system-content .table-title { background:var(--title); color:var(--ink); font:18px Andalus,serif; padding:5px 11px; }
 .dsa5-helpers-sheet .dsa5h-system-content .smallHeader { background:var(--panel); color:var(--ink); border:1px solid var(--line); }
-.dsa5-helpers-sheet .dsa5h-system-content .combat-horse { display:grid; grid-template-columns:100px minmax(120px,1fr) repeat(4,60px); gap:8px; padding:12px; align-items:center; }
-.dsa5-helpers-sheet .dsa5h-system-content .combat-horse .combat-item-image { width:100px; height:120px; grid-row:span 2; background-size:contain; background-repeat:no-repeat; background-position:center; }
-.dsa5-helpers-sheet .dsa5h-system-content .combat-horse .col { width:auto; flex:auto; }
+/* Vorher CSS-Grid mit nur 6 festen Spalten für eine Zeile mit tatsächlich 8 Kindern (Bild/Name/Tempo/Reitweise/
+   Tempo-Max/INI/Loyalität/Löschen) UND `.col{flex:auto}`, das die eigenen Prozent-Breitenklassen des Systems
+   (.fourty/.ten/.fifteen/.zerofive, die Kopf- und Datenzeile aufeinander abstimmen) überschrieb — dadurch passten
+   Kopf- und Datenzeile nicht mehr zueinander (Nutzer-Feedback 2026-09-19: "sieht irgendwie verschoben aus"). Die
+   native Flex-/Prozent-Spaltenaufteilung des Systems jetzt unangetastet gelassen, nur Bild und die winzigen
+   Action-Icons vergrößert (system-eigenes .very-small: 10px, hier zu klein für unseren größeren Bogen). */
+.dsa5-helpers-sheet .dsa5h-system-content .combat-riding .combat-item-image { height:64px; background-size:contain; background-repeat:no-repeat; background-position:center; }
+.dsa5-helpers-sheet .dsa5h-system-content .combat-riding .very-small { font-size:15px; }
+.dsa5-helpers-sheet .dsa5h-system-content .combat-riding .row-section.table-title .fas { font-size:14px; }
 
 /* ===== RESPONSIVE: CONTAINER QUERIES (.dsa5h-main is the query container, see near the top of the file) ===== */
 
 @container (max-width:700px) {
+  .dsa5-helpers-sheet .dsa5h-inventory-cards { flex-wrap:wrap; }
+  .dsa5-helpers-sheet .dsa5h-money-panel { flex-basis:100%; }
+  .dsa5-helpers-sheet .dsa5h-carry-panel { flex-basis:100%; }
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns:40px minmax(90px,1fr) 92px 70px 48px 60px 60px 22px; gap:4px; font-size:12px; }
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-row { grid-template-columns:44px minmax(90px,1fr) 38px 38px 54px 56px 42px 20px 20px; gap:4px; }
   /* Not enough width here for the Kampf-Tab's enlarged 56px weapon image — back to the shared default size. */
@@ -1123,7 +1236,6 @@
   .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image meter { width:40px; }
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns:26px minmax(90px,1fr) 92px 48px 80px 22px; gap:4px; }
   .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main { grid-template-columns:150px minmax(0,1fr); }
-  .dsa5-helpers-sheet .dsa5h-tradition-header { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @container (max-width:520px) {
   .dsa5-helpers-sheet .dsa5h-content .grid-2 { grid-template-columns:1fr; }
@@ -1151,7 +1263,10 @@
 
 /* ===== TITELBLATT TAB (continued — resource-card fill-in for the moved-in header mounts, see near line 1015) ===== */
 
-.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-portrait { width:100%; height:190px; min-height:190px; flex:0 0 auto; border:0; border-radius:0; margin:0; }
+/* border/border-image absichtlich NICHT mehr überschrieben (früher border:0) — der Zierrahmen (siehe .dsa5h-portrait
+   oben) soll auch auf dem vergrößerten Titelblatt-Porträt sichtbar sein, nicht nur in der Kopfzeile
+   (Nutzer-Feedback 2026-09-18: "Rahmen ist noch nicht auf dem Titelblatt angewendet"). */
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-portrait { width:100%; height:190px; min-height:190px; flex:0 0 auto; margin:0; }
 .dsa5-helpers-sheet .dsa5h-cover-resources { padding:10px; background:var(--head-base); color:var(--headink); }
 .dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-resource-frame { flex-direction:column; gap:8px; }
 .dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-res-card { flex:0 0 auto; width:100%; }

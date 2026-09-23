@@ -1,15 +1,19 @@
-<div class="dsa5h-tab" data-tab-panel="status" hidden><div class="grid-2">
-<div class="col-gap">
-<section class="panel"><div class="panel-title">{{localize 'statuseffects'}}</div>
+<div class="dsa5h-tab" data-tab-panel="status" hidden>
+<section class="panel dsa5h-conditions-panel"><div class="panel-title">{{localize 'DSA5HELPERS.Conditions'}}</div>
 {{#if owner}}<details class="dsa5h-condition-picker"><summary>{{localize 'CONDITION.add'}}</summary><div class="dsa5h-condition-grid">{{#each manualConditions}}<button type="button" data-action="statusAdd" data-id="{{id}}" title="{{localize name}}"><img src="{{img}}" alt=""><span>{{localize name}}</span></button>{{/each}}<button type="button" data-action="statusAdd" data-id="custom">{{localize 'CONDITION.custom'}}</button></div></details>{{/if}}
 {{#each conditions}}<div class="row dsa5h-effect-row{{#if disabled}} dsa5h-effect-disabled{{/if}}" data-id="{{_id}}" {{#if descriptor}}data-descriptor="{{descriptor}}"{{/if}}><span class="statusEffect effectConfig"><img src="{{img}}" alt=""></span><a data-action="conditionShow" data-id="{{_id}}">{{localize name}}</a><span>{{#if editable}}{{#unless boolean}}<button type="button" data-action="conditionValue" title="{{localize 'ABBR.modifiers'}}">{{manual}}</button>{{/unless}}{{/if}}</span><strong>{{value}}</strong><button type="button" data-action="statusContextMenu" aria-label="{{localize 'SHEET.EditItem'}}">⋮</button></div>{{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Empty'}}</p>{{/each}}</section>
+<div class="grid-2 dsa5h-status-secondary">
 <section class="panel"><div class="panel-title">{{localize 'cummulativeStatusEffects'}}</div>{{#each cumulativeConditions}}<div class="row dsa5h-effect-row" data-id="{{id}}" data-descriptor="{{id}}"><img src="{{img}}" alt=""><a data-action="conditionShow" data-id="{{id}}">{{localize name}}</a><span></span><strong>{{value}}</strong></div>{{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Empty'}}</p>{{/each}}</section>
 <section class="panel"><div class="panel-title">{{localize 'transferredStatusEffects'}}</div>{{#each transferedConditions}}<div class="row dsa5h-effect-row{{#if disabled}} dsa5h-effect-disabled{{/if}}" data-id="{{_id}}" data-item-id="{{parent.id}}" data-origin="{{uuid}}" {{#if descriptor}}data-descriptor="{{descriptor}}"{{/if}}><span class="statusEffect effectConfig"><img src="{{img}}" alt=""></span><a data-action="conditionEdit" data-uuid="{{uuid}}" data-locked="true">{{localize name}}</a><a data-action="conditionEdit" data-uuid="{{parent.uuid}}">{{parent.name}}</a><span></span><button type="button" data-action="statusContextMenu" aria-label="{{localize 'SHEET.EditItem'}}">⋮</button></div>{{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Empty'}}</p>{{/each}}</section>
 </div>
+<div class="grid-2">
 <div class="col-gap">
 <section class="panel"><div class="panel-title">{{localize 'Modifiers'}}</div><div class="row-head dsa5h-modifier-row"><span>{{localize 'target'}}</span><span>{{localize 'ABBR.value'}}</span><span class="left">{{localize 'source'}}</span></div>{{#each prepare.itemModifiers}}<div class="row dsa5h-modifier-row"><span>{{@key}}</span><span>{{value}}</span><span>{{joinStr ', ' sources}}</span></div>{{/each}}</section>
-{{#if isGM}}<section class="panel"><div class="panel-title">{{localize 'disease'}}</div>{{#each prepare.diseases as |item|}}<div class="row item dsa5h-disease-row" data-item-id="{{item._id}}"><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span><span>{{item.system.step.value}}</span><span>{{item.system.incubation.value}}</span><span>{{item.system.duration.resolved}}</span><button type="button" data-action="rollDisease">{{localize 'probe'}}</button></div>{{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Empty'}}</p>{{/each}}</section>{{/if}}
-{{> "modules/dsa5-helpers/templates/actors/parts/chips.hbs" title="demonmark" items=prepare.demonmarks}}
+{{#if isGM}}{{#if prepare.diseases.length}}<section class="panel"><div class="panel-title">{{localize 'disease'}}</div>{{#each prepare.diseases as |item|}}<div class="row item dsa5h-disease-row" data-item-id="{{item._id}}"><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span><span>{{item.system.step.value}}</span><span>{{item.system.incubation.value}}</span><span>{{item.system.duration.resolved}}</span><button type="button" data-action="rollDisease">{{localize 'probe'}}</button></div>{{/each}}</section>{{/if}}{{/if}}
+</div>
+<div class="col-gap">
+{{#if prepare.demonmarks.length}}{{> "modules/dsa5-helpers/templates/actors/parts/chips.hbs" title="demonmark" items=prepare.demonmarks}}{{/if}}
 <section class="panel"><div class="panel-title">{{localize 'SHEET.actorConfig'}}</div><div class="dsa5h-quick-actions"><button type="button" data-action="actorConfig">{{localize 'SHEET.actorConfig'}}</button>{{#each dsa5h.regenerations}}<button type="button" data-action="disableRegeneration" data-type="{{id}}" aria-pressed="{{active}}">{{localize 'regenerate'}} · {{localize id}}</button>{{/each}}</div></section>
 </div>
-</div></div>
+</div>
+</div>

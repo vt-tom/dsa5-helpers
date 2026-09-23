@@ -59,6 +59,8 @@ const A = {
   liturgy: (name) => ICONS + "/spellicons/liturgies/" + name + ".webp",
   // Hintergrund
   bgActor: ICONS + "/backgrounds/actor.webp",
+  // Porträt-Zierrahmen ist seit der Nutzer-Entscheidung 2026-09-18 ("Ecken gekappt" + Gold-Saum, siehe STATUS.md)
+  // reines CSS (.portrait in style.css: border/box-shadow/clip-path) — kein Bild-Asset mehr nötig.
   // IDEEN.md: Auswahlliste für den simulierten Foundry-FilePicker beim Kopfzeilen-Hintergrundbild
   // (openHeaderBgPicker() in script.js) — echte Systemgrafiken aus icons/backgrounds statt erfundener Bilder,
   // auch wenn es dort eigentlich UI-Texturen statt Szenerie-Artworks sind. Der echte FilePicker würde beliebige
@@ -70,3 +72,20 @@ const A = {
     { label: "DSA-Kopf", img: ICONS + "/backgrounds/dsahead.webp" },
   ],
 };
+
+// Tradition-Icon-Zuordnung (Nutzerwunsch 2026-09-18, Traditionsanzeige-Badge): MAGIC_TRADITION.tradition/
+// RELIGION_TRADITION.tradition sind im echten System Freitextfelder ohne feste Werteliste (lang/de.json
+// "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") — die Zuordnung
+// zu einem Icon (icons/traditionen bzw. icons/months) ist daher nur über Teilstring-Abgleich gegen die bekannten
+// Dateinamen möglich, kein exaktes Enum-Match. 1:1 dieselbe Liste/Logik wie im echten Modul
+// (dsa5hTraditionIcon-Handlebars-Helfer in scripts/dsa5-helpers.js).
+const MAGIC_TRADITION_ICONS = ["animisten", "druiden", "elfen", "geoden", "gildenmagier", "hexen", "magiedilettanten", "scharlatane", "zauberalchimisten", "zauberbarden", "zaubertaenzer", "zibiljas"];
+const GOD_ICONS = ["Achaz", "Angrosch", "Aves", "Boron", "Brazoragh", "Chrssirssr", "Efferd", "Ferkina", "Firun", "Fjarninger", "Gjalsker", "Gravesh", "Hesinde", "Hszint", "Ifirn", "Ingerimm", "Kor", "Namenloser", "Nandus", "Nivesen", "Peraine", "Phex", "Praios", "Rahja", "Rikai", "Rondra", "Shinxir", "Swafnir", "Tahaya", "Tairach", "Travia", "Trollzacker", "Tsa", "Zsahh", "levthan", "marbo", "numinoru"];
+function findTraditionIcon(text, names, folder) {
+  if (!text) return null;
+  const lower = text.toLowerCase();
+  const hit = names.find((n) => lower.includes(n.toLowerCase()));
+  return hit ? `${DSA5_SYSTEM_PATH}/icons/${folder}/${hit}.webp` : null;
+}
+A.magicTraditionIcon = (text) => findTraditionIcon(text, MAGIC_TRADITION_ICONS, "traditionen");
+A.godIcon = (text) => findTraditionIcon(text, GOD_ICONS, "months");

@@ -1133,54 +1133,77 @@ function renderCombatActions() {
   ));
 }
 
-// Rüstungsbild groß, RS/BE als Badges unten links/rechts direkt aufs Bild gelegt; weitere Rüstungsstücke
-// (falls mehr als eines getragen wird) folgen darunter als schmale Zeilen wie bisher.
-function renderArmorPanel() {
-  const [primary, ...rest] = ARMOR;
-  const primaryStats = primary ? effectiveArmor(primary) : null;
-  // Gesamtschutz-Zeile (siehe MAGIC_ARMOR-Kommentar bei ARMOR in data.js): Summe aller getragenen Rüstungsteile
-  // (bereits verschleiß-bereinigt) plus separat ausgewiesene magische Boni, exakt wie actor-combat.hbs:158.
-  const armorSum = ARMOR.reduce((sum, a) => sum + effectiveArmor(a).rs, 0);
+// Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich, siehe Git-Historie
+// "UI-Vergleich 2026-09-17, Runde 3": Nutzerfeedback nach A–E war "von vorne beginnen", A–E waren letztlich alle
+// Reskins derselben Grundidee — ein Bild + aufgelegte Werte für das ERSTE Rüstungsteil. Zur Wahl standen drei
+// genuin unterschiedliche Vorbilder: "Verteidigung" (Rüstung + Ausweichen/Initiative in einem Panel, wie die
+// Rüstungsklasse in D&D Beyond/Roll20), "Ausrüstungsreihe" (Diablo/WoW-artige Slot-Reihe, hier gewählt) und
+// "Schutzsiegel" (Gesamtschutz als rundes Gold-Siegel). Diablo/WoW-artige Ausrüstungs-Slot-Reihe — Wiederverwendung
+// des im Modul bereits etablierten Slot-Musters (.companion-slot, companionHotbar()) statt einer Sonderkachel für
+// nur das erste Teil; jedes getragene Rüstungsteil ein gleichwertiger Icon-Slot mit RS/BE direkt sichtbar darunter
+// (nicht erst per Hover), wächst/schrumpft einfach mit der Stückzahl über flex-wrap.
+
+// Gesamtschutz (siehe MAGIC_ARMOR-Kommentar bei ARMOR in data.js): Summe aller getragenen, bereits
+// verschleiß-bereinigten Rüstungsteile plus separat ausgewiesene magische Boni, exakt wie actor-combat.hbs:158
+// ("protection ({{prepare.armorSum}}...)").
+function computeArmorSum() {
+  const sum = ARMOR.reduce((s, a) => s + effectiveArmor(a).rs, 0);
   const magicParts = [];
   if (MAGIC_ARMOR.spell) magicParts.push(`+${MAGIC_ARMOR.spell} Zauber`);
   if (MAGIC_ARMOR.liturgy) magicParts.push(`+${MAGIC_ARMOR.liturgy} Liturgie`);
+  return { sum, magicParts };
+}
+
+function armorSumText({ sum, magicParts }) {
+  return `Schutz gesamt ${sum}${magicParts.length ? ` (${magicParts.join(", ")})` : ""}`;
+}
+
+// Angeborene Rüstung (TRAITS.armor, z.B. Naturpanzer bei Verwandlungen) ist unabhängig von der Darstellung immer
+// als einfache Zeile zu sehen.
+function armorTraitRows() {
+  return TRAITS.armor.map((t) =>
+    el("div", { class: "row armor-row" }, [
+      el("img", { src: t.img || A.armor, alt: "" }),
+      el("span", { class: "left" }, t.name),
+      el("span", { class: "big center" }, String(t.at)),
+      el("span", { class: "muted center" }, "–"),
+    ])
+  );
+}
+
+// Rüstung bleibt neben den Kampfwerten stehen (siehe .combat-top in renderCombatMain()). Jedes getragene
+// Rüstungsteil ein gleichwertiger Icon-Slot statt einer Sonderkachel nur fürs erste Teil, RS/BE direkt sichtbar
+// darunter (nicht erst per Hover).
+function renderArmorPanel() {
+  const armorSum = computeArmorSum();
+  // Bild füllt die ganze Kachel, Name oben zentriert (Lesbarkeits-Gradient), RS/BE als Badges unten
+  // links/rechts über dem Bild statt als Textzeile darunter (Nutzer-Feedback 2026-09-18).
+  const slots = ARMOR.map((a) => {
+    const stats = effectiveArmor(a);
+    return el("div", { class: "armor-slot" }, [
+      itemIcon(A.armor, a.name, a.structure, "armor"),
+      el("span", { class: "armor-slot-name" }, a.name),
+      el("span", { class: "armor-slot-rs" }, `RS ${stats.rs}`),
+      el("span", { class: "armor-slot-be" }, `BE ${stats.be}`),
+    ]);
+  });
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Rüstung"),
-    el("div", { class: "armor-sum-line" }, `Schutz gesamt ${armorSum}${magicParts.length ? ` (${magicParts.join(", ")})` : ""}`),
-    el("div", { class: "armor-hero" }, [
-      itemIcon(A.armor, primary ? primary.name : "", primary ? primary.structure : null, "armor"),
-      primary ? el("span", { class: "badge-rs" }, `RS ${primaryStats.rs}`) : null,
-      primary ? el("span", { class: "badge-be" }, `BE ${primaryStats.be}`) : null,
-    ]),
-    primary ? el("div", { class: "armor-name" }, primary.name) : null,
-    ...rest.map((a) => {
-      const stats = effectiveArmor(a);
-      return el("div", { class: "row armor-row" }, [
-        itemIcon(A.armor, "", a.structure, "armor"),
-        el("span", { class: "left" }, a.name),
-        el("span", { class: "big center" }, String(stats.rs)),
-        el("span", { class: "muted center" }, String(stats.be)),
-      ]);
-    }),
-    ...TRAITS.armor.map((t) =>
-      el("div", { class: "row armor-row" }, [
-        el("img", { src: t.img || A.armor, alt: "" }),
-        el("span", { class: "left" }, t.name),
-        el("span", { class: "big center" }, String(t.at)),
-        el("span", { class: "muted center" }, "–"),
-      ])
-    ),
+    el("div", { class: "armor-sum-line" }, armorSumText(armorSum)),
+    el("div", { class: "armor-slots" }, slots.length ? slots : [el("div", { class: "armor-empty" }, "Keine Rüstung getragen")]),
+    ...armorTraitRows(),
   ]);
 }
 
-// Kampf-Unterreiter: Schnellwürfe, Kampfwerte + Rüstung nebeneinander, darunter die Waffentabellen (WAFFEN-TAB.md).
+// Kampf-Unterreiter: Schnellwürfe, Kampfwerte + Rüstung, darunter die Waffentabellen (WAFFEN-TAB.md).
 function renderCombatMain() {
   // Ausweichen/Initiative sind vom Eigenschaften-Tab hierher gewandert (EIGENSCHAFTEN-TAB.md: "Sollen auf den Kampf Tab wandern").
-  const combatValuesPanel = el("div", { class: "panel" }, [
-    el("div", { class: "panel-title" }, "Kampfwerte"),
-    el("div", { class: "row-head simple-row" }, head("", "Wert", "Mod", "Max")),
-    ...COMBAT_DERIVED.map(buildSimpleRow),
-  ]);
+  const combatValuesPanel = () =>
+    el("div", { class: "panel" }, [
+      el("div", { class: "panel-title" }, "Kampfwerte"),
+      el("div", { class: "row-head simple-row" }, head("", "Wert", "Mod", "Max")),
+      ...COMBAT_DERIVED.map(buildSimpleRow),
+    ]);
 
   // AT/PA (Nahkampf) und FK (Fernkampf) sowie TP stehen bewusst als letzte Spalten in beiden Tabellen, mit exakt
   // derselben Gesamtbreite (siehe .melee-row/.ranged-row in style.css) — so liegen die beiden "Aktionen" (Angriffs-
@@ -1204,9 +1227,11 @@ function renderCombatMain() {
     ...TRAITS.rangeAttack.map(traitRangedRow),
   ]);
 
+  const topArea = el("div", { class: "combat-top" }, [combatValuesPanel(), renderArmorPanel()]);
+
   return el("div", {}, [
     renderCombatActions(),
-    el("div", { class: "combat-top" }, [combatValuesPanel, renderArmorPanel()]),
+    topArea,
     meleePanel,
     rangedPanel,
     specialsBlock("Kampfsonderfertigkeiten", COMBAT_SPECIALS),
@@ -1390,37 +1415,67 @@ function artifactTable(title, items, showVolume) {
   ]);
 }
 
+// Wohlgefällige Talente (Religion-Tab, t.happyTalents nur bei RELIGION_TRADITION gesetzt): nach einem
+// Drei-Varianten-Vergleich (2026-09-17) hat sich der Nutzer für "B · Einklappbar" entschieden (Umschalter +
+// Varianten A "Textzeile"/C "Kachel" entfernt, siehe archive/DECISIONS.md) — genau wie im echten Modul
+// (dsa5h-happy-talents-toggle in religion.hbs) standardmäßig auf eine einzeilige Andeutung mit Anzahl
+// ("Wohlgefällige Talente (3)") eingeklappt, Klick blendet den vollen Text ein/aus. Im Bearbeiten-Modus immer
+// aufgeklappt, damit das Feld dort ohne einen zusätzlichen Klick editierbar bleibt. happyTalentsExpanded ist
+// eigener State (nicht Teil von RELIGION_TRADITION in data.js), da es reine Darstellungs-, keine
+// Fachdaten-Information ist.
+let happyTalentsExpanded = false;
+
+function renderHappyTalentsCollapse(t) {
+  const mode = document.querySelector(".sheet").getAttribute("data-mode");
+  const expanded = happyTalentsExpanded || mode === "edit";
+  const count = t.happyTalents.split(",").map((s) => s.trim()).filter(Boolean).length;
+  const toggleBtn = el("button", { type: "button", class: "happy-talents-toggle", "aria-expanded": String(expanded) }, [
+    el("span", { class: "happy-talents-caret" }, expanded ? "▾" : "▸"),
+    el("span", {}, `Wohlgefällige Talente (${count})`),
+  ]);
+  toggleBtn.addEventListener("click", () => { happyTalentsExpanded = !happyTalentsExpanded; renderContent(); });
+  if (!expanded) return el("div", { class: "trad-tiles-note happy-talents-note-collapsed" }, [toggleBtn]);
+  const span = el("span", {}, t.happyTalents);
+  if (mode === "edit") makeEditable(span, t.happyTalents, (v) => { t.happyTalents = v; renderContent(); }, { type: "text" });
+  return el("div", { class: "trad-tiles-note happy-talents-note-collapsed" }, [toggleBtn, el("div", { class: "happy-talents-expanded" }, span)]);
+}
+
 // Traditions-Kopfleiste ganz oben auf Magie/Religion (2026-09-13, Nutzerwunsch: "ganz oben auf beiden Tabs" statt
 // rechter Sidebar-Box). Nutzer hat sich nach Vergleich dreier Optiken für die Kachel-Variante entschieden
 // (Umschalter/Alternativen entfernt) — vier gleich breite Spalten mit Trennlinien statt frei fließender,
 // unterschiedlich breiter Blöcke, damit die Leiste die volle Panel-Breite ruhig ausfüllt statt löchrig zu wirken.
 // Leiteigenschaft/Merkmal/Faktor sind im Bearbeiten-Modus direkt editierbar (BEARBEITEN.md); "Tradition" selbst
 // ist dort NICHT gelistet und bleibt bewusst reine Anzeige. happyTalents ("Wohlgefällige Talente", nur bei
-// RELIGION_TRADITION vorhanden) ebenfalls editierbar, siehe BEARBEITEN.md Tab-Religion-Zusatzpunkt.
-function traditionHeader(t) {
+// RELIGION_TRADITION vorhanden) ebenfalls editierbar, siehe BEARBEITEN.md Tab-Religion-Zusatzpunkt und
+// renderHappyTalentsCollapse()-Kommentar oben.
+// "Wappen-Badge"-Layout — Nutzer-Entscheidung 2026-09-18 nach Vergleich dreier Ansätze im Click-Dummy (siehe
+// STATUS.md): Tradition soll klar herausstechen, die drei Nebenwerte (Leiteigenschaft/Merkmal/Faktor) sollen
+// zweitrangig wirken. Tradition jetzt als akzentfarbene Pille mit passendem System-Icon (kind "magic" →
+// icons/traditionen, "religion" → icons/months — Freitextfeld, daher nur Teilstring-Match, siehe
+// A.magicTraditionIcon/A.godIcon in assets-map.js), die drei Nebenwerte als schmale Schlüssel-Wert-Spalte
+// daneben (.trad-tile-meta).
+function traditionHeader(t, kind) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
-  const tile = (label, rawValue, valClass, field) => {
+  const tile = (label, rawValue, valClass, field, key) => {
     const type = typeof rawValue === "number" ? "number" : "text";
     const valEl = el("div", { class: "trad-tile-val" + (valClass ? " " + valClass : "") }, String(rawValue));
     if (field && mode === "edit") {
       makeEditable(valEl, rawValue, (v) => { t[field] = v; renderContent(); }, { type, min: type === "number" ? 0 : undefined, max: type === "number" ? 99 : undefined });
     }
-    return el("div", { class: "trad-tile" }, [el("div", { class: "trad-tile-label" }, label), valEl]);
+    return el("div", { class: "trad-tile" + (key ? " trad-tile-" + key : "") }, [el("div", { class: "trad-tile-label" }, label), valEl]);
   };
-  let happyTalentsEl = null;
-  if (t.happyTalents !== undefined) {
-    const span = el("span", {}, t.happyTalents);
-    if (mode === "edit") makeEditable(span, t.happyTalents, (v) => { t.happyTalents = v; renderContent(); }, { type: "text" });
-    happyTalentsEl = el("div", { class: "trad-tiles-note" }, [el("span", { class: "muted" }, "Wohlgefällige Talente: "), span]);
-  }
+  const traditionTile = tile("Tradition", t.tradition, "trad-tile-val-name", null, "tradition");
+  const iconSrc = kind === "religion" ? A.godIcon(t.tradition) : A.magicTraditionIcon(t.tradition);
+  if (iconSrc) traditionTile.prepend(el("img", { class: "trad-tile-icon", src: iconSrc, alt: "" }));
+  const metaTiles = el("div", { class: "trad-tile-meta" }, [
+    tile("Leiteigenschaft", t.guidevalue, null, "guidevalue", "guidevalue"),
+    tile("Merkmal", t.feature, null, "feature", "feature"),
+    tile("Faktor", t.energyfactor, "accent", "energyfactor", "energyfactor"),
+  ]);
+  const happyTalentsBelow = t.happyTalents !== undefined ? renderHappyTalentsCollapse(t) : null;
   return el("div", { class: "trad-header" }, [
-    el("div", { class: "trad-tiles-grid" }, [
-      tile("Tradition", t.tradition, "trad-tile-val-name"),
-      tile("Leiteigenschaft", t.guidevalue, null, "guidevalue"),
-      tile("Merkmal", t.feature, null, "feature"),
-      tile("Faktor", t.energyfactor, "accent", "energyfactor"),
-    ]),
-    happyTalentsEl,
+    el("div", { class: "trad-tiles-grid" }, [traditionTile, metaTiles]),
+    happyTalentsBelow,
   ]);
 }
 
@@ -1429,7 +1484,7 @@ function traditionHeader(t) {
 // Zeichen sind auf den zweiten Unter-Tab gewandert (renderMagicItems).
 function renderMagicSpells() {
   return el("div", {}, [
-    traditionHeader(MAGIC_TRADITION),
+    traditionHeader(MAGIC_TRADITION, "magic"),
     magicTable("Zauber", SPELLS),
     magicTable("Rituale", RITUALS),
     el("div", { class: "panel" }, [
@@ -1443,7 +1498,7 @@ function renderMagicSpells() {
 // Unter-Tab "Ausrüstung": Traditions-Kopfleiste → Traditionsgegenstände → Magische Zeichen.
 function renderMagicItems() {
   return el("div", {}, [
-    traditionHeader(MAGIC_TRADITION),
+    traditionHeader(MAGIC_TRADITION, "magic"),
     artifactTable("Traditionsgegenstände", TRADITION_ARTIFACTS, true),
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title" }, "Magische Zeichen"),
@@ -1460,7 +1515,7 @@ function renderMagic() {
 // Zeremonien, vor den Sonderfertigkeiten) → Sonderfertigkeiten (Kategorie "clerical").
 function renderReligionLiturgies() {
   return el("div", {}, [
-    traditionHeader(RELIGION_TRADITION),
+    traditionHeader(RELIGION_TRADITION, "religion"),
     magicTable("Liturgien", LITURGIES),
     magicTable("Zeremonien", CEREMONIES),
     el("div", { class: "panel" }, [
@@ -1474,7 +1529,7 @@ function renderReligionLiturgies() {
 // Unter-Tab "Ausrüstung": Traditions-Kopfleiste → Kirchengeräte. Kein Äquivalent zu "Magische Zeichen" bei
 // Religion, daher hier nur ein Panel statt zwei wie bei renderMagicItems.
 function renderReligionItems() {
-  return el("div", {}, [traditionHeader(RELIGION_TRADITION), artifactTable("Kirchengeräte", CEREMONIAL_ITEMS, false)]);
+  return el("div", {}, [traditionHeader(RELIGION_TRADITION, "religion"), artifactTable("Kirchengeräte", CEREMONIAL_ITEMS, false)]);
 }
 
 function renderReligion() {
@@ -2298,68 +2353,32 @@ function collectFavorites() {
   };
 }
 
-// Kurze Kennzahlen für die Favoriten-Vorschau (openFavoritePreview()) je Item-Art — kein vollständiges Item-Sheet
-// (der Click-Dummy hat dafür keine echten Foundry-Dokumente, analog zu openIdentityModal()), nur die Werte, die
-// am Spieltisch zuerst gebraucht werden.
-function favoritePreviewStats(item, kind) {
+// Favoriten-Chip: statisch (kein Klick-Roll-plus-Kontextmenü mehr, siehe Runde 2026-09-18 "das gefällt mir auch
+// irgendwie nicht"), aber die Würfel selbst lösen wieder eine Probe/einen Angriff aus (Nutzer-Feedback 2026-09-19:
+// "Favoriten lassen sich aktuell nicht würfeln") — nur der Chip drumherum (Bild+Name+Stern) bleibt unklickbar.
+// Talentwert steht direkt hinter dem Namen und etwas größer (Nutzerwunsch), die Würfel folgen danach. Der
+// Click-Dummy hat keine echte Würfelmechanik — "Auslösen" zeigt hier nur flashNotice() als Platzhalter; im echten
+// Modul löst derselbe Klick echte Proben/Angriffswürfe aus (skillSelect/chRollCombat, siehe favorite-values.hbs).
+function favChip(item, kind) {
+  const icon = el("img", { class: "fav-chip-icon", src: item.img, alt: "" });
+  const name = el("span", { class: "fav-chip-name", title: item.name }, item.name);
+  let values;
   if (kind === "weapon") {
     const ranged = RANGED.includes(item);
     const stats = ranged ? effectiveRangedStats(item) : effectiveMeleeStats(item);
-    return (ranged ? `FK ${stats.at}` : `AT ${stats.at} · PA ${stats.pa}`) + ` · TP ${item.tp}`;
+    const atDie = el("button", { type: "button", class: "probe-die fav-chip-roll", style: dieBg("d20mu"), title: "Angriff auslösen" }, String(stats.at));
+    atDie.addEventListener("click", () => flashNotice(`🎲 Angriff ausgelöst: ${item.name}`));
+    values = [atDie, el("span", { class: "fav-chip-damage" }, item.tp)];
+  } else {
+    const dice = probeDice(item.probe);
+    dice.classList.add("fav-chip-roll");
+    dice.setAttribute("role", "button");
+    dice.setAttribute("tabindex", "0");
+    dice.title = "Probe auslösen";
+    dice.addEventListener("click", () => flashNotice(`🎲 Probe ausgelöst: ${item.name}`));
+    values = [el("span", { class: "fav-chip-value" }, String(item.fw)), dice];
   }
-  const parts = [`FW ${item.fw}`];
-  if (item.cost !== undefined) parts.push(`Kosten ${item.cost}`);
-  return parts.join(" · ");
-}
-
-// UI-UX-REVIEW.md Priorität 1 Punkt 2: Klick auf den Favoriten-Chip entfernte bisher sofort den Favoriten — für
-// eine Startseite überraschend, ein Chip wirkt wie eine Abkürzung zum Eintrag. Öffnet jetzt stattdessen diese
-// Kurzvorschau (analog zu openIdentityModal(), da noch keine echte Probe ausgelöst werden kann); Entfernen
-// passiert nur noch über den separaten, klar beschrifteten Button darin — symmetrisch zum Stern, der den
-// Favoriten ursprünglich gesetzt hat (favStar()).
-function openFavoritePreview(item, kind) {
-  const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
-  closeBtn.addEventListener("click", closeModal);
-  const removeBtn = el("button", { type: "button", class: "fav-remove-btn" }, "★ Favorit entfernen");
-  removeBtn.addEventListener("click", () => {
-    item.fav = false;
-    closeModal();
-    renderContent();
-  });
-  openModal(
-    el("div", { class: "panel" }, [
-      el("div", { class: "panel-title flex" }, [el("span", {}, item.name), closeBtn]),
-      el("div", { class: "identity-modal-body" }, [
-        el("img", { src: item.img, alt: "" }),
-        el("div", {}, [
-          item.probe ? probeDice(item.probe) : null,
-          el("p", {}, favoritePreviewStats(item, kind)),
-        ]),
-      ]),
-      removeBtn,
-    ]),
-    { label: item.name }
-  );
-}
-
-// Ein Favorit als Chip (Bild + Name + separater Entfernen-Stern), nicht als volle Datenzeile — Nutzer-Feedback
-// 2026-09-14: eine Tabelle im Stil von "Vor- & Nachteile" (ein Panel, Unterüberschrift je Kategorie, darunter
-// eine .chips-Reihe) statt vier einzelner Tabellen je Typ. Zwei getrennte Buttons statt einem (kein <button> im
-// <button>, siehe fav-chip-open/fav-chip-star in style.css): der große Bereich öffnet die Vorschau
-// (openFavoritePreview()), nur der kleine Stern entfernt den Favoriten direkt.
-function favChip(item, kind) {
-  const openBtn = el("button", { type: "button", class: "fav-chip-open", title: `${item.name} – Vorschau öffnen` }, [
-    el("img", { src: item.img, alt: "" }),
-    el("span", {}, item.name),
-  ]);
-  openBtn.addEventListener("click", () => openFavoritePreview(item, kind));
-  const star = el("button", { type: "button", class: "fav-chip-star", title: "Favorit entfernen" }, "★");
-  star.addEventListener("click", (e) => {
-    e.stopPropagation();
-    item.fav = false;
-    renderContent();
-  });
-  return el("span", { class: "chip fav-chip" }, [openBtn, star]);
+  return el("span", { class: "chip fav-chip" }, [icon, name, el("span", { class: "fav-chip-values" }, values), favStar(item)]);
 }
 
 // Ein Panel "Favoriten" mit einer Unterüberschrift je Kategorie (Talente/Waffen/Zauber/Liturgien), analog zu

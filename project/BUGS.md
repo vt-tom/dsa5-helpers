@@ -8,4 +8,6 @@ Wenn GitHub-Issues angebunden sind (siehe [FEATURES.md](FEATURES.md)), spiegeln 
 
 ---
 
-_Aktuell keine offenen Punkte._ Die letzte Fehlerrunde (Absturz beim Öffnen, Talente-Suche ohne Wirkung, Ausrüstungssuche ohne Wirkung, Initiative-Anzeige mit Nachkommastelle) ist behoben, aber noch nicht erneut vom Nutzer live bestätigt — siehe [STATUS.md](STATUS.md).
+Die letzte Fehlerrunde (Absturz beim Öffnen, Talente-Suche ohne Wirkung, Ausrüstungssuche ohne Wirkung, Initiative-Anzeige mit Nachkommastelle) ist behoben, aber noch nicht erneut vom Nutzer live bestätigt — siehe [STATUS.md](STATUS.md).
+
+- **Sheet-Größe 880×780 → 770×740 (2026-09-19):** rein rechnerisch geprüft (feste Spaltenbudgets der Waffen-/Kampftechnik-Tabellen passen laut Pixel-Summe knapp), nicht live in Foundry getestet. Bei der ersten Live-Prüfung gezielt auf horizontales Scrollen/Umbruch in Kampf (Nah-/Fernkampfwaffen, Kampftechniken nebeneinander) und Magie/Religion (Zauber-/Liturgien-Tabellen) achten.
