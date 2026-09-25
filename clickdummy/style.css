@@ -957,13 +957,13 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .fav-card-roll{display:flex;justify-content:center}
 .fav-card .fav-chip-damage{font-size:var(--fs-small);white-space:nowrap}
 
-/* ===== Paket F: kompakter Kopf (Vergleichsschalter #headSizeSwitch) ===== */
-.sheet[data-headsize="compact"] .head{padding:10px 14px}
-.sheet[data-headsize="compact"] .head-top h1{font-size:31px}
-.sheet[data-headsize="compact"] .head-inner .portrait{flex-basis:92px;height:108px}
-.sheet[data-headsize="compact"][data-tab="cover"] .head-top h1{font-size:32px}
-.sheet[data-headsize="compact"][data-tab="cover"] .badge{font-size:14px;padding:2px 10px}
-.sheet[data-headsize="compact"][data-tab="cover"] #coverSidebar .portrait{height:128px}
+/* ===== Porträt auf den Fachreitern (Vergleichsschalter #portraitSwitch; Titelblatt bleibt unverändert) =====
+   Nutzer-Feedback 2026-09-25: Kopf "Standard" passt, aber das Porträt neben dem Titelblatt ist sehr klein.
+   "large" = 150×178 (Kopf wird etwas höher), "overlap" = 150×172, ragt unten über die Kopfkante in das
+   Würfelband (links neben den Eigenschaftswürfeln ist dort Platz); Kopf- und Titelzeile bleiben gleich hoch. */
+.sheet[data-portrait="large"]:not([data-tab="cover"]) .head-inner .portrait{flex-basis:150px;height:178px}
+.sheet[data-portrait="overlap"]:not([data-tab="cover"]) .head{overflow:visible;z-index:3}
+.sheet[data-portrait="overlap"]:not([data-tab="cover"]) .head-inner .portrait{flex-basis:150px;height:172px;margin-bottom:-30px;box-shadow:inset 0 0 0 1px rgba(224,192,128,.5),0 4px 12px rgba(0,0,0,.35)}
 
 /* ===== Paket F: Kampf-Übersicht, Varianten "Leiste" und "Silhouette" (Vergleichsschalter #combatTopSwitch) ===== */
 .combat-strip{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;padding:8px 12px}
@@ -1012,8 +1012,25 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .bag-tiles .bag-tile-name{text-align:left}
 /* Spalte "Angelegt" (vorher nur ✓ als Kopf, 34px) braucht Platz für die Beschriftung. */
 .inv-row{grid-template-columns:30px 1fr 64px 52px 58px 74px 42px}
-/* Tradition "zurückgenommen" (Vergleichsschalter #tradSwitch): nicht mehr akzentfarbene Pille über die ganze Breite,
-   sondern ruhige Zeile mit Rahmen — die Zauberwerte darunter bekommen mehr Gewicht. */
-.sheet[data-trad="quiet"] .trad-tile-tradition{flex:0 1 auto;background:var(--field);border:1px solid var(--accent);padding:3px 12px}
-.sheet[data-trad="quiet"] .trad-tile-tradition .trad-tile-val{color:var(--ink);text-shadow:none;font-size:15px}
-.sheet[data-trad="quiet"] .trad-tile-icon{filter:none}
+/* Tradition: Farbe der Pille, Platz der zurückgenommenen Variante — nicht mehr über die ganze Breite (Nutzer-
+   Entscheidung 2026-09-25 nach Vergleich "Pille" vs. "zurückgenommen"). */
+.trad-tile-tradition{flex:0 1 auto;padding:4px 14px}
+.trad-tile-tradition .trad-tile-val{font-size:16px}
+
+/* Spielmodus: Mod- und Zukauf-Spalten ausblenden (Nutzer-Entscheidung 2026-09-25) — sie sind nur beim Bearbeiten
+   nützlich; im Spiel zählen aktueller Wert und Maximum. */
+.sheet[data-mode="play"] .derived-row{grid-template-columns:1fr 56px 52px}
+.sheet[data-mode="play"] .derived-row>:nth-child(3),.sheet[data-mode="play"] .derived-row>:nth-child(4){display:none}
+.sheet[data-mode="play"] .simple-row{grid-template-columns:1fr 56px 56px}
+.sheet[data-mode="play"] .simple-row>:nth-child(3){display:none}
+
+/* ===== Reiter "Körper" (renderBody(), Issue #6) ===== */
+.body-grid{display:grid;grid-template-columns:minmax(0,1fr) 170px minmax(0,1.2fr);gap:14px;align-items:center;padding:12px}
+.body-grid .figure-body{height:320px}
+.body-grid .figure-body::before{width:100px;margin-left:-50px;background-position:-60px 0}
+.hand-slot-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.hand-select{max-width:170px;font-size:var(--fs-small)}
+.hand-slot-weapon>.hand-dice{display:flex;flex-direction:row;flex:none;gap:4px}
+.hand-note{padding:6px 0;font-size:var(--fs-small)}
+.body-others{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--line)}
+.body-others .chip img{width:18px;height:18px}

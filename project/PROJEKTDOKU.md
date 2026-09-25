@@ -39,7 +39,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - **LeP/AsP/KaP:** einzelne goldgerahmte Karten.
 - **Eigenschaftswürfel:** „Wachssiegel“-Optik; die kleinen Würfel im Kopf lösen ebenfalls eine Probe aus.
 - **Favoriten:** Bild + Name + Stern, dahinter Talentwert und klickbare Würfel. Kein Hover-Aufklappen, kein Kontextmenü (beides ausprobiert und verworfen).
-- **Tradition (Magie/Religion):** „Wappen-Badge“ mit Icon + kleine 3-Spalten-Tabelle (Leiteigenschaft, Merkmal, Faktor). Die Pille füllt die Breite; Klick öffnet die Sonderfertigkeit „Tradition (…)“ (Erkennung wie im System: Name beginnt mit `LocalizedIDs.assumeTradition`, Kategorie magical/clerical).
+- **Tradition (Magie/Religion):** „Wappen-Badge“ mit Icon + kleine 3-Spalten-Tabelle (Leiteigenschaft, Merkmal, Faktor). Die Pille behält ihre Akzentfarbe, ist seit 2026-09-25 aber nur so breit wie ihr Inhalt (vorher volle Breite); Klick öffnet die Sonderfertigkeit „Tradition (…)“ (Erkennung wie im System: Name beginnt mit `LocalizedIDs.assumeTradition`, Kategorie magical/clerical).
 - **Waffenzeile (Kampf):** Bild | Name + Technik klein darunter | AT | PA (bei Fernkampf FK über beide) | TP | RW | Griff | ⋮ | Stern; Munition/Nachladen/Zielen als zweite Zeile. Reichweite als eigene Spalte (Variante A, 2026-09-25).
 - **Rüstung (Kampf):** jedes Rüstungsteil als Kachel, Bild füllt die Kachel, RS/BE als Ecken-Badges.
 - **Wohlgefällige Talente:** einklappbar.
@@ -48,6 +48,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - **Trefferflächen (UI/UX-Review 2026-09-25):** häufige Aktionen 28 px (Zustands-±, Stern, Regeneration, Schicksalspunkte ~29 px), Löschen/Hilfe 24 px — Grafik bleibt klein, Fläche per Rand/Pseudo-Element/negativem Margin, Zeilenhöhen unverändert.
 - **Schrift:** Namen/Werte 15 px (`--fs-data`), Nebenangaben −1 px, Metadaten nie unter 12 px, große Zahlen +3 px. Zahlen in Textschrift (GentiumBasic fett), Andalus nur für Überschriften.
 - **Kontrast:** Würfelzahlen überall weiß mit dunkler Kontur (dunkle Schrift auf hellen Würfeln war schlecht lesbar); `--muted` ≥ 4,5:1; Ressourcenbalken leicht entsättigt.
+- **Spielmodus Eigenschaften/Kampfwerte:** Mod- und Zukauf-Spalten ausgeblendet, nur Aktuell/Basis und Max (2026-09-25).
 - **Bedienung ohne Maus:** jede Würfelaktion ist ein Button mit Ziel im Label („Klettern würfeln“); Zustände haben getrennte −/+-Knöpfe mit Stufe „Wert/Max“.
 
 ## Technische Stolpersteine (gelernt)

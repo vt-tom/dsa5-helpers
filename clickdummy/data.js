@@ -16,7 +16,10 @@ const TABS = [
   { id: "cover", label: "Titelblatt", icon: A.tabCover, title: "Titelblatt", hint: "" },
   { id: "main", label: "Eigenschaften", icon: A.tabMain, title: "Eigenschaften", hint: "" },
   { id: "skills", label: "Talente", icon: A.tabSkills, title: "Talente", hint: "" }, // Hint entfällt: die Kategorien stehen ja direkt als Tabs daneben, Platz geht an größere Tabs.
-  { id: "combat", label: "Kampf", icon: A.tabCombat, title: "Kampf", hint: "" }, // Hint entfällt: Kampf/Kampftalente-Unterreiter stehen daneben, siehe SKILL_GROUPS-Kommentar unten.
+  { id: "combat", label: "Kampf", icon: A.tabCombat, title: "Kampf", hint: "" },
+  // Entwurf GitHub-Issue #6 (Nutzerwunsch 2026-09-25: Silhouette erst einmal als eigener Reiter weiterentwickeln):
+  // Figur mit Rüstung am Körper und Waffen in den Händen.
+  { id: "body", label: "Körper", icon: A.armor, title: "Körper", hint: "Rüstung · Waffen in der Hand" }, // Hint entfällt: Kampf/Kampftalente-Unterreiter stehen daneben, siehe SKILL_GROUPS-Kommentar unten.
   { id: "magic", label: "Magie", icon: A.tabMagic, title: "Magie", hint: "" },
   { id: "religion", label: "Religion", icon: A.tabReligion, title: "Religion", hint: "" },
   { id: "inventory", label: "Ausrüstung", icon: A.tabInventory, title: "Ausrüstung", hint: "" },

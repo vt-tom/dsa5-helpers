@@ -46,21 +46,21 @@ Quelle: [UI-UX-FEEDBACK-2026-09-25.md](UI-UX-FEEDBACK-2026-09-25.md). **Ablauf j
 
 Favoriten als gleich breite Zeilen im Raster (`favCard()`, `.fav-grid` auto-fill ≥ 300 px, füllt die ganze Breite): Bild | Name (bricht um) | Wert | Probe | Stern; Waffen mit sichtbaren Kürzeln „AT/FK“ und „TP“. Foundry: `favorite-values.hbs`, `cover.hbs` + CSS.
 
-### Paket F – Kopf, Titelblatt, Kampf (Issue #6) — im Clickdummy, wartet auf Abnahme
+### Paket F – Kopf, Kampf, Reiter „Körper“ (Issue #6)
 
-- Vergleichsschalter **Kopf: Standard / Kompakt** (kleineres Porträt, Name 31–32 px, Titelblatt-Name einzeilig, mehr Platz für Favoriten).
-- Vergleichsschalter **Kampf: Panels / Leiste / Silhouette** für den Bereich über den Waffen. „Silhouette“ = Issue #6: Figur aus dem Artenbild (`icons/species/<Art>.webp`, per CSS zugeschnitten + abgedunkelt, kein eigenes Bild), Rüstungsteile links, Hände rechts (Haupt-/Nebenhand bzw. beidhändig), Schutz auf der Brust. DSA5 ohne Trefferzonen kennt keine Körperzonen — Rüstung deshalb als Liste neben der Figur. Hand-Zuordnung im Dummy nur beispielhaft.
-- Fest umgesetzt: Kampf-Unterreiter „Kampf“ → „Übersicht“.
-- Nach Entscheidung: Schalter + Verlierer löschen, dann Foundry.
+- Entschieden 2026-09-25: Kopf bleibt **Standard** (Kompakt verworfen). Offen: Porträt auf den Fachreitern ist zu klein → Vergleichsschalter **Porträt: Standard / Größer (150×178, Kopf etwas höher) / Überlappend (150×172, ragt ins Würfelband)**.
+- Offen: **Kampf: Panels / Leiste** (Bereich über den Waffen).
+- Silhouette als **eigener Reiter „Körper“** (Nutzerwunsch, `renderBody()`): Figur aus dem Artenbild (per CSS zugeschnitten + abgedunkelt), Rüstung links, rechts Haupt-/Nebenhand mit Auswahl aus den ausgerüsteten Waffen (beidhändige Waffe sperrt die Nebenhand), AT/PA würfelbar, darunter Ausweichen/Initiative/Schutz/BE und „ausgerüstet, aber nicht in der Hand“. Weiterentwickeln; im Modul später über die Hand-Logik des Systems (`equipWeaponToHand`/`swapWeaponHandSlot`). Zuschnitt der Figur ist auf die Artenbilder abgestimmt (Elf geprüft) — Mensch/Zwerg noch prüfen.
+- Fest: Kampf-Unterreiter „Kampf“ → „Übersicht“.
 
 ### Paket G – Detailpunkte pro Reiter — im Clickdummy, wartet auf Abnahme
 
-- Eigenschaften/Kampf: Spalte „Wert“ → „Aktuell“ (Ressourcen) bzw. „Basis“ (berechnete Werte). Offen: Mod/Zukauf im Spielmodus ausblenden? (noch nicht gemacht)
-- Magie/Religion: ✦ mit Label + Legende unter der Tabelle; Vergleichsschalter **Tradition: Pille / Zurückgenommen** (Pille über die ganze Breite ist eine frühere Entscheidung, deshalb nur als Variante).
-- Ausrüstung: Münznamen sichtbar unter dem Wert, „Stein“ beim Gewicht, Kopf „Angelegt“ statt ✓, Behältnisse als kompakte Zeilen-Kacheln.
-- Status: Spieler-/GM-Umschalter unter der Überschrift „Krankheiten & Gifte“ (bleibt Dummy-Testschalter).
-- Notizen: persönliche Daten mind. 150 px je Spalte; Sichtbarkeitshinweis je Unterreiter (alle / Besitzer + SL / nur SL).
-- Gefährten: Loyalität beim Reittier neben den Würfeln; Buch/Knochen/Pferd mit Kurzbeschriftung („Fähigkeiten“, „Trick“, „Reittier“).
+- Eigenschaften/Kampf: „Wert“ → „Aktuell“ (Ressourcen) bzw. „Basis“; **Mod/Zukauf im Spielmodus ausgeblendet** (Nutzerentscheidung 2026-09-25).
+- Magie/Religion: ✦ mit Label + Legende; **Tradition: Farbe der Pille, aber nicht mehr über die ganze Breite** (Nutzerentscheidung, ersetzt „Pille füllt die Breite“). Wohlgefällige Talente sind da (Religion, eingeklappt) — Nutzer fragte, ob sie fehlen: im Clickdummy vorhanden, in Magie regelbedingt nicht.
+- Ausrüstung: Münznamen sichtbar, „Stein“ beim Gewicht, Kopf „Angelegt“, Behältnisse kompakt.
+- Status: Spieler-/GM-Testschalter unter „Krankheiten & Gifte“.
+- Notizen: Felder ≥ 150 px, Sichtbarkeitshinweis je Unterreiter.
+- Gefährten: Loyalität neben den Würfeln; Knöpfe mit Kurzbeschriftung.
 
 ### Abnahme-Aufgaben (nach jedem Paket im Clickdummy, am Ende live in Foundry)
 

@@ -1321,51 +1321,105 @@ function combatStrip() {
   ]);
 }
 
-// Variante "Silhouette" (GitHub-Issue #6, Vorbild DSA4-Heldenbogen): Figur aus dem Artenbild des Helden, links die
-// getragenen Rüstungsteile, rechts die Hände. DSA5 kennt ohne Trefferzonen-Regel keine Körperzonen für Rüstungen —
-// die Teile stehen deshalb als Liste neben der Figur, der Gesamtschutz liegt auf der Brust. Die Hand-Slots machen
-// die Einschränkung aus dem Issue sichtbar: in den Händen steht nur, was dort geführt wird (Haupt-/Nebenhand bzw.
-// beidhändig), weitere ausgerüstete Waffen erscheinen darunter als "ebenfalls ausgerüstet".
-function combatFigurePanel() {
+// Reiter "Körper" (GitHub-Issue #6, Vorbild DSA4-Heldenbogen; Nutzerwunsch 2026-09-25: als eigener Reiter
+// weiterentwickeln). Figur aus dem Artenbild des Helden, links die getragenen Rüstungsteile, rechts die beiden
+// Hände. DSA5 kennt ohne Trefferzonen-Regel keine Körperzonen für Rüstungen — die Teile stehen deshalb als Liste
+// neben der Figur, der Gesamtschutz liegt auf der Brust. Die Hand-Slots zeigen die Einschränkung aus dem Issue:
+// pro Hand genau eine der ausgerüsteten Waffen; eine beidhändige Waffe belegt beide Hände. Nur Entwurf im
+// Click-Dummy — im Modul liefe die Wahl über die Hand-Logik des Systems (equipWeaponToHand/swapWeaponHandSlot).
+const HANDS = { main: null, off: null };
+
+function handWeapons() {
+  return [...MELEE, ...RANGED].filter((w) => w.worn);
+}
+
+function initHands() {
+  const worn = handWeapons();
+  HANDS.main = worn.find((w) => !w.worn.offHand) || null;
+  HANDS.off = HANDS.main && HANDS.main.worn.requiresBothHands ? null : worn.find((w) => w.worn.offHand && w !== HANDS.main) || null;
+}
+
+function handSlot(hand) {
+  const isMain = hand === "main";
+  const w = HANDS[hand];
+  const blockedBy = !isMain && HANDS.main && HANDS.main.worn.requiresBothHands ? HANDS.main : null;
+  const select = el("select", { class: "val-select-input hand-select", "aria-label": isMain ? "Waffe in der Haupthand" : "Waffe in der Nebenhand" }, [
+    el("option", { value: "" }, "— frei —"),
+    ...handWeapons()
+      .filter((x) => isMain || !x.worn.requiresBothHands)
+      .map((x, i) => {
+        const opt = el("option", { value: String(i) }, x.name + (x.worn.requiresBothHands ? " (beidhändig)" : ""));
+        if (x === w) opt.selected = true;
+        return opt;
+      }),
+  ]);
+  const options = handWeapons().filter((x) => isMain || !x.worn.requiresBothHands);
+  select.addEventListener("change", () => {
+    const pick = select.value === "" ? null : options[Number(select.value)];
+    HANDS[hand] = pick;
+    const other = isMain ? "off" : "main";
+    if (pick && HANDS[other] === pick) HANDS[other] = null;
+    if (isMain && pick && pick.worn.requiresBothHands) HANDS.off = null;
+    renderContent();
+  });
+  if (blockedBy) select.disabled = true;
+  let card;
+  if (blockedBy) card = el("div", { class: "muted hand-note" }, `belegt durch ${blockedBy.name} (beidhändig)`);
+  else if (!w) card = el("div", { class: "muted hand-note" }, "keine Waffe");
+  else {
+    const ranged = RANGED.includes(w);
+    const stats = ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
+    card = el("div", { class: "hand-slot-weapon" }, [
+      itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
+      el("span", {}, [el("span", { class: "hand-slot-name" }, w.name), el("small", {}, `${w.group} · TP ${w.tp}`)]),
+      el("span", { class: "hand-dice" }, [
+        combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
+        !ranged && stats.pa !== undefined ? combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`) : null,
+      ]),
+    ]);
+  }
+  return el("div", { class: "hand-slot" + (w || blockedBy ? "" : " empty") }, [
+    el("div", { class: "hand-slot-head" }, [el("small", {}, isMain ? "Haupthand" : "Nebenhand"), select]),
+    card,
+  ]);
+}
+
+function renderBody() {
+  if (!HANDS.ready) {
+    initHands();
+    HANDS.ready = true;
+  }
   const armorSum = computeArmorSum();
   const be = ARMOR.reduce((t, a) => t + effectiveArmor(a).be, 0);
-  const worn = [...MELEE, ...RANGED].filter((w) => w.worn);
-  const twoHanded = worn.find((w) => w.worn.requiresBothHands && RANGED.includes(w) && w.fav) || null;
-  const main = twoHanded || worn.find((w) => !w.worn.offHand && !w.worn.requiresBothHands) || null;
-  const off = twoHanded ? null : worn.find((w) => w.worn.offHand) || null;
-  const handSlot = (label, w, both) => el("div", { class: "hand-slot" + (w ? "" : " empty") }, [
-    el("small", {}, label),
-    w ? el("span", { class: "hand-slot-weapon" }, [
-      itemIcon(w.img, "", w.structure, RANGED.includes(w) ? "rangeweapon" : "meleeweapon"),
-      el("span", {}, [el("span", { class: "hand-slot-name" }, w.name), el("small", {}, both ? "beidhändig" : w.group)]),
-      combatDie(RANGED.includes(w) ? effectiveRangedStats(w).at : effectiveMeleeStats(w).at, "d20mu", `${RANGED.includes(w) ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
-    ]) : el("span", { class: "muted" }, "frei"),
-  ]);
-  const others = worn.filter((w) => w !== main && w !== off);
-  return el("div", { class: "panel combat-figure" }, [
-    el("div", { class: "panel-title" }, "Ausrüstung am Körper"),
-    el("div", { class: "combat-figure-grid" }, [
-      el("div", { class: "figure-armor" }, [
-        el("small", { class: "figure-col-title" }, "Rüstung"),
-        ...ARMOR.map((a) => {
-          const st = effectiveArmor(a);
-          return el("div", { class: "figure-armor-item" }, [itemIcon(A.armor, a.name, a.structure, "armor"), el("span", {}, [el("span", {}, a.name), el("small", {}, `RS ${st.rs} · BE ${st.be}`)])]);
-        }),
+  const inHands = [HANDS.main, HANDS.off].filter(Boolean);
+  const others = handWeapons().filter((w) => !inHands.includes(w));
+  const stat = (label, value) => el("span", { class: "combat-stat" }, [el("small", {}, label), el("strong", {}, String(value))]);
+  return el("div", {}, [
+    el("div", { class: "panel body-panel" }, [
+      el("div", { class: "panel-title" }, "Ausrüstung am Körper"),
+      el("div", { class: "body-grid" }, [
+        el("div", { class: "figure-armor" }, [
+          el("small", { class: "figure-col-title" }, "Rüstung"),
+          ...ARMOR.map((a) => {
+            const st = effectiveArmor(a);
+            return el("div", { class: "figure-armor-item" }, [itemIcon(A.armor, a.name, a.structure, "armor"), el("span", {}, [el("span", {}, a.name), el("small", {}, `RS ${st.rs} · BE ${st.be}`)])]);
+          }),
+          ...(ARMOR.length ? [] : [el("div", { class: "muted" }, "Keine Rüstung getragen")]),
+        ]),
+        el("div", { class: "figure-body", style: `--figure:url('${A.speciesFigure(IDENTITY.species.name)}')` }, [
+          el("span", { class: "figure-badge" }, [el("strong", {}, `RS ${armorSum.sum}`), el("small", {}, `BE ${be}`)]),
+        ]),
+        el("div", { class: "figure-hands" }, [el("small", { class: "figure-col-title" }, "Hände"), handSlot("main"), handSlot("off")]),
       ]),
-      el("div", { class: "figure-body", style: `--figure:url('${A.speciesFigure(IDENTITY.species.name)}')` }, [
-        el("span", { class: "figure-badge" }, [el("strong", {}, `RS ${armorSum.sum}`), el("small", {}, `BE ${be}`)]),
+      el("div", { class: "figure-stats" }, [
+        stat("Ausweichen", COMBAT_DERIVED[0].max),
+        stat("Initiative", COMBAT_DERIVED[1].max),
+        stat("Schutz gesamt", armorSumText(armorSum).replace("Schutz gesamt ", "")),
+        stat("Belastung", be),
       ]),
-      el("div", { class: "figure-hands" }, [
-        el("small", { class: "figure-col-title" }, "Hände"),
-        twoHanded ? handSlot("Beide Hände", twoHanded, true) : handSlot("Haupthand", main),
-        twoHanded ? null : handSlot("Nebenhand", off),
-        others.length ? el("small", { class: "muted figure-others" }, `Ebenfalls ausgerüstet: ${others.map((w) => w.name).join(", ")}`) : null,
-      ]),
-    ]),
-    el("div", { class: "figure-stats" }, [
-      el("span", { class: "combat-stat" }, [el("small", {}, "Ausweichen"), el("strong", {}, String(COMBAT_DERIVED[0].max))]),
-      el("span", { class: "combat-stat" }, [el("small", {}, "Initiative"), el("strong", {}, String(COMBAT_DERIVED[1].max))]),
-      el("span", { class: "combat-stat" }, [el("small", {}, "Schutz gesamt"), el("strong", {}, armorSumText(armorSum).replace("Schutz gesamt ", ""))]),
+      others.length
+        ? el("div", { class: "body-others" }, [el("small", { class: "muted" }, "Ausgerüstet, aber nicht in der Hand:"), ...others.map((w) => el("span", { class: "chip" }, [el("img", { src: w.img, alt: "" }), w.name]))])
+        : null,
     ]),
   ]);
 }
@@ -1402,13 +1456,10 @@ function renderCombatMain() {
     ...TRAITS.rangeAttack.map(traitRangedRow),
   ]);
 
-  // Paket F (UI/UX-Review 2026-09-25 + GitHub-Issue #6): drei Varianten für den Bereich über den Waffen —
-  // "panels" = Kampfwerte + Rüstung als zwei Panels (bisher), "strip" = eine kompakte Leiste, damit die Waffen
-  // früher sichtbar sind, "figure" = Silhouette mit Rüstung am Körper und Waffen in den Händen.
-  const topArea =
-    COMBAT_TOP === "strip" ? combatStrip()
-    : COMBAT_TOP === "figure" ? combatFigurePanel()
-    : el("div", { class: "combat-top" }, [combatValuesPanel(), renderArmorPanel()]);
+  // Paket F (UI/UX-Review 2026-09-25): zwei Varianten für den Bereich über den Waffen — "panels" = Kampfwerte +
+  // Rüstung als zwei Panels (bisher), "strip" = eine kompakte Leiste, damit die Waffen früher sichtbar sind. Die
+  // Silhouette (Issue #6) ist in den eigenen Reiter "Körper" gewandert (renderBody()).
+  const topArea = COMBAT_TOP === "strip" ? combatStrip() : el("div", { class: "combat-top" }, [combatValuesPanel(), renderArmorPanel()]);
 
   return el("div", {}, [
     renderCombatActions(),
@@ -2793,6 +2844,7 @@ const RENDERERS = {
   status: renderStatus,
   notes: renderNotes,
   companions: renderCompanions,
+  body: renderBody,
 };
 
 function renderContent() {
@@ -2937,7 +2989,7 @@ function initSheetResize() {
   });
 }
 
-// Vergleichsschalter Paket F (#headSizeSwitch/#combatTopSwitch in index.html) — nach der Entscheidung löschen.
+// Vergleichsschalter Paket F (#portraitSwitch/#combatTopSwitch in index.html) — nach der Entscheidung löschen.
 function initLayoutSwitches() {
   const wire = (id, apply) => {
     const group = document.getElementById(id);
@@ -2949,9 +3001,8 @@ function initLayoutSwitches() {
       apply(btn.dataset.value);
     }));
   };
-  wire("headSizeSwitch", (v) => { document.querySelector(".sheet").dataset.headsize = v; });
+  wire("portraitSwitch", (v) => { document.querySelector(".sheet").dataset.portrait = v; });
   wire("combatTopSwitch", (v) => { COMBAT_TOP = v; renderContent(); });
-  wire("tradSwitch", (v) => { document.querySelector(".sheet").dataset.trad = v; });
 }
 
 // Munitionsmenü (renderAmmoCell) schließt sich bei jedem Klick außerhalb, wie ein normales Dropdown.
