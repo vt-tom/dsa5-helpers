@@ -1,12 +1,16 @@
       <div class="dsa5h-tab" data-tab-panel="skills" hidden>
-        <input type="search" class="talentSearch" placeholder="{{localize 'searchTalents'}}" aria-label="{{localize 'searchTalents'}}" />
+        <div class="dsa5h-search-bar">
+          <input type="search" class="talentSearch" placeholder="{{localize 'searchTalents'}}" aria-label="{{localize 'searchTalents'}}" />
+          <button type="button" class="dsa5h-filter-switch" data-action="dsa5hOnlyLearned" role="switch" aria-checked="false"><span class="dsa5h-filter-switch-track" aria-hidden="true"><span class="dsa5h-filter-switch-thumb"></span></span>{{localize 'DSA5HELPERS.OnlyLearned'}}</button>
+        </div>
+        <div class="dsa5h-search-info" data-talent-search-info role="status" hidden><span data-talent-search-text></span><button type="button" data-action="dsa5hClearTalentSearch">{{localize 'DSA5HELPERS.ClearSearch'}}</button></div>
         <div class="allTalents showAll">
           {{#each dsa5h.skillGroups as |group|}}
           <section class="panel dsa5h-skill-panel" data-skill-panel="{{group.id}}" hidden>
             <div class="panel-title">{{localize (concat "SKILL." group.id)}}</div>
             <div class="row-head dsa5h-skill-row"><span></span><span class="left">{{localize "TYPES.Item.skill"}}</span><span>{{localize "probe"}}</span><span>{{localize "encumbrance"}}</span><span>{{localize "CHARAbbrev.FW"}}</span><span></span></div>
             {{#each group.items as |item|}}
-            <div class="row dsa5h-skill-row item" data-item-id="{{item._id}}">
+            <div class="row dsa5h-skill-row item" data-item-id="{{item._id}}" data-fw="{{item.system.talentValue.value}}">
               <img src="{{item.img}}" alt="" />
               <span class="withContext"><a class="talentName" data-action="itemEdit">{{item.name}}</a></span>
               {{> "modules/dsa5-helpers/templates/actors/parts/probe.hbs" item=item}}
@@ -15,6 +19,7 @@
               {{> "modules/dsa5-helpers/templates/actors/parts/favorite.hbs" item=item}}
             </div>
             {{else}}<p class="muted">{{localize "DSA5HELPERS.NoSkills"}}</p>{{/each}}
+            <p class="muted" data-only-learned-empty hidden>{{localize "DSA5HELPERS.NoLearnedSkills"}}</p>
           </section>
           {{/each}}
         </div>

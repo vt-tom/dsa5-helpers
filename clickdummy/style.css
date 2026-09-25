@@ -3,7 +3,7 @@
 @font-face{font-family:'GentiumBasic';src:url('../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
 
 :root{
-  --paper:#ece2d2; --ink:#2b2721; --muted:rgba(43,39,33,.66); --line:rgba(43,39,33,.16);
+  --paper:#ece2d2; --ink:#2b2721; --muted:rgba(43,39,33,.72); --line:rgba(43,39,33,.2);
   --panel:rgba(255,255,255,.4); --field:rgba(255,255,255,.55); --odd:rgba(0,0,0,.045);
   --title:linear-gradient(90deg,rgba(147,123,72,.9) 0%,rgba(147,123,72,.06) 100%);
   --head:linear-gradient(180deg,#3a322b,#272320); --accent:#8b6f3f; --headink:#f4e8d6; --headmuted:rgba(244,232,214,.74);
@@ -13,13 +13,19 @@
   --head-base:#272320;
 }
 [data-theme='dark']{
-  --paper:#241f1c; --ink:#ede3d1; --muted:rgba(237,227,209,.68); --line:rgba(237,227,209,.14);
+  --paper:#241f1c; --ink:#ede3d1; --muted:rgba(237,227,209,.7); --line:rgba(237,227,209,.18);
   --panel:rgba(255,255,255,.05); --field:rgba(255,255,255,.08); --odd:rgba(255,255,255,.035);
   --title:linear-gradient(90deg,rgba(185,154,92,.6) 0%,rgba(185,154,92,.04) 100%);
   --head:linear-gradient(180deg,#2e2823,#1c1917); --accent:#c2a267; --headink:#f4e8d6; --headmuted:rgba(244,232,214,.74); --attrband:rgba(244,232,214,.15);
   --desk:#161413; --railidle:rgba(60,52,44,.85); --railon:#4a3f33;
   --head-base:#1c1917;
 }
+
+/* Schriftstufen (UI/UX-Review 2026-09-25, Paket B): --fs-data für Namen und spielrelevante Werte, --fs-small für
+   Nebenangaben, --fs-meta für Spaltenköpfe/Metadaten (nie unter 12px), --fs-big für hervorgehobene Zahlen.
+   15px nach Vergleich 14/15/16 (Nutzer-Entscheidung 2026-09-25). */
+.sheet{--fs-data:15px}
+.sheet{--fs-small:calc(var(--fs-data) - 1px);--fs-meta:max(12px,calc(var(--fs-data) - 3px));--fs-big:calc(var(--fs-data) + 3px)}
 
 *{box-sizing:border-box}
 /* UI-UX-REVIEW.md Priorität 3 Punkt 10: einheitliche Tastatur-Fokusmarkierung — bisher nirgends definiert. */
@@ -45,7 +51,7 @@ input,button{font-family:inherit;color:inherit}
 /* Wie .mode-switch, aber für den Einsatz auf hellem Panel-Grund (z.B. im panel-title.flex) statt im dunklen
    Toolbar-Streifen — siehe renderDiseasePanel() in script.js. */
 .panel-toggle{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;flex-shrink:0;font-family:ui-monospace,Menlo,monospace}
-.panel-toggle button{padding:2px 9px;border:none;background:var(--field);color:var(--ink);font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.panel-toggle button{padding:2px 9px;border:none;background:var(--field);color:var(--ink);font-size:var(--fs-meta);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
 .panel-toggle button+button{border-left:1px solid var(--line)}
 .panel-toggle button:hover{background:var(--odd)}
 .panel-toggle button.active{background:var(--accent);color:#fff;font-weight:bold}
@@ -63,8 +69,11 @@ input,button{font-family:inherit;color:inherit}
 /* UI-UX-REVIEW.md Priorität 1 Punkt 3: sichtbares Label neben dem aktiven Rail-Icon (renderRail() in script.js).
    Ausgeblendet unter der 860px-Umbruchgrenze, wo die Rail zu einer umbrechenden Icon-Reihe wird und rechts davon
    kein verlässlicher Platz mehr für ein ausklappendes Label bleibt. */
-.rail-label{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--railon);border:1px solid var(--accent);border-radius:4px;padding:3px 8px;font-size:12px;color:var(--ink);pointer-events:none;z-index:5}
-@media (max-width:860px){.rail-label{display:none}}
+.rail-label{display:none;position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--railon);border:1px solid var(--accent);border-radius:4px;padding:3px 8px;font-size:12px;color:var(--ink);pointer-events:none;z-index:5}
+/* Label: beim aktiven Reiter immer, sonst bei Hover und Tastaturfokus (Entscheidung 4b, 2026-09-25). */
+.rail button.active .rail-label,.rail button:hover .rail-label,.rail button:focus-visible .rail-label{display:block}
+.rail button:hover .rail-label,.rail button:focus-visible .rail-label{z-index:6}
+@media (max-width:860px){.rail button .rail-label{display:none}}
 
 /* Feste Größe wie das echte DSA5-Actor-Sheet-Fenster (systems/dsa5/modules/actor/actor-sheet.js: width 770 / height 740), damit die Platznutzung realistisch geprüft werden kann. */
 .sheet{position:relative;width:770px;max-width:100%;height:740px;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border:16px solid transparent;border-image:url('../../../systems/dsa5/icons/backgrounds/actor.webp') 20 stretch;box-shadow:0 18px 48px rgba(0,0,0,.5)}
@@ -109,8 +118,11 @@ input,button{font-family:inherit;color:inherit}
    unverändert oben. */
 .ap-block{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding-top:18px}
 .ap-text{font-size:13px;color:var(--headmuted);font-family:'GentiumBasic',Georgia,serif;white-space:nowrap}
-.fate-points{display:flex;gap:3px}
-.fate-points img{width:23px;height:23px;cursor:pointer}
+.fate-points{display:flex;gap:0}
+/* Schicksalspunkte als echte Knöpfe (fatePointsRow()): 3px Polster um das Bild ergeben ~29px Trefferfläche. */
+.fate-point-btn{display:inline-flex;padding:3px;margin:-3px 0;border:0;border-radius:50%;background:none;cursor:pointer}
+.fate-point-btn:hover img{filter:brightness(1.15)}
+.fate-points img{display:block;width:23px;height:23px}
 .fate-points img.dim{opacity:.45}
 
 /* Generischer Inline-Editor (makeEditable() in script.js) — dezente Klick-Andeutung, unabhängig vom Bearbeiten-/
@@ -164,19 +176,20 @@ input,button{font-family:inherit;color:inherit}
 .res-card .bar{width:100%}
 .bar{position:relative;height:30px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.1)}
 .bar-fill{position:absolute;inset:0 auto 0 0}
-.bar-lep .bar-fill{background:linear-gradient(90deg,#8c1414,#e02020)}
-.bar-asp .bar-fill{background:linear-gradient(90deg,#0e90cf,#3a6bff)}
-.bar-kap .bar-fill{background:linear-gradient(90deg,#93cf0e,#04a236)}
+/* UI/UX-Review 2026-09-25 Punkt 2: etwas weniger leuchtend (v. a. KaP-Hellgrün), Zuordnung Rot/Blau/Grün bleibt. */
+.bar-lep .bar-fill{background:linear-gradient(90deg,#841a16,#c42c24)}
+.bar-asp .bar-fill{background:linear-gradient(90deg,#1c6f9e,#3558c4)}
+.bar-kap .bar-fill{background:linear-gradient(90deg,#5d8f24,#2a7a3a)}
 /* .bar-label-prefix/.bar-label-value als eigene Spans mit Gap statt nur einem Leerzeichen dazwischen —
    Nutzer-Feedback 2026-09-14: "steht viel zu nah an den Werten". */
 .bar-label{position:relative;height:100%;display:flex;align-items:center;justify-content:center;gap:7px;color:#fff;font-size:16px;letter-spacing:.04em;text-shadow:0 1px 2px rgba(0,0,0,.55)}
 .bar-label-prefix{opacity:.85}
 /* Klein im Ruhezustand, wächst + leuchtet beim Hover statt permanent Platz zu beanspruchen. */
-.regen-btn{position:static;align-self:center;width:22px;height:22px;flex:none;border:1px solid rgba(224,192,128,.5);border-radius:50%;background:#2e2823;color:#ecd8b1;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.5);transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+.regen-btn{position:static;align-self:center;width:28px;height:28px;flex:none;border:1px solid rgba(224,192,128,.5);border-radius:50%;background:#2e2823;color:#ecd8b1;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.5);transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
 .regen-btn:hover{transform:scale(1.45);background:rgba(224,192,128,.35);box-shadow:0 0 9px rgba(224,192,128,.65)}
 
 .attr-die{width:46px;height:46px;line-height:46px;text-align:center;font-family:'GentiumBasic',serif;font-weight:700;font-size:19px;color:#fff;background-repeat:no-repeat;background-position:center;background-size:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.35))}
-.attr-key{font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.attr-key{font-size:var(--fs-meta);letter-spacing:.12em;color:var(--muted)}
 
 /* Eigenschaften-Kacheln: nur auf dem Attribute-Tab, immer eine Reihe (kompakt, nur Würfel+Wert). */
 .attr-tiles{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:16px}
@@ -218,8 +231,8 @@ input,button{font-family:inherit;color:inherit}
    angepasst wird). */
 .head:has(~ #attrOverlay.show){padding-bottom:23px}
 .attr-overlay.show + .tab-title{padding-top:6px}
-.attr-die-mini{position:relative;width:28px;height:28px;cursor:default;transition:transform .15s ease;transform-origin:center}
-.attr-die-mini:hover{transform:scale(1.7);z-index:6}
+.attr-die-mini{position:relative;width:28px;height:28px;cursor:pointer;transition:transform .15s ease;transform-origin:center}
+.attr-die-mini:hover,.attr-die-mini:focus-visible{transform:scale(1.7);z-index:6}
 .attr-die-mini-face{display:block;width:100%;height:100%;line-height:28px;text-align:center;font-family:'GentiumBasic',serif;font-weight:700;font-size:12px;color:#fff;background-repeat:no-repeat;background-position:center;background-size:contain;border-radius:50%}
 .attr-die-mini::after{
   content:"";position:absolute;inset:-5px;z-index:-1;
@@ -241,8 +254,9 @@ input,button{font-family:inherit;color:inherit}
 /* Aufschlüsselung Start/Fortschritte/Mod: eigene volle-Breite-Tabelle, nur im Bearbeiten-Modus (.edit-only), viel Raum für gut lesbare Werte. */
 .attr-matrix-row{grid-template-columns:90px repeat(8,1fr)}
 .attr-matrix-header{background:var(--odd)}
-.attr-matrix-head{display:flex;align-items:center;justify-content:center;gap:4px;font-family:'Andalus',serif;font-size:16px}
-.attr-matrix-val{font-size:14px}
+.attr-matrix-head .step{width:18px}
+.attr-matrix-head{display:flex;align-items:center;justify-content:center;gap:2px;font-family:'Andalus',serif;font-size:16px}
+.attr-matrix-val{font-size:var(--fs-data)}
 .sheet[data-mode="edit"] .attr-matrix-val{display:inline-block;border:1px solid var(--line);background:var(--field);border-radius:3px;padding:1px 6px;margin:0 auto}
 
 .tab-title{flex:none;padding:11px 16px 2px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
@@ -250,7 +264,7 @@ input,button{font-family:inherit;color:inherit}
 .tab-title .rule{flex:1;height:1px;background:var(--line)}
 .tab-subnav{align-self:center}
 .tab-subnav:empty{display:none}
-.muted{color:var(--muted);font-size:13px}
+.muted{color:var(--muted);font-size:var(--fs-small)}
 #tabHint:empty{display:none}
 
 .content{padding:8px 16px 20px;flex:1;min-height:0;overflow-y:auto}
@@ -273,22 +287,23 @@ input,button{font-family:inherit;color:inherit}
    2026-09-18: "die ganze Zeile nimmt aber sehr viel Platz von der Höhe ein". */
 .trad-header{margin-bottom:12px}
 .trad-tiles-grid{display:flex;align-items:center;flex-wrap:wrap;gap:16px;padding:5px 0}
-.trad-tile-tradition{display:flex;align-items:center;gap:8px;flex:0 0 auto;padding:6px 16px;border-radius:999px;background:linear-gradient(135deg,var(--accent),#8a4a1f)}
+.trad-tile-tradition{display:flex;align-items:center;gap:8px;flex:1 1 260px;min-width:0;cursor:pointer;padding:6px 16px;border-radius:999px;background:linear-gradient(135deg,var(--accent),#8a4a1f)}
 .trad-tile-icon{width:20px;height:20px;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))}
 .trad-tile-tradition .trad-tile-label{display:none}
 .trad-tile-tradition .trad-tile-val{font-family:'Andalus',serif;font-size:17px;color:#fff8ec;text-shadow:0 1px 2px rgba(0,0,0,.4)}
 .trad-tile-meta{display:flex;gap:16px;border-left:1px solid var(--line);padding-left:14px}
 .trad-tile-meta .trad-tile{display:flex;flex-direction:column;gap:1px}
-.trad-tile-meta .trad-tile-label{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
-.trad-tile-meta .trad-tile-val{font-family:inherit;font-size:13px;color:var(--muted)}
+.trad-tile-tradition:hover{filter:brightness(1.12)}
+.trad-tile-meta .trad-tile-label{font-size:var(--fs-meta);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.trad-tile-meta .trad-tile-val{font-family:inherit;font-size:15px;color:var(--muted)}
 .trad-tile-meta .trad-tile-val.accent{color:var(--accent);font-weight:600}
-.trad-tiles-note{margin-top:8px;padding:8px 11px;border:1px solid var(--line);background:var(--panel);font-size:13px;text-align:center}
+.trad-tiles-note{margin-top:8px;padding:8px 11px;border:1px solid var(--line);background:var(--panel);font-size:var(--fs-small);text-align:center}
 
 /* Wohlgefällige Talente (Religion-Tab, "B · Einklappbar" nach Vergleich gewählt, 2026-09-17): eingeklappt nur
    eine Zeile mit Anzahl, Klick blendet den vollen Text darunter ein — siehe renderHappyTalentsCollapse()
    Kommentar in script.js, gleiche Optik wie im echten Modul (.dsa5h-happy-talents-toggle). */
 .happy-talents-note-collapsed{text-align:left;cursor:default}
-.happy-talents-toggle{display:flex;align-items:center;gap:6px;width:100%;border:none;background:none;color:var(--ink);font:inherit;font-size:13px;cursor:pointer;padding:0;text-align:left}
+.happy-talents-toggle{display:flex;align-items:center;gap:6px;width:100%;border:none;background:none;color:var(--ink);font:inherit;font-size:var(--fs-small);cursor:pointer;padding:0;text-align:left}
 .happy-talents-caret{color:var(--accent);width:1em;flex-shrink:0}
 .happy-talents-expanded{margin-top:6px;padding-top:6px;border-top:1px solid var(--line)}
 
@@ -309,13 +324,13 @@ input,button{font-family:inherit;color:inherit}
 .sub-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:bold}
 .sub-tab:hover{color:var(--ink)}
 
-.row{display:grid;gap:8px;align-items:center;padding:5px 11px;font-size:14px;border-top:1px solid var(--line)}
-.row-head{display:grid;gap:8px;padding:4px 11px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:center;border-top:1px solid var(--line)}
+.row{display:grid;gap:8px;align-items:center;padding:5px 11px;font-size:var(--fs-data);border-top:1px solid var(--line)}
+.row-head{display:grid;gap:8px;padding:4px 11px;font-size:var(--fs-meta);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:center;border-top:1px solid var(--line)}
 .row-head span:first-child, .row span.left{text-align:left}
 .row span.left{overflow-wrap:break-word}
 .center{text-align:center}
 
-.derived-row{grid-template-columns:1fr 40px 40px 52px 40px}
+.derived-row{grid-template-columns:1fr 56px 40px 52px 40px}
 .simple-row{grid-template-columns:1fr 50px 50px 56px}
 
 /* Spielmodus vs. Bearbeiten-Modus: .edit-only-Elemente (z.B. hideInPlay-Zeilen, Eigenschaften-Aufschlüsselung) erscheinen nur im Bearbeiten-Modus. */
@@ -326,13 +341,20 @@ input,button{font-family:inherit;color:inherit}
 .sheet[data-mode="edit"] .val-select{display:inline-block;border:1px solid var(--line);background:var(--field);border-radius:3px;padding:1px 20px 1px 6px;position:relative}
 .sheet[data-mode="edit"] .val-select::after{content:"▾";position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--muted)}
 .derived-name{display:flex;align-items:center;gap:6px}
-.step{font-size:12px;cursor:pointer}
+/* +/−-Knöpfe (stepButton() in script.js). UI/UX-Review 2026-09-25 Punkt 1: Trefferfläche 24×28 statt eines
+   12px-Zeichens; der negative Rand hält die Zeilenhöhe unverändert. Zustands-/Dienste-Stepper (häufig im Spiel)
+   bekommen darunter volle 28×28 mit sichtbarem Kreis, die AP-Stepper im Bearbeiten-Modus bleiben schlank. */
+.step{display:inline-flex;align-items:center;justify-content:center;flex:none;width:24px;height:28px;margin:-4px 0;padding:0;border:0;border-radius:50%;background:none;font:inherit;font-size:16px;font-weight:700;line-height:1;cursor:pointer;transition:background-color .12s ease,color .12s ease}
+.step:hover{background:var(--field)}
 .step.minus{color:var(--muted)}
 .step.plus{color:var(--accent)}
+.list-row .step,.companion-loyalty-row .step{width:28px;border:4px solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line)}
+.list-row .step:hover,.companion-loyalty-row .step:hover{box-shadow:inset 0 0 0 1px var(--accent)}
+.cond-count{min-width:2.4em;text-align:right;font-size:var(--fs-small);color:var(--muted);font-variant-numeric:tabular-nums}
 /* AP-gekoppelte Stepper (advanceStepper() in script.js) an ihrer Ober-/Untergrenze: aus dem Klickfluss, aber
    weiterhin sichtbar (kein display:none), damit erkennbar bleibt, dass hier ein Limit erreicht ist. */
-.step.disabled{opacity:.35;cursor:default;pointer-events:none}
-.big{font-family:'Andalus',serif;font-size:18px}
+.step.disabled{opacity:.3;cursor:default;pointer-events:none;box-shadow:none}
+.big{font-family:'Andalus',serif;font-size:var(--fs-big)}
 
 /* Echtes <select> für selectWert-Felder (Trefferzone/Größenkategorie) im Bearbeiten-Modus, siehe selectWertCell()
    in script.js — eigene Klasse statt .val-select, da .val-select sonst zusätzlich einen ▾-Pfeil einblendet
@@ -343,8 +365,8 @@ input,button{font-family:inherit;color:inherit}
    TODOS.md: als kleiner runder Button mit Zoom-Effekt bei Hover/Focus statt nacktem Zeichen, damit er besser
    sichtbar ist; das Zoomen passiert nur beim Hover (Maus ist ohnehin schon darüber), verdeckt also im
    Ruhezustand keinen Text. */
-.chip-delete{border:none;background:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:0;margin-left:2px;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;transition:transform .12s ease,color .12s ease,background-color .12s ease}
-.chip-delete:hover,.chip-delete:focus-visible{color:#a8501a;background:var(--field);transform:scale(1.35)}
+.chip-delete{border:none;background:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:0;margin:-4px -4px -4px -2px;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;transition:transform .12s ease,color .12s ease,background-color .12s ease}
+.chip-delete:hover,.chip-delete:focus-visible{color:#a8501a;background:var(--field);transform:scale(1.15)}
 
 /* Kurze, sich selbst ausblendende Meldung (flashNotice() in script.js), z.B. "Nicht genug AP verfügbar". */
 .dsa-notice{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:#1c1917;color:#f4e8d6;border:1px solid rgba(224,192,128,.4);border-radius:4px;padding:6px 14px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;white-space:nowrap}
@@ -354,41 +376,41 @@ input,button{font-family:inherit;color:inherit}
 .xp-item{text-align:center}
 .xp-num{font-family:'Andalus',serif;font-size:24px;line-height:1}
 .xp-num.accent{color:var(--accent)}
-.xp-label{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.xp-label{font-size:var(--fs-meta);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:3px}
 /* Im Bearbeiten-Modus wirken alle 3 Erfahrungswerte editierbar; im Spielmodus reine Anzeige. */
 .sheet[data-mode="edit"] .xp-field{display:inline-block;border:1px solid var(--line);background:var(--field);border-radius:3px;padding:2px 12px}
 
-.subhead{padding:4px 11px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--odd);border-top:1px solid var(--line)}
+.subhead{padding:4px 11px;font-size:var(--fs-meta);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--odd);border-top:1px solid var(--line)}
 .subhead.flex{display:flex;align-items:center;justify-content:space-between}
 
 /* Info-Knopf für Sonderfertigkeiten-/Vor-Nachteile-Kategorien (specHelpBtn() in script.js) — dezent, da reiner
    Hilfetext ohne Aktion; im Panel-Titel hell (auf dunklem --title-Grund), im .subhead dunkel (auf hellem --odd). */
-.spec-help-btn{border:none;background:none;padding:0;font-size:13px;line-height:1;color:inherit;opacity:.6;cursor:help}
+.spec-help-btn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin:-5px -4px;border:none;border-radius:50%;background:none;padding:0;font-size:14px;line-height:1;color:inherit;opacity:.6;cursor:help}
 .spec-help-btn:hover{opacity:1}
 .subhead .spec-help-btn{color:var(--muted)}
-.list-row{display:flex;align-items:center;gap:9px;padding:4px 11px;font-size:14px;border-top:1px solid var(--line)}
+.list-row{display:flex;align-items:center;gap:9px;padding:4px 11px;font-size:var(--fs-data);border-top:1px solid var(--line)}
 .list-row img{width:24px;height:24px;border:1px solid var(--line)}
 .list-row .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.list-row .cost{font-size:13px;color:var(--muted)}
+.list-row .cost{font-size:var(--fs-small);color:var(--muted)}
 
 /* TODOS.md: "von {Quelle}" auf eigene Zeile unter Bezeichnung+Dauer, damit die Bezeichnung nicht mehr mit
    "…" abgeschnitten wird (vorher teilte sie sich die Zeile mit dem Quellentext). */
-.list-row-2line{padding:4px 11px;font-size:14px;border-top:1px solid var(--line)}
+.list-row-2line{padding:4px 11px;font-size:var(--fs-data);border-top:1px solid var(--line)}
 .list-row-2line .list-row-main{display:flex;align-items:center;gap:9px}
 .list-row-2line .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.list-row-2line .cost{font-size:13px;color:var(--muted)}
-.list-row-2line .source-line{margin-top:2px;font-size:12px;color:var(--muted)}
+.list-row-2line .cost{font-size:var(--fs-small);color:var(--muted)}
+.list-row-2line .source-line{margin-top:2px;font-size:var(--fs-meta);color:var(--muted)}
 
 /* Ursprünglich für "Alle anzeigen"/"Weniger anzeigen"; seit 2026-09-14 auch von buildActiveEffectsSummary()
    (script.js) als Sprung-Button "N aktive Effekte → Status" auf dem Titelblatt genutzt — dort ohne Liste
    darunter, damit die linke Leiste unabhängig von der Effekt-Anzahl nie scrollen muss. */
-.show-all-btn{display:block;width:100%;padding:6px 11px;border:none;border-top:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:12px;text-align:center;cursor:pointer}
+.show-all-btn{display:block;width:100%;padding:6px 11px;border:none;border-top:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:var(--fs-meta);text-align:center;cursor:pointer}
 .show-all-btn:hover{color:var(--accent)}
 .show-all-btn:disabled{cursor:default;opacity:.6}
 .show-all-btn:disabled:hover{color:var(--muted)}
 
 .chips{display:flex;flex-wrap:wrap;gap:6px;padding:11px}
-.chip{display:flex;align-items:center;gap:6px;padding:2px 10px 2px 4px;border:1px solid var(--line);background:var(--field);font-size:13px}
+.chip{display:flex;align-items:center;gap:6px;padding:2px 10px 2px 4px;border:1px solid var(--line);background:var(--field);font-size:var(--fs-small)}
 .chip img{width:20px;height:20px}
 
 /* Traditionsgegenstand-/Kirchengerät-Fähigkeit mit bezahlbaren AsP-Kosten (payTraditionAbilityCost() in
@@ -398,11 +420,22 @@ input,button{font-family:inherit;color:inherit}
 .chip-pay.disabled{opacity:.5;cursor:default}
 
 .search-bar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.search-bar input{flex:1;padding:5px 10px;border:1px solid var(--line);background:var(--field);font-size:14px}
+/* "Nur gesteigerte" als echter Schalter mit sichtbarem Zustand (UI/UX-Review 2026-09-25 Punkt 8). */
+.filter-switch{display:inline-flex;align-items:center;gap:7px;flex:none;min-height:28px;padding:2px 10px 2px 6px;border:1px solid var(--line);border-radius:14px;background:var(--field);color:var(--muted);font:inherit;font-size:var(--fs-small);cursor:pointer}
+.filter-switch:hover{border-color:var(--accent);color:var(--ink)}
+.filter-switch-track{position:relative;width:26px;height:14px;border-radius:7px;background:var(--line);transition:background .15s ease}
+.filter-switch-thumb{position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--paper);box-shadow:0 1px 2px rgba(0,0,0,.35);transition:left .15s ease}
+.filter-switch.on{color:var(--ink);border-color:var(--accent)}
+.filter-switch.on .filter-switch-track{background:var(--accent)}
+.filter-switch.on .filter-switch-thumb{left:14px}
+.search-info{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-2px 0 10px;padding:4px 10px;border-left:3px solid var(--accent);background:var(--field);font-size:var(--fs-small);color:var(--muted)}
+.search-clear{border:1px solid var(--line);border-radius:3px;background:none;color:var(--ink);font:inherit;font-size:var(--fs-meta);padding:2px 8px;min-height:24px;cursor:pointer}
+.search-clear:hover{border-color:var(--accent)}
+.search-bar input{flex:1;padding:5px 10px;border:1px solid var(--line);background:var(--field);font-size:var(--fs-data)}
 
 .skill-row{grid-template-columns:26px 1fr 108px 74px 62px 20px}
 .skill-row img{width:24px;height:24px;border:1px solid var(--line);object-fit:cover}
-.skill-probe{font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,monospace;text-align:center}
+.skill-probe{font-size:var(--fs-meta);color:var(--muted);font-family:ui-monospace,Menlo,monospace;text-align:center}
 /* Spaltenüberschrift "Talent" linksbündig über dem Talentnamen statt zentriert wie die übrigen Kopfzeilen-
    Labels (die generische Regel färbt nur den ersten Header-Span links ein, hier ist das die leere Icon-Spalte
    davor) — Nutzer-Feedback. */
@@ -410,16 +443,26 @@ input,button{font-family:inherit;color:inherit}
 /* Belastung (belastungCell() in script.js): nur bei "Ja"/"Vielleicht" befüllt, sonst leere Zelle — siehe
    SKILL_GROUPS-Kommentar in data.js. "Ja" etwas auffälliger als "Vielleicht", damit sofort ins Auge fällt, bei
    welchen Talenten eine Rüstungsbehinderung (BE) die Probe erschwert. */
-.belastung-yes{font-size:12px;color:var(--accent);font-weight:bold}
-.belastung-maybe{font-size:12px;color:var(--muted)}
+.belastung-yes{font-size:var(--fs-meta);color:var(--accent);font-weight:bold}
+.belastung-maybe{font-size:var(--fs-meta);color:var(--muted)}
 /* Feste Breiten für Stepper und FW-Zahl, damit die Werte über alle Zeilen exakt untereinander stehen (unabhängig von 1- vs. 2-stelligen Werten und davon, ob die Stepper im Spielmodus ausgeblendet sind). */
-.skill-fw{display:flex;align-items:center;justify-content:center;gap:5px}
-.skill-fw .step{width:10px;text-align:center}
-.skill-fw .big{font-size:17px;width:22px;text-align:center}
+.skill-fw{display:flex;align-items:center;justify-content:center;gap:2px}
+.skill-fw .step{width:18px;height:26px}
+.skill-fw .big{font-size:calc(var(--fs-big) - 1px);width:22px;text-align:center}
 
 /* 3W20-Probe (drei Attribut-Chips statt einer statischen Qualitätsstufe) */
 .probe-dice{display:flex;gap:3px;justify-content:center}
-.probe-die{width:22px;height:22px;line-height:22px;text-align:center;font-size:10px;font-weight:700;letter-spacing:0;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);background-repeat:no-repeat;background-position:center;background-size:contain}
+/* Würfelgruppe als EINE Aktion (makeRollable() in script.js): gemeinsamer Hover/Fokus statt drei Einzelziele. */
+.rollable{cursor:pointer}
+.probe-dice.rollable{border-radius:4px;padding:2px;margin:-2px auto}
+/* Einheitlicher Würfel-Hover (Nutzerwunsch 2026-09-25): derselbe Zoom nach vorn wie bei den kleinen
+   Eigenschaftswürfeln (.attr-die-mini) — per transform, verschiebt also keine Nachbarn (GitHub-Issue #2). Eine
+   3W20-Probe zoomt als GANZE Gruppe (alle drei Würfel gleichzeitig, Nutzerwunsch 2026-09-25) — einzeln skaliert
+   würden sie sich gegenseitig überdecken. */
+:is(.probe-dice.rollable,.die-qs.lg,.attr-die,button.probe-die){position:relative;transition:transform .15s ease;transform-origin:center}
+.probe-dice.rollable:hover,.probe-dice.rollable:focus-visible,button.probe-die:hover,button.probe-die:focus-visible,.die-qs.lg.rollable:hover,.die-qs.lg.rollable:focus-visible{transform:scale(1.6);z-index:6}
+.attr-die.rollable:hover,.attr-die.rollable:focus-visible{transform:scale(1.3);z-index:6}
+.probe-die{width:22px;height:22px;line-height:22px;text-align:center;font-size:11px;font-weight:700;letter-spacing:0;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5);background-repeat:no-repeat;background-position:center;background-size:contain}
 
 /* Klickbarer AT/PA-Würfel im Kampf-Reiter (Attacke/Parade) */
 .die-qs.lg{display:inline-block;width:30px;height:30px;line-height:30px;text-align:center;font-size:14px;font-weight:700;color:#fff;background-repeat:no-repeat;background-position:center;background-size:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));cursor:pointer}
@@ -427,7 +470,7 @@ input,button{font-family:inherit;color:inherit}
 /* Sammelproben: eine Kopfzeile (Name/Intervall/Versuchsbudget/QS) je Sammelprobe, darunter eingerückt bis zu 3
    alternative Talente ohne eigenes Bild (daher eine Spalte weniger + kleinere, gedimmte Schrift). */
 .agg-head-row{grid-template-columns:26px 1fr 110px 90px 80px}
-.agg-talent-row{grid-template-columns:1fr 96px 62px;padding-left:37px;font-size:13px}
+.agg-talent-row{grid-template-columns:1fr 96px 62px;padding-left:37px;font-size:var(--fs-small)}
 
 .actions-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
 .actions-row button{display:flex;align-items:center;gap:7px;padding:4px 12px;border:1px solid var(--line);background:var(--field);font-size:13px;cursor:pointer;white-space:nowrap}
@@ -452,10 +495,10 @@ input,button{font-family:inherit;color:inherit}
 .armor-hero .badge-rs,.armor-hero .badge-be{position:absolute;bottom:7px;padding:2px 9px;font-family:'Andalus',serif;font-size:15px;background:rgba(0,0,0,.6);color:#f4e8d6;border-radius:3px}
 .armor-hero .badge-rs{left:7px}
 .armor-hero .badge-be{right:7px}
-.armor-name{padding:0 11px 10px;font-size:14px;text-align:center}
+.armor-name{padding:0 11px 10px;font-size:var(--fs-data);text-align:center}
 
 /* Leerzustand "Keine Rüstung getragen" (0 Rüstungsteile). */
-.armor-empty{padding:8px 11px;font-size:13px;color:var(--muted)}
+.armor-empty{padding:8px 11px;font-size:var(--fs-small);color:var(--muted)}
 
 /* Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich, siehe Git-Historie
    "UI-Vergleich 2026-09-17, Runde 3"): Wiederverwendung des .companion-slot-Icon-Rasters (companionHotbar()), hier
@@ -467,8 +510,8 @@ input,button{font-family:inherit;color:inherit}
 .armor-slot{position:relative;width:100px;height:100px;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--field)}
 .armor-slot .item-icon,.armor-slot > img{position:absolute;inset:0;width:100%;height:100%}
 .armor-slot .item-icon img{width:100%;height:100%;object-fit:cover;border:none}
-.armor-slot-name{position:absolute;top:0;left:0;right:0;z-index:1;padding:3px 5px;font-size:11px;text-align:center;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85);background:linear-gradient(180deg,rgba(0,0,0,.65),transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.armor-slot-rs,.armor-slot-be{position:absolute;bottom:4px;z-index:1;padding:1px 5px;border-radius:3px;background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,.85)}
+.armor-slot-name{position:absolute;top:0;left:0;right:0;z-index:1;padding:3px 5px;font-size:var(--fs-meta);text-align:center;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85);background:linear-gradient(180deg,rgba(0,0,0,.65),transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.armor-slot-rs,.armor-slot-be{position:absolute;bottom:4px;z-index:1;padding:1px 5px;border-radius:3px;background:rgba(0,0,0,.55);color:#fff;font-size:var(--fs-meta);font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,.85)}
 .armor-slot-rs{left:4px}
 .armor-slot-be{right:4px}
 
@@ -499,7 +542,7 @@ input,button{font-family:inherit;color:inherit}
 .companion-portrait-col-flat{margin-top:0}
 .companion-info-col{flex:0 0 200px}
 .companion-loyalty-row{display:flex;align-items:center;gap:8px;padding:6px 0}
-.companion-loyalty-row .name{flex:1;font-size:13px;color:var(--muted)}
+.companion-loyalty-row .name{flex:1;font-size:var(--fs-small);color:var(--muted)}
 .companion-badge{font-size:14px;margin-left:6px;cursor:default}
 .companion-nature-btn{border:none;background:none;padding:0;cursor:pointer}
 
@@ -527,19 +570,26 @@ input,button{font-family:inherit;color:inherit}
 /* Griff-Spalte auf 74px verbreitert (war 52px), damit bei wurfwaffenfähigen Nahkampftechniken noch der dritte
    Kontextmenü-Knopf (throwMenuCell()) neben Haupt-/Nebenhand-Knöpfen Platz hat — beide Zeilenarten gleichermaßen
    verbreitert, damit AT/PA/TP/Griff/Favorit weiterhin exakt auf derselben Breite wie zuvor beschrieben ausgerichtet bleiben. */
-.melee-row{grid-template-columns:48px 1fr 92px 76px 46px 46px 80px 74px 20px}
-.ranged-row{grid-template-columns:48px 1fr 84px 170px 46px 46px 80px 74px 20px}
-.ranged-row .ammo-cell{position:relative;display:flex;align-items:center}
+/* Waffenzeilen (weaponNameCell()/weaponDetails() in script.js, Paket C): Bild | Name+Technik | AT | PA | TP | (RW) |
+   Griff | Stern, Munition als zweite Zeile unter dem Namen. Name minmax(0,1fr) — nie mehr breiter als der Bogen. */
+.weapon-row{grid-template-columns:48px minmax(0,1fr) 46px 46px 72px 76px 88px 24px}
+.row-head.weapon-row>span{white-space:nowrap}
+.weapon-name{display:flex;flex-direction:column;min-width:0}
+.weapon-sub{font-size:var(--fs-meta);color:var(--muted)}
+.weapon-details{grid-column:2/-1;display:flex;align-items:center;gap:8px;font-size:var(--fs-meta);margin-top:-2px}
+.weapon-details .ammo-cell{position:relative;display:flex;align-items:center;flex:0 1 300px;min-width:0}
 
 /* "Griff"-Spalte (gripCell() in script.js): zweihändig geführte Waffen zeigen nur ein festes, nicht klickbares
    Symbol; alles andere zwei umschaltbare Haupthand-/Nebenhand-Knöpfe. In BEIDEN Modi bedienbar. */
-.grip-cell{display:flex;align-items:center;justify-content:center;gap:2px}
-.grip-btn{border:1px solid var(--line);background:var(--field);color:var(--muted);width:20px;height:20px;line-height:1;font-size:11px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.grip-cell{display:flex;align-items:center;justify-content:center;gap:3px}
+/* 28×28 (UI/UX-Review 2026-09-25, Punkt 1); die 88px-Griffspalte fasst H + N + ⋮ (Paket C). */
+.grip-btn{border:1px solid var(--line);background:var(--field);color:var(--muted);width:28px;height:28px;flex:none;line-height:1;font-size:12px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .grip-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);cursor:default}
 span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 
 /* Wurfwaffen-Kontextknopf (throwMenuCell()) neben den Griff-Knöpfen; öffnet dasselbe .ammo-menu-Popover-Muster
    wie die Munitionsauswahl, hier rechtsbündig verankert, damit es nicht über den Panelrand hinausragt. */
+.grip-btn.context-btn{width:22px}
 .throw-cell{position:relative;display:inline-flex}
 .throw-cell .ammo-menu{left:auto;right:0}
 .context-btn{opacity:.75}
@@ -548,7 +598,7 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 /* Panel-Titel-Aktionen (Handschuh-/Gliedmaßenlimit-Umschalter, "+"-Ausrüsten-Knopf) — helle Umrandung statt der
    dunklen .grip-btn-Optik, da der Panel-Titel-Hintergrund (--title) selbst schon dunkel/golden ist. */
 .panel-title-actions{display:flex;align-items:center;gap:6px}
-.title-icon-btn{border:1px solid rgba(255,255,255,.45);background:transparent;color:inherit;width:20px;height:20px;line-height:1;font-size:12px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.title-icon-btn{border:1px solid rgba(255,255,255,.45);background:transparent;color:inherit;width:24px;height:24px;line-height:1;font-size:13px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .title-icon-btn:hover{border-color:#fff}
 .title-icon-btn.active{background:rgba(255,255,255,.25)}
 .title-icon-btn:disabled{opacity:.35;cursor:default}
@@ -556,11 +606,11 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .title-menu-wrap .ammo-menu{left:auto;right:0;color:var(--ink)}
 
 /* Gesamtschutz-Zeile unter dem Rüstung-Panel-Titel (siehe renderArmorPanel()). */
-.armor-sum-line{padding:4px 11px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.armor-sum-line{padding:4px 11px;font-size:var(--fs-meta);color:var(--muted);border-bottom:1px solid var(--line)}
 
 /* Einzeiliger Knopf statt der bisher immer sichtbaren Munitionsart(en)+Magazin+Nachladen-Zeilen — hält die
    Fernkampfzeile so ruhig wie die Nahkampfzeile. Öffnet/schließt .ammo-menu darunter (siehe renderAmmoCell). */
-.ammo-toggle{display:flex;align-items:center;gap:6px;width:100%;padding:2px 8px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font-size:11px;cursor:pointer;text-align:left}
+.ammo-toggle{display:flex;align-items:center;gap:6px;width:100%;padding:2px 8px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font-size:var(--fs-meta);cursor:pointer;text-align:left}
 .ammo-toggle:hover{border-color:var(--accent)}
 .ammo-toggle.open{border-color:var(--accent)}
 .ammo-toggle.reloading{color:var(--muted)}
@@ -571,25 +621,25 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .ammo-menu{position:absolute;top:calc(100% + 3px);left:0;z-index:30;display:flex;flex-direction:column;gap:6px;width:max-content;min-width:100%;max-width:240px;padding:8px;border:1px solid var(--line);border-radius:4px;background:var(--paper);box-shadow:0 6px 16px rgba(0,0,0,.35)}
 
 .ammo-types{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-start}
-.ammo-chip{padding:1px 7px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--muted);font-size:11px;cursor:pointer}
+.ammo-chip{padding:1px 7px;border:1px solid var(--line);border-radius:10px;background:var(--field);color:var(--muted);font-size:var(--fs-meta);cursor:pointer}
 .ammo-chip.active{border-color:var(--accent);color:var(--ink);font-weight:bold}
 .ammo-chip:hover{border-color:var(--accent)}
 
 .ammo-mag{display:flex;align-items:center;gap:6px}
 .ammo-mag-bar{flex:1;height:6px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--odd)}
 .ammo-mag-fill{display:block;height:100%;background:var(--accent)}
-.ammo-mag-label{font-size:11px;color:var(--muted);font-family:ui-monospace,Menlo,monospace}
+.ammo-mag-label{font-size:var(--fs-meta);color:var(--muted);font-family:ui-monospace,Menlo,monospace}
 
-.reload-btn{padding:2px 8px;border:1px solid var(--line);border-radius:3px;background:var(--field);font-size:11px;cursor:pointer;color:var(--ink)}
+.reload-btn{min-height:26px;padding:2px 8px;border:1px solid var(--line);border-radius:3px;background:var(--field);font-size:12px;cursor:pointer;color:var(--ink)}
 .reload-btn:hover{border-color:var(--accent)}
 .reload-btn.done{color:#3a8f3a;border-color:#3a8f3a;cursor:default;opacity:.8}
 .armor-row{grid-template-columns:28px 1fr 46px 46px}
 /* FW-Spalte breiter als früher (war 40px): muss jetzt Stepper+Zahl fassen (.skill-fw, wie auf dem Talente-Tab). */
 .combatskill-row{grid-template-columns:28px 1fr 44px 60px 40px 40px}
 .row img{width:26px;height:26px;border:1px solid var(--line);object-fit:cover}
-.melee-row img,.ranged-row img{width:44px;height:44px}
+.weapon-row img{width:44px;height:44px}
 .row .item-icon{width:26px;height:26px}
-.melee-row .item-icon,.ranged-row .item-icon{width:44px;height:44px}
+.weapon-row .item-icon{width:44px;height:44px}
 .row .item-icon img{width:100%;height:100%;border:1px solid var(--line);object-fit:cover}
 
 /* Waffen-/Rüstungsverschleiß (siehe wearLevel()/itemIcon() in script.js): schmaler Balken am unteren Bildrand
@@ -619,11 +669,31 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 /* Taschen/Rucksäcke als Kacheln oben im Ausrüstung-Tab (renderInventory) — Klick öffnet den Inhalt im Modal
    (openBagModal()) statt ihn inline aufzuklappen. Nutzer-Feedback 2026-09-13 (RUECKMELDUNG.md). */
 .bag-tiles{display:flex;gap:12px;flex-wrap:wrap;padding:11px}
-.bag-tile{display:flex;flex-direction:column;align-items:center;gap:4px;width:84px;padding:8px 6px;border:1px solid var(--line);background:var(--field);color:inherit;font:inherit;cursor:pointer}
+.bag-tile{display:flex;flex-direction:column;align-items:center;gap:6px;width:92px;padding:8px 6px;border:1px solid var(--line);background:var(--field);color:inherit;font:inherit}
 .bag-tile:hover{border-color:var(--accent)}
+.bag-tile-open{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;cursor:pointer}
+.bag-tile-open:hover .bag-tile-name{color:var(--accent)}
 .bag-tile img{width:36px;height:36px;opacity:.85}
-.bag-tile-name{font-size:12px;text-align:center;line-height:1.2}
-.bag-tile-meta{font-size:11px;color:var(--muted)}
+.bag-tile-name{font-size:var(--fs-meta);text-align:center;line-height:1.2}
+.bag-tile-meta{font-size:var(--fs-meta);color:var(--muted)}
+.bag-fill-bar{display:block;width:100%;height:6px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--odd)}
+.bag-fill{display:block;height:100%;background:linear-gradient(90deg,#b08a5e,var(--accent))}
+.bag-fill-bar.over .bag-fill{background:#c0392b}
+.grip-menu-wrap{position:relative;display:inline-flex}
+/* Aktionsleiste unter der Kachel wie im Foundry-Modul: 26px-Klickflächen (Ausrüsten-Schild, ⋮-Menü). */
+.bag-tile-actions{position:relative;display:flex;align-items:center;justify-content:center;gap:4px}
+.bag-tile-actions .ammo-menu{left:50%;transform:translateX(-50%)}
+.bag-action-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:16px;line-height:1;cursor:pointer}
+.bag-action-btn:hover,.bag-action-btn.open{border-color:var(--accent)}
+.bag-action-btn[aria-pressed=true]{border-color:var(--accent)}
+/* Ausrüsten-Schild (equipToggle(), entspricht icon-equip.hbs im Foundry-Modul). */
+.equip-toggle{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
+.equip-toggle.bag-action-btn{border:1px solid var(--line);background:var(--panel)}
+.icon-equip{display:block;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;opacity:.6}
+.equip-toggle:hover{color:var(--accent)}
+.equip-toggle:hover .icon-equip{opacity:1}
+.equip-toggle[aria-pressed=true]{color:var(--accent)}
+.equip-toggle[aria-pressed=true] .icon-equip{fill:currentColor;opacity:1}
 
 /* Generisches Modal (openModal()/closeModal() in script.js), bisher nur für den Taschen-Inhalt genutzt. */
 .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40}
@@ -637,7 +707,6 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .info-cards{display:flex;gap:14px;margin-bottom:14px}
 .info-card{flex:1;border:1px solid var(--line);background:var(--panel);padding:9px 12px}
 .info-card.wide{flex:1.3}
-.info-label{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .info-value{font-family:'Andalus',serif;font-size:19px;margin-top:2px}
 
 /* Gemeinsame Spalten für Zauber/Rituale/Liturgien/Zeremonien (magicRow/magicTable in script.js). Letzte Spalte
@@ -654,27 +723,32 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .disease-gm-actions{display:flex;align-items:center;gap:6px}
 .disease-gm-actions .die-qs{width:20px;height:20px;background-size:contain;background-repeat:no-repeat;display:inline-block}
 
-/* Favoriten-Stern (Titelblatt-Feature, TITELBLATT.md): letzte Spalte in skill-row/melee-row/ranged-row/magic-row.
+/* Favoriten-Stern (Titelblatt-Feature, TITELBLATT.md): letzte Spalte in skill-row/weapon-row/magic-row.
    Klick markiert/entmarkiert direkt am Datenobjekt (favStar() in script.js) — dieselbe Referenz taucht dann in
    der Favoriten-Übersicht des Titelblatts (renderCover()) wieder auf. */
-.fav-star{border:none;background:none;padding:0;font-size:16px;line-height:1;color:var(--line);cursor:pointer}
-.fav-star:hover{color:var(--accent)}
+/* 28×28 Trefferfläche bei unveränderter 20px-Spalte (negativer Rand); inaktiver Stern in --muted statt der
+   fast unsichtbaren Linienfarbe, damit er nicht wie deaktiviert wirkt (UI/UX-Review 2026-09-25, Punkt 1). */
+.fav-star{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin:-4px;border:none;border-radius:50%;background:none;padding:0;font-size:18px;line-height:1;color:var(--muted);cursor:pointer}
+.fav-star:hover{color:var(--accent);background:var(--field)}
 .fav-star.active{color:var(--accent)}
-.artifact-row{grid-template-columns:1fr 140px 70px 20px}
+.artifact-row{grid-template-columns:44px 1fr 140px 70px 20px}
+.artifact-row img{width:40px;height:40px;object-fit:contain}
 
 /* Zeilen-Lösch-"×" (rowDeleteBtn() in script.js) — wie .chip-delete, aber als eigenständige Grid-Zelle statt
    Chip-Anhängsel (magicTable/artifactTable-Zeilen). Nur im Bearbeiten-Modus sichtbar (.edit-only).
    TODOS.md: kleiner runder Button mit Zoom-Effekt bei Hover/Focus statt nacktem Zeichen — bleibt im
    Ruhezustand kompakt (passt in die bestehenden 20px-Grid-Spalten), verdeckt also keinen Zeilentext. */
-.row-delete{border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;transition:transform .12s ease,color .12s ease,background-color .12s ease}
-.row-delete:hover,.row-delete:focus-visible{color:#a8501a;background:var(--field);transform:scale(1.35)}
+.row-delete{border:none;background:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;margin:-3px;border-radius:50%;transition:transform .12s ease,color .12s ease,background-color .12s ease}
+.row-delete:hover,.row-delete:focus-visible{color:#a8501a;background:var(--field);transform:scale(1.15)}
 
-.wallet-card{flex:0 0 330px;border:1px solid var(--line);background:var(--panel);padding:9px 12px}
-.wallet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.wallet-panel{flex:0 0 330px}
+.wallet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px}
 .wallet-item{display:flex;align-items:center;gap:5px}
 .wallet-item img{width:19px;height:19px}
-.carry-card{flex:1;border:1px solid var(--line);background:var(--panel);padding:9px 12px}
-.carry-head{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.carry-panel{flex:1;min-width:0}
+.info-cards > .panel + .panel{margin-top:0}
+.carry-body{display:flex;flex-direction:column;gap:6px;padding:12px}
+.carry-values{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-small)}
 .carry-bar{height:14px;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--odd)}
 .carry-fill{height:100%;background:linear-gradient(90deg,#b08a5e,var(--accent))}
 
@@ -693,20 +767,26 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .pip.filled{background:var(--accent)}
 .pip.empty{background:transparent}
 
-.wounds-row{display:flex;gap:10px;padding:11px;font-size:14px}
+.wounds-row{display:flex;gap:10px;padding:11px;font-size:var(--fs-data)}
 .wounds-row span{flex:1;padding:6px;border:1px solid var(--line);text-align:center}
 
-.drop-zone{margin:11px;padding:14px;border:2px dashed var(--line);display:flex;flex-direction:column;align-items:center;gap:6px;font-style:italic;font-size:13px;color:var(--muted)}
+.drop-zone{margin:11px;padding:14px;border:2px dashed var(--line);display:flex;flex-direction:column;align-items:center;gap:6px;font-style:italic;font-size:var(--fs-small);color:var(--muted)}
 .drop-zone img{width:30px;height:30px;opacity:.55}
 
-.notes-grid{display:grid;grid-template-columns:274px 1fr;gap:16px;align-items:start}
-.appearance-row{display:flex;gap:10px;padding:5px 11px;font-size:14px;border-top:1px solid var(--line)}
+/* Notizen-Tab wie im Foundry-Modul: Persönliche-Daten-Grid (auto-fit), darunter ein Freitext-Panel je Unter-Tab. */
+/* Mindestbreite 150px statt 120px: lange Werte (Paket G) brechen sonst in 5 schmalen Spalten eng um. */
+.details-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:12px}
+.details-field{display:flex;flex-direction:column;gap:2px;font-size:var(--fs-data);min-width:0}
+.details-field .k{color:var(--muted);font-size:var(--fs-small)}
+.notes-text-wrap{position:relative}
+.notes-edit-btn{position:absolute;top:6px;right:6px;display:flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border:1px solid var(--accent);border-radius:3px;background:var(--panel);color:var(--accent);font-size:15px;cursor:pointer}
+.notes-edit-btn:hover{background:var(--accent);color:var(--paper)}
+.sheet[data-mode="edit"] .notes-text-wrap .notes-text{padding-right:44px}
+.appearance-row{display:flex;gap:10px;padding:5px 11px;font-size:var(--fs-data);border-top:1px solid var(--line)}
 .appearance-row .k{flex:1;color:var(--muted)}
 .notes-text{padding:12px;font-size:15px;line-height:1.6}
 .notes-text p{margin:0 0 10px}
 .notes-text p:last-child{margin-bottom:0}
-.bond-row{display:flex;gap:10px;padding:5px 11px;font-size:14px;border-top:1px solid var(--line)}
-.bond-row .role{color:var(--muted);font-size:13px}
 
 /* Titelblatt (renderCover()/renderContent() in script.js, TITELBLATT.md), dritte Iteration 2026-09-14: die
    Kopfzeile (.head) enthält auf diesem Tab nur noch Name/AP/Badges — Porträt UND LeP/AsP/KaP/Schips ziehen in
@@ -783,6 +863,17 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 #coverSidebar .row-delete:hover{color:var(--accent)}
 #coverSidebar .step.minus{color:var(--headmuted)}
 #coverSidebar .step.minus:hover{color:var(--accent)}
+#coverSidebar .list-row .step{box-shadow:inset 0 0 0 1px rgba(224,192,128,.4)}
+#coverSidebar .list-row .step:hover{background:rgba(224,192,128,.18);box-shadow:inset 0 0 0 1px var(--accent)}
+#coverSidebar .cond-count{color:var(--headmuted);min-width:0}
+/* Schmale Titelblatt-Leiste: Zustandszeile verdichten, damit der Name trotz Zahl + 28px-Steppern lesbar bleibt —
+   Stepper behalten 28px Trefferfläche, belegen per negativem Rand aber nur 22px Breite. */
+#coverSidebar .list-row{gap:5px}
+#coverSidebar .list-row .step{margin:-4px -3px}
+#coverSidebar .pips{gap:3px}
+#coverSidebar .pip{width:12px;height:12px}
+/* Im Bearbeiten-Modus braucht das Lösch-× den Platz der Zahl (die Kästchen zeigen die Stufe weiterhin). */
+.sheet[data-mode="edit"] #coverSidebar .cond-count{display:none}
 
 /* Spezies/Kultur/Profession-Badges in der Kopfzeile sind jetzt anklickbare <button>s (identityBadge() in
    script.js, ersetzt die früher statischen <span>) statt reiner Anzeige — öffnen eine kurze Item-Vorschau im
@@ -802,15 +893,19 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
    Kontextmenü gefiel trotzdem nicht) — Bild+Name+Stern plus Talentwert+Würfel direkt daneben, kein Klick-Handler
    auf dem Chip selbst mehr. Die Würfel bleiben aber klickbar (Nutzer-Feedback 2026-09-19: "Favoriten lassen sich
    aktuell nicht würfeln"), Talentwert steht direkt hinter dem Namen und etwas größer. */
-.fav-chip{padding-right:6px;display:flex;align-items:center;gap:6px}
-.fav-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.fav-chip{padding-right:6px;display:flex;align-items:center;gap:8px}
+.fav-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;font-size:var(--fs-data)}
 .fav-chip-icon{width:20px;height:20px}
-.fav-chip-values{display:flex;align-items:center;gap:6px;font-size:12px}
-.fav-chip-value{color:var(--ink);font-weight:bold;font-size:15px}
+.fav-chip-values{display:flex;align-items:center;gap:7px;font-size:var(--fs-meta)}
+.fav-chip-value{color:var(--ink);font-weight:bold;font-size:calc(var(--fs-data) + 1px)}
 .fav-chip-damage{color:var(--muted)}
 .fav-chip-roll{cursor:pointer}
-.fav-chip-roll:hover{filter:brightness(1.2)}
-button.fav-chip-roll{border:0;background:none;padding:0}
+.fav-chip-damage.fav-chip-roll:hover{filter:none}
+/* background-color statt background:none — die Kurzform setzte background-size auf auto zurück, dadurch
+   wurde das Würfel-SVG in Originalgröße statt "contain" gezeichnet (viel zu groß für die Box). */
+button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family:inherit;cursor:pointer}
+.fav-chip-damage.fav-chip-roll{color:var(--muted);font-size:var(--fs-meta)}
+.fav-chip-damage.fav-chip-roll:hover{color:var(--accent);filter:none}
 
 /* Entfernen-Button, volle Breite unter Bild/Werten — von openHeaderBgPicker() für "Kein Hintergrundbild"
    wiederverwendet. */
@@ -825,3 +920,100 @@ button.fav-chip-roll{border:0;background:none;padding:0}
 .filepicker-tile img{width:100%;height:64px;object-fit:cover;border:1px solid var(--line)}
 .filepicker-tile span{font-size:12px;text-align:center}
 
+
+/* Zahlen in Textschrift (GentiumBasic fett, gleich breite Ziffern) statt der dekorativen Andalus — Überschriften
+   behalten Andalus (Nutzer-Entscheidung 2026-09-25 nach Vergleich). */
+.big,.xp-num,.info-value,.armor-hero .badge-rs,.armor-hero .badge-be,.bar-label{font-family:'GentiumBasic',Georgia,serif;font-weight:700;font-variant-numeric:tabular-nums}
+
+
+/* Würfelzahlen: überall weiß mit dunkler Kontur (Schatten-Ring) — trägt auch auf den hellen FF/GE/KO/KK-Würfeln,
+   wo weiße Schrift allein nur 2,0–3,4:1 Kontrast hat. Nutzer-Entscheidung 2026-09-25 nach Vergleich mit
+   dunkler Schrift, Plakette und "dunkel kräftig" (Variante A). */
+:is(.probe-die,.attr-die,.attr-die-mini-face,.die-qs){color:#fff;text-shadow:0 0 1px #140f0b,1px 0 0 #140f0b,-1px 0 0 #140f0b,0 1px 0 #140f0b,0 -1px 0 #140f0b,1px 1px 1px #140f0b,-1px -1px 1px #140f0b,1px -1px 1px #140f0b,-1px 1px 1px #140f0b}
+
+
+/* Ziehgriff unten rechts (initSheetResize() in script.js), sitzt im Zierrahmen wie der Resize-Griff eines Foundry-Fensters. */
+.sheet-resize{position:absolute;right:-14px;bottom:-14px;width:16px;height:16px;z-index:20;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 45%,rgba(224,192,128,.85) 45% 53%,transparent 53% 65%,rgba(224,192,128,.85) 65% 73%,transparent 73%)}
+.sheet-resize:hover{filter:brightness(1.3)}
+
+/* Bearbeitbare Werte (makeEditable()) erkennbar machen: gepunktete Unterlinie + Textcursor bei Hover/Fokus, ohne
+   Layoutsprung (UI/UX-Review 2026-09-25 Punkt 9) — Signal "Wert bearbeiten", im Unterschied zu Zoom = "würfeln". */
+.editable-value{cursor:text;border-radius:3px;transition:background-color .12s ease}
+.editable-value:hover,.editable-value:focus-visible{text-decoration:underline dotted;text-underline-offset:3px;background-color:rgba(224,192,128,.18)}
+/* Kurzes Aufleuchten nach einer Änderung (flashChanged() in script.js). */
+@keyframes just-changed{from{box-shadow:inset 0 0 0 999px rgba(224,192,128,.45)}to{box-shadow:inset 0 0 0 999px rgba(224,192,128,0)}}
+.just-changed{animation:just-changed .9s ease-out}
+@media (prefers-reduced-motion:reduce){.just-changed{animation:none}:is(.probe-dice.rollable,.die-qs.lg,.attr-die,button.probe-die){transition:none}}
+
+/* Favoritenraster (favCard() in script.js, Paket E / Issue #5): Karten füllen die ganze Breite (auto-fill), innen
+   feste Spalten, damit Wert, Würfel und Stern in jeder Zeile an derselben Stelle stehen. */
+.fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:6px 10px;padding:10px 11px}
+.fav-card{display:grid;grid-template-columns:24px minmax(0,1fr) 58px 84px 24px;align-items:center;gap:8px;min-height:38px;padding:3px 6px 3px 7px;border:1px solid var(--line);border-radius:3px;background:var(--field)}
+.fav-card-icon{width:24px;height:24px;object-fit:cover}
+.fav-card-name{font-size:var(--fs-data);line-height:1.2;overflow-wrap:anywhere}
+.fav-card-value{justify-self:end;font-weight:bold;font-size:calc(var(--fs-data) + 1px);font-variant-numeric:tabular-nums}
+.fav-card-weapon{display:inline-flex;align-items:center;gap:4px;font-weight:normal}
+.fav-card small{font-size:var(--fs-meta);color:var(--muted);font-weight:normal}
+.fav-card-roll{display:flex;justify-content:center}
+.fav-card .fav-chip-damage{font-size:var(--fs-small);white-space:nowrap}
+
+/* ===== Paket F: kompakter Kopf (Vergleichsschalter #headSizeSwitch) ===== */
+.sheet[data-headsize="compact"] .head{padding:10px 14px}
+.sheet[data-headsize="compact"] .head-top h1{font-size:31px}
+.sheet[data-headsize="compact"] .head-inner .portrait{flex-basis:92px;height:108px}
+.sheet[data-headsize="compact"][data-tab="cover"] .head-top h1{font-size:32px}
+.sheet[data-headsize="compact"][data-tab="cover"] .badge{font-size:14px;padding:2px 10px}
+.sheet[data-headsize="compact"][data-tab="cover"] #coverSidebar .portrait{height:128px}
+
+/* ===== Paket F: Kampf-Übersicht, Varianten "Leiste" und "Silhouette" (Vergleichsschalter #combatTopSwitch) ===== */
+.combat-strip{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;padding:8px 12px}
+.combat-stat{display:inline-flex;flex-direction:column;line-height:1.15}
+.combat-stat small{font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.combat-stat strong{font-size:var(--fs-big);font-variant-numeric:tabular-nums}
+.combat-strip-armor{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.combat-strip-armor .chip img{width:18px;height:18px}
+.combat-figure-grid{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);gap:12px;align-items:center;padding:10px 12px 4px}
+.figure-col-title{display:block;margin-bottom:4px;font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.figure-armor-item,.hand-slot-weapon{display:flex;align-items:center;gap:8px;padding:4px 0}
+.figure-armor-item>span,.hand-slot-weapon>span{display:flex;flex-direction:column;min-width:0;flex:1}
+.figure-armor-item small,.hand-slot-weapon small{font-size:var(--fs-meta);color:var(--muted)}
+.figure-armor-item .item-icon,.figure-armor-item>img,.hand-slot-weapon .item-icon,.hand-slot-weapon>img{width:36px;height:36px;flex:none}
+.figure-armor-item .item-icon img,.hand-slot-weapon .item-icon img{width:100%;height:100%;object-fit:cover;border:1px solid var(--line)}
+/* Linke Figur des Artenbilds, abgedunkelt zur Silhouette (brightness(0)) und leicht transparent wie Tinte auf Papier. */
+/* Nur die linke Figur: das Artenbild ist quadratisch, die linke Figur liegt etwa bei 21–50 % der Breite — bei
+   240px Bildhöhe ein 72px breites Fenster ab -50px. */
+.figure-body{position:relative;height:240px}
+.figure-body::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:64px;margin-left:-32px;background:var(--figure) no-repeat -52px 0/auto 100%;filter:brightness(0);opacity:.28}
+.sheet[data-theme="dark"] .figure-body::before{filter:brightness(0) invert(1);opacity:.2}
+.figure-badge{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;padding:4px 10px;border:1px solid var(--accent);border-radius:4px;background:var(--paper);box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.figure-badge strong{font-size:var(--fs-big)}
+.figure-badge small{font-size:var(--fs-meta);color:var(--muted)}
+.hand-slot{padding:4px 8px;margin-bottom:6px;border:1px solid var(--line);border-radius:4px;background:var(--field)}
+.hand-slot>small{font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.hand-slot.empty{border-style:dashed;background:none}
+.figure-others{display:block;font-size:var(--fs-meta)}
+.figure-stats{display:flex;justify-content:center;gap:28px;padding:6px 12px 10px;border-top:1px solid var(--line)}
+
+/* ===== Paket G: Detailpunkte pro Reiter ===== */
+.wallet-value{display:flex;flex-direction:column;line-height:1.1}
+.wallet-value small{font-size:var(--fs-meta);color:var(--muted)}
+.table-legend{padding:5px 11px;border-top:1px solid var(--line);font-size:var(--fs-meta);color:var(--muted)}
+.ext-badge-inline{display:inline-block;width:14px;height:14px;line-height:14px;text-align:center;font-size:9px;color:#1c1917;background:#e0c080;border-radius:50%}
+.ext-badge:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.panel-subbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:5px 11px;border-bottom:1px solid var(--line)}
+.notes-visibility{padding:4px 11px;font-size:var(--fs-meta);color:var(--muted);border-bottom:1px solid var(--line)}
+.title-icon-btn.labeled{width:auto;height:24px;padding:0 8px;gap:5px;font-size:var(--fs-meta)}
+.loyalty-inline{display:inline-flex;align-items:center;gap:8px}
+/* Bisher 5 Behältnis-Kacheln à 92px mit großem leerem Rest: Kacheln kompakter als Zeile Bild + Name/Füllstand. */
+.bag-tiles{gap:8px;padding:8px 11px}
+.bag-tile{flex-direction:row;width:auto;min-width:200px;padding:6px 8px;align-items:center}
+.bag-tiles .bag-tile-open{display:grid;flex:1;grid-template-columns:32px 1fr;column-gap:8px;row-gap:2px;align-items:center;text-align:left}
+.bag-tiles .bag-tile-open img{grid-row:1/4;width:32px;height:32px}
+.bag-tiles .bag-tile-name{text-align:left}
+/* Spalte "Angelegt" (vorher nur ✓ als Kopf, 34px) braucht Platz für die Beschriftung. */
+.inv-row{grid-template-columns:30px 1fr 64px 52px 58px 74px 42px}
+/* Tradition "zurückgenommen" (Vergleichsschalter #tradSwitch): nicht mehr akzentfarbene Pille über die ganze Breite,
+   sondern ruhige Zeile mit Rahmen — die Zauberwerte darunter bekommen mehr Gewicht. */
+.sheet[data-trad="quiet"] .trad-tile-tradition{flex:0 1 auto;background:var(--field);border:1px solid var(--accent);padding:3px 12px}
+.sheet[data-trad="quiet"] .trad-tile-tradition .trad-tile-val{color:var(--ink);text-shadow:none;font-size:15px}
+.sheet[data-trad="quiet"] .trad-tile-icon{filter:none}

@@ -6,10 +6,10 @@
   <section class="panel">
     <div class="panel-title">{{localize 'statuseffects'}}</div>
     {{#each dsa5h.coverConditions}}
-    <div class="row dsa5h-cover-condition">
+    <div class="row dsa5h-cover-condition" data-id="{{_id}}" {{#if descriptor}}data-descriptor="{{descriptor}}"{{/if}}>
       <img src="{{img}}" alt="" />
       <a data-action="conditionShow" data-id="{{_id}}">{{localize name}}</a>
-      <strong>{{value}}</strong>
+      <span class="dsa5h-cond-steps">{{#if editable}}{{#unless boolean}}<button type="button" class="dsa5h-step" data-action="dsa5hConditionDown" aria-label="{{localize 'DSA5HELPERS.ConditionDecrease' name=(localize name)}}"{{#unless manual}} aria-disabled="true"{{/unless}}>−</button><button type="button" class="dsa5h-step" data-action="conditionValue" aria-label="{{localize 'DSA5HELPERS.ConditionIncrease' name=(localize name)}}"{{#if (gte value editable)}} aria-disabled="true"{{/if}}>+</button>{{/unless}}{{/if}}</span><strong{{#if editable}}{{#unless boolean}} aria-label="{{localize 'DSA5HELPERS.ConditionLevel' value=value max=editable}}"{{/unless}}{{/if}}>{{value}}{{#if editable}}{{#unless boolean}}<small>/{{editable}}</small>{{/unless}}{{/if}}</strong>
     </div>
     {{/each}}
     {{#if dsa5h.coverConditionsMore}}

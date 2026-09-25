@@ -4,14 +4,14 @@
 <div class="dsa5h-limited"><img src="{{document.img}}" alt="{{document.name}}"><h1>{{document.name}}</h1><div>{{{enrichedBiography}}}</div></div>
 {{else}}
 <nav class="dsa5h-rail" aria-label="{{localize 'DSA5HELPERS.Navigation'}}">
-{{#each dsa5h.tabs}}<button type="button" class="dsa5h-rail-btn" data-action="dsa5hSetTab" data-tab="{{id}}" data-tab-rail-target="{{id}}" aria-label="{{label}}" title="{{label}}"><img src="{{icon}}" alt=""></button>{{/each}}
+{{#each dsa5h.tabs}}<button type="button" class="dsa5h-rail-btn" data-action="dsa5hSetTab" data-tab="{{id}}" data-tab-rail-target="{{id}}" aria-label="{{label}}"><img src="{{icon}}" alt=""><span class="dsa5h-rail-label" aria-hidden="true">{{label}}</span></button>{{/each}}
 </nav>
 <div class="dsa5h-main">
   {{> "modules/dsa5-helpers/templates/actors/parts/cover-sidebar.hbs"}}
   {{> "modules/dsa5-helpers/templates/actors/parts/header.hbs"}}
   <div class="dsa5h-attr-overlay" data-attr-overlay hidden>
-    {{#each prepare.mentalAttrs as |ch|}}<span class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></span>{{/each}}
-    {{#each prepare.bodyAttrs as |ch|}}<span class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></span>{{/each}}
+    {{#each prepare.mentalAttrs as |ch|}}<button type="button" class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></button>{{/each}}
+    {{#each prepare.bodyAttrs as |ch|}}<button type="button" class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></button>{{/each}}
   </div>
   <div class="dsa5h-tab-title"><span data-tab-title-label>{{dsa5h.currentTabLabel}}</span>
     {{#each dsa5h.subnav}}<nav class="dsa5h-sub-tabs" data-subnav="{{tab}}" hidden>

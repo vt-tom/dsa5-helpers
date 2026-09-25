@@ -58,8 +58,27 @@
       "companion": ""
     },
     "Weapons": "Waffen",
-    "Edit": "Bearbeiten",
-    "Close": "Schließen",
-    "GMNotes": "Spielleiternotizen"
+    "OpenBag": "Behältnis öffnen (Gegenstände hierher ziehen, um sie einzupacken)",
+    "GMNotes": "Spielleiternotizen",
+    "OpenTradition": "Tradition öffnen",
+    "GripTwoHanded": "Beidhändig",
+    "EquipGripHint": "Ausrüsten · Rechtsklick: Haupthand / Nebenhand / Beidhändig",
+    "ConditionDecrease": "{name} senken",
+    "ConditionIncrease": "{name} erhöhen",
+    "ConditionLevel": "Stufe {value} von {max}",
+    "FatePointSet": "Schicksalspunkte auf {value} setzen ({current} von {max} verfügbar)",
+    "FavoriteOf": "{name}: Favorit umschalten",
+    "RollNamed": "{name} würfeln",
+    "RollAttribute": "Probe auf {name} würfeln",
+    "RollAttackWith": "Attacke mit {name} würfeln",
+    "RollParryWith": "Parade mit {name} würfeln",
+    "RollRangedWith": "Fernkampf mit {name} würfeln",
+    "RollDamageOf": "Schaden von {name} würfeln",
+    "AdvanceNamed": "{name} steigern",
+    "RefundNamed": "{name}: Steigerung zurücknehmen",
+    "OnlyLearned": "Nur gesteigerte",
+    "ClearSearch": "Suche löschen",
+    "SearchAllGroups": "Suchergebnisse aus allen Gruppen für „{query}“",
+    "NoLearnedSkills": "Keine gesteigerten Talente in dieser Gruppe."
   }
 }

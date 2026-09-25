@@ -14,6 +14,8 @@ const A = {
   disadvantage: ICONS + "/categories/Nachteil.webp",
   abilityGeneral: ICONS + "/categories/ability_general.webp",
   abilityLanguage: ICONS + "/categories/Ability_Language.webp",
+  abilityStaff: ICONS + "/categories/ability_staff.webp",
+  abilityCeremonial: ICONS + "/categories/ability_ceremonial.webp",
   aggregatedTest: ICONS + "/categories/aggregated_test.webp",
   armor: ICONS + "/categories/Armor.webp",
   dodge: ICONS + "/categories/Dodge.webp",
@@ -46,6 +48,9 @@ const A = {
   // Spezies/Kultur/Profession-Verweise auf dem Titelblatt (IDENTITY in data.js): thematisch passende, bereits
   // vorhandene Kategorie-Icons statt eigener Rasse-/Kultur-Symbole (die es im System nicht gibt).
   species: ICONS + "/categories/wesenszug.webp",
+  // Artenbild mit zwei ganzen Figuren (icons/species/<Art>.webp) — Grundlage der Rüstungs-Silhouette (Paket F /
+  // GitHub-Issue #6), per CSS auf die linke Figur zugeschnitten und abgedunkelt, kein eigenes Bild.
+  speciesFigure: (name) => ICONS + "/species/" + name + ".webp",
   culture: ICONS + "/categories/praegung.webp",
   career: ICONS + "/categories/Career.webp",
   // Reittier-Porträt-Platzhalter (kein eigenes Bild angelegt, siehe Kommentar oben) — einziges brauchbares

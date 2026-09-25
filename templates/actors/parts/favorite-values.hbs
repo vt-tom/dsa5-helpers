@@ -1,11 +1,12 @@
 {{! Favoriten-Probe/Werte: immer sichtbar neben dem Chip. Talentwert direkt hinter dem Namen, etwas größer
     (Nutzer-Feedback), Würfel klickbar für eine echte Probe/einen echten Angriff (skillSelect/chRollCombat,
-    dieselben Aktionen wie überall sonst im Bogen) — eine reine Anzeige ohne Klick-Möglichkeit galt dem Nutzer als
+    dieselben Aktionen wie überall sonst im Bogen; bei Waffen ist auch der Schaden separat würfelbar,
+    chRollCombat mode=damage wie in weapon.hbs) — eine reine Anzeige ohne Klick-Möglichkeit galt dem Nutzer als
     "lässt sich nicht würfeln". Talente/Zauber/Liturgien nutzen dafür probe.hbs direkt statt eigener Duplizierung. }}
 <span class="dsa5h-fav-values">
 {{#if weapon}}
-<button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'CHARAbbrev.AT'}}">{{item.attack}}</button>
-<span class="dsa5h-fav-damage">{{item.damagedie}}{{item.damageAdd}}</span>
+<button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'CHARAbbrev.AT'}}" aria-label="{{localize 'DSA5HELPERS.RollAttackWith' name=item.name}}">{{item.attack}}</button>
+<button type="button" class="dsa5h-fav-damage" data-action="chRollCombat" data-mode="damage" title="{{localize 'CHARAbbrev.damage'}}" aria-label="{{localize 'DSA5HELPERS.RollDamageOf' name=item.name}}">{{item.damagedie}}{{item.damageAdd}}</button>
 {{else}}
 <span class="dsa5h-fav-value" title="{{localize 'Fw'}}">{{item.system.talentValue.value}}</span>
 {{> "modules/dsa5-helpers/templates/actors/parts/probe.hbs" item=item}}

@@ -13,20 +13,20 @@ let HEADER_BG_IMG = null;
 const TABS = [
   // Titelblatt: eigenständige Startseite, kommt im echten DSA5-Systembogen nicht vor (siehe TITELBLATT.md) —
   // großes Porträt, Namen/Spezies/Kultur/Profession, LeP/AsP/KaP/Schips, Favoriten und Status auf einen Blick.
-  { id: "cover", label: "Titelblatt", icon: A.tabCover, title: "Titelblatt", hint: "Übersicht · Favoriten" },
-  { id: "main", label: "Eigenschaften", icon: A.tabMain, title: "Eigenschaften", hint: "Grundwerte · Erfahrung" },
+  { id: "cover", label: "Titelblatt", icon: A.tabCover, title: "Titelblatt", hint: "" },
+  { id: "main", label: "Eigenschaften", icon: A.tabMain, title: "Eigenschaften", hint: "" },
   { id: "skills", label: "Talente", icon: A.tabSkills, title: "Talente", hint: "" }, // Hint entfällt: die Kategorien stehen ja direkt als Tabs daneben, Platz geht an größere Tabs.
   { id: "combat", label: "Kampf", icon: A.tabCombat, title: "Kampf", hint: "" }, // Hint entfällt: Kampf/Kampftalente-Unterreiter stehen daneben, siehe SKILL_GROUPS-Kommentar unten.
-  { id: "magic", label: "Magie", icon: A.tabMagic, title: "Magie", hint: "Tradition Elfen · 24 / 34 AsP" },
-  { id: "religion", label: "Religion", icon: A.tabReligion, title: "Religion", hint: "Kirche der Peraine · 12 / 18 KaP" },
-  { id: "inventory", label: "Ausrüstung", icon: A.tabInventory, title: "Ausrüstung", hint: "14,5 / 22 Stein getragen" },
-  { id: "status", label: "Status", icon: A.tabStatus, title: "Status", hint: "Zustände · Effekte · Krankheiten" },
-  { id: "notes", label: "Notizen", icon: A.tabNotes, title: "Notizen", hint: "Aussehen · Hintergrund · Verbindungen" },
+  { id: "magic", label: "Magie", icon: A.tabMagic, title: "Magie", hint: "" },
+  { id: "religion", label: "Religion", icon: A.tabReligion, title: "Religion", hint: "" },
+  { id: "inventory", label: "Ausrüstung", icon: A.tabInventory, title: "Ausrüstung", hint: "" },
+  { id: "status", label: "Status", icon: A.tabStatus, title: "Status", hint: "" },
+  { id: "notes", label: "Notizen", icon: A.tabNotes, title: "Notizen", hint: "" },
   // Vorschlag 2026-09-13 (bisher deferred, siehe PLANNING.md): 9. Tab für Reittier/Vertraute/Begleiter. Im echten
   // Systemsheet liegt der "Reittier"-Block (parts/horse.hbs) auf genau diesem Companion-Tab (actors/companions/
   // actor-companion.hbs), nicht auf dem Kampf-Tab — der ursprüngliche Gap-Report hatte die Quelle falsch als
   // actor-combat.hbs referenziert, hier korrigiert.
-  { id: "companions", label: "Gefährten", icon: A.tabCompanion, title: "Gefährten", hint: "Reittier · Vertraute · Begleiter" },
+  { id: "companions", label: "Gefährten", icon: A.tabCompanion, title: "Gefährten", hint: "" },
 ];
 
 // Spezies/Kultur/Profession als eigene Item-Referenzen (system.details.species/culture/career im echten System
@@ -344,9 +344,11 @@ const TRAITS = { meleeAttack: [], rangeAttack: [], armor: [] };
 // combat_rangeweapon.hbs GENAU an der Stelle des Nachlade-Rings angezeigt (ersetzt ihn, sobald >0). Waffen ohne
 // eigenes Magazin/Munitionsauswahl (Wurfmesser) bekommen hier bewusst kein Zielen, da für sie im Click-Dummy
 // noch keine Munitionsmenü-Infrastruktur existiert (renderAmmoCell() steigt für sie vorher aus).
+// reach: Platzhalter im Format des Systems (item.system.reach.value, nah/mittel/weit in Schritt) — die Zahlen sind
+// NICHT aus dem Kompendium, sie dienen nur dem Layout-Test der Waffenzeile (Paket C, 2026-09-25).
 const RANGED = [
   {
-    name: "Elfenbogen", group: "Bögen", at: 14, tp: "1W6+4", img: A.rangeWeapon,
+    name: "Elfenbogen", group: "Bögen", at: 14, tp: "1W6+4", reach: "10/50/80", img: A.rangeWeapon,
     ammoTypes: [
       { name: "Jagdpfeile", count: 14, selected: true },
       { name: "Brandpfeile", count: 4, selected: false },
@@ -357,7 +359,7 @@ const RANGED = [
     worn: { requiresBothHands: true, offHand: false },
   },
   {
-    name: "Armbrust", group: "Armbrüste", at: 6, tp: "1W6+3", img: A.rangeWeapon,
+    name: "Armbrust", group: "Armbrüste", at: 6, tp: "1W6+3", reach: "10/50/80", img: A.rangeWeapon,
     ammoTypes: [{ name: "Bolzen", count: 10, selected: true }],
     ammoCurrent: 0, ammoMax: 1,
     reloadTime: 3, reloadProgress: 1,
@@ -365,7 +367,7 @@ const RANGED = [
     structure: { value: 2, max: 6 },
     worn: { requiresBothHands: true, offHand: false },
   },
-  { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", ammo: "3", img: A.rangeWeapon, worn: { requiresBothHands: false, offHand: false } },
+  { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", reach: "2/5/10", ammo: "3", img: A.rangeWeapon, worn: { requiresBothHands: false, offHand: false } },
 ];
 
 const ARMOR = [
@@ -462,7 +464,7 @@ const MAGICAL_SIGNS = ["Zeichen der Waldesruhe"];
 // zurückgestellt (siehe PLANNING.md-Entscheidung 2026-09-15), Ersteres hier umgesetzt (payTraditionAbilityCost()
 // in script.js).
 const TRADITION_ARTIFACTS = [
-  { name: "Amulett aus Silberbirke", category: "Lebensring", volume: "3 / 4", abilities: [{ name: "Naturverbundenheit I", cost: 2 }] },
+  { name: "Amulett aus Silberbirke", img: A.abilityStaff, category: "Lebensring", volume: "3 / 4", abilities: [{ name: "Naturverbundenheit I", cost: 2 }] },
 ];
 
 // Sonderfertigkeiten der "magical"-Familie (specblock.hbs currentCat="magical") — getrennt von den allgemeinen
@@ -491,7 +493,7 @@ const BLESSINGS = ["Segenswort", "Peraines Auge", "Kräuterweihe", "Erntesegen"]
 
 // Kirchengeräte (tradition-items.hbs, kind="ceremonial", showVolume=false): Name/Gottheits-Kategorie, keine Ladung.
 const CEREMONIAL_ITEMS = [
-  { name: "Peraine-Erntesichel", category: "Peraine", abilities: [{ name: "Erntesegen", cost: 3 }] },
+  { name: "Peraine-Erntesichel", img: A.abilityCeremonial, category: "Peraine", abilities: [{ name: "Erntesegen", cost: 3 }] },
 ];
 
 // Sonderfertigkeiten der "clerical"-Familie (specblock.hbs currentCat="clerical": clerical, clericalStyle
@@ -537,7 +539,7 @@ const INVENTORY_CATEGORIES = [
     { name: "Pfeile", eq: false, qty: 18, weight: "0,9", price: "18 S", img: A.rangeWeapon },
   ]},
   { label: "Taschen & Behältnisse", items: [
-    { name: "Rucksack", eq: true, qty: 1, weight: "1,0", price: "8 S", img: A.tabInventory, children: [
+    { name: "Rucksack", eq: true, qty: 1, capacity: 20, weight: "1,0", price: "8 S", img: A.tabInventory, children: [
       { name: "Reiseproviant", qty: 4, weight: "2,0", price: "2 S", img: A.tabInventory },
       { name: "Zunderbüchse", qty: 1, weight: "0,1", price: "5 H", img: A.tabInventory },
     ]},
@@ -582,24 +584,18 @@ const EFFECTS = [
   { name: "Schutzgeist (Astralschutz +2)", dur: "12 h" },
 ];
 
-// personalDetails (information.hbs/actor-notes.hbs) hat mehr Felder als bisher abgebildet — Geschlecht/Familie/
-// Heimat/Sozialer Stand fehlten komplett.
+// personalDetails (actor-notes.hbs) — Reihenfolge wie im Foundry-Modul (notes.hbs, Persönliche-Daten-Grid).
 const APPEARANCE = [
   { k: "Geschlecht", v: "Weiblich" },
+  { k: "Familie", v: "Clan Wipfelglanz" },
+  { k: "Alter", v: "94 Jahre" },
   { k: "Größe", v: "182 cm" },
   { k: "Gewicht", v: "58 kg" },
-  { k: "Haarfarbe", v: "Silberblond" },
-  { k: "Augenfarbe", v: "Waldgrün" },
-  { k: "Alter", v: "94 Jahre" },
-  { k: "Familie", v: "Clan Wipfelglanz" },
   { k: "Heimat", v: "Auelfen-Bund am Großen Fluss" },
   { k: "Sozialer Stand", v: "Freie" },
+  { k: "Haarfarbe", v: "Silberblond" },
+  { k: "Augenfarbe", v: "Waldgrün" },
   { k: "Auffälligkeiten", v: "Amulett aus Silberbirke" },
-];
-
-const BONDS = [
-  { name: "Alvaeriel Baumhirtin", role: "Mentorin" },
-  { name: "Handelshaus Greifenfurt", role: "Widersacher" },
 ];
 
 // Freitext-Felder des Notizen-Tabs (actor-notes.hbs: "biography", "notes", "notes.ownerdescription",
@@ -625,20 +621,6 @@ let PRIVATE_NOTES_TEXT =
 // notes.gmdescription: nur für die Spielleitung sichtbar.
 let GM_NOTES_TEXT =
   "Der Hehler \"Rabe\" ist ein Deckname für den Kult-Kontakt aus Abenteuer 3. Noch nicht enthüllen.";
-
-// "information"-Items (parts/information.hbs, nur `{{#if isGM}}`sichtbar): strukturierte, einzeln benannte
-// GM-Geheimnisse als Kartenliste — im System eine ANDERE, zusätzliche Funktion neben dem freien GM-Notizen-Text
-// oben (der ist `notes.gmdescription`, ein einzelnes Fließtextfeld; "information"-Items sind mehrere benannte,
-// einzeln bearbeitbare Geheimnis-Karten). Sitzt im System direkt vor der Biografie auf dem NOTIZEN-Tab, nicht auf
-// Statuseffekte (Fehlzuordnung im ursprünglichen Gap-Report). Klick öffnet den Notiztext in einer Kurzvorschau
-// (analog openFavoritePreview()), siehe gmSecretsPanel() in script.js.
-const GM_SECRETS = [
-  { name: "Wer ist \"Rabe\" wirklich?", note: "Der Hehler \"Rabe\" ist ein Deckname für den Kult-Kontakt aus Abenteuer 3. Noch nicht enthüllen." },
-];
-
-// Wesenszug (personaltrait.hbs, TYPES.Item.essence) — seltene Kategorie, für unsere Demo-Figur nicht relevant,
-// daher leer wie andere optionale Kategorien (vgl. TRAITS/IMPRINT/DEMONMARKS).
-const ESSENCE = [];
 
 // Vorschlag 2026-09-13 (bisher deferred, "GM-only-Neugestaltung von Krankheiten/Vergiftungen" — im echten System
 // sieht die Spielerin hier nur den bloßen Zustand, während die SL-Ansicht die vollen Item-Sheet-Werte zeigt,

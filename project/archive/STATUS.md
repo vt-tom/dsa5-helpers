@@ -2,7 +2,7 @@
 
 Erster Anlaufpunkt für "wo stehen wir aktuell". Wird bei jedem größeren Meilenstein aktualisiert (nicht bei jeder Kleinigkeit — dafür sind [BUGS.md](BUGS.md)/[FEATURES.md](FEATURES.md) da). Für die Begründung *warum* etwas so gebaut wurde: [archive/DECISIONS.md](archive/DECISIONS.md).
 
-**Stand: 2026-09-19 (zweiundzwanzigste Runde).**
+**Stand: 2026-09-24 (vierundzwanzigste Runde).**
 
 ## Was funktioniert
 
@@ -78,6 +78,22 @@ Erster Anlaufpunkt für "wo stehen wir aktuell". Wird bei jedem größeren Meile
   - **BE-Abkürzung bei der Rüstung (nur Foundry):** `{{localize 'BE'}}` sah nach einer naheliegenden Abkürzung aus, löst im DSA5-System-Lang aber auf das ausgeschriebene "Belastung" auf (`BE`-Key ist dort ein Tooltip-Text, keine Abkürzung — `lang/de.json`/`en.json` des Systems geprüft). Eigener Schlüssel `DSA5HELPERS.EncumbranceAbbr` ("BE"/"Enc") ergänzt und in `combat.hbs` verwendet. Click-Dummy hatte die Abkürzung immer schon hartkodiert richtig, keine Änderung nötig.
   - **Chat-Icon springt nicht mehr ein:** `.chip-actions` (Im-Chat-posten/Löschen-Icons auf Vor-/Nachteile-, Sonderfertigkeiten-, Prägungs- und Sprachen-Chips) waren bisher nur bei Hover/Fokus sichtbar — das plötzliche Einblenden ließ die Chip-Breite springen und konnte die ganze Zeile zum Umbrechen bringen, wenn sie schon fast voll war. Jetzt dauerhaft sichtbar (`display:flex` ohne Hover-Bedingung). Der Klick-Icon existiert im Click-Dummy nicht (kein Chatlog dort), keine Änderung nötig.
   - Alle 16 Tests (`node tests/sheet.test.cjs`) grün, Click-Dummy-JS/CSS separat auf Syntaxfehler/Klammerbalance geprüft. [project/NOTIZEN.md](project/NOTIZEN.md) wieder leer. Wie immer nur code-seitig geprüft, keine laufende Foundry-Instanz hier.
+
+- **Dreiundzwanzigste Runde (2026-09-24):** [NOTIZEN.md](NOTIZEN.md) abgearbeitet — vier Punkte:
+  - **Favoriten-Waffen (Foundry):** AT-Würfel (`<button>`) erbte Rahmen/Feldhintergrund/Padding des generischen Button-Resets → sichtbarer Kasten, Wert aus der Mitte verschoben. Eigener Reset (`border:0`, `padding:0`, `inline-flex`-Zentrierung). Schaden ist jetzt separat würfelbar (`favorite-values.hbs`: `chRollCombat data-mode="damage"`, wie in `weapon.hbs`), optisch weiter schlichter Text.
+  - **Favoriten-Waffen (Click-Dummy):** Würfel viel zu groß — `button.fav-chip-roll{background:none}` setzte als Kurzform `background-size` auf `auto` zurück, das SVG erschien in Originalgröße. Auf `background-color:transparent` umgestellt; Schaden auch hier als eigener Klick-Button. Cache-Version v62→63 / v47→48.
+  - **Geld (Foundry):** Münzname entfernt, nur noch Tooltip (`data-tooltip` am Label); Klick aufs Münzbild öffnet weiter das Item. Nachtrag: alle Münzen in einer Zeile (`.dsa5h-coins` ohne Umbruch, Eingabefelder teilen sich die Breite).
+  - **Beutel (Foundry):** Aktions-Buttons von 12px/1px-Padding auf 26px-Klickflächen vergrößert. "Ausrüsten funktioniert nicht": DSA5 setzt `toggleValue` bei Ausrüstung nur, wenn `system.worn.wearable` gesetzt ist — unser Bogen zeigte den Schalter trotzdem immer an, der Klick änderte `worn.value`, die Anzeige blieb aber stets ○. Jetzt wie im Systembogen (`actor-equipment.hbs`) nur bei `item.toggle` sichtbar; nicht tragbare Beutel haben keinen Schalter mehr.
+  - Alle Tests grün, Click-Dummy-JS per `node --check` geprüft. Nichts live in Foundry bestätigt.
+
+- **Vierundzwanzigste Runde (2026-09-24):** [NOTIZEN.md](NOTIZEN.md) abgearbeitet — fünf Punkte, zunächst nur im Foundry-Modul, danach Click-Dummy nachgezogen (siehe letzter Unterpunkt):
+  - **⋮-Menü bei Behältnissen ohne Funktion:** DSA5s `_itemContextMenu` sucht ein `.withContext` innerhalb des `[data-item-id]`-Elements und löst dort ein Rechtsklick-Event aus — die Behältnis-Kachel hatte keins (bei gefüllten Beuteln traf es sogar die erste Inhaltszeile im alten Dialog). Kachel-Klickfläche trägt jetzt `withContext`, Rechtsklick auf die Kachel öffnet dasselbe Menü. Neuer Test: jeder `itemContextMenu`-Knopf hat ein `.withContext`-Ziel in seinem Item.
+  - **Behältnis öffnet das DSA5-Item-Sheet:** Klick auf die Kachel = `itemEdit` (Systembogen des Behältnisses mit Inhaltsliste/Drop-Zone). Eigener Inhalts-Dialog samt `dsa5hBag`/`dsa5hCloseBag`/`_openBagId` entfernt, ✎-Knopf entfernt (doppelt zur Kachel). Kachel ist ein `<div role="button">` statt `<button>`, damit sie als `.item` sauber per Drag & Drop gezogen werden kann; Drop auf die Kachel packt über das System-`_onDrop` (`system.parent_id`) ein.
+  - **Ausrüsten-Symbol:** ●/○ durch Schild ersetzt (Nutzerwahl aus Haken/Schild/Schalter) — neue Partial `icon-equip.hbs`, blasser Umriss = nicht ausgerüstet, gefülltes Schild in Akzentfarbe = ausgerüstet; in Ausrüstungszeilen und Behältnis-Kacheln.
+  - **Gewicht als Panel wie der Geldbeutel:** Panel-Titel „Gewicht“, darunter Balken, darunter `aktuell / max` links und `Belastung X` rechts.
+  - **Notizen im Bearbeiten-Modus:** Editoren waren bearbeitbar, aber Foundrys Bearbeiten-Knopf (`prose-mirror button.toggle`) erscheint im Core-CSS nur bei Hover. Im Bearbeiten-Modus jetzt dauerhaft sichtbar (Akzent-Rahmen oben rechts); im Spielmodus weiter nur bei Hover. Falls der Knopf auch so nicht erscheint, liegt es an etwas anderem — dann bitte Rückmeldung.
+  - 17 Tests grün (ein bestehender Test angepasst: Beutel-Inhalt wird bewusst nicht mehr im Bogen gerendert). Nichts live in Foundry bestätigt.
+  - **Click-Dummy auf Foundry-Stand gebracht** (Nutzerwunsch): Ausrüsten-Schild (`equipToggle()`) statt ✓/–; Geld und Gewicht als zwei gleich aufgebaute Panels (Münznamen nur als Tooltip); Behältnis-Kachel mit Klickfläche + Aktionsleiste (Schild, ⋮-Platzhaltermenü), das Inhalts-Modal steht stellvertretend für das DSA5-Item-Sheet und hat eine Drop-Zone. Dabei ältere Abweichung behoben: Notizen-Tab war noch der alte Stand (Aussehen/GM-Geheimnisse/Wesenszug/Verbindungen + vier gestapelte Textfelder) — jetzt wie in Foundry Persönliche-Daten-Grid + ein Textfeld je Unter-Tab (`buildNotesSubTabs()`), mit sichtbarem ✎-Knopf im Bearbeiten-Modus; `GM_SECRETS`/`ESSENCE`/`BONDS` aus data.js entfernt. Tab-Hinweistexte geleert wie in Foundry (dort alle `""`). Headless-Chrome-Screenshots geprüft (Hell/Dunkel, Spiel/Bearbeiten). Cache-Versionen style v64, data v20, script v49.
 
 ## Nächster Schritt
 

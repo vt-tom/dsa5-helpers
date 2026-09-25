@@ -11,7 +11,7 @@
             
             <span data-header-slot="fate" hidden></span><div class="dsa5h-fate-points" data-cover-move="fate">
               {{#each prepare.schips as |item|}}
-              <button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="schipUpdate" data-val="{{item.value}}" data-tooltip="fatePoints"></button>
+              <button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="schipUpdate" data-val="{{item.value}}" data-tooltip="fatePoints" aria-label="{{localize 'DSA5HELPERS.FatePointSet' value=item.value current=../document.system.status.fatePoints.value max=../document.system.status.fatePoints.max}}"></button>
               {{/each}}
             </div>
           </div>

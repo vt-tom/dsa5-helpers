@@ -2,8 +2,8 @@
 
 Ein alternativer, überarbeiteter Charakterbogen für das Foundry-VTT-System `dsa5` — zusätzlich zum bestehenden
 Systembogen wählbar, nicht dessen Ersatz. Design-Basis ist der ausführlich iterierte Click-Dummy unter
-[`clickdummy/`](clickdummy/) (reines HTML/CSS/JS, keine echten Actor-Daten); siehe [`project/PLANNING.md`](project/PLANNING.md)
-für die vollständige Entscheidungshistorie.
+[`clickdummy/`](clickdummy/) (reines HTML/CSS/JS, keine echten Actor-Daten); siehe [`project/PROJEKTDOKU.md`](project/PROJEKTDOKU.md)
+für Stand und Entscheidungen.
 
 ## Aktueller Stand (2026-09-15)
 

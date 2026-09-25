@@ -36,18 +36,13 @@ d:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers\
 
 ## Projektplanung & Rückmeldungen (`project/`)
 
-Alles, was nicht Code/Design-Datei ist, liegt gesammelt in `project/`. Seit 2026-09-15 bewusst klein und token-sparend gehalten (vorher ein einzelnes, stark angewachsenes PLANNING.md) — **immer mit [project/STATUS.md](project/STATUS.md) anfangen**, nicht mit der Historie:
+Alles, was nicht Code/Design-Datei ist, liegt in `project/`. Seit 2026-09-24 nur noch zwei aktive Dateien — **immer mit diesen beiden anfangen**:
 
-- [project/STATUS.md](project/STATUS.md) — Kurzüberblick: was funktioniert, was offen ist, nächster Schritt. Erster Anlaufpunkt vor jeder Session.
-- [project/BUGS.md](project/BUGS.md) — offene/gemeldete Fehler.
-- [project/FEATURES.md](project/FEATURES.md) — Feature-Ideen und -Backlog.
-- [project/PLANNING.md](project/PLANNING.md) — Vision sowie dauerhaft gültige Architektur-/Design-Entscheidungen und wiederverwendbare Muster. Ändert sich selten, nicht die laufende Historie.
-- [project/TABS.md](project/TABS.md) — Tab-für-Tab-Checkliste, was im Bearbeiten- bzw. Spielmodus sichtbar/editierbar sein soll. Erledigte Punkte werden gelöscht, Überschriften bleiben stehen.
-- [project/NOTIZEN.md](project/NOTIZEN.md) — Kurze, noch unsortierte Ideen/Rückmeldungen des Nutzers, nach Datum. Größere Entscheidungen wandern von hier in PLANNING.md bzw. FEATURES.md/BUGS.md, sobald geklärt.
-- [project/KI-PROMPTING.md](project/KI-PROMPTING.md) — Meta-Vorgaben, wie der Nutzer mit Coding-Agents an diesem Projekt zusammenarbeiten möchte (Freigaben, Selbstständigkeit, Ablauf).
-- [project/archive/](project/archive/) — **Nicht standardmäßig lesen.** Vollständige Entscheidungs-/Debugging-Historie (`DECISIONS.md`) sowie abgeschlossene bzw. nicht mehr aktive Einzel-Prüfaufträge aus der Click-Dummy-Ära (`UI-UX-REVIEW.md`, `DARKMODE-PRUEFUNG.md`). Nur gezielt konsultieren, wenn eine konkrete frühere Entscheidung/ein früherer Bug im Detail gebraucht wird — sonst unnötiger Token-Verbrauch.
+- [project/AUFGABEN.md](project/AUFGABEN.md) — die eine Arbeitsliste: neue Notizen des Nutzers, Fehler, live zu prüfende Punkte, offene Entscheidungen, Feature-Backlog. Neues oben unter „Neu“, Erledigtes löschen. Der Abschnitt „GitHub-Issues“ (zwischen den `GITHUB-ISSUES`-Markern) wird von `tools/sync-github-issues.cjs` erzeugt — bei Claude Code automatisch per SessionStart-Hook (`.claude/settings.json`), andere Agents rufen `node tools/sync-github-issues.cjs` zu Sessionbeginn selbst auf. Nicht von Hand bearbeiten; Issue-Status wird auf GitHub gepflegt. Er steht immer ganz unten und ist **nur zur Information**: GitHub-Issues werden **nie selbstständig abgearbeitet** — der Nutzer entscheidet, wann welches Issue bearbeitet wird, und beauftragt es ausdrücklich.
+- [project/PROJEKTDOKU.md](project/PROJEKTDOKU.md) — Ziel, aktueller Stand, Grundsätze, getroffene Design-Entscheidungen, technische Stolpersteine, Vorgaben zur Zusammenarbeit mit Agents.
+- [project/archive/](project/archive/) — **Nicht standardmäßig lesen.** Frühere Dateien (STATUS mit den Feedback-Runden 1–24, PLANNING, BUGS, FEATURES, NOTIZEN, TABS, KI-PROMPTING) und die vollständige Entscheidungs-Historie `DECISIONS.md`. Nur gezielt konsultieren, wenn eine frühere Entscheidung im Detail gebraucht wird.
 
-Faustregel für neue Dokumente: kurze, sich schnell erledigende Notizen gehören nach NOTIZEN.md statt in eine neue Datei; nur ein in sich geschlossener, umfangreicher Einzelauftrag bekommt eine eigene Datei, und die gehört dann nach `project/archive/`, sobald er abgeschlossen ist.
+Faustregel: keine neuen Dateien anlegen — Offenes gehört in AUFGABEN.md, dauerhaft Gültiges kurz in PROJEKTDOKU.md.
 
 ## CLAUDE.md
 
@@ -61,9 +56,9 @@ Claude Code lädt automatisch `CLAUDE.md` im Projekt-Root, nicht `AGENTS.md`. Da
 
 ## Arbeitsweise für Agents
 
-1. Vor Änderungen [project/STATUS.md](project/STATUS.md) lesen (aktueller Stand/nächster Schritt), bei Bedarf ergänzt um [project/BUGS.md](project/BUGS.md)/[project/FEATURES.md](project/FEATURES.md). [project/PLANNING.md](project/PLANNING.md) nur für dauerhafte Architektur-Fragen, `project/archive/` nur gezielt bei Bedarf.
+1. Vor Änderungen [project/AUFGABEN.md](project/AUFGABEN.md) und [project/PROJEKTDOKU.md](project/PROJEKTDOKU.md) lesen, `project/archive/` nur gezielt bei Bedarf.
 2. Der `clickdummy/`-Ordner ist die Design-Referenz für den echten Modulcode (`scripts/`/`templates/`/`styles/`), aber nicht blind zu übernehmen — Ziel ist ein sauberes, wartbares Foundry-Modul, das echte Systemlogik erbt statt Optik/Funktion neu zu erfinden.
 3. Generierte Dateien (siehe Kopfkommentare) nicht manuell bearbeiten.
-4. Neue dauerhafte Entscheidungen in [project/PLANNING.md](project/PLANNING.md) nachpflegen; laufender Stand/nächste Schritte in [project/STATUS.md](project/STATUS.md), neue Fehler/Ideen in [project/BUGS.md](project/BUGS.md)/[project/FEATURES.md](project/FEATURES.md).
+4. Erledigte Punkte aus [project/AUFGABEN.md](project/AUFGABEN.md) löschen, neue Fehler/Ideen/Live-Prüfpunkte dort eintragen; dauerhafte Entscheidungen und den Stand kurz in [project/PROJEKTDOKU.md](project/PROJEKTDOKU.md) nachpflegen.
 5. Foundry- und DSA5-System-Konventionen einhalten (Datenmodelle, Hooks, Sheet-Registrierung) statt eigene Parallelstrukturen zu bauen, wo es vermeidbar ist.
 6. Änderungen am Click-Dummy im Browser über `clickdummy/start-server.bat` prüfen (nicht per `file://` öffnen), da sonst Fonts/Icons/Rahmenbild aus `systems/dsa5` fehlen.

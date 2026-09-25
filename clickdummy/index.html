@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=62">
+<link rel="stylesheet" href="style.css?v=86">
 </head>
 <body>
 
@@ -19,13 +19,27 @@
        Zauberer/Geweihter, kein AsP/KaP) — siehe initOnlyLepToggle(). Rein visuell, ändert data.js nicht. -->
   <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
   <button type="button" id="themeToggle">Dunkles Thema</button>
+  <!-- Vergleichsschalter Paket F — nach der Entscheidung samt Verlierer-Varianten löschen, siehe initLayoutSwitches(). -->
+  <div class="mode-switch" id="headSizeSwitch" role="group" aria-label="Kopfbereich">
+    <button type="button" data-value="standard" class="active" aria-pressed="true">Kopf: Standard</button>
+    <button type="button" data-value="compact" aria-pressed="false">Kopf: Kompakt</button>
+  </div>
+  <div class="mode-switch" id="tradSwitch" role="group" aria-label="Traditionsanzeige">
+    <button type="button" data-value="pill" class="active" aria-pressed="true">Tradition: Pille</button>
+    <button type="button" data-value="quiet" aria-pressed="false">Tradition: Zurückgenommen</button>
+  </div>
+  <div class="mode-switch" id="combatTopSwitch" role="group" aria-label="Kampf-Übersicht">
+    <button type="button" data-value="panels" class="active" aria-pressed="true">Kampf: Panels</button>
+    <button type="button" data-value="strip" aria-pressed="false">Kampf: Leiste</button>
+    <button type="button" data-value="figure" aria-pressed="false">Kampf: Silhouette</button>
+  </div>
 </div>
 
 <div class="sheet-wrap">
 
   <nav class="rail" id="rail"></nav>
 
-  <div class="sheet" data-theme="light" data-mode="play">
+  <div class="sheet" data-theme="light" data-mode="play" data-headsize="standard" data-trad="pill">
 
     <!-- VORSCHAU 2026-09-15 (siehe PLANNING.md-Entscheidungsprotokoll, "Kopfzeile passt nicht richtig, Name
          doppelt, viel Platz verloren"): Nachbau der ECHTEN Foundry-Fenster-Titelzeile (Augen-/Schloss-Icon links,
@@ -126,8 +140,8 @@
      liefert der Browser bei einem einfachen Reload evtl. eine alte JS-Datei zusammen mit neuem HTML/CSS aus
      (führt zu einem leeren Content-Bereich, weil script.js dann Datenformen aus data.js erwartet, die die
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
-<script src="assets-map.js?v=12"></script>
-<script src="data.js?v=19"></script>
-<script src="script.js?v=47"></script>
+<script src="assets-map.js?v=14"></script>
+<script src="data.js?v=22"></script>
+<script src="script.js?v=64"></script>
 </body>
 </html>

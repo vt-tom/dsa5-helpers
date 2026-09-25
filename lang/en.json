@@ -58,8 +58,27 @@
       "companion": ""
     },
     "Weapons": "Weapons",
-    "Edit": "Edit",
-    "Close": "Close",
-    "GMNotes": "GM notes"
+    "OpenBag": "Open container (drop items here to pack them)",
+    "GMNotes": "GM notes",
+    "OpenTradition": "Open tradition",
+    "GripTwoHanded": "Two-handed",
+    "EquipGripHint": "Equip · right-click: main hand / off hand / two-handed",
+    "ConditionDecrease": "Decrease {name}",
+    "ConditionIncrease": "Increase {name}",
+    "ConditionLevel": "Level {value} of {max}",
+    "FatePointSet": "Set fate points to {value} ({current} of {max} available)",
+    "FavoriteOf": "{name}: toggle favorite",
+    "RollNamed": "Roll {name}",
+    "RollAttribute": "Roll {name} check",
+    "RollAttackWith": "Roll attack with {name}",
+    "RollParryWith": "Roll parry with {name}",
+    "RollRangedWith": "Roll ranged attack with {name}",
+    "RollDamageOf": "Roll damage for {name}",
+    "AdvanceNamed": "Advance {name}",
+    "RefundNamed": "{name}: refund advance",
+    "OnlyLearned": "Only improved",
+    "ClearSearch": "Clear search",
+    "SearchAllGroups": "Results from all groups for “{query}”",
+    "NoLearnedSkills": "No improved skills in this group."
   }
 }

@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|clear|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/tools/sync-github-issues.cjs\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

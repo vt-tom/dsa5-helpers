@@ -2,17 +2,17 @@
         
         <div class="dsa5h-attr-tiles">
           {{#each prepare.mentalAttrs as |ch|}}
-          <div class="dsa5h-attr-tile"><button type="button" class="dsa5h-attr-roll" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}">
+          <div class="dsa5h-attr-tile"><button type="button" class="dsa5h-attr-roll" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}">
             <span class="dsa5h-attr-die" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span>
             <span class="dsa5h-attr-key">{{attrAbbr ch}}</span></button>
-{{#if @root.dsa5h.editMode}}<div class="dsa5h-attribute-edit">{{#if @root.prepare.canAdvance}}<button type="button" data-action="advanceWrapper" data-fct="_refundAttributeAdvance" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.Refund'}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advanceAttribute" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.Advance'}}">+</button>{{/if}}<label>{{localize 'Initial'}}<input type="number" name="system.characteristics.{{ch}}.initial" value="{{getAttr @root.document ch 'initial'}}"></label><label>{{localize 'ABBR.advances'}}<input type="number" name="system.characteristics.{{ch}}.advances" value="{{getAttr @root.document ch 'advances'}}"></label></div>{{/if}}
+{{#if @root.dsa5h.editMode}}<div class="dsa5h-attribute-edit">{{#if @root.prepare.canAdvance}}<button type="button" data-action="advanceWrapper" data-fct="_refundAttributeAdvance" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize (concatUp 'CHAR.' ch))}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advanceAttribute" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize (concatUp 'CHAR.' ch))}}">+</button>{{/if}}<label>{{localize 'Initial'}}<input type="number" name="system.characteristics.{{ch}}.initial" value="{{getAttr @root.document ch 'initial'}}"></label><label>{{localize 'ABBR.advances'}}<input type="number" name="system.characteristics.{{ch}}.advances" value="{{getAttr @root.document ch 'advances'}}"></label></div>{{/if}}
           </div>
           {{/each}}
           {{#each prepare.bodyAttrs as |ch|}}
-          <div class="dsa5h-attr-tile"><button type="button" class="dsa5h-attr-roll" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}">
+          <div class="dsa5h-attr-tile"><button type="button" class="dsa5h-attr-roll" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}">
             <span class="dsa5h-attr-die" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span>
             <span class="dsa5h-attr-key">{{attrAbbr ch}}</span></button>
-{{#if @root.dsa5h.editMode}}<div class="dsa5h-attribute-edit">{{#if @root.prepare.canAdvance}}<button type="button" data-action="advanceWrapper" data-fct="_refundAttributeAdvance" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.Refund'}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advanceAttribute" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.Advance'}}">+</button>{{/if}}<label>{{localize 'Initial'}}<input type="number" name="system.characteristics.{{ch}}.initial" value="{{getAttr @root.document ch 'initial'}}"></label><label>{{localize 'ABBR.advances'}}<input type="number" name="system.characteristics.{{ch}}.advances" value="{{getAttr @root.document ch 'advances'}}"></label></div>{{/if}}
+{{#if @root.dsa5h.editMode}}<div class="dsa5h-attribute-edit">{{#if @root.prepare.canAdvance}}<button type="button" data-action="advanceWrapper" data-fct="_refundAttributeAdvance" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize (concatUp 'CHAR.' ch))}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advanceAttribute" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize (concatUp 'CHAR.' ch))}}">+</button>{{/if}}<label>{{localize 'Initial'}}<input type="number" name="system.characteristics.{{ch}}.initial" value="{{getAttr @root.document ch 'initial'}}"></label><label>{{localize 'ABBR.advances'}}<input type="number" name="system.characteristics.{{ch}}.advances" value="{{getAttr @root.document ch 'advances'}}"></label></div>{{/if}}
           </div>
           {{/each}}
         </div>
@@ -92,7 +92,7 @@
               <div class="subhead">{{localize "DSA5HELPERS.Resources"}}</div>
               <div class="row-head derived-row"><span></span><span>{{localize "ABBR.value"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.advances"}}</span><span>{{localize "ABBR.max"}}</span></div>
               <div class="row derived-row">
-                <span class="left">{{localize "wounds"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="wounds" aria-label="{{localize 'DSA5HELPERS.Refund'}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="wounds" aria-label="{{localize 'DSA5HELPERS.Advance'}}">+</button></span>{{/if}}</span>
+                <span class="left">{{localize "wounds"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="wounds" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize 'wounds')}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="wounds" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize 'wounds')}}">+</button></span>{{/if}}</span>
                 <span class="muted center">{{document.system.status.wounds.current}}</span>
                 <span class="center">{{formInput systemFields.status.fields.wounds.fields.modifier value=document.system.status.wounds.modifier disabled=(not dsa5h.editMode)}}</span>
                 <span class="center">{{formInput systemFields.status.fields.wounds.fields.advances value=document.system.status.wounds.advances disabled=(not dsa5h.editMode)}}</span>
@@ -109,7 +109,7 @@
               {{/if}}
               {{#if prepare.magic.hasSpells}}
               <div class="row derived-row">
-                <span class="left">{{localize "astralenergy"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="astralenergy" aria-label="{{localize 'DSA5HELPERS.Refund'}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="astralenergy" aria-label="{{localize 'DSA5HELPERS.Advance'}}">+</button></span>{{/if}}</span>
+                <span class="left">{{localize "astralenergy"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="astralenergy" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize 'astralenergy')}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="astralenergy" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize 'astralenergy')}}">+</button></span>{{/if}}</span>
                 <span class="muted center">{{document.system.status.astralenergy.current}}</span>
                 <span class="center">{{formInput systemFields.status.fields.astralenergy.fields.modifier value=document.system.status.astralenergy.modifier disabled=(not dsa5h.editMode)}}</span>
                 <span class="center">{{formInput systemFields.status.fields.astralenergy.fields.advances value=document.system.status.astralenergy.advances disabled=(not dsa5h.editMode)}}</span>
@@ -124,7 +124,7 @@
                 <span class="big center">{{document.system.status.regeneration.AsPmax}}</span>
               </div>
               <div class="row derived-row">
-                <span class="left" data-tooltip="FORMULA.permanentAsP">{{localize "CHARAbbrev.pAsP"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPC" data-attr="astralenergy" data-tooltip="rebuyRevertCost" aria-label="{{localize 'DSA5HELPERS.Refund'}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_rebuyPC" data-attr="astralenergy" data-tooltip="rebuyCost" aria-label="{{localize 'DSA5HELPERS.Advance'}}">+</button></span>{{/if}}</span>
+                <span class="left" data-tooltip="FORMULA.permanentAsP">{{localize "CHARAbbrev.pAsP"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPC" data-attr="astralenergy" data-tooltip="rebuyRevertCost" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize 'CHARAbbrev.pAsP')}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_rebuyPC" data-attr="astralenergy" data-tooltip="rebuyCost" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize 'CHARAbbrev.pAsP')}}">+</button></span>{{/if}}</span>
                 <span class="muted center"></span>
                 <span class="center">{{formInput systemFields.status.fields.astralenergy.fields.permanentLoss value=document.system.status.astralenergy.permanentLoss tooltip="SHEET.paidPAsP"}}</span>
                 <span class="center">{{formInput systemFields.status.fields.astralenergy.fields.rebuy value=document.system.status.astralenergy.rebuy tooltip="SHEET.rebuyPAsP"}}</span>
@@ -134,7 +134,7 @@
               {{/if}}
               {{#if prepare.magic.hasPrayers}}
               <div class="row derived-row">
-                <span class="left">{{localize "karmaenergy"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="karmaenergy" aria-label="{{localize 'DSA5HELPERS.Refund'}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="karmaenergy" aria-label="{{localize 'DSA5HELPERS.Advance'}}">+</button></span>{{/if}}</span>
+                <span class="left">{{localize "karmaenergy"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="karmaenergy" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize 'karmaenergy')}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="karmaenergy" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize 'karmaenergy')}}">+</button></span>{{/if}}</span>
                 <span class="muted center">{{document.system.status.karmaenergy.current}}</span>
                 <span class="center">{{formInput systemFields.status.fields.karmaenergy.fields.modifier value=document.system.status.karmaenergy.modifier disabled=(not dsa5h.editMode)}}</span>
                 <span class="center">{{formInput systemFields.status.fields.karmaenergy.fields.advances value=document.system.status.karmaenergy.advances disabled=(not dsa5h.editMode)}}</span>
@@ -149,7 +149,7 @@
                 <span class="big center">{{document.system.status.regeneration.KaPmax}}</span>
               </div>
               <div class="row derived-row">
-                <span class="left" data-tooltip="FORMULA.permanentKaP">{{localize "CHARAbbrev.pKaP"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPC" data-attr="karmaenergy" data-tooltip="rebuyRevertCost" aria-label="{{localize 'DSA5HELPERS.Refund'}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_rebuyPC" data-attr="karmaenergy" data-tooltip="rebuyCost" aria-label="{{localize 'DSA5HELPERS.Advance'}}">+</button></span>{{/if}}</span>
+                <span class="left" data-tooltip="FORMULA.permanentKaP">{{localize "CHARAbbrev.pKaP"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPC" data-attr="karmaenergy" data-tooltip="rebuyRevertCost" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize 'CHARAbbrev.pKaP')}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_rebuyPC" data-attr="karmaenergy" data-tooltip="rebuyCost" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize 'CHARAbbrev.pKaP')}}">+</button></span>{{/if}}</span>
                 <span class="muted center"></span>
                 <span class="center">{{formInput systemFields.status.fields.karmaenergy.fields.permanentLoss value=document.system.status.karmaenergy.permanentLoss tooltip="SHEET.paidPAsP"}}</span>
                 <span class="center">{{formInput systemFields.status.fields.karmaenergy.fields.rebuy value=document.system.status.karmaenergy.rebuy tooltip="SHEET.rebuyPAsP"}}</span>

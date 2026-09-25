@@ -11,6 +11,11 @@ function el(tag, attrs = {}, children = []) {
     if (c == null) continue;
     node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
   }
+  // Reine Symbol-Knöpfe (☾, 📖, ×, ⓘ …) bekommen ihren title als zugänglichen Namen — sonst liest ein Screenreader
+  // nur das Zeichen vor (UI/UX-Review 2026-09-25, Punkt 4). Knöpfe mit sichtbarem Text behalten ihren Text als Namen.
+  if (tag === "button" && attrs.title && !attrs["aria-label"] && !/[\p{L}\p{N}]/u.test(node.textContent)) {
+    node.setAttribute("aria-label", attrs.title);
+  }
   return node;
 }
 
@@ -26,13 +31,45 @@ function dieBg(dieName, big) {
 // Bildet die 3W20-Probe wie im DSA5-System ab (skillselect.hbs): drei Attribut-Chips statt einer fertig gewürfelten Qualitätsstufe.
 // Die Chips nutzen dieselben Würfelgrafiken/-farben wie das Attribut-Band (System: .diet-mu/.diet-kl/… via CSS-Hintergrundbild).
 const DIE_BY_ATTR = { MU: "d20mu", KL: "d20kl", IN: "d20in", CH: "d20ch", FF: "d20ff", GE: "d20ge", KO: "d20ko", KK: "d20kk" };
-function probeDice(probe) {
+// Mit `name` wird die Würfelgruppe zu EINER auslösbaren Aktion („Sinnesschärfe würfeln“) statt drei einzelner
+// Kürzel (UI/UX-Review 2026-09-25, Punkt 4); ohne `name` bleibt sie reine Anzeige.
+function probeDice(probe, name) {
   const attrs = probe.split("/");
-  return el(
+  const node = el(
     "span",
     { class: "probe-dice" },
-    attrs.map((a) => el("span", { class: "probe-die", style: dieBg(DIE_BY_ATTR[a]) }, a))
+    attrs.map((a) => el("span", { class: "probe-die", style: dieBg(DIE_BY_ATTR[a]), "aria-hidden": "true" }, a))
   );
+  return name ? makeRollable(node, `${name} würfeln (${probe})`) : node;
+}
+
+const ATTR_LABELS = { MU: "Mut", KL: "Klugheit", IN: "Intuition", CH: "Charisma", FF: "Fingerfertigkeit", GE: "Gewandtheit", KO: "Konstitution", KK: "Körperkraft" };
+
+// Macht ein beliebiges Element zu einer per Klick, Enter und Leertaste auslösbaren Würfelaktion mit sprechendem
+// aria-label (UI/UX-Review 2026-09-25, Punkt 4). Der Click-Dummy hat keine Würfelmechanik — flashNotice() steht
+// stellvertretend für die echte Probe; im Modul hängt dieselbe Rolle an den geerbten System-data-actions.
+function makeRollable(node, label) {
+  node.classList.add("rollable");
+  node.setAttribute("role", "button");
+  node.setAttribute("tabindex", "0");
+  node.setAttribute("aria-label", label);
+  node.title = label;
+  const fire = (e) => {
+    e.stopPropagation();
+    flashNotice(`🎲 ${label}`);
+  };
+  node.addEventListener("click", fire);
+  node.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    fire(e);
+  });
+  return node;
+}
+
+// AT/PA/FK-Würfel im Kampf-Reiter (.die-qs.lg) als auslösbare Aktion.
+function combatDie(value, die, label) {
+  return makeRollable(el("span", { class: "die-qs lg", style: dieBg(die) }, String(value)), label);
 }
 
 // AP-Kosten-Engine — auf Nutzerwunsch 1:1 aus dem echten DSA5-System portiert, nichts Neu-Erfundenes:
@@ -91,13 +128,15 @@ function flashNotice(msg) {
 // getValue/setValue lesen/schreiben den aktuellen Wert, stf den Steigerungsfaktor (A-E), min die Untergrenze
 // (0 normalerweise, z.B. 6 bei Kampftalenten wegen deren advanceMin im System), onChange rendert nach einer
 // erfolgreichen Änderung neu. Gibt [minus, plus] zum Einbetten in die jeweilige Zeile zurück.
-function advanceStepper(getValue, setValue, stf, min, onChange) {
+// `label` (optional) benennt das Ziel im aria-label („Klettern steigern (2 AP)“).
+function advanceStepper(getValue, setValue, stf, min, onChange, label) {
   const current = getValue();
   const advanceCost = calcAdvCost(current, stf);
-  const minus = el("span", { class: "step minus edit-only", title: current > min ? `Senken (${calcAdvCost(current, stf, 0)} AP zurück)` : "Minimalwert erreicht" }, "−");
-  const plus = el("span", { class: "step plus edit-only", title: advanceCost !== undefined ? `Steigern (${advanceCost} AP)` : "Maximalwert erreicht" }, "+");
-  if (current <= min) minus.classList.add("disabled");
-  if (advanceCost === undefined) plus.classList.add("disabled");
+  const prefix = label ? `${label} ` : "";
+  const minusTitle = current > min ? `${prefix}senken (${calcAdvCost(current, stf, 0)} AP zurück)` : `${prefix}Minimalwert erreicht`;
+  const plusTitle = advanceCost !== undefined ? `${prefix}steigern (${advanceCost} AP)` : `${prefix}Maximalwert erreicht`;
+  const minus = stepButton("minus edit-only", "−", minusTitle, current <= min, `adv-minus:${label}`);
+  const plus = stepButton("plus edit-only", "+", plusTitle, advanceCost === undefined, `adv-plus:${label}`);
   plus.addEventListener("click", (e) => {
     e.stopPropagation();
     const v = getValue();
@@ -167,9 +206,10 @@ let currentTab = "cover";
 // wirkt direkt auf das Objekt selbst — dieselbe Referenz taucht auf dem Titelblatt (renderCover) wieder auf,
 // ein erneutes renderContent() dort reicht also, es gibt keinen separaten Favoriten-Datenspeicher.
 function favStar(item) {
+  const label = item.fav ? `${item.name}: Favorit entfernen` : `${item.name} als Favorit markieren`;
   const btn = el(
     "button",
-    { type: "button", class: "fav-star" + (item.fav ? " active" : ""), title: item.fav ? "Favorit entfernen" : "Als Favorit markieren" },
+    { type: "button", class: "fav-star" + (item.fav ? " active" : ""), title: label, "aria-label": label, "aria-pressed": String(!!item.fav), "data-fkey": `fav:${item.name}` },
     item.fav ? "★" : "☆"
   );
   btn.addEventListener("click", (e) => {
@@ -215,6 +255,7 @@ function makeEditable(container, value, onCommit, opts = {}) {
         if (min !== undefined) n = Math.max(min, n);
         if (max !== undefined) n = Math.min(max, n);
         if (n === value) return restore();
+        if (container.dataset.fkey) pendingFlash = container.dataset.fkey;
         onCommit(n);
       } else {
         const v = input.value.trim();
@@ -241,11 +282,12 @@ function renderRail() {
   rail.innerHTML = "";
   TABS.forEach((t) => {
     const active = t.id === currentTab;
-    const children = [el("img", { src: t.icon, alt: "" })];
-    if (active) children.push(el("span", { class: "rail-label" }, t.label));
+    // Jeder Reiter trägt sein Label; CSS zeigt es beim aktiven Reiter dauerhaft, bei den übrigen zuverlässig bei
+    // Hover UND Tastaturfokus (UI/UX-Review 2026-09-25 Punkt 7, Variante b) — kein title mehr, sonst doppelter Tooltip.
+    const children = [el("img", { src: t.icon, alt: "" }), el("span", { class: "rail-label", "aria-hidden": "true" }, t.label)];
     const btn = el(
       "button",
-      { type: "button", title: t.label, "aria-label": t.label, "aria-current": active ? "page" : "false", class: active ? "active" : "" },
+      { type: "button", "aria-label": t.label, "aria-current": active ? "page" : "false", class: active ? "active" : "" },
       children
     );
     btn.addEventListener("click", () => setTab(t.id));
@@ -279,7 +321,7 @@ function buildAttrTiles() {
     // gespeicherten Felds — sonst würde die Kachel nach dem Steigern/Editieren in buildAttrDetailPanel() veralten.
     ATTRS.map((a) =>
       el("div", { class: "attr-tile" }, [
-        el("span", { class: "attr-die", style: dieBg(a.die) }, String(a.initial + a.adv + a.mod)),
+        makeRollable(el("span", { class: "attr-die", style: dieBg(a.die) }, String(a.initial + a.adv + a.mod)), `Probe auf ${ATTR_LABELS[a.k]} würfeln`),
         el("span", { class: "attr-key" }, a.k),
       ])
     )
@@ -303,7 +345,8 @@ function buildAttrDetailPanel() {
           (v) => { a.adv = v - a.initial; },
           "E",
           a.initial,
-          () => { renderContent(); renderHeader(); }
+          () => { renderContent(); renderHeader(); },
+          ATTR_LABELS[a.k]
         );
         return el("span", { class: "attr-matrix-head" }, [minus, el("span", {}, a.k), plus]);
       }),
@@ -412,7 +455,8 @@ function buildResourceRow(d) {
       },
       "D",
       0,
-      () => { renderContent(); renderHeader(); }
+      () => { renderContent(); renderHeader(); },
+      `${d.label} Zukauf`
     );
     nameChildren.push(minus, plus);
   }
@@ -461,7 +505,8 @@ function buildSimpleRow(d) {
 // die Original-Array-Referenz aus data.js, `item` der zu löschende Eintrag (Mutation direkt auf den Daten,
 // analog zu favStar()).
 function deletableChip(iconSrc, label, list, item) {
-  const delBtn = el("button", { type: "button", class: "chip-delete edit-only", title: "Löschen" }, "×");
+  const delLabel = `${typeof label === "string" ? label : "Eintrag"} löschen`;
+  const delBtn = el("button", { type: "button", class: "chip-delete edit-only", title: delLabel, "aria-label": delLabel }, "×");
   delBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const idx = list.indexOf(item);
@@ -537,13 +582,15 @@ function renderMain() {
   const basicsGroupPanel = el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Grundwerte"),
     el("div", { class: "subhead" }, "Ressourcen"),
-    el("div", { class: "row-head derived-row" }, head("", "Wert", "Mod", "Zukauf", "Max")),
+    // "Wert" war nicht selbsterklärend: bei Ressourcen ist es der aktuelle Stand, bei berechneten Werten der
+    // Grundwert vor Modifikatoren (UI/UX-Review 2026-09-25, Paket G).
+    el("div", { class: "row-head derived-row" }, head("", "Aktuell", "Mod", "Zukauf", "Max")),
     ...RESOURCES.filter((d) => d.show !== false).map(buildResourceRow),
     el("div", { class: "subhead" }, "Resistenzen"),
-    el("div", { class: "row-head simple-row" }, head("", "Wert", "Mod", "Max")),
+    el("div", { class: "row-head simple-row" }, head("", "Basis", "Mod", "Max")),
     ...RESISTANCES.filter((d) => d.show !== false).map(buildSimpleRow),
     el("div", { class: "subhead" }, "Grundwerte"),
-    el("div", { class: "row-head simple-row" }, head("", "Wert", "Mod", "Max")),
+    el("div", { class: "row-head simple-row" }, head("", "Basis", "Mod", "Max")),
     ...BASICS.map(buildSimpleRow),
   ]);
 
@@ -603,6 +650,7 @@ let currentSkillGroup = 0;
 
 function setSkillGroup(g) {
   currentSkillGroup = g;
+  skillSearchQuery = "";
   renderContent();
   renderSubNav();
   document.getElementById("content").scrollTop = 0;
@@ -635,13 +683,13 @@ function belastungCell(s) {
 // SKILL_GROUPS-Kommentar in data.js), analog zum Eigenschaften-Tab.
 function skillRow(s) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
-  const [minus, plus] = advanceStepper(() => s.fw, (v) => { s.fw = v; }, s.stf, 0, () => { renderContent(); renderHeader(); });
+  const [minus, plus] = advanceStepper(() => s.fw, (v) => { s.fw = v; }, s.stf, 0, () => { renderContent(); renderHeader(); }, s.name);
   const fwSpan = el("span", { class: "big val-editable" }, String(s.fw));
   if (mode === "edit") makeEditable(fwSpan, s.fw, (v) => { s.fw = v; renderContent(); renderHeader(); }, { type: "number", min: 0, max: 99 });
   return el("div", { class: "row skill-row" }, [
     el("img", { src: s.img, alt: "" }),
     el("span", { class: "left" }, s.name),
-    probeDice(s.probe),
+    probeDice(s.probe, s.name),
     belastungCell(s),
     el("span", { class: "skill-fw" }, [minus, fwSpan, plus]),
     favStar(s),
@@ -654,7 +702,7 @@ function skillRow(s) {
 // statt eines leeren Panels (renderSkills() zeigt dann bei mehreren durchsuchten Gruppen nur eine gemeinsame
 // "nichts gefunden"-Meldung statt einer pro leerer Gruppe).
 function renderSkillGroupPanel(g, query) {
-  const items = query ? g.items.filter((s) => s.name.toLowerCase().includes(query)) : g.items;
+  const items = g.items.filter((s) => (!query || s.name.toLowerCase().includes(query)) && (!skillOnlyLearned || s.fw > 0));
   if (query && !items.length) return null;
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title", style: `color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.55);background:${g.grad}` }, g.name),
@@ -663,6 +711,7 @@ function renderSkillGroupPanel(g, query) {
     // Kopfzeilen der Wert-Spalten zentriert sein.
     el("div", { class: "row-head skill-row" }, head("", "Talent", "Probe", "BE", "FW", "")),
     ...items.map(skillRow),
+    ...(items.length ? [] : [el("div", { class: "drop-zone" }, "Keine gesteigerten Talente in dieser Gruppe.")]),
   ]);
 }
 
@@ -683,7 +732,7 @@ function renderAggregatedPanel() {
       ...a.talents.map((t) =>
         el("div", { class: "row agg-talent-row" }, [
           el("span", { class: "left muted" }, t.name),
-          probeDice(t.probe),
+          probeDice(t.probe, t.name),
           el("span", { class: "muted center" }, `FW ${t.fw}`),
         ])
       ),
@@ -700,14 +749,16 @@ function buildSkillSubTabs() {
     "div",
     { class: "sub-tabs" },
     [
+      // Während einer Suche zeigt die Liste Treffer aus ALLEN Gruppen — dann ist keine Gruppe markiert
+      // (UI/UX-Review 2026-09-25 Punkt 8); nach dem Löschen der Suche gilt wieder currentSkillGroup.
       ...SKILL_GROUPS.map((g, i) => {
-        const active = currentSkillGroup === i;
+        const active = !skillSearchQuery.trim() && currentSkillGroup === i;
         const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, g.name.replace(/s?talente$/i, ""));
         btn.addEventListener("click", () => setSkillGroup(i));
         return btn;
       }),
       (() => {
-        const active = currentSkillGroup === "agg";
+        const active = !skillSearchQuery.trim() && currentSkillGroup === "agg";
         const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, "Sammelproben");
         btn.addEventListener("click", () => setSkillGroup("agg"));
         return btn;
@@ -720,7 +771,7 @@ function buildSkillSubTabs() {
 // .sub-tabs/.sub-tab-Muster wie bei den Talenten.
 function buildCombatSubTabs() {
   return el("div", { class: "sub-tabs" }, [
-    ["kampf", "Kampf"], ["kampftalente", "Kampftalente"],
+    ["kampf", "Übersicht"], ["kampftalente", "Kampftalente"],
   ].map(([id, label]) => {
     const active = currentCombatSection === id;
     const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
@@ -772,7 +823,30 @@ function buildReligionSubTabs() {
   }));
 }
 
-// Nur auf Tabs gefüllt, die in gleichwertige Unter-Bereiche zerfallen (Talente/Kampf/Magie/Religion), sonst geleert.
+// Notizen-Unterreiter (wie im Foundry-Modul, notes-Subnav): vier Freitextfelder als gleichwertige Bereiche.
+const NOTES_SECTIONS = [
+  { id: "biography", label: "Hintergrundgeschichte", get: () => BIOGRAPHY_TEXT, set: (v) => { BIOGRAPHY_TEXT = v; } },
+  { id: "notes", label: "Notizen", get: () => NOTES_TEXT, set: (v) => { NOTES_TEXT = v; } },
+  { id: "ownernotes", label: "Private Notizen", get: () => PRIVATE_NOTES_TEXT, set: (v) => { PRIVATE_NOTES_TEXT = v; } },
+  { id: "gmnotes", label: "GM-Notizen", get: () => GM_NOTES_TEXT, set: (v) => { GM_NOTES_TEXT = v; } },
+];
+let currentNotesSection = "biography";
+
+function buildNotesSubTabs() {
+  return el("div", { class: "sub-tabs" }, NOTES_SECTIONS.map(({ id, label }) => {
+    const active = currentNotesSection === id;
+    const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
+    btn.addEventListener("click", () => {
+      currentNotesSection = id;
+      renderContent();
+      renderSubNav();
+      document.getElementById("content").scrollTop = 0;
+    });
+    return btn;
+  }));
+}
+
+// Nur auf Tabs gefüllt, die in gleichwertige Unter-Bereiche zerfallen (Talente/Kampf/Magie/Religion/Notizen), sonst geleert.
 function renderSubNav() {
   const nav = document.getElementById("tabSubNav");
   nav.innerHTML = "";
@@ -780,6 +854,7 @@ function renderSubNav() {
   else if (currentTab === "combat") nav.appendChild(buildCombatSubTabs());
   else if (currentTab === "magic") nav.appendChild(buildMagicSubTabs());
   else if (currentTab === "religion") nav.appendChild(buildReligionSubTabs());
+  else if (currentTab === "notes") nav.appendChild(buildNotesSubTabs());
 }
 
 // Nutzer-Feedback 2026-09-14: die Suche filterte bisher nur innerhalb der gerade aktiven Talentgruppe — ein Treffer
@@ -788,6 +863,9 @@ function renderSubNav() {
 // als eigene Panels untereinander gezeigt (leere Gruppen entfallen), unabhängig vom aktiven Unter-Tab. Ohne
 // Suchbegriff bleibt die gewohnte Ein-Gruppe-pro-Unter-Tab-Ansicht (inkl. Sammelproben) erhalten.
 let skillSearchQuery = "";
+// "Nur gesteigerte anzeigen" wie der Filter im System (actor-talents.hbs: .notLearned = FW 0, ausgeblendet solange
+// .allTalents nicht .showAll trägt) — bisher nur ein Text ohne Funktion.
+let skillOnlyLearned = false;
 
 function renderSkills() {
   const searchInput = el("input", { type: "search", id: "skillSearch", placeholder: "Talent suchen …", value: skillSearchQuery });
@@ -795,18 +873,36 @@ function renderSkills() {
     skillSearchQuery = searchInput.value;
     const pos = searchInput.selectionStart;
     renderContent();
+    renderSubNav();
     const fresh = document.getElementById("skillSearch");
     fresh.focus();
     fresh.setSelectionRange(pos, pos);
   });
-  const search = el("div", { class: "search-bar" }, [searchInput, el("span", { class: "muted" }, "Nur gesteigerte anzeigen")]);
+  const filterBtn = el("button", { type: "button", class: "filter-switch" + (skillOnlyLearned ? " on" : ""), role: "switch", "aria-checked": String(skillOnlyLearned) }, [
+    el("span", { class: "filter-switch-track", "aria-hidden": "true" }, [el("span", { class: "filter-switch-thumb" })]),
+    "Nur gesteigerte",
+  ]);
+  filterBtn.addEventListener("click", () => {
+    skillOnlyLearned = !skillOnlyLearned;
+    renderContent();
+    document.querySelector(".filter-switch")?.focus();
+  });
+  const search = el("div", { class: "search-bar" }, [searchInput, filterBtn]);
 
   const q = skillSearchQuery.trim().toLowerCase();
   let content;
   if (q) {
     const panels = SKILL_GROUPS.map((g) => renderSkillGroupPanel(g, q)).filter(Boolean);
     const noResults = panels.length ? null : el("div", { class: "drop-zone" }, `Kein Talent gefunden für „${skillSearchQuery}“`);
-    content = el("div", {}, [...panels, ...(noResults ? [noResults] : [])]);
+    const clearBtn = el("button", { type: "button", class: "search-clear" }, "Suche löschen");
+    clearBtn.addEventListener("click", () => {
+      skillSearchQuery = "";
+      renderContent();
+      renderSubNav();
+      document.getElementById("skillSearch")?.focus();
+    });
+    const info = el("div", { class: "search-info", role: "status" }, [`Suchergebnisse aus allen Gruppen für „${skillSearchQuery.trim()}“`, clearBtn]);
+    content = el("div", {}, [info, ...panels, ...(noResults ? [noResults] : [])]);
   } else {
     content = currentSkillGroup === "agg" ? renderAggregatedPanel() : renderSkillGroupPanel(SKILL_GROUPS[currentSkillGroup], q);
   }
@@ -982,8 +1078,8 @@ function gripCell(w) {
   if (w.worn.requiresBothHands) {
     return el("span", { class: "grip-cell" }, [el("span", { class: "grip-btn active", title: "Beidhändig geführt" }, "✋✋"), throwMenu]);
   }
-  const mainBtn = el("button", { type: "button", class: "grip-btn" + (!w.worn.offHand ? " active" : ""), title: "Haupthand" }, "H");
-  const offBtn = el("button", { type: "button", class: "grip-btn" + (w.worn.offHand ? " active" : ""), title: "Nebenhand" }, "N");
+  const mainBtn = el("button", { type: "button", class: "grip-btn" + (!w.worn.offHand ? " active" : ""), title: "Haupthand", "aria-label": `${w.name} in der Haupthand führen`, "aria-pressed": String(!w.worn.offHand) }, "H");
+  const offBtn = el("button", { type: "button", class: "grip-btn" + (w.worn.offHand ? " active" : ""), title: "Nebenhand", "aria-label": `${w.name} in der Nebenhand führen`, "aria-pressed": String(!!w.worn.offHand) }, "N");
   mainBtn.addEventListener("click", (e) => { e.stopPropagation(); w.worn.offHand = false; renderContent(); });
   offBtn.addEventListener("click", (e) => { e.stopPropagation(); w.worn.offHand = true; renderContent(); });
   return el("span", { class: "grip-cell" }, [mainBtn, offBtn, throwMenu]);
@@ -1058,48 +1154,62 @@ function combatPanelTitle(text, actions) {
   return el("div", { class: "panel-title flex" }, [el("span", {}, text), el("div", { class: "panel-title-actions" }, actions)]);
 }
 
+// Waffenzeilen (Paket C, UI/UX-Review 2026-09-25): die Fernkampftabelle lief nach rechts aus dem Bogen, weil Technik,
+// Munition und Reichweite je eine eigene Spalte hatten. Jetzt wie im Foundry-Modul (weapon.hbs): Technik klein unter
+// dem Namen, Munition/Nachladen/Zielen in einer zweiten Zeile — AT/PA/FK und TP bleiben immer nebeneinander.
+// Reichweite als eigene Spalte zwischen TP und Griff (Nutzer-Entscheidung 2026-09-25, Variante A statt "RW klein
+// unter dem Namen").
+function weaponNameCell(name, group) {
+  return el("span", { class: "left weapon-name" }, [el("span", {}, name), el("small", { class: "weapon-sub" }, group)]);
+}
+
+function weaponReachCell(reach) {
+  return el("span", { class: "muted center" }, reach || "–");
+}
+
+// Zweite Zeile unter Name bis Zeilenende (nur Fernkampf mit Munition): Auswahl/Nachladen/Zielen über renderAmmoCell().
+function weaponDetails(w) {
+  if (!w.ammoTypes && !w.ammo) return null;
+  return el("div", { class: "weapon-details" }, [el("span", { class: "muted" }, "Munition"), renderAmmoCell(w)]);
+}
+
 // Angeborene Kampfwerte (TRAITS-Kommentar in data.js): eigene Zeilen ohne Griff-/Favoriten-Zelle (nicht
 // ausrüstbar), AT/PA bzw. AT sind hier reine Anzeigewerte ohne Verschleiß (trait-Items haben kein structure-Feld).
 function traitMeleeRow(t) {
-  return el("div", { class: "row melee-row" }, [
+  return el("div", { class: "row weapon-row" }, [
     el("img", { src: t.img || A.combatSkill, alt: "" }),
-    el("span", { class: "left" }, t.name),
-    el("span", { class: "muted center" }, "Angeboren"),
-    el("span", { class: "muted center" }, t.reach || "kurz"),
-    el("span", { class: "center" }, [el("span", { class: "die-qs lg", style: dieBg("d20mu") }, String(t.at))]),
-    el("span", { class: "center" }, t.pa !== undefined ? [el("span", { class: "die-qs lg", style: dieBg("d20in") }, String(t.pa))] : "–"),
+    weaponNameCell(t.name, "Angeboren"),
+    el("span", { class: "center" }, [combatDie(t.at, "d20mu", `Attacke mit ${t.name} würfeln`)]),
+    el("span", { class: "center" }, t.pa !== undefined ? [combatDie(t.pa, "d20in", `Parade mit ${t.name} würfeln`)] : "–"),
     el("span", { class: "center" }, t.tp),
+    weaponReachCell(t.reach || "kurz"),
     el("span", {}),
     el("span", {}),
   ]);
 }
 
 function traitRangedRow(t) {
-  return el("div", { class: "row ranged-row" }, [
+  return el("div", { class: "row weapon-row" }, [
     el("img", { src: t.img || A.combatSkill, alt: "" }),
-    el("span", { class: "left" }, t.name),
-    el("span", { class: "muted center" }, "Angeboren"),
-    el("span", { class: "muted center" }, "–"),
-    el("span", { class: "center", style: "grid-column:span 2" }, [el("span", { class: "die-qs lg", style: dieBg("d20mu") }, String(t.at))]),
+    weaponNameCell(t.name, "Angeboren"),
+    el("span", { class: "center", style: "grid-column:span 2" }, [combatDie(t.at, "d20mu", `Fernkampf mit ${t.name} würfeln`)]),
     el("span", { class: "center" }, t.tp),
+    weaponReachCell(t.reach),
     el("span", {}),
     el("span", {}),
   ]);
 }
 
-// Je eine Nah-/Fernkampfwaffen-Zeile — eigene Funktionen statt Inline-Map, damit die Favoriten-Liste auf dem
-// Titelblatt (renderCover) exakt dieselben Zeilen (inkl. Verschleiß-Icon, Munitionsmenü, Favoriten-Stern)
-// wiederverwenden kann statt sie zu duplizieren.
+// Je eine Nah-/Fernkampfwaffen-Zeile — eigene Funktionen statt Inline-Map (Nah-/Fernkampf-Panel, Traits daneben).
 function meleeRow(w) {
   const stats = effectiveMeleeStats(w);
-  return el("div", { class: "row melee-row" }, [
+  return el("div", { class: "row weapon-row" }, [
     itemIcon(w.img, "", w.structure, "meleeweapon"),
-    el("span", { class: "left" }, w.name),
-    el("span", { class: "muted center" }, w.group),
-    el("span", { class: "muted center" }, w.reach),
-    el("span", { class: "center" }, [el("span", { class: "die-qs lg", style: dieBg("d20mu") }, String(stats.at))]),
-    el("span", { class: "center" }, [el("span", { class: "die-qs lg", style: dieBg("d20in") }, String(stats.pa))]),
+    weaponNameCell(w.name, w.group),
+    el("span", { class: "center" }, [combatDie(stats.at, "d20mu", `Attacke mit ${w.name} würfeln`)]),
+    el("span", { class: "center" }, [combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`)]),
     el("span", { class: "center" }, w.tp),
+    weaponReachCell(w.reach),
     gripCell(w),
     favStar(w),
   ]);
@@ -1107,19 +1217,17 @@ function meleeRow(w) {
 
 function rangedRow(w) {
   const stats = effectiveRangedStats(w);
-  return el("div", { class: "row ranged-row" }, [
+  return el("div", { class: "row weapon-row" }, [
     itemIcon(w.img, "", w.structure, "rangeweapon"),
-    el("span", { class: "left" }, w.name),
-    el("span", { class: "muted center" }, w.group),
-    renderAmmoCell(w),
+    weaponNameCell(w.name, w.group),
     // FK spannt über AT+PA-Spaltenbreite (Fernkampf hat keine Parade), damit der Wert mittig zwischen AT und PA
     // der Nahkampftabelle sitzt statt an der AT-Position zu kleben.
-    el("span", { class: "center", style: "grid-column:span 2" }, [
-      el("span", { class: "die-qs lg", style: dieBg("d20mu") }, String(stats.at)),
-    ]),
+    el("span", { class: "center", style: "grid-column:span 2" }, [combatDie(stats.at, "d20mu", `Fernkampf mit ${w.name} würfeln`)]),
     el("span", { class: "center" }, w.tp),
+    weaponReachCell(w.reach),
     gripCell(w),
     favStar(w),
+    weaponDetails(w),
   ]);
 }
 
@@ -1195,39 +1303,112 @@ function renderArmorPanel() {
   ]);
 }
 
+let COMBAT_TOP = "panels";
+
+// Variante "Leiste": Ausweichen, Initiative, Schutz und die getragenen Rüstungsteile in einer Zeile.
+function combatStrip() {
+  const armorSum = computeArmorSum();
+  const be = ARMOR.reduce((t, a) => t + effectiveArmor(a).be, 0);
+  const stat = (label, value) => el("span", { class: "combat-stat" }, [el("small", {}, label), el("strong", {}, String(value))]);
+  return el("div", { class: "panel combat-strip" }, [
+    stat("Ausweichen", COMBAT_DERIVED[0].max),
+    stat("Initiative", COMBAT_DERIVED[1].max),
+    stat("Schutz", `RS ${armorSum.sum}${armorSum.magicParts.length ? ` (${armorSum.magicParts.join(", ")})` : ""} · BE ${be}`),
+    el("span", { class: "combat-strip-armor" }, ARMOR.map((a) => {
+      const st = effectiveArmor(a);
+      return el("span", { class: "chip", title: `${a.name}: RS ${st.rs}, BE ${st.be}` }, [el("img", { src: A.armor, alt: "" }), a.name]);
+    })),
+  ]);
+}
+
+// Variante "Silhouette" (GitHub-Issue #6, Vorbild DSA4-Heldenbogen): Figur aus dem Artenbild des Helden, links die
+// getragenen Rüstungsteile, rechts die Hände. DSA5 kennt ohne Trefferzonen-Regel keine Körperzonen für Rüstungen —
+// die Teile stehen deshalb als Liste neben der Figur, der Gesamtschutz liegt auf der Brust. Die Hand-Slots machen
+// die Einschränkung aus dem Issue sichtbar: in den Händen steht nur, was dort geführt wird (Haupt-/Nebenhand bzw.
+// beidhändig), weitere ausgerüstete Waffen erscheinen darunter als "ebenfalls ausgerüstet".
+function combatFigurePanel() {
+  const armorSum = computeArmorSum();
+  const be = ARMOR.reduce((t, a) => t + effectiveArmor(a).be, 0);
+  const worn = [...MELEE, ...RANGED].filter((w) => w.worn);
+  const twoHanded = worn.find((w) => w.worn.requiresBothHands && RANGED.includes(w) && w.fav) || null;
+  const main = twoHanded || worn.find((w) => !w.worn.offHand && !w.worn.requiresBothHands) || null;
+  const off = twoHanded ? null : worn.find((w) => w.worn.offHand) || null;
+  const handSlot = (label, w, both) => el("div", { class: "hand-slot" + (w ? "" : " empty") }, [
+    el("small", {}, label),
+    w ? el("span", { class: "hand-slot-weapon" }, [
+      itemIcon(w.img, "", w.structure, RANGED.includes(w) ? "rangeweapon" : "meleeweapon"),
+      el("span", {}, [el("span", { class: "hand-slot-name" }, w.name), el("small", {}, both ? "beidhändig" : w.group)]),
+      combatDie(RANGED.includes(w) ? effectiveRangedStats(w).at : effectiveMeleeStats(w).at, "d20mu", `${RANGED.includes(w) ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
+    ]) : el("span", { class: "muted" }, "frei"),
+  ]);
+  const others = worn.filter((w) => w !== main && w !== off);
+  return el("div", { class: "panel combat-figure" }, [
+    el("div", { class: "panel-title" }, "Ausrüstung am Körper"),
+    el("div", { class: "combat-figure-grid" }, [
+      el("div", { class: "figure-armor" }, [
+        el("small", { class: "figure-col-title" }, "Rüstung"),
+        ...ARMOR.map((a) => {
+          const st = effectiveArmor(a);
+          return el("div", { class: "figure-armor-item" }, [itemIcon(A.armor, a.name, a.structure, "armor"), el("span", {}, [el("span", {}, a.name), el("small", {}, `RS ${st.rs} · BE ${st.be}`)])]);
+        }),
+      ]),
+      el("div", { class: "figure-body", style: `--figure:url('${A.speciesFigure(IDENTITY.species.name)}')` }, [
+        el("span", { class: "figure-badge" }, [el("strong", {}, `RS ${armorSum.sum}`), el("small", {}, `BE ${be}`)]),
+      ]),
+      el("div", { class: "figure-hands" }, [
+        el("small", { class: "figure-col-title" }, "Hände"),
+        twoHanded ? handSlot("Beide Hände", twoHanded, true) : handSlot("Haupthand", main),
+        twoHanded ? null : handSlot("Nebenhand", off),
+        others.length ? el("small", { class: "muted figure-others" }, `Ebenfalls ausgerüstet: ${others.map((w) => w.name).join(", ")}`) : null,
+      ]),
+    ]),
+    el("div", { class: "figure-stats" }, [
+      el("span", { class: "combat-stat" }, [el("small", {}, "Ausweichen"), el("strong", {}, String(COMBAT_DERIVED[0].max))]),
+      el("span", { class: "combat-stat" }, [el("small", {}, "Initiative"), el("strong", {}, String(COMBAT_DERIVED[1].max))]),
+      el("span", { class: "combat-stat" }, [el("small", {}, "Schutz gesamt"), el("strong", {}, armorSumText(armorSum).replace("Schutz gesamt ", ""))]),
+    ]),
+  ]);
+}
+
 // Kampf-Unterreiter: Schnellwürfe, Kampfwerte + Rüstung, darunter die Waffentabellen (WAFFEN-TAB.md).
 function renderCombatMain() {
   // Ausweichen/Initiative sind vom Eigenschaften-Tab hierher gewandert (EIGENSCHAFTEN-TAB.md: "Sollen auf den Kampf Tab wandern").
   const combatValuesPanel = () =>
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title" }, "Kampfwerte"),
-      el("div", { class: "row-head simple-row" }, head("", "Wert", "Mod", "Max")),
+      el("div", { class: "row-head simple-row" }, head("", "Basis", "Mod", "Max")),
       ...COMBAT_DERIVED.map(buildSimpleRow),
     ]);
 
   // AT/PA (Nahkampf) und FK (Fernkampf) sowie TP stehen bewusst als letzte Spalten in beiden Tabellen, mit exakt
-  // derselben Gesamtbreite (siehe .melee-row/.ranged-row in style.css) — so liegen die beiden "Aktionen" (Angriffs-
+  // derselben Gesamtbreite (siehe .weapon-row in style.css) — so liegen die beiden "Aktionen" (Angriffs-
   // würfel + Schadenswert) beim Scannen durch Nah- und Fernkampfwaffen immer an derselben Bildschirmposition,
   // unabhängig davon, was in den Spalten davor steht (Technik/Reichweite bzw. Munition).
   const meleePanel = el("div", { class: "panel" }, [
     combatPanelTitle("Nahkampfwaffen", [ignoreHandLimitsBtn(), equipMenuBtn("melee")]),
-    el("div", { class: "row-head melee-row" }, head("", "Waffe", "Technik", "Reichweite", "AT", "PA", "TP", "Griff", "")),
+    el("div", { class: "row-head weapon-row" }, head("", "Waffe", "AT", "PA", "TP", "RW", "Griff", "")),
     ...MELEE.map(meleeRow),
     ...TRAITS.meleeAttack.map(traitMeleeRow),
   ]);
 
   const rangedPanel = el("div", { class: "panel" }, [
     combatPanelTitle("Fernkampfwaffen", [ignoreHandLimitsBtn(), equipMenuBtn("ranged")]),
-    el("div", { class: "row-head ranged-row" }, [
-      ...head("", "Waffe", "Technik", "Munition"),
+    el("div", { class: "row-head weapon-row" }, [
+      ...head("", "Waffe"),
       el("span", { class: "center", style: "grid-column:span 2" }, "FK"),
-      ...head("TP", "Griff", ""),
+      ...head("TP", "RW", "Griff", ""),
     ]),
     ...RANGED.map(rangedRow),
     ...TRAITS.rangeAttack.map(traitRangedRow),
   ]);
 
-  const topArea = el("div", { class: "combat-top" }, [combatValuesPanel(), renderArmorPanel()]);
+  // Paket F (UI/UX-Review 2026-09-25 + GitHub-Issue #6): drei Varianten für den Bereich über den Waffen —
+  // "panels" = Kampfwerte + Rüstung als zwei Panels (bisher), "strip" = eine kompakte Leiste, damit die Waffen
+  // früher sichtbar sind, "figure" = Silhouette mit Rüstung am Körper und Waffen in den Händen.
+  const topArea =
+    COMBAT_TOP === "strip" ? combatStrip()
+    : COMBAT_TOP === "figure" ? combatFigurePanel()
+    : el("div", { class: "combat-top" }, [combatValuesPanel(), renderArmorPanel()]);
 
   return el("div", {}, [
     renderCombatActions(),
@@ -1250,7 +1431,7 @@ function renderCombatSkills() {
       el("div", { class: "panel-title" }, title),
       el("div", { class: "row-head combatskill-row" }, head("", "Technik", "Leit.", "FW", "AT", "PA")),
       ...list.map((c) => {
-        const [minus, plus] = advanceStepper(() => c.fw, (v) => { c.fw = v; }, c.stf, 6, () => { renderContent(); renderHeader(); });
+        const [minus, plus] = advanceStepper(() => c.fw, (v) => { c.fw = v; }, c.stf, 6, () => { renderContent(); renderHeader(); }, c.name);
         const fwSpan = el("span", { class: "big val-editable" }, String(c.fw));
         if (mode === "edit") makeEditable(fwSpan, c.fw, (v) => { c.fw = Math.max(6, v); renderContent(); renderHeader(); }, { type: "number", min: 6, max: 99 });
         return el("div", { class: "row combatskill-row" }, [
@@ -1291,7 +1472,7 @@ function magicIcon(item) {
   const charging = item.LZ > 1 && item.progress < item.LZ;
   const wrap = el("div", { class: "magic-icon" }, [
     el("img", { src: item.img, alt: "" }),
-    item.extensions ? el("span", { class: "ext-badge", title: `Erweiterung: ${item.extensions}` }, "✦") : null,
+    item.extensions ? el("span", { class: "ext-badge", role: "img", tabindex: "0", title: `Zaubererweiterung gelernt: ${item.extensions}`, "aria-label": `Zaubererweiterung gelernt: ${item.extensions}` }, "✦") : null,
     item.LZ > 1
       ? (() => {
           const pct = Math.min(100, (item.progress / item.LZ) * 100);
@@ -1311,7 +1492,8 @@ function magicIcon(item) {
 // Zeilen-Lösch-"×" für Tabellenzeilen (magicTable/artifactTable) — analog zu deletableChip(), aber für ganze
 // Grid-Zeilen statt Chips: `list` ist die Original-Array-Referenz, `item` der zu löschende Eintrag.
 function rowDeleteBtn(list, item) {
-  const btn = el("button", { type: "button", class: "row-delete edit-only", title: "Löschen" }, "×");
+  const label = `${item.name || "Eintrag"} löschen`;
+  const btn = el("button", { type: "button", class: "row-delete edit-only", title: label, "aria-label": label }, "×");
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     const idx = list.indexOf(item);
@@ -1348,13 +1530,13 @@ function rowActionsCell(list, item) {
 // Akteuren der dsa5-magic-*-Module ausgelesen, siehe SPELLS-Kommentar in data.js), analog zu Talenten/Kampftalenten.
 function magicRow(item, list) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
-  const [minus, plus] = advanceStepper(() => item.fw, (v) => { item.fw = v; }, item.stf, 0, () => { renderContent(); renderHeader(); });
+  const [minus, plus] = advanceStepper(() => item.fw, (v) => { item.fw = v; }, item.stf, 0, () => { renderContent(); renderHeader(); }, item.name);
   const fwSpan = el("span", { class: "big val-editable" }, String(item.fw));
   if (mode === "edit") makeEditable(fwSpan, item.fw, (v) => { item.fw = v; renderContent(); renderHeader(); }, { type: "number", min: 0, max: 99 });
   return el("div", { class: "row magic-row" }, [
     magicIcon(item),
     el("span", { class: "left" }, item.name),
-    probeDice(item.probe),
+    probeDice(item.probe, item.name),
     el("span", { class: "skill-fw" }, [minus, fwSpan, plus]),
     el("span", { class: "center" }, String(item.cost)),
     el("span", { class: "muted center" }, item.dauer),
@@ -1365,10 +1547,13 @@ function magicRow(item, list) {
 }
 
 function magicTable(title, items) {
+  // Legende nur, wenn überhaupt ein Eintrag das ✦ trägt (UI/UX-Review 2026-09-25: Zeichen zugänglich erklären).
+  const hasExt = items.some((it) => it.extensions);
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, title),
     el("div", { class: "row-head magic-row" }, head("", "Name", "Probe", "FW", "Kosten", "Dauer", "Reichweite", "", "")),
     ...items.map((it) => magicRow(it, items)),
+    hasExt ? el("div", { class: "table-legend" }, [el("span", { class: "ext-badge-inline", "aria-hidden": "true" }, "✦"), " = Zaubererweiterung gelernt (Zeichen antippen oder mit der Maus darauf zeigen für Details)"]) : null,
   ]);
 }
 
@@ -1389,9 +1574,10 @@ function payTraditionAbilityCost(ability) {
 function artifactTable(title, items, showVolume) {
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title flex" }, [el("span", {}, title), specHelpBtn()]),
-    el("div", { class: "row-head artifact-row" }, head("", "Kategorie", showVolume ? "Ladung" : "", "")),
+    el("div", { class: "row-head artifact-row" }, head("", "", "Kategorie", showVolume ? "Ladung" : "", "")),
     ...items.flatMap((it) => [
       el("div", { class: "row artifact-row" }, [
+        el("img", { src: it.img, alt: "" }),
         el("span", { class: "left" }, it.name),
         el("span", { class: "muted center" }, it.category),
         el("span", { class: "center" }, showVolume ? it.volume : ""),
@@ -1467,6 +1653,10 @@ function traditionHeader(t, kind) {
   const traditionTile = tile("Tradition", t.tradition, "trad-tile-val-name", null, "tradition");
   const iconSrc = kind === "religion" ? A.godIcon(t.tradition) : A.magicTraditionIcon(t.tradition);
   if (iconSrc) traditionTile.prepend(el("img", { class: "trad-tile-icon", src: iconSrc, alt: "" }));
+  // Klick öffnet die Tradition (in Foundry: Sonderfertigkeit „Tradition (…)“ im DSA5-Item-Sheet) — hier nur Hinweis.
+  traditionTile.setAttribute("role", "button");
+  traditionTile.title = "Tradition öffnen";
+  traditionTile.addEventListener("click", () => flashNotice(`📜 Sonderfertigkeit „Tradition (${t.tradition})“ würde geöffnet`));
   const metaTiles = el("div", { class: "trad-tile-meta" }, [
     tile("Leiteigenschaft", t.guidevalue, null, "guidevalue", "guidevalue"),
     tile("Merkmal", t.feature, null, "feature", "feature"),
@@ -1539,7 +1729,7 @@ function renderReligion() {
 // Nahkampfwaffen/Fernkampfwaffen/Rüstung tragen hier dieselben structure-Werte wie ihr Gegenstück in
 // MELEE/RANGED/ARMOR (data.js) und zeigen daher denselben Verschleiß-Rahmen+Balken (itemIcon()/wearLevel())
 // wie auf dem Kampf-Tab — bisher fehlte die Struktur-Anzeige auf der allgemeinen Ausrüstungsliste komplett.
-// "✓/–"-Zelle ist jetzt anklickbar (schaltet i.eq um, in BEIDEN Modi — BEARBEITEN.md "Ausrüstung ist
+// Ausrüsten-Zelle (Schild, equipToggle()) ist anklickbar (schaltet i.eq um, in BEIDEN Modi — BEARBEITEN.md "Ausrüstung ist
 // ausrüstbar"); `list` (die Original-Array-Referenz) macht die Zeile zusätzlich löschbar (nur Bearbeiten-Modus,
 // rowDeleteBtn()). Wird sowohl für die Kategorie-Tabellen als auch für Taschen-Inhalte (openBagModal) genutzt.
 // Mengen-Schnelländerung (actor-sheet.js:1007-1013 _quantityClick() → RuleChaos.increment(): Linksklick +1,
@@ -1562,11 +1752,40 @@ function quantityCell(item) {
   return span;
 }
 
+// Offenes Griff-Menü (Rechtsklick aufs Ausrüsten-Schild einer Waffe), siehe equipToggle().
+let openGripMenu = null;
+
+// Ausrüsten-Schalter als Schild (wie icon-equip.hbs im Foundry-Modul, Nutzerwahl 2026-09-24 statt ✓/–):
+// blasser Umriss = nicht ausgerüstet, gefülltes Schild in Akzentfarbe = ausgerüstet.
+function equipToggle(item, extraClass = "") {
+  const btn = el("button", { type: "button", class: "equip-toggle" + (extraClass ? " " + extraClass : ""), title: item.eq ? "Ablegen" : "Ausrüsten", "aria-pressed": String(!!item.eq) });
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 20 20");
+  svg.setAttribute("class", "icon-equip");
+  svg.setAttribute("aria-hidden", "true");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", "M10 2l6.5 2.5v5c0 4-2.7 6.9-6.5 8.5-3.8-1.6-6.5-4.5-6.5-8.5v-5z");
+  svg.appendChild(path);
+  btn.appendChild(svg);
+  btn.addEventListener("click", (e) => { e.stopPropagation(); item.eq = !item.eq; renderContent(); });
+  if (!item.structType || !item.structType.endsWith("weapon")) return btn;
+  // Waffen: Rechtsklick = Griffwahl (in Foundry das DSA5-Kontextmenü mit Haupthand/Nebenhand/Beidhändig/Ablegen).
+  btn.title = "Ausrüsten · Rechtsklick: Haupthand / Nebenhand / Beidhändig";
+  btn.addEventListener("contextmenu", (e) => { e.preventDefault(); e.stopPropagation(); openGripMenu = openGripMenu === item ? null : item; renderContent(); });
+  if (openGripMenu !== item) return btn;
+  const grip = item.grip || "main";
+  const entry = (key, label) => {
+    const b = el("button", { type: "button", class: "reload-btn" }, (item.eq && grip === key ? "✓ " : "") + label);
+    b.addEventListener("click", (e) => { e.stopPropagation(); openGripMenu = null; if (key === "off") { item.eq = false; item.grip = "main"; } else { item.eq = true; item.grip = key; } renderContent(); });
+    return b;
+  };
+  const menu = el("div", { class: "ammo-menu" }, [entry("main", "Haupthand"), entry("offhand", "Nebenhand"), item.structType === "meleeweapon" ? entry("both", "Beidhändig") : null, item.eq ? entry("off", "Ablegen") : null]);
+  menu.addEventListener("click", (e) => e.stopPropagation());
+  return el("span", { class: "grip-menu-wrap" }, [btn, menu]);
+}
+
 function inventoryRow(i, list) {
-  const eqCell = i.eq === undefined
-    ? el("span", {})
-    : el("span", { class: "center", style: `color:${i.eq ? "#3a8f3a" : "var(--muted)"};cursor:pointer`, title: i.eq ? "Ablegen" : "Anlegen" }, i.eq ? "✓" : "–");
-  if (i.eq !== undefined) eqCell.addEventListener("click", (e) => { e.stopPropagation(); i.eq = !i.eq; renderContent(); });
+  const eqCell = i.eq === undefined ? el("span", {}) : el("span", { class: "center" }, [equipToggle(i)]);
   return el("div", { class: "row inv-row" }, [
     i.structure ? itemIcon(i.img, "", i.structure, i.structType) : el("img", { src: i.img, alt: "" }),
     el("span", { class: "left" }, i.name),
@@ -1584,11 +1803,17 @@ function inventoryRow(i, list) {
 // Getrenntes Leer-/Inhaltsgewicht (actor-equipment.hbs:55-59 item.system.bagweight = Gewicht des tatsächlich
 // getragenen Inhalts, separat vom Eigengewicht der leeren Tasche selbst = bag.weight) — Inhaltsgewicht ist hier aus
 // den Kindergewichten aufsummiert statt eines eigenen Felds, da die Kindgewichte schon die Quelle der Wahrheit sind.
+function bagFillPercent(bag) {
+  return bag.capacity ? Math.round(parseFloat(bagContentWeight(bag).replace(",", ".")) / bag.capacity * 100) : 0;
+}
+
 function bagContentWeight(bag) {
   const sum = (bag.children || []).reduce((total, c) => total + (parseFloat(String(c.weight).replace(",", ".")) || 0), 0);
   return sum.toFixed(1).replace(".", ",");
 }
 
+// Steht im Click-Dummy stellvertretend für das DSA5-Item-Sheet des Behältnisses, das das Foundry-Modul beim Klick
+// auf die Kachel öffnet (Nutzer-Feedback 2026-09-24) — dort Inhaltsliste + Drop-Zone zum Einpacken.
 function openBagModal(bag) {
   const rows = bag.children && bag.children.length ? bag.children.map((c) => inventoryRow(c, bag.children)) : [el("div", { class: "drop-zone" }, "Leer")];
   const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
@@ -1597,8 +1822,9 @@ function openBagModal(bag) {
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, bag.name), closeBtn]),
       el("div", { class: "armor-sum-line" }, `Leergewicht ${bag.weight} Stein · Inhalt ${bagContentWeight(bag)} Stein`),
-      el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "", "Anzahl", "Gewicht", "Wert", "")),
+      el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "")),
       ...rows,
+      el("div", { class: "drop-zone" }, "Gegenstände hierher ziehen, um sie einzupacken"),
     ]),
     { label: bag.name }
   );
@@ -1609,7 +1835,8 @@ function openBagModal(bag) {
 function walletItem(img, alt, field) {
   const span = el("span", {}, String(WALLET[field]));
   makeEditable(span, WALLET[field], (v) => { WALLET[field] = v; renderContent(); }, { type: "number", min: 0, max: 99999 });
-  return el("div", { class: "wallet-item" }, [el("img", { src: img, alt }), span]);
+  // Münzname sichtbar als Kürzel unter dem Wert (UI/UX-Review 2026-09-25) — vorher nur als Tooltip.
+  return el("div", { class: "wallet-item", title: alt }, [el("img", { src: img, alt }), el("span", { class: "wallet-value" }, [span, el("small", {}, alt)])]);
 }
 
 // Suchfunktion (bisher gefehlt, siehe BEARBEITEN.md-Kopfnotiz "Es fehlt hier noch eine Suchfunktion."): filtert
@@ -1618,10 +1845,15 @@ function walletItem(img, alt, field) {
 // der Fokus verloren — deshalb wird Fokus+Cursorposition nach dem Rendern explizit wiederhergestellt.
 let inventorySearchQuery = "";
 
+// Offenes ⋮-Menü einer Behältnis-Kachel (Platzhalter für das DSA5-Kontextmenü im Foundry-Modul).
+let openBagMenu = null;
+
 function renderInventory() {
+  // Geld und Gewicht als zwei gleich aufgebaute Panels nebeneinander (Panel-Titel + Inhalt) wie im Foundry-Modul
+  // (inventory.hbs): Münznamen nur als Tooltip, Gewicht = Balken, darunter aktuell/max und die Belastungsstufe.
   const top = el("div", { class: "info-cards" }, [
-    el("div", { class: "wallet-card" }, [
-      el("div", { class: "info-label", style: "margin-bottom:8px" }, "Geldbeutel"),
+    el("div", { class: "panel wallet-panel" }, [
+      el("div", { class: "panel-title" }, "Geld"),
       el("div", { class: "wallet-grid" }, [
         walletItem(A.moneyD, "Dukaten", "d"),
         walletItem(A.moneyS, "Silbertaler", "s"),
@@ -1629,9 +1861,12 @@ function renderInventory() {
         walletItem(A.moneyK, "Kreuzer", "k"),
       ]),
     ]),
-    el("div", { class: "carry-card" }, [
-      el("div", { class: "carry-head" }, [el("span", {}, "Tragkraft"), el("span", {}, "14,5 / 22 Stein")]),
-      el("div", { class: "carry-bar" }, [el("div", { class: "carry-fill", style: "width:66%" })]),
+    el("div", { class: "panel carry-panel", title: "Tragkraft" }, [
+      el("div", { class: "panel-title" }, "Gewicht"),
+      el("div", { class: "carry-body" }, [
+        el("div", { class: "carry-bar" }, [el("div", { class: "carry-fill", style: "width:66%" })]),
+        el("div", { class: "carry-values" }, [el("span", {}, "14,5 / 22 Stein"), el("span", { class: "muted" }, "Belastung 0")]),
+      ]),
     ]),
   ]);
 
@@ -1651,13 +1886,35 @@ function renderInventory() {
     ? el("div", { class: "panel" }, [
         el("div", { class: "panel-title" }, bagsCategory.label),
         el("div", { class: "bag-tiles" }, bagsCategory.items.map((bag) => {
-          const tile = el("button", { type: "button", class: "bag-tile" }, [
+          // Kachel wie im Foundry-Modul: Klickfläche öffnet das Behältnis (dort das DSA5-Item-Sheet), darunter
+          // Ausrüsten-Schild + ⋮-Menü (dort das System-Kontextmenü; hier nur ein Platzhalter-Menü).
+          const open = el("div", { class: "bag-tile-open", role: "button", tabindex: "0", title: "Behältnis öffnen (Gegenstände hierher ziehen, um sie einzupacken)" }, [
             el("img", { src: bag.img, alt: "" }),
             el("span", { class: "bag-tile-name" }, bag.name),
-            el("span", { class: "bag-tile-meta" }, `Leer ${bag.weight} · Inhalt ${bagContentWeight(bag)} Stein`),
+            // Füllstand wie in Foundry (inventory.hbs): Inhaltsgewicht / Fassungsvermögen als Wert + Balken.
+            el("span", { class: "bag-tile-meta" }, `${bagContentWeight(bag)} / ${bag.capacity}`),
+            el("span", { class: "bag-fill-bar" + (bagFillPercent(bag) > 100 ? " over" : "") }, [el("span", { class: "bag-fill", style: `width:${Math.min(100, bagFillPercent(bag))}%` })]),
           ]);
-          tile.addEventListener("click", () => openBagModal(bag));
-          return tile;
+          open.addEventListener("click", () => openBagModal(bag));
+          const isMenuOpen = openBagMenu === bag;
+          const menuBtn = el("button", { type: "button", class: "bag-action-btn" + (isMenuOpen ? " open" : ""), title: "Weitere Aktionen", "aria-label": "Weitere Aktionen" }, "⋮");
+          menuBtn.addEventListener("click", (e) => { e.stopPropagation(); openBagMenu = isMenuOpen ? null : bag; renderContent(); });
+          const actions = el("span", { class: "bag-tile-actions" }, [bag.eq === undefined ? null : equipToggle(bag, "bag-action-btn"), menuBtn]);
+          if (isMenuOpen) {
+            const entry = (label, fn) => {
+              const b = el("button", { type: "button", class: "reload-btn" }, label);
+              b.addEventListener("click", (e) => { e.stopPropagation(); openBagMenu = null; fn(); renderContent(); });
+              return b;
+            };
+            const menu = el("div", { class: "ammo-menu" }, [
+              entry("Bearbeiten", () => openBagModal(bag)),
+              entry("Im Chat posten", () => flashNotice(`💬 ${bag.name} im Chat gepostet`)),
+              entry("Löschen", () => bagsCategory.items.splice(bagsCategory.items.indexOf(bag), 1)),
+            ]);
+            menu.addEventListener("click", (e) => e.stopPropagation());
+            actions.appendChild(menu);
+          }
+          return el("div", { class: "bag-tile" }, [open, actions]);
         })),
       ])
     : null;
@@ -1672,7 +1929,7 @@ function renderInventory() {
     .map((cat) =>
       el("div", { class: "panel" }, [
         el("div", { class: "panel-title" }, cat.label),
-        el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "✓", "Anzahl", "Gewicht", "Wert", "")),
+        el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "")),
         ...cat.items.map((it) => inventoryRow(it, INVENTORY_CATEGORIES.find((c) => c.label === cat.label).items)),
       ])
     );
@@ -1681,11 +1938,23 @@ function renderInventory() {
   return el("div", {}, [top, searchBar, ...(bagsPanel ? [bagsPanel] : []), ...categoryPanels, ...(noResults ? [noResults] : [])]);
 }
 
+// +/−-Knopf als echter <button> mit benanntem Ziel (UI/UX-Review 2026-09-25, Punkt 1 + 4): größere Trefferfläche
+// über .step in style.css, am Limit sichtbar gedämpft.
+// Am Limit nur aria-disabled statt disabled, damit der Tastaturfokus nach dem Neu-Rendern nicht verloren geht.
+function stepButton(cls, glyph, label, disabled, fkey) {
+  const btn = el("button", { type: "button", class: `step ${cls}`, title: label, "aria-label": label, "data-fkey": fkey }, glyph);
+  if (disabled) {
+    btn.setAttribute("aria-disabled", "true");
+    btn.classList.add("disabled");
+  }
+  return btn;
+}
+
 // "−"-Schritt zum Reduzieren eines Zustands-/Effekt-Werts (BEARBEITEN.md "Effekte und Zustände Wert
 // reduzieren") — in BEIDEN Modi bedienbar, anders als das Löschen (rowDeleteBtn(), nur Bearbeiten-Modus).
-function reduceStep(getValue, setValue, min, onChange) {
-  const btn = el("span", { class: "step minus", title: "Reduzieren" }, "−");
-  if (getValue() <= min) btn.classList.add("disabled");
+// `label` benennt den Wert im aria-label („Furcht senken“).
+function reduceStep(getValue, setValue, min, onChange, label = "Wert") {
+  const btn = stepButton("minus", "−", `${label} senken`, getValue() <= min, `minus:${label}`);
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     const v = getValue();
@@ -1698,9 +1967,8 @@ function reduceStep(getValue, setValue, min, onChange) {
 
 // "+"-Gegenstück zu reduceStep() — Zustand verschlimmern (z.B. durch Zauber/Falle/Verletzung), ebenfalls in
 // BEIDEN Modi bedienbar.
-function increaseStep(getValue, setValue, max, onChange) {
-  const btn = el("span", { class: "step plus", title: "Erhöhen" }, "+");
-  if (getValue() >= max) btn.classList.add("disabled");
+function increaseStep(getValue, setValue, max, onChange, label = "Wert") {
+  const btn = stepButton("plus", "+", `${label} erhöhen`, getValue() >= max, `plus:${label}`);
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     const v = getValue();
@@ -1725,13 +1993,14 @@ function buildConditionsPanel(limit) {
     ...shown.map((c) =>
       el("div", { class: "list-row" }, [
         el("span", { class: "name" }, c.name),
-        reduceStep(() => c.filled, (v) => { c.filled = v; }, 0, () => renderContent()),
+        reduceStep(() => c.filled, (v) => { c.filled = v; }, 0, () => renderContent(), c.name),
         el(
           "span",
           { class: "pips" },
           Array.from({ length: c.pips }, (_, i) => el("span", { class: `pip ${i < c.filled ? "filled" : "empty"}` }))
         ),
-        increaseStep(() => c.filled, (v) => { c.filled = v; }, c.pips, () => renderContent()),
+        el("span", { class: "cond-count", "aria-label": `Stufe ${c.filled} von ${c.pips}` }, `${c.filled}/${c.pips}`),
+        increaseStep(() => c.filled, (v) => { c.filled = v; }, c.pips, () => renderContent(), c.name),
         rowDeleteBtn(CONDITIONS, c),
       ])
     ),
@@ -1779,7 +2048,7 @@ function renderStatus() {
         el("div", { class: "panel-title" }, "Kumulative Zustandseffekte"),
         ...CUMULATIVE_CONDITIONS.map((c) => el("div", { class: "list-row" }, [
           el("span", { class: "name" }, c.name),
-          reduceStep(() => c.stacks, (v) => { c.stacks = v; }, 0, () => renderContent()),
+          reduceStep(() => c.stacks, (v) => { c.stacks = v; }, 0, () => renderContent(), c.name),
           el("span", { class: "cost" }, `× ${c.stacks}`),
           rowDeleteBtn(CUMULATIVE_CONDITIONS, c),
         ])),
@@ -1876,7 +2145,9 @@ function renderDiseasePanel() {
       return btn;
     })
   );
-  const title = el("div", { class: "panel-title flex" }, [el("span", {}, "Krankheiten & Gifte"), toggle]);
+  // Umschalter unter der Überschrift statt daneben — daneben brach "Krankheiten & Gifte" ungünstig um (UI/UX-Review
+  // 2026-09-25). Der Spieler-/GM-Umschalter ist nur ein Test-Schalter des Dummys; im Modul entscheidet die Rechteprüfung.
+  const title = el("div", {}, [el("div", { class: "panel-title" }, "Krankheiten & Gifte"), el("div", { class: "panel-subbar" }, [el("small", { class: "muted" }, "Test-Ansicht:"), toggle])]);
 
   if (!AFFLICTIONS.length) {
     return el("div", { class: "panel" }, [
@@ -1934,76 +2205,45 @@ function renderDiseasePanel() {
 function renderNotes() {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
 
-  const appearancePanel = el("div", { class: "panel" }, [
-    el("div", { class: "panel-title" }, "Aussehen"),
-    ...APPEARANCE.map((a) => {
-      const valSpan = el("span", {}, a.v);
+  // Wie im Foundry-Modul (notes.hbs): oben das Persönliche-Daten-Grid, darunter genau EIN Freitextfeld je nach
+  // Unter-Tab (Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen, Nutzer-Feedback 2026-09-19). Wesenszug,
+  // GM-Geheimnisse und Verbindungen gibt es dort nicht (kommen im offiziellen Bogen nicht vor) — hier entfernt.
+  const detailsPanel = el("div", { class: "panel" }, [
+    el("div", { class: "panel-title" }, "Persönliche Daten"),
+    el("div", { class: "details-grid" }, APPEARANCE.map((a) => {
+      const valSpan = el("span", { class: "val-editable" }, a.v);
       if (mode === "edit") makeEditable(valSpan, a.v, (v) => { a.v = v; renderContent(); }, { type: "text" });
-      return el("div", { class: "appearance-row" }, [el("span", { class: "k" }, a.k), valSpan]);
-    }),
+      return el("div", { class: "details-field" }, [el("span", { class: "k" }, a.k), valSpan]);
+    })),
   ]);
 
   const renderParagraphs = (c, v) => v.split(/\n\n+/).forEach((para) => c.appendChild(el("p", {}, para)));
-  // TODOS.md: der offizielle Bogen (actor-notes.hbs) hat vier getrennte Freitextfelder statt nur einem —
-  // Hintergrundgeschichte, Notizen, Private Notizen (nur Besitzer/in) und GM-Notizen (nur Spielleitung).
-  const textPanel = (title, value, setter) => {
-    const textEl = el("div", { class: "notes-text" }, []);
-    renderParagraphs(textEl, value);
-    if (mode === "edit") makeEditable(textEl, value, setter, { type: "textarea", render: renderParagraphs });
-    return el("div", { class: "panel" }, [el("div", { class: "panel-title" }, title), textEl]);
+  const section = NOTES_SECTIONS.find((n) => n.id === currentNotesSection) || NOTES_SECTIONS[0];
+  const textEl = el("div", { class: "notes-text" }, []);
+  renderParagraphs(textEl, section.get());
+  let editBtn = null;
+  if (mode === "edit") {
+    makeEditable(textEl, section.get(), (v) => { section.set(v); renderContent(); }, { type: "textarea", render: renderParagraphs });
+    // Sichtbarer Bearbeiten-Knopf oben rechts wie im Foundry-Modul (dort Foundrys prose-mirror-Toggle, im
+    // Bearbeiten-Modus dauerhaft eingeblendet — Nutzer-Feedback 2026-09-24).
+    editBtn = el("button", { type: "button", class: "notes-edit-btn", title: "Bearbeiten", "aria-label": "Bearbeiten" }, "✎");
+    editBtn.addEventListener("click", () => textEl.click());
+  }
+  // Wer sieht den Text? (UI/UX-Review 2026-09-25) — Hinweiszeile je Unterreiter; im Modul entspricht das den
+  // Bedingungen owner/isGM in notes.hbs.
+  const VISIBILITY = {
+    biography: "Sichtbar für alle, die den Bogen sehen dürfen.",
+    notes: "Sichtbar für alle, die den Bogen sehen dürfen.",
+    ownernotes: "Privat: nur für Besitzer des Helden und die Spielleitung sichtbar.",
+    gmnotes: "Nur für die Spielleitung sichtbar.",
   };
-
-  const biographyPanel = textPanel("Hintergrundgeschichte", BIOGRAPHY_TEXT, (v) => { BIOGRAPHY_TEXT = v; renderContent(); });
-  const notesPanel = textPanel("Notizen", NOTES_TEXT, (v) => { NOTES_TEXT = v; renderContent(); });
-  const privateNotesPanel = textPanel("Private Notizen", PRIVATE_NOTES_TEXT, (v) => { PRIVATE_NOTES_TEXT = v; renderContent(); });
-  const gmNotesPanel = textPanel("GM-Notizen", GM_NOTES_TEXT, (v) => { GM_NOTES_TEXT = v; renderContent(); });
-
-  // GM-Geheimnisse (siehe GM_SECRETS-Kommentar in data.js) — strukturierte Karten statt Fließtext, nur eine
-  // Kurzvorschau (analog openFavoritePreview) beim Klick, damit man die Notiz lesen kann ohne sie gleich zu editieren.
-  const gmSecretsPanel = GM_SECRETS.length
-    ? el("div", { class: "panel" }, [
-        el("div", { class: "panel-title" }, "GM-Geheimnisse"),
-        el(
-          "div",
-          { class: "chips" },
-          GM_SECRETS.map((s) => {
-            const chip = el("button", { type: "button", class: "chip chip-pay" }, s.name);
-            chip.addEventListener("click", () => {
-              const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
-              closeBtn.addEventListener("click", closeModal);
-              openModal(
-                el("div", { class: "panel" }, [el("div", { class: "panel-title flex" }, [el("span", {}, s.name), closeBtn]), el("div", { class: "notes-text" }, [el("p", {}, s.note)])]),
-                { label: s.name }
-              );
-            });
-            return chip;
-          })
-        ),
-      ])
-    : null;
-
-  // Wesenszug (siehe ESSENCE-Kommentar in data.js) — nur gerendert, wenn tatsächlich befüllt.
-  const essencePanel = ESSENCE.length
-    ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Wesenszug"), el("div", { class: "chips" }, ESSENCE.map((s) => deletableChip(A.abilityGeneral, s, ESSENCE, s)))])
-    : null;
-
-  const bondsPanel = el("div", { class: "panel" }, [
-    el("div", { class: "panel-title" }, "Verbindungen"),
-    ...BONDS.map((b) => {
-      const nameSpan = el("span", { style: "flex:1" }, b.name);
-      const roleSpan = el("span", { class: "role" }, b.role);
-      if (mode === "edit") {
-        makeEditable(nameSpan, b.name, (v) => { b.name = v; renderContent(); }, { type: "text" });
-        makeEditable(roleSpan, b.role, (v) => { b.role = v; renderContent(); }, { type: "text" });
-      }
-      return el("div", { class: "bond-row" }, [nameSpan, roleSpan]);
-    }),
+  const textPanel = el("div", { class: "panel" }, [
+    el("div", { class: "panel-title" }, section.label),
+    el("div", { class: "notes-visibility" }, ["👁 ", VISIBILITY[section.id] || ""]),
+    el("div", { class: "notes-text-wrap" }, [textEl, editBtn]),
   ]);
 
-  return el("div", { class: "notes-grid" }, [
-    el("div", { class: "col-gap" }, [appearancePanel, gmSecretsPanel, essencePanel, bondsPanel]),
-    el("div", { class: "col-gap" }, [biographyPanel, notesPanel, privateNotesPanel, gmNotesPanel]),
-  ]);
+  return el("div", {}, [detailsPanel, textPanel]);
 }
 
 // Vorschlag 2026-09-13 (bisher deferred, "komplett neuer Gefährten-Tab") — siehe COMPANIONS-Kommentar in data.js.
@@ -2163,26 +2403,27 @@ function companionCard(c, list) {
   const loyaltyRow = c.loyalty
     ? el("div", { class: "companion-loyalty-row" }, [
         el("span", { class: "name" }, "Loyalität"),
-        probeDice(c.loyalty.probe),
+        probeDice(c.loyalty.probe, `Loyalität (${c.name})`),
         el("span", { class: "big center" }, String(c.loyalty.value)),
       ])
     : el("div", { class: "companion-loyalty-row" }, [
         el("span", { class: "name" }, "Dienste"),
-        reduceStep(() => c.services.value, (v) => { c.services.value = v; }, 0, () => renderContent()),
+        reduceStep(() => c.services.value, (v) => { c.services.value = v; }, 0, () => renderContent(), "Dienste"),
         el("span", { class: "big center" }, `${c.services.value} / ${c.services.max}`),
-        increaseStep(() => c.services.value, (v) => { c.services.value = v; }, c.services.max, () => renderContent()),
+        increaseStep(() => c.services.value, (v) => { c.services.value = v; }, c.services.max, () => renderContent(), "Dienste"),
       ]);
 
-  const skillSelectBtn = el("button", { type: "button", class: "title-icon-btn", title: "Fähigkeiten wählen" }, "📖");
+  // Symbol + kurze Beschriftung statt reiner Symbole (UI/UX-Review 2026-09-25: Buch/Knochen waren ohne Vorwissen unklar).
+  const skillSelectBtn = el("button", { type: "button", class: "title-icon-btn labeled", title: "Fähigkeiten wählen" }, ["📖", el("span", {}, "Fähigkeiten")]);
   skillSelectBtn.addEventListener("click", () => openCompanionSkillSelection(c));
   const sideButtons = [skillSelectBtn];
   if (c.isTrainable) {
-    const trainBtn = el("button", { type: "button", class: "title-icon-btn", title: "Neuen Trick trainieren" }, "🦴");
+    const trainBtn = el("button", { type: "button", class: "title-icon-btn labeled", title: "Neuen Trick trainieren" }, ["🦴", el("span", {}, "Trick")]);
     trainBtn.addEventListener("click", () => openTrainingDialog(c));
     sideButtons.push(trainBtn);
   }
   if (c.isMountPossible) {
-    const mountBtn = el("button", { type: "button", class: "title-icon-btn" + (c.isMountActive ? " active" : ""), title: c.isMountActive ? "Als Reittier entfernen" : "Als Reittier verwenden" }, "🐴");
+    const mountBtn = el("button", { type: "button", class: "title-icon-btn labeled" + (c.isMountActive ? " active" : ""), title: c.isMountActive ? "Als Reittier entfernen" : "Als Reittier verwenden" }, ["🐴", el("span", {}, "Reittier")]);
     mountBtn.addEventListener("click", () => { c.isMountActive = !c.isMountActive; renderContent(); });
     sideButtons.push(mountBtn);
   }
@@ -2239,7 +2480,7 @@ function renderCompanions() {
             el("div", { class: "appearance-row" }, [el("span", { class: "k" }, "Reitweise"), alwaysSelect(RIDING_MODE_OPTIONS, m.ridingMode, (v) => { m.ridingMode = v; renderContent(); })]),
             row("Höchstgeschwindigkeit", String(m.maxSpeed)),
             row("Initiative", String(m.initiative)),
-            el("div", { class: "appearance-row" }, [el("span", { class: "k" }, "Loyalität"), el("span", {}, [probeDice(m.loyalty.probe), el("span", { class: "big" }, ` ${m.loyalty.value}`)])]),
+            el("div", { class: "appearance-row" }, [el("span", { class: "k" }, "Loyalität"), el("span", { class: "loyalty-inline" }, [probeDice(m.loyalty.probe, "Loyalität"), el("span", { class: "big" }, String(m.loyalty.value))])]),
           ]),
         ]),
       ]);
@@ -2353,32 +2594,34 @@ function collectFavorites() {
   };
 }
 
-// Favoriten-Chip: statisch (kein Klick-Roll-plus-Kontextmenü mehr, siehe Runde 2026-09-18 "das gefällt mir auch
-// irgendwie nicht"), aber die Würfel selbst lösen wieder eine Probe/einen Angriff aus (Nutzer-Feedback 2026-09-19:
-// "Favoriten lassen sich aktuell nicht würfeln") — nur der Chip drumherum (Bild+Name+Stern) bleibt unklickbar.
-// Talentwert steht direkt hinter dem Namen und etwas größer (Nutzerwunsch), die Würfel folgen danach. Der
-// Click-Dummy hat keine echte Würfelmechanik — "Auslösen" zeigt hier nur flashNotice() als Platzhalter; im echten
-// Modul löst derselbe Klick echte Proben/Angriffswürfe aus (skillSelect/chRollCombat, siehe favorite-values.hbs).
-function favChip(item, kind) {
-  const icon = el("img", { class: "fav-chip-icon", src: item.img, alt: "" });
-  const name = el("span", { class: "fav-chip-name", title: item.name }, item.name);
-  let values;
+// Favoriten-Zeile (Paket E, UI/UX-Review 2026-09-25 Punkt 5 + GitHub-Issue #5): statt unterschiedlich langer
+// Etiketten ein gemeinsames Raster — feste Bereiche für Bild | Name | Wert | Probe | Stern, lange Namen brechen um,
+// Wert und Würfel bleiben an ihrem Platz. Waffen zeigen ihre Werte beschriftet ("AT", "TP"). Die bestehende
+// Entscheidung "Bild + Name + Stern + Wert + klickbare Würfel, kein Hover-Aufklappen" bleibt unverändert; im
+// echten Modul lösen die Würfel echte Proben/Angriffe aus (skillSelect/chRollCombat, favorite-values.hbs).
+function favCard(item, kind) {
+  const icon = el("img", { class: "fav-card-icon", src: item.img, alt: "" });
+  const name = el("span", { class: "fav-card-name" }, item.name);
+  let value;
+  let roll;
   if (kind === "weapon") {
     const ranged = RANGED.includes(item);
     const stats = ranged ? effectiveRangedStats(item) : effectiveMeleeStats(item);
-    const atDie = el("button", { type: "button", class: "probe-die fav-chip-roll", style: dieBg("d20mu"), title: "Angriff auslösen" }, String(stats.at));
-    atDie.addEventListener("click", () => flashNotice(`🎲 Angriff ausgelöst: ${item.name}`));
-    values = [atDie, el("span", { class: "fav-chip-damage" }, item.tp)];
+    const atLabel = `${ranged ? "Fernkampf" : "Attacke"} mit ${item.name} würfeln`;
+    const atDie = el("button", { type: "button", class: "probe-die fav-chip-roll", style: dieBg("d20mu"), title: atLabel, "aria-label": atLabel }, String(stats.at));
+    atDie.addEventListener("click", () => flashNotice(`🎲 ${atLabel}`));
+    value = el("span", { class: "fav-card-value fav-card-weapon" }, [el("small", {}, ranged ? "FK" : "AT"), atDie]);
+    const dmgLabel = `Schaden von ${item.name} würfeln (${item.tp})`;
+    const dmg = el("button", { type: "button", class: "fav-chip-damage fav-chip-roll", title: dmgLabel, "aria-label": dmgLabel }, [el("small", {}, "TP "), item.tp]);
+    dmg.addEventListener("click", () => flashNotice(`🎲 ${dmgLabel}`));
+    roll = el("span", { class: "fav-card-roll" }, [dmg]);
   } else {
-    const dice = probeDice(item.probe);
+    value = el("span", { class: "fav-card-value", title: "Fertigkeitswert" }, String(item.fw));
+    const dice = probeDice(item.probe, item.name);
     dice.classList.add("fav-chip-roll");
-    dice.setAttribute("role", "button");
-    dice.setAttribute("tabindex", "0");
-    dice.title = "Probe auslösen";
-    dice.addEventListener("click", () => flashNotice(`🎲 Probe ausgelöst: ${item.name}`));
-    values = [el("span", { class: "fav-chip-value" }, String(item.fw)), dice];
+    roll = el("span", { class: "fav-card-roll" }, [dice]);
   }
-  return el("span", { class: "chip fav-chip" }, [icon, name, el("span", { class: "fav-chip-values" }, values), favStar(item)]);
+  return el("div", { class: "fav-card" }, [icon, name, value, roll, favStar(item)]);
 }
 
 // Ein Panel "Favoriten" mit einer Unterüberschrift je Kategorie (Talente/Waffen/Zauber/Liturgien), analog zu
@@ -2396,7 +2639,7 @@ function favoritesPanel() {
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Favoriten"),
     ...(active.length
-      ? active.flatMap((g) => [el("div", { class: "subhead" }, g.label), el("div", { class: "chips" }, g.items.map((it) => favChip(it, g.kind)))])
+      ? active.flatMap((g) => [el("div", { class: "subhead" }, g.label), el("div", { class: "fav-grid" }, g.items.map((it) => favCard(it, g.kind)))])
       : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern oder Liturgien anklicken")]),
   ]);
 }
@@ -2420,6 +2663,7 @@ function vitalBar(cls, label, prefix) {
     el("span", { class: "bar-label-prefix" }, prefix),
     el("span", { class: "bar-label-value" }, [valSpan, " / " + r.max]),
   ]);
+  valSpan.dataset.fkey = `res:${prefix}`;
   makeEditable(valSpan, r.wert, (n) => { r.wert = n; renderHeader(); renderContent(); }, { type: "number", min: 0, max: r.max });
   return el("div", { class: "bar " + cls }, [el("div", { class: "bar-fill", style: `width:${pct}%` }), labelEl]);
 }
@@ -2450,21 +2694,21 @@ function resourceGroup(colLayout) {
 function fatePointsRow() {
   const r = resourceByLabel("Schicksalspunkte");
   const used = r.used || 0;
-  const wrap = el("div", { class: "fate-points" });
+  const avail = r.max - used;
+  const wrap = el("div", { class: "fate-points", role: "group", "aria-label": `Schicksalspunkte: ${avail} von ${r.max} verfügbar` });
+  // Jeder Punkt ist ein echter <button> mit Zustand + Handlung im Label (UI/UX-Review 2026-09-25, Punkt 4).
   for (let i = 0; i < r.max; i++) {
     const isUsed = i >= r.max - used;
-    const img = el("img", {
-      src: `../../../systems/dsa5/icons/${isUsed ? "gray_schip" : "schip"}.webp`,
-      alt: "Schicksalspunkt",
-      class: isUsed ? "dim" : "",
-      title: isUsed ? "Klicken, um wiederherzustellen" : "Klicken, um auszugeben",
-    });
-    img.addEventListener("click", () => {
+    const label = `${isUsed ? "Schicksalspunkt wiederherstellen" : "Schicksalspunkt ausgeben"} (${avail} von ${r.max} verfügbar)`;
+    const btn = el("button", { type: "button", class: "fate-point-btn", title: label, "aria-label": label, "data-fkey": `fate:${i}` }, [
+      el("img", { src: `../../../systems/dsa5/icons/${isUsed ? "gray_schip" : "schip"}.webp`, alt: "", class: isUsed ? "dim" : "" }),
+    ]);
+    btn.addEventListener("click", () => {
       r.used = isUsed ? used - 1 : used + 1;
       renderHeader();
       renderContent();
     });
-    wrap.appendChild(img);
+    wrap.appendChild(btn);
   }
   return wrap;
 }
@@ -2486,6 +2730,7 @@ function coverResourcesBlock() {
 // (Werteditor-Commits, Modus-Umschalter). Name ist nur im Bearbeiten-Modus editierbar (BEARBEITEN.md
 // Kopf-Abschnitt), die übrigen Werte in beiden Modi.
 function renderHeader() {
+  const restoreFocus = rememberFocus();
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
 
   // IDEEN.md: optionales Hintergrundbild (HEADER_BG_IMG in data.js) — .has-bg blendet .head-bg-layer/
@@ -2509,6 +2754,7 @@ function renderHeader() {
   fp.appendChild(fatePointsRow());
 
   document.getElementById("apText").textContent = `AP ${formatNum(EXPERIENCE.total)} · ${formatNum(experienceAvailable())} frei`;
+  restoreFocus();
 }
 
 // Befüllt #coverSidebar (Porträt + Werte + Status) und verschiebt das einzige Porträt-Element aus der Kopfzeile
@@ -2550,6 +2796,7 @@ const RENDERERS = {
 };
 
 function renderContent() {
+  const restoreFocus = rememberFocus();
   const content = document.getElementById("content");
   content.innerHTML = "";
   content.appendChild(RENDERERS[currentTab]());
@@ -2557,6 +2804,40 @@ function renderContent() {
   // Verlassen des Tabs holt leaveCoverSidebar() das Porträt zurück in die Kopfzeile.
   if (currentTab === "cover") renderCoverSidebar();
   else leaveCoverSidebar();
+  restoreFocus();
+}
+
+// Tastaturfokus über ein Neu-Rendern retten (UI/UX-Review 2026-09-25, Punkt 4): Knöpfe mit data-fkey (Stepper,
+// Schicksalspunkte, Favoritensterne) werden nach dem Neuaufbau über Schlüssel + Position wiedergefunden — sonst
+// landet der Fokus nach jedem +/− wieder am Seitenanfang.
+function rememberFocus() {
+  const active = document.activeElement;
+  const key = active?.dataset?.fkey;
+  if (!key) return () => flashChanged();
+  pendingFlash = key;
+  const sel = `[data-fkey="${CSS.escape(key)}"]`;
+  const idx = [...document.querySelectorAll(sel)].indexOf(active);
+  return () => {
+    if (document.activeElement?.dataset?.fkey !== key) document.querySelectorAll(sel)[idx]?.focus();
+    flashChanged();
+  };
+}
+
+// Kurzes Aufleuchten der geänderten Zeile/des geänderten Werts nach einer Änderung (UI/UX-Review 2026-09-25,
+// Punkt 9). pendingFlash setzt rememberFocus() (Knöpfe mit data-fkey) bzw. makeEditable() beim Übernehmen;
+// renderHeader() und renderContent() laufen oft direkt nacheinander, deshalb wird der Schlüssel erst im nächsten
+// Tick gelöscht.
+let pendingFlash = null;
+function flashChanged() {
+  if (!pendingFlash) return;
+  const key = pendingFlash;
+  document.querySelectorAll(`[data-fkey="${CSS.escape(key)}"]`).forEach((node) => {
+    const target = node.closest(".list-row, .row, .bar, .fate-points, .companion-loyalty-row") || node;
+    target.classList.remove("just-changed");
+    void target.offsetWidth;
+    target.classList.add("just-changed");
+  });
+  setTimeout(() => { if (pendingFlash === key) pendingFlash = null; }, 0);
 }
 
 // Befüllt #attrOverlay (siehe index.html) mit denselben Werten wie buildAttrTiles(), nur kompakter
@@ -2578,9 +2859,10 @@ function renderAttrOverlay() {
     // .attr-die-mini — siehe Kommentar bei .attr-die-mini in style.css (Hover-Zoom-Bug mit der Wachssiegel-
     // Fassung, Nutzer-Feedback 2026-09-15 dritte Runde).
     host.appendChild(
-      el("span", { class: "attr-die-mini", title: `${a.k}: ${value}` }, [
-        el("span", { class: "attr-die-mini-face", style: dieBg(a.die) }, String(value)),
-      ])
+      makeRollable(
+        el("span", { class: "attr-die-mini" }, [el("span", { class: "attr-die-mini-face", style: dieBg(a.die) }, String(value))]),
+        `Probe auf ${ATTR_LABELS[a.k]} (${value}) würfeln`
+      )
     );
   });
 }
@@ -2626,6 +2908,52 @@ function initOnlyLepToggle() {
   });
 }
 
+// Ziehgriff unten rechts wie am Foundry-Fenster (Nutzerwunsch 2026-09-25): Standardgröße bleibt 770×740 (style.css
+// .sheet), der Griff setzt nur width/height inline; Doppelklick stellt die Standardgröße wieder her. Die Breite
+// wächst doppelt so schnell wie die Mausbewegung, weil .sheet-wrap Bogen + Rail zentriert (die rechte Kante wandert
+// sonst nur um die halbe Strecke mit).
+function initSheetResize() {
+  const sheet = document.querySelector(".sheet");
+  const handle = el("div", { class: "sheet-resize", title: "Größe ändern (Doppelklick: Standardgröße)" });
+  sheet.appendChild(handle);
+  handle.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    handle.setPointerCapture(e.pointerId);
+    const start = { x: e.clientX, y: e.clientY, w: sheet.offsetWidth, h: sheet.offsetHeight };
+    const move = (ev) => {
+      sheet.style.width = `${Math.max(560, start.w + 2 * (ev.clientX - start.x))}px`;
+      sheet.style.height = `${Math.max(480, start.h + ev.clientY - start.y)}px`;
+    };
+    const up = () => {
+      handle.removeEventListener("pointermove", move);
+      handle.removeEventListener("pointerup", up);
+    };
+    handle.addEventListener("pointermove", move);
+    handle.addEventListener("pointerup", up);
+  });
+  handle.addEventListener("dblclick", () => {
+    sheet.style.width = "";
+    sheet.style.height = "";
+  });
+}
+
+// Vergleichsschalter Paket F (#headSizeSwitch/#combatTopSwitch in index.html) — nach der Entscheidung löschen.
+function initLayoutSwitches() {
+  const wire = (id, apply) => {
+    const group = document.getElementById(id);
+    group.querySelectorAll("button").forEach((btn) => btn.addEventListener("click", () => {
+      group.querySelectorAll("button").forEach((b) => {
+        b.classList.toggle("active", b === btn);
+        b.setAttribute("aria-pressed", String(b === btn));
+      });
+      apply(btn.dataset.value);
+    }));
+  };
+  wire("headSizeSwitch", (v) => { document.querySelector(".sheet").dataset.headsize = v; });
+  wire("combatTopSwitch", (v) => { COMBAT_TOP = v; renderContent(); });
+  wire("tradSwitch", (v) => { document.querySelector(".sheet").dataset.trad = v; });
+}
+
 // Munitionsmenü (renderAmmoCell) schließt sich bei jedem Klick außerhalb, wie ein normales Dropdown.
 function initAmmoMenuOutsideClick() {
   document.addEventListener("click", () => {
@@ -2648,6 +2976,8 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
+initLayoutSwitches();
+initSheetResize();
 initHeaderBgPicker();
 initAmmoMenuOutsideClick();
 initModalEscape();
