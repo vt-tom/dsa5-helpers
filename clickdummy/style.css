@@ -901,6 +901,8 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
    Hintergrund/Padding, hier nur noch Button-Reset + Zeigercursor/Hover als Klick-Affordanz ergänzt. */
 .badges .badge{appearance:none;-webkit-appearance:none;cursor:pointer}
 .badges .badge:hover{border-color:#f4e8d6;background:rgba(224,192,128,.28)}
+.badges .badge.chargen{border-color:rgba(224,192,128,.75);background:rgba(224,192,128,.28)}
+.badges .badge.chargen:hover{background:rgba(224,192,128,.45);color:#fff}
 
 .identity-modal-body{display:flex;gap:12px;padding:12px}
 .identity-modal-body img{flex:0 0 46px;width:46px;height:46px;border:1px solid var(--line)}

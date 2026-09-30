@@ -116,6 +116,22 @@
     "CastSpellsTitle": "Spells, rituals & cantrips",
     "CastLiturgiesTitle": "Liturgies, ceremonies & blessings",
     "NoArmorWorn": "No armor worn",
-    "Close": "Close"
+    "Close": "Close",
+    "Settings": {
+      "DefaultSheet": {
+        "Name": "Default sheet for heroes",
+        "Hint": "Makes the DSA5 Helpers sheet the default for all heroes. Heroes with an explicitly chosen sheet keep it. Foundry reloads after changing this."
+      }
+    },
+    "Changelog": {
+      "Title": "DSA5 Helpers – Changes",
+      "Open": "Show changelog",
+      "Hint": "Shows what changed in each version of DSA5 Helpers.",
+      "Updated": "DSA5 Helpers was updated to version {version}. New since your last visit:",
+      "ShowAll": "Show all versions",
+      "OnGitHub": "Changelog on GitHub",
+      "Missing": "The changelog could not be loaded.",
+      "Versions": "Versions"
+    }
   }
 }

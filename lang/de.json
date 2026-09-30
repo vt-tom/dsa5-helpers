@@ -116,6 +116,22 @@
     "CastSpellsTitle": "Zauber, Rituale & Zaubertricks",
     "CastLiturgiesTitle": "Liturgien, Zeremonien & Segnungen",
     "NoArmorWorn": "Keine Rüstung getragen",
-    "Close": "Schließen"
+    "Close": "Schließen",
+    "Settings": {
+      "DefaultSheet": {
+        "Name": "Standard-Bogen für Helden",
+        "Hint": "Macht den DSA5-Helpers-Bogen zum Standard für alle Helden. Helden, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Nach dem Ändern wird Foundry neu geladen."
+      }
+    },
+    "Changelog": {
+      "Title": "DSA5 Helpers – Änderungen",
+      "Open": "Changelog anzeigen",
+      "Hint": "Zeigt, was sich in den einzelnen Versionen von DSA5 Helpers geändert hat.",
+      "Updated": "DSA5 Helpers wurde auf Version {version} aktualisiert. Neu seit deinem letzten Besuch:",
+      "ShowAll": "Alle Versionen anzeigen",
+      "OnGitHub": "Changelog auf GitHub",
+      "Missing": "Der Changelog konnte nicht geladen werden.",
+      "Versions": "Versionen"
+    }
   }
 }

@@ -45,6 +45,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     },
     ownerActions: {
       schipUpdate: this._schipUdate,
+      startCharacterBuilder: this._startCharacterBuilder,
       deleteItem: this._deleteItemAction,
       advanceWrapper: this._advanceWrapper,
       statusAdd: { handler: this._statusAdd, buttons: [0, 2] },
@@ -452,6 +453,12 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static async _setBodyFigure(_event, target) {
     if (!this.isEditable) return;
     await this.actor.setFlag(MODULE_ID, 'bodyFigure', target.dataset.figure === 'portrait' ? 'portrait' : 'placeholder');
+  }
+
+  // Charakterbauer (#10): wie im System, merkt sich aber die bisherige Bogenwahl ('' = Standard), die der
+  // preUpdateActor-Hook in scripts/dsa5-helpers.js beim Abschließen statt des fest gesetzten Systembogens einsetzt.
+  static async _startCharacterBuilder() {
+    await this.actor.update({ 'flags.core.sheetClass': 'dsa5.DSACharBuilder', [`flags.${MODULE_ID}.preChargenSheet`]: this.actor.getFlag('core', 'sheetClass') ?? '' });
   }
 
   // Zauber-/Liturgieliste als Dialog im Reiter „Körper“ (im Kampf würfeln, ohne den Reiter zu wechseln). Natives

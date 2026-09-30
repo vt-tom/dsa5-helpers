@@ -246,3 +246,39 @@ test('body tab: a free off hand renders compactly below the main hand, its tile 
  const off=item('off','meleeweapon');off.system.worn={value:true,offHand:true};p.wornMeleeWeapons=[main,off];actor.items.set('off',off);
  context=await sheet._prepareContext({});html=render(context);assert(!context.dsa5h.body.offFree);assert(!html.includes('dsa5h-hand-free'));
 });
+
+test('character builder button replaces the species field only when the system allows building (issue #10)',async()=>{
+ const {sheet}=await prepare();let html=render(await sheet._prepareContext({}));
+ assert(!html.includes('data-action="startCharacterBuilder"'));assert(html.includes('name="system.details.species.value"'));
+ sheet.context.prepare.canBuild=true;html=render(await sheet._prepareContext({}));
+ assert(html.includes('data-action="startCharacterBuilder"'));assert(!html.includes('name="system.details.species.value"'));
+ assert.equal(Sheet.DEFAULT_OPTIONS.ownerActions.startCharacterBuilder,Sheet._startCharacterBuilder);
+});
+test('patrons (own list prepare.patrons since DSA5 8.1.8) render on the magic tab only when present',async()=>{
+ const {sheet}=await prepare();let html=render(await sheet._prepareContext({}));assert(!html.includes(localize('TYPES.Item.patron')));
+ sheet.context.prepare.patrons=[{_id:'patron-1',name:'Katzenpatron',img:'icons/svg/cat.svg',system:{}}];html=render(await sheet._prepareContext({}));
+ const chip=elements(html,el=>el.attribs?.['data-item-id']==='patron-1')[0];assert(chip,'patron chip missing');
+ let panel=chip;while(panel&&!panel.attribs?.['data-tab-panel'])panel=panel.parent;assert.equal(panel?.attribs['data-tab-panel'],'magic');
+});
+const importChangelog=()=>import('data:text/javascript;base64,'+Buffer.from(read('scripts/apps/changelog.js')).toString('base64'));
+// Vereinfachtes foundry.utils.isNewerVersion für reine x.y.z-Versionen.
+const isNewer=(a,b)=>{const pa=a.split('.').map(Number),pb=b.split('.').map(Number);for(let i=0;i<3;i++)if((pa[i]||0)!==(pb[i]||0))return (pa[i]||0)>(pb[i]||0);return false;};
+test('changelog splits the shipped CHANGELOG.md per version and filters unseen sections (issues #11/#12)',async()=>{
+ const {parseChangelog,sectionsSince}=await importChangelog();
+ const sections=parseChangelog(read('CHANGELOG.md'));const versions=sections.map(s=>s.version);
+ assert(versions.includes('0.2.0')&&versions.includes('0.1.0'));assert(sections.every(s=>/^\d+\.\d+\.\d+$/.test(s.version)),'every heading is a version: '+versions);
+ assert(!sections.some(s=>/^\[[^\]]+\]:/m.test(s.body)),'compare-link definitions are stripped');assert.equal(sections.find(s=>s.version==='0.2.0').date,'2026-09-30');
+ const md='# Changelog\n\n## [0.3.0] — unveröffentlicht\n\n- c\n\n## [0.2.0] — 2026-09-30\n\n- b\n\n## [0.1.0] — 2026-09-29\n\n- a\n\n[0.2.0]: https://x\n';const all=parseChangelog(md);
+ assert.deepEqual(sectionsSince(all,'0.1.0','0.2.0',isNewer).map(s=>s.version),['0.2.0'],'unreleased newer section stays hidden');
+ assert.deepEqual(sectionsSince(all,'','0.2.0',isNewer).map(s=>s.version),['0.2.0','0.1.0'],'first install shows everything up to the installed version');
+ assert.equal(all[2].body,'- a');
+});
+test('changelog window and settings: template, localization and registration order',()=>{
+ missing.clear();const html=H.compile(read('templates/changelog.hbs'))({filtered:true,installed:'0.3.0',sections:[{version:'0.3.0',date:'2026-10-01',html:'<ul><li>x</li></ul>'}],url:'https://x'});
+ assert(html.includes('data-action="showAll"'));assert(html.includes('<li>x</li>'));assert(!html.includes('data-action="jumpTo"'),'no version bar for a single section');
+ const full=H.compile(read('templates/changelog.hbs'))({filtered:false,sections:[{version:'0.3.0',html:''},{version:'0.2.0',html:''}]});const details=elements(full,el=>el.name==='details');
+ assert.equal(elements(full,el=>el.attribs?.['data-action']==='jumpTo').length,2);assert.deepEqual(details.map(d=>'open' in d.attribs),[true,false],'only the newest version starts open');assert.deepEqual([...missing],[]);
+ const entry=read('scripts/dsa5-helpers.js');for(const key of ['defaultSheet','lastSeenVersion'])assert(entry.indexOf(`'${key}'`)<entry.indexOf('if (!Dsa5HelpersCharacterSheet)'),key+' must be registered even without the DSA5 sheet');
+ assert(/makeDefault: game\.settings\.get\('dsa5-helpers', 'defaultSheet'\)/.test(entry));
+ for(const lang of ['de','en']){const l=JSON.parse(read(`lang/${lang}.json`)).DSA5HELPERS;for(const k of ['Title','Open','Hint','Updated','ShowAll','OnGitHub','Missing','Versions'])assert(l.Changelog[k],lang+' Changelog.'+k);assert(l.Settings.DefaultSheet.Name&&l.Settings.DefaultSheet.Hint);}
+});

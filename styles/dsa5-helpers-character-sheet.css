@@ -379,6 +379,28 @@
    height: auto
 }
 
+/* Heldenerschaffung (Issue #10): statt des Spezies-Feldes, gleiche Pillenform wie die Badges, aber als Knopf */
+.dsa5-helpers-sheet .dsa5h-badges .dsa5h-chargen {
+   flex: 0 0 auto;
+   width: auto;
+   height: auto;
+   margin: 0;
+   padding: 2px 11px;
+   font-size: 14px;
+   line-height: 1.4;
+   border-radius: 3px;
+   border: 1px solid rgba(224, 192, 128, .75);
+   background: rgba(224, 192, 128, .28);
+   color: #ecd8b1;
+   cursor: pointer
+}
+
+.dsa5-helpers-sheet .dsa5h-badges .dsa5h-chargen:hover,
+.dsa5-helpers-sheet .dsa5h-badges .dsa5h-chargen:focus-visible {
+   background: rgba(224, 192, 128, .45);
+   color: #fff
+}
+
 .dsa5-helpers-sheet .dsa5h-resource-frame {
    display: flex;
    align-items: center;
@@ -1731,3 +1753,96 @@
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-dialog .panel-title button { flex:none; width:24px; height:24px; min-height:0; padding:0; border:0; background:none; color:inherit; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-row { grid-template-columns:26px minmax(0, 1fr) 90px 40px 44px; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-row > img { width:24px; height:24px; margin:0; border:0; }
+
+/* ===== CHANGELOG-FENSTER (Issues #11/#12) — eigenes Fenster, nicht im Bogen: nur Foundry-Theme-Variablen ===== */
+
+/* Foundry legt .window-content mit overflow:hidden an — Versionsleiste und Fußzeile stehen fest, nur der
+   Bereich dazwischen scrollt (Live-Rückmeldung 2026-09-30: erst ließ sich nichts scrollen, dann „Changelog wird
+   immer länger“ → je Version aufklappbar + Sprungleiste). */
+.dsa5-helpers-changelog .window-content {
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+   padding: 0
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog {
+   flex: 1 1 auto;
+   min-height: 0;
+   display: flex;
+   flex-direction: column;
+   line-height: 1.45
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-nav {
+   flex: 0 0 auto;
+   display: flex;
+   flex-wrap: wrap;
+   gap: 4px;
+   padding: 8px 16px;
+   border-bottom: 1px solid var(--color-border, currentColor)
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-nav button {
+   flex: 0 0 auto;
+   width: auto;
+   min-width: 52px;
+   height: 26px;
+   padding: 0 8px;
+   line-height: 1
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-body {
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow-y: auto;
+   padding: 4px 16px 12px
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-intro {
+   font-weight: 700
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-version summary {
+   cursor: pointer;
+   list-style-position: outside;
+   margin-left: 16px
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-version summary h2 {
+   display: inline-block;
+   width: calc(100% - 4px);
+   margin: 12px 0 4px;
+   border-bottom: 1px solid var(--color-border, currentColor)
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-date {
+   font-size: .7em;
+   font-weight: normal;
+   opacity: .75
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-version h3 {
+   margin: 10px 0 2px;
+   font-size: 1.05em;
+   border: none
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-version ul {
+   margin: 0;
+   padding-left: 20px
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-footer {
+   flex: 0 0 auto;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 12px;
+   padding: 8px 16px;
+   border-top: 1px solid var(--color-border, currentColor)
+}
+
+.dsa5-helpers-changelog .dsa5h-changelog-footer button {
+   width: auto
+}

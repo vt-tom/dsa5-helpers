@@ -2,6 +2,23 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.3.0] — 2026-09-30
+
+### Neu
+
+- Nach einem Update (und nach der Erstinstallation) zeigt Foundry einmal je Nutzer, was sich geändert hat – auch Spielern ([#11](https://github.com/vt-tom/dsa5-helpers/issues/11)).
+- Der Changelog ist jederzeit unter *Einstellungen › Moduleinstellungen › DSA5 Helpers* aufrufbar; jede Version ist einzeln aufklappbar und über eine Versionsleiste oben direkt erreichbar ([#12](https://github.com/vt-tom/dsa5-helpers/issues/12)).
+- Neue Einstellung für die Spielleitung: „Standard-Bogen für Helden“ macht den Bogen zum Standard für alle Helden; ein am Helden ausdrücklich gewählter Bogen bleibt ([#13](https://github.com/vt-tom/dsa5-helpers/issues/13)).
+- Hat ein Held noch keine Spezies und ist der Charakterbauer installiert, steht im Kopf wie im Systembogen der Knopf „Heldenerschaffung“ ([#10](https://github.com/vt-tom/dsa5-helpers/issues/10)); nach dem Abschließen öffnet sich wieder der zuvor gewählte Bogen statt des Systembogens.
+
+### Behoben
+
+- Patrone werden im Reiter „Magie“ wieder angezeigt – DSA5 8.1.8 führt sie nicht mehr unter den magischen Sonderfertigkeiten.
+
+### Kompatibilität
+
+- Geprüft mit DSA5 8.1.8.
+
 ## [0.2.0] — 2026-09-30
 
 ### Neu
@@ -40,5 +57,6 @@ Erste Version, installierbar über die Manifest-URL.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
 
+[0.3.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/vt-tom/dsa5-helpers/releases/tag/v0.1.0
