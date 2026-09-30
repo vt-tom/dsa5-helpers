@@ -98,6 +98,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - **Layout:** zwei Panels nebeneinander brauchen `.panel + .panel{margin-top:0}`, sonst sitzt das zweite tiefer.
 - **Bogen-ID ist `dsa5-helpers.`** (mit Punkt, ohne Klassennamen): Foundry bildet sie aus `scope + '.' + sheetClass.name`, unsere Klasse ist anonym (`BaseCharacterSheet ? class extends … : null`). Nicht „reparieren“ — Akteure mit gewähltem Bogen speichern genau diese ID in `flags.core.sheetClass`.
 - **`position:sticky` im Scrollbereich:** `top` zählt ab der Innenkante (nach `padding-top`) — im Click-Dummy (`.content` mit 8 px Padding) deshalb `top:-8px`, sonst schauen Zeilen über der Leiste durch. Im Modul hat `.dsa5h-content` oben kein Padding.
+- **DSA5 8.1.8 (2026-09-30 geprüft gegen 8.1.5):** Patron-Items stehen nicht mehr in `prepare.specAbs.magical`, sondern in eigener Liste `prepare.patrons` (System-Template `patrons.hbs`) — im Magie-Reiter eigener Chip-Block nach den Sonderfertigkeiten. Sonst für uns relevant nur: AppV2Mixin `_toggleDisabled` gibt jetzt zusätzlich `input[type=search]`/`[data-observer-enabled]` frei und hat `_observerEnabledSelectors()` (unser Override ruft `super` zuerst, passt). Eingebundene System-Templates und Chargen-Flags (`dsa5-core` 8.1.6) unverändert. Bei künftigen Systemupdates: `gh api repos/Plushtoast/dsa5-foundryVTT/compare/<alt>...<neu>` liefert die Dateiliste, Release-Notizen des Systems sind nichtssagend.
 
 ## Zusammenarbeit mit dem Agent
 

@@ -7,11 +7,13 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-- **DSA5-System 8.1.5 → 8.1.8 prüfen:** Lokal entwickeln wir gegen DSA5 8.1.5 (`module.json` → `relationships.systems[0].compatibility.verified`), aktuell ist 8.1.8. Änderungen der Zwischenversionen auf Auswirkungen fürs Modul prüfen — v. a. geerbte Sheet-Klasse `ActorSheetdsa5Character` (Aktionen/`ownerActions`, `_prepareContext`/`prepare.*`), eingebundene System-Templates (`actor-companion.hbs`, `companion-card.hbs`, `member-card-header.hbs`, `horse.hbs`), Sprachschlüssel und Datenpfade. Danach lokal aktualisieren, `node tests/sheet.test.cjs` laufen lassen (prüft gegen die installierten Systemdateien), live testen und `verified` hochsetzen.
-
 ## Version 0.3.0 (Branch `release/0.3.0`)
 
-Alles live bestätigt, Release vorbereitet (`version` 0.3.0, CHANGELOG datiert). Offen nach Freigabe: nach `main` mergen, Tag `v0.3.0`, GitHub-Release, Issues #10–#13 schließen, Meilenstein schließen — siehe [RELEASE.md](RELEASE.md).
+Release vorbereitet (`version` 0.3.0, CHANGELOG datiert). Nach dem Live-Check unten: `relationships.systems[0].compatibility.verified` → 8.1.8 in `module.json`, dann nach Freigabe nach `main` mergen, Tag `v0.3.0`, GitHub-Release, Issues #10–#13 und Meilenstein schließen — siehe [RELEASE.md](RELEASE.md).
+
+## Live in Foundry prüfen
+
+- **DSA5 8.1.8:** Code-Vergleich 8.1.5→8.1.8 ergab nur eine Lücke (Patrone fehlten im Magie-Reiter, behoben). Kurz live gegenprüfen: Bogen öffnen, alle Reiter durchklicken, eine Probe würfeln, ein Item löschen (System hat den Löschdialog umgebaut). Falls vorhanden: Held mit Patron → erscheint im Magie-Reiter unter „Patron“. Als Beobachter öffnen → Reiter und Talentsuche bedienbar.
 
 ## Offene Entscheidungen
 

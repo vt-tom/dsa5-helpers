@@ -11,6 +11,14 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 - Neue Einstellung für die Spielleitung: „Standard-Bogen für Helden“ macht den Bogen zum Standard für alle Helden; ein am Helden ausdrücklich gewählter Bogen bleibt ([#13](https://github.com/vt-tom/dsa5-helpers/issues/13)).
 - Hat ein Held noch keine Spezies und ist der Charakterbauer installiert, steht im Kopf wie im Systembogen der Knopf „Heldenerschaffung“ ([#10](https://github.com/vt-tom/dsa5-helpers/issues/10)); nach dem Abschließen öffnet sich wieder der zuvor gewählte Bogen statt des Systembogens.
 
+### Behoben
+
+- Patrone werden im Reiter „Magie“ wieder angezeigt – DSA5 8.1.8 führt sie nicht mehr unter den magischen Sonderfertigkeiten.
+
+### Kompatibilität
+
+- Geprüft mit DSA5 8.1.8.
+
 ## [0.2.0] — 2026-09-30
 
 ### Neu

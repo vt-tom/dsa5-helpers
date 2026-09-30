@@ -467,6 +467,10 @@ const TRICKS = ["Punktlicht", "Ignifaxius (Minimal)", "Kleiner Lärm", "Flimmers
 // ({{#if prepare.magic.magicalsign}} in magicalSigns.hbs); hier ein Demo-Eintrag, damit der Block überhaupt zu sehen ist.
 const MAGICAL_SIGNS = ["Zeichen der Waldesruhe"];
 
+// "patron"-Items: seit DSA5 8.1.8 eigene Liste prepare.patrons (patrons.hbs, nur sichtbar wenn vorhanden), vorher
+// unter den magischen Sonderfertigkeiten. Platzhalter-Name, nur damit der Block im Click-Dummy zu sehen ist.
+const PATRONS = ["Patron (Demo)"];
+
 // Traditionsgegenstände (tradition-items.hbs, kind="magical", showVolume=true): Name/Kategorie (aus
 // lang/de.json "traditionArtifacts", z.B. Magierstab/Lebensring/Zauberkleidung) + AE-Ladung Ist/Max, optional
 // Fähigkeiten als Untereinträge. Ihr Amulett aus Silberbirke (siehe Notizen-Tab) ist ihr Zauberfokus.

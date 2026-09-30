@@ -254,6 +254,12 @@ test('character builder button replaces the species field only when the system a
  assert(html.includes('data-action="startCharacterBuilder"'));assert(!html.includes('name="system.details.species.value"'));
  assert.equal(Sheet.DEFAULT_OPTIONS.ownerActions.startCharacterBuilder,Sheet._startCharacterBuilder);
 });
+test('patrons (own list prepare.patrons since DSA5 8.1.8) render on the magic tab only when present',async()=>{
+ const {sheet}=await prepare();let html=render(await sheet._prepareContext({}));assert(!html.includes(localize('TYPES.Item.patron')));
+ sheet.context.prepare.patrons=[{_id:'patron-1',name:'Katzenpatron',img:'icons/svg/cat.svg',system:{}}];html=render(await sheet._prepareContext({}));
+ const chip=elements(html,el=>el.attribs?.['data-item-id']==='patron-1')[0];assert(chip,'patron chip missing');
+ let panel=chip;while(panel&&!panel.attribs?.['data-tab-panel'])panel=panel.parent;assert.equal(panel?.attribs['data-tab-panel'],'magic');
+});
 const importChangelog=()=>import('data:text/javascript;base64,'+Buffer.from(read('scripts/apps/changelog.js')).toString('base64'));
 // Vereinfachtes foundry.utils.isNewerVersion für reine x.y.z-Versionen.
 const isNewer=(a,b)=>{const pa=a.split('.').map(Number),pb=b.split('.').map(Number);for(let i=0;i<3;i++)if((pa[i]||0)!==(pb[i]||0))return (pa[i]||0)>(pb[i]||0);return false;};

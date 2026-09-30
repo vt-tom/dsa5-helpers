@@ -2057,6 +2057,10 @@ function renderMagicSpells() {
       el("div", { class: "chips" }, TRICKS.map((t) => deletableChip(A.spellTrick, t, TRICKS, t))),
     ]),
     specialsBlock("Sonderfertigkeiten (Magie)", MAGIC_SPECIALS),
+    PATRONS.length ? el("div", { class: "panel" }, [
+      el("div", { class: "panel-title" }, "Patron"),
+      el("div", { class: "chips" }, PATRONS.map((p) => el("span", { class: "chip" }, p))),
+    ]) : null,
   ]);
 }
 
