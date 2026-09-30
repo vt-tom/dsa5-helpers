@@ -1,0 +1,29 @@
+<div class="dsa5h-changelog">
+  {{!-- Versionsleiste bleibt stehen, nur der Inhalt darunter scrollt (Changelog wird mit jeder Version länger). --}}
+  {{#if (gt sections.length 1)}}
+  <nav class="dsa5h-changelog-nav" aria-label="{{localize 'DSA5HELPERS.Changelog.Versions'}}">
+    {{#each sections as |section|}}
+    <button type="button" data-action="jumpTo" data-version="{{section.version}}">{{section.version}}</button>
+    {{/each}}
+  </nav>
+  {{/if}}
+  <div class="dsa5h-changelog-body">
+    {{#if filtered}}
+    <p class="dsa5h-changelog-intro">{{localize "DSA5HELPERS.Changelog.Updated" version=installed}}</p>
+    {{/if}}
+    {{#each sections as |section|}}
+    <details class="dsa5h-changelog-version" data-version="{{section.version}}" {{#if (or @first ../filtered)}}open{{/if}}>
+      <summary><h2>{{section.version}}{{#if section.date}} <span class="dsa5h-changelog-date">{{section.date}}</span>{{/if}}</h2></summary>
+      {{{section.html}}}
+    </details>
+    {{else}}
+    <p>{{localize "DSA5HELPERS.Changelog.Missing"}}</p>
+    {{/each}}
+  </div>
+  <footer class="dsa5h-changelog-footer">
+    {{#if filtered}}
+    <button type="button" data-action="showAll"><i class="fas fa-list"></i> {{localize "DSA5HELPERS.Changelog.ShowAll"}}</button>
+    {{/if}}
+    {{#if url}}<a href="{{url}}" target="_blank" rel="noopener">{{localize "DSA5HELPERS.Changelog.OnGitHub"}}</a>{{/if}}
+  </footer>
+</div>

@@ -18,7 +18,12 @@
         </div>
 
         <div class="dsa5h-badges autosizing">
-          {{formInput systemFields.details.fields.species.fields.value value=document.system.details.species.value placeholder=(localize 'TYPES.Item.species') readonly=true disabled=(not dsa5h.editMode)}}
+          {{!-- Wie im Systembogen (actor-header.hbs): ohne Spezies und mit installiertem Charakterbauer statt des Spezies-Feldes (Issue #10). --}}
+          {{#if prepare.canBuild}}
+          <button type="button" class="dsa5h-chargen" data-action="startCharacterBuilder" data-tooltip="CHARGEN.chargenTT"><i class="fas fa-user-edit"></i> {{localize "CHARGEN.chargen"}}</button>
+          {{else}}
+            {{formInput systemFields.details.fields.species.fields.value value=document.system.details.species.value placeholder=(localize 'TYPES.Item.species') readonly=true disabled=(not dsa5h.editMode)}}
+          {{/if}}
           {{formInput systemFields.details.fields.culture.fields.value value=document.system.details.culture.value placeholder=(localize 'TYPES.Item.culture') disabled=(not dsa5h.editMode)}}
           {{formInput systemFields.details.fields.career.fields.value value=document.system.details.career.value placeholder=(localize 'TYPES.Item.career') disabled=(not dsa5h.editMode)}}
         </div>

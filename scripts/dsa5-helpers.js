@@ -1,4 +1,5 @@
 import { Dsa5HelpersCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
+import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -16,8 +17,14 @@ function findTraditionIcon(text, names, folder) {
 }
 
 Hooks.once('init', async () => {
-  if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   game.settings.register('dsa5-helpers', 'theme', { scope: 'client', config: false, type: String, default: 'light', choices: { light: 'Light', dark: 'Dark' } });
+  // Standard-Bogen für Helden (Issue #13): nur der Foundry-Weg über makeDefault — eine ausdrückliche Wahl am Akteur
+  // oder unter „Standard-Bögen konfigurieren“ hat weiter Vorrang (Nutzerentscheidung 2026-09-30).
+  game.settings.register('dsa5-helpers', 'defaultSheet', { name: 'DSA5HELPERS.Settings.DefaultSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultSheet.Hint', scope: 'world', config: true, restricted: true, type: Boolean, default: false, requiresReload: true });
+  // Zuletzt gesehene Version je Nutzer (Issue #11) — auch Spieler und Erstinstallation bekommen den Changelog.
+  game.settings.register('dsa5-helpers', 'lastSeenVersion', { scope: 'client', config: false, type: String, default: '' });
+  game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
+  if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
   Handlebars.registerHelper('dsa5hFormatNum', value => String(value ?? 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' '));
   // Kürzel einer Münze im Geld-Panel (Dukaten → D): Münzen sind Items, auch eigene Währungen bekommen so ein Kürzel.
@@ -25,6 +32,7 @@ Hooks.once('init', async () => {
   Handlebars.registerHelper('dsa5hCharacteristics', item => [1, 2, 3].map(n => item.system['characteristic' + n]?.value).filter(Boolean));
   Handlebars.registerHelper('dsa5hTraditionIcon', (text, kind) => findTraditionIcon(text, kind === 'religion' ? GOD_ICONS : MAGIC_TRADITION_ICONS, kind === 'religion' ? 'months' : 'traditionen'));
   await foundry.applications.handlebars.loadTemplates([
+  "modules/dsa5-helpers/templates/changelog.hbs",
   "modules/dsa5-helpers/templates/actors/dsa5-helpers-character-sheet.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body.hbs",
   "modules/dsa5-helpers/templates/actors/parts/cast-list.hbs",
@@ -61,5 +69,21 @@ Hooks.once('init', async () => {
   "systems/dsa5/templates/actors/parts/member-card-header.hbs",
   "systems/dsa5/templates/actors/parts/horse.hbs"
 ]);
-  foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersCharacterSheet, { types: ['character'], makeDefault: false, label: 'DSA5HELPERS.SheetLabel' });
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersCharacterSheet, { types: ['character'], makeDefault: game.settings.get('dsa5-helpers', 'defaultSheet'), label: 'DSA5HELPERS.SheetLabel' });
+});
+
+Hooks.once('ready', () => showChangelogIfUpdated());
+
+// Rückweg aus dem Charakterbauer (#10, Nutzerfreigabe 2026-09-30): dsa5-core setzt beim Abschließen fest
+// flags.core.sheetClass = "dsa5.ActorSheetdsa5Character". Wurde der Bauer aus unserem Bogen gestartet
+// (Flag preChargenSheet, siehe _startCharacterBuilder), stattdessen die vorherige Wahl wiederherstellen —
+// '' heißt Standard-Bogen, damit auch die Einstellung „Standard für alle Helden“ (#13) wieder greift.
+Hooks.on('preUpdateActor', (actor, changes) => {
+  const { getProperty, hasProperty, setProperty } = foundry.utils;
+  const previous = actor.getFlag('dsa5-helpers', 'preChargenSheet');
+  if (previous === undefined || !hasProperty(changes, 'flags.core.sheetClass')) return;
+  const next = getProperty(changes, 'flags.core.sheetClass');
+  if (next === 'dsa5.DSACharBuilder') return;
+  if (next === 'dsa5.ActorSheetdsa5Character' && actor.getFlag('core', 'sheetClass') === 'dsa5.DSACharBuilder') setProperty(changes, 'flags.core.sheetClass', previous);
+  setProperty(changes, 'flags.dsa5-helpers.preChargenSheet', new foundry.data.operators.ForcedDeletion());
 });

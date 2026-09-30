@@ -2987,9 +2987,20 @@ function identityBadge(data) {
   return btn;
 }
 
+// Heldenerschaffung (Issue #10): im Modul steht der Knopf statt der Spezies, solange der Held keine Spezies hat und
+// der Charakterbauer (dsa5-core) installiert ist. Im Click-Dummy per ?chargen in der URL zu sehen.
+const SHOW_CHARGEN = new URLSearchParams(location.search).has("chargen");
+
+function chargenButton() {
+  const btn = el("button", { type: "button", class: "badge chargen", title: "Charakterbauer starten" }, "✎ Heldenerschaffung");
+  btn.addEventListener("click", () => alert("Im Modul öffnet sich hier der Charakterbauer des DSA5-Systems."));
+  return btn;
+}
+
 function initHeadBadges() {
   const wrap = document.getElementById("headBadges");
-  [IDENTITY.species, IDENTITY.culture, IDENTITY.career].forEach((d) => wrap.appendChild(identityBadge(d)));
+  wrap.appendChild(SHOW_CHARGEN ? chargenButton() : identityBadge(IDENTITY.species));
+  [IDENTITY.culture, IDENTITY.career].forEach((d) => wrap.appendChild(identityBadge(d)));
 }
 
 // Sammelt alle per favStar() markierten Einträge aus genau den vier auf dem Titelblatt geforderten Kategorien
