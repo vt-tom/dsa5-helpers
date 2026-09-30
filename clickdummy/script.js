@@ -72,6 +72,15 @@ function combatDie(value, die, label) {
   return makeRollable(el("span", { class: "die-qs lg", style: dieBg(die) }, String(value)), label);
 }
 
+// Schadenswurf als erkennbarer Würfelknopf (rote Kante + rotes W6-Quadrat, Zoom bei Hover wie die übrigen Proben)
+// statt reinem Text — Nutzer-Feedback 2026-09-28. Modul: .dsa5h-damage (weapon.hbs, favorite-values.hbs).
+function damageBtn(tp, name) {
+  const label = `Schaden von ${name} würfeln (${tp})`;
+  const btn = el("button", { type: "button", class: "damage-roll", title: label, "aria-label": label }, tp);
+  btn.addEventListener("click", (e) => { e.stopPropagation(); flashNotice(`🎲 ${label}`); });
+  return btn;
+}
+
 // AP-Kosten-Engine — auf Nutzerwunsch 1:1 aus dem echten DSA5-System portiert, nichts Neu-Erfundenes:
 // Tabelle DSA5.advancementCosts (systems/dsa5/modules/config/config-dsa5.js) + DSA5_Utility._calculateAdvCost()
 // (systems/dsa5/modules/system/helpers/utility-dsa5.js). Index = aktueller Wert VOR der Änderung + modifier
@@ -540,7 +549,7 @@ function subheadWithHelp(label) {
 // MAGIC_SPECIALS/RELIGION_SPECIALS in data.js. Leere Kategorien werden weggelassen; Unterüberschriften erscheinen
 // nur, wenn mehr als eine Kategorie tatsächlich Einträge hat (sonst wie bisher eine einzelne Chip-Reihe, der Info-
 // Knopf wandert dann an den Panel-Titel, da dort die einzige Überschrift für diese eine Kategorie steht).
-function specialsBlock(title, groups) {
+function specialsBlock(title, groups, fill = false) {
   const active = groups.filter((g) => g.items.length);
   const showSubheads = active.length > 1;
   return el(
@@ -552,7 +561,7 @@ function specialsBlock(title, groups) {
         : el("div", { class: "panel-title flex" }, [el("span", {}, title), specHelpBtn()]),
       ...active.flatMap((g) => [
         showSubheads ? subheadWithHelp(g.label) : null,
-        el("div", { class: "chips" }, g.items.map((s) => deletableChip(A.abilityGeneral, s, g.items, s))),
+        el("div", { class: fill ? "chips chips-fill" : "chips" }, g.items.map((s) => deletableChip(A.abilityGeneral, s, g.items, s))),
       ]),
     ]
   );
@@ -610,17 +619,17 @@ function renderMain() {
   const traitsPanel = el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Vor- & Nachteile"),
     subheadWithHelp("Vorteile"),
-    el("div", { class: "chips" }, ADVANTAGES.map((t) => deletableChip(A.advantage, t, ADVANTAGES, t))),
+    el("div", { class: "chips chips-fill" }, ADVANTAGES.map((t) => deletableChip(A.advantage, t, ADVANTAGES, t))),
     subheadWithHelp("Nachteile"),
-    el("div", { class: "chips" }, DISADVANTAGES.map((t) => deletableChip(A.disadvantage, t, DISADVANTAGES, t))),
+    el("div", { class: "chips chips-fill" }, DISADVANTAGES.map((t) => deletableChip(A.disadvantage, t, DISADVANTAGES, t))),
   ]);
 
-  const specialsPanel = specialsBlock("Allgemeine Sonderfertigkeiten", SPECIALS);
+  const specialsPanel = specialsBlock("Allgemeine Sonderfertigkeiten", SPECIALS, true);
 
   // Vorprägung (siehe IMPRINT-Kommentar in data.js): kein Info-Knopf im System, nur eine reine Namensliste, daher
   // hier ohne subheadWithHelp — nur gerendert, wenn tatsächlich befüllt.
   const imprintPanel = IMPRINT.length
-    ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Vorprägung"), el("div", { class: "chips" }, IMPRINT.map((s) => deletableChip(A.abilityGeneral, s, IMPRINT, s)))])
+    ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Vorprägung"), el("div", { class: "chips chips-fill" }, IMPRINT.map((s) => deletableChip(A.abilityGeneral, s, IMPRINT, s)))])
     : null;
 
   const languagesPanel = el("div", { class: "panel" }, [
@@ -629,9 +638,9 @@ function renderMain() {
       LANGUAGE_POINTS ? el("small", {}, `Sprachpunkte ${LANGUAGE_POINTS.used}/${LANGUAGE_POINTS.value}`) : null,
     ]),
     el("div", { class: "subhead" }, "Sprachen"),
-    el("div", { class: "chips" }, LANGUAGES.map((l) => deletableChip(A.abilityLanguage, l, LANGUAGES, l))),
+    el("div", { class: "chips chips-fill" }, LANGUAGES.map((l) => deletableChip(A.abilityLanguage, l, LANGUAGES, l))),
     el("div", { class: "subhead" }, "Schriften"),
-    el("div", { class: "chips" }, SCRIPTS.map((s) => deletableChip(A.abilityLanguage, s, SCRIPTS, s))),
+    el("div", { class: "chips chips-fill" }, SCRIPTS.map((s) => deletableChip(A.abilityLanguage, s, SCRIPTS, s))),
   ]);
 
   return el("div", {}, [
@@ -720,7 +729,16 @@ function renderSkillGroupPanel(g, query) {
 // entscheidet über Erfolg, nicht die Versuchszahl allein — deshalb beide getrennt als eigene Spalten.
 function renderAggregatedPanel() {
   return el("div", { class: "panel" }, [
-    el("div", { class: "panel-title flex" }, [el("span", {}, "Sammelproben"), el("small", {}, "Gruppierte Proben über mehrere Intervalle")]),
+    // "+" in beiden Modi (Nutzer-Feedback 2026-09-28: Sammelproben auch im Spielmodus anlegen); Modul: itemCreate.
+    el("div", { class: "panel-title flex" }, [
+      el("span", {}, "Sammelproben"),
+      el("small", {}, "Gruppierte Proben über mehrere Intervalle"),
+      (() => {
+        const add = el("button", { type: "button", class: "title-icon-btn", title: "Sammelprobe hinzufügen", "aria-label": "Sammelprobe hinzufügen" }, "+");
+        add.addEventListener("click", () => flashNotice("Neue Sammelprobe angelegt (Click-Dummy)"));
+        return add;
+      })(),
+    ]),
     ...AGGREGATED.flatMap((a) => [
       el("div", { class: "row agg-head-row" }, [
         el("img", { src: A.aggregatedTest, alt: "" }),
@@ -771,7 +789,7 @@ function buildSkillSubTabs() {
 // .sub-tabs/.sub-tab-Muster wie bei den Talenten.
 function buildCombatSubTabs() {
   return el("div", { class: "sub-tabs" }, [
-    ["kampf", "Übersicht"], ["kampftalente", "Kampftalente"],
+    ["kampf", "Übersicht"], ["koerper", "Körper"], ["kampftalente", "Kampftalente"],
   ].map(([id, label]) => {
     const active = currentCombatSection === id;
     const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
@@ -971,10 +989,9 @@ function effectiveArmor(a) {
   return { rs, be };
 }
 
-// Munitionszelle einer Fernkampfwaffe (siehe RANGED-Kommentar in data.js): standardmäßig nur ein einzeiliger
-// Knopf mit der aktiven Munitionsart (+ Nachlade-Status bei Waffen mit Lademechanismus), damit die Fernkampf-
-// tabelle so ruhig wirkt wie die Nahkampftabelle. Erst per Klick klappt darunter das eigentliche Munitions-
-// menü auf (Munitionsart wechseln, Magazin-Balken, Nachladen-Knopf) — analog zu combat_ammo_button/-menu.hbs.
+// Munitionszelle einer Fernkampfwaffe (siehe RANGED-Kommentar in data.js) — Variante "Mischform" (Nutzer-
+// Entscheidung 2026-09-28 nach Vergleich mit "alles im Menü" und "alles kompakt inline"): Nachladen und Magazin
+// (im Kampf oft geklickt) direkt sichtbar, nur die selten geänderte Munitionswahl im Aufklapp-Menü.
 let openAmmoWeapon = null;
 
 function toggleAmmoMenu(weapon) {
@@ -982,85 +999,115 @@ function toggleAmmoMenu(weapon) {
   renderContent();
 }
 
+// ammo === null = "Keine Munition" (im System selectAmmo mit data-ammo-id="clear").
 function selectAmmo(weapon, ammo) {
   weapon.ammoTypes.forEach((a) => (a.selected = a === ammo));
   openAmmoWeapon = null;
   renderContent();
 }
 
+const selectedAmmo = (w) => w.ammoTypes.find((a) => a.selected) || null;
+const isLoaded = (w) => !w.reloadTime || w.reloadProgress >= w.reloadTime;
+
+// Wie actor-sheet.js _loadWeapon: Linksklick +1 bis LZ, nur mit gewählter Munition.
 function advanceReload(weapon) {
-  if (weapon.ammoCurrent >= weapon.ammoMax) return;
+  if (!selectedAmmo(weapon) || isLoaded(weapon)) return;
   weapon.reloadProgress++;
-  if (weapon.reloadProgress >= weapon.reloadTime) {
-    weapon.ammoCurrent = weapon.ammoMax;
-    weapon.reloadProgress = 0;
-  }
   renderContent();
+}
+
+// Wie actor-sheet.js _loadWeapon mit Rechtsklick: Lade- und Zielfortschritt auf 0.
+function resetReload(weapon) {
+  weapon.reloadProgress = 0;
+  if (weapon.aim) weapon.aim.progress = 0;
+  renderContent();
+}
+
+// Wie itemSwapMag: volles Magazin einsetzen, ein Magazin aus dem Vorrat verbrauchen.
+function swapMag(weapon) {
+  const ammo = selectedAmmo(weapon);
+  if (!ammo?.mag || ammo.count < 1) return;
+  ammo.count--;
+  ammo.mag.current = ammo.mag.max;
+  renderContent();
+}
+
+function stopClick(node, fn) {
+  node.addEventListener("click", (e) => {
+    e.stopPropagation();
+    fn();
+  });
+  return node;
+}
+
+// Nachladen: Beschriftung + Segmentbalken (ein Segment je Aktion) + Stand, ↺ setzt zurück
+// (im System sonst nur per Rechtsklick) — Modul: .dsa5h-reload in weapon.hbs.
+function reloadWidget(w) {
+  const loaded = isLoaded(w);
+  const title = loaded ? "Geladen" : `Nachladen ${w.reloadProgress}/${w.reloadTime}`;
+  const btn = el("button", { type: "button", class: "reload-btn" + (loaded ? " done" : ""), title, "aria-label": `${title}: ${w.name}` }, [
+    el("span", {}, loaded ? "Geladen" : "Nachladen"),
+    el("span", { class: "reload-bar", style: `--lz:${w.reloadTime}`, "aria-hidden": "true" }, [el("span", { style: `width:${Math.min(100, (w.reloadProgress / w.reloadTime) * 100)}%` })]),
+    el("span", { class: "reload-count" }, `${Math.min(w.reloadProgress, w.reloadTime)}/${w.reloadTime}`),
+  ]);
+  if (loaded || !selectedAmmo(w)) btn.disabled = true;
+  else stopClick(btn, () => advanceReload(w));
+  const row = el("span", { class: "reload" }, [btn]);
+  if (w.reloadProgress > 0) {
+    row.appendChild(stopClick(el("button", { type: "button", class: "reload-reset", title: "Nachladen zurücksetzen", "aria-label": `Nachladen zurücksetzen: ${w.name}` }, "↺"), () => resetReload(w)));
+  }
+  return row;
+}
+
+// Magazinstand "Magazin 10/10" + ⇄ zum Tauschen.
+function magWidget(w) {
+  const ammo = selectedAmmo(w);
+  if (!ammo?.mag) return null;
+  const { current, max } = ammo.mag;
+  const swapLabel = `Magazin tauschen (${ammo.count} im Vorrat)`;
+  const swap = el("button", { type: "button", class: "mag-swap", title: swapLabel, "aria-label": `${swapLabel}: ${w.name}` }, "⇄");
+  if (!ammo.count || current === max) swap.disabled = true;
+  else stopClick(swap, () => swapMag(w));
+  return el("span", { class: "mag" }, [
+    el("span", { class: "muted" }, "Magazin"),
+    el("span", { class: "mag-count", title: "Schuss im Magazin" }, `${current}/${max}`),
+    swap,
+  ]);
+}
+
+// Munitionsarten als Chips + "Keine Munition" (Aufklapp-Menü der Munitionswahl).
+function ammoChips(w) {
+  const chip = (label, active, ammo) =>
+    stopClick(el("button", { type: "button", class: "ammo-chip" + (active ? " active" : ""), "aria-pressed": String(active) }, label), () => selectAmmo(w, ammo));
+  return el("div", { class: "ammo-types" }, [...w.ammoTypes.map((a) => chip(`${a.name} ×${a.count}`, a.selected, a)), chip("Keine Munition", !selectedAmmo(w), null)]);
+}
+
+function ammoToggle(w, summary) {
+  const isOpen = openAmmoWeapon === w;
+  return stopClick(
+    el("button", { type: "button", class: "ammo-toggle" + (isOpen ? " open" : ""), "aria-expanded": String(isOpen) }, [
+      el("span", { class: "ammo-toggle-label" }, summary),
+      el("span", { class: "ammo-toggle-caret" }, "▾"),
+    ]),
+    () => toggleAmmoMenu(w)
+  );
+}
+
+function ammoMenu(children) {
+  const menu = el("div", { class: "ammo-menu" }, children.filter(Boolean));
+  menu.addEventListener("click", (e) => e.stopPropagation());
+  return menu;
 }
 
 function renderAmmoCell(w) {
   // Waffen ohne eigene Munitionsgruppe (z.B. Wurfmesser) haben weiterhin nur eine einfache Anzahl.
   if (!w.ammoTypes) return el("span", { class: "muted center" }, w.ammo);
-
-  const hasMag = w.ammoMax !== undefined;
-  const loaded = !hasMag || w.ammoCurrent >= w.ammoMax;
-  const selected = w.ammoTypes.find((a) => a.selected) || w.ammoTypes[0];
-  const isOpen = openAmmoWeapon === w;
-
-  const aimSuffix = w.aim && w.aim.progress > 0 ? ` · Zielt ${w.aim.progress}/2` : "";
-  const summary = (hasMag ? `${selected.name} · ${loaded ? "Bereit" : `Nachladen ${w.reloadProgress}/${w.reloadTime}`}` : `${selected.name} ×${selected.count}`) + aimSuffix;
-
-  const toggle = el(
-    "button",
-    { type: "button", class: "ammo-toggle" + (isOpen ? " open" : "") + (hasMag && !loaded ? " reloading" : "") },
-    [el("span", { class: "ammo-toggle-label" }, summary), el("span", { class: "ammo-toggle-caret" }, "▾")]
-  );
-  toggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    toggleAmmoMenu(w);
-  });
-
-  if (!isOpen) return el("span", { class: "ammo-cell" }, [toggle]);
-
-  const typesRow = el(
-    "div",
-    { class: "ammo-types" },
-    w.ammoTypes.map((a) => {
-      const btn = el("button", { type: "button", class: "ammo-chip" + (a.selected ? " active" : "") }, `${a.name} ×${a.count}`);
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        selectAmmo(w, a);
-      });
-      return btn;
-    })
-  );
-
-  const menuChildren = [typesRow];
-  if (hasMag) {
-    const magRow = el("div", { class: "ammo-mag" }, [
-      el("span", { class: "ammo-mag-bar" }, [el("span", { class: "ammo-mag-fill", style: `width:${(w.ammoCurrent / w.ammoMax) * 100}%` })]),
-      el("span", { class: "ammo-mag-label" }, `${w.ammoCurrent}/${w.ammoMax}`),
-    ]);
-    const reloadBtn = el("button", { type: "button", class: "reload-btn" + (loaded ? " done" : "") }, loaded ? "Bereit" : `Nachladen ${w.reloadProgress}/${w.reloadTime}`);
-    if (!loaded) reloadBtn.addEventListener("click", (e) => { e.stopPropagation(); advanceReload(w); });
-    else reloadBtn.disabled = true;
-    menuChildren.push(magRow, reloadBtn);
-  }
-
-  // Zielen (siehe RANGED-Kommentar in data.js): eigener Fortschritt 0/2, nur erhöhbar wenn die Waffe geladen ist,
-  // exakt die Bedingung aus dialog-combat-dsa5.js:1110 ("if (loaded && aimProgress < 2)").
-  if (w.aim) {
-    const aimDone = w.aim.progress >= 2;
-    const aimBtn = el("button", { type: "button", class: "reload-btn aim-btn" + (aimDone ? " done" : "") }, aimDone ? "Gezielt ✓" : `Zielen ${w.aim.progress}/2`);
-    if (loaded && !aimDone) aimBtn.addEventListener("click", (e) => { e.stopPropagation(); w.aim.progress++; renderContent(); });
-    else aimBtn.disabled = true;
-    menuChildren.push(aimBtn);
-  }
-
-  const menu = el("div", { class: "ammo-menu" }, menuChildren);
-  menu.addEventListener("click", (e) => e.stopPropagation());
-
-  return el("span", { class: "ammo-cell open" }, [toggle, menu]);
+  const ammo = selectedAmmo(w);
+  return el("span", { class: "ammo-cell inline" }, [
+    el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]),
+    w.reloadTime ? reloadWidget(w) : null,
+    magWidget(w),
+  ]);
 }
 
 // "Wie die Waffe geführt wird" (system.worn.requiresBothHands/.offHand, siehe combat_weapon.hbs/
@@ -1181,7 +1228,7 @@ function traitMeleeRow(t) {
     weaponNameCell(t.name, "Angeboren"),
     el("span", { class: "center" }, [combatDie(t.at, "d20mu", `Attacke mit ${t.name} würfeln`)]),
     el("span", { class: "center" }, t.pa !== undefined ? [combatDie(t.pa, "d20in", `Parade mit ${t.name} würfeln`)] : "–"),
-    el("span", { class: "center" }, t.tp),
+    el("span", { class: "center" }, [damageBtn(t.tp, t.name)]),
     weaponReachCell(t.reach || "kurz"),
     el("span", {}),
     el("span", {}),
@@ -1193,7 +1240,7 @@ function traitRangedRow(t) {
     el("img", { src: t.img || A.combatSkill, alt: "" }),
     weaponNameCell(t.name, "Angeboren"),
     el("span", { class: "center", style: "grid-column:span 2" }, [combatDie(t.at, "d20mu", `Fernkampf mit ${t.name} würfeln`)]),
-    el("span", { class: "center" }, t.tp),
+    el("span", { class: "center" }, [damageBtn(t.tp, t.name)]),
     weaponReachCell(t.reach),
     el("span", {}),
     el("span", {}),
@@ -1208,7 +1255,7 @@ function meleeRow(w) {
     weaponNameCell(w.name, w.group),
     el("span", { class: "center" }, [combatDie(stats.at, "d20mu", `Attacke mit ${w.name} würfeln`)]),
     el("span", { class: "center" }, [combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`)]),
-    el("span", { class: "center" }, w.tp),
+    el("span", { class: "center" }, [damageBtn(w.tp, w.name)]),
     weaponReachCell(w.reach),
     gripCell(w),
     favStar(w),
@@ -1223,7 +1270,7 @@ function rangedRow(w) {
     // FK spannt über AT+PA-Spaltenbreite (Fernkampf hat keine Parade), damit der Wert mittig zwischen AT und PA
     // der Nahkampftabelle sitzt statt an der AT-Position zu kleben.
     el("span", { class: "center", style: "grid-column:span 2" }, [combatDie(stats.at, "d20mu", `Fernkampf mit ${w.name} würfeln`)]),
-    el("span", { class: "center" }, w.tp),
+    el("span", { class: "center" }, [damageBtn(w.tp, w.name)]),
     weaponReachCell(w.reach),
     gripCell(w),
     favStar(w),
@@ -1303,24 +1350,6 @@ function renderArmorPanel() {
   ]);
 }
 
-let COMBAT_TOP = "panels";
-
-// Variante "Leiste": Ausweichen, Initiative, Schutz und die getragenen Rüstungsteile in einer Zeile.
-function combatStrip() {
-  const armorSum = computeArmorSum();
-  const be = ARMOR.reduce((t, a) => t + effectiveArmor(a).be, 0);
-  const stat = (label, value) => el("span", { class: "combat-stat" }, [el("small", {}, label), el("strong", {}, String(value))]);
-  return el("div", { class: "panel combat-strip" }, [
-    stat("Ausweichen", COMBAT_DERIVED[0].max),
-    stat("Initiative", COMBAT_DERIVED[1].max),
-    stat("Schutz", `RS ${armorSum.sum}${armorSum.magicParts.length ? ` (${armorSum.magicParts.join(", ")})` : ""} · BE ${be}`),
-    el("span", { class: "combat-strip-armor" }, ARMOR.map((a) => {
-      const st = effectiveArmor(a);
-      return el("span", { class: "chip", title: `${a.name}: RS ${st.rs}, BE ${st.be}` }, [el("img", { src: A.armor, alt: "" }), a.name]);
-    })),
-  ]);
-}
-
 // Reiter "Körper" (GitHub-Issue #6, Vorbild DSA4-Heldenbogen; Nutzerwunsch 2026-09-25: als eigener Reiter
 // weiterentwickeln). Figur aus dem Artenbild des Helden, links die getragenen Rüstungsteile, rechts die beiden
 // Hände. DSA5 kennt ohne Trefferzonen-Regel keine Körperzonen für Rüstungen — die Teile stehen deshalb als Liste
@@ -1328,6 +1357,15 @@ function combatStrip() {
 // pro Hand genau eine der ausgerüsteten Waffen; eine beidhändige Waffe belegt beide Hände. Nur Entwurf im
 // Click-Dummy — im Modul liefe die Wahl über die Hand-Logik des Systems (equipWeaponToHand/swapWeaponHandSlot).
 const HANDS = { main: null, off: null };
+
+// Hände nebeneinander, TP-Knopf und Auswahl untereinander unter der Kachel (Variante B, Nutzer-Entscheidung
+// 2026-09-30 nach Vergleich mit "untereinander" und "Knöpfe rechts"). Führt die Haupthand eine beidhändige Waffe,
+// entfällt die Nebenhand ganz.
+
+// Figur hinter Rüstung/Händen: Platzhalter (Artenbild) oder das Akteur-Porträt (Rückmeldung 2026-09-30).
+// Umschalter nur im Bearbeiten-Modus; im Modul ein Actor-Flag, das Bild ist document.img. Der Click-Dummy hat kein
+// echtes Ganzkörper-Porträt — dort steht stellvertretend das Menschen-Artenbild.
+let BODY_FIGURE = "species";
 
 function handWeapons() {
   return [...MELEE, ...RANGED].filter((w) => w.worn);
@@ -1342,7 +1380,6 @@ function initHands() {
 function handSlot(hand) {
   const isMain = hand === "main";
   const w = HANDS[hand];
-  const blockedBy = !isMain && HANDS.main && HANDS.main.worn.requiresBothHands ? HANDS.main : null;
   const select = el("select", { class: "val-select-input hand-select", "aria-label": isMain ? "Waffe in der Haupthand" : "Waffe in der Nebenhand" }, [
     el("option", { value: "" }, "— frei —"),
     ...handWeapons()
@@ -1362,26 +1399,69 @@ function handSlot(hand) {
     if (isMain && pick && pick.worn.requiresBothHands) HANDS.off = null;
     renderContent();
   });
-  if (blockedBy) select.disabled = true;
-  let card;
-  if (blockedBy) card = el("div", { class: "muted hand-note" }, `belegt durch ${blockedBy.name} (beidhändig)`);
-  else if (!w) card = el("div", { class: "muted hand-note" }, "keine Waffe");
-  else {
+  // Hand als Kachel im Stil der Rüstungskacheln (Nutzerwunsch 2026-09-28): Waffenbild füllt die Kachel, AT/PA bzw.
+  // FK als Würfel auf der Unterkante (ragen heraus, damit der Hover-Zoom nicht abgeschnitten wird), gefasst wie die
+  // Eigenschaftswürfel im Kopf (dunkle Fassung mit Goldrand, Rückmeldung 2026-09-30). Name groß ÜBER der Kachel,
+  // TP-Knopf und Auswahl darunter.
+  let tile;
+  if (!w) tile = el("div", { class: "hand-tile empty" }, [el("span", { class: "hand-tile-note" }, "frei")]);
+  let tp = null;
+  if (w) {
     const ranged = RANGED.includes(w);
     const stats = ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
-    card = el("div", { class: "hand-slot-weapon" }, [
+    tile = el("div", { class: "hand-tile" }, [
       itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
-      el("span", {}, [el("span", { class: "hand-slot-name" }, w.name), el("small", {}, `${w.group} · TP ${w.tp}`)]),
-      el("span", { class: "hand-dice" }, [
-        combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
-        !ranged && stats.pa !== undefined ? combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`) : null,
-      ]),
+      el("span", { class: "hand-tile-at die-seal" }, [combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`)]),
+      !ranged && stats.pa !== undefined ? el("span", { class: "hand-tile-pa die-seal" }, [combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`)]) : null,
     ]);
+    tp = damageBtn(w.tp, w.name);
   }
-  return el("div", { class: "hand-slot" + (w || blockedBy ? "" : " empty") }, [
-    el("div", { class: "hand-slot-head" }, [el("small", {}, isMain ? "Haupthand" : "Nebenhand"), select]),
-    card,
+  return el("div", { class: "hand-slot" }, [
+    el("small", { class: "figure-col-title" }, isMain ? "Haupthand" : "Nebenhand"),
+    el("span", { class: "body-item-name" }, w ? w.name : "—"),
+    el("div", { class: "hand-slot-body" }, [tile, el("div", { class: "hand-slot-side" }, [tp, select])]),
   ]);
+}
+
+// Zauber-/Liturgieliste als Dialog direkt aus dem Reiter "Körper" (Nutzer-Feedback 2026-09-28): im Kampf würfeln,
+// ohne auf Magie/Religion zu wechseln. Zeile = Bild | Name | Probe (würfelbar) | FW | Kosten. Gegliedert nach
+// Zauber/Rituale/Zaubertricks bzw. Liturgien/Zeremonien/Segnungen (Nutzer-Feedback 2026-09-30: Rituale, Zeremonien,
+// Tricks und Segnungen fehlten). Tricks/Segnungen haben keine Probe und kosten 1 AsP/KaP — Knopf „wirken“ statt Würfel.
+function openCastListModal(kind) {
+  const isSpell = kind === "spell";
+  const energy = isSpell ? "AsP" : "KaP";
+  const sections = isSpell
+    ? [["Zauber", SPELLS], ["Rituale", RITUALS]]
+    : [["Liturgien", LITURGIES], ["Zeremonien", CEREMONIES]];
+  const [cantripLabel, cantrips, cantripImg] = isSpell ? ["Zaubertricks", TRICKS, A.spellTrick] : ["Segnungen", BLESSINGS, A.blessing];
+  const title = isSpell ? "Zauber, Rituale & Zaubertricks" : "Liturgien, Zeremonien & Segnungen";
+  const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
+  closeBtn.addEventListener("click", closeModal);
+  const castRow = (it) =>
+    el("div", { class: "row cast-row" }, [
+      el("img", { src: it.img, alt: "" }),
+      el("span", { class: "left" }, it.name),
+      probeDice(it.probe, it.name),
+      el("span", { class: "center" }, String(it.fw)),
+      el("span", { class: "center muted" }, String(it.cost)),
+    ]);
+  const cantripRow = (name) =>
+    el("div", { class: "row cast-row" }, [
+      el("img", { src: cantripImg, alt: "" }),
+      el("span", { class: "left" }, name),
+      makeRollable(el("span", { class: "cast-auto" }, isSpell ? "wirken" : "spenden"), `${name} ${isSpell ? "wirken" : "spenden"}`),
+      el("span", { class: "center muted" }, "–"),
+      el("span", { class: "center muted" }, "1"),
+    ]);
+  openModal(
+    el("div", { class: "panel cast-modal" }, [
+      el("div", { class: "panel-title flex" }, [el("span", {}, title), closeBtn]),
+      el("div", { class: "row-head cast-row" }, head("", "Name", "Probe", "FW", energy)),
+      ...sections.filter(([, list]) => list.length).flatMap(([label, list]) => [el("div", { class: "subhead" }, label), ...list.map(castRow)]),
+      ...(cantrips.length ? [el("div", { class: "subhead" }, cantripLabel), ...cantrips.map(cantripRow)] : []),
+    ]),
+    { label: title }
+  );
 }
 
 function renderBody() {
@@ -1392,27 +1472,89 @@ function renderBody() {
   const armorSum = computeArmorSum();
   const be = ARMOR.reduce((t, a) => t + effectiveArmor(a).be, 0);
   const inHands = [HANDS.main, HANDS.off].filter(Boolean);
+  const twoHanded = !!(HANDS.main && HANDS.main.worn.requiresBothHands);
   const others = handWeapons().filter((w) => !inHands.includes(w));
   const stat = (label, value) => el("span", { class: "combat-stat" }, [el("small", {}, label), el("strong", {}, String(value))]);
+  const editMode = document.querySelector(".sheet").getAttribute("data-mode") === "edit";
+  const figureSrc = BODY_FIGURE === "portrait" ? A.speciesFigure("Mensch") : A.speciesFigure(IDENTITY.species.name);
+  const segmented = (options, current, onPick, cls, label) =>
+    el("div", { class: "body-seg " + cls, role: "group", "aria-label": label }, options.map(([value, text]) => {
+      const b = el("button", { type: "button", class: value === current ? "active" : "", "aria-pressed": String(value === current) }, text);
+      b.addEventListener("click", () => onPick(value));
+      return b;
+    }));
+  const figureSwitch = editMode
+    ? segmented([["species", "Platzhalter"], ["portrait", "Akteur-Porträt"]], BODY_FIGURE, (v) => { BODY_FIGURE = v; renderContent(); }, "body-figure-switch", "Figur im Hintergrund")
+    : null;
+  // Rüstung als große Kacheln wie im Rüstungs-Panel (Bild füllt die Kachel, RS/BE unten links/rechts) — Nutzer-
+  // Feedback 2026-09-28: "Rüstung sollte größer dargestellt werden".
+  const armorTiles = ARMOR.map((a) => {
+    const st = effectiveArmor(a);
+    // Name groß über der Kachel statt klein im Bild (Nutzer-Feedback 2026-09-30).
+    return el("div", { class: "body-armor-item" }, [
+      el("span", { class: "body-item-name", title: a.name }, a.name),
+      el("div", { class: "armor-slot" }, [
+        itemIcon(A.armor, a.name, a.structure, "armor"),
+        el("span", { class: "armor-slot-rs" }, `RS ${st.rs}`),
+        el("span", { class: "armor-slot-be" }, `BE ${st.be}`),
+      ]),
+    ]);
+  });
+  // Ab drei Rüstungsteilen Tabelle statt Kacheln (Bild | Name | RS | BE), Namen einzeilig mit „…“ (Rückmeldung 2026-09-30).
+  const armorTable = ARMOR.length >= 3;
+  const armorTableEl = el("table", { class: "body-armor-table" }, [
+    el("colgroup", {}, [el("col", { class: "col-img" }), el("col"), el("col", { class: "col-val" }), el("col", { class: "col-val" })]),
+    el("thead", {}, [el("tr", {}, [el("th", { colspan: "2" }, "Name"), el("th", { title: "Rüstungsschutz" }, "RS"), el("th", { title: "Belastung" }, "BE")])]),
+    el("tbody", {}, ARMOR.map((a) => {
+      const st = effectiveArmor(a);
+      return el("tr", {}, [
+        el("td", { class: "body-armor-img" }, [el("img", { src: A.armor, alt: "" })]),
+        el("td", { class: "body-armor-name", title: a.name }, [
+          el("span", {}, a.name),
+          a.structure ? el("meter", { min: "0", max: String(a.structure.max), value: String(a.structure.value) }) : null,
+        ]),
+        el("td", {}, String(st.rs)),
+        el("td", {}, String(st.be)),
+      ]);
+    })),
+  ]);
+  // Zauber/Liturgien nur für Figuren mit AsP/KaP (hier: nicht im "Nur LeP"-Test) — im Modul magic.hasSpells/hasPrayers.
+  const castButtons = ONLY_LEP
+    ? []
+    : [
+        ["spell", "Zauber", "✦"],
+        ["liturgy", "Liturgien", "☀"],
+      ].map(([kind, label, glyph]) => {
+        const btn = el("button", { type: "button", class: "cast-btn" }, [el("span", { "aria-hidden": "true" }, glyph), `${label} …`]);
+        btn.addEventListener("click", () => openCastListModal(kind));
+        return btn;
+      });
   return el("div", {}, [
     el("div", { class: "panel body-panel" }, [
-      el("div", { class: "panel-title" }, "Ausrüstung am Körper"),
-      el("div", { class: "body-grid" }, [
+      el("div", { class: "panel-title flex" }, [el("span", {}, "Ausrüstung am Körper"), castButtons.length ? el("span", { class: "cast-btns" }, castButtons) : null]),
+      // Komplettes Artenbild als Hintergrund der ganzen Fläche (statt ausgeschnittener, geschwärzter Silhouette —
+      // Nutzer-Feedback 2026-09-28), abgeblendet; Rüstung links, Hände rechts, Gesamtschutz in der Mitte.
+      // Figur als echtes <img> (nicht url() in einer CSS-Variable — die löst Chrome gegen den Stylesheet-Pfad auf,
+      // in Foundry blieb die Figur deshalb leer, 2026-09-30).
+      el("div", { class: "body-grid" + (armorTable ? " armor-table" : ""), "data-figure": BODY_FIGURE }, [
+        el("img", { class: "body-figure", src: figureSrc, alt: "", "aria-hidden": "true" }),
+        figureSwitch,
         el("div", { class: "figure-armor" }, [
           el("small", { class: "figure-col-title" }, "Rüstung"),
-          ...ARMOR.map((a) => {
-            const st = effectiveArmor(a);
-            return el("div", { class: "figure-armor-item" }, [itemIcon(A.armor, a.name, a.structure, "armor"), el("span", {}, [el("span", {}, a.name), el("small", {}, `RS ${st.rs} · BE ${st.be}`)])]);
-          }),
-          ...(ARMOR.length ? [] : [el("div", { class: "muted" }, "Keine Rüstung getragen")]),
+          armorTable ? armorTableEl : ARMOR.length ? el("div", { class: "armor-slots" }, armorTiles) : el("div", { class: "muted" }, "Keine Rüstung getragen"),
         ]),
-        el("div", { class: "figure-body", style: `--figure:url('${A.speciesFigure(IDENTITY.species.name)}')` }, [
-          el("span", { class: "figure-badge" }, [el("strong", {}, `RS ${armorSum.sum}`), el("small", {}, `BE ${be}`)]),
-        ]),
-        el("div", { class: "figure-hands" }, [el("small", { class: "figure-col-title" }, "Hände"), handSlot("main"), handSlot("off")]),
+        // Plakette absolut über der Mitte der ganzen Fläche (nicht der mittleren Spalte), damit sie über der Figur
+        // zentriert bleibt, auch wenn Rüstungs- und Händespalte verschieden breit sind (Rückmeldung 2026-09-30).
+        el("div", { class: "figure-body" }),
+        el("span", { class: "figure-badge" }, [el("strong", {}, `RS ${armorSum.sum}`), el("small", {}, `BE ${be}`)]),
+        twoHanded
+          ? el("div", { class: "figure-hands single" }, [handSlot("main")])
+          : el("div", { class: "figure-hands" }, [handSlot("main"), handSlot("off")]),
       ]),
+      // Die vier Schnellwürfe wie in der Übersicht (Rückmeldung 2026-09-30); Ausweichen steht dort mit Wert, daher
+      // nicht mehr zusätzlich in der Wertezeile.
+      el("div", { class: "body-actions" }, [renderCombatActions()]),
       el("div", { class: "figure-stats" }, [
-        stat("Ausweichen", COMBAT_DERIVED[0].max),
         stat("Initiative", COMBAT_DERIVED[1].max),
         stat("Schutz gesamt", armorSumText(armorSum).replace("Schutz gesamt ", "")),
         stat("Belastung", be),
@@ -1421,6 +1563,8 @@ function renderBody() {
         ? el("div", { class: "body-others" }, [el("small", { class: "muted" }, "Ausgerüstet, aber nicht in der Hand:"), ...others.map((w) => el("span", { class: "chip" }, [el("img", { src: w.img, alt: "" }), w.name]))])
         : null,
     ]),
+    // Kampfsonderfertigkeiten auch hier, damit im Kampf alles auf einer Seite steht (Nutzer-Feedback 2026-09-30).
+    specialsBlock("Kampfsonderfertigkeiten", COMBAT_SPECIALS),
   ]);
 }
 
@@ -1456,10 +1600,9 @@ function renderCombatMain() {
     ...TRAITS.rangeAttack.map(traitRangedRow),
   ]);
 
-  // Paket F (UI/UX-Review 2026-09-25): zwei Varianten für den Bereich über den Waffen — "panels" = Kampfwerte +
-  // Rüstung als zwei Panels (bisher), "strip" = eine kompakte Leiste, damit die Waffen früher sichtbar sind. Die
-  // Silhouette (Issue #6) ist in den eigenen Reiter "Körper" gewandert (renderBody()).
-  const topArea = COMBAT_TOP === "strip" ? combatStrip() : el("div", { class: "combat-top" }, [combatValuesPanel(), renderArmorPanel()]);
+  // Kampfwerte + Rüstung als zwei Panels (Nutzer-Entscheidung 2026-09-28 gegen die kompakte "Leiste"); die
+  // Silhouette (Issue #6) ist der eigene Reiter "Körper" (renderBody()).
+  const topArea = el("div", { class: "combat-top" }, [combatValuesPanel(), renderArmorPanel()]);
 
   return el("div", {}, [
     renderCombatActions(),
@@ -1475,6 +1618,18 @@ function renderCombatMain() {
 // FW ist wie bei Talenten direkt editierbar UND per AP-gekoppeltem Stepper steigerbar (c.stf, echt aus dem
 // Kompendium, siehe COMBAT_SKILLS-Kommentar in data.js); advanceMin 6, da Kampftechniken im System nie unter
 // ihren ungeübten Basiswert 6 sinken (combatskill.js: get advanceMin() { return 6; }).
+// Suche wie bei den Talenten (Nutzer-Feedback 2026-09-28) — filtert die Zeilen direkt im DOM statt neu zu
+// rendern, damit der Fokus im Suchfeld bleibt; Modul: .combatSkillSearch/_applyCombatSkillSearch().
+let combatSkillQuery = "";
+
+function applyCombatSkillFilter(root) {
+  const q = combatSkillQuery.trim().toLowerCase();
+  root.querySelectorAll(".row.combatskill-row").forEach((row) => {
+    const name = row.querySelector(".left")?.textContent.toLowerCase() || "";
+    row.hidden = !!q && !name.includes(q);
+  });
+}
+
 function renderCombatSkills() {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
   const combatSkillsPanel = (title, list) =>
@@ -1499,13 +1654,19 @@ function renderCombatSkills() {
   const meleeSkills = COMBAT_SKILLS.filter((c) => c.pa !== "—");
   const rangedSkills = COMBAT_SKILLS.filter((c) => c.pa === "—");
 
-  return el("div", { class: "grid-2" }, [
+  const search = el("input", { type: "search", class: "combat-skill-search", placeholder: "Kampftechniken suchen …", "aria-label": "Kampftechniken suchen", value: combatSkillQuery });
+  search.addEventListener("input", () => { combatSkillQuery = search.value; applyCombatSkillFilter(wrap); });
+  const wrap = el("div", {}, [el("div", { class: "search-bar" }, [search]), el("div", { class: "grid-2" }, [
     combatSkillsPanel("Nahkampftechniken", meleeSkills),
     combatSkillsPanel("Fernkampftechniken", rangedSkills),
-  ]);
+  ])]);
+  applyCombatSkillFilter(wrap);
+  return wrap;
 }
 
 function renderCombat() {
+  // "Körper" als Unterreiter (Nutzerwunsch 2026-09-28) — ob er die Übersicht ablöst, entscheidet der Nutzer später.
+  if (currentCombatSection === "koerper") return renderBody();
   return currentCombatSection === "kampftalente" ? renderCombatSkills() : renderCombatMain();
 }
 
@@ -1883,12 +2044,28 @@ function openBagModal(bag) {
 
 // Ein Geldbeutel-Wert (Dukaten/Silber/Heller/Kreuzer) — in BEIDEN Modi direkt editierbar (BEARBEITEN.md), analog
 // zu den LeP/AsP/KaP-Werten in der Kopfzeile (vitalBar()).
-function walletItem(img, alt, field) {
-  const span = el("span", {}, String(WALLET[field]));
-  makeEditable(span, WALLET[field], (v) => { WALLET[field] = v; renderContent(); }, { type: "number", min: 0, max: 99999 });
-  // Münzname sichtbar als Kürzel unter dem Wert (UI/UX-Review 2026-09-25) — vorher nur als Tooltip.
-  return el("div", { class: "wallet-item", title: alt }, [el("img", { src: img, alt }), el("span", { class: "wallet-value" }, [span, el("small", {}, alt)])]);
+// Geld-Panel „Zeile“ (Variante A, Nutzer-Entscheidung 2026-09-30 nach Vergleich mit Kacheln/Summe): eine gemeinsame
+// Geldbörse, vier Segmente mit feinen Trennern, je Münze Bild + großer Wert + Kürzel.
+const COINS = [
+  { field: "d", name: "Dukaten", abbr: "D", img: () => A.moneyD, inSilver: 10 },
+  { field: "s", name: "Silbertaler", abbr: "S", img: () => A.moneyS, inSilver: 1 },
+  { field: "h", name: "Heller", abbr: "H", img: () => A.moneyH, inSilver: 0.1 },
+  { field: "k", name: "Kreuzer", abbr: "K", img: () => A.moneyK, inSilver: 0.01 },
+];
+
+function coinValue(coin) {
+  const span = el("span", { class: "coin-value" }, String(WALLET[coin.field]));
+  makeEditable(span, WALLET[coin.field], (v) => { WALLET[coin.field] = v; renderContent(); }, { type: "number", min: 0, max: 99999 });
+  span.setAttribute("aria-label", `${coin.name}: ${WALLET[coin.field]}`);
+  return span;
 }
+
+function walletLine() {
+  return el("div", { class: "wallet-line" }, COINS.map((c) =>
+    el("span", { class: "wallet-coin", title: c.name }, [el("img", { src: c.img(), alt: "" }), coinValue(c), el("small", { "aria-hidden": "true" }, c.abbr)])
+  ));
+}
+
 
 // Suchfunktion (bisher gefehlt, siehe BEARBEITEN.md-Kopfnotiz "Es fehlt hier noch eine Suchfunktion."): filtert
 // alle Kategorie-Tabellen (nicht die Taschen-Kacheln) per Namens-Teilstring, Groß-/Kleinschreibung egal. Da
@@ -1905,12 +2082,7 @@ function renderInventory() {
   const top = el("div", { class: "info-cards" }, [
     el("div", { class: "panel wallet-panel" }, [
       el("div", { class: "panel-title" }, "Geld"),
-      el("div", { class: "wallet-grid" }, [
-        walletItem(A.moneyD, "Dukaten", "d"),
-        walletItem(A.moneyS, "Silbertaler", "s"),
-        walletItem(A.moneyH, "Heller", "h"),
-        walletItem(A.moneyK, "Kreuzer", "k"),
-      ]),
+      walletLine(),
     ]),
     el("div", { class: "panel carry-panel", title: "Tragkraft" }, [
       el("div", { class: "panel-title" }, "Gewicht"),
@@ -2145,10 +2317,29 @@ function renderStatus() {
       ])
     : null;
 
-  return el("div", { class: "grid-2" }, [
-    el("div", { class: "col-gap" }, [conditionsPanel, cumulativePanel, transferredPanel]),
-    el("div", { class: "col-gap" }, [effectsPanel, modifiersPanel, demonmarkPanel, renderDiseasePanel(), regenConfigPanel()]),
+  // Jede Tabelle volle Breite, Zeilen abwechselnd links/rechts (Nutzer-Feedback 2026-09-28, wie "row-section wrap"
+  // im Systembogen) — Krankheiten und Aktenkonfiguration bleiben einspaltig (keine Tabellen im engeren Sinn).
+  return el("div", { class: "status-stack" }, [
+    ...[conditionsPanel, cumulativePanel, transferredPanel, effectsPanel, modifiersPanel, demonmarkPanel].filter(Boolean).map(twoColPanel),
+    renderDiseasePanel(),
+    regenConfigPanel(),
   ]);
+}
+
+// Verteilt die Zeilen eines Panels (alles nach dem Titel) auf zwei Spalten; eine Kopfzeile wird für die rechte
+// Spalte verdoppelt, Knöpfe wie "+N weitere" laufen über beide Spalten.
+function twoColPanel(panel) {
+  const [title, ...rows] = [...panel.children];
+  const grid = el("div", { class: "two-col" });
+  rows.forEach((r) => grid.appendChild(r));
+  const headRow = grid.firstElementChild;
+  if (headRow && headRow.classList.contains("row-head")) {
+    const dup = headRow.cloneNode(true);
+    dup.setAttribute("aria-hidden", "true");
+    headRow.after(dup);
+  }
+  panel.appendChild(grid);
+  return panel;
 }
 
 // Regeneration ein-/ausschaltbar (siehe REGEN_DISABLED-Kommentar in data.js) — eigenes "Aktenkonfiguration"-Panel
@@ -2294,7 +2485,10 @@ function renderNotes() {
     el("div", { class: "notes-text-wrap" }, [textEl, editBtn]),
   ]);
 
-  return el("div", {}, [detailsPanel, textPanel]);
+  // Zwei Spalten (Nutzer-Feedback 2026-09-28): links schmal die persönlichen Daten, rechts der Text des Unterreiters.
+  detailsPanel.classList.add("notes-details");
+  textPanel.classList.add("notes-text");
+  return el("div", { class: "notes-layout" }, [detailsPanel, textPanel]);
 }
 
 // Vorschlag 2026-09-13 (bisher deferred, "komplett neuer Gefährten-Tab") — siehe COMPANIONS-Kommentar in data.js.
@@ -2481,12 +2675,14 @@ function companionCard(c, list) {
 
   return el("div", { class: "panel companion-full-card" }, [
     el("div", { class: "panel-title flex" }, [
-      el("span", {}, [c.name, ...badges, natureToggle]),
-      el("div", { class: "panel-title-actions" }, [...sideButtons, rowDeleteBtn(list, c)]),
+      el("span", { title: c.name }, [c.name, ...badges, natureToggle]),
+      el("div", { class: "panel-title-actions" }, [rowDeleteBtn(list, c)]),
     ]),
     el("div", { class: "companion-layout" }, [
       el("div", { class: "companion-portrait-col companion-portrait-col-flat" }, [el("div", { class: "armor-hero" }, [el("img", { src: c.img, alt: c.name })]), el("div", { class: "armor-name" }, c.role)]),
-      el("div", { class: "companion-info-col" }, [loyaltyRow]),
+      // Name allein in der Titelzeile, Knöpfe als 2×2-Raster darunter (Rückmeldung 2026-09-30, zweite Runde: bei
+      // langem Namen liefen die Knöpfe in Foundry rechts aus der Karte).
+      el("div", { class: "companion-info-col" }, [loyaltyRow, el("div", { class: "companion-actions" }, sideButtons)]),
       companionHotbar(c),
     ]),
     companionTrainingTable(c),
@@ -2661,18 +2857,19 @@ function favCard(item, kind) {
     const atLabel = `${ranged ? "Fernkampf" : "Attacke"} mit ${item.name} würfeln`;
     const atDie = el("button", { type: "button", class: "probe-die fav-chip-roll", style: dieBg("d20mu"), title: atLabel, "aria-label": atLabel }, String(stats.at));
     atDie.addEventListener("click", () => flashNotice(`🎲 ${atLabel}`));
-    value = el("span", { class: "fav-card-value fav-card-weapon" }, [el("small", {}, ranged ? "FK" : "AT"), atDie]);
+    roll = el("span", { class: "fav-card-roll fav-card-weapon" }, [el("small", {}, ranged ? "FK" : "AT"), atDie]);
     const dmgLabel = `Schaden von ${item.name} würfeln (${item.tp})`;
-    const dmg = el("button", { type: "button", class: "fav-chip-damage fav-chip-roll", title: dmgLabel, "aria-label": dmgLabel }, [el("small", {}, "TP "), item.tp]);
+    const dmg = el("button", { type: "button", class: "damage-roll", title: dmgLabel, "aria-label": dmgLabel }, [el("small", {}, "TP"), item.tp]);
     dmg.addEventListener("click", () => flashNotice(`🎲 ${dmgLabel}`));
-    roll = el("span", { class: "fav-card-roll" }, [dmg]);
+    value = el("span", { class: "fav-card-value" }, [dmg]);
   } else {
     value = el("span", { class: "fav-card-value", title: "Fertigkeitswert" }, String(item.fw));
     const dice = probeDice(item.probe, item.name);
     dice.classList.add("fav-chip-roll");
     roll = el("span", { class: "fav-card-roll" }, [dice]);
   }
-  return el("div", { class: "fav-card" }, [icon, name, value, roll, favStar(item)]);
+  // Reihenfolge Name | Probe | Wert | Stern (Nutzer-Feedback 2026-09-28); Waffen: AT/FK-Würfel als Probe, TP als Wert.
+  return el("div", { class: "fav-card" }, [icon, name, roll, value, favStar(item)]);
 }
 
 // Ein Panel "Favoriten" mit einer Unterüberschrift je Kategorie (Talente/Waffen/Zauber/Liturgien), analog zu
@@ -2844,7 +3041,6 @@ const RENDERERS = {
   status: renderStatus,
   notes: renderNotes,
   companions: renderCompanions,
-  body: renderBody,
 };
 
 function renderContent() {
@@ -2989,22 +3185,6 @@ function initSheetResize() {
   });
 }
 
-// Vergleichsschalter Paket F (#portraitSwitch/#combatTopSwitch in index.html) — nach der Entscheidung löschen.
-function initLayoutSwitches() {
-  const wire = (id, apply) => {
-    const group = document.getElementById(id);
-    group.querySelectorAll("button").forEach((btn) => btn.addEventListener("click", () => {
-      group.querySelectorAll("button").forEach((b) => {
-        b.classList.toggle("active", b === btn);
-        b.setAttribute("aria-pressed", String(b === btn));
-      });
-      apply(btn.dataset.value);
-    }));
-  };
-  wire("portraitSwitch", (v) => { document.querySelector(".sheet").dataset.portrait = v; });
-  wire("combatTopSwitch", (v) => { COMBAT_TOP = v; renderContent(); });
-}
-
 // Munitionsmenü (renderAmmoCell) schließt sich bei jedem Klick außerhalb, wie ein normales Dropdown.
 function initAmmoMenuOutsideClick() {
   document.addEventListener("click", () => {
@@ -3027,7 +3207,6 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
-initLayoutSwitches();
 initSheetResize();
 initHeaderBgPicker();
 initAmmoMenuOutsideClick();

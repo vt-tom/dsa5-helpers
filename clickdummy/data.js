@@ -17,9 +17,7 @@ const TABS = [
   { id: "main", label: "Eigenschaften", icon: A.tabMain, title: "Eigenschaften", hint: "" },
   { id: "skills", label: "Talente", icon: A.tabSkills, title: "Talente", hint: "" }, // Hint entfällt: die Kategorien stehen ja direkt als Tabs daneben, Platz geht an größere Tabs.
   { id: "combat", label: "Kampf", icon: A.tabCombat, title: "Kampf", hint: "" },
-  // Entwurf GitHub-Issue #6 (Nutzerwunsch 2026-09-25: Silhouette erst einmal als eigener Reiter weiterentwickeln):
-  // Figur mit Rüstung am Körper und Waffen in den Händen.
-  { id: "body", label: "Körper", icon: A.armor, title: "Körper", hint: "Rüstung · Waffen in der Hand" }, // Hint entfällt: Kampf/Kampftalente-Unterreiter stehen daneben, siehe SKILL_GROUPS-Kommentar unten.
+  // "Körper" (GitHub-Issue #6) ist seit 2026-09-28 ein Unterreiter von Kampf (renderBody()), kein eigener Reiter mehr.
   { id: "magic", label: "Magie", icon: A.tabMagic, title: "Magie", hint: "" },
   { id: "religion", label: "Religion", icon: A.tabReligion, title: "Religion", hint: "" },
   { id: "inventory", label: "Ausrüstung", icon: A.tabInventory, title: "Ausrüstung", hint: "" },
@@ -337,8 +335,11 @@ const TRAITS = { meleeAttack: [], rangeAttack: [], armor: [] };
 
 // Munition & Nachladen (combat_rangeweapon.hbs + combat_ammo_button/-menu.hbs): eine Fernkampfwaffe kann mehrere
 // Munitionsarten besitzen (ammoTypes, genau eine davon "selected" — Pfeiltyp-Wechsel per Klick), und Waffen mit
-// Lademechanismus (Armbrust) führen zusätzlich ein Magazin (ammoCurrent/ammoMax) plus eine Ladezeit
-// (reloadProgress/reloadTime, im System "LZ") — beides fehlte bisher komplett, es gab nur ein Freitextfeld.
+// Ladezeit (reloadProgress/reloadTime, im System reloadTime.progress / "LZ") haben einen Nachlade-Fortschritt,
+// geladen = progress ≥ LZ. Magazinmunition (Eisenwalder, ammunitiongroup "mag") hat zusätzlich einen Magazinstand
+// (mag.current/mag.max, im System currentAmmo.system.mag) und "Magazin tauschen" (itemSwapMag). "Keine Munition"
+// = keine Art ausgewählt (selectAmmo "clear"). Modell 2026-09-28 an das System angeglichen (vorher waren Magazin
+// und Ladezustand in ammoCurrent/ammoMax vermischt).
 // Waffen ohne eigene Munitionsgruppe (Wurfmesser verbrauchen sich selbst als Munition) behalten die einfache
 // Anzahl (ammo) ohne Typenauswahl/Magazin, genau wie im System (ammunitiongroup "-").
 // Zielen (rangeweapon.js:52-54 aimTime.progress, buildAimProgress(); dialog-combat-dsa5.js:1108-1133 "Zielen"-
@@ -364,11 +365,17 @@ const RANGED = [
   {
     name: "Armbrust", group: "Armbrüste", at: 6, tp: "1W6+3", reach: "10/50/80", img: A.rangeWeapon,
     ammoTypes: [{ name: "Bolzen", count: 10, selected: true }],
-    ammoCurrent: 0, ammoMax: 1,
     reloadTime: 3, reloadProgress: 1,
     aim: { progress: 0 },
     structure: { value: 2, max: 6 },
     worn: { requiresBothHands: true, offHand: false },
+  },
+  {
+    name: "Eisenwalder", group: "Armbrüste", at: 11, tp: "1W6+4", reach: "10/50/80", img: A.rangeWeapon,
+    ammoTypes: [{ name: "Magazin (Eisenwalder)", count: 2, selected: true, mag: { current: 10, max: 10 } }],
+    reloadTime: 2, reloadProgress: 0,
+    aim: { progress: 0 },
+    worn: { requiresBothHands: false, offHand: false },
   },
   { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", reach: "2/5/10", ammo: "3", img: A.rangeWeapon, worn: { requiresBothHands: false, offHand: false } },
 ];
@@ -376,6 +383,8 @@ const RANGED = [
 const ARMOR = [
   { name: "Waldläuferkluft", rs: 2, be: 0, structure: { value: 5, max: 8 } },
   { name: "Lederkappe", rs: 1, be: 0 },
+  // Drittes Teil, damit „Körper“ die Rüstungstabelle (ab drei Teilen, 2026-09-30) zeigt.
+  { name: "Lederhandschuhe", rs: 0, be: 0 },
 ];
 
 // Gesamtschutz-Anzeige (actor-combat.hbs:158 "protection ({{prepare.armorSum}}...)"): Summe aller getragenen

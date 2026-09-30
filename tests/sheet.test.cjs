@@ -17,7 +17,8 @@ const de=JSON.parse(fs.readFileSync(path.join(dataRoot,'systems/dsa5/lang/de.jso
 const own=JSON.parse(read('lang/de.json'));
 const missing=new Set();
 const localize=key=>{if(typeof key!=='string')return '';const value=lookup(own,key)??lookup(de,key);if(value===undefined && !key.startsWith('TYPES.Item.'))missing.add(key);return value??key;};
-H.registerHelper('localize',localize);
+// Wie Foundrys {{localize}}: Hash-Argumente ersetzen {platzhalter} (game.i18n.format).
+H.registerHelper('localize',(key,options)=>{const text=localize(key);const hash=options?.hash??{};return Object.keys(hash).length?String(text).replace(/\{(\w+)\}/g,(m,k)=>hash[k]??m):text;});
 H.registerHelper('getAttr',(a,b,c)=>a.system.characteristics[b][c]);
 H.registerHelper('attrAbbr',ch=>localize('CHARAbbrev.'+ch.toUpperCase()));
 H.registerHelper('concat',(...args)=>args.slice(0,-1).join(''));
@@ -25,7 +26,7 @@ H.registerHelper('concatUp',(...args)=>args.slice(0,-1).join('').toUpperCase().r
 const magicTraditionIcons=['animisten','druiden','elfen','geoden','gildenmagier','hexen','magiedilettanten','scharlatane','zauberalchimisten','zauberbarden','zaubertaenzer','zibiljas'];
 const godIcons=['Achaz','Angrosch','Aves','Boron','Brazoragh','Chrssirssr','Efferd','Ferkina','Firun','Fjarninger','Gjalsker','Gravesh','Hesinde','Hszint','Ifirn','Ingerimm','Kor','Namenloser','Nandus','Nivesen','Peraine','Phex','Praios','Rahja','Rikai','Rondra','Shinxir','Swafnir','Tahaya','Tairach','Travia','Trollzacker','Tsa','Zsahh','levthan','marbo','numinoru'];
 const findTraditionIcon=(text,names,folder)=>{if(!text)return '';const lower=String(text).toLowerCase();const hit=names.find(n=>lower.includes(n.toLowerCase()));return hit?`systems/dsa5/icons/${folder}/${hit}.webp`:'';};
-for(const [key,fn]of Object.entries({eq:(a,b)=>a===b,ne:(a,b)=>a!==b,gt:(a,b)=>a>b,gte:(a,b)=>a>=b,lte:(a,b)=>a<=b,not:a=>!a,and:(...a)=>a.slice(0,-1).every(Boolean),or:(...a)=>a.slice(0,-1).some(Boolean),ifThen:(c,a,b)=>c?a:b,roman:()=>'',joinStr:(separator,values)=>(values??[]).join(separator),specCategoryHelp:()=>'',dsa5hFormatNum:v=>String(v??0),dsa5hPercent:(v,m)=>m?Math.max(0,Math.min(100,v/m*100)):0,dsa5hCharacteristics:i=>[1,2,3].map(n=>i.system['characteristic'+n]?.value).filter(Boolean),dsa5hTraditionIcon:(text,kind)=>findTraditionIcon(text,kind==='religion'?godIcons:magicTraditionIcons,kind==='religion'?'months':'traditionen')}))H.registerHelper(key,fn);
+for(const [key,fn]of Object.entries({eq:(a,b)=>a===b,ne:(a,b)=>a!==b,gt:(a,b)=>a>b,gte:(a,b)=>a>=b,lte:(a,b)=>a<=b,not:a=>!a,and:(...a)=>a.slice(0,-1).every(Boolean),or:(...a)=>a.slice(0,-1).some(Boolean),ifThen:(c,a,b)=>c?a:b,roman:()=>'',joinStr:(separator,values)=>(values??[]).join(separator),specCategoryHelp:()=>'',dsa5hFormatNum:v=>String(v??0),dsa5hInitial:t=>String(t??'').trim().charAt(0).toUpperCase(),dsa5hPercent:(v,m)=>m?Math.max(0,Math.min(100,v/m*100)):0,dsa5hCharacteristics:i=>[1,2,3].map(n=>i.system['characteristic'+n]?.value).filter(Boolean),dsa5hTraditionIcon:(text,kind)=>findTraditionIcon(text,kind==='religion'?godIcons:magicTraditionIcons,kind==='religion'?'months':'traditionen')}))H.registerHelper(key,fn);
 H.registerHelper('formInput',(field,options)=>{
  assert(field?.path,'formInput received an undefined schema field');
  const {value,disabled}=options.hash;return new H.SafeString('<input name="'+field.path+'" value="'+H.escapeExpression(value??'')+'"'+(disabled?' disabled':'')+'>');
@@ -78,6 +79,27 @@ test('ranged weapons, charged magic, tradition items and companions render popul
  sheet.context.companionSections=[{visible:true,label:'COMPANIONS.Companion',contents:[{uuid:'Actor.companion',name:'Companion',img:'icons/svg/pawprint.svg',system:sheet.actor.system,prepareCompanion:{}}]}];sheet.context.hasCompanions=true;
  const html=render(await sheet._prepareContext({}));assert(html.includes('data-ammo-id="ammo-id"'));assert(html.includes('data-action="chargeSpell"'));assert(html.includes('data-action="traditionPayCost"'));assert(html.includes('data-action="memberCardLink"'));assert(html.includes('Test extension'));
 });
+test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the off hand, figure flag and cast dialogs',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;
+ const main=item('main','meleeweapon'),off=item('off','meleeweapon');main.system.worn={value:true,offHand:false};off.system.worn={value:true,offHand:true};
+ p.wornMeleeWeapons=[main,off];p.wornRangedWeapons=[];actor.items.set('main',main);actor.items.set('off',off);
+ let context=await sheet._prepareContext({});let html=render(context);
+ assert(html.includes('data-sub-panel="combat:body"'));assert(context.dsa5h.subnav.find(n=>n.tab==='combat').items.some(i=>i.id==='body'));
+ assert.equal(context.dsa5h.body.hands.length,2);assert(html.includes('data-dsa5h-hand="offhand"'));assert(html.includes('data-current="off"'));
+ const offSelect=elements(html,el=>el.attribs?.['data-dsa5h-hand']==='offhand')[0];assert(!dom.findAll(el=>el.attribs?.value==='main'&&Object.hasOwn(el.attribs,'selected'),offSelect.children).length);
+ assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-die-seal')).length,4);
+ assert(html.includes('data-action="dsa5hBodyFigure"'),'figure switch in edit mode');assert(html.includes('data-cast-dialog="spell"'));
+ main.wieldedTwoHand=true;context=await sheet._prepareContext({});html=render(context);
+ assert.equal(context.dsa5h.body.hands.length,1);assert(context.dsa5h.body.single);assert(!html.includes('data-dsa5h-hand="offhand"'));
+ const mainOptions=context.dsa5h.body.hands[0].options;assert(mainOptions.find(o=>o.id==='main').twoHanded);
+ context.dsa5h.editMode=false;assert(!render(context).includes('data-action="dsa5hBodyFigure"'),'figure switch only in edit mode');
+ assert(elements(html,el=>el.name==='img'&&String(el.attribs?.class??'').includes('dsa5h-body-figure')&&el.attribs.src===context.dsa5h.body.figure).length===1,'figure is a real img, not a CSS url() variable');assert(!html.includes('--figure'));
+ const armor=n=>Array.from({length:n},(_,i)=>{const a=item('a'+i,'armor');a.system.protection={value:1};a.system.calculatedEncumbrance=0;return a;});
+ p.wornArmor=armor(2);context=await sheet._prepareContext({});html=render(context);assert(!context.dsa5h.body.armorTable);assert(!html.includes('dsa5h-body-armor-table'));assert(html.includes('dsa5h-body-armor-item'));
+ p.wornArmor=armor(3);context=await sheet._prepareContext({});html=render(context);assert(context.dsa5h.body.armorTable,'table from three armor pieces');
+ assert.equal(elements(html,el=>el.name==='tr'&&el.attribs?.['data-item-id']).length,3);assert(!html.includes('dsa5h-body-armor-item'));
+ await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hBodyFigure.call(sheet,{}, {dataset:{figure:'portrait'}});assert.deepEqual(actor.saved,{scope:'dsa5-helpers',key:'bodyFigure',value:'portrait'});
+});
 test('navigation rejects unknown tabs and preserves subtab selection',async()=>{
  const {sheet}=await prepare();const panel={dataset:{tabPanel:'combat'}};const sub={dataset:{subPanel:'combat:skills'}};const button={dataset:{parentTab:'combat',subtab:'skills'},classList:{toggle(_key,value){this.active=value;}},setAttribute(k,v){this[k]=v;}};
  sheet.element={dataset:{},querySelector(){return null;},querySelectorAll(selector){return selector==='[data-tab-panel]'?[panel]:selector==='[data-sub-panel]'?[sub]:selector==='[data-subtab]'?[button]:[];}};
@@ -124,4 +146,43 @@ test('talent search spans all groups without marking one, "only improved" hides 
  assert.equal(body.hidden,true);assert.equal(nature.hidden,false);assert.equal(agg.hidden,true);assert.equal(info.hidden,false);
  sheet._search.talent='';sheet._subtabs.skills='body';Sheet.DEFAULT_OPTIONS.actions.dsa5hOnlyLearned.call(sheet);
  assert.equal(body.hidden,false);assert.deepEqual(body.querySelectorAll().map(r=>r.hidden),[true,false]);assert.equal(filter.attrs['aria-checked'],'true');assert.equal(info.hidden,true);assert.equal(agg.hidden,true);
+});
+test('reload shows the system progress once, reset reuses the system handler with right-click semantics',async()=>{
+ const {sheet}=await prepare();const p=sheet.context.prepare;
+ const ranged=item('ranged','rangeweapon');ranged.LZ=3;ranged.progress='1/3';ranged.title='Ladestatus: 1/3';ranged.system.reloadTime={progress:1};p.wornRangedWeapons=[ranged];
+ const html=render(await sheet._prepareContext({}));
+ const load=elements(html,el=>el.attribs?.['data-action']==='loadWeapon');assert.equal(load.length,1);
+ assert(!/1\/3\s*\/\s*3/.test(html),'progress must not repeat LZ');
+ const resets=elements(html,el=>el.attribs?.['data-action']==='dsa5hReloadReset');assert.equal(resets.length,1);assert(resets[0].attribs['aria-label']);
+ const calls=[];Sheet._loadWeapon=function(ev,target){calls.push([this,ev.button,target]);};
+ try{const target={};await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hReloadReset.call(sheet,{button:0},target);assert.deepEqual(calls,[[sheet,2,target]]);}finally{delete Sheet._loadWeapon;}
+ assert(Sheet.RIGHT_CLICK_ACTIONS.includes('[data-action="loadWeapon"]'));
+ ranged.system.reloadTime.progress=0;assert.equal(elements(render(await sheet._prepareContext({})),el=>el.attribs?.['data-action']==='dsa5hReloadReset').length,0);
+});
+test('favorites render as grid cards with value, roll and star; weapon damage is a marked roll button everywhere',async()=>{
+ const {context}=await prepare();const html=render(context);
+ const cards=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-card'));assert.equal(cards.length,2);
+ for(const card of cards){assert(card.attribs['data-item-id']);assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',card.children).length,1);}
+ const damage=elements(html,el=>el.attribs?.['data-mode']==='damage');assert(damage.length>=2);for(const b of damage)assert(String(b.attribs.class).includes('dsa5h-damage'));
+});
+test('aggregated tests can be added in play mode',async()=>{
+ const {sheet}=await prepare();sheet.context.prepare.sheetLocked=true;const ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.editMode,false);
+ assert.equal(elements(render(ctx),el=>el.attribs?.['data-action']==='itemCreate' && el.attribs['data-type']==='aggregatedTest').length,1);
+});
+test('ammo row: selection inside a dropdown incl. "no ammunition", magazine count with swap button',async()=>{
+ const {sheet}=await prepare();const p=sheet.context.prepare;
+ const ranged=item('ranged','rangeweapon');ranged.LZ=2;ranged.progress='0/2';ranged.system.reloadTime={progress:0};ranged.ammo=[{pickId:'mag-id',name:'Magazin',count:'2',selected:true}];ranged.selectedAmmo={pickId:'mag-id',img:'x.webp',tooltip:'Magazin',count:'2'};ranged.clearAmmo={pickId:'clear',selected:false};ranged.ammoCurrent=10;ranged.ammoMax=10;p.wornRangedWeapons=[ranged];
+ const html=render(await sheet._prepareContext({}));
+ const picker=elements(html,el=>el.name==='details'&&String(el.attribs?.class).includes('dsa5h-ammo-pick'));assert.equal(picker.length,1);
+ const picks=dom.findAll(el=>el.attribs?.['data-action']==='selectAmmo',picker[0].children).map(el=>el.attribs['data-ammo-id']);assert.deepEqual(picks,['mag-id','clear']);
+ const swap=elements(html,el=>el.attribs?.['data-action']==='itemSwapMag');assert.equal(swap.length,1);assert.equal(swap[0].attribs['aria-disabled'],'true');assert(swap[0].attribs['aria-label']);
+});
+test('AP total/spent editable only in edit mode; combat skill search and two-column status render',async()=>{
+ const {sheet,context}=await prepare();const html=render(context);
+ const names=elements(html,el=>el.attribs?.name).map(el=>el.attribs.name);
+ assert(names.includes('system.details.experience.total'));assert(names.includes('system.details.experience.spent'));
+ assert.equal(elements(html,el=>String(el.attribs?.class).includes('combatSkillSearch')).length,1);
+ assert(elements(html,el=>String(el.attribs?.class).split(' ').includes('dsa5h-two-col')).length>=3);
+ sheet.context.prepare.sheetLocked=true;const play=render(await sheet._prepareContext({}));
+ assert(!elements(play,el=>el.attribs?.name==='system.details.experience.total').length);
 });

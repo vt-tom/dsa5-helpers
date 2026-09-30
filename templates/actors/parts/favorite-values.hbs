@@ -1,14 +1,15 @@
-{{! Favoriten-Probe/Werte: immer sichtbar neben dem Chip. Talentwert direkt hinter dem Namen, etwas größer
-    (Nutzer-Feedback), Würfel klickbar für eine echte Probe/einen echten Angriff (skillSelect/chRollCombat,
-    dieselben Aktionen wie überall sonst im Bogen; bei Waffen ist auch der Schaden separat würfelbar,
-    chRollCombat mode=damage wie in weapon.hbs) — eine reine Anzeige ohne Klick-Möglichkeit galt dem Nutzer als
-    "lässt sich nicht würfeln". Talente/Zauber/Liturgien nutzen dafür probe.hbs direkt statt eigener Duplizierung. }}
-<span class="dsa5h-fav-values">
+{{! Favoritenraster (Paket E / Issue #5): liefert die zwei festen Spalten Probe | Wert einer .dsa5h-fav-card
+    (Reihenfolge Name, Probe, Wert, Stern — Nutzer-Feedback 2026-09-28).
+    Talente/Zauber/Liturgien: Fertigkeitswert + 3W20-Probe (probe.hbs); Waffen: AT- bzw. FK-Würfel mit sichtbarem
+    Kürzel + Schadenswurf mit "TP"-Kürzel. Dieselben System-Aktionen wie auf den Fachreitern (skillSelect/chRollCombat). }}
 {{#if weapon}}
-<button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'CHARAbbrev.AT'}}" aria-label="{{localize 'DSA5HELPERS.RollAttackWith' name=item.name}}">{{item.attack}}</button>
-<button type="button" class="dsa5h-fav-damage" data-action="chRollCombat" data-mode="damage" title="{{localize 'CHARAbbrev.damage'}}" aria-label="{{localize 'DSA5HELPERS.RollDamageOf' name=item.name}}">{{item.damagedie}}{{item.damageAdd}}</button>
+{{#if (or (eq item.type 'rangeweapon') (eq item.system.traitType.value 'rangeAttack'))}}
+<span class="dsa5h-fav-card-roll dsa5h-fav-card-weapon"><small>{{localize 'CHARAbbrev.FK'}}</small><button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'CHARAbbrev.FK'}}" aria-label="{{localize 'DSA5HELPERS.RollRangedWith' name=item.name}}">{{item.attack}}</button></span>
 {{else}}
-<span class="dsa5h-fav-value" title="{{localize 'Fw'}}">{{item.system.talentValue.value}}</span>
-{{> "modules/dsa5-helpers/templates/actors/parts/probe.hbs" item=item}}
+<span class="dsa5h-fav-card-roll dsa5h-fav-card-weapon"><small>{{localize 'CHARAbbrev.AT'}}</small><button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'CHARAbbrev.AT'}}" aria-label="{{localize 'DSA5HELPERS.RollAttackWith' name=item.name}}">{{item.attack}}</button></span>
 {{/if}}
-</span>
+<span class="dsa5h-fav-card-value"><button type="button" class="dsa5h-damage" data-action="chRollCombat" data-mode="damage" title="{{localize 'CHARAbbrev.damage'}}" aria-label="{{localize 'DSA5HELPERS.RollDamageOf' name=item.name}}"><small>{{localize 'CHARAbbrev.damage'}}</small>{{item.damagedie}}{{item.damageAdd}}</button></span>
+{{else}}
+<span class="dsa5h-fav-card-roll">{{> "modules/dsa5-helpers/templates/actors/parts/probe.hbs" item=item}}</span>
+<span class="dsa5h-fav-card-value" title="{{localize 'Fw'}}">{{item.system.talentValue.value}}</span>
+{{/if}}

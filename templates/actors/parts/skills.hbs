@@ -24,7 +24,7 @@
           {{/each}}
         </div>
         <section class="panel" data-skill-panel="aggregated" hidden>
-          <div class="panel-title flex"><span>{{localize "aggregatedTests"}}</span>{{#if dsa5h.editMode}}<button type="button" data-action="itemCreate" data-type="aggregatedTest" item-section="aggregatedTest" aria-label="{{localize 'SHEET.addItem'}}">+</button>{{/if}}</div>
+          <div class="panel-title flex"><span>{{localize "aggregatedTests"}}</span>{{#if @root.editable}}<button type="button" data-action="itemCreate" data-type="aggregatedTest" item-section="aggregatedTest" aria-label="{{localize 'SHEET.addItem'}}">+</button>{{/if}}</div>
           {{#each prepare.aggregatedtests as |item|}}
           <div class="item dsa5h-aggregated" data-item-id="{{item._id}}">
             <div class="row dsa5h-aggregated-head"><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span><span>{{localize "interval"}}: {{item.system.interval.value}}</span><span>{{localize "probes"}}: {{item.system.usedTestCount.value}} / {{item.system.allowedTestCount.value}}</span><span>{{localize "CHARAbbrev.QS"}}: {{item.system.cummulatedQS.value}} / 10</span></div>

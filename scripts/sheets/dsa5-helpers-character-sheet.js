@@ -23,6 +23,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hOnlyLearned: this._toggleOnlyLearned,
       dsa5hClearTalentSearch: this._clearTalentSearch,
       postItem: this._postItem,
+      dsa5hOpenCast: this._openCastDialog,
+      dsa5hCloseCast: this._closeCastDialog,
     },
     // DSA5's own roll/damage actions (attribute dice, combat rolls, advances, item toggles, …) live in
     // ownerRollActions/ownerActions, not the plain `actions` table above — a separate permission-gated dispatch
@@ -54,6 +56,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       onUseItem: { handler: this._onMacroUseItem, buttons: [0, 2] },
       chargeSpell: { handler: this._chargeSpell, buttons: [0, 2] },
       loadWeapon: { handler: this._loadWeapon, buttons: [0, 2] },
+      dsa5hReloadReset: this._dsa5hReloadReset,
       selectAmmo: this._selectAmmo,
       itemSwapMag: this._itemSwapMag,
       swapWeaponHand: this._swapWeaponHand,
@@ -62,6 +65,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       traditionPayCost: { handler: this._payAeSpecialAbilityCost, buttons: [0, 2] },
       traditionItemDelete: this._deleteTraditionItem,
       selectTraditionItem: this._selectTraditionItem,
+      dsa5hBodyFigure: this._setBodyFigure,
     },
     // Foundry concatenates majorButtons across the inheritance chain (ApplicationV2#_initializeApplicationOptions),
     // so this adds a third header-control icon next to DSA5's own eye/lock buttons instead of replacing them.
@@ -92,7 +96,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     ];
   _currentTab = 'cover';
   _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells', notes: 'biography' };
-  _search = { talent: '', gear: '' };
+  _search = { talent: '', gear: '', combatskill: '' };
   _favoritePending = false;
   // Wohlgefällige Talente (Religion-Tab) starten eingeklappt im Spielmodus, Klick blendet den vollen Text ein —
   // Nutzerentscheidung 2026-09-19 nach Click-Dummy-Vergleich dreier Varianten ("B · Einklappbar" gewählt, nahm
@@ -128,6 +132,10 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // Fensteranfang, mehrfaches +/− per Tastatur wäre unmöglich (UI/UX-Review 2026-09-25, Punkt 4). Gemerkt wird
   // die Aktion plus die Daten, die das Element eindeutig machen (Item, Zustand, Eigenschaft, Wert …), nach dem
   // Rendern wird das passende neue Element wieder fokussiert.
+  static RIGHT_CLICK_ACTIONS = ['loadWeapon', 'quantityClick', 'chargeSpell', 'conditionValue', 'statusAdd', 'rollAggregatedProbe', 'traditionPayCost', 'onUseItem', 'dsa5hEquip']
+    .map(action => `[data-action="${action}"]`).join(', ');
+  // Alles, was im Kopf selbst bedienbar ist, startet kein Fenster-Ziehen (siehe pointerdown in _onRender).
+  static DRAG_EXCLUDE = 'button, a, input:not([disabled]), select, textarea, label, details, [data-action], [contenteditable], [draggable="true"]';
   static FOCUS_KEYS = ['action', 'val', 'char', 'mode', 'hand', 'fct', 'attr', 'tab', 'subtab', 'parentTab'];
 
   _focusKey() {
@@ -218,7 +226,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Own SKILL.* strings ("Körpertalente" etc.) end in "-talente" — dropped here to keep the sub-tabs compact,
       // matching the click-dummy's buildSkillSubTabs() (the full name still shows in the panel title below).
       { tab: 'skills', items: [...skillGroups.map(group => ({ id: group.id, label: localize('SKILL.' + group.id).replace(/s?talente$/i, '') })), { id: 'aggregated', label: localize('aggregatedTests') }] },
-      { tab: 'combat', items: [{ id: 'combat', label: localize('Combat') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
+      // Erster Kampf-Unterreiter heißt „Übersicht“ statt nochmals „Kampf“ neben dem Reitertitel (Paket F).
+      // „Körper“ steht vorerst neben der Übersicht, damit Testende beide vergleichen können (Rückmeldung 2026-09-30).
+      { tab: 'combat', items: [{ id: 'combat', label: localize('DSA5HELPERS.Overview') }, { id: 'body', label: localize('DSA5HELPERS.Body') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
       ...['magic', 'religion'].map(tab => ({ tab, items: [{ id: 'spells', label: localize(tab === 'magic' ? 'spells' : 'liturgies') }, { id: 'equipment', label: localize('DSA5HELPERS.Tabs.inventory') }] })),
       { tab: 'notes', items: noteSubtabs },
     ];
@@ -254,6 +264,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       coverConditions: (context.conditions ?? []).slice(0, 4),
       coverConditionsMore: Math.max(0, (context.conditions ?? []).length - 4),
       happyTalentsExpanded: this._happyTalentsExpanded,
+      body: limited ? null : this._bodyContext(prepare),
       happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
     // The original sheet prepares this only for its separate companion part.
@@ -272,6 +283,44 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     if (!this._changeListenerBound) {
       this._changeListenerBound = true;
       this.element.addEventListener('change', event => { if (event.target?.name) this._flashName = event.target.name; });
+      // Knöpfe mit eigener Rechtsklick-Bedeutung (Nachladen zurücksetzen, Zustand senken, Menge verringern …):
+      // das contextmenu-Ereignis würde sonst bis zur Zeile hochlaufen und dort zusätzlich das Kontextmenü des
+      // Systems öffnen (Nutzer-Feedback 2026-09-28). Die Aktion selbst kommt über auxclick und bleibt unberührt.
+      // Capture-Phase, weil Foundrys ContextMenu am selben Element (this.element) in der Bubble-Phase lauscht.
+      this.element.addEventListener('contextmenu', event => {
+        if (!event.target?.closest?.(this.constructor.RIGHT_CLICK_ACTIONS)) return;
+        event.preventDefault();
+        event.stopPropagation();
+      }, { capture: true });
+      // Seit die Titelleiste nur noch eine kleine Knopfgruppe ist, war das Fenster nur dort verschiebbar (Nutzer-
+      // Feedback 2026-09-30). Ein Druck auf eine freie Stelle im dunklen Kopf wird deshalb an Foundrys eigene
+      // Zieh-Logik der .window-header weitergereicht (ApplicationV2 lauscht dort auf pointerdown und verfolgt
+      // pointermove danach am ganzen Fenster). Nur der Kopf, nicht Seitenleiste/Reiterleiste (Rückmeldung
+      // 2026-09-30); Hinweis für Spielende ist der Greif-Cursor (CSS .dsa5h-head).
+      this.element.addEventListener('pointerdown', event => {
+        if (event.button !== 0 || !this.window?.header) return;
+        const target = event.target;
+        if (!target?.closest?.('.dsa5h-head')) return;
+        if (target.closest(this.constructor.DRAG_EXCLUDE)) return;
+        this.window.header.dispatchEvent(new PointerEvent('pointerdown', {
+          bubbles: true, button: 0, buttons: event.buttons, clientX: event.clientX, clientY: event.clientY,
+          pointerId: event.pointerId, pointerType: event.pointerType, isPrimary: event.isPrimary
+        }));
+      });
+      // Hand-Auswahl im Reiter „Körper“: nur die Hand-Logik des Systems (actor-dsa5.js equipWeaponToHand) —
+      // 1H-Waffe in die gewählte Hand (die dortige Waffe wird abgelegt), beidhändige Waffe belegt beide Hände.
+      this.element.addEventListener('change', event => {
+        const select = event.target?.closest?.('select[data-dsa5h-hand]');
+        if (!select) return;
+        event.stopPropagation();
+        const hand = select.dataset.dsa5hHand;
+        if (select.value) this.actor.equipWeaponToHand(select.value, { hand, equip: true });
+        else if (select.dataset.current) this.actor.equipWeaponToHand(select.dataset.current, { equip: false });
+      }, { capture: true });
+      // Munitionswahl (<details class="dsa5h-ammo-pick">) schließt sich bei einem Klick daneben wie ein Dropdown.
+      this.element.addEventListener('click', event => {
+        this.element.querySelectorAll('details.dsa5h-ammo-pick[open]').forEach(details => { if (!details.contains(event.target)) details.open = false; });
+      });
     }
     if (this._flashName) {
       this._flash(this.element.querySelector(`[name="${CSS.escape(this._flashName)}"]`));
@@ -279,15 +328,109 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     }
     if (context.dsa5h.limited) return;
     const companion = this.element.querySelector('[data-tab-panel="companion"]');
-    if (companion) this.attachCompanionTabListeners(companion);
-    const searchHandlers = { talent: () => this._applyCurrentTab(), gear: () => this._applyGearSearch() };
-    for (const [kind, selector] of Object.entries({ talent: '.talentSearch', gear: '.gearSearch' })) {
+    if (companion) {
+      this.attachCompanionTabListeners(companion);
+      this._labelCompanionButtons(companion);
+    }
+    const searchHandlers = { talent: () => this._applyCurrentTab(), gear: () => this._applyGearSearch(), combatskill: () => this._applyCombatSkillSearch() };
+    for (const [kind, selector] of Object.entries({ talent: '.talentSearch', gear: '.gearSearch', combatskill: '.combatSkillSearch' })) {
       const input = this.element.querySelector(selector);
       if (!input) continue;
       input.value = this._search[kind];
       input.addEventListener('input', () => { this._search[kind] = input.value; searchHandlers[kind](); });
     }
     this._applyGearSearch();
+    this._applyCombatSkillSearch();
+  }
+
+  // Gefährten-Reiter nutzt die Systemvorlage (actor-companion.hbs) unverändert; deren reine Symbolknöpfe bekommen
+  // hier eine Kurzbeschriftung daneben (Paket G, 2026-09-28) — statt die ganze Vorlage zu kopieren.
+  static COMPANION_BUTTON_LABELS = {
+    openSkillSelection: 'DSA5HELPERS.CompanionShort.skills',
+    toggleHotbarControl: 'DSA5HELPERS.CompanionShort.hotbar',
+    trainCompanion: 'DSA5HELPERS.CompanionShort.train',
+    toggleMount: 'DSA5HELPERS.CompanionShort.mount',
+  };
+
+  _labelCompanionButtons(root) {
+    for (const [action, key] of Object.entries(this.constructor.COMPANION_BUTTON_LABELS)) {
+      root.querySelectorAll(`button[data-action="${action}"]`).forEach(button => {
+        if (button.querySelector('.dsa5h-btn-short')) return;
+        const label = document.createElement('span');
+        label.className = 'dsa5h-btn-short';
+        label.textContent = game.i18n.localize(key);
+        button.append(label);
+        button.classList.add('dsa5h-labeled');
+      });
+    }
+    // Knopfspalte aus der Loyalitätszeile in den Kartenkopf (vor das ⋮) — wie im Clickdummy (Knöpfe in der
+    // Titelzeile). Neben Loyalität + 7er-Hotbar lief sie rechts aus der Karte (Nutzer-Feedback 2026-09-30). Die
+    // System-Handler suchen nur .companion-header-ui (die ganze Karte), das Verschieben innerhalb bleibt also folgenlos.
+    root.querySelectorAll('.companion-header-ui').forEach(card => {
+      // Lange Namen werden per CSS gekürzt — der volle Name steht dann im Tooltip.
+      const name = card.querySelector('.member-card h3 > a');
+      if (name && !name.dataset.tooltip) name.dataset.tooltip = name.textContent.trim();
+      const actions = card.querySelector('.companion-loyalty-row > .flexcol');
+      const slot = card.querySelector('.member-card > .flex0');
+      if (!actions || !slot) return;
+      actions.classList.add('dsa5h-companion-actions');
+      slot.prepend(actions);
+    });
+  }
+
+  // Reiter „Körper“ (Kampf-Unterreiter, Issue #6): Rüstung links, Hände rechts, Figur dahinter. Haupt-/Nebenhand
+  // kommen aus den vom System vorbereiteten getragenen Waffen (system.worn.offHand); beidhändig wie im System
+  // (weapon_hands.js isTwoHandedWeapon: Nahkampf über RuleChaos, Fernkampf über worn.requiresBothHands). Führt die
+  // Haupthand eine beidhändige Waffe, entfällt die Nebenhand (Rückmeldung 2026-09-30).
+  _bodyContext(prepare) {
+    const RuleChaos = globalThis.dsa5?.apps?.RuleChaos;
+    const twoHanded = item => item.type === 'meleeweapon'
+      ? (RuleChaos ? RuleChaos.isWieldedTwohanded(item) : !!item.wieldedTwoHand)
+      : item.system?.worn?.requiresBothHands !== false;
+    const worn = [...(prepare.wornMeleeWeapons ?? []), ...(prepare.wornRangedWeapons ?? [])];
+    const main = worn.find(w => !w.system?.worn?.offHand) ?? null;
+    const mainTwoHanded = !!main && twoHanded(this.actor.items.get(main._id) ?? main);
+    const off = mainTwoHanded ? null : worn.find(w => w !== main && w.system?.worn?.offHand) ?? null;
+    const weapons = [...(this.actor.items?.values?.() ?? [])].filter(item => ['meleeweapon', 'rangeweapon'].includes(item.type))
+      .sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang));
+    const slot = (hand, item) => ({
+      hand,
+      label: hand === 'main' ? 'mainHand' : 'offHand',
+      item,
+      ranged: item?.type === 'rangeweapon',
+      options: weapons.filter(w => hand === 'main' || !twoHanded(w)).map(w => ({ id: w.id, name: w.name, twoHanded: twoHanded(w), selected: w.id === item?._id })),
+    });
+    const armor = prepare.wornArmor ?? [];
+    const species = String(this.actor.system?.details?.species?.value ?? '');
+    const placeholder = /elf/i.test(species) ? 'Elf' : /zwerg|dwarf/i.test(species) ? 'Zwerg' : 'Mensch';
+    const portrait = this.actor.getFlag?.(MODULE_ID, 'bodyFigure') === 'portrait';
+    return {
+      armor,
+      // Ab drei Rüstungsteilen Tabelle statt Kacheln (Rückmeldung 2026-09-30).
+      armorTable: armor.length >= 3,
+      encumbrance: armor.reduce((sum, item) => sum + (Number(item.system?.calculatedEncumbrance) || 0), 0),
+      hands: mainTwoHanded ? [slot('main', main)] : [slot('main', main), slot('offhand', off)],
+      single: mainTwoHanded,
+      portrait,
+      figure: portrait ? this.actor.img : `systems/dsa5/icons/species/${placeholder}.webp`,
+      initiative: Math.floor(this.actor.system?.status?.initiative?.value ?? 0),
+    };
+  }
+
+  // Figur im Reiter „Körper“: Platzhalter (Artenbild) oder Akteur-Porträt — Actor-Flag, nur im Bearbeiten-Modus.
+  static async _setBodyFigure(_event, target) {
+    if (!this.isEditable) return;
+    await this.actor.setFlag(MODULE_ID, 'bodyFigure', target.dataset.figure === 'portrait' ? 'portrait' : 'placeholder');
+  }
+
+  // Zauber-/Liturgieliste als Dialog im Reiter „Körper“ (im Kampf würfeln, ohne den Reiter zu wechseln). Natives
+  // <dialog> im Bogen, damit die Würfelknöpfe über die normalen Sheet-Aktionen laufen (skillSelect usw.).
+  static _openCastDialog(_event, target) {
+    this.element.querySelector(`dialog[data-cast-dialog="${CSS.escape(target.dataset.kind)}"]`)?.showModal();
+  }
+
+  static _closeCastDialog(_event, target) {
+    target.closest('dialog')?.close();
   }
 
   // Die Tradition steht im System nur als Textfeld (system.tradition.magical/clerical); das zugehörige Item ist die
@@ -341,6 +484,13 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // System-Handler auf, nur mit Rechtsklick-Semantik (actor-sheet.js _conditionValue → removeCondition).
   static _dsa5hConditionDown(_event, target) {
     return this.constructor._conditionValue.call(this, { button: 2 }, target);
+  }
+
+  // Sichtbarer Zurücksetzen-Knopf fürs Nachladen (Nutzer-Feedback 2026-09-28): das System setzt Lade- und
+  // Zielfortschritt nur per Rechtsklick auf seinen Ladeknopf zurück. Ruft denselben System-Handler mit
+  // Rechtsklick-Semantik auf (actor-sheet.js _loadWeapon), wie _dsa5hConditionDown.
+  static _dsa5hReloadReset(_event, target) {
+    return this.constructor._loadWeapon.call(this, { button: 2 }, target);
   }
 
   static _setTab(_event, target) {
@@ -470,6 +620,24 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       filter.setAttribute('aria-checked', String(this._onlyLearned));
       filter.classList.toggle('on', this._onlyLearned);
     }
+  }
+
+  // Kampftechniken filtern wie die Talente (Nutzer-Feedback 2026-09-28): Namens-Teilstring, beide Spalten (Nah-/
+  // Fernkampf) bleiben stehen, leere Treffer zeigen einen Hinweis.
+  _applyCombatSkillSearch() {
+    const root = this.element;
+    if (!root) return;
+    const query = this._search.combatskill.trim().toLowerCase();
+    root.querySelectorAll('[data-sub-panel="combat:skills"] .panel').forEach(panel => {
+      let visible = 0;
+      panel.querySelectorAll('.dsa5h-combatskill-row.item').forEach(row => {
+        const name = row.querySelector('[data-action="itemEdit"]')?.textContent?.toLowerCase() ?? '';
+        row.hidden = !!query && !name.includes(query);
+        if (!row.hidden) visible++;
+      });
+      const empty = panel.querySelector('[data-search-empty]');
+      if (empty) empty.hidden = !query || visible > 0;
+    });
   }
 
   _applyGearSearch() {

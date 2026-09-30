@@ -23,15 +23,15 @@
             <div class="panel">
               <div class="panel-title">{{localize "DSA5HELPERS.AdvantagesDisadvantages"}}</div>
               <div class="subhead flex"><span>{{localize "advantages"}}</span><button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp 'advantage'}}" aria-label="{{localize 'advantages'}}">i</button></div>
-              <div class="chips">
+              <div class="chips dsa5h-chips-fill">
                 {{#each prepare.advantages as |item|}}
-                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
+                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
                 {{/each}}
               </div>
               <div class="subhead flex"><span>{{localize "disadvantages"}}</span><button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp 'disadvantage'}}" aria-label="{{localize 'disadvantages'}}">i</button></div>
-              <div class="chips">
+              <div class="chips dsa5h-chips-fill">
                 {{#each prepare.disadvantages as |item|}}
-                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
+                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
                 {{/each}}
               </div>
             </div>
@@ -46,9 +46,9 @@
                   {{else}}
                     <div class="panel-title flex"><span>{{localize (concat "SpecCategory." g.cat)}}</span><button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp g.cat}}" aria-label="{{localize (concat "SpecCategory." g.cat)}}">i</button></div>
                   {{/if}}
-                  <div class="chips">
+                  <div class="chips dsa5h-chips-fill">
                     {{#each g.items as |item|}}
-                    <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.maxRank.value}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
+                    <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.maxRank.value}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
                     {{/each}}
                   </div>
                 {{/each}}
@@ -60,9 +60,9 @@
             {{#if prepare.imprint.length}}
             <div class="panel">
               <div class="panel-title">{{localize "TYPES.Item.imprint"}}</div>
-              <div class="chips">
+              <div class="chips dsa5h-chips-fill">
                 {{#each prepare.imprint as |item|}}
-                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
+                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
                 {{/each}}
               </div>
             </div>
@@ -75,9 +75,9 @@
                 <span>{{localize "SpecCategory.language"}}</span>
                 {{#if prepare.languagePoints}}<small>{{{prepare.languagePoints}}}</small>{{/if}}
               </div>
-              <div class="chips">
+              <div class="chips dsa5h-chips-fill">
                 {{#each (lookup prepare.specAbs "language") as |item|}}
-                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
+                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span><span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.editMode}}hidden{{/unless}} data-tooltip="SHEET.DeleteItem" aria-label="{{localize 'SHEET.DeleteItem'}}">×</button></span></span>
                 {{/each}}
               </div>
             </div>
@@ -90,7 +90,7 @@
               <div class="panel-title">{{localize "DSA5HELPERS.BaseValues"}}</div>
 
               <div class="subhead">{{localize "DSA5HELPERS.Resources"}}</div>
-              <div class="row-head derived-row"><span></span><span>{{localize "ABBR.value"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.advances"}}</span><span>{{localize "ABBR.max"}}</span></div>
+              <div class="row-head derived-row"><span></span><span>{{localize "DSA5HELPERS.ColCurrent"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.advances"}}</span><span>{{localize "ABBR.max"}}</span></div>
               <div class="row derived-row">
                 <span class="left">{{localize "wounds"}}{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="wounds" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize 'wounds')}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="wounds" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize 'wounds')}}">+</button></span>{{/if}}</span>
                 <span class="muted center">{{document.system.status.wounds.current}}</span>
@@ -166,7 +166,7 @@
               </div>
 
               <div class="subhead">{{localize "DSA5HELPERS.Resistances"}}</div>
-              <div class="row-head simple-row"><span></span><span>{{localize "ABBR.value"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.max"}}</span></div>
+              <div class="row-head simple-row"><span></span><span>{{localize "DSA5HELPERS.ColBase"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.max"}}</span></div>
               <div class="row simple-row">
                 <span class="left">{{localize "soulpower"}}</span>
                 <span class="muted center">{{document.system.status.soulpower.value}}</span>
@@ -193,7 +193,7 @@
               </div>
 
               <div class="subhead">{{localize "DSA5HELPERS.BaseValues"}}</div>
-              <div class="row-head simple-row"><span></span><span>{{localize "ABBR.value"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.max"}}</span></div>
+              <div class="row-head simple-row"><span></span><span>{{localize "DSA5HELPERS.ColBase"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.max"}}</span></div>
               <div class="row simple-row">
                 <span class="left">{{localize "speed"}}</span>
                 <span class="muted center">{{document.system.status.speed.initial}}</span>
@@ -213,9 +213,9 @@
                 <small>{{localize document.system.details.experience.description}}</small>
               </div>
               <div class="xp-grid">
-                <div class="xp-item"><div class="xp-num">{{dsa5hFormatNum document.system.details.experience.total}}</div><div class="xp-label">{{localize "Total"}}</div></div>
+                <div class="xp-item"><div class="xp-num">{{#if dsa5h.editMode}}{{formInput systemFields.details.fields.experience.fields.total value=document.system.details.experience.total}}{{else}}{{dsa5hFormatNum document.system.details.experience.total}}{{/if}}</div><div class="xp-label">{{localize "Total"}}</div></div>
                 <div class="xp-item"><div class="xp-num accent">{{dsa5hFormatNum document.system.details.experience.current}}</div><div class="xp-label">{{localize "Current"}}</div></div>
-                <div class="xp-item"><div class="xp-num">{{dsa5hFormatNum document.system.details.experience.spent}}</div><div class="xp-label">{{localize "Spent"}}</div></div>
+                <div class="xp-item"><div class="xp-num">{{#if dsa5h.editMode}}{{formInput systemFields.details.fields.experience.fields.spent value=document.system.details.experience.spent}}{{else}}{{dsa5hFormatNum document.system.details.experience.spent}}{{/if}}</div><div class="xp-label">{{localize "Spent"}}</div></div>
               </div>
             </div>
           </div>

@@ -20,10 +20,14 @@ Hooks.once('init', async () => {
   game.settings.register('dsa5-helpers', 'theme', { scope: 'client', config: false, type: String, default: 'light', choices: { light: 'Light', dark: 'Dark' } });
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
   Handlebars.registerHelper('dsa5hFormatNum', value => String(value ?? 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' '));
+  // Kürzel einer Münze im Geld-Panel (Dukaten → D): Münzen sind Items, auch eigene Währungen bekommen so ein Kürzel.
+  Handlebars.registerHelper('dsa5hInitial', text => String(text ?? '').trim().charAt(0).toUpperCase());
   Handlebars.registerHelper('dsa5hCharacteristics', item => [1, 2, 3].map(n => item.system['characteristic' + n]?.value).filter(Boolean));
   Handlebars.registerHelper('dsa5hTraditionIcon', (text, kind) => findTraditionIcon(text, kind === 'religion' ? GOD_ICONS : MAGIC_TRADITION_ICONS, kind === 'religion' ? 'months' : 'traditionen'));
   await foundry.applications.handlebars.loadTemplates([
   "modules/dsa5-helpers/templates/actors/dsa5-helpers-character-sheet.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/body.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/cast-list.hbs",
   "modules/dsa5-helpers/templates/actors/parts/chips.hbs",
   "modules/dsa5-helpers/templates/actors/parts/combat.hbs",
   "modules/dsa5-helpers/templates/actors/parts/companion.hbs",
@@ -40,6 +44,7 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/main.hbs",
   "modules/dsa5-helpers/templates/actors/parts/notes.hbs",
   "modules/dsa5-helpers/templates/actors/parts/probe.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/quick-actions.hbs",
   "modules/dsa5-helpers/templates/actors/parts/religion.hbs",
   "modules/dsa5-helpers/templates/actors/parts/skill-value.hbs",
   "modules/dsa5-helpers/templates/actors/parts/skills.hbs",

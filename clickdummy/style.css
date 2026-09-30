@@ -11,6 +11,7 @@
   /* Unterer Farbton von --head als eigene (nicht-Gradient-)Variable — var(--head) selbst ist ein Gradient und
      als Farb-Stopp innerhalb eines anderen Gradients (.head-bg-fade) ungültig CSS. */
   --head-base:#272320;
+  --dmg:#b3241a; --dmg-bg:rgba(179,36,26,.08);
 }
 [data-theme='dark']{
   --paper:#241f1c; --ink:#ede3d1; --muted:rgba(237,227,209,.7); --line:rgba(237,227,209,.18);
@@ -19,6 +20,7 @@
   --head:linear-gradient(180deg,#2e2823,#1c1917); --accent:#c2a267; --headink:#f4e8d6; --headmuted:rgba(244,232,214,.74); --attrband:rgba(244,232,214,.15);
   --desk:#161413; --railidle:rgba(60,52,44,.85); --railon:#4a3f33;
   --head-base:#1c1917;
+  --dmg:#d0574b; --dmg-bg:rgba(208,87,75,.14);
 }
 
 /* Schriftstufen (UI/UX-Review 2026-09-25, Paket B): --fs-data für Namen und spielrelevante Werte, --fs-small für
@@ -71,8 +73,8 @@ input,button{font-family:inherit;color:inherit}
    kein verlässlicher Platz mehr für ein ausklappendes Label bleibt. */
 .rail-label{display:none;position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--railon);border:1px solid var(--accent);border-radius:4px;padding:3px 8px;font-size:12px;color:var(--ink);pointer-events:none;z-index:5}
 /* Label: beim aktiven Reiter immer, sonst bei Hover und Tastaturfokus (Entscheidung 4b, 2026-09-25). */
-.rail button.active .rail-label,.rail button:hover .rail-label,.rail button:focus-visible .rail-label{display:block}
-.rail button:hover .rail-label,.rail button:focus-visible .rail-label{z-index:6}
+/* Name nur bei Hover/Tastaturfokus, nicht dauerhaft beim aktiven Reiter (Nutzer-Feedback 2026-09-28). */
+.rail button:hover .rail-label,.rail button:focus-visible .rail-label{display:block;z-index:6}
 @media (max-width:860px){.rail button .rail-label{display:none}}
 
 /* Feste Größe wie das echte DSA5-Actor-Sheet-Fenster (systems/dsa5/modules/actor/actor-sheet.js: width 770 / height 740), damit die Platznutzung realistisch geprüft werden kann. */
@@ -346,7 +348,7 @@ input,button{font-family:inherit;color:inherit}
    bekommen darunter volle 28×28 mit sichtbarem Kreis, die AP-Stepper im Bearbeiten-Modus bleiben schlank. */
 .step{display:inline-flex;align-items:center;justify-content:center;flex:none;width:24px;height:28px;margin:-4px 0;padding:0;border:0;border-radius:50%;background:none;font:inherit;font-size:16px;font-weight:700;line-height:1;cursor:pointer;transition:background-color .12s ease,color .12s ease}
 .step:hover{background:var(--field)}
-.step.minus{color:var(--muted)}
+.step.minus{color:var(--accent);font-size:20px}
 .step.plus{color:var(--accent)}
 .list-row .step,.companion-loyalty-row .step{width:28px;border:4px solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line)}
 .list-row .step:hover,.companion-loyalty-row .step:hover{box-shadow:inset 0 0 0 1px var(--accent)}
@@ -365,7 +367,7 @@ input,button{font-family:inherit;color:inherit}
    TODOS.md: als kleiner runder Button mit Zoom-Effekt bei Hover/Focus statt nacktem Zeichen, damit er besser
    sichtbar ist; das Zoomen passiert nur beim Hover (Maus ist ohnehin schon darüber), verdeckt also im
    Ruhezustand keinen Text. */
-.chip-delete{border:none;background:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:0;margin:-4px -4px -4px -2px;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;transition:transform .12s ease,color .12s ease,background-color .12s ease}
+.chip-delete{border:none;background:none;color:var(--muted);cursor:pointer;font-size:19px;font-weight:bold;line-height:1;padding:0;margin:-4px -4px -4px -2px;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;transition:transform .12s ease,color .12s ease,background-color .12s ease}
 .chip-delete:hover,.chip-delete:focus-visible{color:#a8501a;background:var(--field);transform:scale(1.15)}
 
 /* Kurze, sich selbst ausblendende Meldung (flashNotice() in script.js), z.B. "Nicht genug AP verfügbar". */
@@ -412,6 +414,10 @@ input,button{font-family:inherit;color:inherit}
 .chips{display:flex;flex-wrap:wrap;gap:6px;padding:11px}
 .chip{display:flex;align-items:center;gap:6px;padding:2px 10px 2px 4px;border:1px solid var(--line);background:var(--field);font-size:var(--fs-small)}
 .chip img{width:20px;height:20px}
+/* Eigenschaften-Reiter: Chips füllen die Panelbreite, max. zwei pro Zeile; lange Namen bekommen die ganze Zeile.
+   Das × (Bearbeiten-Modus) rückt an den rechten Rand und zählt zur Inhaltsbreite (2026-09-30). */
+.chips-fill>.chip{flex:1 1 auto;min-width:calc(50% - 3px);max-width:100%}
+.chips-fill>.chip .chip-delete{margin-left:auto}
 
 /* Traditionsgegenstand-/Kirchengerät-Fähigkeit mit bezahlbaren AsP-Kosten (payTraditionAbilityCost() in
    script.js) — <button> statt <div>, daher Font/Cursor explizit gesetzt statt vom Chip-Grunddesign geerbt. */
@@ -613,7 +619,6 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .ammo-toggle{display:flex;align-items:center;gap:6px;width:100%;padding:2px 8px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font-size:var(--fs-meta);cursor:pointer;text-align:left}
 .ammo-toggle:hover{border-color:var(--accent)}
 .ammo-toggle.open{border-color:var(--accent)}
-.ammo-toggle.reloading{color:var(--muted)}
 .ammo-toggle-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ammo-toggle-caret{font-size:8px;color:var(--muted);transition:transform .1s}
 .ammo-toggle.open .ammo-toggle-caret{transform:rotate(180deg)}
@@ -625,14 +630,11 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .ammo-chip.active{border-color:var(--accent);color:var(--ink);font-weight:bold}
 .ammo-chip:hover{border-color:var(--accent)}
 
-.ammo-mag{display:flex;align-items:center;gap:6px}
-.ammo-mag-bar{flex:1;height:6px;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--odd)}
-.ammo-mag-fill{display:block;height:100%;background:var(--accent)}
-.ammo-mag-label{font-size:var(--fs-meta);color:var(--muted);font-family:ui-monospace,Menlo,monospace}
 
 .reload-btn{min-height:26px;padding:2px 8px;border:1px solid var(--line);border-radius:3px;background:var(--field);font-size:12px;cursor:pointer;color:var(--ink)}
 .reload-btn:hover{border-color:var(--accent)}
 .reload-btn.done{color:#3a8f3a;border-color:#3a8f3a;cursor:default;opacity:.8}
+.reload-btn:disabled:not(.done){opacity:.55;cursor:default}
 .armor-row{grid-template-columns:28px 1fr 46px 46px}
 /* FW-Spalte breiter als früher (war 40px): muss jetzt Stepper+Zahl fassen (.skill-fw, wie auf dem Talente-Tab). */
 .combatskill-row{grid-template-columns:28px 1fr 44px 60px 40px 40px}
@@ -742,9 +744,6 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .row-delete:hover,.row-delete:focus-visible{color:#a8501a;background:var(--field);transform:scale(1.15)}
 
 .wallet-panel{flex:0 0 330px}
-.wallet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px}
-.wallet-item{display:flex;align-items:center;gap:5px}
-.wallet-item img{width:19px;height:19px}
 .carry-panel{flex:1;min-width:0}
 .info-cards > .panel + .panel{margin-top:0}
 .carry-body{display:flex;flex-direction:column;gap:6px;padding:12px}
@@ -832,7 +831,8 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
    untergeordnet. Höhe 220px→190px reduziert und die Abstände/Innenränder der Leiste gestrafft (Nutzer-Feedback
    2026-09-15: bei 3 Ressourcenleisten (LeP/AsP/KaP) reichte der Platz nicht mehr aus, die Leiste bekam wieder
    einen Scrollbalken). */
-.sheet[data-tab="cover"] #coverSidebar .portrait{width:100%;flex:0 0 auto;height:190px}
+/* Gleiches Seitenverhältnis wie im Kopf (118×142), damit das Bild überall gleich beschnitten wird (2026-09-28). */
+.sheet[data-tab="cover"] #coverSidebar .portrait{width:180px;height:auto;aspect-ratio:118/142;flex:0 0 auto;align-self:center}
 .sheet[data-tab="cover"] #coverSidebar .fate-points img{width:28px;height:28px}
 
 /* LeP/AsP/KaP/Schips direkt auf der dunklen Leiste, ohne eigene Panel-Box — .bar/.bar-fill/.bar-label/
@@ -861,7 +861,7 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
    darum kaum sichtbar. Hier wie die übrigen Sidebar-Texte auf --headmuted/--accent umgefärbt. */
 #coverSidebar .row-delete{color:var(--headmuted)}
 #coverSidebar .row-delete:hover{color:var(--accent)}
-#coverSidebar .step.minus{color:var(--headmuted)}
+#coverSidebar .step.minus{color:var(--headink)}
 #coverSidebar .step.minus:hover{color:var(--accent)}
 #coverSidebar .list-row .step{box-shadow:inset 0 0 0 1px rgba(224,192,128,.4)}
 #coverSidebar .list-row .step:hover{background:rgba(224,192,128,.18);box-shadow:inset 0 0 0 1px var(--accent)}
@@ -948,30 +948,19 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 /* Favoritenraster (favCard() in script.js, Paket E / Issue #5): Karten füllen die ganze Breite (auto-fill), innen
    feste Spalten, damit Wert, Würfel und Stern in jeder Zeile an derselben Stelle stehen. */
 .fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:6px 10px;padding:10px 11px}
-.fav-card{display:grid;grid-template-columns:24px minmax(0,1fr) 58px 84px 24px;align-items:center;gap:8px;min-height:38px;padding:3px 6px 3px 7px;border:1px solid var(--line);border-radius:3px;background:var(--field)}
+.fav-card{display:grid;grid-template-columns:24px minmax(0,1fr) 84px 72px 24px;align-items:center;gap:8px;min-height:38px;padding:3px 6px 3px 7px;border:1px solid var(--line);border-radius:3px;background:var(--field)}
 .fav-card-icon{width:24px;height:24px;object-fit:cover}
 .fav-card-name{font-size:var(--fs-data);line-height:1.2;overflow-wrap:anywhere}
-.fav-card-value{justify-self:end;font-weight:bold;font-size:calc(var(--fs-data) + 1px);font-variant-numeric:tabular-nums}
-.fav-card-weapon{display:inline-flex;align-items:center;gap:4px;font-weight:normal}
+.fav-card-value{justify-self:center;font-weight:bold;font-size:calc(var(--fs-data) + 1px);font-variant-numeric:tabular-nums}
+.fav-card-weapon{display:flex;align-items:center;justify-content:center;gap:4px;font-weight:normal}
 .fav-card small{font-size:var(--fs-meta);color:var(--muted);font-weight:normal}
 .fav-card-roll{display:flex;justify-content:center}
 .fav-card .fav-chip-damage{font-size:var(--fs-small);white-space:nowrap}
 
-/* ===== Porträt auf den Fachreitern (Vergleichsschalter #portraitSwitch; Titelblatt bleibt unverändert) =====
-   Nutzer-Feedback 2026-09-25: Kopf "Standard" passt, aber das Porträt neben dem Titelblatt ist sehr klein.
-   "large" = 150×178 (Kopf wird etwas höher), "overlap" = 150×172, ragt unten über die Kopfkante in das
-   Würfelband (links neben den Eigenschaftswürfeln ist dort Platz); Kopf- und Titelzeile bleiben gleich hoch. */
-.sheet[data-portrait="large"]:not([data-tab="cover"]) .head-inner .portrait{flex-basis:150px;height:178px}
-.sheet[data-portrait="overlap"]:not([data-tab="cover"]) .head{overflow:visible;z-index:3}
-.sheet[data-portrait="overlap"]:not([data-tab="cover"]) .head-inner .portrait{flex-basis:150px;height:172px;margin-bottom:-30px;box-shadow:inset 0 0 0 1px rgba(224,192,128,.5),0 4px 12px rgba(0,0,0,.35)}
-
-/* ===== Paket F: Kampf-Übersicht, Varianten "Leiste" und "Silhouette" (Vergleichsschalter #combatTopSwitch) ===== */
-.combat-strip{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;padding:8px 12px}
+/* ===== Paket F: Kampfwerte-Stil und Figur (Reiter "Körper") ===== */
 .combat-stat{display:inline-flex;flex-direction:column;line-height:1.15}
 .combat-stat small{font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .combat-stat strong{font-size:var(--fs-big);font-variant-numeric:tabular-nums}
-.combat-strip-armor{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
-.combat-strip-armor .chip img{width:18px;height:18px}
 .combat-figure-grid{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);gap:12px;align-items:center;padding:10px 12px 4px}
 .figure-col-title{display:block;margin-bottom:4px;font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .figure-armor-item,.hand-slot-weapon{display:flex;align-items:center;gap:8px;padding:4px 0}
@@ -995,14 +984,20 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .figure-stats{display:flex;justify-content:center;gap:28px;padding:6px 12px 10px;border-top:1px solid var(--line)}
 
 /* ===== Paket G: Detailpunkte pro Reiter ===== */
-.wallet-value{display:flex;flex-direction:column;line-height:1.1}
-.wallet-value small{font-size:var(--fs-meta);color:var(--muted)}
 .table-legend{padding:5px 11px;border-top:1px solid var(--line);font-size:var(--fs-meta);color:var(--muted)}
 .ext-badge-inline{display:inline-block;width:14px;height:14px;line-height:14px;text-align:center;font-size:9px;color:#1c1917;background:#e0c080;border-radius:50%}
 .ext-badge:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .panel-subbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:5px 11px;border-bottom:1px solid var(--line)}
 .notes-visibility{padding:4px 11px;font-size:var(--fs-meta);color:var(--muted);border-bottom:1px solid var(--line)}
 .title-icon-btn.labeled{width:auto;height:24px;padding:0 8px;gap:5px;font-size:var(--fs-meta)}
+/* Gefährten-Karte (Rückmeldung 2026-09-30, wie Foundry): Name allein in der Titelzeile (langer Name mit „…“),
+   Knöpfe gleich breit als 2×2-Raster unter der Loyalität. */
+.companion-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:4px}
+.companion-actions .title-icon-btn.labeled{width:100%;height:28px;justify-content:flex-start;border-color:var(--line);color:var(--ink);background:var(--field)}
+.companion-actions .title-icon-btn.labeled:hover{border-color:var(--accent)}
+.companion-actions .title-icon-btn.labeled.active{border-color:var(--accent);font-weight:bold}
+.companion-full-card>.panel-title>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.companion-full-card>.panel-title-actions,.companion-full-card>.panel-title>.panel-title-actions{flex:none}
 .loyalty-inline{display:inline-flex;align-items:center;gap:8px}
 /* Bisher 5 Behältnis-Kacheln à 92px mit großem leerem Rest: Kacheln kompakter als Zeile Bild + Name/Füllstand. */
 .bag-tiles{gap:8px;padding:8px 11px}
@@ -1012,9 +1007,11 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .bag-tiles .bag-tile-name{text-align:left}
 /* Spalte "Angelegt" (vorher nur ✓ als Kopf, 34px) braucht Platz für die Beschriftung. */
 .inv-row{grid-template-columns:30px 1fr 64px 52px 58px 74px 42px}
-/* Tradition: Farbe der Pille, Platz der zurückgenommenen Variante — nicht mehr über die ganze Breite (Nutzer-
-   Entscheidung 2026-09-25 nach Vergleich "Pille" vs. "zurückgenommen"). */
-.trad-tile-tradition{flex:0 1 auto;padding:4px 14px}
+/* Tradition: Pille mit fester Breite, Nebenwerte teilen sich den Rest gleichmäßig — gleiche Aufteilung auf Magie
+   und Religion (Nutzer-Entscheidung 2026-09-28, ersetzt "so breit wie der Inhalt"). */
+.trad-tile-tradition{flex:0 0 260px;width:260px;padding:4px 14px}
+.trad-tile-tradition .trad-tile-val{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trad-tile-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));flex:1 1 300px}
 .trad-tile-tradition .trad-tile-val{font-size:16px}
 
 /* Spielmodus: Mod- und Zukauf-Spalten ausblenden (Nutzer-Entscheidung 2026-09-25) — sie sind nur beim Bearbeiten
@@ -1026,11 +1023,149 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 
 /* ===== Reiter "Körper" (renderBody(), Issue #6) ===== */
 .body-grid{display:grid;grid-template-columns:minmax(0,1fr) 170px minmax(0,1.2fr);gap:14px;align-items:center;padding:12px}
-.body-grid .figure-body{height:320px}
-.body-grid .figure-body::before{width:100px;margin-left:-50px;background-position:-60px 0}
+/* Komplettes Artenbild als abgeblendeter Hintergrund der ganzen Fläche (2026-09-28, ersetzt die ausgeschnittene
+   Silhouette): mittig, volle Höhe, zu den Rändern ins Papier ausgeblendet. */
+.body-grid{position:relative;isolation:isolate;min-height:330px}
+.body-grid>.body-figure{position:absolute;inset:0;z-index:-1;width:100%;height:100%;max-width:none;margin:0;border:0;object-fit:contain;object-position:center;pointer-events:none;opacity:.3;-webkit-mask-image:linear-gradient(90deg,transparent 12%,#000 35%,#000 65%,transparent 88%);mask-image:linear-gradient(90deg,transparent 12%,#000 35%,#000 65%,transparent 88%)}
+.sheet[data-theme="dark"] .body-grid>.body-figure{opacity:.22}
+.body-grid .figure-body{height:300px;position:static}
+.body-grid>.figure-badge{z-index:2}
+.body-grid .figure-body::before{content:none}
+.body-grid .armor-slots{margin:4px 0 0;gap:8px}
+.body-grid .armor-slot{background:var(--paper)}
+.panel-title .cast-btns{display:flex;gap:6px}
+.cast-btn{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border:1px solid rgba(255,255,255,.45);border-radius:3px;background:rgba(255,255,255,.12);color:inherit;font:inherit;font-size:var(--fs-meta);cursor:pointer}
+.cast-btn:hover{border-color:#fff;background:rgba(255,255,255,.25)}
+.cast-modal{width:min(560px,92vw)}
+.cast-row{grid-template-columns:26px minmax(0,1fr) 84px 40px 44px}
+.cast-row img{width:24px;height:24px}
 .hand-slot-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
 .hand-select{max-width:170px;font-size:var(--fs-small)}
 .hand-slot-weapon>.hand-dice{display:flex;flex-direction:row;flex:none;gap:4px}
 .hand-note{padding:6px 0;font-size:var(--fs-small)}
 .body-others{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--line)}
 .body-others .chip img{width:18px;height:18px}
+
+/* Schadenswurf (damageBtn()/favCard() in script.js, Nutzer-Feedback 2026-09-28): rote Kante + rotes W6-Quadrat
+   (Farbe des System-Schadenswürfels d6red.svg), Zoom bei Hover wie die übrigen Proben (breit, daher 1,3×). */
+.damage-roll{position:relative;display:inline-flex;align-items:center;gap:3px;min-height:26px;padding:1px 5px 1px 4px;border:1px solid var(--dmg);border-radius:4px;background:var(--dmg-bg);color:var(--ink);font-family:'GentiumBasic',Georgia,serif;font-weight:700;font-size:var(--fs-small);font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1;cursor:pointer;transition:transform .15s ease;transform-origin:center}
+.damage-roll::before{content:"";flex:0 0 9px;width:9px;height:9px;border-radius:2px;background:var(--dmg)}
+.damage-roll:hover,.damage-roll:focus-visible{transform:scale(1.3);z-index:6;background:var(--paper)}
+.fav-card .damage-roll{padding:1px 6px}
+.fav-card .damage-roll::before{display:none}
+.fav-card .damage-roll small{font-weight:normal}
+/* Nachladen: Beschriftung + Segmentbalken + Stand, ↺ setzt zurück (renderAmmoCell()). */
+.reload{display:inline-flex;align-items:center;gap:3px}
+.reload-btn{display:inline-flex;align-items:center;gap:7px}
+.reload-bar{--lz:1;position:relative;width:calc(var(--lz) * 14px);max-width:84px;height:8px;border-radius:2px;background:var(--line);overflow:hidden}
+.reload-bar>span{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.reload-bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(100% / var(--lz) - 2px),var(--field) calc(100% / var(--lz) - 2px) calc(100% / var(--lz)))}
+.reload-count{font-weight:700;font-variant-numeric:tabular-nums}
+.reload-reset{width:26px;height:26px;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--field);color:var(--muted);font-size:15px;line-height:1;cursor:pointer}
+.reload-reset:hover{color:var(--accent);border-color:var(--accent)}
+@media (prefers-reduced-motion:reduce){.damage-roll{transition:none}}
+
+/* Munitionszeile, Variante "Mischform" (renderAmmoCell(), Nutzer-Entscheidung 2026-09-28). */
+.weapon-details .ammo-cell.inline{flex:1 1 auto;gap:8px;flex-wrap:wrap}
+.ammo-cell.inline .reload-btn{min-height:24px;padding:1px 7px}
+.ammo-pick{position:relative;display:flex;flex:0 1 auto;min-width:0;max-width:220px}
+.ammo-pick .ammo-toggle{width:auto;max-width:100%}
+.mag{display:inline-flex;align-items:center;gap:6px}
+.mag-count{font-weight:700;font-variant-numeric:tabular-nums}
+.mag-swap{width:24px;height:24px;padding:0;border:1px solid var(--line);border-radius:50%;background:var(--field);color:var(--ink);font-size:14px;line-height:1;cursor:pointer}
+.mag-swap:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}
+.mag-swap:disabled{opacity:.4;cursor:default}
+
+/* ===== Foundry-Titelleiste "schwebend" (Nutzer-Entscheidung 2026-09-28 nach Vergleich A/B/C) =====
+   Knöpfe als kleine Gruppe oben rechts über dem Kopf statt eigener Zeile (im Modul: .window-header absolut
+   positioniert, Titel ausgeblendet). Überdeckt so weder Porträt noch Name. */
+.sheet .fake-window-chrome{left:auto;right:0;height:28px;gap:2px;padding:0 6px;border-bottom-left-radius:6px;background:rgba(20,16,12,.55)}
+
+/* ===== Geld-Panel (walletLine(), Variante A, 2026-09-30) ===== */
+/* Eine gemeinsame Geldbörse — ein Rahmen, vier Segmente mit feinen Trennern, Werte ohne eigenen Kasten
+   (Bearbeiten per Klick wie bei LeP: gepunktete Unterlinie bei Hover). */
+.wallet-line{display:grid;grid-template-columns:repeat(4,1fr);margin:12px;border:1px solid var(--line);border-radius:4px;background:var(--field)}
+.wallet-coin{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 6px;min-width:0}
+.wallet-coin+.wallet-coin{border-left:1px solid var(--line)}
+.wallet-coin img{width:22px;height:22px;flex:none}
+.wallet-coin .coin-value{font-weight:700;font-size:var(--fs-big);font-variant-numeric:tabular-nums}
+.wallet-coin small{font-size:var(--fs-meta);color:var(--muted)}
+
+/* ===== "Körper" als Kampf-Unterreiter (2026-09-28): Rüstung untereinander, Hände als Kacheln ===== */
+.body-grid{grid-template-columns:120px minmax(0,1fr) 250px;align-items:center}
+.body-grid .figure-armor{display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:stretch}
+.body-grid .figure-armor .armor-slots{flex-direction:column;flex-wrap:nowrap;align-items:center}
+/* Hände nebeneinander (Variante B, Nutzer-Entscheidung 2026-09-30); je Hand: Titel, Name groß, Kachel, darunter
+   TP-Knopf und Auswahl untereinander. Beidhändige Waffe: nur die Haupthand, rechtsbündig. */
+.body-grid .figure-hands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;column-gap:12px;align-self:center}
+/* Beidhändige Waffe: die eine Hand rechtsbündig an der Außenkante statt mittig (Rückmeldung 2026-09-30). */
+.body-grid .figure-hands.single{grid-template-columns:minmax(0,1fr);justify-items:end}
+.body-grid .figure-hands.single .hand-slot,.body-grid .figure-hands.single .hand-slot-body,.body-grid .figure-hands.single .hand-slot-side{align-items:flex-end;text-align:right}
+.body-grid .hand-slot{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:0;margin:0;border:0;background:none}
+.body-grid .hand-slot .figure-col-title{margin-bottom:0}
+.hand-slot-body{display:flex;flex-direction:column;align-items:flex-start;gap:14px;align-self:stretch}
+.hand-slot-side{display:flex;flex-direction:column;align-items:flex-start;gap:8px;align-self:stretch}
+.body-grid .hand-select{max-width:100%;width:100%;font-size:var(--fs-meta)}
+.body-seg{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.body-seg button{border:0;background:var(--field);color:var(--ink);font:inherit;font-size:var(--fs-meta);padding:2px 8px;cursor:pointer}
+.body-seg button+button{border-left:1px solid var(--line)}
+.body-seg button.active{background:var(--accent);color:#fff}
+/* Figur-Umschalter (nur Bearbeiten-Modus) schwebt oben mittig über der Figur statt eine Rasterzelle zu belegen. */
+.body-figure-switch{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:2}
+.body-actions{padding:10px 12px 0;border-top:1px solid var(--line)}
+.body-actions .actions-row{justify-content:center;margin-bottom:0}
+.body-actions+.figure-stats{border-top:0}
+/* Namen über Rüstungs- und Handkacheln: Datenschrift, fett, darf umbrechen (Nutzer-Feedback 2026-09-30: zu klein im Bild). */
+.body-item-name{max-width:100%;font-weight:bold;font-size:var(--fs-data);line-height:1.15;overflow-wrap:anywhere}
+.body-armor-item{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:116px;text-align:center}
+.cast-auto{display:inline-flex;align-items:center;height:24px;padding:0 8px;border:1px solid var(--line);border-radius:3px;background:var(--field);font-size:var(--fs-meta)}
+.cast-auto:hover{border-color:var(--accent)}
+/* Kein overflow:hidden mehr (Rückmeldung 2026-09-30: die Würfel wurden beim Hover-Zoom am Kachelrand
+   abgeschnitten) — das Bild rundet sich selbst ab, die Würfel sitzen auf der Unterkante und ragen heraus. */
+.hand-tile{position:relative;flex:none;width:96px;height:96px;border:1px solid var(--line);border-radius:4px;background:var(--paper)}
+.hand-tile .item-icon{position:absolute;inset:0;width:100%;height:100%;border-radius:3px}
+.hand-tile .item-icon img{width:100%;height:100%;object-fit:cover;border:none;border-radius:3px}
+.hand-tile.empty{display:flex;align-items:center;justify-content:center;border-style:dashed;background:var(--field)}
+.hand-tile-note{padding:0 6px;font-size:var(--fs-meta);color:var(--muted);text-align:center}
+.hand-tile-at,.hand-tile-pa{position:absolute;bottom:-12px;z-index:1}
+.hand-tile-at{left:-8px}
+.hand-tile-pa{right:-8px}
+.hand-tile:has(.hand-tile-at){margin-bottom:10px}
+.hand-tile .die-qs.lg{width:30px;height:30px;line-height:30px}
+/* AT/PA-Würfel in der "Wachssiegel"-Fassung der Eigenschaftswürfel im Kopf (.attr-die-mini): dunkle Fassung in
+   Würfelform + Goldrand dahinter (Rückmeldung 2026-09-30). Gezoomt wird die ganze Fassung, nicht nur der Würfel. */
+.die-seal{display:block;width:30px;height:30px;transition:transform .15s ease;transform-origin:center}
+.die-seal .die-qs.lg{display:block;filter:none}
+.die-seal .die-qs.lg.rollable:is(:hover,:focus-visible){transform:none}
+.die-seal:is(:hover,:focus-within){transform:scale(1.6);z-index:6}
+.die-seal::after,.die-seal::before{content:"";position:absolute;clip-path:polygon(50% 0%,93% 28%,93% 72%,50% 100%,7% 72%,7% 28%)}
+.die-seal::after{inset:-5px;z-index:-1;background:var(--head);filter:drop-shadow(0 1px 2px rgba(0,0,0,.55))}
+.die-seal::before{inset:-7px;z-index:-2;background:var(--accent);filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+@media (prefers-reduced-motion:reduce){.die-seal{transition:none}}
+/* Ab drei Rüstungsteilen Tabelle statt Kacheln (Rückmeldung 2026-09-30, ersetzt „kleinere Kacheln zu zweit“):
+   Bild | Name (einzeilig, „…“ + Tooltip, Strukturbalken darunter) | RS | BE. */
+.body-grid.armor-table{grid-template-columns:230px minmax(0,1fr) 250px}
+.body-armor-table{width:100%;margin:4px 0 0;border-collapse:collapse;table-layout:fixed;background:var(--paper);border:1px solid var(--line)}
+.body-armor-table col.col-img,.body-armor-table col.col-val{width:34px}
+.body-armor-table th{padding:2px 4px;font-size:var(--fs-meta);font-weight:normal;color:var(--muted);text-align:center;border-bottom:1px solid var(--line)}
+.body-armor-table th:first-child{text-align:left}
+.body-armor-table td{padding:2px 4px;font-size:var(--fs-data);font-weight:bold;text-align:center;border-bottom:1px solid var(--line)}
+.body-armor-table tr:last-child td{border-bottom:0}
+.body-armor-table td.body-armor-img{padding:2px}
+.body-armor-table td.body-armor-img img{display:block;width:28px;height:28px;border:1px solid var(--line);border-radius:3px;object-fit:cover}
+.body-armor-table td.body-armor-name{text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.body-armor-table td.body-armor-name meter{display:block;width:100%;height:3px}
+
+/* ===== Status: Tabellen zweispaltig (twoColPanel(), Nutzer-Feedback 2026-09-28) ===== */
+.status-stack>.panel+.panel{margin-top:14px}
+.two-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px}
+.two-col>.show-all-btn,.two-col>.drop-zone{grid-column:1/-1}
+
+/* ===== Notizen zweispaltig (renderNotes(), Nutzer-Feedback 2026-09-28) ===== */
+.notes-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:14px;align-items:start}
+.notes-layout>.panel+.panel{margin-top:0}
+.notes-details .details-grid{grid-template-columns:1fr;gap:6px;padding:10px 11px}
+.notes-text .notes-text-wrap{min-height:360px}
+
+/* hidden-Attribut schlägt eigene display-Werte (z. B. .row{display:grid}) — wie im Modul (.dsa5-helpers-sheet [hidden]). */
+.sheet [hidden]{display:none!important}
