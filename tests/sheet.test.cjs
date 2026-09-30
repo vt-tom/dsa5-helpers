@@ -260,7 +260,7 @@ test('frame listeners are re-attached when Foundry builds a new window element a
  const first=frame();sheet.element=first;await sheet._onRender(context,{});await sheet._onRender(context,{});
  assert.equal(first.types.filter(t=>t==='pointerdown').length,1,'re-render of the same frame must not add listeners twice');
  const second=frame();sheet.element=second;await sheet._onRender(context,{});
- assert(second.types.includes('pointerdown'),'new frame after close/reopen lost the head drag listener');
+ assert(second.types.includes('pointerdown'),'new frame after close/reopen lost the head drag listener');assert(second.types.includes('dblclick'),'double-click on the head minimizes like the system sheet');
 });
 test('patrons (own list prepare.patrons since DSA5 8.1.8) render on the magic tab only when present',async()=>{
  const {sheet}=await prepare();let html=render(await sheet._prepareContext({}));assert(!html.includes(localize('TYPES.Item.patron')));

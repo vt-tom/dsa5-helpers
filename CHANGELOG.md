@@ -4,6 +4,10 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 ## [0.3.1] — unveröffentlicht
 
+### Neu
+
+- Doppelklick auf eine freie Stelle im dunklen Kopf minimiert den Bogen wie im Systembogen; minimiert zeigt er eine Leiste mit dem Heldennamen, per Doppelklick darauf klappt er wieder auf.
+
 ### Behoben
 
 - Ein Bogen, der geschlossen und wieder geöffnet wurde, ließ sich bis zum Neuladen (F5) nicht mehr am Kopf verschieben; ebenso fielen dann Hand-Auswahl im Reiter „Körper“, das Schließen des Zauberdialogs und das Merken der Scrollposition aus.

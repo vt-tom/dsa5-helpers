@@ -9,11 +9,12 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Version 0.3.1 (Branch `release/0.3.1`)
 
-Bugfix-Version. Nach dem Live-Check unten Release nach [RELEASE.md](RELEASE.md).
+Bugfix-Version plus Minimieren per Doppelklick. Nach dem Live-Check unten Release nach [RELEASE.md](RELEASE.md).
 
 ## Live in Foundry prüfen
 
 - **Bogen nach Schließen/Öffnen verschiebbar:** F5, Bogen öffnen, am dunklen Kopf ziehen → geht. Bogen schließen, wieder öffnen, erneut am Kopf ziehen → muss weiter gehen (vorher erst nach F5). Danach noch: Hand-Auswahl im Reiter „Körper“ und Zauberdialog dort (schließt beim Würfeln) nach dem Wiederöffnen.
+- **Minimieren per Doppelklick:** Doppelklick auf freie Stelle im dunklen Kopf → Bogen klappt zur dunklen Leiste mit Heldennamen zusammen (kein Bilderrahmen, kein Inhalt sichtbar). Leiste verschiebbar, Doppelklick darauf klappt wieder auf, ✕ schließt. Doppelklick auf Knöpfe/Felder im Kopf darf nicht minimieren. Auch nach Schließen/Öffnen prüfen.
 
 ## Offene Entscheidungen
 

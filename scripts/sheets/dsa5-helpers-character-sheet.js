@@ -324,6 +324,13 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
           pointerId: event.pointerId, pointerType: event.pointerType, isPrimary: event.isPrimary
         }));
       });
+      // Doppelklick auf dieselben freien Kopfstellen minimiert wie im Systembogen — Foundrys eigener Handler an der
+      // .window-header (minimize/maximize, beachtet options.window.minimizable). Aufklappen dann über die Titelleiste.
+      this.element.addEventListener('dblclick', event => {
+        if (!this.window?.header || !event.target?.closest?.('.dsa5h-head')) return;
+        if (event.target.closest(this.constructor.DRAG_EXCLUDE)) return;
+        this.window.header.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, clientX: event.clientX, clientY: event.clientY }));
+      });
       // Hand-Auswahl im Reiter „Körper“: nur die Hand-Logik des Systems (actor-dsa5.js equipWeaponToHand) —
       // 1H-Waffe in die gewählte Hand (die dortige Waffe wird abgelegt), beidhändige Waffe belegt beide Hände.
       this.element.addEventListener('change', event => {

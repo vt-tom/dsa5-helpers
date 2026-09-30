@@ -97,6 +97,38 @@
    display: none !important
 }
 
+/* Minimiert (Doppelklick auf Titelleiste oder freie Stelle im dunklen Kopf): wie im Systembogen eine normale Leiste
+   mit Heldennamen, über die man wieder aufklappt/verschiebt. Der 16px-Bilderrahmen passt nicht in Foundrys
+   --header-height, und unser display:flex am Inhalt würde Foundrys display:none überstimmen. */
+.dsa5-helpers-sheet.minimized,
+.dsa5-helpers-sheet.minimizing,
+.dsa5-helpers-sheet.maximizing {
+   border-width: 0 !important;
+   border-image: none !important;
+   background: var(--head-base) !important
+}
+
+.dsa5-helpers-sheet.dsa5-helpers-sheet:is(.minimized, .minimizing, .maximizing) .window-content {
+   display: none !important
+}
+
+.dsa5-helpers-sheet.minimized .window-header {
+   position: static !important;
+   width: 100% !important;
+   height: var(--header-height) !important;
+   border-radius: 0 !important;
+   background: var(--head) !important;
+   padding: 0 8px !important
+}
+
+.dsa5-helpers-sheet.minimized .window-header .window-title {
+   display: block !important;
+   color: var(--headink) !important;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap
+}
+
 .dsa5-helpers-sheet .window-header .header-button {
    color: var(--headink) !important
 }
