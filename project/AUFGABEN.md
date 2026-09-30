@@ -9,6 +9,8 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Live in Foundry prüfen
 
+- **Installation per Manifest-URL (v0.1.0):** in einer *anderen* Foundry-Installation bzw. einem anderen Data-Ordner testen — hier liegt unter `modules/dsa5-helpers` das Git-Arbeitsverzeichnis, eine Installation/ein Update über Foundry würde es überschreiben.
+
 - **Kampf › Körper, beidhändige Waffe:** die eine Hand (Titel, Name, Kachel, TP, Auswahl) sitzt jetzt rechtsbündig an der Außenkante statt mittig. Passt das?
 - **Eigenschaften, Bearbeiten-Modus:** brechen die Labels „LeP regenerieren“ / „AsP regenerieren“ / „KaP regenerieren“ in der Grundwerte-Tabelle um?
 
