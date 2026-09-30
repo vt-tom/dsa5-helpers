@@ -2,7 +2,7 @@
   "id": "dsa5-helpers",
   "title": "DSA5 Helpers",
   "description": "Ein alternativer, überarbeiteter Charakterbogen für DSA5 — zusätzlich zum bestehenden Systembogen wählbar.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "authors": [
     {
       "name": "Tom"
@@ -42,6 +42,10 @@
       "path": "lang/en.json"
     }
   ],
+  "url": "https://github.com/vt-tom/dsa5-helpers",
+  "manifest": "https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json",
+  "download": "https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.zip",
+  "bugs": "https://github.com/vt-tom/dsa5-helpers/issues",
   "license": "LICENSE",
   "readme": "README.md"
 }

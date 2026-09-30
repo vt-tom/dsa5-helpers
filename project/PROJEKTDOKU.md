@@ -21,6 +21,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - **Mindestversion:** DSA5 8.1.5 / Foundry ≥ 14.364.
 - **Keine eigenen Bilder:** nur vorhandene Assets aus `systems/dsa5/icons/...`.
 - **System-Sprachdateien nicht ändern:** eigene Texte unter `DSA5HELPERS.*` in `lang/de.json`/`en.json`.
+- **Release/Installation:** Manifest-URL `https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json`. Ablauf: `version` in `module.json` hochzählen → GitHub-Release mit Tag `v<version>` → Action `.github/workflows/release.yml` setzt Version/URLs und hängt `module.json` + `module.zip` (nur `scripts/ styles/ templates/ lang/` + Manifest, LICENSE, README) an. Setzt ein öffentliches Repo voraus (Foundry lädt ohne Anmeldung).
 - **Lizenz:** MIT. Repo auf GitHub (derzeit privat), später Release über Foundry Package Registry. Keine DSA5-Regeltexte im Modul (Rechte bei Ulisses Spiele).
 
 ## Click-Dummy

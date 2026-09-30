@@ -1,0 +1,43 @@
+# Baut beim Veröffentlichen eines GitHub-Releases das installierbare Modul:
+# Version aus dem Tag (v0.1.0 → 0.1.0), manifest-/download-URL in module.json, module.zip nur mit den
+# Moduldateien (ohne clickdummy/, project/, tests/, tools/), beides als Release-Assets.
+# Manifest-URL für Foundry: https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: module.json für dieses Release setzen
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const m = JSON.parse(fs.readFileSync("module.json", "utf8"));
+            const tag = process.env.TAG, repo = process.env.REPO;
+            m.version = tag.replace(/^v/, "");
+            m.url = `https://github.com/${repo}`;
+            m.manifest = `https://github.com/${repo}/releases/latest/download/module.json`;
+            m.download = `https://github.com/${repo}/releases/download/${tag}/module.zip`;
+            fs.writeFileSync("module.json", JSON.stringify(m, null, 2) + "\n");
+          '
+          cat module.json
+
+      - name: module.zip packen
+        run: zip -r module.zip module.json LICENSE README.md scripts styles templates lang
+
+      - name: Assets an das Release hängen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" module.json module.zip --clobber
