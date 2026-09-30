@@ -33,6 +33,8 @@ wählen.
    `module.zip` (nur Moduldateien) und hängt beides an das Release. Foundry findet das Update danach über die
    Manifest-URL.
 
+Ausführlich mit allen Befehlen, Prüfschritten und Fehlerbehebung: [`project/RELEASE.md`](project/RELEASE.md).
+
 ## Projektstruktur
 
 ```text

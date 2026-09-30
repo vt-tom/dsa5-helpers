@@ -36,10 +36,11 @@ d:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers\
 
 ## Projektplanung & Rückmeldungen (`project/`)
 
-Alles, was nicht Code/Design-Datei ist, liegt in `project/`. Seit 2026-09-24 nur noch zwei aktive Dateien — **immer mit diesen beiden anfangen**:
+Alles, was nicht Code/Design-Datei ist, liegt in `project/`. Seit 2026-09-24 nur noch zwei aktive Arbeitsdateien — **immer mit diesen beiden anfangen** — plus die Release-Anleitung (seit 2026-09-30):
 
 - [project/AUFGABEN.md](project/AUFGABEN.md) — die eine Arbeitsliste: neue Notizen des Nutzers, Fehler, live zu prüfende Punkte, offene Entscheidungen, Feature-Backlog. Neues oben unter „Neu“, Erledigtes löschen. Der Abschnitt „GitHub-Issues“ (zwischen den `GITHUB-ISSUES`-Markern) wird von `tools/sync-github-issues.cjs` erzeugt — bei Claude Code automatisch per SessionStart-Hook (`.claude/settings.json`), andere Agents rufen `node tools/sync-github-issues.cjs` zu Sessionbeginn selbst auf. Nicht von Hand bearbeiten; Issue-Status wird auf GitHub gepflegt. Er steht immer ganz unten und ist **nur zur Information**: GitHub-Issues werden **nie selbstständig abgearbeitet** — der Nutzer entscheidet, wann welches Issue bearbeitet wird, und beauftragt es ausdrücklich.
 - [project/PROJEKTDOKU.md](project/PROJEKTDOKU.md) — Ziel, aktueller Stand, Grundsätze, getroffene Design-Entscheidungen, technische Stolpersteine, Vorgaben zur Zusammenarbeit mit Agents.
+- [project/RELEASE.md](project/RELEASE.md) — Anleitung für neue Versionen (Manifest-URL, Tag, GitHub-Release, Action). Nur lesen, wenn ein Release ansteht; bei Änderungen an `release.yml` oder am Ablauf mitpflegen.
 - [project/archive/](project/archive/) — **Nicht standardmäßig lesen.** Frühere Dateien (STATUS mit den Feedback-Runden 1–24, PLANNING, BUGS, FEATURES, NOTIZEN, TABS, KI-PROMPTING) und die vollständige Entscheidungs-Historie `DECISIONS.md`. Nur gezielt konsultieren, wenn eine frühere Entscheidung im Detail gebraucht wird.
 
 Faustregel: keine neuen Dateien anlegen — Offenes gehört in AUFGABEN.md, dauerhaft Gültiges kurz in PROJEKTDOKU.md.
