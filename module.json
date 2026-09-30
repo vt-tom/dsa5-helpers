@@ -2,7 +2,7 @@
   "id": "dsa5-helpers",
   "title": "DSA5 Helpers",
   "description": "Ein alternativer, überarbeiteter Charakterbogen für DSA5 — zusätzlich zum bestehenden Systembogen wählbar.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "authors": [
     {
       "name": "Tom"
