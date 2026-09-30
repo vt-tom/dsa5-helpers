@@ -254,6 +254,14 @@ test('character builder button replaces the species field only when the system a
  assert(html.includes('data-action="startCharacterBuilder"'));assert(!html.includes('name="system.details.species.value"'));
  assert.equal(Sheet.DEFAULT_OPTIONS.ownerActions.startCharacterBuilder,Sheet._startCharacterBuilder);
 });
+test('frame listeners are re-attached when Foundry builds a new window element after close (drag via head)',async()=>{
+ const {sheet,context}=await prepare();const base=Object.getPrototypeOf(Sheet.prototype);base._onRender??=async function(){};
+ const frame=()=>{const types=[];return {types,dataset:{},classList:{toggle(){},add(){},remove(){},contains:()=>false},querySelector:()=>null,querySelectorAll:()=>[],addEventListener:t=>types.push(t)};};
+ const first=frame();sheet.element=first;await sheet._onRender(context,{});await sheet._onRender(context,{});
+ assert.equal(first.types.filter(t=>t==='pointerdown').length,1,'re-render of the same frame must not add listeners twice');
+ const second=frame();sheet.element=second;await sheet._onRender(context,{});
+ assert(second.types.includes('pointerdown'),'new frame after close/reopen lost the head drag listener');
+});
 test('patrons (own list prepare.patrons since DSA5 8.1.8) render on the magic tab only when present',async()=>{
  const {sheet}=await prepare();let html=render(await sheet._prepareContext({}));assert(!html.includes(localize('TYPES.Item.patron')));
  sheet.context.prepare.patrons=[{_id:'patron-1',name:'Katzenpatron',img:'icons/svg/cat.svg',system:{}}];html=render(await sheet._prepareContext({}));
