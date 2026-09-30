@@ -81,6 +81,18 @@ function damageBtn(tp, name) {
   return btn;
 }
 
+// OnUse-Würfelknopf (Issue #9, 2026-09-30): grüner W6 (Farbe von systems/dsa5/icons/dice/d6green.svg) bei Items
+// mit Anwendungseffekt (ON_USE_ITEMS in data.js). Modul: parts/onuse.hbs → Systemaktion onUseItem. Liefert null,
+// wenn das Item keinen Effekt hat, damit es direkt in el()-Kinderlisten passt.
+function onUseBtn(name) {
+  if (!ON_USE_ITEMS.has(name)) return null;
+  const label = `Anwendungseffekt: ${name}`;
+  const btn = el("button", { type: "button", class: "onuse-btn", title: label, "aria-label": label });
+  btn.innerHTML = '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><rect x="1" y="1" width="14" height="14" rx="3"/><circle cx="4.6" cy="4.6" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="11.4" cy="11.4" r="1.5"/></svg>';
+  btn.addEventListener("click", (e) => { e.stopPropagation(); flashNotice(`🎲 ${label}`); });
+  return btn;
+}
+
 // AP-Kosten-Engine — auf Nutzerwunsch 1:1 aus dem echten DSA5-System portiert, nichts Neu-Erfundenes:
 // Tabelle DSA5.advancementCosts (systems/dsa5/modules/config/config-dsa5.js) + DSA5_Utility._calculateAdvCost()
 // (systems/dsa5/modules/system/helpers/utility-dsa5.js). Index = aktueller Wert VOR der Änderung + modifier
@@ -312,6 +324,8 @@ function setTab(id) {
   // Steuert die auf dem Titelblatt prominentere Kopfzeile (größeres Porträt etc., siehe [data-tab="cover"] in
   // style.css) — Nutzer-Feedback 2026-09-14: die Kopfzeile soll sich NUR auf diesem einen Blatt verändern.
   document.querySelector(".sheet").setAttribute("data-tab", id);
+  // Talente starten oben — also ist die erste Gruppe markiert.
+  if (id === "skills") currentSkillGroup = 0;
   renderRail();
   renderContent();
   renderSubNav();
@@ -437,6 +451,33 @@ function selectWertCell(d, extraStyle) {
 // editierbar (val-editable); die Stepper (nur bei Lebenskraft/Astralenergie/Karmaenergie) steigern/senken
 // Zukauf zusätzlich mit echten AP-Kosten (Steigerungsfaktor D, wie system.status.lp/ae/ke.advances im echten
 // System) und heben dabei den Max-Wert im Gleichschritt an (jeder gekaufte Punkt erhöht die Obergrenze um 1).
+// Berechnungsformel als Tooltip am Namen jedes Grundwerts (Tester-Rückmeldung 2026-09-30). Texte wörtlich aus
+// systems/dsa5/lang/de.json "FORMULA.*" — das Modul hängt nur data-tooltip="FORMULA.<key>" an, keine eigene Regellogik.
+const FORMULAS = {
+  "Lebenskraft": "Spezies-Grundwert + 2 × KO + Mod",
+  "LeP-Regeneration": "Zusätzliche Lebensenergie-Regeneration (z. B. nach Rast).",
+  "Astralenergie": "Grundwert (Vorteil Zauberer) + Leiteigenschaft + Mod",
+  "AsP-Regeneration": "Zusätzliche Astralenergie-Regeneration (z. B. nach Rast).",
+  "pAsP (perm. Verlust)": "Dauerhaft verbrauchte Astralenergie (z. B. Schaffung von Artefakten).",
+  "Karmaenergie": "Grundwert (Vorteil Geweihter) + Leiteigenschaft + Mod",
+  "KaP-Regeneration": "Zusätzliche Karmaenergie-Regeneration (z. B. nach Rast).",
+  "pKaP (perm. Verlust)": "Dauerhaft verbrauchte Karmaenergie (z. B. Zeremonialgegenstände).",
+  "Schicksalspunkte": "Punkte zum Beeinflussen von Proben und Kampf (z. B. Neuwurf oder Erster handeln).",
+  "Seelenkraft": "Widerstand gegen geistige Einflüsse.\nSpezies-Grundwert + (MU + KL + IN) / 6 + Mod",
+  "Zähigkeit": "Widerstand gegen körperliche Einflüsse wie Gift und Krankheit.\nSpezies-Grundwert + (KO + KO + KK) / 6 + Mod",
+  "Kälteschutz": "Schutz gegen Kälte und Kälteschaden.",
+  "Hitzeschutz": "Schutz gegen Hitze und Hitzeschaden.",
+  "Geschwindigkeit": "Bewegungsweite in Schritt.\nSpezies-Grundwert + Mod",
+  "Ausweichen": "GE / 2 + Mod",
+  "Initiative": "Bestimmt die Handlungsreihenfolge im Kampf.\n(MU + GE) / 2 + Mod",
+  "Initiativewürfel": "Würfel, der zur Initiative hinzuaddiert wird (üblicherweise 1W6).",
+  "Initiative-Mod.": "Fester Bonus oder Malus auf den Initiativewurf.",
+  "Größenkategorie": "Größe des Wesens für Reichweite, Trefferzonen und ähnliche Regeln.",
+};
+function formulaLabel(label) {
+  return FORMULAS[label] ? el("span", { class: "formula-hint", title: FORMULAS[label] }, label) : label;
+}
+
 function buildResourceRow(d) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
 
@@ -450,7 +491,7 @@ function buildResourceRow(d) {
     makeEditable(zukaufSpan, d.zukauf, (v) => { d.zukauf = Math.max(0, v); renderContent(); renderHeader(); }, { type: "number", min: 0, max: 99 });
   }
 
-  const nameChildren = [d.label];
+  const nameChildren = [formulaLabel(d.label)];
   if (d.stepper) {
     const [minus, plus] = advanceStepper(
       () => d.zukauf,
@@ -484,7 +525,7 @@ function buildSimpleRow(d) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
   if (d.sameModMax !== undefined) {
     return el("div", { class: "row simple-row" }, [
-      el("span", { class: "left" }, d.label),
+      el("span", { class: "left" }, formulaLabel(d.label)),
       el("span", { class: "muted center" }, "–"),
       el("span", { class: "center" }, String(d.sameModMax)),
       el("span", { class: "big center" }, String(d.sameModMax)),
@@ -493,7 +534,7 @@ function buildSimpleRow(d) {
   // Auswahlliste ohne Mod/Max (z.B. Trefferzone): Wertfeld über die volle Restbreite statt in die schmale Wert-Spalte gequetscht.
   if (d.selectWert && d.mod === undefined && d.max === undefined) {
     return el("div", { class: "row simple-row" + (d.hideInPlay ? " edit-only" : "") }, [
-      el("span", { class: "left" }, d.label),
+      el("span", { class: "left" }, formulaLabel(d.label)),
       selectWertCell(d, "grid-column:2 / -1"),
     ]);
   }
@@ -502,7 +543,7 @@ function buildSimpleRow(d) {
     makeEditable(modSpan, d.mod, (v) => { d.mod = v; renderContent(); renderHeader(); }, { type: "number", min: -99, max: 99 });
   }
   return el("div", { class: "row simple-row" }, [
-    el("span", { class: "left" }, d.label),
+    el("span", { class: "left" }, formulaLabel(d.label)),
     d.selectWert ? selectWertCell(d) : el("span", { class: "muted center" }, String(d.wert)),
     modSpan,
     el("span", { class: "big center" }, d.max !== undefined ? String(d.max) : "–"),
@@ -522,7 +563,7 @@ function deletableChip(iconSrc, label, list, item) {
     if (idx !== -1) list.splice(idx, 1);
     renderContent();
   });
-  return el("span", { class: "chip" }, [el("img", { src: iconSrc, alt: "" }), label, delBtn]);
+  return el("span", { class: "chip" }, [el("img", { src: iconSrc, alt: "" }), label, typeof label === "string" ? onUseBtn(label) : null, delBtn]);
 }
 
 // Info-Tooltip-Knopf (specblock.hbs:7, specialabilities.hbs:4,18,55: "data-tooltip-html={{specCategoryHelp cat}}")
@@ -600,7 +641,9 @@ function renderMain() {
     ...RESISTANCES.filter((d) => d.show !== false).map(buildSimpleRow),
     el("div", { class: "subhead" }, "Grundwerte"),
     el("div", { class: "row-head simple-row" }, head("", "Basis", "Mod", "Max")),
-    ...BASICS.map(buildSimpleRow),
+    // Ausweichen + Initiative auch hier (Tester-Rückmeldung 2026-09-30) — dieselben Objekte wie im Kampf-Reiter;
+    // Initiativewürfel/-Mod. nur im Bearbeiten-Modus (hideInPlay, Nutzer 2026-09-30). Modul: main.hbs.
+    ...[BASICS[0], ...COMBAT_DERIVED, ...BASICS.slice(1)].map(buildSimpleRow),
   ]);
 
   // Unter der Grundwerte-Tabelle in der linken Spalte (Nutzerwunsch 2026-09-14: dort blieb sonst viel Leerraum,
@@ -656,13 +699,54 @@ function renderMain() {
 // Talente als 6 Unter-Tabs (5 Kategorien + Sammelproben) statt einer langen Spalten-Ansicht.
 // currentSkillGroup: Index in SKILL_GROUPS, oder "agg" für Sammelproben.
 let currentSkillGroup = 0;
+// Talente „Sprungmarken“ (Tester-Rückmeldung 2026-09-30, Variante B gewählt): kein eigener Reiter „Alle“ — die
+// Liste zeigt immer alle Gruppen untereinander, die Gruppen-Reiter springen nur an die passende Stelle; beim
+// Scrollen wandert die Markierung mit. Seit der Live-Rückmeldung 2026-09-30 stehen auch die Sammelproben als
+// letzter Abschnitt in derselben Liste (einheitlich scrollbar), Suche + „Nur gesteigerte“ bleiben oben stehen.
+const skillGroupKey = (v) => (v === "agg" ? "agg" : Number(v));
 
-function setSkillGroup(g) {
-  currentSkillGroup = g;
+// Abstand eines Panels zum oberen Rand — abzüglich der oben klebenden Suchleiste, sonst läge der Titel darunter.
+function skillPanelTop(content, panel) {
+  const bar = content.querySelector(".skills-search");
+  return content.scrollTop + panel.getBoundingClientRect().top - content.getBoundingClientRect().top - (bar ? bar.offsetHeight : 0) - 4;
+}
+
+// Gruppen-Reiter scrollen die Gesamtliste an die Gruppe (aus einer Suche heraus erst zurück zur Liste). Solange der
+// Sprung läuft, führt die Scroll-Mitführung die Markierung nicht mit (sonst flackert sie über die Gruppen dazwischen).
+let skillJumping = false;
+function jumpToSkillGroup(g) {
+  const rerender = skillSearchQuery.trim();
   skillSearchQuery = "";
-  renderContent();
+  currentSkillGroup = g;
+  if (rerender) renderContent();
   renderSubNav();
-  document.getElementById("content").scrollTop = 0;
+  const content = document.getElementById("content");
+  const panel = content.querySelector(`[data-skill-group="${g}"]`);
+  if (!panel) return;
+  const top = Math.max(0, Math.min(skillPanelTop(content, panel), content.scrollHeight - content.clientHeight));
+  skillJumping = Math.abs(top - content.scrollTop) > 1;
+  content.scrollTo({ top, behavior: "smooth" });
+}
+
+// Scroll-Mitführung: markiert die Gruppe, deren Panel gerade oben im Inhaltsbereich steht; ganz unten die letzte
+// (die Sammelproben sind meist zu kurz, um bis nach oben zu kommen).
+function initSkillScrollSpy() {
+  const content = document.getElementById("content");
+  content.addEventListener("scrollend", () => { skillJumping = false; });
+  content.addEventListener("scroll", () => {
+    if (currentTab !== "skills" || skillSearchQuery.trim() || skillJumping) return;
+    const panels = [...content.querySelectorAll("[data-skill-group]")];
+    if (!panels.length) return;
+    const bar = content.querySelector(".skills-search");
+    const top = content.getBoundingClientRect().top + (bar ? bar.offsetHeight : 0) + 40;
+    let current = skillGroupKey(panels[0].dataset.skillGroup);
+    if (content.scrollTop + content.clientHeight >= content.scrollHeight - 2) current = skillGroupKey(panels.at(-1).dataset.skillGroup);
+    else panels.forEach((p) => { if (p.getBoundingClientRect().top <= top) current = skillGroupKey(p.dataset.skillGroup); });
+    if (current !== currentSkillGroup) {
+      currentSkillGroup = current;
+      renderSubNav();
+    }
+  });
 }
 
 // Kampf-Unterreiter: "Kampf" (Kampfwerte/Waffen/Rüstung) und "Kampftalente" (Kampftechniken), gleiches Muster
@@ -751,7 +835,7 @@ function renderAggregatedPanel() {
         el("div", { class: "row agg-talent-row" }, [
           el("span", { class: "left muted" }, t.name),
           probeDice(t.probe, t.name),
-          el("span", { class: "muted center" }, `FW ${t.fw}`),
+          el("strong", { class: "agg-fw", title: "Fertigkeitswert" }, String(t.fw)),
         ])
       ),
     ]),
@@ -772,13 +856,13 @@ function buildSkillSubTabs() {
       ...SKILL_GROUPS.map((g, i) => {
         const active = !skillSearchQuery.trim() && currentSkillGroup === i;
         const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, g.name.replace(/s?talente$/i, ""));
-        btn.addEventListener("click", () => setSkillGroup(i));
+        btn.addEventListener("click", () => jumpToSkillGroup(i));
         return btn;
       }),
       (() => {
         const active = !skillSearchQuery.trim() && currentSkillGroup === "agg";
         const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, "Sammelproben");
-        btn.addEventListener("click", () => setSkillGroup("agg"));
+        btn.addEventListener("click", () => jumpToSkillGroup("agg"));
         return btn;
       })(),
     ]
@@ -905,7 +989,8 @@ function renderSkills() {
     renderContent();
     document.querySelector(".filter-switch")?.focus();
   });
-  const search = el("div", { class: "search-bar" }, [searchInput, filterBtn]);
+  // Klebt oben im Inhaltsbereich (.skills-search), damit Suche und Filter beim Scrollen erreichbar bleiben.
+  const search = el("div", { class: "search-bar skills-search" }, [searchInput, filterBtn]);
 
   const q = skillSearchQuery.trim().toLowerCase();
   let content;
@@ -922,7 +1007,16 @@ function renderSkills() {
     const info = el("div", { class: "search-info", role: "status" }, [`Suchergebnisse aus allen Gruppen für „${skillSearchQuery.trim()}“`, clearBtn]);
     content = el("div", {}, [info, ...panels, ...(noResults ? [noResults] : [])]);
   } else {
-    content = currentSkillGroup === "agg" ? renderAggregatedPanel() : renderSkillGroupPanel(SKILL_GROUPS[currentSkillGroup], q);
+    const agg = renderAggregatedPanel();
+    agg.dataset.skillGroup = "agg";
+    content = el("div", {}, [
+      ...SKILL_GROUPS.map((g, i) => {
+        const panel = renderSkillGroupPanel(g, q);
+        panel.dataset.skillGroup = String(i);
+        return panel;
+      }),
+      agg,
+    ]);
   }
 
   return el("div", {}, [search, content]);
@@ -1059,6 +1153,19 @@ function reloadWidget(w) {
   return row;
 }
 
+// Zielen (Issue #8, 2026-09-30): reine Anzeige wie im Systembogen, nur wenn schon gezielt wurde (aim.progress > 0);
+// erhöht wird im System im Probendialog, ↺ beim Nachladen setzt Laden + Zielen zurück. Modul: .dsa5h-aim in weapon.hbs.
+function aimWidget(w) {
+  const progress = Math.min(2, w.aim?.progress || 0);
+  if (!progress) return null;
+  const title = progress >= 2 ? "Gezielt" : `Zielen (${progress}/2)`;
+  return el("span", { class: "aim" + (progress >= 2 ? " done" : ""), title, "aria-label": `Zielen: ${w.name} (${title})` }, [
+    el("span", {}, "Zielen"),
+    el("span", { class: "reload-bar", style: "--lz:2", "aria-hidden": "true" }, [el("span", { style: `width:${progress * 50}%` })]),
+    el("span", { class: "reload-count" }, `${progress}/2`),
+  ]);
+}
+
 // Magazinstand "Magazin 10/10" + ⇄ zum Tauschen.
 function magWidget(w) {
   const ammo = selectedAmmo(w);
@@ -1106,6 +1213,7 @@ function renderAmmoCell(w) {
   return el("span", { class: "ammo-cell inline" }, [
     el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]),
     w.reloadTime ? reloadWidget(w) : null,
+    aimWidget(w),
     magWidget(w),
   ]);
 }
@@ -1207,7 +1315,35 @@ function combatPanelTitle(text, actions) {
 // Reichweite als eigene Spalte zwischen TP und Griff (Nutzer-Entscheidung 2026-09-25, Variante A statt "RW klein
 // unter dem Namen").
 function weaponNameCell(name, group) {
-  return el("span", { class: "left weapon-name" }, [el("span", {}, name), el("small", { class: "weapon-sub" }, group)]);
+  return el("span", { class: "left weapon-name" }, [el("span", {}, [name, onUseBtn(name)]), combatSkillLink(group) || el("small", { class: "weapon-sub" }, group)]);
+}
+
+// Kampftechnik der Waffe mit Kampftechnikwert (Tester-Rückmeldung 2026-09-30), Klick springt zur Zeile im Unterreiter
+// „Kampftalente“. Modul später: Waffe kennt ihre Technik (system.combatskill.value), Technik-Item per Name wie im
+// System. Liefert null, wenn es keine passende Technik gibt (z. B. „Angeboren“ bei Angriffen).
+function combatSkillLink(group) {
+  const cs = COMBAT_SKILLS.find((c) => c.name === group);
+  if (!cs) return null;
+  const btn = el("button", { type: "button", class: "weapon-sub ct-link", title: `Zur Kampftechnik ${cs.name}`, "aria-label": `${cs.name}, Kampftechnikwert ${cs.fw} — zur Kampftechnik springen` }, [
+    cs.name, el("span", { class: "ct-link-ktw" }, `KtW ${cs.fw}`),
+  ]);
+  btn.addEventListener("click", (e) => { e.stopPropagation(); jumpToCombatSkill(cs.name); });
+  return btn;
+}
+
+// Sprung: Unterreiter wechseln, Suche leeren, Zeile hinscrollen + kurz aufleuchten lassen (wie nach einer Änderung).
+function jumpToCombatSkill(name) {
+  combatSkillQuery = "";
+  setCombatSection("kampftalente");
+  const row = [...document.querySelectorAll("#content .combatskill-row")].find((r) => r.querySelector(".cs-name")?.textContent === name);
+  if (!row) return;
+  // Nur den Inhaltsbereich scrollen — scrollIntoView() verschiebt auch die Seite um den Bogen herum.
+  const content = document.getElementById("content");
+  const offset = row.getBoundingClientRect().top - content.getBoundingClientRect().top;
+  content.scrollTo({ top: content.scrollTop + offset - (content.clientHeight - row.offsetHeight) / 2, behavior: "smooth" });
+  row.classList.remove("just-changed");
+  void row.offsetWidth;
+  row.classList.add("just-changed");
 }
 
 function weaponReachCell(reach) {
@@ -1338,6 +1474,7 @@ function renderArmorPanel() {
     return el("div", { class: "armor-slot" }, [
       itemIcon(A.armor, a.name, a.structure, "armor"),
       el("span", { class: "armor-slot-name" }, a.name),
+      onUseBtn(a.name),
       el("span", { class: "armor-slot-rs" }, `RS ${stats.rs}`),
       el("span", { class: "armor-slot-be" }, `BE ${stats.be}`),
     ]);
@@ -1411,14 +1548,33 @@ function handSlot(hand) {
     const stats = ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
     tile = el("div", { class: "hand-tile" }, [
       itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
+      onUseBtn(w.name),
       el("span", { class: "hand-tile-at die-seal" }, [combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`)]),
       !ranged && stats.pa !== undefined ? el("span", { class: "hand-tile-pa die-seal" }, [combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`)]) : null,
     ]);
     tp = damageBtn(w.tp, w.name);
+    // Fernkampf: Nachladen/Zielen/Magazin wie in der Waffenzeile der Übersicht (reloadWidget() usw.) unter dem
+    // TP-Knopf (Vorschlag 2026-09-30, AUFGABEN.md). Nachladen und Zielen nebeneinander, solange die Spalte reicht
+    // (Live-Rückmeldung 2026-09-30: spart Höhe), Magazin in eigener Zeile. Modul: .dsa5h-hand-ranged in body.hbs.
+    if (ranged) {
+      const extras = [w.reloadTime ? reloadWidget(w) : null, aimWidget(w), magWidget(w)].filter(Boolean);
+      if (extras.length) tp = el("div", { class: "hand-ranged" }, [tp, el("div", { class: "hand-ranged-extras" }, extras)]);
+    }
+  }
+  // Freie Nebenhand kompakt unter der Haupthand (Vorschlag 2026-09-30, Rückmeldung: nicht daneben, das schob die
+  // Haupthand nach rechts): kleine gestrichelte Kachel „+“, die selbst die Auswahlliste ist (unsichtbares <select>
+  // darüber), daneben „Nebenhand · frei“. Modul: body.hbs (.dsa5h-hand-free).
+  if (!isMain && !w) {
+    select.classList.add("hand-free-select");
+    return el("div", { class: "hand-slot hand-slot-free" }, [
+      el("div", { class: "hand-tile empty compact", title: "Nebenhand frei — Waffe wählen" }, [el("span", { class: "hand-tile-note", "aria-hidden": "true" }, "+"), select]),
+      el("span", { class: "hand-free-text" }, [el("small", { class: "figure-col-title" }, "Nebenhand"), el("small", { class: "hand-free-note" }, "frei")]),
+    ]);
   }
   return el("div", { class: "hand-slot" }, [
     el("small", { class: "figure-col-title" }, isMain ? "Haupthand" : "Nebenhand"),
     el("span", { class: "body-item-name" }, w ? w.name : "—"),
+    w ? combatSkillLink(w.group) : null,
     el("div", { class: "hand-slot-body" }, [tile, el("div", { class: "hand-slot-side" }, [tp, select])]),
   ]);
 }
@@ -1498,6 +1654,7 @@ function renderBody() {
       el("span", { class: "body-item-name", title: a.name }, a.name),
       el("div", { class: "armor-slot" }, [
         itemIcon(A.armor, a.name, a.structure, "armor"),
+        onUseBtn(a.name),
         el("span", { class: "armor-slot-rs" }, `RS ${st.rs}`),
         el("span", { class: "armor-slot-be" }, `BE ${st.be}`),
       ]),
@@ -1513,6 +1670,7 @@ function renderBody() {
       return el("tr", {}, [
         el("td", { class: "body-armor-img" }, [el("img", { src: A.armor, alt: "" })]),
         el("td", { class: "body-armor-name", title: a.name }, [
+          onUseBtn(a.name),
           el("span", {}, a.name),
           a.structure ? el("meter", { min: "0", max: String(a.structure.max), value: String(a.structure.value) }) : null,
         ]),
@@ -1552,7 +1710,7 @@ function renderBody() {
         el("span", { class: "figure-badge" }, [el("strong", {}, `RS ${armorSum.sum}`), el("small", {}, `BE ${be}`)]),
         twoHanded
           ? el("div", { class: "figure-hands single" }, [handSlot("main")])
-          : el("div", { class: "figure-hands" }, [handSlot("main"), handSlot("off")]),
+          : el("div", { class: "figure-hands" + (HANDS.off ? "" : " off-free") }, [handSlot("main"), handSlot("off")]),
       ]),
       // Die vier Schnellwürfe wie in der Übersicht (Rückmeldung 2026-09-30); Ausweichen steht dort mit Wert, daher
       // nicht mehr zusätzlich in der Wertezeile.
@@ -1628,7 +1786,7 @@ let combatSkillQuery = "";
 function applyCombatSkillFilter(root) {
   const q = combatSkillQuery.trim().toLowerCase();
   root.querySelectorAll(".row.combatskill-row").forEach((row) => {
-    const name = row.querySelector(".left")?.textContent.toLowerCase() || "";
+    const name = row.querySelector(".cs-name")?.textContent.toLowerCase() || "";
     row.hidden = !!q && !name.includes(q);
   });
 }
@@ -1638,15 +1796,16 @@ function renderCombatSkills() {
   const combatSkillsPanel = (title, list) =>
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title" }, title),
-      el("div", { class: "row-head combatskill-row" }, head("", "Technik", "Leit.", "FW", "AT", "PA")),
+      // Leiteigenschaft klein unter dem Namen statt eigener Spalte, wie die Technik unter dem Waffennamen — lange
+      // Namen liefen sonst in die Leit.-Spalte (Nutzer-Entscheidung 2026-09-30). Modul: combat.hbs.
+      el("div", { class: "row-head combatskill-row" }, head("", "Technik", "FW", "AT", "PA")),
       ...list.map((c) => {
         const [minus, plus] = advanceStepper(() => c.fw, (v) => { c.fw = v; }, c.stf, 6, () => { renderContent(); renderHeader(); }, c.name);
         const fwSpan = el("span", { class: "big val-editable" }, String(c.fw));
         if (mode === "edit") makeEditable(fwSpan, c.fw, (v) => { c.fw = Math.max(6, v); renderContent(); renderHeader(); }, { type: "number", min: 6, max: 99 });
         return el("div", { class: "row combatskill-row" }, [
           el("img", { src: A.combatSkill, alt: "" }),
-          el("span", { class: "left" }, c.name),
-          el("span", { class: "muted center" }, c.guide),
+          el("span", { class: "left weapon-name" }, [el("span", { class: "cs-name" }, c.name), el("small", { class: "weapon-sub", title: "Leiteigenschaft" }, c.guide)]),
           el("span", { class: "skill-fw" }, [minus, fwSpan, plus]),
           el("span", { class: "muted center" }, String(c.at)),
           el("span", { class: "muted center" }, String(c.pa)),
@@ -1735,8 +1894,8 @@ function duplicateBtn(list, item) {
   return btn;
 }
 
-function rowActionsCell(list, item) {
-  return el("span", { class: "row-actions-cell" }, [duplicateBtn(list, item), rowDeleteBtn(list, item)]);
+function rowActionsCell(list, item, lead = null) {
+  return el("span", { class: "row-actions-cell" }, [lead, duplicateBtn(list, item), rowDeleteBtn(list, item)]);
 }
 
 // Gemeinsame Zeile/Tabelle für Zauber/Rituale/Liturgien/Zeremonien — im System (spell-section.hbs) identische
@@ -1808,7 +1967,8 @@ function artifactTable(title, items, showVolume) {
               const payBtn = el("button", { type: "button", class: "chip chip-pay" + (affordable ? "" : " disabled"), title: `${a.cost} AsP zahlen` }, `${a.name} (${a.cost} AsP)`);
               if (affordable) payBtn.addEventListener("click", () => payTraditionAbilityCost(a));
               else payBtn.disabled = true;
-              return payBtn;
+              const use = onUseBtn(a.name);
+              return use ? el("span", { class: "chip-with-use" }, [payBtn, use]) : payBtn;
             })
           )
         : null,
@@ -2008,7 +2168,7 @@ function inventoryRow(i, list) {
     quantityCell(i),
     el("span", { class: "muted center" }, i.weight),
     el("span", { class: "center" }, i.price),
-    list ? rowActionsCell(list, i) : el("span", {}),
+    list ? rowActionsCell(list, i, onUseBtn(i.name)) : el("span", {}, [onUseBtn(i.name)]),
   ]);
 }
 
@@ -3210,6 +3370,7 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
+initSkillScrollSpy();
 initSheetResize();
 initHeaderBgPicker();
 initAmmoMenuOutsideClick();

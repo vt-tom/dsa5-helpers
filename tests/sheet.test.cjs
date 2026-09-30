@@ -130,7 +130,7 @@ test('conditions get named +/− buttons on status and cover, minus reuses the s
  sheet.context.conditions[0].manual=0;sheet.context.conditions[0].value=4;const capped=render(await sheet._prepareContext({}));
  for(const action of ['dsa5hConditionDown','conditionValue'])for(const b of elements(capped,el=>el.attribs?.['data-action']===action))assert.equal(b.attribs['aria-disabled'],'true');
 });
-test('talent search spans all groups without marking one, "only improved" hides FW 0, both render their controls',async()=>{
+test('talent search spans all groups without marking one, Sammelproben are part of the list, "only improved" hides FW 0, both render their controls',async()=>{
  const {sheet,context}=await prepare();const html=render(context);
  assert.equal(elements(html,el=>el.attribs?.['data-action']==='dsa5hOnlyLearned' && el.attribs.role==='switch').length,1);
  assert.equal(elements(html,el=>el.attribs?.['data-talent-search-info']!==undefined).length,1);
@@ -145,7 +145,7 @@ test('talent search spans all groups without marking one, "only improved" hides 
  sheet._subtabs.skills='aggregated';sheet._search.talent='fähr';sheet._applyTalentSearch();
  assert.equal(body.hidden,true);assert.equal(nature.hidden,false);assert.equal(agg.hidden,true);assert.equal(info.hidden,false);
  sheet._search.talent='';sheet._subtabs.skills='body';Sheet.DEFAULT_OPTIONS.actions.dsa5hOnlyLearned.call(sheet);
- assert.equal(body.hidden,false);assert.deepEqual(body.querySelectorAll().map(r=>r.hidden),[true,false]);assert.equal(filter.attrs['aria-checked'],'true');assert.equal(info.hidden,true);assert.equal(agg.hidden,true);
+ assert.equal(body.hidden,false);assert.equal(nature.hidden,false,'without a search all groups are listed');assert.deepEqual(body.querySelectorAll().map(r=>r.hidden),[true,false]);assert.equal(filter.attrs['aria-checked'],'true');assert.equal(info.hidden,true);assert.equal(agg.hidden,false,'Sammelproben follow the groups in the same scrolling list');
 });
 test('reload shows the system progress once, reset reuses the system handler with right-click semantics',async()=>{
  const {sheet}=await prepare();const p=sheet.context.prepare;
@@ -185,4 +185,64 @@ test('AP total/spent editable only in edit mode; combat skill search and two-col
  assert(elements(html,el=>String(el.attribs?.class).split(' ').includes('dsa5h-two-col')).length>=3);
  sheet.context.prepare.sheetLocked=true;const play=render(await sheet._prepareContext({}));
  assert(!elements(play,el=>el.attribs?.name==='system.details.experience.total').length);
+});
+test('OnUse die button (issue #9): same system action on weapons, armor, body tab, chips, inventory and tradition items',async()=>{
+ const {sheet}=await prepare();const p=sheet.context.prepare;
+ const main=item('main','meleeweapon');main.OnUseEffect=true;main.system.worn={value:true,offHand:false};p.wornMeleeWeapons=[main];p.wornRangedWeapons=[];sheet.actor.items.set('main',main);
+ const armor=item('armor2','armor');armor.OnUseEffect=true;armor.system.protection={value:1};p.wornArmor=[armor];
+ p.specAbs.general[0].OnUseEffect=true;
+ const html=render(await sheet._prepareContext({}));
+ const buttons=elements(html,el=>el.attribs?.['data-action']==='onUseItem');
+ for(const b of buttons){assert(String(b.attribs.class).includes('dsa5h-onuse'));assert(b.attribs['aria-label']);assert(!dom.textContent(b).includes('▶'));}
+ const owners=new Set(buttons.map(b=>{let n=b.parent;while(n&&!n.attribs?.['data-item-id'])n=n.parent;return n?.attribs['data-item-id'];}));
+ for(const id of ['main','armor2','general'])assert(owners.has(id),'onUse button inside [data-item-id='+id+']');
+ assert(buttons.length>=5,'weapon row, overview armor, body armor, body hand, chip');
+});
+test('aim progress (issue #8) shows only once the weapon is aimed, with the system texts',async()=>{
+ const {sheet}=await prepare();const p=sheet.context.prepare;
+ const ranged=item('ranged','rangeweapon');ranged.LZ=2;ranged.progress='2/2';ranged.system.reloadTime={progress:2};ranged.system.aimTime={progress:0};p.wornRangedWeapons=[ranged];
+ let html=render(await sheet._prepareContext({}));assert(!html.includes('dsa5h-aim'));
+ ranged.system.aimTime.progress=1;ranged.aimProgress='1/2';ranged.aimTitle='Zielen (1/2)';html=render(await sheet._prepareContext({}));
+ const aim=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-aim'));assert.equal(aim.length,1);assert(dom.textContent(aim[0]).includes('1/2'));assert.equal(aim[0].attribs['data-tooltip'],'Zielen (1/2)');assert(!aim[0].attribs.class.includes('dsa5h-aim-done'));
+ ranged.system.aimTime.progress=2;html=render(await sheet._prepareContext({}));assert(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-aim-done')).length===1);
+});
+test('aggregated tests show dice and FW of the referenced skill and still roll via rollAggregatedProbe',async()=>{
+ const {sheet}=await prepare();const p=sheet.context.prepare;
+ const agg=item('agg','aggregatedTest');agg.system.talent={value:'Test skill',value2:'Unknown skill'};agg.system.interval=valueField('1h');agg.system.usedTestCount=valueField(1);agg.system.allowedTestCount=valueField(7);agg.system.cummulatedQS=valueField(3);p.aggregatedtests=[agg];
+ const context=await sheet._prepareContext({});assert.equal(context.dsa5h.aggregated[0].talents.length,2);assert.equal(context.dsa5h.aggregated[0].talents[0].skill?._id,'skill');
+ const html=render(context);const rolls=elements(html,el=>el.attribs?.['data-action']==='rollAggregatedProbe');assert.equal(rolls.length,2);
+ assert.equal(rolls[0].attribs['data-which'],'');assert(String(rolls[0].attribs.class).includes('dsa5h-skill-probe'));assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-probe-die'),rolls[0].children).length,3);
+ assert.equal(rolls[1].attribs['data-which'],'2');assert(elements(html,el=>el.attribs?.class==='dsa5h-aggregated-fw').length===1);
+ assert(Sheet.FOCUS_KEYS.includes('which'));
+});
+test('base values: dodge and initiative rows, every base value name carries the system formula tooltip',async()=>{
+ const {context}=await prepare();const html=render(context);
+ for(const key of ['wounds','astralenergy','karmaenergy','fatePoints','soulpower','toughness','coldProtection','heatProtection','speed','sizeCategory','dodge','initiative','initDie','initDieMod'])assert(html.includes(`data-tooltip="FORMULA.${key}"`),key);
+ assert(html.includes('name="system.status.dodge.modifier"'));assert(html.includes('name="system.status.initiative.modifier"'));assert.equal(context.dsa5h.initiative,10);
+ // Initiativewürfel + Würfel-Mod nur im Bearbeiten-Modus (Nutzer 2026-09-30): Zeilen tragen .dsa5h-edit-only.
+ for(const name of ['system.status.initiative.die','system.status.initiative.diemodifier']){const input=elements(html,el=>el.attribs?.name===name);assert.equal(input.length,1,name);let row=input[0];while(row&&!String(row.attribs?.class??'').split(' ').includes('row'))row=row.parent;assert(String(row.attribs.class).includes('dsa5h-edit-only'),name);}
+});
+test('weapons link their combat technique with KtW; the ranged hand on the body tab shows reload and magazine',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;
+ p.combatskills[0].name='Swords';
+ const ranged=item('ranged','rangeweapon');ranged.LZ=2;ranged.progress='1/2';ranged.title='Ladestatus: 1/2';ranged.system.reloadTime={progress:1};ranged.system.aimTime={progress:0};ranged.system.worn={value:true,offHand:false};ranged.ammoCurrent=3;ranged.ammoMax=10;
+ p.wornMeleeWeapons=[];p.wornRangedWeapons=[ranged];actor.items.set('ranged',ranged);
+ let html=render(await sheet._prepareContext({}));
+ const links=elements(html,el=>el.attribs?.['data-action']==='dsa5hJumpCombatSkill');
+ assert.equal(links.length,2,'weapon row + hand');assert(links.every(l=>l.attribs['data-skill-id']==='combatskill'&&dom.textContent(l).includes('7')&&l.attribs['aria-label']));
+ assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-ranged')).length,1);
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='loadWeapon').length,2,'weapon row + hand');
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='itemSwapMag').length,2,'weapon row + hand');
+ p.combatskills[0].name='Other';html=render(await sheet._prepareContext({}));
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='dsa5hJumpCombatSkill').length,0);assert(html.includes('<small>Swords</small>'),'plain technique name without a matching item');
+});
+test('body tab: a free off hand renders compactly below the main hand, its tile is the weapon picker',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;
+ const main=item('main','meleeweapon');main.system.worn={value:true,offHand:false};p.wornMeleeWeapons=[main];p.wornRangedWeapons=[];actor.items.set('main',main);
+ let context=await sheet._prepareContext({});let html=render(context);
+ assert(context.dsa5h.body.offFree);assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-figure-hands off-free')).length,1);
+ const free=elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-free'))[0];assert(free);
+ const select=dom.findAll(el=>el.name==='select'&&el.attribs['data-dsa5h-hand']==='offhand',free.children);assert.equal(select.length,1);assert(select[0].attribs['aria-label']);
+ const off=item('off','meleeweapon');off.system.worn={value:true,offHand:true};p.wornMeleeWeapons=[main,off];actor.items.set('off',off);
+ context=await sheet._prepareContext({});html=render(context);assert(!context.dsa5h.body.offFree);assert(!html.includes('dsa5h-hand-free'));
 });

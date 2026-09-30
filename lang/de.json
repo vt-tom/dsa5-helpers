@@ -82,6 +82,8 @@
     "Overview": "Übersicht",
     "SearchCombatSkills": "Kampftechniken suchen …",
     "NoSearchResults": "Keine Treffer.",
+    "JumpToCombatSkill": "{name}, Kampftechnikwert {value} — zur Kampftechnik springen",
+    "HandFreeChoose": "Nebenhand frei — Waffe wählen",
     "ReloadReset": "Nachladen zurücksetzen",
     "ConditionDecrease": "{name} senken",
     "ConditionIncrease": "{name} erhöhen",

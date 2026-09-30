@@ -50,6 +50,7 @@
    --railon: #ece2d2;
    --dmg: #b3241a;
    --dmg-bg: rgba(179, 36, 26, .08);
+   --use: #2f6b2a;
 }
 
 .dsa5-helpers-sheet {
@@ -1019,13 +1020,20 @@
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-value input { min-width:0; }
 .dsa5-helpers-sheet .talentSearch { margin-bottom:12px; }
 .dsa5-helpers-sheet .dsa5h-skill-panel { --skill-color:#4f6d65; margin-top:0 !important; }
+/* Sprungmarken (2026-09-30): alle Gruppen stehen untereinander; ausgeblendete Panels (display:none) erzeugen keinen Abstand. */
+.dsa5-helpers-sheet .allTalents { display:flex; flex-direction:column; gap:16px; }
 .dsa5-helpers-sheet [data-skill-panel=social] { --skill-color:#85302e; }
 .dsa5-helpers-sheet [data-skill-panel=nature] { --skill-color:#535829; }
 .dsa5-helpers-sheet [data-skill-panel=knowledge] { --skill-color:#4b6585; }
 .dsa5-helpers-sheet [data-skill-panel=trade] { --skill-color:#cda25e; }
 .dsa5-helpers-sheet .dsa5h-skill-panel .panel-title { color:white; text-shadow:0 1px 2px #0009; background:linear-gradient(90deg,var(--skill-color),transparent); }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-head { grid-template-columns:2fr 1fr 1fr 1fr; }
-.dsa5-helpers-sheet .dsa5h-aggregated > button { width:auto; margin:6px; padding:3px 8px; color:var(--ink); background:var(--field); border:1px solid var(--line); }
+/* Sammelprobe: je Talent eine Zeile Bild | Name | 3W20-Probe | FW wie in der Talentliste (Nutzer-Notiz 2026-09-30).
+   Spalten wie .dsa5h-skill-row, nur ohne Behinderung/Stern; nicht gefundenes Talent → einfacher Probenknopf. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-talent { grid-template-columns:26px minmax(120px,1fr) 108px 60px; border-top-style:dashed; }
+.dsa5-helpers-sheet .dsa5h-aggregated-talent img { width:24px; height:24px; object-fit:cover; border:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-aggregated-fw { justify-self:center; font-family:'GentiumBasic', Georgia, serif; font-size:calc(var(--fs-data) + 1px); font-variant-numeric:tabular-nums; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-roll { justify-self:center; width:auto; min-height:26px; padding:2px 8px; color:var(--ink); background:var(--field); border:1px solid var(--line); }
 
 /* ===== DARK THEME + GLOBAL INTERACTION STATES ===== */
 /* Theme and interaction states are scoped to this application. */
@@ -1034,7 +1042,7 @@
   --panel:#ffffff08; --field:#ffffff0d; --odd:#ffffff05;
   --title:linear-gradient(90deg,#75603b99,transparent); --accent:#d0b276;
   --railidle:#39332c; --railon:#5b4a32;
-  --dmg:#d0574b; --dmg-bg:rgba(208,87,75,.14);
+  --dmg:#d0574b; --dmg-bg:rgba(208,87,75,.14); --use:#6fae63;
   color-scheme:dark;
 }
 .dsa5-helpers-sheet [hidden] { display:none !important; }
@@ -1077,6 +1085,13 @@
 /* Spaltenkopf „Reichweite“ brach immer um (Nutzer-Feedback 2026-09-24) — Spalte 68→84px, Kopf ohne Umbruch. */
 .dsa5-helpers-sheet .dsa5h-weapon-row.row-head > span { white-space:nowrap; }
 .dsa5-helpers-sheet .dsa5h-weapon-row small { display:block; color:var(--muted); font-size:var(--fs-meta); }
+/* Kampftechnik unter dem Waffennamen (Übersicht) bzw. unter dem Namen an der Hand (Körper) als Sprungknopf zu den
+   Kampftechniken, mit KtW (parts/combatskill-link.hbs, Tester 2026-09-30): sieht aus wie der frühere kleine Text,
+   Unterstrich erst bei Hover/Fokus. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-ct-link { display:inline-flex; align-items:baseline; gap:6px; align-self:flex-start; width:auto; min-height:0; margin:0; padding:0; border:0; background:none; color:var(--muted); font:inherit; font-size:var(--fs-meta); line-height:1.3; text-align:left; cursor:pointer; box-shadow:none; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-ct-link:is(:hover, :focus-visible) { color:var(--accent); text-decoration:underline; text-underline-offset:2px; background:none; }
+.dsa5-helpers-sheet .dsa5h-ct-link-ktw { font-weight:bold; }
+.dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-ct-link { display:flex; }
 .dsa5-helpers-sheet .dsa5h-weapon-details { grid-column:2/-1; display:flex; gap:5px; flex-wrap:wrap; align-items:center; font-size:var(--fs-meta); }
 /* Munitionszeile, Variante C (Nutzer-Entscheidung 2026-09-28): Munitionswahl als Aufklapp-Knopf (<details>),
    Nachladen und Magazin (im Kampf oft geklickt) direkt sichtbar. */
@@ -1115,7 +1130,16 @@
    Spaltenbreiten (minmax 140px Name + 90/96/55/55px) passten beide Tabellen zusammen nicht mehr in die
    Sheet-Breite und erzeugten horizontales Scrollen (Nutzer-Feedback 2026-09-16). Deutlich schmaler, angelehnt an
    die Click-Dummy-Proportionen (dort: 28px 1fr 44px 60px 40px 40px bei insgesamt schmalerem Sheet). */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-combatskill-row { grid-template-columns:minmax(90px,1fr) 66px 50px 42px 42px; }
+/* Leiteigenschaft klein unter dem Namen statt eigener Spalte (wie die Technik unter dem Waffennamen): lange Namen
+   („Zweihandhiebwaffen“) liefen sonst in die Leit.-Spalte (Nutzer-Entscheidung 2026-09-30). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-combatskill-row { grid-template-columns:minmax(90px,1fr) 50px 42px 42px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-combatskill-row > .withContext { overflow-wrap:break-word; }
+.dsa5-helpers-sheet .dsa5h-combatskill-row small { display:block; color:var(--muted); font-size:var(--fs-meta); }
+/* FW-Spalte im Bearbeiten-Modus breiter: −/+ (je 20 px) ließen in 50 px keinen Platz für die Zahl (Tester 2026-09-30). */
+.dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-combatskill-row { grid-template-columns:minmax(90px,1fr) 88px 42px 42px; }
+/* Grundwerte: Formel des Systems (FORMULA.*) als Tooltip am Namen, nur Hilfe-Cursor als Hinweis — die gepunktete
+   Unterstreichung gefiel nicht (Nutzer 2026-09-30). */
+.dsa5-helpers-sheet .dsa5h-content [data-tooltip^="FORMULA."] { cursor:help; }
 /* Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich im Click-Dummy,
    siehe clickdummy/script.js renderArmorSlotsBody()/Konzept 2 "Ausrüstungsreihe"): jedes getragene Rüstungsteil
    ein gleichwertiger Icon-Slot statt einer Sonderkachel nur fürs erste Teil, flex-wrap statt fester Kachel-/
@@ -1244,8 +1268,9 @@
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-bag-open:hover strong { color:var(--accent); }
 .dsa5-helpers-sheet .dsa5h-bag img { width:36px; height:36px; object-fit:contain; }
 .dsa5-helpers-sheet .dsa5h-bag-info { display:flex; flex-direction:column; align-items:center; min-width:0; gap:1px; }
-.dsa5-helpers-sheet .dsa5h-bag-info strong { font-size:var(--fs-meta); line-height:1.2; overflow-wrap:break-word; }
-.dsa5-helpers-sheet .dsa5h-bag-info small { color:var(--muted); font-size:var(--fs-meta); }
+/* Name/Füllstand in normaler Datengröße statt Metadaten (Nutzer-Notiz 2026-09-30: zu klein). */
+.dsa5-helpers-sheet .dsa5h-bag-info strong { font-size:var(--fs-data); line-height:1.2; overflow-wrap:break-word; }
+.dsa5-helpers-sheet .dsa5h-bag-info small { color:var(--muted); font-size:var(--fs-small); }
 /* Füllstand (Inhaltsgewicht / Fassungsvermögen) als Wert + Balken (Nutzer-Feedback 2026-09-24), gleiche Optik wie
    der Gewicht-Balken im Panel darüber. */
 .dsa5-helpers-sheet .dsa5h-bag .dsa5h-weight-bar { width:100%; height:6px; border-radius:3px; }
@@ -1377,6 +1402,7 @@
   .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image img { width:40px; height:40px; }
   .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image meter { width:40px; }
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns:26px minmax(90px,1fr) 92px 48px 80px 22px; gap:4px; }
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-talent { grid-template-columns:26px minmax(90px,1fr) 92px 48px; gap:4px; }
   .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main { grid-template-columns:150px minmax(0,1fr); }
 }
 @container (max-width:520px) {
@@ -1461,6 +1487,9 @@
 /* Talentsuche + "Nur gesteigerte"-Schalter + Hinweis bei gruppenübergreifender Suche. */
 .dsa5-helpers-sheet .dsa5h-search-bar { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
 .dsa5-helpers-sheet .dsa5h-search-bar .talentSearch { flex:1; margin:0; }
+/* Talente: Suche + „Nur gesteigerte“ kleben oben im Inhaltsbereich (Live-Rückmeldung 2026-09-30); die Sprungmarken
+   ziehen ihre Höhe ab (_skillStickyOffset). */
+.dsa5-helpers-sheet [data-tab-panel="skills"] > .dsa5h-search-bar { position:sticky; top:0; z-index:7; padding:6px 0; background:var(--paper); box-shadow:0 6px 6px -6px rgba(0,0,0,.3); }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-filter-switch { display:inline-flex; align-items:center; gap:7px; flex:none; width:auto; min-height:28px; padding:2px 10px 2px 6px; border:1px solid var(--line); border-radius:14px; background:var(--field); color:var(--muted); font-size:var(--fs-small); cursor:pointer; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-filter-switch:hover { border-color:var(--accent); color:var(--ink); }
 .dsa5-helpers-sheet .dsa5h-filter-switch-track { position:relative; width:26px; height:14px; border-radius:7px; background:var(--line); transition:background .15s ease; }
@@ -1501,7 +1530,22 @@
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-reload-done .dsa5h-reload-btn { border-color:var(--accent); font-weight:bold; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-reload-reset { width:26px; min-height:26px; padding:0; border-radius:50%; font-size:15px; line-height:1; color:var(--muted); }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-reload-reset:hover { color:var(--accent); border-color:var(--accent); }
+/* Zielen (Issue #8, 2026-09-30): reine Anzeige wie im Systembogen (combat_rangeweapon.hbs), nur wenn schon gezielt
+   wurde — erhöht wird im Probendialog, zurückgesetzt über ↺ (setzt im System Laden + Zielen zurück). Gleicher
+   Segmentbalken wie Nachladen, zwei Segmente (Zielen 0–2), Werte/Texte aus RangeweaponData.buildAimProgress. */
+.dsa5-helpers-sheet .dsa5h-aim { display:inline-flex; align-items:center; gap:7px; min-height:26px; padding:2px 8px; border:1px solid var(--line); border-radius:4px; }
+.dsa5-helpers-sheet .dsa5h-aim-done { border-color:var(--accent); font-weight:bold; }
 @media (prefers-reduced-motion: reduce) { .dsa5-helpers-sheet .dsa5h-content .dsa5h-damage { transition:none; } }
+/* OnUse-Würfelknopf (Issue #9, 2026-09-30): grüner W6 (Farbe wie systems/dsa5/icons/dice/d6green.svg, Token --use)
+   statt des früheren ungestylten „▶“. Überall gleich: 24 px Fläche, Zoom bei Hover/Fokus wie die anderen Würfel.
+   Auf Rüstungs-/Hand-Kacheln sitzt er oben rechts über dem Bild (unter dem Namensverlauf). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-onuse { display:inline-flex; align-items:center; justify-content:center; flex:0 0 24px; width:24px; height:24px; min-height:0; margin:0 2px; padding:0; vertical-align:middle; border:1px solid var(--use); border-radius:4px; background:var(--field); color:var(--use); cursor:pointer; transition:transform .15s ease; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-onuse svg { width:16px; height:16px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-onuse rect { fill:currentColor; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-onuse circle { fill:#fff; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-onuse:is(:hover, :focus-visible) { transform:scale(1.3); z-index:6; background:var(--paper); }
+.dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-armor-slot, .dsa5h-hand-tile) > .dsa5h-onuse { position:absolute; top:24px; right:4px; z-index:2; margin:0; background:var(--paper); }
+@media (prefers-reduced-motion: reduce) { .dsa5-helpers-sheet .dsa5h-content .dsa5h-onuse { transition:none; } }
 
 /* ===== PAKET G: Behältnisse kompakt (2026-09-28) ===== */
 /* Bisher hohe 92px-Kacheln (Bild oben, Name, Balken) mit viel Leerraum: jetzt eine Zeile Bild | Name + Füllstand +
@@ -1596,8 +1640,13 @@
 .dsa5-helpers-sheet .dsa5h-figure-armor { grid-column:1; grid-row:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
 .dsa5-helpers-sheet .dsa5h-figure-hands { grid-column:3; grid-row:1; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); column-gap:12px; align-items:start; }
 /* Beidhändige Waffe: die eine Hand rechtsbündig an der Außenkante statt mittig (Rückmeldung 2026-09-30). */
-.dsa5-helpers-sheet .dsa5h-figure-hands.single { grid-template-columns:minmax(0, 1fr); justify-items:end; }
-.dsa5-helpers-sheet .dsa5h-figure-hands.single .dsa5h-hand-slot { align-items:flex-end; text-align:right; }
+/* Freie Nebenhand (off-free) ebenso: eine Spalte, alles rechtsbündig (Rückmeldung 2026-09-30). */
+.dsa5-helpers-sheet .dsa5h-figure-hands:is(.single, .off-free) { grid-template-columns:minmax(0, 1fr); justify-items:end; }
+.dsa5-helpers-sheet .dsa5h-figure-hands:is(.single, .off-free) .dsa5h-hand-slot { align-items:flex-end; text-align:right; }
+/* Kompakte freie Nebenhand: Kachel an der Außenkante, Text links daneben. */
+.dsa5-helpers-sheet .dsa5h-figure-hands.off-free .dsa5h-hand-slot.dsa5h-hand-free { flex-direction:row-reverse; align-items:center; }
+/* Kampftechnik-Knopf sitzt sonst per align-self:flex-start links (Live-Rückmeldung 2026-09-30). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-figure-hands:is(.single, .off-free) .dsa5h-ct-link { align-self:flex-end; text-align:right; }
 .dsa5-helpers-sheet .dsa5h-figure-col-title { display:block; font-size:var(--fs-meta); color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
 .dsa5-helpers-sheet .dsa5h-figure-badge { position:absolute; left:50%; top:34%; z-index:2; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center; padding:4px 10px; border:1px solid var(--accent); border-radius:4px; background:var(--paper); box-shadow:0 1px 4px rgba(0,0,0,.25); }
 .dsa5-helpers-sheet .dsa5h-figure-badge strong { font-size:var(--fs-big); }
@@ -1636,7 +1685,28 @@
 .dsa5-helpers-sheet .dsa5h-hand-tile-at { left:-8px; }
 .dsa5-helpers-sheet .dsa5h-hand-tile-pa { right:-8px; }
 .dsa5-helpers-sheet .dsa5h-hand-slot > .dsa5h-damage { margin-top:4px; }
+/* Fernkampfhand: Nachladen/Zielen/Magazin (parts/ranged-status.hbs) unter dem TP-Knopf. Die Handspalte ist bei zwei
+   Händen nur ~120 px breit — deshalb zweizeilig: Beschriftung oben, Segmentbalken + Stand darunter, ↺ daneben
+   (Vorschlag aus dem Click-Dummy, freigegeben 2026-09-30). Munitionswahl bleibt in der Übersicht. */
+.dsa5-helpers-sheet .dsa5h-hand-ranged { display:flex; flex-wrap:wrap; align-items:center; gap:5px; margin-top:4px; font-size:var(--fs-meta); }
+/* Nachladen und Zielen nebeneinander, solange die Spalte reicht (Live-Rückmeldung 2026-09-30: spart Höhe), Magazin
+   in eigener Zeile; bei beidhändiger Waffe (eine Hand, rechtsbündig) alles an die rechte Kante. */
+.dsa5-helpers-sheet .dsa5h-hand-ranged > .dsa5h-mag { flex-basis:100%; }
+.dsa5-helpers-sheet .dsa5h-figure-hands:is(.single, .off-free) :is(.dsa5h-hand-ranged, .dsa5h-hand-ranged > .dsa5h-mag) { justify-content:flex-end; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-ranged :is(.dsa5h-reload-btn, .dsa5h-aim) { display:grid; grid-template-columns:auto auto; align-items:center; column-gap:5px; row-gap:2px; min-height:0; padding:2px 6px; font-size:12px; line-height:1.2; }
+.dsa5-helpers-sheet .dsa5h-hand-ranged :is(.dsa5h-reload-btn, .dsa5h-aim) > span:first-child { grid-column:1 / -1; }
+.dsa5-helpers-sheet .dsa5h-hand-ranged .dsa5h-reload-bar { max-width:56px; }
+.dsa5-helpers-sheet .dsa5h-hand-ranged .dsa5h-mag { font-size:12px; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-select { width:100%; max-width:100%; margin-top:6px; font-size:var(--fs-meta); }
+/* Freie Nebenhand kompakt unter der Haupthand (Rückmeldung 2026-09-30; als eigene Spalte schob sie die Haupthand nach
+   rechts): 40-px-Kachel mit „+“, die Kachel ist die Auswahl (unsichtbares <select> darüber), daneben „Nebenhand · frei“. */
+.dsa5-helpers-sheet .dsa5h-figure-hands.off-free { grid-template-columns:minmax(0, 1fr); row-gap:12px; }
+.dsa5-helpers-sheet .dsa5h-hand-slot.dsa5h-hand-free { flex-direction:row; align-items:center; gap:8px; }
+.dsa5-helpers-sheet .dsa5h-hand-free-text { display:flex; flex-direction:column; line-height:1.2; }
+.dsa5-helpers-sheet .dsa5h-hand-free-text small:last-child { font-size:var(--fs-meta); color:var(--muted); }
+.dsa5-helpers-sheet .dsa5h-hand-tile.empty.compact { width:40px; height:40px; font-size:22px; line-height:1; cursor:pointer; }
+.dsa5-helpers-sheet .dsa5h-hand-tile.empty.compact:is(:hover, :focus-within) { border-color:var(--accent); color:var(--accent); }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-tile.compact .dsa5h-hand-select { position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; }
 /* AT/PA-Würfel in der „Wachssiegel“-Fassung der Kopf-Würfel (.dsa5h-attr-die-mini): dunkle Fassung in Würfelform +
    Goldrand dahinter (Rückmeldung 2026-09-30). Gezoomt wird die ganze Fassung, nicht nur der Würfel. */
 .dsa5-helpers-sheet .dsa5h-die-seal { display:block; width:30px; height:30px; transition:transform .15s ease; transform-origin:center; }

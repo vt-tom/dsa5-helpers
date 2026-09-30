@@ -7,9 +7,11 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
+_(leer)_
+
 ## Live in Foundry prüfen
 
-- **Kampf › Körper, Zauber-/Liturgie-Dialog:** eine Probe (oder ein anderer Knopf in der Liste) schließt den Dialog jetzt, bevor Foundrys Probenfenster aufgeht – liegt das Probenfenster damit direkt bedienbar vorn?
+- **Kampf › Körper, freie Nebenhand rechtsbündig:** Haupthand und die kompakte freie Nebenhand stehen jetzt wie bei beidhändiger Führung an der rechten Kante (Kachel „+“ außen, „Nebenhand · frei“ links daneben).
 
 ## Offene Entscheidungen
 
@@ -17,14 +19,14 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Features / Backlog
 
-Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen, #8 Zielen bei Fernkampf, #9 OnUseEffect-Knöpfe, #10 Heldenerschaffung) – siehe unten. Neue Feature-Ideen dort anlegen oder hier kurz notieren.
+Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen, #10 Heldenerschaffung; #9 und #8 live bestätigt – können geschlossen werden) – siehe unten. Neue Feature-Ideen dort anlegen oder hier kurz notieren.
 
 ---
 
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-09-30 07:38 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-09-30 09:17 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 

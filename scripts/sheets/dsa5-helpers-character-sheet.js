@@ -25,6 +25,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       postItem: this._postItem,
       dsa5hOpenCast: this._openCastDialog,
       dsa5hCloseCast: this._closeCastDialog,
+      dsa5hJumpCombatSkill: this._jumpToCombatSkill,
     },
     // DSA5's own roll/damage actions (attribute dice, combat rolls, advances, item toggles, …) live in
     // ownerRollActions/ownerActions, not the plain `actions` table above — a separate permission-gated dispatch
@@ -111,7 +112,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   _toggleDisabled(disabled) {
     super._toggleDisabled(disabled);
     // Observers may still navigate tabs even when Foundry disables document edits.
-    this.element?.querySelectorAll('[data-action^="dsa5hSet"], [data-action="dsa5hTheme"], [data-action="dsa5hOnlyLearned"], [data-action="dsa5hClearTalentSearch"]')
+    this.element?.querySelectorAll('[data-action^="dsa5hSet"], [data-action="dsa5hTheme"], [data-action="dsa5hOnlyLearned"], [data-action="dsa5hClearTalentSearch"], [data-action="dsa5hJumpCombatSkill"]')
       .forEach(button => { button.disabled = false; });
   }
 
@@ -136,7 +137,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     .map(action => `[data-action="${action}"]`).join(', ');
   // Alles, was im Kopf selbst bedienbar ist, startet kein Fenster-Ziehen (siehe pointerdown in _onRender).
   static DRAG_EXCLUDE = 'button, a, input:not([disabled]), select, textarea, label, details, [data-action], [contenteditable], [draggable="true"]';
-  static FOCUS_KEYS = ['action', 'val', 'char', 'mode', 'hand', 'fct', 'attr', 'tab', 'subtab', 'parentTab'];
+  static FOCUS_KEYS = ['action', 'val', 'char', 'mode', 'hand', 'fct', 'attr', 'tab', 'subtab', 'parentTab', 'which'];
 
   _focusKey() {
     const active = document.activeElement;
@@ -207,6 +208,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { label: 'DSA5HELPERS.MeleeSkills', items: (prepare.combatskills ?? []).filter(item => Number(item.system.weapontype.value) === 0) },
       { label: 'DSA5HELPERS.RangeSkills', ranged: true, items: (prepare.combatskills ?? []).filter(item => Number(item.system.weapontype.value) !== 0) },
     ];
+    // Kampftechnik je Waffe (parts/combatskill-link.hbs): wie im System per Name gesucht (actor-dsa5.js
+    // combatskills.find(s => s.name === item.system.combatskill.value)), mit Kampftechnikwert für die Anzeige.
+    const combatSkillIndex = Object.fromEntries((prepare.combatskills ?? []).map(item => [item.name, { id: item._id, name: item.name, value: item.system.talentValue?.value }]));
     const favoriteGroups = [
       { label: 'skills', items: skillGroups.flatMap(group => group.items) },
       { label: 'DSA5HELPERS.Weapons', weapon: true, items: weaponGroups.flatMap(group => group.items) },
@@ -234,7 +238,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     ];
     const status = this.actor.system.status;
     context.dsa5h = {
-      limited, tabs, subnav, skillGroups, favorites, favoriteGroups, weaponGroups, combatSkillGroups, specs,
+      limited, tabs, subnav, skillGroups, favorites, favoriteGroups, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
       currentTab: this._currentTab,
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
       editMode: this.isEditable && !prepare.sheetLocked,
@@ -250,6 +254,13 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         return Object.assign(item, { dsa5hFill: { weight, capacity, over: capacity > 0 && weight > capacity } });
       }),
       traditionItems: this._traditionItems(),
+      // Sammelproben (Nutzer-Notiz 2026-09-30): je Talent Probe + FW wie in der Talentliste. Das Talent wird wie im
+      // System gesucht (item-dsa5.js rollAggregatedProbe: Name + Typ skill); gewürfelt wird weiter über rollAggregatedProbe.
+      aggregated: (prepare.aggregatedtests ?? []).map(item => ({
+        item,
+        talents: ['', '2', '3'].map(which => ({ which, name: item.system?.talent?.['value' + which] })).filter(t => t.name)
+          .map(t => ({ ...t, skill: this.actor.items.find(entry => entry.type === 'skill' && entry.name === t.name) })),
+      })),
       inventory: Object.entries(prepare.inventory ?? {}).filter(([id, section]) => id !== 'bags' && section.show).map(([id, section]) => ({ id, ...section })),
       // initiative.value has no .max and carries a fractional tie-breaker for the combat tracker's sort order
       // (baseactor.js calcInitiative(): Math.round(value) + 0.01*value) — floored here exactly like every real
@@ -258,6 +269,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         const raw = status[id]?.max ?? status[id]?.value;
         return { label: id, value: raw === undefined ? '–' : Math.floor(raw) };
       }),
+      // Grundwerte (Eigenschaften-Reiter): Initiative abgerundet wie oben und im Systembogen.
+      initiative: Math.floor(status.initiative?.value ?? 0),
       regenerations: ['wounds', 'astralenergy', 'karmaenergy'].filter(id => this.actor.system.repeatingEffects?.startOfRound?.[id]?.length).map(id => ({ id, active: !this.actor.system.repeatingEffects.disabled?.[id] })),
       // Cover tab's compact conditions panel (click-dummy buildConditionsPanel(4)): caps the list so the sidebar
       // never needs to scroll, with a jump button to the full Status tab for the rest.
@@ -326,6 +339,13 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         const dialog = action?.closest('dialog.dsa5h-cast-dialog[open]');
         if (dialog && action.dataset.action !== 'dsa5hCloseCast') dialog.close();
       }, { capture: true });
+      // scroll bubbelt nicht — Capture-Phase am Fenster, weil .dsa5h-content bei jedem Render neu entsteht.
+      this.element.addEventListener('scroll', event => {
+        if (event.target?.classList?.contains('dsa5h-content')) this._onContentScroll();
+      }, { capture: true, passive: true });
+      this.element.addEventListener('scrollend', event => {
+        if (event.target?.classList?.contains('dsa5h-content')) this._skillJumping = false;
+      }, { capture: true, passive: true });
       // Munitionswahl (<details class="dsa5h-ammo-pick">) schließt sich bei einem Klick daneben wie ein Dropdown.
       this.element.addEventListener('click', event => {
         this.element.querySelectorAll('details.dsa5h-ammo-pick[open]').forEach(details => { if (!details.contains(event.target)) details.open = false; });
@@ -420,6 +440,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       encumbrance: armor.reduce((sum, item) => sum + (Number(item.system?.calculatedEncumbrance) || 0), 0),
       hands: mainTwoHanded ? [slot('main', main)] : [slot('main', main), slot('offhand', off)],
       single: mainTwoHanded,
+      // Freie Nebenhand kompakt unter der Haupthand statt als volle Spalte (Rückmeldung 2026-09-30).
+      offFree: !mainTwoHanded && !off,
       portrait,
       figure: portrait ? this.actor.img : `systems/dsa5/icons/species/${placeholder}.webp`,
       initiative: Math.floor(this.actor.system?.status?.initiative?.value ?? 0),
@@ -508,7 +530,13 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this._applyCurrentTab();
     this.element.querySelector('.dsa5h-content')?.scrollTo({ top: 0 });
     // Switching to Talente should let the user start typing a search immediately, no extra click needed.
-    if (this._currentTab === 'skills') this.element.querySelector('.talentSearch')?.focus();
+    if (this._currentTab === 'skills') {
+      // Die Liste steht wieder oben — also ist die erste Gruppe markiert.
+      const first = this.element.querySelector('.allTalents [data-skill-panel]')?.dataset.skillPanel;
+      if (first) this._subtabs.skills = first;
+      this._applySubTabButtons();
+      this.element.querySelector('.talentSearch')?.focus();
+    }
   }
 
   static _setSubTab(_event, target) {
@@ -516,9 +544,67 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const id = target.dataset.subtab;
     if (!Object.hasOwn(this._subtabs, tab)) return;
     this._subtabs[tab] = id;
-    // Gruppenwahl beendet eine laufende Talentsuche (wie im Click-Dummy setSkillGroup()).
+    // Gruppenwahl beendet eine laufende Talentsuche (wie im Click-Dummy jumpToSkillGroup()).
     if (tab === 'skills') this._resetTalentSearch();
     this._applyCurrentTab();
+    if (tab === 'skills') this._jumpToSkillGroup(id);
+  }
+
+  // Talente „Sprungmarken“ (Tester-Rückmeldung 2026-09-30): die Liste zeigt immer alle Gruppen untereinander, die
+  // Gruppen-Reiter scrollen nur an die passende Stelle. Seit der Live-Rückmeldung 2026-09-30 gehören auch die
+  // Sammelproben als letzter Abschnitt dazu; Suche + „Nur gesteigerte“ kleben oben (CSS), deshalb wird ihre Höhe
+  // abgezogen. Solange der Sprung läuft, führt _onContentScroll() die Markierung nicht mit (sonst flackert sie über
+  // die Gruppen dazwischen) — Ende über das scrollend-Ereignis (Listener in _onRender).
+  _skillPanels() {
+    return [...(this.element?.querySelectorAll('[data-tab-panel="skills"] [data-skill-panel]') ?? [])].filter(panel => !panel.hidden);
+  }
+
+  _skillStickyOffset(content) {
+    return content.querySelector('[data-tab-panel="skills"] > .dsa5h-search-bar')?.offsetHeight ?? 0;
+  }
+
+  _jumpToSkillGroup(id) {
+    const content = this.element?.querySelector('.dsa5h-content');
+    const panel = this._skillPanels().find(entry => entry.dataset.skillPanel === id);
+    if (!content || !panel) return;
+    const wanted = panel.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop - this._skillStickyOffset(content) - 4;
+    const top = Math.max(0, Math.min(wanted, content.scrollHeight - content.clientHeight));
+    this._skillJumping = Math.abs(top - content.scrollTop) > 1;
+    content.scrollTo({ top, behavior: 'smooth' });
+  }
+
+  // Scroll-Mitführung: markiert die Gruppe, deren Panel gerade oben im Inhaltsbereich steht; ganz unten die letzte
+  // (die Sammelproben sind meist zu kurz, um bis nach oben zu kommen).
+  _onContentScroll() {
+    if (this._currentTab !== 'skills' || this._search.talent.trim() || this._skillJumping) return;
+    const content = this.element?.querySelector('.dsa5h-content');
+    const panels = this._skillPanels();
+    if (!content || !panels.length) return;
+    const top = content.getBoundingClientRect().top + this._skillStickyOffset(content) + 40;
+    let current = panels[0].dataset.skillPanel;
+    if (content.scrollTop + content.clientHeight >= content.scrollHeight - 2) current = panels.at(-1).dataset.skillPanel;
+    else panels.forEach(panel => { if (panel.getBoundingClientRect().top <= top) current = panel.dataset.skillPanel; });
+    if (current === this._subtabs.skills) return;
+    this._subtabs.skills = current;
+    this._applySubTabButtons();
+  }
+
+  // Sprung von der Kampftechnik einer Waffe (parts/combatskill-link.hbs) zur Zeile im Unterreiter „Kampftechniken“:
+  // Unterreiter wechseln, Suche leeren, Zeile in die Mitte scrollen und kurz aufleuchten lassen (Tester 2026-09-30).
+  static _jumpToCombatSkill(_event, target) {
+    this._subtabs.combat = 'skills';
+    this._search.combatskill = '';
+    const input = this.element.querySelector('.combatSkillSearch');
+    if (input) input.value = '';
+    this._applyCurrentTab();
+    this._applyCombatSkillSearch();
+    const content = this.element.querySelector('.dsa5h-content');
+    const row = content?.querySelector(`[data-sub-panel="combat:skills"] [data-item-id="${CSS.escape(target.dataset.skillId ?? '')}"]`);
+    if (!row) return;
+    const offset = row.getBoundingClientRect().top - content.getBoundingClientRect().top;
+    content.scrollTo({ top: content.scrollTop + offset - (content.clientHeight - row.offsetHeight) / 2, behavior: 'smooth' });
+    row.querySelector('[data-action="itemEdit"]')?.focus({ preventScroll: true });
+    this._flash(row);
   }
 
   static _toggleOnlyLearned() {
@@ -560,14 +646,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       el.setAttribute('aria-current', active ? 'page' : 'false');
     });
     root.querySelectorAll('[data-subnav]').forEach(el => { el.hidden = el.dataset.subnav !== this._currentTab; });
-    // Während einer Talentsuche stehen Treffer aus ALLEN Gruppen da — dann ist keine Gruppe markiert
-    // (UI/UX-Review 2026-09-25 Punkt 8).
-    const talentSearching = !!this._search.talent.trim();
-    root.querySelectorAll('[data-subtab]').forEach(el => {
-      const active = this._subtabs[el.dataset.parentTab] === el.dataset.subtab && !(el.dataset.parentTab === 'skills' && talentSearching);
-      el.classList.toggle('active', active);
-      el.setAttribute('aria-pressed', String(active));
-    });
+    this._applySubTabButtons();
     root.querySelectorAll('[data-sub-panel]').forEach(el => {
       const [tab, id] = el.dataset.subPanel.split(':');
       el.hidden = this._subtabs[tab] !== id;
@@ -594,10 +673,22 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     });
   }
 
+  // Während einer Talentsuche stehen Treffer aus ALLEN Gruppen da — dann ist keine Gruppe markiert
+  // (UI/UX-Review 2026-09-25 Punkt 8).
+  _applySubTabButtons() {
+    const talentSearching = !!this._search.talent.trim();
+    this.element?.querySelectorAll('[data-subtab]').forEach(el => {
+      const active = this._subtabs[el.dataset.parentTab] === el.dataset.subtab && !(el.dataset.parentTab === 'skills' && talentSearching);
+      el.classList.toggle('active', active);
+      el.setAttribute('aria-pressed', String(active));
+    });
+  }
+
   // The category panels live under data-skill-panel; while a search is active every category with a hit stays
   // visible (matching the real system's own SearchFilter#_filterTalents, which forces .allTalents into "showAll")
   // and individual rows are filtered by name. "Nur gesteigerte" (_onlyLearned) additionally hides FW-0 rows.
-  // The Sammelproben panel sits outside .allTalents and is hidden during a search (results only from the groups).
+  // Without a search all groups are shown one below the other ("Sprungmarken", 2026-09-30), followed by the
+  // Sammelproben panel (outside .allTalents), which is hidden during a search.
   _applyTalentSearch() {
     const root = this.element;
     if (!root) return;
@@ -605,7 +696,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     root.querySelectorAll('[data-skill-panel]').forEach(panel => {
       const grouped = panel.closest('.allTalents');
       if (!grouped) {
-        panel.hidden = !!query || panel.dataset.skillPanel !== this._subtabs.skills;
+        panel.hidden = !!query;
         return;
       }
       let visible = 0;
@@ -614,7 +705,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         row.hidden = (!!query && !name.includes(query)) || (this._onlyLearned && Number(row.dataset.fw) === 0);
         if (!row.hidden) visible++;
       });
-      panel.hidden = query ? !visible : panel.dataset.skillPanel !== this._subtabs.skills;
+      panel.hidden = !!query && !visible;
       const empty = panel.querySelector('[data-only-learned-empty]');
       if (empty) empty.hidden = !(this._onlyLearned && !visible && panel.querySelector('.dsa5h-skill-row.item'));
     });

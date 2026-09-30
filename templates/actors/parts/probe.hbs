@@ -1,2 +1,2 @@
-<button type="button" class="dsa5h-skill-probe" data-action="skillSelect" aria-label="{{localize 'DSA5HELPERS.RollNamed' name=item.name}}">
+<button type="button" class="dsa5h-skill-probe" data-action="{{#if action}}{{action}}{{else}}skillSelect{{/if}}"{{#if action}} data-which="{{which}}"{{/if}} aria-label="{{localize 'DSA5HELPERS.RollNamed' name=item.name}}">
 {{#each (dsa5hCharacteristics item)}}<span class="dsa5h-probe-die" aria-hidden="true" style="background-image:url('systems/dsa5/icons/dice/d20{{this}}.svg')">{{localize (concatUp "CHARAbbrev." this)}}</span>{{/each}}</button>

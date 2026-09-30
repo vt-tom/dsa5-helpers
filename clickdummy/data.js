@@ -472,9 +472,14 @@ const MAGICAL_SIGNS = ["Zeichen der Waldesruhe"];
 // Fähigkeiten als Untereinträge. Ihr Amulett aus Silberbirke (siehe Notizen-Tab) ist ihr Zauberfokus.
 // abilities-Fähigkeiten sind Objekte statt reiner Namen, da sie im System eine per Klick bezahlbare AsP-Kosten
 // (tradition-items.hbs:43-44 "AEpayable" → actor-sheet.js:1645-1663 _payAeSpecialAbilityCost, zieht system.AsPCost
-// von der Astralenergie ab) UND optional einen OnUseEffect-Würfel-Button haben können — Letzterer wie überall
-// zurückgestellt (siehe PLANNING.md-Entscheidung 2026-09-15), Ersteres hier umgesetzt (payTraditionAbilityCost()
+// von der Astralenergie ab) UND optional einen OnUseEffect-Würfel-Button haben können (seit Issue #9 umgesetzt,
+// siehe ON_USE_ITEMS unten/onUseBtn() in script.js), Ersteres über payTraditionAbilityCost()
 // in script.js).
+// Items mit Anwendungseffekt (im System item.OnUseEffect, eine nicht-leere onUseActions-Makroaktion): zeigen den
+// grünen W6-Knopf (Issue #9, 2026-09-30; Modul: parts/onuse.hbs, Systemaktion onUseItem). Hier einfach per Name,
+// weil viele Demo-Listen reine Namenslisten sind.
+const ON_USE_ITEMS = new Set(["Elfenbogen", "Waldläuferkluft", "Schicksalskind", "Naturverbundenheit I", "Reiseproviant", "Elfischer Säbel"]);
+
 const TRADITION_ARTIFACTS = [
   { name: "Amulett aus Silberbirke", img: A.abilityStaff, category: "Lebensring", volume: "3 / 4", abilities: [{ name: "Naturverbundenheit I", cost: 2 }] },
 ];

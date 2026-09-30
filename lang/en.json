@@ -82,6 +82,8 @@
     "Overview": "Overview",
     "SearchCombatSkills": "Search combat techniques …",
     "NoSearchResults": "No matches.",
+    "JumpToCombatSkill": "{name}, combat technique rating {value} — go to combat technique",
+    "HandFreeChoose": "Off hand free — choose a weapon",
     "ReloadReset": "Reset reload",
     "ConditionDecrease": "Decrease {name}",
     "ConditionIncrease": "Increase {name}",
