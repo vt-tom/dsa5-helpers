@@ -9,11 +9,7 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Version 0.3.0 (Branch `release/0.3.0`)
 
-Release vorbereitet (`version` 0.3.0, CHANGELOG datiert). Nach dem Live-Check unten: `relationships.systems[0].compatibility.verified` → 8.1.8 in `module.json`, dann nach Freigabe nach `main` mergen, Tag `v0.3.0`, GitHub-Release, Issues #10–#13 und Meilenstein schließen — siehe [RELEASE.md](RELEASE.md).
-
-## Live in Foundry prüfen
-
-- **DSA5 8.1.8:** Code-Vergleich 8.1.5→8.1.8 ergab nur eine Lücke (Patrone fehlten im Magie-Reiter, behoben). Kurz live gegenprüfen: Bogen öffnen, alle Reiter durchklicken, eine Probe würfeln, ein Item löschen (System hat den Löschdialog umgebaut). Falls vorhanden: Held mit Patron → erscheint im Magie-Reiter unter „Patron“. Als Beobachter öffnen → Reiter und Talentsuche bedienbar.
+Alles live bestätigt (inkl. DSA5 8.1.8, `verified` hochgesetzt). Offen nach Freigabe: nach `main` mergen, Tag `v0.3.0`, GitHub-Release, Issues #10–#13 und Meilenstein schließen — siehe [RELEASE.md](RELEASE.md).
 
 ## Offene Entscheidungen
 
