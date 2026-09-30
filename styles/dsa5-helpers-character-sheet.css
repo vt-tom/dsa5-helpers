@@ -1399,7 +1399,10 @@
 
 /* ===== STATUS TAB ===== */
 
-.dsa5-helpers-sheet .dsa5h-inline-steps { display:inline-flex; gap:2px; margin-left:4px; }
+/* Name und −/+ bleiben in einer Zeile (Rückmeldung 2026-09-30: bei „Karmaenergie“ rutschten die Knöpfe in die nächste Zeile);
+   reicht die Spalte knapp nicht, ragen die Knöpfe lieber ein paar Pixel in die zentrierte Wertspalte. */
+.dsa5-helpers-sheet .dsa5h-content .row span.left:has(> .dsa5h-inline-steps) { white-space:nowrap; }
+.dsa5-helpers-sheet .dsa5h-inline-steps { display:inline-flex; gap:2px; margin-left:4px; vertical-align:middle; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-inline-steps button { padding:0 3px; min-height:18px; }
 .dsa5-helpers-sheet .dsa5h-effect-disabled { opacity:.5; }
 
@@ -1583,14 +1586,15 @@
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-btn { display:inline-flex; align-items:center; gap:5px; flex:none; width:auto; height:26px; min-height:0; padding:0 9px; border:1px solid rgba(255,255,255,.45); border-radius:3px; background:rgba(255,255,255,.12); color:inherit; font-size:var(--fs-meta); line-height:1; cursor:pointer; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-btn > span { flex:none; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-btn:is(:hover, :focus-visible) { border-color:#fff; background:rgba(255,255,255,.25); }
-.dsa5-helpers-sheet .dsa5h-body-grid { position:relative; isolation:isolate; display:grid; grid-template-columns:120px minmax(0, 1fr) 250px; gap:14px; align-items:center; min-height:330px; padding:12px; }
+.dsa5-helpers-sheet .dsa5h-body-grid { position:relative; isolation:isolate; display:grid; grid-template-columns:120px minmax(0, 1fr) 250px; gap:14px; align-items:start; align-content:center; min-height:330px; padding:12px; }
 /* Figur als echtes <img>: eine relative url() in einer CSS-Variable (früher --figure im style-Attribut) löst Chrome gegen
    den Pfad dieses Stylesheets auf (modules/dsa5-helpers/styles/…) — in Foundry blieb die Figur deshalb leer (2026-09-30). */
 .dsa5-helpers-sheet .dsa5h-body-grid > .dsa5h-body-figure { position:absolute; inset:0; z-index:-1; width:100%; height:100%; max-width:none; margin:0; border:0; object-fit:contain; object-position:center; pointer-events:none; opacity:.3; -webkit-mask-image:linear-gradient(90deg, transparent 12%, #000 35%, #000 65%, transparent 88%); mask-image:linear-gradient(90deg, transparent 12%, #000 35%, #000 65%, transparent 88%); }
 .dsa5-helpers-sheet[data-theme="dark"] .dsa5h-body-grid > .dsa5h-body-figure { opacity:.22; }
-/* Rüstung in Spalte 1, Hände in Spalte 3; die Mitte bleibt frei für die Figur, die Plakette sitzt über der Mitte der ganzen Fläche. */
-.dsa5-helpers-sheet .dsa5h-figure-armor { grid-column:1; grid-row:1; display:flex; flex-direction:column; align-items:center; justify-content:center; align-self:stretch; }
-.dsa5-helpers-sheet .dsa5h-figure-hands { grid-column:3; grid-row:1; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); column-gap:12px; align-items:start; align-self:center; }
+/* Rüstung in Spalte 1, Hände in Spalte 3; die Mitte bleibt frei für die Figur, die Plakette sitzt über der Mitte der ganzen Fläche.
+   Beide Spalten oben bündig (Titel und Kacheln auf einer Höhe), die Zeile als Ganzes vertikal zentriert (align-content, Rückmeldung 2026-09-30). */
+.dsa5-helpers-sheet .dsa5h-figure-armor { grid-column:1; grid-row:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.dsa5-helpers-sheet .dsa5h-figure-hands { grid-column:3; grid-row:1; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); column-gap:12px; align-items:start; }
 /* Beidhändige Waffe: die eine Hand rechtsbündig an der Außenkante statt mittig (Rückmeldung 2026-09-30). */
 .dsa5-helpers-sheet .dsa5h-figure-hands.single { grid-template-columns:minmax(0, 1fr); justify-items:end; }
 .dsa5-helpers-sheet .dsa5h-figure-hands.single .dsa5h-hand-slot { align-items:flex-end; text-align:right; }
@@ -1605,12 +1609,12 @@
 /* Namen über Rüstungs- und Handkacheln: Datenschrift, fett, darf umbrechen. */
 .dsa5-helpers-sheet .dsa5h-body-item-name { max-width:100%; font-weight:bold; font-size:var(--fs-data); line-height:1.15; overflow-wrap:anywhere; }
 .dsa5-helpers-sheet .dsa5h-body-item-name a { color:inherit; }
-.dsa5-helpers-sheet .dsa5h-body-armor { display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:4px; }
+.dsa5-helpers-sheet .dsa5h-body-armor { display:flex; flex-direction:column; align-items:center; gap:8px; }
 .dsa5-helpers-sheet .dsa5h-body-armor-item { display:flex; flex-direction:column; align-items:center; gap:3px; max-width:116px; text-align:center; }
 .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot { background:var(--paper); }
 /* Ab drei Rüstungsteilen: Tabelle (Bild | Name | RS | BE) statt Kacheln, breitere Spalte, Namen einzeilig mit „…“ + Tooltip (2026-09-30). */
 .dsa5-helpers-sheet .dsa5h-body-grid.armor-table { grid-template-columns:230px minmax(0, 1fr) 250px; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table { width:100%; margin:4px 0 0; border-collapse:collapse; table-layout:fixed; background:var(--paper); border:1px solid var(--line); border-radius:4px; }
+.dsa5-helpers-sheet .dsa5h-body-armor-table { width:100%; margin:0; border-collapse:collapse; table-layout:fixed; background:var(--paper); border:1px solid var(--line); border-radius:4px; }
 .dsa5-helpers-sheet .dsa5h-body-armor-table th { padding:2px 4px; font-size:var(--fs-meta); font-weight:normal; color:var(--muted); text-align:center; border-bottom:1px solid var(--line); background:none; }
 .dsa5-helpers-sheet .dsa5h-body-armor-table th:first-child { text-align:left; }
 .dsa5-helpers-sheet .dsa5h-body-armor-table col.dsa5h-col-img { width:34px; }

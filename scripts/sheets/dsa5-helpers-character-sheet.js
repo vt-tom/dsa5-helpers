@@ -317,6 +317,15 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         if (select.value) this.actor.equipWeaponToHand(select.value, { hand, equip: true });
         else if (select.dataset.current) this.actor.equipWeaponToHand(select.dataset.current, { equip: false });
       }, { capture: true });
+      // Zauber-/Liturgie-Dialog im Reiter „Körper“: showModal() legt ihn in den Top-Layer über alles, auch über Foundrys
+      // Probenfenster (Rückmeldung 2026-09-30: Probe öffnete sich dahinter). Jede Aktion darin (Probe, Item öffnen …)
+      // schließt ihn deshalb zuerst; die Aktion selbst läuft danach normal über Foundrys Handler in der Bubble-Phase.
+      // Offen halten ginge ohnehin nicht: AsP/KaP-Verbrauch rendert den ganzen Bogen neu.
+      this.element.addEventListener('click', event => {
+        const action = event.target?.closest?.('[data-action]');
+        const dialog = action?.closest('dialog.dsa5h-cast-dialog[open]');
+        if (dialog && action.dataset.action !== 'dsa5hCloseCast') dialog.close();
+      }, { capture: true });
       // Munitionswahl (<details class="dsa5h-ammo-pick">) schließt sich bei einem Klick daneben wie ein Dropdown.
       this.element.addEventListener('click', event => {
         this.element.querySelectorAll('details.dsa5h-ammo-pick[open]').forEach(details => { if (!details.contains(event.target)) details.open = false; });

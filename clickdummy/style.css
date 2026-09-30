@@ -333,6 +333,8 @@ input,button{font-family:inherit;color:inherit}
 .center{text-align:center}
 
 .derived-row{grid-template-columns:1fr 56px 40px 52px 40px}
+/* Name und −/+ in einer Zeile (Rückmeldung 2026-09-30, „Karmaenergie“ brach in Foundry um). */
+.derived-name{white-space:nowrap}
 .simple-row{grid-template-columns:1fr 50px 50px 56px}
 
 /* Spielmodus vs. Bearbeiten-Modus: .edit-only-Elemente (z.B. hideInPlay-Zeilen, Eigenschaften-Aufschlüsselung) erscheinen nur im Bearbeiten-Modus. */
@@ -1028,10 +1030,10 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .body-grid{position:relative;isolation:isolate;min-height:330px}
 .body-grid>.body-figure{position:absolute;inset:0;z-index:-1;width:100%;height:100%;max-width:none;margin:0;border:0;object-fit:contain;object-position:center;pointer-events:none;opacity:.3;-webkit-mask-image:linear-gradient(90deg,transparent 12%,#000 35%,#000 65%,transparent 88%);mask-image:linear-gradient(90deg,transparent 12%,#000 35%,#000 65%,transparent 88%)}
 .sheet[data-theme="dark"] .body-grid>.body-figure{opacity:.22}
-.body-grid .figure-body{height:300px;position:static}
+.body-grid .figure-body{height:0;position:static}
 .body-grid>.figure-badge{z-index:2}
 .body-grid .figure-body::before{content:none}
-.body-grid .armor-slots{margin:4px 0 0;gap:8px}
+.body-grid .armor-slots{gap:8px}
 .body-grid .armor-slot{background:var(--paper)}
 .panel-title .cast-btns{display:flex;gap:6px}
 .cast-btn{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border:1px solid rgba(255,255,255,.45);border-radius:3px;background:rgba(255,255,255,.12);color:inherit;font:inherit;font-size:var(--fs-meta);cursor:pointer}
@@ -1092,12 +1094,15 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .wallet-coin small{font-size:var(--fs-meta);color:var(--muted)}
 
 /* ===== "Körper" als Kampf-Unterreiter (2026-09-28): Rüstung untereinander, Hände als Kacheln ===== */
-.body-grid{grid-template-columns:120px minmax(0,1fr) 250px;align-items:center}
-.body-grid .figure-armor{display:flex;flex-direction:column;align-items:center;justify-content:center;align-self:stretch}
-.body-grid .figure-armor .armor-slots{flex-direction:column;flex-wrap:nowrap;align-items:center}
+/* Beide Spalten oben bündig (Titel und Kacheln auf einer Höhe), die Zeile als Ganzes vertikal zentriert (Rückmeldung 2026-09-30). */
+.body-grid{grid-template-columns:120px minmax(0,1fr) 250px;align-items:start;align-content:center}
+.body-grid .figure-armor{display:flex;flex-direction:column;align-items:center;gap:3px}
+.body-grid .figure-armor .figure-col-title{margin-bottom:0}
+.body-grid .figure-armor .armor-slots{flex-direction:column;flex-wrap:nowrap;align-items:center;margin:0}
+.body-grid .figure-armor .body-armor-table{margin:0}
 /* Hände nebeneinander (Variante B, Nutzer-Entscheidung 2026-09-30); je Hand: Titel, Name groß, Kachel, darunter
    TP-Knopf und Auswahl untereinander. Beidhändige Waffe: nur die Haupthand, rechtsbündig. */
-.body-grid .figure-hands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;column-gap:12px;align-self:center}
+.body-grid .figure-hands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;column-gap:12px}
 /* Beidhändige Waffe: die eine Hand rechtsbündig an der Außenkante statt mittig (Rückmeldung 2026-09-30). */
 .body-grid .figure-hands.single{grid-template-columns:minmax(0,1fr);justify-items:end}
 .body-grid .figure-hands.single .hand-slot,.body-grid .figure-hands.single .hand-slot-body,.body-grid .figure-hands.single .hand-slot-side{align-items:flex-end;text-align:right}

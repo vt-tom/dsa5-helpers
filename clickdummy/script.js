@@ -1453,15 +1453,18 @@ function openCastListModal(kind) {
       el("span", { class: "center muted" }, "–"),
       el("span", { class: "center muted" }, "1"),
     ]);
-  openModal(
-    el("div", { class: "panel cast-modal" }, [
+  // Wie in Foundry: eine Probe (oder „wirken“/„spenden“) schließt den Dialog, damit das Probenfenster frei liegt
+  // (Rückmeldung 2026-09-30). Capture-Phase, weil makeRollable() die Ausbreitung stoppt.
+  const modalBox = el("div", { class: "panel cast-modal" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, title), closeBtn]),
       el("div", { class: "row-head cast-row" }, head("", "Name", "Probe", "FW", energy)),
       ...sections.filter(([, list]) => list.length).flatMap(([label, list]) => [el("div", { class: "subhead" }, label), ...list.map(castRow)]),
       ...(cantrips.length ? [el("div", { class: "subhead" }, cantripLabel), ...cantrips.map(cantripRow)] : []),
-    ]),
-    { label: title }
-  );
+    ]);
+  const closeOnRoll = (e) => { if (e.target.closest(".rollable") && (e.type === "click" || e.key === "Enter" || e.key === " ")) setTimeout(closeModal); };
+  modalBox.addEventListener("click", closeOnRoll, true);
+  modalBox.addEventListener("keydown", closeOnRoll, true);
+  openModal(modalBox, { label: title });
 }
 
 function renderBody() {
