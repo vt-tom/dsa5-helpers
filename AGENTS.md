@@ -43,6 +43,8 @@ Alles, was nicht Code/Design-Datei ist, liegt in `project/`. Seit 2026-09-24 nur
 - [project/RELEASE.md](project/RELEASE.md) — Anleitung für neue Versionen (Manifest-URL, Tag, GitHub-Release, Action). Nur lesen, wenn ein Release ansteht; bei Änderungen an `release.yml` oder am Ablauf mitpflegen.
 - [project/archive/](project/archive/) — **Nicht standardmäßig lesen.** Frühere Dateien (STATUS mit den Feedback-Runden 1–24, PLANNING, BUGS, FEATURES, NOTIZEN, TABS, KI-PROMPTING) und die vollständige Entscheidungs-Historie `DECISIONS.md`. Nur gezielt konsultieren, wenn eine frühere Entscheidung im Detail gebraucht wird.
 
+Außerdem im Root: [CHANGELOG.md](CHANGELOG.md) — jede für Nutzer sichtbare Änderung im selben Zug im Abschnitt der kommenden Version (oben, „unveröffentlicht“) eintragen.
+
 Faustregel: keine neuen Dateien anlegen — Offenes gehört in AUFGABEN.md, dauerhaft Gültiges kurz in PROJEKTDOKU.md.
 
 ## CLAUDE.md

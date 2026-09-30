@@ -27,7 +27,7 @@ wählen.
 
 ## Neue Version veröffentlichen
 
-1. `version` in `module.json` hochzählen, committen, nach `main` pushen.
+1. `version` in `module.json` hochzählen, [`CHANGELOG.md`](CHANGELOG.md) abschließen, committen, nach `main` pushen.
 2. Auf GitHub ein Release mit Tag `v<version>` (z. B. `v0.1.0`) veröffentlichen.
 3. Die Action [`release.yml`](.github/workflows/release.yml) setzt Version und URLs in `module.json`, packt
    `module.zip` (nur Moduldateien) und hängt beides an das Release. Foundry findet das Update danach über die

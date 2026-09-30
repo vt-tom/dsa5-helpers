@@ -21,7 +21,7 @@ danach bei jedem Release genau diese Schritte.
   auf GitHub **veröffentlicht** wird, und:
   1. setzt `version` aus dem Tag (`v0.2.0` → `0.2.0`),
   2. setzt `url`, `manifest` und `download` (Download zeigt fest auf das ZIP dieses Tags),
-  3. packt `module.zip` nur aus `module.json`, `LICENSE`, `README.md`, `scripts/`, `styles/`, `templates/`, `lang/`
+  3. packt `module.zip` nur aus `module.json`, `LICENSE`, `README.md`, `CHANGELOG.md`, `scripts/`, `styles/`, `templates/`, `lang/`
      (**nicht** enthalten: `clickdummy/`, `project/`, `tests/`, `tools/`, `.claude/`, `.github/`),
   4. hängt `module.json` und `module.zip` an das Release.
 - Das Repo muss **öffentlich** sein — Foundry lädt ohne Anmeldung.
@@ -70,8 +70,12 @@ In [`module.json`](../module.json):
   wirklich nicht mehr gehen.
 - `manifest`/`download` **nicht anfassen** — die setzt die Action.
 
+In [`CHANGELOG.md`](../CHANGELOG.md) den Abschnitt der Version von „unveröffentlicht“ auf das Datum setzen und den
+Vergleichslink unten von `...main` auf `...v0.2.0` ändern. Den Text daraus als Release-Notizen (Schritt 5) nehmen.
+Während der Arbeit an einer Version gehört jede sichtbare Änderung gleich in deren Abschnitt.
+
 ```sh
-git add module.json
+git add module.json CHANGELOG.md
 git commit -m "Release 0.2.0"
 git push origin main
 ```
@@ -157,7 +161,7 @@ Stattdessen in einer zweiten Foundry-Installation / einem zweiten Data-Ordner:
 
 ```sh
 git checkout main && git pull && node tests/sheet.test.cjs
-# module.json: "version": "0.2.0"
+# module.json: "version": "0.2.0"; CHANGELOG.md: Datum + Vergleichslink setzen
 git commit -am "Release 0.2.0" && git push origin main
 git tag -a v0.2.0 -m "v0.2.0" && git push origin v0.2.0
 gh release create v0.2.0 --verify-tag --title "v0.2.0" --notes "…"

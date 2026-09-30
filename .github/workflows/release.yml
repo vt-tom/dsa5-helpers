@@ -35,7 +35,7 @@ jobs:
           cat module.json
 
       - name: module.zip packen
-        run: zip -r module.zip module.json LICENSE README.md scripts styles templates lang
+        run: zip -r module.zip module.json LICENSE README.md CHANGELOG.md scripts styles templates lang
 
       - name: Assets an das Release hängen
         env:
