@@ -108,20 +108,11 @@
    text-shadow: 0 1px 1px rgba(0, 0, 0, .6)
 }
 
-/* Feiner Trennstrich zwischen den Bogen-Knöpfen und ⋮/✕. */
+/* Feiner Trennstrich zwischen den Bogen-Knöpfen und ⋮/✕ — als Hintergrund-Verlauf, nicht als ::before: dort zeichnet
+   Font Awesome das ⋮-Symbol selbst (Issue #24, das Symbol war sonst unsichtbar). */
 .dsa5-helpers-sheet .window-header .header-control[data-action="toggleControls"] {
-   position: relative;
-   margin-left: 3px !important
-}
-
-.dsa5-helpers-sheet .window-header .header-control[data-action="toggleControls"]::before {
-   content: "";
-   position: absolute;
-   left: -2px;
-   top: 3px;
-   bottom: 3px;
-   width: 1px;
-   background: rgba(220, 198, 184, .35)
+   margin-left: 3px !important;
+   background: linear-gradient(rgba(220, 198, 184, .35), rgba(220, 198, 184, .35)) no-repeat 0 50% / 1px 14px
 }
 
 .dsa5-helpers-sheet .window-header .window-title {
@@ -1300,6 +1291,9 @@
 .dsa5-helpers-sheet .dsa5h-tradition-icon { width:20px; height:20px; object-fit:contain; filter:drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
 .dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-name > span:not(.dsa5h-tradition-name-text) { display:none; }
 .dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-name :is(input,select) { flex:1 1 auto; width:100%; min-width:80px; background:none; border:none; color:#fff8ec; text-shadow:0 1px 2px rgba(0,0,0,.4); font-family:'Andalus', serif; font-size:17px; text-align:left; padding:0; }
+/* Platzhalter = Name aus der Traditions-Sonderfertigkeit (Issue #23): genau wie echter Text in der Pille — die Standard-
+   Platzhalterfarbe war dunkel und kaum lesbar, gedämpft sah es anders aus als im Magie-Reiter (Rückmeldungen 2026-10-01). */
+.dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-name input::placeholder { color:#fff8ec; opacity:1; }
 /* Pille wächst nach rechts (Nutzer-Feedback 2026-09-24: „zu schmal“); Klick öffnet die Tradition-Sonderfertigkeit
    (im Spielmodus die ganze Pille, im Bearbeiten-Modus das Icon — das Textfeld bleibt dort editierbar). */
 .dsa5-helpers-sheet .dsa5h-tradition-name-text { flex:1 1 auto; min-width:0; color:#fff8ec; text-shadow:0 1px 2px rgba(0,0,0,.4); font-family:'Andalus', serif; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

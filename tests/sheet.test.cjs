@@ -339,3 +339,8 @@ test('Traditions-Badge (#23): Name und Symbol aus der Sonderfertigkeit, sonst au
  const icons=elements(html,el=>el.attribs?.class==='dsa5h-tradition-icon').map(el=>el.attribs.src);
  assert(icons.includes('systems/dsa5/icons/traditionen/gildenmagier.webp'));assert(icons.includes('systems/dsa5/icons/months/Praios.webp'));
 });
+test('Titelleisten-Plakette (#24): kein eigenes ::before/::after an Foundrys Kopfknöpfen (dort zeichnet Font Awesome das Symbol)',()=>{
+ const root=postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));const bad=[];
+ root.walkRules(rule=>{for(const sel of rule.selectors)if(/\.header-control[^,\s]*::?(before|after)/.test(sel))bad.push(sel);});
+ assert.deepEqual(bad,[]);
+});
