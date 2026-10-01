@@ -1,0 +1,3 @@
+{{!-- Reiter „Steigerungsplaner“ (Issue #17): Inhalt ist das Template von „Lyynix: DSA5 - Steigerungsplaner“, nur wenn
+      der Planer aktiv ist (dsa5h.planner, siehe scripts/compat/steigerungsplaner.js). --}}
+{{#if dsa5h.planner}}<div class="dsa5h-tab dsa5h-planner" data-tab-panel="steigerungsplaner" hidden>{{> "modules/dsa5-steigerungsplaner/templates/planner-tab.hbs" tabs=dsa5h.planner.tabs}}</div>{{/if}}

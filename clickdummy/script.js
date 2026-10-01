@@ -301,7 +301,7 @@ function makeEditable(container, value, onCommit, opts = {}) {
 function renderRail() {
   const rail = document.getElementById("rail");
   rail.innerHTML = "";
-  TABS.forEach((t) => {
+  TABS.filter((t) => !(companionTabHidden && t.id === "companions")).forEach((t) => {
     const active = t.id === currentTab;
     // Jeder Reiter trägt sein Label; CSS zeigt es beim aktiven Reiter dauerhaft, bei den übrigen zuverlässig bei
     // Hover UND Tastaturfokus (UI/UX-Review 2026-09-25 Punkt 7, Variante b) — kein title mehr, sonst doppelter Tooltip.
@@ -1925,7 +1925,7 @@ function magicTable(title, items) {
   const hasExt = items.some((it) => it.extensions);
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, title),
-    el("div", { class: "row-head magic-row" }, head("", "Name", "Probe", "FW", "Kosten", "Dauer", "Reichweite", "", "")),
+    el("div", { class: "row-head magic-row" }, head("", "Name", "Probe", "FW", "Kosten", "Aktionsdauer", "Reichweite", "", "")),
     ...items.map((it) => magicRow(it, items)),
     hasExt ? el("div", { class: "table-legend" }, [el("span", { class: "ext-badge-inline", "aria-hidden": "true" }, "✦"), " = Zaubererweiterung gelernt (Zeichen antippen oder mit der Maus darauf zeigen für Details)"]) : null,
   ]);
@@ -2986,7 +2986,7 @@ function initHeaderBgPicker() {
 // Ersetzt die früher statischen <span class="badge"> in index.html (#headBadges) — dieselbe Optik, aber
 // anklickbar (öffnet die Item-Vorschau oben). Einmalig beim Laden gefüllt, siehe initHeadBadges() unten.
 function identityBadge(data) {
-  const btn = el("button", { type: "button", class: "badge" }, data.name);
+  const btn = el("button", { type: "button", class: "badge", title: data.name }, data.name);
   btn.addEventListener("click", () => openIdentityModal(data));
   return btn;
 }
@@ -3208,6 +3208,47 @@ function renderCover() {
   return favoritesPanel();
 }
 
+// Steigerungsplaner (GitHub-Issue #17): im Modul ein eigener Reiter, wenn „Lyynix: DSA5 - Steigerungsplaner“ aktiv
+// ist (Inhalt = dessen Template, Optik auf unsere Panels umgestellt). Im Click-Dummy per ?planner in der URL zu sehen,
+// mit festen Demo-Schritten. Geplant wird im Modul per Shift-Klick auf „+“/„−“ im Bearbeiten-Modus (der Planer).
+const SHOW_PLANNER = new URLSearchParams(location.search).has("planner");
+if (SHOW_PLANNER) TABS.push({ id: "steigerungsplaner", label: "Steigerungsplaner", icon: A.career, title: "Steigerungsplaner", hint: "" });
+const step = (from, to, cost) => ({ from, to, cost });
+const PLANNER_DEMO = [
+  { label: "Eigenschaften", groups: [{ label: "Mut", icon: ICONS + "/dice/d20mu.svg", steps: [step(13, 14, 15)] }] },
+  { label: "Körpertalente", groups: [
+    { label: "Körperbeherrschung", icon: A.tabSkills, steps: [step(8, 9, 4), step(9, 10, 4), step(10, 11, 4)] },
+    { label: "Klettern", icon: A.tabSkills, steps: [step(4, 5, 2)] },
+  ] },
+  { label: "Zauber", groups: [{ label: "Balsam Salabunde", icon: A.tabMagic, steps: [step(7, 8, 6), step(8, 9, 6), step(9, 10, 6), step(10, 11, 6)] }] },
+];
+
+function renderPlanner() {
+  const free = EXPERIENCE.total - EXPERIENCE.spent;
+  const sections = PLANNER_DEMO.map((s) => ({ ...s, groups: s.groups.filter((g) => g.steps.length) })).filter((s) => s.groups.length);
+  const total = sections.reduce((sum, s) => sum + s.groups.reduce((t, g) => t + g.steps.reduce((u, st) => u + st.cost, 0), 0), 0);
+  const groupRow = (g) => {
+    let left = free;
+    let reachable = true;
+    const tiles = g.steps.map((st, i) => {
+      reachable = reachable && st.cost <= left;
+      if (reachable) left -= st.cost;
+      const tile = el("button", { type: "button", class: "planner-step" + (reachable ? "" : " unaffordable"), title: "Schritte bis hier anwenden" }, [el("span", { class: "planner-step-values" }, `${st.from} » ${st.to}`), el("span", { class: "planner-step-cost" }, `${st.cost} AP`)]);
+      tile.addEventListener("click", () => { g.steps.splice(0, i + 1); renderContent(); });
+      return tile;
+    });
+    const discard = el("button", { type: "button", class: "planner-discard", "aria-label": `Geplante Steigerungen für ${g.label} verwerfen` }, "🗑");
+    discard.addEventListener("click", () => { g.steps.length = 0; renderContent(); });
+    return el("div", { class: "row planner-row" }, [el("img", { src: g.icon, alt: "" }), el("span", { class: "left" }, g.label), el("span", { class: "planner-steps" }, tiles), discard]);
+  };
+  return el("div", { class: "planner-tab" }, [
+    el("div", { class: "planner-summary" }, [el("span", {}, `Verfügbare AP: ${free}`), el("span", {}, `Geplante Kosten: ${total}`)]),
+    ...(sections.length
+      ? sections.map((s) => el("div", { class: "panel" }, [el("div", { class: "panel-title" }, s.label), ...s.groups.map(groupRow)]))
+      : [el("p", { class: "panel planner-empty" }, "Keine Steigerungen geplant. Shift-Klick auf + im Charakterbogen um eine zu planen.")]),
+  ]);
+}
+
 const RENDERERS = {
   cover: renderCover,
   main: renderMain,
@@ -3219,6 +3260,7 @@ const RENDERERS = {
   status: renderStatus,
   notes: renderNotes,
   companions: renderCompanions,
+  steigerungsplaner: renderPlanner,
 };
 
 function renderContent() {
@@ -3322,6 +3364,54 @@ function initModeSwitch() {
   });
 }
 
+// Fensterrahmen + Titelleiste (GitHub-Issue #22, Nutzer-Entscheidung 2026-10-01): Nachbau des Systemrahmens mit
+// breiterem oberem Band (styles/dsa5-helpers-frame.svg, wie im Modul), Knöpfe in einer aufgesetzten Plakette.
+// Ziehen an der Plakette und am oberen Rahmenband (der Rand gehört der .sheet: Ereignisziel ist sie selbst, die
+// Höhe prüft der Abstand zur Innenkante), Doppelklick minimiert — wie im Modul über Foundrys .window-header.
+function initWindowFrame() {
+  const sheet = document.querySelector(".sheet");
+  const chrome = sheet.querySelector(".fake-window-chrome");
+  chrome.querySelector(".fwc-title").textContent = CHARACTER_NAME;
+  const onTopBorder = (ev) => ev.target === sheet && ev.clientY < sheet.getBoundingClientRect().top + parseFloat(getComputedStyle(sheet).borderTopWidth);
+  const isHandle = (ev) => !ev.target.closest("button") && (chrome.contains(ev.target) || onTopBorder(ev));
+  let drag = null;
+  sheet.addEventListener("pointerdown", (ev) => {
+    if (ev.button !== 0 || !isHandle(ev)) return;
+    const [x, y] = (sheet.style.translate || "0px 0px").split(" ").map(parseFloat);
+    drag = { sx: ev.clientX, sy: ev.clientY, x: x || 0, y: y || 0 };
+    ev.preventDefault();
+  });
+  document.addEventListener("pointermove", (ev) => {
+    if (drag) sheet.style.translate = `${drag.x + ev.clientX - drag.sx}px ${drag.y + ev.clientY - drag.sy}px`;
+  });
+  document.addEventListener("pointerup", () => { drag = null; });
+  sheet.addEventListener("dblclick", (ev) => {
+    if (isHandle(ev)) sheet.classList.toggle("minimized");
+  });
+}
+
+// Fenstermenü „⋮“ (GitHub-Issue #21, Variante A): wie im Modul (_getHeaderControls) ein Eintrag, der den Reiter
+// Gefährten für diesen Helden aus-/einblendet — im Modul als Actor-Flag hideCompanionTab gespeichert.
+let companionTabHidden = false;
+
+function initWindowMenu() {
+  const btn = document.getElementById("windowMenuBtn");
+  btn.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    document.querySelector(".fwc-menu")?.remove();
+    const item = el("button", { type: "button" }, companionTabHidden ? "🐾 Reiter Gefährten einblenden" : "🚫 Reiter Gefährten ausblenden");
+    const menu = el("div", { class: "fwc-menu", role: "menu" }, [item]);
+    item.addEventListener("click", () => {
+      menu.remove();
+      companionTabHidden = !companionTabHidden;
+      if (companionTabHidden && currentTab === "companions") setTab("cover");
+      else renderRail();
+    });
+    btn.closest(".fake-window-chrome").appendChild(menu);
+    setTimeout(() => document.addEventListener("click", () => menu.remove(), { once: true }));
+  });
+}
+
 // Testschalter "Nur LeP" (#onlyLepToggle in index.html) — siehe ONLY_LEP/resourceGroup()-Kommentar.
 function initOnlyLepToggle() {
   const btn = document.getElementById("onlyLepToggle");
@@ -3385,6 +3475,8 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
+initWindowMenu();
+initWindowFrame();
 initSkillScrollSpy();
 initSheetResize();
 initHeaderBgPicker();

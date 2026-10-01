@@ -24,6 +24,8 @@ wählen.
 - Spiel- und Bearbeiten-Modus, Favoriten (Stern) auf dem Titelblatt.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
+- Arbeitet mit [„Lyynix: DSA5 - Steigerungsplaner“](https://github.com/Lyynix/dsa5-steigerungsplaner) zusammen:
+  Shift-Klick auf „+“/„−“ plant im Bearbeiten-Modus, eigener Reiter „Steigerungsplaner“ (nur wenn der Planer aktiv ist).
 
 ## Neue Version veröffentlichen
 

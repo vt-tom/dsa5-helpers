@@ -2,6 +2,23 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.3.2] — 2026-10-01
+
+### Neu
+
+- Zusammenarbeit mit dem Modul „Lyynix: DSA5 - Steigerungsplaner“: Shift-Klick auf „+“/„−“ (Bearbeiten-Modus) plant eine Steigerung, statt sie auszuführen; neben dem „+“ zeigt ein Zähler die geplanten Schritte, und ein eigener Reiter „Steigerungsplaner“ listet sie zum Anwenden oder Verwerfen. Der Reiter erscheint nur, wenn der Planer aktiv ist, und nur für Besitzer des Helden ([#17](https://github.com/vt-tom/dsa5-helpers/issues/17)).
+- Neuer Fensterrahmen im Stil des bisherigen (Holz mit Knotenband), aber nicht mehr verzerrt: die Ecken bleiben fest, das Band wiederholt sich statt gestreckt zu werden; oben ist es etwas breiter. Die Knöpfe der Titelleiste sitzen rechts in einer Plakette auf dem oberen Rahmen, und am ganzen oberen Rahmen lässt sich der Bogen wieder verschieben bzw. per Doppelklick minimieren ([#22](https://github.com/vt-tom/dsa5-helpers/issues/22)).
+- Der Reiter „Titelblatt“ hat ein eigenes Symbol (aufgeschlagenes Buch) statt des Auges, das dem der Eigenschaften glich ([#20](https://github.com/vt-tom/dsa5-helpers/issues/20)).
+- Der Reiter „Gefährten“ lässt sich je Held ausblenden: Menü „⋮“ oben rechts am Bogen › „Reiter Gefährten ausblenden“ (dort auch wieder einblenden). Nur für Besitzer des Helden ([#21](https://github.com/vt-tom/dsa5-helpers/issues/21)).
+
+### Behoben
+
+- Lange Professions-, Kultur- und Speziesnamen ragen nicht mehr aus dem Kopf des Bogens heraus, sondern werden mit „…“ gekürzt; der volle Name erscheint beim Darüberfahren ([#14](https://github.com/vt-tom/dsa5-helpers/issues/14)).
+- Eine Kreatur, die im Reiter „Gefährten“ auf die Fläche „Favoriten zum Schnellauswählen hierher ziehen“ gezogen wird, wird jetzt als Beschwörungs-Favorit angelegt statt als Begleiter, Reittier oder Gestaltwandlung ([#15](https://github.com/vt-tom/dsa5-helpers/issues/15)). Wie im Systembogen wird außerdem Rüstung, die im Reiter „Kampf“ auf den Bogen gezogen wird, gleich angelegt.
+- Spaltenköpfe brechen nicht mehr mitten im Wort um: „Aktionsdauer“ bei Zaubern/Liturgien, „Encumbrance“ (englisch) bei den Talenten sowie „Aktuell“ (englisch auch „Advance“) der Grundwerte im Bearbeiten-Modus ([#16](https://github.com/vt-tom/dsa5-helpers/issues/16)).
+- Das Traditions-Badge in den Reitern Magie und Religion zeigt jetzt Name und Symbol auch dann, wenn die Tradition nur als Sonderfertigkeit hinzugefügt wurde (z. B. „Tradition (Hesindekirche)“ → „Hesindekirche“) – wie im Systembogen hat die Sonderfertigkeit Vorrang vor dem Textfeld ([#23](https://github.com/vt-tom/dsa5-helpers/issues/23)).
+- Der Rahmen um das Porträt sieht im dunklen Thema wieder aus wie im hellen (dunkle Linie mit feinem Goldsaum) statt einer dicken hellen Linie ([#19](https://github.com/vt-tom/dsa5-helpers/issues/19)).
+
 ## [0.3.1] — 2026-09-30
 
 ### Neu
@@ -67,6 +84,7 @@ Erste Version, installierbar über die Manifest-URL.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
 
+[0.3.2]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.1.0...v0.2.0

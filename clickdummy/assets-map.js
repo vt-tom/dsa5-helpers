@@ -35,7 +35,7 @@ const A = {
   // Reiter-Icons
   // "Spieler-Auge"-Variante des Systemlogos (fa-dsa5-player in dsa5.scss) statt der GM-Variante (tabMain) —
   // rein zur visuellen Unterscheidung vom Eigenschaften-Tab-Icon, keine eigene Bedeutung im System.
-  tabCover: ICONS + "/categories/DSA-Auge-Spieler.webp",
+  tabCover: ICONS + "/categories/Spellextension.webp", // aufgeschlagenes Buch (Issue #20, Variante C)
   tabMain: ICONS + "/categories/DSA-Auge.webp",
   tabSkills: ICONS + "/categories/Skill.webp",
   tabCombat: ICONS + "/categories/ability_combat.webp",

@@ -3,7 +3,7 @@
 @font-face{font-family:'GentiumBasic';src:url('../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
 
 :root{
-  --paper:#ece2d2; --ink:#2b2721; --muted:rgba(43,39,33,.72); --line:rgba(43,39,33,.2);
+  --paper:#ece2d2; --ink:#2b2721; --frame-ink:#2b2721; /* Porträtrahmen, im dunklen Thema bewusst gleich (Issue #19) */ --muted:rgba(43,39,33,.72); --line:rgba(43,39,33,.2);
   --panel:rgba(255,255,255,.4); --field:rgba(255,255,255,.55); --odd:rgba(0,0,0,.045);
   --title:linear-gradient(90deg,rgba(147,123,72,.9) 0%,rgba(147,123,72,.06) 100%);
   --head:linear-gradient(180deg,#3a322b,#272320); --accent:#8b6f3f; --headink:#f4e8d6; --headmuted:rgba(244,232,214,.74);
@@ -78,15 +78,25 @@ input,button{font-family:inherit;color:inherit}
 @media (max-width:860px){.rail button .rail-label{display:none}}
 
 /* Feste Größe wie das echte DSA5-Actor-Sheet-Fenster (systems/dsa5/modules/actor/actor-sheet.js: width 770 / height 740), damit die Platznutzung realistisch geprüft werden kann. */
-.sheet{position:relative;width:770px;max-width:100%;height:740px;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border:16px solid transparent;border-image:url('../../../systems/dsa5/icons/backgrounds/actor.webp') 20 stretch;box-shadow:0 18px 48px rgba(0,0,0,.5)}
+/* Rahmen (Issue #22, 2026-10-01): Nachbau des Systemrahmens actor.webp als Vektor, oben breiteres Band (24px) für die
+   aufgesetzte Knopf-Plakette — dieselbe Datei wie im Modul (erzeugt von tools/gen-frame.cjs). Ecken fest, Knoten
+   gekachelt statt gestreckt. */
+.sheet{position:relative;width:770px;max-width:100%;height:740px;display:flex;flex-direction:column;background:var(--paper);color:var(--ink);border:16px solid transparent;border-top-width:24px;border-image:url('../styles/dsa5-helpers-frame.svg') 24 16 16 16 / 24px 16px 16px 16px repeat;box-shadow:0 18px 48px rgba(0,0,0,.5)}
 
-/* VORSCHAU 2026-09-15 (Kopf-Redesign-Idee des Nutzers, siehe index.html-Kommentar dort): Nachbau der Foundry-
-   Fenster-Titelzeile als reines Overlay über den obersten ~30px von .head, statt einer eigenen Zeile — dadurch
-   entfällt (im echten Modul) die separate .window-header-Zeilenhöhe komplett, Name steht dann auch nur noch
-   einmal (im echten .dsa5h-name), nicht zusätzlich blass in der Titelzeile. */
-.fake-window-chrome{position:absolute;top:0;left:0;right:0;height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 6px;z-index:5;background:linear-gradient(to bottom,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 100%);pointer-events:none}
-.fake-window-chrome .fwc-left,.fake-window-chrome .fwc-right{display:flex;gap:2px}
-.fake-window-chrome button{background:none;border:none;color:rgba(244,232,214,.85);font-size:12px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;cursor:default;opacity:.9}
+/* Titelleiste als Plakette (Issue #22): alle Knöpfe rechts, sitzt auf dem oberen Rahmenband (24px) und ragt 8px
+   darüber hinaus — im Modul Foundrys .window-header mit denselben Maßen. Ziehen + Doppelklick: initWindowFrame(). */
+.fake-window-chrome{position:absolute;top:-32px;right:-6px;z-index:5;display:flex;align-items:center;gap:0;height:22px;padding:0 4px;background:linear-gradient(180deg,#3a322b,#2c2622);border:1px solid #dcc6b8;box-shadow:0 0 0 1.5px #4a372b,0 2px 4px rgba(0,0,0,.5);border-radius:4px;cursor:move;user-select:none}
+.fake-window-chrome button{background:none;border:none;color:rgba(244,232,214,.9);font-size:12px;width:22px;height:20px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-shadow:0 1px 1px rgba(0,0,0,.6)}
+.fake-window-chrome .fwc-sep{margin-left:3px;position:relative}
+.fake-window-chrome .fwc-sep::before{content:"";position:absolute;left:-2px;top:3px;bottom:3px;width:1px;background:rgba(220,198,184,.35)}
+.fwc-title{display:none;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 8px;font-family:'Andalus',serif;font-size:15px;color:rgba(244,232,214,.9)}
+/* Minimiert (Doppelklick): nur der Rahmen bleibt, die Plakette wird zur Leiste mit Name + ✕ (wie Foundry, das dort
+   alle anderen Knöpfe ausblendet). */
+.sheet.minimized{height:auto !important;min-height:0}
+.sheet.minimized > :not(.fake-window-chrome){display:none !important}
+.sheet.minimized .fake-window-chrome{left:-6px}
+.sheet.minimized .fwc-title{display:block}
+.sheet.minimized .fake-window-chrome button:not(.fwc-close){display:none}
 
 .head{position:relative;overflow:hidden;flex:none;background:var(--head);border-bottom:1px solid rgba(224,192,128,.3);padding:15px 16px}
 /* IDEEN.md: optionales Hintergrundbild je Charakter (HEADER_BG_IMG in data.js) — .head-bg-layer trägt das Bild
@@ -107,7 +117,7 @@ input,button{font-family:inherit;color:inherit}
    dieselbe dünne Tintenlinie mit diagonal gekappten Ecken statt Gold/Ornamenten). Dazu ein leichter Gold-Saum
    (Nutzerwunsch: "wie bei den LeP") — dieselbe gedämpfte Randfarbe wie die LeP/AsP/KaP-Ressourcenkarten
    (rgba(224,192,128,.4), siehe .res-card), nur als dünne innen liegende Linie statt Vollrahmen. */
-.portrait{position:relative;flex:0 0 118px;height:142px;border:3px solid var(--ink);border-radius:0;box-shadow:inset 0 0 0 1px rgba(224,192,128,.5);clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);overflow:hidden;background-color:var(--paper);background-image:repeating-linear-gradient(135deg,rgba(247,236,224,.1) 0 6px,transparent 6px 12px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:7px}
+.portrait{position:relative;flex:0 0 118px;height:142px;border:3px solid var(--frame-ink);border-radius:0;box-shadow:inset 0 0 0 1px rgba(224,192,128,.5);clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);overflow:hidden;background-color:var(--paper);background-image:repeating-linear-gradient(135deg,rgba(247,236,224,.1) 0 6px,transparent 6px 12px);display:flex;align-items:flex-end;justify-content:center;padding-bottom:7px}
 .portrait span{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.1em;color:rgba(247,236,224,.66);text-transform:uppercase}
 .head-main{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
 .head-top{display:flex;align-items:flex-start;gap:12px}
@@ -734,7 +744,8 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
    (20px) ist der Lösch-"×" (rowDeleteBtn()), nur im Bearbeiten-Modus sichtbar. */
 /* Letzte Spalte 20px→42px verbreitert, da die Aktionen-Zelle jetzt Duplizieren+Löschen nebeneinander fasst
    (rowActionsCell(), siehe itemContextMenu-Kommentar bei duplicateBtn() in script.js). */
-.magic-row{grid-template-columns:28px 1fr 108px 62px 46px 76px 90px 20px 42px}
+/* Kopf „Aktionsdauer“ wie im Modul (castingTime), Spalte 76→92px, sonst bricht er um (Issue #16). */
+.magic-row{grid-template-columns:28px 1fr 108px 62px 46px 92px 90px 20px 42px}
 .row-actions-cell{display:flex;align-items:center;justify-content:center;gap:2px}
 
 /* Dämonenmal-Tabelle (renderStatus() in script.js), gleiche 3-Spalten-Aufteilung wie .armor-row. */
@@ -899,7 +910,8 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
    script.js, ersetzt die früher statischen <span>) statt reiner Anzeige — öffnen eine kurze Item-Vorschau im
    bestehenden Modal (openIdentityModal(), identity-modal-body unten). .badge selbst überschreibt bereits Rahmen/
    Hintergrund/Padding, hier nur noch Button-Reset + Zeigercursor/Hover als Klick-Affordanz ergänzt. */
-.badges .badge{appearance:none;-webkit-appearance:none;cursor:pointer}
+/* Lange Namen (Issue #14) einzeilig mit „…“ auf die Kopfbreite kürzen, voller Name im Tooltip (title). */
+.badges .badge{appearance:none;-webkit-appearance:none;cursor:pointer;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .badges .badge:hover{border-color:#f4e8d6;background:rgba(224,192,128,.28)}
 .badges .badge.chargen{border-color:rgba(224,192,128,.75);background:rgba(224,192,128,.28)}
 .badges .badge.chargen:hover{background:rgba(224,192,128,.45);color:#fff}
@@ -1098,10 +1110,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .mag-swap:hover:not(:disabled){color:var(--accent);border-color:var(--accent)}
 .mag-swap:disabled{opacity:.4;cursor:default}
 
-/* ===== Foundry-Titelleiste "schwebend" (Nutzer-Entscheidung 2026-09-28 nach Vergleich A/B/C) =====
-   Knöpfe als kleine Gruppe oben rechts über dem Kopf statt eigener Zeile (im Modul: .window-header absolut
-   positioniert, Titel ausgeblendet). Überdeckt so weder Porträt noch Name. */
-.sheet .fake-window-chrome{left:auto;right:0;height:28px;gap:2px;padding:0 6px;border-bottom-left-radius:6px;background:rgba(20,16,12,.55)}
 
 /* ===== Geld-Panel (walletLine(), Variante A, 2026-09-30) ===== */
 /* Eine gemeinsame Geldbörse — ein Rahmen, vier Segmente mit feinen Trennern, Werte ohne eigenen Kasten
@@ -1234,3 +1242,26 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 /* Zielen (Issue #8, 2026-09-30): wie Nachladen, zwei Segmente, nur sichtbar wenn schon gezielt. Modul: .dsa5h-aim. */
 .aim{display:inline-flex;align-items:center;gap:7px;min-height:26px;padding:2px 8px;border:1px solid var(--line);border-radius:3px;font-size:12px}
 .aim.done{border-color:var(--accent);font-weight:bold}
+
+/* Steigerungsplaner (Issue #17, nur mit ?planner): Demo des Modul-Reiters — Kacheln je geplantem Schritt, nicht
+   erreichbare (zu wenig AP) halb durchsichtig wie im Planer. */
+.planner-tab{display:flex;flex-direction:column;gap:16px}
+.planner-tab>.panel{margin-top:0}
+.planner-summary{display:flex;justify-content:flex-end;gap:16px;font-size:var(--fs-small);color:var(--muted)}
+.planner-row{grid-template-columns:24px 160px minmax(0,1fr) 28px}
+.planner-row img{width:24px;height:24px;border:1px solid var(--line);object-fit:cover}
+.planner-steps{display:flex;gap:8px;overflow-x:auto;min-width:0}
+.planner-step{flex:0 0 auto;display:flex;align-items:stretch;height:30px;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font:inherit;cursor:pointer}
+/* Zweigeteilt wie im Modul (Feedback 2026-10-01): Schritt groß/fett, Kosten als farbiges Feld. */
+.planner-step-values{display:flex;align-items:center;padding:0 9px;font-size:var(--fs-data);font-weight:bold;font-variant-numeric:tabular-nums}
+.planner-step-cost{display:flex;align-items:center;padding:0 8px;background:var(--accent);color:#fff;font-size:var(--fs-meta);font-weight:bold;letter-spacing:.03em}
+.planner-step.unaffordable{opacity:.5}
+.planner-step:hover,.planner-step:focus-visible{border-color:var(--accent)}
+.planner-discard{width:28px;height:28px;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
+.planner-empty{margin:0;padding:10px 11px;color:var(--muted)}
+
+/* Fenstermenü „⋮“ (Issue #21): nur der ⋮-Knopf ist klickbar, das Overlay selbst lässt Klicks weiter durch. */
+.fake-window-chrome #windowMenuBtn{pointer-events:auto;cursor:pointer}
+.fwc-menu{position:absolute;top:100%;right:6px;z-index:20;min-width:220px;padding:4px 0;background:#1c1917;border:1px solid rgba(224,192,128,.45);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.5);pointer-events:auto}
+.fwc-menu button{display:block;width:100%;padding:6px 12px;border:0;background:none;color:#ecd8b1;font:14px 'GentiumBasic',serif;text-align:left;cursor:pointer}
+.fwc-menu button:hover,.fwc-menu button:focus-visible{background:rgba(224,192,128,.18)}

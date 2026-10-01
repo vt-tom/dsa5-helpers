@@ -1,5 +1,6 @@
 import { Dsa5HelpersCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
 import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
+import { initSteigerungsplaner } from './compat/steigerungsplaner.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -53,6 +54,7 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/main.hbs",
   "modules/dsa5-helpers/templates/actors/parts/notes.hbs",
   "modules/dsa5-helpers/templates/actors/parts/onuse.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/planner.hbs",
   "modules/dsa5-helpers/templates/actors/parts/probe.hbs",
   "modules/dsa5-helpers/templates/actors/parts/quick-actions.hbs",
   "modules/dsa5-helpers/templates/actors/parts/ranged-status.hbs",
@@ -70,6 +72,8 @@ Hooks.once('init', async () => {
   "systems/dsa5/templates/actors/parts/horse.hbs"
 ]);
   foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersCharacterSheet, { types: ['character'], makeDefault: game.settings.get('dsa5-helpers', 'defaultSheet'), label: 'DSA5HELPERS.SheetLabel' });
+  // Reiter „Steigerungsplaner“, falls Lyynix' Planer aktiv ist (Issue #17).
+  await initSteigerungsplaner();
 });
 
 Hooks.once('ready', () => showChangelogIfUpdated());

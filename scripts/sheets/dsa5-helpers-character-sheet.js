@@ -1,6 +1,7 @@
 /** Alternative presentation; all rule actions and actor updates are inherited from DSA5. */
 const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
+import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -18,6 +19,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hSetTab: this._setTab,
       dsa5hSetSubTab: this._setSubTab,
       dsa5hTheme: this._toggleTheme,
+      dsa5hToggleCompanionTab: this._toggleCompanionTab,
       dsa5hFavorite: this._toggleFavorite,
       dsa5hToggleHappyTalents: this._toggleHappyTalents,
       dsa5hOnlyLearned: this._toggleOnlyLearned,
@@ -47,7 +49,10 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       schipUpdate: this._schipUdate,
       startCharacterBuilder: this._startCharacterBuilder,
       deleteItem: this._deleteItemAction,
-      advanceWrapper: this._advanceWrapper,
+      // advanceWrapper bewusst NICHT hier: ActorSheetDsa5 deklariert ihn selbst und ApplicationV2 führt die
+      // DEFAULT_OPTIONS der Klassenkette zusammen. Ein eigener Eintrag hielte die Funktion beim Laden fest, also vor
+      // dem Umhüllen durch den Steigerungsplaner (ready) — Shift-Klick hätte dann sofort gesteigert und AP
+      // abgezogen statt zu planen (Issue #17).
       statusAdd: { handler: this._statusAdd, buttons: [0, 2] },
       disableRegeneration: this._disableRegeneration,
       conditionValue: { handler: this._conditionValue, buttons: [0, 2] },
@@ -85,7 +90,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // DSA5 uses LIMITEDPARTS (without underscore). The template renders public content only in this mode.
   static LIMITEDPARTS = this.PARTS;
   static HELPER_TABS = [
-      { id: "cover", label: "Titelblatt", icon: "systems/dsa5/icons/categories/DSA-Auge-Spieler.webp", hint: "Übersicht · Favoriten" },
+      // Aufgeschlagenes Buch statt des Auges, das dem der Eigenschaften zum Verwechseln ähnelte (Issue #20, Variante C).
+      { id: "cover", label: "Titelblatt", icon: "systems/dsa5/icons/categories/Spellextension.webp", hint: "Übersicht · Favoriten" },
       { id: "main", label: "Eigenschaften", icon: "systems/dsa5/icons/categories/DSA-Auge.webp", hint: "Grundwerte · Erfahrung" },
       { id: "skills", label: "Talente", icon: "systems/dsa5/icons/categories/Skill.webp", hint: "" },
       { id: "combat", label: "Kampf", icon: "systems/dsa5/icons/categories/ability_combat.webp", hint: "" },
@@ -95,6 +101,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { id: "status", label: "Status", icon: "systems/dsa5/icons/categories/ability_ceremonial.webp", hint: "Zustände · Effekte · Krankheiten" },
       { id: "notes", label: "Notizen", icon: "systems/dsa5/icons/categories/Ability_Language.webp", hint: "Aussehen · Hintergrund · Verbindungen" },
       { id: "companion", label: "Gefährten", icon: "systems/dsa5/icons/categories/ability_animal.webp", hint: "Reittier · Vertraute · Begleiter" },
+      // Nur mit aktivem „Lyynix: DSA5 - Steigerungsplaner“ und nur für Owner, wie dessen eigener Reiter (Issue #17).
+      { id: PLANNER_TAB_ID, label: "Steigerungsplaner", icon: "systems/dsa5/icons/categories/Career.webp", hint: "" },
     ];
   _currentTab = 'cover';
   _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells', notes: 'biography' };
@@ -180,8 +188,10 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // Same flags the inherited header partial already uses to hide the AsP/KaP resource cards (SHEET.hasSpells/hasPrayers ==
     // actor.system.isMage/isPriest) — reused here so Magie/Religion only appear in the rail for characters that can use them,
     // exactly like the real system's own ActorSheetDsa5#_prepareTabs.
+    const planner = !limited && this.actor.isOwner ? getPlannerTab() : null;
     const tabs = this.constructor.HELPER_TABS
-      .filter(tab => (tab.id !== 'magic' || magic.hasSpells) && (tab.id !== 'religion' || magic.hasPrayers))
+      .filter(tab => (tab.id !== 'magic' || magic.hasSpells) && (tab.id !== 'religion' || magic.hasPrayers) && (tab.id !== PLANNER_TAB_ID || planner)
+        && (tab.id !== 'companion' || !this.actor.getFlag?.(MODULE_ID, 'hideCompanionTab')))
       .map(tab => ({ ...tab, label: localize('DSA5HELPERS.Tabs.' + tab.id), hint: localize('DSA5HELPERS.Hints.' + tab.id) }));
     if (!tabs.some(tab => tab.id === this._currentTab)) this._currentTab = 'cover';
     // DSA5StatusEffects.prepareActiveEffects() hands us CONFIG.statusEffects in its raw config order (roughly by
@@ -255,6 +265,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         return Object.assign(item, { dsa5hFill: { weight, capacity, over: capacity > 0 && weight > capacity } });
       }),
       traditionItems: this._traditionItems(),
+      tradition: this._traditionNames(),
       // Sammelproben (Nutzer-Notiz 2026-09-30): je Talent Probe + FW wie in der Talentliste. Das Talent wird wie im
       // System gesucht (item-dsa5.js rollAggregatedProbe: Name + Typ skill); gewürfelt wird weiter über rollAggregatedProbe.
       aggregated: (prepare.aggregatedtests ?? []).map(item => ({
@@ -283,6 +294,12 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     };
     // The original sheet prepares this only for its separate companion part.
     if (!limited) await this.prepareCompanionTab(context);
+    // Daten des Planer-Reiters (plannerSections/-TotalCost/-AvailableXP) direkt vom Planer; `tabs` braucht sein
+    // Template für die Klasse `active` (parts/planner.hbs).
+    if (planner) {
+      await planner.prepareContext(this, context);
+      context.dsa5h.planner = { tabs: { [PLANNER_TAB_ID]: { cssClass: 'active', group: 'sheet' } } };
+    }
     return context;
   }
 
@@ -291,6 +308,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this.element.dataset.mode = context.dsa5h.editMode ? 'edit' : 'play';
     this.element.dataset.theme = game.settings.get(MODULE_ID, 'theme');
     this._applyCurrentTab();
+    // Listener des Planer-Reiters (Anwenden/Verwerfen) — jedes Rendern baut den Reiter neu, also jedes Mal.
+    const plannerElement = context.dsa5h.planner && this.element.querySelector('.steigerungsplaner-tab');
+    if (plannerElement) getPlannerTab()?.attachListeners(this, plannerElement);
     if (this._pendingScrollTop) this.element.querySelector('.dsa5h-content')?.scrollTo({ top: this._pendingScrollTop });
     this._restoreFocus(this._pendingFocus);
     this._pendingFocus = null;
@@ -314,11 +334,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Zieh-Logik der .window-header weitergereicht (ApplicationV2 lauscht dort auf pointerdown und verfolgt
       // pointermove danach am ganzen Fenster). Nur der Kopf, nicht Seitenleiste/Reiterleiste (Rückmeldung
       // 2026-09-30); Hinweis für Spielende ist der Greif-Cursor (CSS .dsa5h-head).
+      // Seit Issue #22 außerdem das obere Rahmenband (24px, border des Fensters — dort ist this.element selbst das Ziel).
       this.element.addEventListener('pointerdown', event => {
-        if (event.button !== 0 || !this.window?.header) return;
-        const target = event.target;
-        if (!target?.closest?.('.dsa5h-head')) return;
-        if (target.closest(this.constructor.DRAG_EXCLUDE)) return;
+        if (event.button !== 0 || !this.window?.header || !this._isDragHandle(event)) return;
         this.window.header.dispatchEvent(new PointerEvent('pointerdown', {
           bubbles: true, button: 0, buttons: event.buttons, clientX: event.clientX, clientY: event.clientY,
           pointerId: event.pointerId, pointerType: event.pointerType, isPrimary: event.isPrimary
@@ -327,8 +345,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Doppelklick auf dieselben freien Kopfstellen minimiert wie im Systembogen — Foundrys eigener Handler an der
       // .window-header (minimize/maximize, beachtet options.window.minimizable). Aufklappen dann über die Titelleiste.
       this.element.addEventListener('dblclick', event => {
-        if (!this.window?.header || !event.target?.closest?.('.dsa5h-head')) return;
-        if (event.target.closest(this.constructor.DRAG_EXCLUDE)) return;
+        if (!this.window?.header || !this._isDragHandle(event)) return;
         this.window.header.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, clientX: event.clientX, clientY: event.clientY }));
       });
       // Hand-Auswahl im Reiter „Körper“: nur die Hand-Logik des Systems (actor-dsa5.js equipWeaponToHand) —
@@ -459,6 +476,36 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     };
   }
 
+  // Freie Stelle im dunklen Kopf oder oberes Rahmenband: beide verschieben das Fenster / minimieren per Doppelklick.
+  _isDragHandle(event) {
+    const target = event.target;
+    if (target === this.element) {
+      const top = this.element.getBoundingClientRect().top;
+      return event.clientY < top + parseFloat(getComputedStyle(this.element).borderTopWidth);
+    }
+    return !!target?.closest?.('.dsa5h-head') && !target.closest(this.constructor.DRAG_EXCLUDE);
+  }
+
+  // Menü „⋮“ der Titelleiste: Reiter Gefährten je Held aus-/einblenden (Issue #21, Variante A — immer erreichbar,
+  // auch wenn der Reiter weg ist). Foundry baut das Menü bei jedem Öffnen neu, die Beschriftung folgt dem Flag.
+  _getHeaderControls() {
+    const controls = super._getHeaderControls();
+    const hidden = !!this.actor.getFlag?.(MODULE_ID, 'hideCompanionTab');
+    controls.push({
+      action: 'dsa5hToggleCompanionTab',
+      icon: hidden ? 'fas fa-paw' : 'fas fa-eye-slash',
+      label: hidden ? 'DSA5HELPERS.CompanionTab.Show' : 'DSA5HELPERS.CompanionTab.Hide',
+      visible: function () { return this.actor.isOwner; },
+    });
+    return controls;
+  }
+
+  // Actor-Flag hideCompanionTab; das Update rendert neu, ein aktiver Gefährten-Reiter fällt dann aufs Titelblatt zurück.
+  static async _toggleCompanionTab() {
+    if (!this.actor.isOwner) return;
+    await this.actor.setFlag(MODULE_ID, 'hideCompanionTab', !this.actor.getFlag(MODULE_ID, 'hideCompanionTab'));
+  }
+
   // Figur im Reiter „Körper“: Platzhalter (Artenbild) oder Akteur-Porträt — Actor-Flag, nur im Bearbeiten-Modus.
   static async _setBodyFigure(_event, target) {
     if (!this.isEditable) return;
@@ -483,10 +530,26 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
 
   // Die Tradition steht im System nur als Textfeld (system.tradition.magical/clerical); das zugehörige Item ist die
   // Sonderfertigkeit „Tradition (…)“ — gleiche Erkennung wie das System selbst (item-dsa5.js, LocalizedIDs.assumeTradition).
-  _traditionItems() {
+  _findTradition(kind) {
     const prefix = game.i18n.localize('LocalizedIDs.assumeTradition');
-    const find = kind => this.actor.items.find(item => item.type === 'specialability' && item.name.startsWith(prefix) && item.system.category?.value === kind)?.id;
-    return { magical: find('magical'), clerical: find('clerical') };
+    return this.actor.items.find(item => item.type === 'specialability' && item.name.startsWith(prefix) && item.system.category?.value === kind);
+  }
+
+  _traditionItems() {
+    return { magical: this._findTradition('magical')?.id, clerical: this._findTradition('clerical')?.id };
+  }
+
+  // Name fürs Traditions-Badge (Issue #23): wie im System (item-dsa5.js: traditionItem?.name || system.tradition.*)
+  // zuerst die Sonderfertigkeit — „Tradition (Hesindekirche)“ → „Hesindekirche“ —, sonst das Freitextfeld. Das System
+  // füllt das Feld beim Hinzufügen der Sonderfertigkeit nicht, das Badge blieb dann leer.
+  _traditionNames() {
+    const names = {};
+    for (const kind of ['magical', 'clerical']) {
+      const item = this._findTradition(kind);
+      const fromItem = item ? (item.name.match(/\(([^)]*)\)\s*$/)?.[1] ?? item.name).trim() : '';
+      names[kind] = { name: fromItem || this.actor.system.tradition?.[kind] || '', fromItem };
+    }
+    return names;
   }
 
   // Ausrüsten-Schild in der Ausrüstungsliste: Linksklick = System-Umschalter (_itemToggle), Rechtsklick bei Waffen =
@@ -651,6 +714,10 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     if (!root) return;
     // Drives the cover tab's full-height sidebar grid (CSS: .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main).
     root.dataset.tab = this._currentTab;
+    // Das System fragt den aktiven Reiter über tabGroups.sheet ab (gleiche IDs wie unsere Reiter) — u. a. erkennt
+    // _onDropActor daran den Gefährten-Reiter und legt eine Kreatur auf der Favoriten-Fläche als Beschwörungs-
+    // Favorit an statt als Begleiter (Issue #15); ebenso CreatureDropDialog und das Anlegen von Rüstung im Kampf.
+    this.tabGroups.sheet = this._currentTab;
     const localize = key => game.i18n.localize(key);
     const title = root.querySelector('[data-tab-title-label]');
     if (title) title.textContent = localize('DSA5HELPERS.Tabs.' + this._currentTab);

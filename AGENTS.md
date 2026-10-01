@@ -19,7 +19,7 @@ d:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers\
 
 - `clickdummy/` — **Design-Referenz**: funktionsfähiger Click-Dummy des neuen Heldenbogens (reines HTML/CSS/JS, kein Framework, kein Foundry-Datenmodell). Hier findet die laufende Design-Iteration statt.
   - `index.html` — Grundgerüst: Toolbar (Theme-Umschalter), Rail-Navigation, Kopf-/Attributbereich, Content-Bereich für Reiter.
-  - `style.css` — Sämtliches Styling; CSS-Custom-Properties in `:root`/`[data-theme='dark']` steuern Light/Dark-Theme. Lädt Fonts und das Rahmen-Bild direkt aus `../../../systems/dsa5/`.
+  - `style.css` — Sämtliches Styling; CSS-Custom-Properties in `:root`/`[data-theme='dark']` steuern Light/Dark-Theme. Lädt Fonts direkt aus `../../../systems/dsa5/`, den Fensterrahmen aus `../styles/dsa5-helpers-frame.svg` (wie das Modul).
   - `data.js` — Statische Demo-/Platzhalterdaten (ein Beispielheld) für alle Reiter; keine echten Actor-Daten.
   - `script.js` — Reine Darstellungslogik: baut DOM-Elemente aus `data.js` für die 8 Reiter (main/skills/combat/magic/religion/inventory/status/notes), Tab-Umschaltung, Theme-Toggle.
   - `assets-map.js` — Zentrale Pfad-Zuordnung `A.*` zu bestehenden Assets in `systems/dsa5/icons/...`; bewusst **keine eigenen/neuen Bilder**, sondern Referenzen auf vorhandene Systemgrafiken.
@@ -31,6 +31,7 @@ d:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers\
   - `scripts/sheets/dsa5-helpers-character-sheet.js` — Sheet-Klasse, erbt von `globalThis.dsa5.sheets.ActorSheetdsa5Character`.
   - `templates/actors/` — Handlebars-Templates (`dsa5-helpers-character-sheet.hbs` + `parts/*.hbs` je Tab/Baustein).
   - `styles/dsa5-helpers-character-sheet.css` — sämtliches Styling.
+  - `styles/dsa5-helpers-frame.svg` — Fensterrahmen, **generiert** von `tools/gen-frame.cjs` (nach Änderungen am Skript `node tools/gen-frame.cjs`).
   - `lang/de.json`, `lang/en.json` — Lokalisierung.
   - `tests/sheet.test.cjs` — Node-Test-Harness (`node tests/sheet.test.cjs`): kompiliert die echten Templates gegen ein installiertes `foundry-nodejs-v14` + die echten `systems/dsa5`-Dateien, prüft Struktur/Aktionen/Datenpfade/Lokalisierung statisch (kein jsdom, keine Interaktions-Simulation — echte Klicks/Eingaben nur live in Foundry prüfbar).
 
