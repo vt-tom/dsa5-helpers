@@ -9,13 +9,12 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Live in Foundry prüfen (0.3.3)
 
-- **#25 Heldenname:** langer Name (z. B. „Alrike Rondriane von Feuerwacht-Gareth“) auf Titelblatt und anderen Reitern, Fenster schmaler/breiter ziehen, hell/dunkel; im Bearbeiten-Modus tippen (Schrift passt sich an), Tooltip im Spielmodus.
-- **#26 Notizen:** Unterreiter „Persönliche Daten“ (Bearbeiten-Modus: Felder speichern), Textreiter in voller Breite.
+- **#26 Notizen:** „Persönliche Daten“ jetzt erster Unterreiter und beim Öffnen ausgewählt.
+- **#27 Titelblatt:** Kasten Statuseffekte/Persönliche Daten mit Fähnchen unten (hell/dunkel), nur ausgefüllte Felder, viele Felder → nur die Liste scrollt; Klick auf den Titel öffnet Notizen › Persönliche Daten. Ohne Statuseffekte bzw. ohne Daten: nur der eine Kasten, keine Fähnchen.
 
 ## Offene Entscheidungen
 
 - **Mobile Support (Tablet/Smartphone, „Hybrides Spiel“):** Planung in [MOBILE.md](MOBILE.md). Zuerst die Entscheidungen E1–E19 dort klären, erst dann umsetzen.
-- **#27 Persönliche Daten auf dem Titelblatt:** zwei Varianten im Click-Dummy, Umschalter „Pers. Daten“ in der Toolbar: **A** eigener Kasten zwischen Schips und Zuständen (Leiste scrollt dann), **B** ein Kasten mit Reitern „Zustände | Persönliche Daten“ (Höhe bleibt). Beide: nur ausgefüllte Felder, Titel/Knopf springt zum Unterreiter in den Notizen. Nach der Wahl ins Modul übertragen, Umschalter + Verlierer löschen.
 - **Ersetzt „Körper“ später die Übersicht?** Erst nach dem Feedback der Tester entscheiden (Rückmeldung 2026-09-30: vorerst beide Bögen).
 
 ## Features / Backlog

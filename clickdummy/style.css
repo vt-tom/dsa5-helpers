@@ -892,8 +892,9 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 #coverSidebar .pip.filled{background:var(--accent)}
 #coverSidebar .show-all-btn{color:var(--headmuted);border-top-color:rgba(224,192,128,.18)}
 #coverSidebar .show-all-btn:hover{color:var(--accent)}
-/* Persönliche Daten auf dem Titelblatt (Issue #27): Label | Wert, lange Werte brechen um statt die Leiste zu verbreitern.
-   Varianten A (eigener Kasten) / B (Reiter mit den Zuständen) per Toolbar-Umschalter, siehe renderCoverSidebar(). */
+/* Persönliche Daten auf dem Titelblatt (Issue #27, coverInfoBlock()): Label | Wert, lange Werte brechen um statt die
+   Leiste zu verbreitern. Mit den Zuständen in einem Kasten, umgeschaltet über Fähnchen, die unten am Kasten hängen:
+   das aktive in Kastenfarbe ohne Oberkante (deckt den Kastenrand ab), das andere zurückgesetzt. */
 #coverSidebar .cover-details{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;margin:0;padding:4px 11px 8px;font-size:var(--fs-small);color:var(--headink)}
 #coverSidebar .cover-details dt,#coverSidebar .cover-details dd{margin:0;padding:3px 0;border-top:1px solid rgba(224,192,128,.18)}
 #coverSidebar .cover-details dt{color:var(--headmuted);font-size:var(--fs-meta);max-width:96px;overflow-wrap:anywhere}
@@ -901,10 +902,14 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 #coverSidebar .cover-details :is(dt,dd):nth-child(-n+2){border-top:0}
 #coverSidebar .cover-details-link{all:unset;cursor:pointer}
 #coverSidebar .cover-details-link:hover,#coverSidebar .cover-details-link:focus-visible{color:var(--accent);text-decoration:underline}
-#coverSidebar .cover-info-tabs{display:flex;gap:12px;align-items:baseline}
-#coverSidebar .cover-info-tab{all:unset;cursor:pointer;font:inherit;font-size:16px;color:var(--headmuted);padding:0 0 2px;border-bottom:2px solid transparent}
-#coverSidebar .cover-info-tab.active{color:var(--headink);border-bottom-color:var(--accent)}
-#coverSidebar .cover-info-tab:hover,#coverSidebar .cover-info-tab:focus-visible{color:var(--accent)}
+/* Der Block nimmt höchstens den Restplatz der Leiste: bei vielen Feldern scrollt nur die Liste, die Fähnchen bleiben sichtbar. */
+#coverSidebar .cover-info{display:flex;flex-direction:column;flex:0 1 auto;min-height:0}
+#coverSidebar .cover-info>.panel{display:flex;flex-direction:column;min-height:0}
+#coverSidebar .cover-info .cover-details{min-height:0;overflow-y:auto;scrollbar-width:thin}
+#coverSidebar .cover-info-flags{display:flex;gap:4px;padding:0 8px;flex:none}
+#coverSidebar .cover-info-flag{flex:0 1 auto;min-width:0;margin-top:-1px;padding:4px 10px 5px;border:1px solid rgba(224,192,128,.3);border-top-color:rgba(224,192,128,.3);border-radius:0 0 5px 5px;background:rgba(0,0,0,.18);color:var(--headmuted);font:inherit;font-size:var(--fs-meta);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+#coverSidebar .cover-info-flag.active{border-top-color:transparent;background:color-mix(in srgb,var(--head-base),#fff 6%);color:var(--headink);box-shadow:inset 0 -2px 0 var(--accent)}
+#coverSidebar .cover-info-flag:hover,#coverSidebar .cover-info-flag:focus-visible{color:var(--accent)}
 /* .row-delete ("×" zum Entfernen eines Zustands) und .step.minus ("−" zum Reduzieren) sind standardmäßig in
    --muted gehalten, einer auf helles Papier abgestimmten dunklen Farbe — auf dem dunklen coverSidebar-Grund
    darum kaum sichtbar. Hier wie die übrigen Sidebar-Texte auf --headmuted/--accent umgefärbt. */
