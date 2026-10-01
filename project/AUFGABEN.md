@@ -21,7 +21,8 @@ Branch `release/0.4.0`, anlegen nach dem Merge von 0.3.3 nach `main`. Reihenfolg
    1. Click-Dummy: Statistikfenster + Zustimmungsdialog mit Demo-Daten, 2–3 Varianten der Darstellung → Auswahl.
    2. Modul: Einstellungen + Zustimmung → Erfassung (`DiceTerm#roll`) → Speichern (ein User-Flag, nur Zähler) → Auswertung (Chi-Quadrat) → Fenster.
    3. Tests, Lokalisierung, Live-Test mit mindestens zwei Benutzern (Spieler + SL, blinde Würfe, echte Würfel, Zustimmung ja/nein).
-2. **#7 CSS aufräumen** — bewusst zuletzt, wenn keine weiteren Styles mehr dazukommen; danach gründlicher Live-Test aller Reiter. Vorher mit `feature/mobile` abstimmen: dort wird dieselbe CSS-Datei stark umgebaut, ein Umsortieren erzeugt sonst große Merge-Konflikte. Vorschlag: #7 erst, wenn klar ist, wann Mobile erscheint, oder auf 0.5.0 verschieben.
+2. **#29 Kampf › Körper** — RS/BE-Badge über der Figur weg, Hände links/rechts der Figur, beidhändige Waffe per Knopf seitlich verschiebbar. Für die Rüstung zuerst 2–3 Varianten im Click-Dummy, der Nutzer entscheidet. Kann parallel zu #28 laufen (andere Dateien).
+3. **#7 CSS aufräumen** — bewusst zuletzt, wenn keine weiteren Styles mehr dazukommen; danach gründlicher Live-Test aller Reiter. Vorher mit `feature/mobile` abstimmen: dort wird dieselbe CSS-Datei stark umgebaut, ein Umsortieren erzeugt sonst große Merge-Konflikte. Vorschlag: #7 erst, wenn klar ist, wann Mobile erscheint, oder auf 0.5.0 verschieben.
 
 Kandidaten, noch ohne Meilenstein:
 - **#1 Animation zwischen Titelblatt und den anderen Seiten** (von @Lyynix, ohne Beschreibung) — klären, was gemeint ist.
@@ -44,11 +45,11 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 17:03 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 17:06 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (6)**
+**Offen (7)**
 
 - **[#1](https://github.com/vt-tom/dsa5-helpers/issues/1) feat: Animation zwischen Titelblatt und den anderen seiten**
   - offen · Bearbeiter: niemand · von @Lyynix · 0 Kommentare · zuletzt geändert 2026-09-17
@@ -61,6 +62,8 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 17:03 UTC) — ni
 - **[#27](https://github.com/vt-tom/dsa5-helpers/issues/27) feat: Persönliche Daten auf dem Titelblatt anzeigen**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#28](https://github.com/vt-tom/dsa5-helpers/issues/28) feat: Würfelstatistik – Ergebnisse je Spieler und Würfeltyp auswerten**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
+- **[#29](https://github.com/vt-tom/dsa5-helpers/issues/29) feat: Kampf › Körper – Hände links/rechts der Figur, RS/BE-Badge entfernen, Rüstung neu platzieren**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
 
 **Kürzlich geschlossen (letzte 14 Tage)**
