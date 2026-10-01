@@ -2,12 +2,8 @@
   <div data-cover-slot="portrait"></div>
   <div class="dsa5h-cover-resources" data-cover-slot="resources"></div>
   <div class="dsa5h-cover-fate" data-cover-slot="fate"></div>
-  {{!-- Zustände und Persönliche Daten (Issue #27, Variante B) teilen sich einen Kasten; sind beide da, schalten Fähnchen
-       unten am Kasten um (Unterreiter-Mechanik, _subtabs.cover). Sonst steht nur der eine Kasten ohne Fähnchen da. --}}
-  {{#if (or conditions.length dsa5h.coverDetails.length)}}
-  <div class="dsa5h-cover-info">
-    {{#if conditions.length}}
-    <section class="panel"{{#if dsa5h.coverDetails.length}} data-sub-panel="cover:conditions"{{/if}}>
+  {{#if conditions.length}}
+  <section class="panel">
     <div class="panel-title">{{localize 'statuseffects'}}</div>
     {{#each dsa5h.coverConditions}}
     <div class="row dsa5h-cover-condition" data-id="{{_id}}" {{#if descriptor}}data-descriptor="{{descriptor}}"{{/if}}>
@@ -19,22 +15,6 @@
     {{#if dsa5h.coverConditionsMore}}
     <button type="button" class="dsa5h-cover-more" data-action="dsa5hSetTab" data-tab="status">+{{dsa5h.coverConditionsMore}} {{localize 'DSA5HELPERS.More'}} → {{localize 'DSA5HELPERS.Tabs.status'}}</button>
     {{/if}}
-    </section>
-    {{/if}}
-    {{#if dsa5h.coverDetails.length}}
-    <section class="panel"{{#if conditions.length}} data-sub-panel="cover:details" hidden{{/if}}>
-      <div class="panel-title"><button type="button" class="dsa5h-cover-details-link" data-action="dsa5hSetTab" data-tab="notes" data-to-subtab="details" data-tooltip="DSA5HELPERS.EditInNotes">{{localize 'personalDetails'}}</button></div>
-      <dl class="dsa5h-cover-details">
-        {{#each dsa5h.coverDetails}}<dt>{{localize label}}</dt><dd>{{value}}</dd>{{/each}}
-      </dl>
-    </section>
-    {{/if}}
-    {{#if conditions.length}}{{#if dsa5h.coverDetails.length}}
-    <div class="dsa5h-cover-flags">
-      <button type="button" data-action="dsa5hSetSubTab" data-parent-tab="cover" data-subtab="conditions" aria-pressed="false">{{localize 'statuseffects'}}</button>
-      <button type="button" data-action="dsa5hSetSubTab" data-parent-tab="cover" data-subtab="details" aria-pressed="false">{{localize 'personalDetails'}}</button>
-    </div>
-    {{/if}}{{/if}}
-  </div>
+  </section>
   {{/if}}
 </aside>

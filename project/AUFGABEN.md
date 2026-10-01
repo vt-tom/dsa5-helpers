@@ -7,12 +7,10 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-## Live in Foundry prüfen (0.3.3)
-
-- **#27 Titelblatt:** Fähnchen jetzt immer ganz unten an der Leiste, Kasten reicht bis dorthin, keine sichtbare Scrollleiste (Liste scrollt per Rad, Schatten unten zeigt weitere Felder). Prüfen: hell/dunkel, niedriges Fenster, Held mit 3 Ressourcen + vielen Feldern; Klick auf den Titel öffnet Notizen › Persönliche Daten. Ohne Statuseffekte bzw. ohne Daten: nur der eine Kasten, keine Fähnchen.
-
 ## Offene Entscheidungen
 
+- **#27 Persönliche Daten auf dem Titelblatt:** wieder ausgebaut (2026-10-01), erst klären, ob und wie es aufs Titelblatt passt. Bisherige Versuche siehe PROJEKTDOKU.md (Design-Entscheidungen, „Titelblatt, persönliche Daten“).
+  - Ich habe einen Screenshot an den User geschickt, warte auf Rückmeldung
 - **Ersetzt „Körper“ später die Übersicht?** Erst nach dem Feedback der Tester entscheiden (Rückmeldung 2026-09-30: vorerst beide Bögen).
 
 ## Features / Backlog
@@ -24,7 +22,7 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 10:49 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 11:57 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
