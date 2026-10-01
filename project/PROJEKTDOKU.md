@@ -1,6 +1,6 @@
 # PROJEKTDOKU.md — Das Wichtigste zum Projekt
 
-Stand: 2026-09-30. Offene Arbeit steht in [AUFGABEN.md](AUFGABEN.md), die ausführliche Historie in [archive/](archive/).
+Stand: 2026-10-01. Offene Arbeit steht in [AUFGABEN.md](AUFGABEN.md), die ausführliche Historie in [archive/](archive/).
 
 ## Ziel
 
@@ -10,7 +10,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 
 - Echtes Modul läuft: alle 10 Reiter (Titelblatt, Eigenschaften, Talente, Kampf, Magie, Religion, Ausrüstung, Status, Notizen, Gefährten) mit echten Systemdaten.
 - Favoriten (Stern), Spiel-/Bearbeiten-Modus, Magie/Religion nur bei passender Fähigkeit sichtbar.
-- 36 Tests grün (`node tests/sheet.test.cjs`).
+- 43 Tests grün (`node tests/sheet.test.cjs`).
 - UI/UX-Review vom 2026-09-25 ([Feedback](UI-UX-FEEDBACK-2026-09-25.md)): Pakete A–D (Trefferflächen/Tastatur, Lesbarkeit, Waffentabellen, Orientierung/Rückmeldung) in Clickdummy **und** Foundry umgesetzt und live bestätigt. Pakete E (Favoritenraster) und G (Detailpunkte je Reiter) sowie die Munitionszeile abgenommen und in Foundry übertragen (live zu prüfen). Aus Paket F sind Porträtformat und schwebende Titelleiste in Foundry; Geld-Panel „Zeile“ seit 2026-09-30 auch in Foundry; Kampf-Unterreiter „Körper“ seit 2026-09-30 in Foundry (live zu prüfen, vorerst neben der Übersicht) — siehe AUFGABEN.md.
 - Hier gibt es kein laufendes Foundry. Alles ist nur im Code geprüft – bestätigt wird erst live beim Nutzer.
 
@@ -21,7 +21,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - **Mindestversion:** DSA5 8.1.5 / Foundry ≥ 14.364.
 - **Keine eigenen Bilder:** nur vorhandene Assets aus `systems/dsa5/icons/...`. Einzige Ausnahme (Nutzerwunsch, Issue #22): der Fensterrahmen `styles/dsa5-helpers-frame.svg` — Nachbau des System-Rahmens `actor.webp`, erzeugt von `tools/gen-frame.cjs` (nicht von Hand bearbeiten; Modul und Click-Dummy nutzen dieselbe Datei).
 - **System-Sprachdateien nicht ändern:** eigene Texte unter `DSA5HELPERS.*` in `lang/de.json`/`en.json`.
-- **Release/Installation:** Zuletzt veröffentlicht: v0.3.1 (2026-09-30). Manifest-URL `https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json`. Ablauf: `version` in `module.json` hochzählen → GitHub-Release mit Tag `v<version>` → Action `.github/workflows/release.yml` setzt Version/URLs und hängt `module.json` + `module.zip` (nur `scripts/ styles/ templates/ lang/` + Manifest, LICENSE, README) an. Setzt ein öffentliches Repo voraus (Foundry lädt ohne Anmeldung). Schritt für Schritt: [RELEASE.md](RELEASE.md). Arbeit an der nächsten Version läuft auf einem eigenen Branch `release/<version>` (aktuell `release/0.3.2` seit 2026-10-01 mit den Fixes #14–#16 und #17; 0.3.1 veröffentlicht am 2026-09-30), nicht auf `main`; Merge nach `main` erst, wenn der Nutzer die Version freigibt. Issues, die in eine Version kommen, bekommen den GitHub-Meilenstein mit der Versionsnummer (z. B. `0.3.2`) und werden `vt-tom` zugewiesen (seit 2026-10-01).
+- **Release/Installation:** Zuletzt veröffentlicht: v0.3.2 (2026-10-01). Manifest-URL `https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json`. Ablauf: `version` in `module.json` hochzählen → GitHub-Release mit Tag `v<version>` → Action `.github/workflows/release.yml` setzt Version/URLs und hängt `module.json` + `module.zip` (nur `scripts/ styles/ templates/ lang/` + Manifest, LICENSE, README) an. Setzt ein öffentliches Repo voraus (Foundry lädt ohne Anmeldung). Schritt für Schritt: [RELEASE.md](RELEASE.md). Arbeit an der nächsten Version läuft auf einem eigenen Branch `release/<version>` (nächste: `release/0.3.3` bzw. `release/0.4.0`; 0.3.2 veröffentlicht am 2026-10-01), nicht auf `main`; Merge nach `main` erst, wenn der Nutzer die Version freigibt. Issues, die in eine Version kommen, bekommen den GitHub-Meilenstein mit der Versionsnummer (z. B. `0.3.2`) und werden `vt-tom` zugewiesen (seit 2026-10-01).
 - **Lizenz:** MIT. Repo auf GitHub (derzeit privat), später Release über Foundry Package Registry. Keine DSA5-Regeltexte im Modul (Rechte bei Ulisses Spiele).
 
 ## Click-Dummy
