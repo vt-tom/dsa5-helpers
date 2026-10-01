@@ -9,6 +9,7 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Offene Entscheidungen
 
+- **Mobile Support (Tablet/Smartphone, „Hybrides Spiel“):** Planung in [MOBILE.md](MOBILE.md). Zuerst die Entscheidungen E1–E19 dort klären, erst dann umsetzen.
 - **Ersetzt „Körper“ später die Übersicht?** Erst nach dem Feedback der Tester entscheiden (Rückmeldung 2026-09-30: vorerst beide Bögen).
 
 ## Features / Backlog
