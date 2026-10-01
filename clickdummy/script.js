@@ -937,15 +937,15 @@ function buildReligionSubTabs() {
 }
 
 // Notizen-Unterreiter (wie im Foundry-Modul, notes-Subnav): vier Freitextfelder als gleichwertige Bereiche, dazu
-// seit Issue #26 die persönlichen Daten als eigener Unterreiter (kein Freitext, daher ohne get/set).
+// seit Issue #26 die persönlichen Daten als eigener, erster Unterreiter (kein Freitext, daher ohne get/set).
 const NOTES_SECTIONS = [
-  { id: "biography", label: "Hintergrundgeschichte", get: () => BIOGRAPHY_TEXT, set: (v) => { BIOGRAPHY_TEXT = v; } },
   { id: "details", label: "Persönliche Daten" },
+  { id: "biography", label: "Hintergrundgeschichte", get: () => BIOGRAPHY_TEXT, set: (v) => { BIOGRAPHY_TEXT = v; } },
   { id: "notes", label: "Notizen", get: () => NOTES_TEXT, set: (v) => { NOTES_TEXT = v; } },
   { id: "ownernotes", label: "Private Notizen", get: () => PRIVATE_NOTES_TEXT, set: (v) => { PRIVATE_NOTES_TEXT = v; } },
   { id: "gmnotes", label: "GM-Notizen", get: () => GM_NOTES_TEXT, set: (v) => { GM_NOTES_TEXT = v; } },
 ];
-let currentNotesSection = "biography";
+let currentNotesSection = "details";
 
 function buildNotesSubTabs() {
   return el("div", { class: "sub-tabs" }, NOTES_SECTIONS.map(({ id, label }) => {
@@ -3203,22 +3203,15 @@ function renderCoverSidebar() {
   sidebar.innerHTML = "";
   sidebar.appendChild(portrait);
   sidebar.appendChild(coverResourcesBlock());
-  const details = coverDetailsList();
-  if (COVER_DETAILS_VARIANT === "box") {
-    if (details) sidebar.appendChild(coverDetailsBox(details));
-    sidebar.appendChild(buildConditionsPanel(4));
-  } else {
-    sidebar.appendChild(coverInfoTabs(buildConditionsPanel(4), details));
-  }
+  sidebar.appendChild(coverInfoBlock(buildConditionsPanel(4), coverDetailsList()));
   sidebar.appendChild(buildActiveEffectsSummary());
 }
 
-// Persönliche Daten auf dem Titelblatt (Issue #27): nur lesend, nur ausgefüllte Felder (sind alle leer, entfällt der
-// Kasten), Label | Wert, lange Werte brechen um. Klick auf den Titel springt zum Unterreiter „Persönliche Daten“.
-// Variantenvergleich per Umschalter in der Toolbar (initCoverDetailsToggle()):
-//   "box"  — eigener Kasten zwischen Schips und Zuständen (Leiste kann dadurch scrollen),
-//   "tabs" — ein Kasten mit Reitern „Zustände | Persönliche Daten“ an der Stelle der Zustände (Höhe bleibt).
-let COVER_DETAILS_VARIANT = "box";
+// Persönliche Daten auf dem Titelblatt (Issue #27, Variante B „Reiter“, 2026-10-01): teilen sich mit den Zuständen
+// einen Kasten, umgeschaltet über Reiter-Fähnchen, die unten am Kasten hängen — die Leiste wird so nicht länger.
+// Nur lesend, nur ausgefüllte Felder (sind alle leer, bleibt es beim Zustände-Kasten ohne Fähnchen), Label | Wert,
+// lange Werte brechen um. Klick auf den Titel springt zum Unterreiter „Persönliche Daten“ im Reiter Notizen.
+// Verworfen: Variante A, eigener Kasten zwischen Schips und Zuständen (Leiste musste scrollen).
 let coverInfoTab = "conditions";
 
 function coverDetailsList() {
@@ -3232,45 +3225,21 @@ function openNotesDetails() {
   setTab("notes");
 }
 
-function coverDetailsTitle(label) {
-  const btn = el("button", { type: "button", class: "cover-details-link", title: "Im Reiter Notizen bearbeiten" }, label);
-  btn.addEventListener("click", openNotesDetails);
-  return btn;
-}
-
-function coverDetailsBox(list) {
-  return el("div", { class: "panel" }, [el("div", { class: "panel-title" }, [coverDetailsTitle("Persönliche Daten")]), list]);
-}
-
-function coverInfoTabs(conditionsPanel, list) {
+function coverInfoBlock(conditionsPanel, list) {
   if (!list) return conditionsPanel;
-  const tabs = [
+  const link = el("button", { type: "button", class: "cover-details-link", title: "Im Reiter Notizen bearbeiten" }, "Persönliche Daten");
+  link.addEventListener("click", openNotesDetails);
+  const panel = coverInfoTab === "details" ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, [link]), list]) : conditionsPanel;
+  const flags = el("div", { class: "cover-info-flags", role: "tablist" }, [
     { id: "conditions", label: "Zustände" },
     { id: "details", label: "Persönliche Daten" },
-  ];
-  const bar = el("div", { class: "panel-title cover-info-tabs", role: "tablist" }, tabs.map(({ id, label }) => {
+  ].map(({ id, label }) => {
     const active = coverInfoTab === id;
-    const btn = el("button", { type: "button", role: "tab", class: "cover-info-tab" + (active ? " active" : ""), "aria-selected": String(active) }, label);
+    const btn = el("button", { type: "button", role: "tab", class: "cover-info-flag" + (active ? " active" : ""), "aria-selected": String(active) }, label);
     btn.addEventListener("click", () => { coverInfoTab = id; renderCoverSidebar(); });
     return btn;
   }));
-  // Inhalt der Zustände ohne deren eigenen Titel übernehmen (dieselben Zeilen wie sonst, siehe buildConditionsPanel).
-  const body = coverInfoTab === "details"
-    ? [list, (() => { const b = el("button", { type: "button", class: "show-all-btn" }, "Bearbeiten → Notizen"); b.addEventListener("click", openNotesDetails); return b; })()]
-    : [...conditionsPanel.children].slice(1);
-  return el("div", { class: "panel" }, [bar, ...body]);
-}
-
-function initCoverDetailsToggle() {
-  const btn = document.getElementById("coverDetailsToggle");
-  const label = () => { btn.textContent = "Pers. Daten: " + (COVER_DETAILS_VARIANT === "box" ? "A Kasten" : "B Reiter"); };
-  label();
-  btn.addEventListener("click", () => {
-    COVER_DETAILS_VARIANT = COVER_DETAILS_VARIANT === "box" ? "tabs" : "box";
-    label();
-    if (currentTab === "cover") renderCoverSidebar();
-    else setTab("cover");
-  });
+  return el("div", { class: "cover-info" }, [panel, flags]);
 }
 
 // Gegenstück zu renderCoverSidebar(): Porträt zurück an seinen Stammplatz in der Kopfzeile, bevor die (dann
@@ -3552,7 +3521,6 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
-initCoverDetailsToggle();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
 document.fonts.ready.then(fitName);
 initWindowMenu();

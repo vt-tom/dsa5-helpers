@@ -1,6 +1,8 @@
 /** Alternative presentation; all rule actions and actor updates are inherited from DSA5. */
 const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
+// Felder unter system.details.* mit Beschriftungsschlüssel aus der System-Sprachdatei (Reihenfolge wie in notes.hbs).
+const PERSONAL_DETAILS = { gender: 'Gender', family: 'Family', age: 'Age', height: 'Height', weight: 'Weight', Home: 'Home', socialstate: 'Socialstate', haircolor: 'Hair_color', eyecolor: 'Eye_color', distinguishingmark: 'Distinguishing_mark' };
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
@@ -105,7 +107,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { id: PLANNER_TAB_ID, label: "Steigerungsplaner", icon: "systems/dsa5/icons/categories/Career.webp", hint: "" },
     ];
   _currentTab = 'cover';
-  _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells', notes: 'biography' };
+  _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells', notes: 'details', cover: 'conditions' };
   _search = { talent: '', gear: '', combatskill: '' };
   _favoritePending = false;
   // Wohlgefällige Talente (Religion-Tab) starten eingeklappt im Spielmodus, Klick blendet den vollen Text ein —
@@ -232,9 +234,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // (Nutzer-Feedback 2026-09-19) — Sichtbarkeit der letzten beiden Reiter folgt denselben Bedingungen wie bisher
     // die Panels selbst ({{#if owner}}/{{#if isGM}} in notes.hbs).
     const noteSubtabs = [
-      { id: 'biography', label: localize('biography') },
-      // Persönliche Daten als eigener Unterreiter statt dauerhafter Spalte links (Issue #26).
+      // Persönliche Daten als eigener, erster Unterreiter statt dauerhafter Spalte links (Issue #26).
       { id: 'details', label: localize('personalDetails') },
+      { id: 'biography', label: localize('biography') },
       { id: 'notes', label: localize('Notes') },
     ];
     if (context.owner) noteSubtabs.push({ id: 'ownernotes', label: localize('ownerNotes') });
@@ -290,6 +292,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // never needs to scroll, with a jump button to the full Status tab for the rest.
       coverConditions: (context.conditions ?? []).slice(0, 4),
       coverConditionsMore: Math.max(0, (context.conditions ?? []).length - 4),
+      // Persönliche Daten auf dem Titelblatt (Issue #27): nur ausgefüllte Felder, Beschriftung wie in notes.hbs.
+      coverDetails: Object.entries(PERSONAL_DETAILS).map(([key, label]) => ({ label, value: String(this.actor.system.details?.[key]?.value ?? '').trim() })).filter(entry => entry.value),
       happyTalentsExpanded: this._happyTalentsExpanded,
       body: limited ? null : this._bodyContext(prepare),
       happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
@@ -618,6 +622,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static _setTab(_event, target) {
     if (!this.constructor.HELPER_TABS.some(tab => tab.id === target.dataset.tab)) return;
     this._currentTab = target.dataset.tab;
+    // Optional gleich ein Unterreiter (z. B. Titelblatt › „Persönliche Daten“ → Notizen, Issue #27).
+    if (target.dataset.toSubtab && Object.hasOwn(this._subtabs, this._currentTab)) this._subtabs[this._currentTab] = target.dataset.toSubtab;
     this._applyCurrentTab();
     this.element.querySelector('.dsa5h-content')?.scrollTo({ top: 0 });
     // Switching to Talente should let the user start typing a search immediately, no extra click needed.

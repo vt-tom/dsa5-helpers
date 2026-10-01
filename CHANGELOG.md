@@ -6,7 +6,8 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 ### Neu
 
-- Im Reiter „Notizen“ haben die persönlichen Daten (Geschlecht, Alter, Größe, Heimat …) einen eigenen Unterreiter „Persönliche Daten“ zwischen „Hintergrundgeschichte“ und „Notizen“. Die Textreiter nutzen dadurch die volle Breite ([#26](https://github.com/vt-tom/dsa5-helpers/issues/26)).
+- Im Reiter „Notizen“ haben die persönlichen Daten (Geschlecht, Alter, Größe, Heimat …) einen eigenen Unterreiter „Persönliche Daten“. Er steht an erster Stelle und ist beim Öffnen ausgewählt. Die Textreiter nutzen dadurch die volle Breite ([#26](https://github.com/vt-tom/dsa5-helpers/issues/26)).
+- Das Titelblatt zeigt die ausgefüllten persönlichen Daten in der linken Leiste. Sie teilen sich einen Kasten mit den Statuseffekten, umgeschaltet über zwei Reiter-Fähnchen unten am Kasten. Ein Klick auf den Titel „Persönliche Daten“ öffnet sie zum Bearbeiten im Reiter „Notizen“ ([#27](https://github.com/vt-tom/dsa5-helpers/issues/27)).
 
 ### Behoben
 
