@@ -330,7 +330,18 @@ function setTab(id) {
   renderContent();
   renderSubNav();
   renderAttrOverlay();
+  fitName();
   document.getElementById("content").scrollTop = 0;
+}
+
+// Heldenname einpassen (Issue #25, wie _fitName() im Modul): Schrift ab der CSS-Höchstgröße (39px, Titelblatt 44px)
+// so weit verkleinern (bis 22px), dass der Name ganz in die Zeile passt; danach kürzt text-overflow mit „…“.
+function fitName() {
+  const h1 = document.querySelector("#headName h1");
+  if (!h1) return;
+  h1.style.removeProperty("font-size");
+  const max = parseFloat(getComputedStyle(h1).fontSize);
+  if (h1.scrollWidth > h1.clientWidth) h1.style.fontSize = Math.max(22, Math.floor(max * h1.clientWidth / h1.scrollWidth)) + "px";
 }
 
 // Eigenschaften werden nur noch auf dem Attribute-Tab angezeigt (nicht mehr als globales Band auf allen Tabs).
@@ -925,14 +936,16 @@ function buildReligionSubTabs() {
   }));
 }
 
-// Notizen-Unterreiter (wie im Foundry-Modul, notes-Subnav): vier Freitextfelder als gleichwertige Bereiche.
+// Notizen-Unterreiter (wie im Foundry-Modul, notes-Subnav): vier Freitextfelder als gleichwertige Bereiche, dazu
+// seit Issue #26 die persönlichen Daten als eigener, erster Unterreiter (kein Freitext, daher ohne get/set).
 const NOTES_SECTIONS = [
+  { id: "details", label: "Persönliche Daten" },
   { id: "biography", label: "Hintergrundgeschichte", get: () => BIOGRAPHY_TEXT, set: (v) => { BIOGRAPHY_TEXT = v; } },
   { id: "notes", label: "Notizen", get: () => NOTES_TEXT, set: (v) => { NOTES_TEXT = v; } },
   { id: "ownernotes", label: "Private Notizen", get: () => PRIVATE_NOTES_TEXT, set: (v) => { PRIVATE_NOTES_TEXT = v; } },
   { id: "gmnotes", label: "GM-Notizen", get: () => GM_NOTES_TEXT, set: (v) => { GM_NOTES_TEXT = v; } },
 ];
-let currentNotesSection = "biography";
+let currentNotesSection = "details";
 
 function buildNotesSubTabs() {
   return el("div", { class: "sub-tabs" }, NOTES_SECTIONS.map(({ id, label }) => {
@@ -2614,20 +2627,22 @@ function renderDiseasePanel() {
 function renderNotes() {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
 
-  // Wie im Foundry-Modul (notes.hbs): oben das Persönliche-Daten-Grid, darunter genau EIN Freitextfeld je nach
-  // Unter-Tab (Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen, Nutzer-Feedback 2026-09-19). Wesenszug,
-  // GM-Geheimnisse und Verbindungen gibt es dort nicht (kommen im offiziellen Bogen nicht vor) — hier entfernt.
-  const detailsPanel = el("div", { class: "panel" }, [
-    el("div", { class: "panel-title" }, "Persönliche Daten"),
-    el("div", { class: "details-grid" }, APPEARANCE.map((a) => {
-      const valSpan = el("span", { class: "val-editable" }, a.v);
-      if (mode === "edit") makeEditable(valSpan, a.v, (v) => { a.v = v; renderContent(); }, { type: "text" });
-      return el("div", { class: "details-field" }, [el("span", { class: "k" }, a.k), valSpan]);
-    })),
-  ]);
+  // Wie im Foundry-Modul (notes.hbs): je Unter-Tab genau ein Panel — das Persönliche-Daten-Grid (Issue #26) oder
+  // ein Freitextfeld (Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen, Nutzer-Feedback 2026-09-19).
+  // Wesenszug, GM-Geheimnisse und Verbindungen gibt es dort nicht (kommen im offiziellen Bogen nicht vor).
+  const section = NOTES_SECTIONS.find((n) => n.id === currentNotesSection) || NOTES_SECTIONS[0];
+  if (section.id === "details") {
+    return el("div", { class: "panel" }, [
+      el("div", { class: "panel-title" }, section.label),
+      el("div", { class: "details-grid" }, APPEARANCE.map((a) => {
+        const valSpan = el("span", { class: "val-editable" }, a.v);
+        if (mode === "edit") makeEditable(valSpan, a.v, (v) => { a.v = v; renderContent(); }, { type: "text" });
+        return el("div", { class: "details-field" }, [el("span", { class: "k" }, a.k), valSpan]);
+      })),
+    ]);
+  }
 
   const renderParagraphs = (c, v) => v.split(/\n\n+/).forEach((para) => c.appendChild(el("p", {}, para)));
-  const section = NOTES_SECTIONS.find((n) => n.id === currentNotesSection) || NOTES_SECTIONS[0];
   const textEl = el("div", { class: "notes-text" }, []);
   renderParagraphs(textEl, section.get());
   let editBtn = null;
@@ -2646,16 +2661,11 @@ function renderNotes() {
     ownernotes: "Privat: nur für Besitzer des Helden und die Spielleitung sichtbar.",
     gmnotes: "Nur für die Spielleitung sichtbar.",
   };
-  const textPanel = el("div", { class: "panel" }, [
+  return el("div", { class: "panel notes-text" }, [
     el("div", { class: "panel-title" }, section.label),
     el("div", { class: "notes-visibility" }, ["👁 ", VISIBILITY[section.id] || ""]),
     el("div", { class: "notes-text-wrap" }, [textEl, editBtn]),
   ]);
-
-  // Zwei Spalten (Nutzer-Feedback 2026-09-28): links schmal die persönlichen Daten, rechts der Text des Unterreiters.
-  detailsPanel.classList.add("notes-details");
-  textPanel.classList.add("notes-text");
-  return el("div", { class: "notes-layout" }, [detailsPanel, textPanel]);
 }
 
 // Vorschlag 2026-09-13 (bisher deferred, "komplett neuer Gefährten-Tab") — siehe COMPANIONS-Kommentar in data.js.
@@ -3167,9 +3177,10 @@ function renderHeader() {
 
   const headName = document.getElementById("headName");
   headName.innerHTML = "";
-  const h1 = el("h1", {}, CHARACTER_NAME);
+  const h1 = el("h1", { title: CHARACTER_NAME }, CHARACTER_NAME);
   headName.appendChild(h1);
   if (mode === "edit") makeEditable(h1, CHARACTER_NAME, (v) => { CHARACTER_NAME = v; renderHeader(); }, { type: "text" });
+  fitName();
 
   const bars = document.getElementById("bars");
   bars.innerHTML = "";
@@ -3475,6 +3486,8 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
+new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
+document.fonts.ready.then(fitName);
 initWindowMenu();
 initWindowFrame();
 initSkillScrollSpy();

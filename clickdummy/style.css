@@ -121,6 +121,11 @@ input,button{font-family:inherit;color:inherit}
 .portrait span{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.1em;color:rgba(247,236,224,.66);text-transform:uppercase}
 .head-main{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:8px}
 .head-top{display:flex;align-items:flex-start;gap:12px}
+/* Issue #25 (wie im Modul): font-size ist die Höchstgröße, fitName() (script.js) verkleinert bis 22px, bis der Name
+   passt; was dann noch nicht passt, wird mit „…“ gekürzt (voller Name im Tooltip). */
+.head-name{flex:1 1 auto;min-width:0}
+.head-top h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.head-top h1 .inline-edit-input{width:100%;box-sizing:border-box}
 .head-top h1{margin:0;font-family:'Andalus',serif;font-size:39px;font-weight:normal;line-height:1.02;color:var(--headink);text-shadow:0 1px 3px rgba(0,0,0,.65)}
 /* padding-top 4px → 18px (Nutzer-Feedback zur Kopf-Vorschau 2026-09-15: "AP und Schicksalspunkte etwas tiefer
    platzieren") — .head-top richtet Name und AP-Block per align-items:flex-start auf derselben Oberkante aus; die
@@ -1220,10 +1225,7 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .two-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:18px}
 .two-col>.show-all-btn,.two-col>.drop-zone{grid-column:1/-1}
 
-/* ===== Notizen zweispaltig (renderNotes(), Nutzer-Feedback 2026-09-28) ===== */
-.notes-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:14px;align-items:start}
-.notes-layout>.panel+.panel{margin-top:0}
-.notes-details .details-grid{grid-template-columns:1fr;gap:6px;padding:10px 11px}
+/* ===== Notizen (renderNotes()): persönliche Daten seit Issue #26 als eigener Unterreiter in voller Breite ===== */
 .notes-text .notes-text-wrap{min-height:360px}
 
 /* hidden-Attribut schlägt eigene display-Werte (z. B. .row{display:grid}) — wie im Modul (.dsa5-helpers-sheet [hidden]). */

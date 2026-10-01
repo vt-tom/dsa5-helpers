@@ -7,20 +7,45 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
+## Version 0.3.3 (Branch `release/0.3.3`)
+
+- Fertig und live bestätigt: #25 Heldenname einpassen, #26 Persönliche Daten als erster Unterreiter in den Notizen.
+- #27 wieder ausgebaut, ohne Meilenstein (siehe Offene Entscheidungen).
+- Bereit zum Release, sobald freigegeben (Ablauf: [RELEASE.md](RELEASE.md)); danach #25/#26 schließen.
+
+## Version 0.4.0 (Plan, Änderungen vorbehalten)
+
+Branch `release/0.4.0`, anlegen nach dem Merge von 0.3.3 nach `main`. Reihenfolge:
+
+1. **#28 Würfelstatistik** — Hauptfeature, Plan im Issue.
+   1. Click-Dummy: Statistikfenster + Zustimmungsdialog mit Demo-Daten, 2–3 Varianten der Darstellung → Auswahl.
+   2. Modul: Einstellungen + Zustimmung → Erfassung (`DiceTerm#roll`) → Speichern (ein User-Flag, nur Zähler) → Auswertung (Chi-Quadrat) → Fenster.
+   3. Tests, Lokalisierung, Live-Test mit mindestens zwei Benutzern (Spieler + SL, blinde Würfe, echte Würfel, Zustimmung ja/nein).
+2. **#29 Kampf › Körper** — RS/BE-Badge über der Figur weg, Hände links/rechts der Figur, beidhändige Waffe per Knopf seitlich verschiebbar. Für die Rüstung zuerst 2–3 Varianten im Click-Dummy, der Nutzer entscheidet. Kann parallel zu #28 laufen (andere Dateien).
+3. **#7 CSS aufräumen** — bewusst zuletzt, wenn keine weiteren Styles mehr dazukommen; danach gründlicher Live-Test aller Reiter. Vorher mit `feature/mobile` abstimmen: dort wird dieselbe CSS-Datei stark umgebaut, ein Umsortieren erzeugt sonst große Merge-Konflikte. Vorschlag: #7 erst, wenn klar ist, wann Mobile erscheint, oder auf 0.5.0 verschieben.
+
+Kandidaten, noch ohne Meilenstein:
+- **#1 Animation zwischen Titelblatt und den anderen Seiten** (von @Lyynix, ohne Beschreibung) — klären, was gemeint ist.
+- **#27 Persönliche Daten auf dem Titelblatt** — nur, wenn bis dahin eine passende Lösung gefunden ist.
+- **HUD des Moduls** (siehe Backlog) — würde zum Einstieg der Würfelstatistik passen, ist aber eigenständig zu planen.
+
 ## Offene Entscheidungen
 
+- **#27 Persönliche Daten auf dem Titelblatt:** wieder ausgebaut (2026-10-01), erst klären, ob und wie es aufs Titelblatt passt. Bisherige Versuche siehe PROJEKTDOKU.md (Design-Entscheidungen, „Titelblatt, persönliche Daten“).
 - **Ersetzt „Körper“ später die Übersicht?** Erst nach dem Feedback der Tester entscheiden (Rückmeldung 2026-09-30: vorerst beide Bögen).
 
 ## Features / Backlog
 
 Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3.0 erledigt) – siehe unten. Neue Feature-Ideen dort anlegen oder hier kurz notieren.
 
+- **Eigenes HUD des Moduls** (Idee 2026-10-01): ein Einstieg für mehrere Modulfunktionen, z. B. die Würfelstatistik (#28, vorerst nur über die Moduleinstellungen). Noch kein Issue.
+
 ---
 
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 10:10 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 17:06 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
@@ -28,21 +53,25 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 10:10 UTC) — ni
 
 - **[#1](https://github.com/vt-tom/dsa5-helpers/issues/1) feat: Animation zwischen Titelblatt und den anderen seiten**
   - offen · Bearbeiter: niemand · von @Lyynix · 0 Kommentare · zuletzt geändert 2026-09-17
-- **[#3](https://github.com/vt-tom/dsa5-helpers/issues/3) feat: hover Effekt bei Proben**
-  - offen · Bearbeiter: niemand · von @Lyynix · 1 Kommentar · zuletzt geändert 2026-09-30
 - **[#7](https://github.com/vt-tom/dsa5-helpers/issues/7) chore: CSS-Datei aufräumen**
-  - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-09-30
-- **[#18](https://github.com/vt-tom/dsa5-helpers/issues/18) feat: Steigerungshelfer – eigenes Fenster zum Planen von Steigerungen und Neuerwerb**
-  - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-01
+  - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#25](https://github.com/vt-tom/dsa5-helpers/issues/25) feat: Heldenname im Kopfbereich passt Schriftgröße an die Fensterbreite an**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#26](https://github.com/vt-tom/dsa5-helpers/issues/26) feat: Persönliche Daten als eigene Registerkarte im Reiter Notizen**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#27](https://github.com/vt-tom/dsa5-helpers/issues/27) feat: Persönliche Daten auf dem Titelblatt anzeigen**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 0 Kommentare · zuletzt geändert 2026-10-01
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-01
+- **[#28](https://github.com/vt-tom/dsa5-helpers/issues/28) feat: Würfelstatistik – Ergebnisse je Spieler und Würfeltyp auswerten**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
+- **[#29](https://github.com/vt-tom/dsa5-helpers/issues/29) feat: Kampf › Körper – Hände links/rechts der Figur, RS/BE-Badge entfernen, Rüstung neu platzieren**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 
+- **[#3](https://github.com/vt-tom/dsa5-helpers/issues/3) feat: hover Effekt bei Proben**
+  - erledigt · Bearbeiter: niemand · von @Lyynix · 1 Kommentar · geschlossen 2026-10-01
+- **[#18](https://github.com/vt-tom/dsa5-helpers/issues/18) feat: Steigerungshelfer – eigenes Fenster zum Planen von Steigerungen und Neuerwerb**
+  - geschlossen (nicht geplant) · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · 1 Kommentar · geschlossen 2026-10-01
 - **[#24](https://github.com/vt-tom/dsa5-helpers/issues/24) fix: Symbol ⋮ (Toggle Controls) in der Titelleisten-Plakette unsichtbar**
   - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: bug · Meilenstein: 0.3.2 · 1 Kommentar · geschlossen 2026-10-01
 - **[#23](https://github.com/vt-tom/dsa5-helpers/issues/23) fix: Traditions-Badge bleibt leer, wenn die Tradition als Sonderfertigkeit hinzugefügt wird**

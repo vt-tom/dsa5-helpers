@@ -105,7 +105,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { id: PLANNER_TAB_ID, label: "Steigerungsplaner", icon: "systems/dsa5/icons/categories/Career.webp", hint: "" },
     ];
   _currentTab = 'cover';
-  _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells', notes: 'biography' };
+  _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells', notes: 'details' };
   _search = { talent: '', gear: '', combatskill: '' };
   _favoritePending = false;
   // Wohlgefällige Talente (Religion-Tab) starten eingeklappt im Spielmodus, Klick blendet den vollen Text ein —
@@ -232,6 +232,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // (Nutzer-Feedback 2026-09-19) — Sichtbarkeit der letzten beiden Reiter folgt denselben Bedingungen wie bisher
     // die Panels selbst ({{#if owner}}/{{#if isGM}} in notes.hbs).
     const noteSubtabs = [
+      // Persönliche Daten als eigener, erster Unterreiter statt dauerhafter Spalte links (Issue #26).
+      { id: 'details', label: localize('personalDetails') },
       { id: 'biography', label: localize('biography') },
       { id: 'notes', label: localize('Notes') },
     ];
@@ -320,6 +322,15 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     if (this._listenerElement !== this.element) {
       this._listenerElement = this.element;
       this.element.addEventListener('change', event => { if (event.target?.name) this._flashName = event.target.name; });
+      // Heldenname einpassen (Issue #25): beim Tippen, bei geänderter Fensterbreite und sobald die Schrift geladen ist.
+      this.element.addEventListener('input', event => { if (event.target?.closest?.('.dsa5h-name')) this._fitName(); });
+      let observedWidth = 0;
+      new ResizeObserver(([entry]) => {
+        if (entry.contentRect.width === observedWidth) return;
+        observedWidth = entry.contentRect.width;
+        this._fitName();
+      }).observe(this.element);
+      document.fonts?.ready.then(() => this._fitName());
       // Knöpfe mit eigener Rechtsklick-Bedeutung (Nachladen zurücksetzen, Zustand senken, Menge verringern …):
       // das contextmenu-Ereignis würde sonst bis zur Zeile hochlaufen und dort zusätzlich das Kontextmenü des
       // Systems öffnen (Nutzer-Feedback 2026-09-28). Die Aktion selbst kommt über auxclick und bleibt unberührt.
@@ -755,6 +766,25 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       if (this._currentTab === 'cover') root.querySelector('[data-cover-slot="' + slot + '"]')?.append(el);
       else root.querySelector('[data-header-slot="' + slot + '"]')?.after(el);
     });
+    this._fitName();
+  }
+
+  // Heldenname (Issue #25): Schrift so weit verkleinern (bis 22 px), dass der ganze Name in die Zeile passt — die
+  // Höchstgröße kommt aus dem CSS (39 px, Titelblatt 44 px). Was dann noch nicht passt, kürzt text-overflow mit „…“
+  // (voller Name im Tooltip). Gemessen per Canvas, weil ein <input> keine Textbreite liefert. Aufrufe: jeder
+  // Reiterwechsel (_applyCurrentTab), Fenstergröße und Eingabe im Namensfeld (Listener in _onRender).
+  _fitName() {
+    const heading = this.element?.querySelector('.dsa5h-name');
+    const input = heading?.querySelector('input');
+    if (!input) return;
+    heading.style.removeProperty('font-size');
+    const style = getComputedStyle(input);
+    const max = parseFloat(style.fontSize);
+    const context = (this._nameCanvas ??= document.createElement('canvas')).getContext('2d');
+    context.font = `${style.fontWeight} ${max}px ${style.fontFamily}`;
+    const width = context.measureText(input.value || input.placeholder).width;
+    const available = input.clientWidth;
+    if (available > 0 && width > available) heading.style.fontSize = Math.max(22, Math.floor(max * available / width)) + 'px';
   }
 
   // Während einer Talentsuche stehen Treffer aus ALLEN Gruppen da — dann ist keine Gruppe markiert
