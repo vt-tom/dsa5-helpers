@@ -9,10 +9,7 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Live in Foundry prüfen (0.3.3)
 
-- **#26 Notizen:** „Persönliche Daten“ jetzt erster Unterreiter und beim Öffnen ausgewählt.
-  - erledigt
-- **#27 Titelblatt:** Kasten Statuseffekte/Persönliche Daten mit Fähnchen unten (hell/dunkel), nur ausgefüllte Felder, viele Felder → nur die Liste scrollt; Klick auf den Titel öffnet Notizen › Persönliche Daten. Ohne Statuseffekte bzw. ohne Daten: nur der eine Kasten, keine Fähnchen.
-  - Die Tabs sollten immer ganz unten in der Zeile sein. Und nicht mit Scrollbar!
+- **#27 Titelblatt:** Fähnchen jetzt immer ganz unten an der Leiste, Kasten reicht bis dorthin, keine sichtbare Scrollleiste (Liste scrollt per Rad, Schatten unten zeigt weitere Felder). Prüfen: hell/dunkel, niedriges Fenster, Held mit 3 Ressourcen + vielen Feldern; Klick auf den Titel öffnet Notizen › Persönliche Daten. Ohne Statuseffekte bzw. ohne Daten: nur der eine Kasten, keine Fähnchen.
 
 ## Offene Entscheidungen
 
