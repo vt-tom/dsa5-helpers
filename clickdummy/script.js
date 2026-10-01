@@ -2387,7 +2387,7 @@ function increaseStep(getValue, setValue, max, onChange, label = "Wert") {
 // Pips) in BEIDEN Modi reduzierbar, ganze Zeile nur im Bearbeiten-Modus löschbar. `limit` (nur von
 // renderCoverSidebar() übergeben, Status-Tab bleibt unlimitiert) deckelt die Liste auf dem Titelblatt — bei mehr
 // Zuständen als `limit` erscheint statt weiterer Zeilen ein Sprung-Button zum Status-Tab (Nutzer-Feedback
-// 2026-09-14), damit die linke Leiste nie scrollen muss.
+// 2026-09-14, analog zu buildActiveEffectsSummary()), damit die linke Leiste nie scrollen muss.
 function buildConditionsPanel(limit) {
   const capped = limit && CONDITIONS.length > limit;
   const shown = capped ? CONDITIONS.slice(0, limit) : CONDITIONS;
@@ -2421,6 +2421,23 @@ function buildActiveEffectsPanel() {
     el("div", { class: "panel-title" }, "Aktive Effekte"),
     ...EFFECTS.map((e) => el("div", { class: "list-row" }, [el("span", { class: "name" }, e.name), el("span", { class: "cost" }, e.dur), rowDeleteBtn(EFFECTS, e)])),
   ]);
+}
+
+// Nutzer-Feedback 2026-09-14: auf dem Titelblatt sollen Aktive Effekte gar nicht mehr einzeln aufgelistet werden
+// (auch die vorherige "erste 4 + Alle anzeigen"-Begrenzung machte die linke Leiste noch scrollbar) — nur noch ein
+// knapper Hinweis, ob überhaupt welche aktiv sind, mit direktem Sprung zum Status-Tab (die volle Liste bleibt dort
+// über buildActiveEffectsPanel() unverändert). Damit bleibt die Höhe der Leiste unabhängig von der Effekt-Anzahl
+// konstant, siehe #coverSidebar-Kommentar in style.css.
+function buildActiveEffectsSummary() {
+  const count = EFFECTS.length;
+  const btn = el(
+    "button",
+    { type: "button", class: "show-all-btn" },
+    count ? `${count} aktive${count === 1 ? "r" : ""} Effekt${count === 1 ? "" : "e"} → Status` : "Keine aktiven Effekte"
+  );
+  if (count) btn.addEventListener("click", () => setTab("status"));
+  else btn.disabled = true;
+  return el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Aktive Effekte"), btn]);
 }
 
 function renderStatus() {
@@ -3186,44 +3203,8 @@ function renderCoverSidebar() {
   sidebar.innerHTML = "";
   sidebar.appendChild(portrait);
   sidebar.appendChild(coverResourcesBlock());
-  // Kein Hinweis „Aktive Effekte“ mehr (2026-10-01): gab es im Modul nie, und der Kasten mit den Fähnchen braucht den Platz.
-  sidebar.appendChild(coverInfoBlock(buildConditionsPanel(4), coverDetailsList()));
-}
-
-// Persönliche Daten auf dem Titelblatt (Issue #27, Variante B „Reiter“, 2026-10-01): teilen sich mit den Zuständen
-// einen Kasten, umgeschaltet über Reiter-Fähnchen, die unten am Kasten hängen — der Kasten reicht bis ans Ende der
-// Leiste, die Fähnchen sitzen also immer ganz unten; die Leiste wird nicht länger und scrollt nicht.
-// Nur lesend, nur ausgefüllte Felder (sind alle leer, bleibt es beim Zustände-Kasten ohne Fähnchen), Label | Wert,
-// lange Werte brechen um. Klick auf den Titel springt zum Unterreiter „Persönliche Daten“ im Reiter Notizen.
-// Verworfen: Variante A, eigener Kasten zwischen Schips und Zuständen (Leiste musste scrollen).
-let coverInfoTab = "conditions";
-
-function coverDetailsList() {
-  const filled = APPEARANCE.filter((a) => String(a.v ?? "").trim());
-  if (!filled.length) return null;
-  return el("dl", { class: "cover-details" }, filled.flatMap((a) => [el("dt", {}, a.k), el("dd", {}, a.v)]));
-}
-
-function openNotesDetails() {
-  currentNotesSection = "details";
-  setTab("notes");
-}
-
-function coverInfoBlock(conditionsPanel, list) {
-  if (!list) return conditionsPanel;
-  const link = el("button", { type: "button", class: "cover-details-link", title: "Im Reiter Notizen bearbeiten" }, "Persönliche Daten");
-  link.addEventListener("click", openNotesDetails);
-  const panel = coverInfoTab === "details" ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, [link]), list]) : conditionsPanel;
-  const flags = el("div", { class: "cover-info-flags", role: "tablist" }, [
-    { id: "conditions", label: "Zustände" },
-    { id: "details", label: "Persönliche Daten" },
-  ].map(({ id, label }) => {
-    const active = coverInfoTab === id;
-    const btn = el("button", { type: "button", role: "tab", class: "cover-info-flag" + (active ? " active" : ""), "aria-selected": String(active) }, label);
-    btn.addEventListener("click", () => { coverInfoTab = id; renderCoverSidebar(); });
-    return btn;
-  }));
-  return el("div", { class: "cover-info" }, [panel, flags]);
+  sidebar.appendChild(buildConditionsPanel(4));
+  sidebar.appendChild(buildActiveEffectsSummary());
 }
 
 // Gegenstück zu renderCoverSidebar(): Porträt zurück an seinen Stammplatz in der Kopfzeile, bevor die (dann

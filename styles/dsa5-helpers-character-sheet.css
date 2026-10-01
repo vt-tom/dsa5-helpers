@@ -1468,31 +1468,6 @@
 .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-cover-condition a:hover { text-decoration: underline; }
 .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-cover-more { display: block; width: 100%; padding: 6px 11px; border: none; border-top: 1px solid rgba(224, 192, 128, .18); background: rgba(224, 192, 128, .08); color: var(--headink); font-size: var(--fs-meta); text-align: center; cursor: pointer; }
 .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-cover-more:hover { background: rgba(224, 192, 128, .18); }
-/* Persönliche Daten auf dem Titelblatt (Issue #27, Variante B): Label | Wert, lange Werte brechen um. Mit den Zuständen
-   in einem Kasten, umgeschaltet über Fähnchen unten am Kasten (aktives in Kastenfarbe, deckt dessen Unterkante ab).
-   Der Block nimmt höchstens den Restplatz der Leiste: bei vielen Feldern scrollt nur die Liste, die Fähnchen bleiben sichtbar. */
-/* Mit Fähnchen reicht der Kasten bis ans Ende der Leiste, die Fähnchen sitzen immer ganz unten (Rückmeldung 2026-10-01). */
-.dsa5-helpers-sheet .dsa5h-cover-info { --dsa5h-cover-panel: color-mix(in srgb, var(--head-base), #fff 6%); display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; }
-.dsa5-helpers-sheet .dsa5h-cover-info:has(.dsa5h-cover-flags) { flex: 1 1 0; }
-.dsa5-helpers-sheet .dsa5h-cover-info > .panel:not([hidden]) { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: none; }
-.dsa5-helpers-sheet .dsa5h-cover-info > .panel::-webkit-scrollbar { display: none; }
-/* Zeilen behalten ihre Höhe (sonst quetscht Flex sie bei wenig Platz); nur die Datenliste darf schrumpfen und scrollen. */
-.dsa5-helpers-sheet .dsa5h-cover-info > .panel > * { flex: none; }
-.dsa5-helpers-sheet .dsa5h-cover-info > .panel > .dsa5h-cover-details { flex: 0 1 auto; }
-.dsa5-helpers-sheet .dsa5h-cover-details { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; margin: 0; padding: 4px 11px 8px; flex: 0 1 auto; min-height: 0; overflow-y: auto; font-size: var(--fs-small); color: var(--headink);
-   /* Keine sichtbare Scrollleiste (Rückmeldung 2026-10-01): Liste scrollt per Rad/Wischen, ein Schatten unten zeigt
-      weiteren Inhalt an (verschwindet am Ende, weil die Abdeckung mitscrollt). */
-   scrollbar-width: none; background: linear-gradient(transparent, var(--dsa5h-cover-panel) 70%) bottom / 100% 22px no-repeat local, radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, .5), transparent) bottom / 100% 10px no-repeat scroll; }
-.dsa5-helpers-sheet .dsa5h-cover-details::-webkit-scrollbar { display: none; }
-.dsa5-helpers-sheet .dsa5h-cover-details :is(dt, dd) { margin: 0; padding: 3px 0; border-top: 1px solid rgba(224, 192, 128, .18); overflow-wrap: anywhere; }
-.dsa5-helpers-sheet .dsa5h-cover-details dt { max-width: 96px; color: var(--headmuted); font-size: var(--fs-meta); font-weight: normal; }
-.dsa5-helpers-sheet .dsa5h-cover-details :is(dt, dd):nth-child(-n+2) { border-top: 0; }
-.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-cover-details-link { all: unset; cursor: pointer; }
-.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-cover-details-link:is(:hover, :focus-visible) { color: var(--accent); text-decoration: underline; }
-.dsa5-helpers-sheet .dsa5h-cover-flags { display: flex; gap: 4px; padding: 0 8px; flex: none; }
-.dsa5-helpers-sheet .dsa5h-cover-flags button { flex: 0 1 auto; min-width: 0; width: auto; height: auto; min-height: 0; margin: -1px 0 0; padding: 4px 10px 5px; border: 1px solid rgba(224, 192, 128, .3); border-radius: 0 0 5px 5px; background: rgba(0, 0, 0, .18); box-shadow: none; color: var(--headmuted); font: inherit; font-size: var(--fs-meta); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
-.dsa5-helpers-sheet .dsa5h-cover-flags button.active { border-top-color: transparent; background: var(--dsa5h-cover-panel); color: var(--headink); box-shadow: inset 0 -2px 0 var(--accent); }
-.dsa5-helpers-sheet .dsa5h-cover-flags button:is(:hover, :focus-visible) { color: var(--accent); }
 .dsa5-helpers-sheet .dsa5h-limited { padding:20px; overflow:auto; }
 .dsa5-helpers-sheet .dsa5h-limited > img { max-width:220px; max-height:300px; object-fit:contain; }
 /* ===== GEFÄHRTEN TAB — reused system markup (actor-companion.hbs etc.), styling adapted only ===== */
