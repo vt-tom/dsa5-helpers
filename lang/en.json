@@ -33,6 +33,10 @@
     "GripMain": "M",
     "GripOff": "O",
     "GripBoth": "B",
+    "CompanionTab": {
+      "Show": "Show Companions tab",
+      "Hide": "Hide Companions tab"
+    },
     "Tabs": {
       "cover": "Overview",
       "main": "Characteristics",
@@ -43,7 +47,8 @@
       "inventory": "Equipment",
       "status": "Status",
       "notes": "Notes",
-      "companion": "Companions"
+      "companion": "Companions",
+      "steigerungsplaner": "Advancement planner"
     },
     "Hints": {
       "cover": "",
@@ -55,7 +60,8 @@
       "inventory": "",
       "status": "",
       "notes": "",
-      "companion": ""
+      "companion": "",
+      "steigerungsplaner": ""
     },
     "Weapons": "Weapons",
     "OpenBag": "Open container (drop items here to pack them)",

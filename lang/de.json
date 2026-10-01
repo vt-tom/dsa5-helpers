@@ -33,6 +33,10 @@
     "GripMain": "H",
     "GripOff": "N",
     "GripBoth": "B",
+    "CompanionTab": {
+      "Show": "Reiter Gefährten einblenden",
+      "Hide": "Reiter Gefährten ausblenden"
+    },
     "Tabs": {
       "cover": "Titelblatt",
       "main": "Eigenschaften",
@@ -43,7 +47,8 @@
       "inventory": "Ausrüstung",
       "status": "Status",
       "notes": "Notizen",
-      "companion": "Gefährten"
+      "companion": "Gefährten",
+      "steigerungsplaner": "Steigerungsplaner"
     },
     "Hints": {
       "cover": "",
@@ -55,7 +60,8 @@
       "inventory": "",
       "status": "",
       "notes": "",
-      "companion": ""
+      "companion": "",
+      "steigerungsplaner": ""
     },
     "Weapons": "Waffen",
     "OpenBag": "Behältnis öffnen (Gegenstände hierher ziehen, um sie einzupacken)",

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=126">
+<link rel="stylesheet" href="style.css?v=141">
 </head>
 <body>
 
@@ -27,26 +27,18 @@
 
   <div class="sheet" data-theme="light" data-mode="play">
 
-    <!-- VORSCHAU 2026-09-15 (siehe PLANNING.md-Entscheidungsprotokoll, "Kopfzeile passt nicht richtig, Name
-         doppelt, viel Platz verloren"): Nachbau der ECHTEN Foundry-Fenster-Titelzeile (Augen-/Schloss-Icon links,
-         Menü-/Würfel-/Schließen-Icon rechts) — im echten Modul die native .window-header-Leiste, hier nur zur
-         visuellen Abstimmung nachgebaut (KEINE echte Funktion, nicht klickbar/tabbar: tabindex="-1"). Idee des
-         Nutzers: die Buttons "schweben" über dem Kopf statt eine eigene, oft leere Zeile zu beanspruchen —
-         technisch im echten Modul später per "position:absolute" auf .window-header umsetzbar (füllt dann keine
-         eigene Flex-Zeile mehr, sitzt direkt über .dsa5h-head). Absichtlich NICHT Teil des eigentlichen Bogens,
-         nur ein Overlay über den obersten ~30px von .head — links über dem Porträt, rechts über Name/Badges. -->
-    <!-- Nachbau der Foundry-v14-Fensterleiste mit den Knöpfen, die der echte Bogen zeigt: DSA5-"majorButtons"
-         (Spieleransicht, Sperre) + unser Theme-Knopf, dann ⋮ und ✕ — "schwebend" oben rechts über dem Kopf. -->
+    <!-- Nachbau der Foundry-Titelleiste (.window-header) als „Plakette“ (GitHub-Issue #22, 2026-10-01): alle Knöpfe
+         rechts in einer Plakette, die auf dem oberen Rahmenband sitzt und 8px darüber hinausragt — DSA5-„majorButtons“
+         (Spieleransicht, Sperre) + Theme-Knopf, dann ⋮ und ✕. Ziehen an Plakette und oberem Rahmenband, Doppelklick
+         minimiert (initWindowFrame() in script.js). Minimiert wird die Plakette zur Leiste mit Name + ✕ wie in Foundry. -->
     <div class="fake-window-chrome" aria-hidden="true">
-      <div class="fwc-left">
-        <button type="button" tabindex="-1" title="Spieleransicht">◐</button>
-        <button type="button" tabindex="-1" title="Bogen sperren">🔓</button>
-        <button type="button" tabindex="-1" title="Dunkles Thema">☾</button>
-      </div>
-      <div class="fwc-right">
-        <button type="button" tabindex="-1" title="Fenstermenü">⋮</button>
-        <button type="button" tabindex="-1" title="Schließen">✕</button>
-      </div>
+      <span class="fwc-title"></span>
+      <button type="button" tabindex="-1" title="Spieleransicht">◐</button>
+      <button type="button" tabindex="-1" title="Bogen sperren">🔓</button>
+      <button type="button" tabindex="-1" title="Dunkles Thema">☾</button>
+      <!-- Seit Issue #21 echt klickbar: Eintrag „Reiter Gefährten aus-/einblenden“ (initWindowMenu() in script.js). -->
+      <button type="button" tabindex="-1" title="Fenstermenü" id="windowMenuBtn" class="fwc-sep">⋮</button>
+      <button type="button" tabindex="-1" title="Schließen" class="fwc-close">✕</button>
     </div>
 
     <!-- KOPF -->
@@ -128,8 +120,8 @@
      liefert der Browser bei einem einfachen Reload evtl. eine alte JS-Datei zusammen mit neuem HTML/CSS aus
      (führt zu einem leeren Content-Bereich, weil script.js dann Datenformen aus data.js erwartet, die die
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
-<script src="assets-map.js?v=14"></script>
+<script src="assets-map.js?v=15"></script>
 <script src="data.js?v=27"></script>
-<script src="script.js?v=92"></script>
+<script src="script.js?v=104"></script>
 </body>
 </html>

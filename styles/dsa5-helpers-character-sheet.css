@@ -35,6 +35,9 @@
 .dsa5-helpers-sheet {
    --paper: #ece2d2;
    --ink: #2b2721;
+   /* Porträtrahmen (Tintenlinie): in beiden Themen dasselbe Braun — mit --ink wurde er im dunklen Thema zur hellen
+      Linie und passte nicht mehr zum hellen Thema (Issue #19). Im dunklen Thema bewusst nicht überschrieben. */
+   --frame-ink: #2b2721;
    --muted: rgba(43, 39, 33, .72);
    --line: rgba(43, 39, 33, .2);
    --panel: rgba(255, 255, 255, .4);
@@ -53,12 +56,16 @@
    --use: #2f6b2a;
 }
 
+/* Fensterrahmen (Issue #22, Nutzer-Entscheidung 2026-10-01 nach Click-Dummy-Vergleich): Nachbau des DSA5-Rahmens
+   actor.webp als Vektor (dsa5-helpers-frame.svg, erzeugt von tools/gen-frame.cjs). Ecken fest, Knoten gekachelt statt
+   über die ganze Breite gestreckt; oben ist das ganze Band breiter (24px) — darauf sitzt die Titelleisten-Plakette.
+   overflow:visible, damit die Plakette über den Rahmen hinausragen darf (Foundry schneidet .application sonst ab). */
 .dsa5-helpers-sheet {
    border-style: solid !important;
    border-color: transparent !important;
-   border-width: 16px !important;
-   border-image: url('../../../systems/dsa5/icons/backgrounds/actor.webp') 20 stretch !important;
-   
+   border-width: 24px 16px 16px !important;
+   border-image: url('dsa5-helpers-frame.svg') 24 16 16 16 / 24px 16px 16px 16px repeat !important;
+   overflow: visible !important;
    box-shadow: 0 10px 20px rgba(0, 0, 0, .5) !important;
    background: var(--paper) !important;
 }
@@ -70,41 +77,65 @@
 /* ===== NATIVE FOUNDRY FRAME/WINDOW OVERRIDES ===== */
 
 .dsa5-helpers-sheet .window-header {
-   /* Titelleiste „schwebend“ (Nutzer-Entscheidung 2026-09-28 nach Clickdummy-Vergleich A/B/C): keine eigene Zeile
-      mehr über dem Kopf, sondern eine kleine Knopfgruppe oben rechts über dem dunklen Kopf — spart ~30px Höhe.
-      Bleibt die Ziehfläche fürs Fenster (Foundry), dann eben nur so breit wie die Knöpfe. */
+   /* Titelleiste als „Plakette“ (Issue #22, 2026-10-01): alle Knöpfe rechts in einer dunklen Plakette mit heller
+      Kante, die auf dem oberen Rahmenband (24px) sitzt und 8px darüber hinausragt — keine eigene Zeile über dem
+      Kopf. Bleibt Foundrys Ziehfläche; zusätzlich zieht das obere Rahmenband (pointerdown-Weiterleitung im Sheet). */
    position: absolute !important;
-   top: 0 !important;
-   right: 0 !important;
+   top: -32px !important;
+   right: -6px !important;
    left: auto !important;
    width: auto !important;
    z-index: 5 !important;
-   background: rgba(20, 16, 12, .55) !important;
-   background-image: none !important;
-   border: none !important;
-   border-radius: 0 0 0 6px !important;
+   background: linear-gradient(180deg, #3a322b, #2c2622) !important;
+   border: 1px solid #dcc6b8 !important;
+   border-radius: 4px !important;
    margin: 0 !important;
-   box-shadow: none !important;
+   box-shadow: 0 0 0 1.5px #4a372b, 0 2px 4px rgba(0, 0, 0, .5) !important;
    color: var(--headink) !important;
    flex: 0 0 auto !important;
-   padding: 2px 6px !important;
+   padding: 0 4px !important;
    min-height: 0 !important;
-   height: auto !important;
-   gap: 2px !important
+   height: 22px !important;
+   gap: 0 !important
+}
+
+.dsa5-helpers-sheet .window-header .header-control {
+   width: 22px !important;
+   height: 20px !important;
+   min-height: 0 !important;
+   padding: 0 !important;
+   font-size: 12px !important;
+   text-shadow: 0 1px 1px rgba(0, 0, 0, .6)
+}
+
+/* Feiner Trennstrich zwischen den Bogen-Knöpfen und ⋮/✕. */
+.dsa5-helpers-sheet .window-header .header-control[data-action="toggleControls"] {
+   position: relative;
+   margin-left: 3px !important
+}
+
+.dsa5-helpers-sheet .window-header .header-control[data-action="toggleControls"]::before {
+   content: "";
+   position: absolute;
+   left: -2px;
+   top: 3px;
+   bottom: 3px;
+   width: 1px;
+   background: rgba(220, 198, 184, .35)
 }
 
 .dsa5-helpers-sheet .window-header .window-title {
    display: none !important
 }
 
-/* Minimiert (Doppelklick auf Titelleiste oder freie Stelle im dunklen Kopf): wie im Systembogen eine normale Leiste
-   mit Heldennamen, über die man wieder aufklappt/verschiebt. Der 16px-Bilderrahmen passt nicht in Foundrys
-   --header-height, und unser display:flex am Inhalt würde Foundrys display:none überstimmen. */
+/* Minimiert (Doppelklick auf Plakette, oberes Rahmenband oder freie Stelle im dunklen Kopf): nur der Rahmen bleibt,
+   die Plakette wird zur Leiste mit Heldennamen (Foundry blendet dort alle Knöpfe außer ✕ aus). Foundry begrenzt die
+   Höhe beim Minimieren auf --header-height — hier so hoch wie der Rahmen (24 + 16px). Unser display:flex am Inhalt
+   würde Foundrys display:none überstimmen. */
 .dsa5-helpers-sheet.minimized,
 .dsa5-helpers-sheet.minimizing,
 .dsa5-helpers-sheet.maximizing {
-   border-width: 0 !important;
-   border-image: none !important;
+   --header-height: 40px;
    background: var(--head-base) !important
 }
 
@@ -113,12 +144,8 @@
 }
 
 .dsa5-helpers-sheet.minimized .window-header {
-   position: static !important;
-   width: 100% !important;
-   height: var(--header-height) !important;
-   border-radius: 0 !important;
-   background: var(--head) !important;
-   padding: 0 8px !important
+   left: -6px !important;
+   padding: 0 4px 0 10px !important
 }
 
 .dsa5-helpers-sheet.minimized .window-header .window-title {
@@ -277,7 +304,7 @@
    height: auto;
    aspect-ratio: 118 / 142;
    align-self: flex-start;
-   border: 3px solid var(--ink);
+   border: 3px solid var(--frame-ink);
    box-shadow: inset 0 0 0 1px rgba(224, 192, 128, .5);
    clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
    overflow: hidden;
@@ -407,8 +434,24 @@
    font-size: 14px;
    line-height: 1.4;
    width: auto;
-   max-width: none;
+   /* Nie breiter als die Kopfzeile (Issue #14: lange Professionsnamen ragten rechts aus dem Bogen) — das Inline-
+      `width: Nch` der Autosizing-Logik bleibt, wird hier nur gedeckelt; 24px = Padding + Rand (content-box). Der
+      Rest wird mit „…“ gekürzt, den vollen Text zeigt der Tooltip am Wrapper .dsa5h-badge. */
+   max-width: calc(100% - 24px);
+   text-overflow: ellipsis;
    height: auto
+}
+
+.dsa5-helpers-sheet .dsa5h-badge {
+   display: flex;
+   min-width: 0;
+   max-width: 100%
+}
+
+/* Gesperrt (Spielmodus) bekäme das Feld keine Mausereignisse für den Tooltip — der Wrapper übernimmt sie. Ziehen
+   und Doppelklick des Kopfs funktionieren dort wie bisher (gesperrte Felder stehen nicht in DRAG_EXCLUDE). */
+.dsa5-helpers-sheet .dsa5h-badges input:disabled {
+   pointer-events: none
 }
 
 /* Heldenerschaffung (Issue #10): statt des Spezies-Feldes, gleiche Pillenform wie die Badges, aber als Knopf */
@@ -950,7 +993,9 @@
 }
 
 .dsa5-helpers-sheet .dsa5h-content .derived-row {
-   grid-template-columns: 1fr 40px 40px 52px 40px
+   /* Aktuell 40→56px, Zukauf 52→56px wie im Click-Dummy: „AKTUELL“/„CURRENT“ (50/52px) und „ADVANCE“ (54px)
+      ragten im Bearbeiten-Modus über ihre Spalte hinaus (Issue #16). */
+   grid-template-columns: 1fr 56px 40px 56px 40px
 }
 
 .dsa5-helpers-sheet .dsa5h-content .simple-row {
@@ -1063,7 +1108,8 @@
 .dsa5-helpers-sheet .dsa5h-sub-tabs { display:flex; flex-wrap:wrap; }
 .dsa5-helpers-sheet .dsa5h-sub-tabs button { width:auto; min-height:0; padding:3px 8px; border:0; border-bottom:2px solid transparent; border-radius:0; background:none; color:var(--muted); font:15px Andalus,serif; }
 .dsa5-helpers-sheet .dsa5h-sub-tabs button.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:bold; }
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns:26px minmax(120px,1fr) 108px 80px 96px 24px; }
+/* Belastung-Spalte 80→88px: „ENCUMBRANCE“ (en) ist als Kopf 85px breit und brach sonst mitten im Wort (Issue #16). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns:26px minmax(120px,1fr) 108px 88px 96px 24px; }
 .dsa5-helpers-sheet .dsa5h-skill-row img { width:24px; height:24px; object-fit:cover; border:1px solid var(--line); }
 /* .dsa5h-content is added to win against the generic button reset below (:where() there carries zero
    specificity, but same-specificity ties resolve by source order — this rule used to lose because it came
@@ -1231,7 +1277,9 @@
 /* Icon-Spalte war schmaler (28px) als das tatsächliche .dsa5h-item-image (40px) — das Bild lief dadurch in die
    Namensspalte hinein, kaum Abstand zum Namen (Nutzer-Feedback 2026-09-16, Liturgien-Tabelle). Gilt genauso für
    .dsa5h-inventory-row weiter unten. */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns:44px minmax(120px,1fr) 98px 90px 55px 80px 75px 24px; }
+/* Aktionsdauer-Spalte 80→92px: „AKTIONSDAUER“ ist als Kopf 87px breit und brach sonst als „AKTIONSDAUE / R“ um
+   (Issue #16). Englisch „Action duration“ bricht weiterhin sauber am Leerzeichen. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns:44px minmax(120px,1fr) 98px 90px 55px 92px 75px 24px; }
 .dsa5-helpers-sheet .dsa5h-spell-row > span { overflow-wrap:anywhere; }
 /* Niedriger als vorher (war padding:10px rundum + 5px Label-Abstand) — Nutzer-Feedback 2026-09-19: "sollte nicht
    so hoch sein". Kein eigener Kachel-Hintergrund/Vollrahmen mehr (war eine helle, deutlich vom Papier abgesetzte
@@ -1449,13 +1497,13 @@
   .dsa5-helpers-sheet .dsa5h-inventory-cards { flex-wrap:wrap; }
   .dsa5-helpers-sheet .dsa5h-money-panel { flex-basis:100%; }
   .dsa5-helpers-sheet .dsa5h-carry-panel { flex-basis:100%; }
-  .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns:40px minmax(90px,1fr) 92px 70px 48px 60px 60px 22px; gap:4px; font-size:12px; }
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns:40px minmax(90px,1fr) 92px 70px 48px 88px 70px 22px; gap:4px; font-size:12px; }
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-row { grid-template-columns:44px minmax(90px,1fr) 38px 38px 66px 64px 60px 20px 20px; gap:4px; }
   /* Not enough width here for the Kampf-Tab's enlarged 56px weapon image — back to the shared default size. */
   .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image { width:40px; height:44px; }
   .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image img { width:40px; height:40px; }
   .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image meter { width:40px; }
-  .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns:26px minmax(90px,1fr) 92px 48px 80px 22px; gap:4px; }
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns:26px minmax(90px,1fr) 92px 68px 80px 22px; gap:4px; }
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-talent { grid-template-columns:26px minmax(90px,1fr) 92px 48px; gap:4px; }
   .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main { grid-template-columns:150px minmax(0,1fr); }
 }
@@ -1468,7 +1516,9 @@
   .dsa5-helpers-sheet .dsa5h-content .panel { overflow-x:auto; }
   .dsa5-helpers-sheet .dsa5h-content .row, .dsa5-helpers-sheet .dsa5h-content .row-head { min-width:460px; }
 }
-@media (prefers-reduced-motion:reduce) { .dsa5-helpers-sheet * { transition:none !important; } }
+/* Ausgenommen die Kacheln des Steigerungsplaners (Issue #17): der führt „Anwenden“/„Verwerfen“ erst nach deren
+   transitionend aus — ohne Übergang käme das Ereignis nie und der Klick bliebe wirkungslos. */
+@media (prefers-reduced-motion:reduce) { .dsa5-helpers-sheet *:not(.steigerungsplaner-tab .planner-step) { transition:none !important; } }
 
 /* ===== EIGENSCHAFTEN TAB (continued from near the top — .dsa5h-attr-tiles/.dsa5h-attr-die) ===== */
 
@@ -1878,3 +1928,32 @@
 .dsa5-helpers-changelog .dsa5h-changelog-footer button {
    width: auto
 }
+
+/* ===== Steigerungsplaner (Issue #17) =====
+   Reiter mit dem Template von „Lyynix: DSA5 - Steigerungsplaner“ (parts/planner.hbs). Dessen Markup nutzt die
+   Tabellenklassen des Systembogens — hier auf unsere Panels/Zeilen umgestellt; Funktion und Animationen bleiben die
+   des Planers. Überschrift steht schon als Reitertitel da, nur die AP-Zusammenfassung bleibt. */
+.dsa5-helpers-sheet .steigerungsplaner-tab { padding:0; gap:16px; }
+.dsa5-helpers-sheet .steigerungsplaner-tab .planner-header { justify-content:flex-end; padding:0; border:0; }
+.dsa5-helpers-sheet .steigerungsplaner-tab .planner-header h2 { display:none; }
+.dsa5-helpers-sheet .steigerungsplaner-tab .planner-summary { gap:16px; font-size:var(--fs-small); color:var(--muted); }
+.dsa5-helpers-sheet .steigerungsplaner-tab > div:not(.planner-header) { border:1px solid var(--line); background:var(--panel); }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .row-section.table-header { display:block; padding:5px 11px; margin:0; border:0; background:var(--title); font-family:'Andalus', serif; font-size:18px; font-weight:normal; color:var(--ink); line-height:1.4; }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .row-section.table-header .col { padding:0; }
+/* Spaltenkopf „Talent | Steigerungsliste“ sagt nichts, was die Zeilen nicht schon zeigen. */
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .row-section.table-title { display:none; }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .row-section.tableOdd { display:flex; flex-wrap:nowrap; align-items:center; gap:8px; margin:0; padding:5px 11px; min-height:0; border:0; border-top:1px solid var(--line); background:none; font-size:var(--fs-data); color:var(--ink); }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .planner-group-icon { width:24px; height:24px; flex:0 0 24px; margin:0; border:1px solid var(--line); object-fit:cover; }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .planner-group-label { flex:0 0 160px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:normal; }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .planner-step-inner { height:100%; min-height:0; gap:0; padding:0; overflow:hidden; background:var(--field); border:1px solid var(--line); color:var(--ink); }
+/* Kachel zweigeteilt (Nutzer-Feedback 2026-10-01: schwer zu sehen, was gesteigert wird und was es kostet): links der
+   Schritt groß und fett, rechts die Kosten als farbiges Feld. */
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .planner-step-values { padding:0 9px; font-size:var(--fs-data); font-weight:bold; font-variant-numeric:tabular-nums; }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .planner-step-cost { align-self:stretch; display:flex; align-items:center; padding:0 8px; background:var(--accent); color:#fff; font-size:var(--fs-meta); font-weight:bold; letter-spacing:.03em; }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab :is(.planner-apply, .planner-cancel) { color:var(--muted); }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab :is(.planner-apply, .planner-cancel):is(:hover, :focus-visible) { color:var(--accent); }
+.dsa5-helpers-sheet .dsa5h-content .steigerungsplaner-tab .planner-empty { margin:0; padding:10px 11px; border:1px solid var(--line); background:var(--panel); color:var(--muted); }
+/* +N-Badges des Planers an den „+“-Knöpfen: Farbe wie unsere Akzente; über dem Knopf statt daneben, wo die Zeile
+   keinen Platz hat (Eigenschaften, LeP/AsP/KaP — der Planer hängt sie dort in den Knopf). */
+.dsa5-helpers-sheet .steigerungsplaner-badge { background:var(--accent); font-family:'GentiumBasic', serif; }
+.dsa5-helpers-sheet .steigerungsplaner-badge-above { top:-.95rem; right:-.5rem; z-index:1; pointer-events:auto; }

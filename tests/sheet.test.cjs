@@ -50,11 +50,13 @@ function fixture() {
  context.fields={name:{path:'name'}};context.systemFields={};
  // Explicit paths are cross-checked against the installed system templates in a separate test.
  for(const source of modulePaths.map(read))for(const match of source.matchAll(/systemFields\.([\w.]+)/g)) {const parts=match[1].split('.');let target=context.systemFields;for(const p of parts)target=target[p]??={};target.path='system.'+parts.filter(p=>p!=='fields').join('.');}
- const actor={system,items,isOwner:true,getFlag:()=>['skill','weapon','missing'],async setFlag(scope,key,value){this.saved={scope,key,value};}};
+ const actor={system,items,isOwner:true,flags:{favorites:['skill','weapon','missing']},getFlag(_scope,key){return this.flags[key];},async setFlag(scope,key,value){this.saved={scope,key,value};}};
  return {context,actor};
 }
 let Sheet;
-async function loadSheet(){if(Sheet)return Sheet;global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import('data:text/javascript;base64,'+Buffer.from(read('scripts/sheets/dsa5-helpers-character-sheet.js')).toString('base64')));return Sheet;}
+// data:-URLs, weil die Modul-.js hier sonst als CommonJS gälten; der eine relative Import wird mit ersetzt.
+const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
+async function loadSheet(){if(Sheet)return Sheet;global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
@@ -105,6 +107,7 @@ test('navigation rejects unknown tabs and preserves subtab selection',async()=>{
  sheet.element={dataset:{},querySelector(){return null;},querySelectorAll(selector){return selector==='[data-tab-panel]'?[panel]:selector==='[data-sub-panel]'?[sub]:selector==='[data-subtab]'?[button]:[];}};
  Sheet.DEFAULT_OPTIONS.actions.dsa5hSetTab.call(sheet,{}, {dataset:{tab:'invalid'}});assert.equal(sheet._currentTab,'cover');
  Sheet.DEFAULT_OPTIONS.actions.dsa5hSetTab.call(sheet,{}, {dataset:{tab:'combat'}});Sheet.DEFAULT_OPTIONS.actions.dsa5hSetSubTab.call(sheet,{},button);assert.equal(panel.hidden,false);assert.equal(sub.hidden,false);assert.equal(button['aria-pressed'],'true');await sheet._prepareContext({});assert.equal(sheet._subtabs.combat,'skills');
+ Sheet.DEFAULT_OPTIONS.actions.dsa5hSetTab.call(sheet,{}, {dataset:{tab:'companion'}});assert.equal(sheet.tabGroups.sheet,'companion','inherited _onDropActor recognises the companion tab via tabGroups.sheet (#15)');
 });
 test('bags expose the category required by the inherited drop handler',async()=>{const {context}=await prepare();const html=render(context);const bag=elements(html,el=>el.attribs?.class==='item dsa5h-bag')[0];assert.equal(bag.attribs['data-category'],'bags');assert.equal(bag.attribs['data-item-id'],'bag');});
 test('every item context-menu button has a .withContext target like the inherited _itemContextMenu expects',async()=>{const {context}=await prepare();const html=render(context);const hasWithContext=node=>(node.children??[]).some(c=>String(c.attribs?.class??'').split(/\s+/).includes('withContext')||hasWithContext(c));const buttons=elements(html,el=>el.attribs?.['data-action']==='itemContextMenu');assert(buttons.length);for(const el of buttons){let parent=el;while(parent&&!parent.attribs?.['data-item-id'])parent=parent.parent;assert(parent&&hasWithContext(parent),'itemContextMenu in item '+parent?.attribs?.['data-item-id']+' has no .withContext target');}});
@@ -289,4 +292,50 @@ test('changelog window and settings: template, localization and registration ord
  const entry=read('scripts/dsa5-helpers.js');for(const key of ['defaultSheet','lastSeenVersion'])assert(entry.indexOf(`'${key}'`)<entry.indexOf('if (!Dsa5HelpersCharacterSheet)'),key+' must be registered even without the DSA5 sheet');
  assert(/makeDefault: game\.settings\.get\('dsa5-helpers', 'defaultSheet'\)/.test(entry));
  for(const lang of ['de','en']){const l=JSON.parse(read(`lang/${lang}.json`)).DSA5HELPERS;for(const k of ['Title','Open','Hint','Updated','ShowAll','OnGitHub','Missing','Versions'])assert(l.Changelog[k],lang+' Changelog.'+k);assert(l.Settings.DefaultSheet.Name&&l.Settings.DefaultSheet.Hint);}
+});
+test('Steigerungsplaner (#17): advanceWrapper is inherited, planner tab only with the planner module',async()=>{
+ // Eigener ownerActions-Eintrag würde die Funktion vor dem libWrapper-Wrap des Planers festhalten (Shift-Klick steigert dann sofort).
+ assert(!Object.hasOwn(Sheet.DEFAULT_OPTIONS.ownerActions,'advanceWrapper'));
+ const {sheet,context}=await prepare();assert(!context.dsa5h.tabs.some(t=>t.id==='steigerungsplaner'));assert(!render(context).includes('steigerungsplaner-tab'));
+ const plannerTemplate=path.join(dataRoot,'modules/dsa5-steigerungsplaner/templates/planner-tab.hbs');if(!fs.existsSync(plannerTemplate))return;
+ const calls=[];const PlannerTab={async prepareContext(s,c){calls.push(s);c.plannerSections=[{label:'Körpertalente',cssClass:'body',groups:[{type:'item',key:'skill',label:'Test skill',icon:'x.webp',steps:[{id:'a',from:7,to:8,cost:2}]}]}];c.plannerTotalCost=2;c.plannerAvailableXP=100;return c;},attachListeners(){}};
+ global.game.modules=new Map([['dsa5-steigerungsplaner',{active:true,api:{PlannerTab}}],['lib-wrapper',{active:true}]]);global.foundry={utils:{getRoute:p=>'/'+p},applications:{handlebars:{loadTemplates:async()=>{}}}};
+ H.registerPartial('modules/dsa5-steigerungsplaner/templates/planner-tab.hbs',fs.readFileSync(plannerTemplate,'utf8'));
+ try{
+  await (await import(dataUrl(read('scripts/compat/steigerungsplaner.js')))).initSteigerungsplaner();
+  const ctx=await sheet._prepareContext({});assert(ctx.dsa5h.tabs.some(t=>t.id==='steigerungsplaner'));assert.equal(calls[0],sheet);
+  const html=render(ctx);const panel=elements(html,el=>el.attribs?.['data-tab-panel']==='steigerungsplaner')[0];assert(panel);
+  assert(elements(html,el=>/\bsteigerungsplaner-tab\b/.test(el.attribs?.class??'')&&/\bactive\b/.test(el.attribs.class))[0],'planner template gets the active class');assert(html.includes('data-plan-apply'));
+  sheet.actor.isOwner=false;assert(!(await sheet._prepareContext({})).dsa5h.tabs.some(t=>t.id==='steigerungsplaner'),'owners only');
+ }finally{delete global.game.modules;delete global.foundry;}
+});
+test('Gefährten-Reiter (#21): je Held per Titelleisten-Menü aus-/einblendbar, nur für Owner',async()=>{
+ const {sheet,actor,context}=await prepare();assert(context.dsa5h.tabs.some(t=>t.id==='companion'));
+ const control=()=>sheet._getHeaderControls().find(c=>c.action==='dsa5hToggleCompanionTab');
+ assert.equal(sheet._getHeaderControls()[0].action,'system','system controls stay');assert.equal(control().label,'DSA5HELPERS.CompanionTab.Hide');assert(localize(control().label)!==control().label);assert(control().visible.call(sheet));
+ await Sheet.DEFAULT_OPTIONS.actions.dsa5hToggleCompanionTab.call(sheet);assert.deepEqual(actor.saved,{scope:'dsa5-helpers',key:'hideCompanionTab',value:true});
+ actor.flags.hideCompanionTab=true;sheet._currentTab='companion';const hidden=await sheet._prepareContext({});assert(!hidden.dsa5h.tabs.some(t=>t.id==='companion'));assert.equal(sheet._currentTab,'cover');
+ assert.equal(control().label,'DSA5HELPERS.CompanionTab.Show');assert(localize(control().label)!==control().label);
+ delete actor.saved;actor.isOwner=false;assert(!control().visible.call(sheet));await Sheet.DEFAULT_OPTIONS.actions.dsa5hToggleCompanionTab.call(sheet);assert.equal(actor.saved,undefined);
+});
+test('Fensterrahmen (#22): eigene Rahmengrafik eingebunden, Ziehen am oberen Rahmenband und an freien Kopfstellen',async()=>{
+ const css=read('styles/dsa5-helpers-character-sheet.css');assert(fs.existsSync(path.join(root,'styles/dsa5-helpers-frame.svg')),'run node tools/gen-frame.cjs');
+ assert(/border-image: url\('dsa5-helpers-frame\.svg'\) 24 16 16 16/.test(css));assert(!css.includes('backgrounds/actor.webp'));
+ assert(read('styles/dsa5-helpers-frame.svg').includes('tools/gen-frame.cjs'),'generated file header');
+ const {sheet}=await prepare();const el={getBoundingClientRect:()=>({top:100})};sheet.element=el;global.getComputedStyle=()=>({borderTopWidth:'24px'});
+ const node=(head,excluded)=>({closest:sel=>sel==='.dsa5h-head'?head:excluded});
+ try{
+  assert(sheet._isDragHandle({target:el,clientY:110}),'top frame band');assert(!sheet._isDragHandle({target:el,clientY:130}),'side/bottom border below the top band');
+  assert(sheet._isDragHandle({target:node(true,null),clientY:300}),'free spot in the head');assert(!sheet._isDragHandle({target:node(true,{}),clientY:300}),'buttons in the head');assert(!sheet._isDragHandle({target:node(null,null),clientY:300}),'outside the head');
+ }finally{delete global.getComputedStyle;}
+});
+test('Traditions-Badge (#23): Name und Symbol aus der Sonderfertigkeit, sonst aus dem Freitextfeld',async()=>{
+ const {sheet}=await prepare();sheet.actor.system.tradition={magical:'',clerical:'Praioskirche'};sheet.context.prepare.sheetLocked=true;
+ const context=await sheet._prepareContext({});
+ assert.deepEqual(context.dsa5h.tradition.magical,{name:'Gildenmagier',fromItem:'Gildenmagier'},'tradition SF wins like in the system');
+ assert.deepEqual(context.dsa5h.tradition.clerical,{name:'Praioskirche',fromItem:''},'free-text field without SF');
+ const html=render(context);const names=elements(html,el=>el.attribs?.class==='dsa5h-tradition-name-text').map(el=>dom.textContent(el));
+ assert.deepEqual(names,['Gildenmagier','Praioskirche']);
+ const icons=elements(html,el=>el.attribs?.class==='dsa5h-tradition-icon').map(el=>el.attribs.src);
+ assert(icons.includes('systems/dsa5/icons/traditionen/gildenmagier.webp'));assert(icons.includes('systems/dsa5/icons/months/Praios.webp'));
 });
