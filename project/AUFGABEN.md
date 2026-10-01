@@ -10,12 +10,13 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 ## Offene Entscheidungen
 
 - **#27 Persönliche Daten auf dem Titelblatt:** wieder ausgebaut (2026-10-01), erst klären, ob und wie es aufs Titelblatt passt. Bisherige Versuche siehe PROJEKTDOKU.md (Design-Entscheidungen, „Titelblatt, persönliche Daten“).
-  - Ich habe einen Screenshot an den User geschickt, warte auf Rückmeldung
 - **Ersetzt „Körper“ später die Übersicht?** Erst nach dem Feedback der Tester entscheiden (Rückmeldung 2026-09-30: vorerst beide Bögen).
 
 ## Features / Backlog
 
 Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3.0 erledigt) – siehe unten. Neue Feature-Ideen dort anlegen oder hier kurz notieren.
+
+- **Eigenes HUD des Moduls** (Idee 2026-10-01): ein Einstieg für mehrere Modulfunktionen, z. B. die Würfelstatistik (#28, vorerst nur über die Moduleinstellungen). Noch kein Issue.
 
 ---
 
