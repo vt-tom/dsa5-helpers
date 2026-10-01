@@ -7,15 +7,9 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-## Version 0.3.3 (Branch `release/0.3.3`)
-
-- Fertig und live bestätigt: #25 Heldenname einpassen, #26 Persönliche Daten als erster Unterreiter in den Notizen.
-- #27 wieder ausgebaut, ohne Meilenstein (siehe Offene Entscheidungen).
-- Bereit zum Release, sobald freigegeben (Ablauf: [RELEASE.md](RELEASE.md)); danach #25/#26 schließen.
-
 ## Version 0.4.0 (Plan, Änderungen vorbehalten)
 
-Branch `release/0.4.0`, anlegen nach dem Merge von 0.3.3 nach `main`. Reihenfolge:
+Branch `release/0.4.0` (von `main`, 0.3.3 ist veröffentlicht). Reihenfolge:
 
 1. **#28 Würfelstatistik** — Hauptfeature, Plan im Issue.
    1. Click-Dummy: Statistikfenster + Zustimmungsdialog mit Demo-Daten, 2–3 Varianten der Darstellung → Auswahl.
@@ -45,20 +39,16 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 17:06 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 17:11 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (7)**
+**Offen (5)**
 
 - **[#1](https://github.com/vt-tom/dsa5-helpers/issues/1) feat: Animation zwischen Titelblatt und den anderen seiten**
   - offen · Bearbeiter: niemand · von @Lyynix · 0 Kommentare · zuletzt geändert 2026-09-17
 - **[#7](https://github.com/vt-tom/dsa5-helpers/issues/7) chore: CSS-Datei aufräumen**
   - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
-- **[#25](https://github.com/vt-tom/dsa5-helpers/issues/25) feat: Heldenname im Kopfbereich passt Schriftgröße an die Fensterbreite an**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 0 Kommentare · zuletzt geändert 2026-10-01
-- **[#26](https://github.com/vt-tom/dsa5-helpers/issues/26) feat: Persönliche Daten als eigene Registerkarte im Reiter Notizen**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#27](https://github.com/vt-tom/dsa5-helpers/issues/27) feat: Persönliche Daten auf dem Titelblatt anzeigen**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#28](https://github.com/vt-tom/dsa5-helpers/issues/28) feat: Würfelstatistik – Ergebnisse je Spieler und Würfeltyp auswerten**
@@ -68,6 +58,10 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 17:06 UTC) — ni
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 
+- **[#26](https://github.com/vt-tom/dsa5-helpers/issues/26) feat: Persönliche Daten als eigene Registerkarte im Reiter Notizen**
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 1 Kommentar · geschlossen 2026-10-01
+- **[#25](https://github.com/vt-tom/dsa5-helpers/issues/25) feat: Heldenname im Kopfbereich passt Schriftgröße an die Fensterbreite an**
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 1 Kommentar · geschlossen 2026-10-01
 - **[#3](https://github.com/vt-tom/dsa5-helpers/issues/3) feat: hover Effekt bei Proben**
   - erledigt · Bearbeiter: niemand · von @Lyynix · 1 Kommentar · geschlossen 2026-10-01
 - **[#18](https://github.com/vt-tom/dsa5-helpers/issues/18) feat: Steigerungshelfer – eigenes Fenster zum Planen von Steigerungen und Neuerwerb**
