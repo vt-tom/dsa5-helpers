@@ -332,6 +332,7 @@
    min-width: 0;
    margin: 0;
    font-family: 'Andalus', serif;
+   /* Höchstgröße — passt der Name nicht, verkleinert _fitName() sie per Inline-Stil (Issue #25). */
    font-size: 39px;
    font-weight: normal;
    line-height: 1.1;
@@ -346,7 +347,8 @@
    border-bottom: 1px solid rgba(244, 232, 214, .3);
    color: #f4e8d6;
    font: inherit;
-   font-size: 39px !important;
+   font-size: inherit !important;
+   text-overflow: ellipsis;
    width: 100%;
    min-width: 0;
    padding: 0 0 2px;
@@ -1449,7 +1451,6 @@
 }
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-head { grid-area: head; border-bottom: 1px solid rgba(224, 192, 128, .3); }
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-name { font-size: 44px; }
-.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-name input { font-size: 44px !important; }
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-attr-overlay { grid-area: attrbar; }
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-tab-title { grid-area: tabtitle; }
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-content { grid-area: content; }
@@ -1704,14 +1705,11 @@
    zentriert per Auto-Rand statt align-self (Nutzer-Feedback 2026-09-28: stand links). */
 .dsa5-helpers-sheet .dsa5h-cover-sidebar [data-cover-slot="portrait"] .dsa5h-portrait { margin:0 auto; }
 
-/* ===== NOTIZEN zweispaltig (Nutzer-Feedback 2026-09-28) =====
-   Links schmal die persönlichen Daten (eine Spalte, Beschriftung über dem Feld), rechts der Text des gewählten
-   Unterreiters — lange Notizen rutschen so nicht mehr unter einen breiten Datenblock. */
-.dsa5-helpers-sheet .dsa5h-notes-layout { display:grid; grid-template-columns:210px minmax(0,1fr); gap:14px; align-items:start; }
-.dsa5-helpers-sheet .dsa5h-notes-layout > .panel + *, .dsa5-helpers-sheet .dsa5h-notes-text .panel { margin-top:0; }
-.dsa5-helpers-sheet .dsa5h-notes-details .dsa5h-details-grid { grid-template-columns:1fr; gap:6px; padding:10px 11px; }
+/* ===== NOTIZEN =====
+   Persönliche Daten seit Issue #26 als eigener Unterreiter (notes:details) statt schmaler Spalte links — die
+   Textreiter haben dadurch die volle Breite, das Datenraster nutzt die Grundregel .dsa5h-details-grid. */
+.dsa5-helpers-sheet .dsa5h-notes-text .panel { margin-top:0; }
 .dsa5-helpers-sheet .dsa5h-notes-text .dsa5h-richtext, .dsa5-helpers-sheet .dsa5h-notes-text .dsa5h-richtext prose-mirror { min-height:360px; }
-@container (max-width:560px) { .dsa5-helpers-sheet .dsa5h-notes-layout { grid-template-columns:1fr; } .dsa5-helpers-sheet .dsa5h-notes-details .dsa5h-details-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 
 /* ===== STATUS: Tabellen zweispaltig (Nutzer-Feedback 2026-09-28) =====
    Jede Tabelle volle Breite, Zeilen füllen abwechselnd die linke und rechte Spalte (wie „row-section wrap“ im

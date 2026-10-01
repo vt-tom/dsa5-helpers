@@ -5,7 +5,7 @@
       </div>
       <div class="dsa5h-head-main">
         <div class="dsa5h-head-top">
-          <h1 class="dsa5h-name">{{formInput fields.name value=document.name placeholder=(localize 'Name') disabled=(not dsa5h.editMode)}}</h1>
+          <h1 class="dsa5h-name"{{#unless dsa5h.editMode}} data-tooltip="{{document.name}}"{{/unless}}>{{formInput fields.name value=document.name placeholder=(localize 'Name') disabled=(not dsa5h.editMode)}}</h1>
           <div class="dsa5h-ap-block">
             <span class="dsa5h-ap-text">{{localize "APValue"}} {{dsa5hFormatNum document.system.details.experience.total}} · {{dsa5hFormatNum document.system.details.experience.current}} {{localize "DSA5HELPERS.Free"}}</span>
             

@@ -7,8 +7,14 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
+## Live in Foundry prüfen (0.3.3)
+
+- **#25 Heldenname:** langer Name (z. B. „Alrike Rondriane von Feuerwacht-Gareth“) auf Titelblatt und anderen Reitern, Fenster schmaler/breiter ziehen, hell/dunkel; im Bearbeiten-Modus tippen (Schrift passt sich an), Tooltip im Spielmodus.
+- **#26 Notizen:** Unterreiter „Persönliche Daten“ (Bearbeiten-Modus: Felder speichern), Textreiter in voller Breite.
+
 ## Offene Entscheidungen
 
+- **#27 Persönliche Daten auf dem Titelblatt:** zwei Varianten im Click-Dummy, Umschalter „Pers. Daten“ in der Toolbar: **A** eigener Kasten zwischen Schips und Zuständen (Leiste scrollt dann), **B** ein Kasten mit Reitern „Zustände | Persönliche Daten“ (Höhe bleibt). Beide: nur ausgefüllte Felder, Titel/Knopf springt zum Unterreiter in den Notizen. Nach der Wahl ins Modul übertragen, Umschalter + Verlierer löschen.
 - **Ersetzt „Körper“ später die Übersicht?** Erst nach dem Feedback der Tester entscheiden (Rückmeldung 2026-09-30: vorerst beide Bögen).
 
 ## Features / Backlog
@@ -20,20 +26,18 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 10:10 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 10:49 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (7)**
+**Offen (6)**
 
 - **[#1](https://github.com/vt-tom/dsa5-helpers/issues/1) feat: Animation zwischen Titelblatt und den anderen seiten**
   - offen · Bearbeiter: niemand · von @Lyynix · 0 Kommentare · zuletzt geändert 2026-09-17
 - **[#3](https://github.com/vt-tom/dsa5-helpers/issues/3) feat: hover Effekt bei Proben**
   - offen · Bearbeiter: niemand · von @Lyynix · 1 Kommentar · zuletzt geändert 2026-09-30
 - **[#7](https://github.com/vt-tom/dsa5-helpers/issues/7) chore: CSS-Datei aufräumen**
-  - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-09-30
-- **[#18](https://github.com/vt-tom/dsa5-helpers/issues/18) feat: Steigerungshelfer – eigenes Fenster zum Planen von Steigerungen und Neuerwerb**
-  - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-01
+  - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#25](https://github.com/vt-tom/dsa5-helpers/issues/25) feat: Heldenname im Kopfbereich passt Schriftgröße an die Fensterbreite an**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#26](https://github.com/vt-tom/dsa5-helpers/issues/26) feat: Persönliche Daten als eigene Registerkarte im Reiter Notizen**
@@ -43,6 +47,8 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 10:10 UTC) — ni
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 
+- **[#18](https://github.com/vt-tom/dsa5-helpers/issues/18) feat: Steigerungshelfer – eigenes Fenster zum Planen von Steigerungen und Neuerwerb**
+  - geschlossen (nicht geplant) · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · 1 Kommentar · geschlossen 2026-10-01
 - **[#24](https://github.com/vt-tom/dsa5-helpers/issues/24) fix: Symbol ⋮ (Toggle Controls) in der Titelleisten-Plakette unsichtbar**
   - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: bug · Meilenstein: 0.3.2 · 1 Kommentar · geschlossen 2026-10-01
 - **[#23](https://github.com/vt-tom/dsa5-helpers/issues/23) fix: Traditions-Badge bleibt leer, wenn die Tradition als Sonderfertigkeit hinzugefügt wird**

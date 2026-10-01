@@ -2,6 +2,16 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.3.3] — unveröffentlicht
+
+### Neu
+
+- Im Reiter „Notizen“ haben die persönlichen Daten (Geschlecht, Alter, Größe, Heimat …) einen eigenen Unterreiter „Persönliche Daten“ zwischen „Hintergrundgeschichte“ und „Notizen“. Die Textreiter nutzen dadurch die volle Breite ([#26](https://github.com/vt-tom/dsa5-helpers/issues/26)).
+
+### Behoben
+
+- Lange Heldennamen im Kopf des Bogens werden kleiner dargestellt, bis sie ganz in die Zeile passen, auch wenn das Fenster schmaler gezogen wird. Erst bei sehr langen Namen wird mit „…“ gekürzt, und der volle Name erscheint beim Darüberfahren ([#25](https://github.com/vt-tom/dsa5-helpers/issues/25)).
+
 ## [0.3.2] — 2026-10-01
 
 ### Neu
