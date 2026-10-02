@@ -1,6 +1,6 @@
 # PROJEKTDOKU.md — Das Wichtigste zum Projekt
 
-Stand: 2026-10-01. Offene Arbeit steht in [AUFGABEN.md](AUFGABEN.md), die ausführliche Historie in [archive/](archive/).
+Stand: 2026-10-02. Offene Arbeit steht in [AUFGABEN.md](AUFGABEN.md), die ausführliche Historie in [archive/](archive/).
 
 ## Ziel
 
@@ -10,7 +10,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 
 - Echtes Modul läuft: alle 10 Reiter (Titelblatt, Eigenschaften, Talente, Kampf, Magie, Religion, Ausrüstung, Status, Notizen, Gefährten) mit echten Systemdaten.
 - Favoriten (Stern), Spiel-/Bearbeiten-Modus, Magie/Religion nur bei passender Fähigkeit sichtbar.
-- 45 Tests grün (`node tests/sheet.test.cjs`).
+- 49 Tests grün (`node tests/sheet.test.cjs`).
 - UI/UX-Review vom 2026-09-25 ([Feedback](UI-UX-FEEDBACK-2026-09-25.md)): Pakete A–D (Trefferflächen/Tastatur, Lesbarkeit, Waffentabellen, Orientierung/Rückmeldung) in Clickdummy **und** Foundry umgesetzt und live bestätigt. Pakete E (Favoritenraster) und G (Detailpunkte je Reiter) sowie die Munitionszeile abgenommen und in Foundry übertragen (live zu prüfen). Aus Paket F sind Porträtformat und schwebende Titelleiste in Foundry; Geld-Panel „Zeile“ seit 2026-09-30 auch in Foundry; Kampf-Unterreiter „Körper“ seit 2026-09-30 in Foundry (live zu prüfen, vorerst neben der Übersicht) — siehe AUFGABEN.md.
 - Hier gibt es kein laufendes Foundry. Alles ist nur im Code geprüft – bestätigt wird erst live beim Nutzer.
 
@@ -104,6 +104,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - **`position:sticky` im Scrollbereich:** `top` zählt ab der Innenkante (nach `padding-top`) — im Click-Dummy (`.content` mit 8 px Padding) deshalb `top:-8px`, sonst schauen Zeilen über der Leiste durch. Im Modul hat `.dsa5h-content` oben kein Padding.
 - **DSA5 8.1.8 (2026-09-30 geprüft gegen 8.1.5):** Patron-Items stehen nicht mehr in `prepare.specAbs.magical`, sondern in eigener Liste `prepare.patrons` (System-Template `patrons.hbs`) — im Magie-Reiter eigener Chip-Block nach den Sonderfertigkeiten. Sonst für uns relevant nur: AppV2Mixin `_toggleDisabled` gibt jetzt zusätzlich `input[type=search]`/`[data-observer-enabled]` frei und hat `_observerEnabledSelectors()` (unser Override ruft `super` zuerst, passt). Eingebundene System-Templates und Chargen-Flags (`dsa5-core` 8.1.6) unverändert. Bei künftigen Systemupdates: `gh api repos/Plushtoast/dsa5-foundryVTT/compare/<alt>...<neu>` liefert die Dateiliste, Release-Notizen des Systems sind nichtssagend.
 - **Aktiver Reiter fürs System (2026-10-01):** Das System liest den aktiven Reiter aus `this.tabGroups.sheet` (`_onDropActor` → Beschwörungs-Favorit nur auf dem Gefährten-Reiter, `CreatureDropDialog`, `_addLoot` legt Rüstung im Kampf-Reiter an). Unsere Reiter-IDs sind dieselben, `_applyCurrentTab()` setzt `tabGroups.sheet` deshalb immer mit (Issue #15).
+- **Würfel erfassen (Issue #28, 2026-10-02):** nicht an `DiceTerm#roll` hängen — bei echten Würfeln (Erfüllungsart „manual“) schreibt der `RollResolver` die Ergebnisse direkt in `term.results` (`_fulfillRoll`), ohne `roll()`. Deshalb `DiceTerm#_evaluateAsync` umhüllen und die neuen Einträge in `results` zählen; Mindest-/Höchstwert-Auswertungen laufen synchron (`_evaluateSync`) und kommen dort gar nicht an. `term.method` setzt der Resolver; interaktive Art = echte Würfel. Nur `Die` zählen (`Coin`/`FateDie` erben direkt von `DiceTerm`, FateDie liefert −1…1). DSA5 legt für jeden Wurf (auch Schips-Neuwürfe) ein neues `Roll` an und ruft `evaluate()`.
 - **Listener am Fenster-Element (2026-09-30):** `close()` verwirft das Element, beim nächsten Öffnen baut Foundry ein neues (`isFirstRender` → `_renderFrame`), die Sheet-Instanz bleibt bis F5 dieselbe. Einmal-Listener deshalb an das Element koppeln (`this._listenerElement !== this.element`), nie an ein reines Instanz-Flag.
 
 ## Zusammenarbeit mit dem Agent

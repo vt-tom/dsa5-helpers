@@ -1,6 +1,7 @@
 import { Dsa5HelpersCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
 import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
 import { initSteigerungsplaner } from './compat/steigerungsplaner.js';
+import { registerDiceStatsSettings, readyDiceStats } from './dice-stats/settings.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -24,6 +25,8 @@ Hooks.once('init', async () => {
   game.settings.register('dsa5-helpers', 'defaultSheet', { name: 'DSA5HELPERS.Settings.DefaultSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultSheet.Hint', scope: 'world', config: true, restricted: true, type: Boolean, default: false, requiresReload: true });
   // Zuletzt gesehene Version je Nutzer (Issue #11) — auch Spieler und Erstinstallation bekommen den Changelog.
   game.settings.register('dsa5-helpers', 'lastSeenVersion', { scope: 'client', config: false, type: String, default: '' });
+  // Würfelstatistik (Issue #28): Einstellungen, Zustimmung, Erfassung — unabhängig vom Bogen.
+  registerDiceStatsSettings();
   game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
@@ -76,7 +79,10 @@ Hooks.once('init', async () => {
   await initSteigerungsplaner();
 });
 
-Hooks.once('ready', () => showChangelogIfUpdated());
+Hooks.once('ready', () => {
+  showChangelogIfUpdated();
+  readyDiceStats();
+});
 
 // Rückweg aus dem Charakterbauer (#10, Nutzerfreigabe 2026-09-30): dsa5-core setzt beim Abschließen fest
 // flags.core.sheetClass = "dsa5.ActorSheetdsa5Character". Wurde der Bauer aus unserem Bogen gestartet

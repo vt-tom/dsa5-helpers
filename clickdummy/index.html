@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=148">
+<link rel="stylesheet" href="style.css?v=153">
 </head>
 <body>
 
@@ -18,6 +18,24 @@
   <!-- Test-Schalter: Vorschau, wie die Ressourcengruppe aussieht, wenn eine Figur nur Lebenskraft hat (kein
        Zauberer/Geweihter, kein AsP/KaP) — siehe initOnlyLepToggle(). Rein visuell, ändert data.js nicht. -->
   <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
+  <!-- TEST-UMSCHALTER Issue #29 (nach der Entscheidung löschen): Platz der Rüstung im Kampf › Körper und Anzahl
+       der Rüstungsteile — siehe initBodyArmorToggles(). -->
+  <div class="mode-switch" id="bodyArmorVariant" role="group" aria-label="Rüstung im Körper-Reiter">
+    <button type="button" data-variant="A" class="active" aria-pressed="true" title="Unter der Figur">Rüstung A</button>
+    <button type="button" data-variant="B" aria-pressed="false" title="Leiste über der Figur">B</button>
+    <button type="button" data-variant="C" aria-pressed="false" title="In den Seitenspalten unter den Händen">C</button>
+    <button type="button" data-variant="D" aria-pressed="false" title="Eigenes Panel darunter">D</button>
+  </div>
+  <div class="mode-switch" id="bodyArmorCount" role="group" aria-label="Anzahl Rüstungsteile">
+    <button type="button" data-count="0" aria-pressed="false">Teile 0</button>
+    <button type="button" data-count="1" aria-pressed="false">1</button>
+    <button type="button" data-count="2" aria-pressed="false">2</button>
+    <button type="button" data-count="3" class="active" aria-pressed="true">3</button>
+    <button type="button" data-count="4" aria-pressed="false">4</button>
+  </div>
+  <!-- Würfelstatistik (Issue #28): in Foundry eigenes Fenster aus den Moduleinstellungen, hier per Knopf. -->
+  <button type="button" id="diceStatsBtn">Würfelstatistik</button>
+  <button type="button" id="diceConsentBtn">Zustimmung (Dialog)</button>
   <button type="button" id="themeToggle">Dunkles Thema</button>
 </div>
 
@@ -122,6 +140,7 @@
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
 <script src="assets-map.js?v=15"></script>
 <script src="data.js?v=27"></script>
-<script src="script.js?v=110"></script>
+<script src="script.js?v=112"></script>
+<script type="module" src="dice-stats.js?v=3"></script>
 </body>
 </html>

@@ -1267,3 +1267,146 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .fwc-menu{position:absolute;top:100%;right:6px;z-index:20;min-width:220px;padding:4px 0;background:#1c1917;border:1px solid rgba(224,192,128,.45);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.5);pointer-events:auto}
 .fwc-menu button{display:block;width:100%;padding:6px 12px;border:0;background:none;color:#ecd8b1;font:14px 'GentiumBasic',serif;text-align:left;cursor:pointer}
 .fwc-menu button:hover,.fwc-menu button:focus-visible{background:rgba(224,192,128,.18)}
+
+/* ===== Kampf › Körper: Hände links/rechts der Figur (Issue #29) ===== */
+/* Haupthand links, Nebenhand rechts (wie man es als Betrachter liest); die Mitte bleibt für die Figur frei. Die rechte
+   Seite ist gespiegelt: alles an der Außenkante. Beidhändige Waffe auf einer Seite, die andere zeigt nur einen Hinweis. */
+.body-grid.sides{grid-template-columns:minmax(0,1fr) 110px minmax(0,1fr);align-items:start}
+.body-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.body-side.left{grid-column:1;align-items:flex-start}
+.body-side.right{grid-column:3;align-items:flex-end;text-align:right}
+.body-side .hand-slot{width:100%;max-width:210px}
+.body-side.right :is(.hand-slot,.hand-slot-body,.hand-slot-side){align-items:flex-end;text-align:right}
+.body-side .hand-slot.hand-slot-free{flex-direction:row;align-items:center;gap:8px}
+.body-side.right .hand-slot.hand-slot-free{flex-direction:row-reverse}
+.hand-2h-note{max-width:150px;margin-top:28px;font-size:var(--fs-meta);font-style:italic;line-height:1.3}
+.hand-swap-btn{border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font:inherit;font-size:var(--fs-meta);padding:2px 8px;cursor:pointer}
+.hand-swap-btn:hover,.hand-swap-btn:focus-visible{border-color:var(--accent);color:var(--accent)}
+.hand-swap-btn span{margin-right:3px}
+
+/* TEST-VARIANTEN Rüstung (Issue #29, nach der Entscheidung die verworfenen löschen) */
+/* A – Kachelreihe unter der Figur, Schutz/Belastung links daneben */
+.body-armor-row{display:flex;align-items:flex-start;justify-content:center;gap:18px;padding:10px 12px;border-top:1px solid var(--line)}
+.body-armor-row-sum{display:flex;flex-direction:column;gap:6px;flex:none}
+.body-armor-row-tiles{display:flex;flex-wrap:wrap;gap:10px}
+.body-armor-item.small{max-width:92px}
+.body-armor-item.small .armor-slot{width:76px;height:76px}
+.body-armor-item.small{max-width:110px}
+.body-armor-item.small .body-item-name{display:block;font-size:var(--fs-small);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* B – schmale Leiste über der Figur */
+.body-armor-strip{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.body-armor-mini{display:flex;align-items:center;gap:7px;min-width:0}
+.armor-slot.mini{flex:none;width:46px;height:46px}
+.body-armor-mini-text{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+.body-armor-mini-name{max-width:150px;font-weight:bold;font-size:var(--fs-data);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.body-armor-mini-text small{font-size:var(--fs-meta);color:var(--muted)}
+/* C – Rüstung in den Seitenspalten unter den Händen */
+.body-side-armor{display:flex;flex-direction:column;gap:4px;width:100%;max-width:210px;text-align:left}
+.body-side.right .body-side-armor .figure-col-title{text-align:right}
+.body-armor-line{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:6px;padding:2px 4px;border:1px solid var(--line);border-radius:3px;background:var(--paper)}
+.body-armor-line img{width:28px;height:28px;border:1px solid var(--line);border-radius:3px;object-fit:cover}
+.body-armor-line-name{font-weight:bold;font-size:var(--fs-data);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.body-armor-line-text{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+.body-armor-line small{font-size:var(--fs-meta);color:var(--muted);white-space:nowrap}
+/* D – eigenes Panel unter dem Körper-Panel */
+.body-armor-panel .armor-slots{margin:11px}
+.body-armor-panel-table{padding:4px 11px 11px}
+.body-armor-empty{padding:4px 0;font-size:var(--fs-small)}
+
+/* ===== Würfelstatistik (Issue #28): eigenes Fenster + Zustimmungsdialog, clickdummy/dice-stats.js ===== */
+/* Nachbau eines Foundry-Fensters (ApplicationV2) über der Seite; Inhalt im Stil des Bogens (Papier, Panels).
+   Abweichungsfarben: Blau/Rot mit grauer Mitte, Einstufung mit Symbol + Text (nie nur Farbe). */
+.ds-window{--fs-data:15px;--fs-small:14px;--fs-meta:12px;--fs-big:18px;
+  --ds-less:#2a78d6;--ds-more:#d03b3b;--ds-neutral:#f0efec;--ds-good:#0ca30c;--ds-warn:#fab219;--ds-serious:#ec835a;--ds-bar:#6b5a3e;
+  position:fixed;top:60px;left:50%;z-index:50;transform:translateX(-50%);display:flex;flex-direction:column;width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 90px);background:var(--paper);color:var(--ink);border:1px solid #000;border-radius:5px;box-shadow:0 18px 48px rgba(0,0,0,.6);font-family:'GentiumBasic',Georgia,serif}
+.ds-window[data-theme='dark']{--ds-neutral:#383835;--ds-bar:#c2a267}
+.ds-window.ds-dialog{top:160px;width:min(440px,calc(100vw - 32px));z-index:60}
+.ds-window-header{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--head);color:var(--headink);border-radius:4px 4px 0 0}
+.ds-window-header h2{flex:1;margin:0;font-family:'Andalus',serif;font-size:17px;font-weight:normal}
+.ds-close{border:0;background:none;color:inherit;font-size:16px;cursor:pointer}
+.ds-body{display:flex;flex-direction:column;gap:10px;padding:12px;overflow:auto}
+.ds-body p{margin:0;line-height:1.45}
+.ds-test-bar{display:flex;align-items:center;gap:8px;padding:4px 8px;border:1px dashed var(--line);border-radius:4px;font-size:var(--fs-meta)}
+.ds-filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.ds-since{margin-left:auto;font-size:var(--fs-meta);color:var(--muted)}
+.ds-seg{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.ds-seg button{border:0;background:var(--field);color:var(--ink);font:inherit;font-size:var(--fs-small);padding:3px 10px;cursor:pointer}
+.ds-seg button+button{border-left:1px solid var(--line)}
+.ds-seg button.active{background:var(--accent);color:#fff;font-weight:bold}
+.ds-swatch{display:inline-block;flex:none;width:10px;height:10px;margin-right:6px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+.ds-name{display:inline-flex;align-items:center;min-width:0;font-weight:bold;font-size:var(--fs-data)}
+.ds-name-text{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ds-verdict{justify-self:start;display:inline-flex;align-items:center;gap:5px;padding:1px 8px 1px 2px;border:1px solid var(--line);border-radius:999px;background:var(--field);font-size:var(--fs-small);white-space:nowrap}
+.ds-verdict small{color:var(--muted)}
+.ds-verdict-icon{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 3px;border-radius:999px;font-size:11px;font-weight:bold;color:#fff;background:var(--muted)}
+.ds-verdict.good .ds-verdict-icon{background:var(--ds-good)}
+.ds-verdict.warn .ds-verdict-icon{background:var(--ds-warn);color:#2b2721}
+.ds-verdict.serious .ds-verdict-icon{background:var(--ds-serious);color:#2b2721}
+.ds-verdict.warn{border-color:var(--ds-warn)}
+.ds-verdict.serious{border-color:var(--ds-serious)}
+.ds-hist{display:block;overflow:visible}
+.ds-hist-bar{fill:var(--ds-bar);opacity:.8}
+.ds-hist-bar.ds-key{opacity:1}
+.ds-hist-bar:hover{opacity:1;fill:var(--accent)}
+.ds-hist-base{stroke:var(--line);stroke-width:1}
+.ds-hist-expected{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:4 3}
+.ds-hist-label{fill:var(--muted);font-size:10px;text-anchor:middle;font-family:'GentiumBasic',Georgia,serif}
+.ds-figures{display:flex;flex-wrap:wrap;gap:6px 22px}
+.ds-figures>span{display:flex;flex-direction:column;line-height:1.2}
+.ds-figures small{font-size:var(--fs-meta);color:var(--muted)}
+.ds-figures strong{font-size:var(--fs-big)}
+.ds-details{display:flex;flex-direction:column;gap:6px}
+.ds-table{width:100%;border-collapse:collapse;font-size:var(--fs-small);font-variant-numeric:tabular-nums}
+.ds-table th{padding:2px 6px;font-size:var(--fs-meta);font-weight:normal;color:var(--muted);text-align:right;border-bottom:1px solid var(--line)}
+.ds-table td{padding:1px 6px;text-align:right;border-bottom:1px solid var(--line)}
+.ds-table :is(th,td):first-child{text-align:left}
+.ds-table tr.ds-key-row td{font-weight:bold}
+.ds-table td.ds-dev-big{font-weight:bold}
+.ds-test{font-size:var(--fs-meta);color:var(--muted)}
+.ds-note{font-size:var(--fs-meta);color:var(--muted)}
+.ds-empty{padding:20px;text-align:center;color:var(--muted)}
+.ds-reset{flex:none;width:26px;height:26px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);cursor:pointer}
+.ds-reset:hover{border-color:var(--accent);color:var(--accent)}
+.ds-footer{display:flex;justify-content:flex-end}
+.ds-btn{padding:4px 14px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font:inherit;cursor:pointer}
+.ds-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:bold}
+.ds-btn.danger{border-color:var(--dmg);color:var(--dmg)}
+.ds-dialog-buttons{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.ds-dialog-buttons .ds-btn{flex:1}
+/* A – Zeilen */
+.ds-rows{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
+.ds-row+.ds-row{border-top:1px solid var(--line)}
+.ds-row-line{display:flex;align-items:center;gap:6px;padding-right:8px}
+.ds-row-head{flex:1;display:grid;grid-template-columns:minmax(110px,1fr) 46px 92px 180px 168px 12px;align-items:center;gap:10px;min-width:0;padding:6px 8px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.ds-row-head:hover{background:var(--odd)}
+.ds-num{display:flex;flex-direction:column;line-height:1.15}
+.ds-num strong{font-size:var(--fs-data)}
+.ds-num small{font-size:var(--fs-meta);color:var(--muted);white-space:nowrap}
+.ds-chevron{color:var(--muted)}
+.ds-row-body{display:flex;flex-direction:column;gap:10px;padding:6px 12px 12px}
+.ds-row-body .ds-hist{width:100%;height:auto}
+/* B – Karten */
+.ds-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px}
+.ds-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:10px;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
+.ds-card-head{display:flex;align-items:center;justify-content:space-between;align-self:stretch;gap:8px}
+.ds-card .ds-hist{width:100%;height:auto}
+.ds-more{border:0;background:none;color:var(--accent);font:inherit;font-size:var(--fs-small);padding:0;cursor:pointer;text-decoration:underline}
+/* C – Abweichungs-Raster */
+.ds-grid-wrap{display:flex;flex-direction:column;gap:6px;overflow-x:auto}
+.ds-grid-legend{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:var(--fs-meta)}
+.ds-grid-legend span{display:inline-flex;align-items:center;gap:5px}
+.ds-grid-legend i{display:inline-block;width:14px;height:14px;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
+.ds-grid-legend small{color:var(--muted)}
+.ds-grid{border-collapse:separate;border-spacing:2px;font-size:var(--fs-small)}
+.ds-grid th{font-size:var(--fs-meta);font-weight:normal;color:var(--muted);padding:0 2px}
+.ds-grid th.ds-key-col{font-weight:bold;color:var(--ink)}
+.ds-grid th.ds-grid-name{text-align:left;font-size:var(--fs-data);font-weight:bold;color:var(--ink);white-space:nowrap;padding-right:8px}
+.ds-grid thead th.ds-grid-name{font-size:var(--fs-meta);font-weight:normal;color:var(--muted)}
+.ds-grid-row{cursor:pointer}
+.ds-grid-row:hover th,.ds-grid-row:focus-visible th{color:var(--accent)}
+.ds-grid-n{padding:0 6px;text-align:right;font-variant-numeric:tabular-nums}
+.ds-cell{width:22px;height:26px;border-radius:2px}
+.ds-grid.dense .ds-cell{width:18px}
+.ds-grid-detail td{padding:6px 4px 10px}
+/* Zu wenige Würfe: Farben blass, damit Zufallsschwankungen nicht wie Befunde aussehen. */
+.ds-grid-row.few .ds-cell{opacity:.35}

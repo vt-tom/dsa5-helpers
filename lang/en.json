@@ -138,6 +138,29 @@
       "OnGitHub": "Changelog on GitHub",
       "Missing": "The changelog could not be loaded.",
       "Versions": "Versions"
+    },
+    "DiceStats": {
+      "Title": "Dice statistics",
+      "Consent": {
+        "Question": "May your rolls be included in the dice statistics?",
+        "Info": "Only how often each face comes up is counted – no individual rolls. All players can see your statistics.",
+        "Change": "You can change this at any time in the module settings. If you withdraw consent, nothing is counted any more and your statistics are hidden.",
+        "Yes": "Yes, include them",
+        "No": "No"
+      },
+      "Settings": {
+        "Enabled": {
+          "Name": "Dice statistics",
+          "Hint": "Counts per player and die type how often each face comes up and shows whether the distribution is statistically unusual. Every player is asked for consent first. Only counters are stored."
+        },
+        "Consent": {
+          "Name": "Dice statistics: include my rolls",
+          "Hint": "Whether your rolls are included in the dice statistics. Without consent nothing is counted; existing data is kept but hidden.",
+          "Undecided": "Not decided yet",
+          "Yes": "Yes",
+          "No": "No"
+        }
+      }
     }
   }
 }

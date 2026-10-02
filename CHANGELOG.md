@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.4.0] — unveröffentlicht
+
+### Neu
+
+- Würfelstatistik (in Arbeit): Die Spielleitung kann in den Moduleinstellungen eine Würfelstatistik einschalten (standardmäßig aus). Jeder Spieler wird dann beim Verbinden gefragt, ob seine Würfe ausgewertet werden dürfen; die Antwort lässt sich jederzeit in den Moduleinstellungen ändern. Gezählt wird nur, wie oft welche Augenzahl je Würfeltyp fällt, getrennt nach digitalen und echten Würfeln – keine einzelnen Würfe ([#28](https://github.com/vt-tom/dsa5-helpers/issues/28)).
+
 ## [0.3.3] — 2026-10-01
 
 ### Neu
