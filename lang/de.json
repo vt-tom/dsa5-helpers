@@ -219,6 +219,7 @@
         "To": "bis"
       },
       "NoConsent": "Du hast der Auswertung deiner Würfe nicht zugestimmt. Das kannst du in den Moduleinstellungen ändern."
-    }
+    },
+    "OtherWeapons": "Weitere Waffen"
   }
 }

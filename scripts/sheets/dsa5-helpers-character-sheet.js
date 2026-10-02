@@ -473,9 +473,30 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const hands = mainTwoHanded ? [slot('main', main)] : [slot('main', main), slot('offhand', off)];
     const twoHandedSide = this.actor.getFlag?.(MODULE_ID, 'twoHandedSide') === 'right' ? 'right' : 'left';
     const weaponSide = { slot: hands[0], twoHanded: true, moveTo: twoHandedSide === 'left' ? 'right' : 'left' };
+    const encumbrance = armor.reduce((sum, item) => sum + (Number(item.system?.calculatedEncumbrance) || 0), 0);
+    // Schild-Tooltip: Rüstungsschutz der Teile (prepare.armorSum) und getrennt Zauber-/Liturgie-Schutz wie im
+    // Systembogen (actor-combat.hbs „protection (armorSum, spellArmor, liturgyArmor)“), dazu die Belastung je Teil.
+    const esc = text => String(text ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const magicArmor = (Number(prepare.spellArmor) || 0) + (Number(prepare.liturgyArmor) || 0);
+    const armorTooltip = [
+      `<strong>${esc(game.i18n.localize('protection'))} ${prepare.armorSum ?? 0}</strong>`,
+      ...armor.map(item => `${esc(item.name)}: ${esc(game.i18n.localize('CHARAbbrev.RS'))} ${item.system?.protection?.value ?? 0}, ${esc(game.i18n.localize('DSA5HELPERS.EncumbranceAbbr'))} ${item.system?.calculatedEncumbrance ?? 0}`),
+      ...(prepare.spellArmor ? [`${esc(game.i18n.localize('spellArmor'))}: +${prepare.spellArmor}`] : []),
+      ...(prepare.liturgyArmor ? [`${esc(game.i18n.localize('liturgyArmor'))}: +${prepare.liturgyArmor}`] : []),
+      `<strong>${esc(game.i18n.localize('encumbrance'))} ${encumbrance}</strong>`,
+    ].join('<br>');
+    // Kurzübersicht „Weitere Waffen“: getragene Waffen, die nicht in einer Hand sind, und Angriffe aus Eigenschaften.
+    const others = [
+      ...worn.filter(w => w !== main && w !== off).map(item => ({ item, ranged: item.type === 'rangeweapon' })),
+      ...(prepare.traits?.meleeAttack ?? []).map(item => ({ item, ranged: false })),
+      ...(prepare.traits?.rangeAttack ?? []).map(item => ({ item, ranged: true })),
+    ];
     return {
       armor,
-      encumbrance: armor.reduce((sum, item) => sum + (Number(item.system?.calculatedEncumbrance) || 0), 0),
+      encumbrance,
+      armorTooltip,
+      magicArmor,
+      others,
       hands,
       single: mainTwoHanded,
       left: !mainTwoHanded ? { slot: hands[0] } : twoHandedSide === 'left' ? weaponSide : { note: true },

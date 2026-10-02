@@ -1170,20 +1170,13 @@
 .dsa5-helpers-sheet .dsa5h-quick-actions img { width:20px; height:20px; object-fit:contain; }
 .dsa5-helpers-sheet .dsa5h-quick-glyph { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; font-size:15px; line-height:1; color:var(--muted); }
 /* Griffspalte fasst zwei 28px-Knöpfe (UI/UX-Review 2026-09-25, Paket A/C); FK spannt bei Fernkampf über AT+PA wie im Click-Dummy. */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-row { grid-template-columns:60px minmax(100px,1fr) 50px 50px 72px 76px 62px 24px 24px; }
-.dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-span-2 { grid-column:span 2; display:flex; justify-content:center; }
-.dsa5-helpers-sheet .dsa5h-weapon-attack { display:flex; justify-content:center; }
 /* Spaltenkopf „Reichweite“ brach immer um (Nutzer-Feedback 2026-09-24) — Spalte 68→84px, Kopf ohne Umbruch. */
-.dsa5-helpers-sheet .dsa5h-weapon-row.row-head > span { white-space:nowrap; }
-.dsa5-helpers-sheet .dsa5h-weapon-row small { display:block; color:var(--muted); font-size:var(--fs-meta); }
 /* Kampftechnik unter dem Waffennamen (Übersicht) bzw. unter dem Namen an der Hand (Körper) als Sprungknopf zu den
    Kampftechniken, mit KtW (parts/combatskill-link.hbs, Tester 2026-09-30): sieht aus wie der frühere kleine Text,
    Unterstrich erst bei Hover/Fokus. */
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-ct-link { display:inline-flex; align-items:baseline; gap:6px; align-self:flex-start; width:auto; min-height:0; margin:0; padding:0; border:0; background:none; color:var(--muted); font:inherit; font-size:var(--fs-meta); line-height:1.3; text-align:left; cursor:pointer; box-shadow:none; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-ct-link:is(:hover, :focus-visible) { color:var(--accent); text-decoration:underline; text-underline-offset:2px; background:none; }
 .dsa5-helpers-sheet .dsa5h-ct-link-ktw { font-weight:bold; }
-.dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-ct-link { display:flex; }
-.dsa5-helpers-sheet .dsa5h-weapon-details { grid-column:2/-1; display:flex; gap:5px; flex-wrap:wrap; align-items:center; font-size:var(--fs-meta); }
 /* Munitionszeile, Variante C (Nutzer-Entscheidung 2026-09-28): Munitionswahl als Aufklapp-Knopf (<details>),
    Nachladen und Magazin (im Kampf oft geklickt) direkt sichtbar. */
 .dsa5-helpers-sheet .dsa5h-ammo-pick { position:relative; min-width:0; max-width:220px; }
@@ -1214,9 +1207,6 @@
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-combat-die { flex:0 0 34px; width:34px; height:34px; padding:0; border:0; border-radius:50%; background-repeat:no-repeat; background-position:center; background-size:contain; color:#fff; font-size:15px; text-shadow:0 1px 2px rgba(0,0,0,.6); filter:drop-shadow(0 1px 2px rgba(0,0,0,.4)); justify-self:center; }
 .dsa5-helpers-sheet .dsa5h-die-attack { background-image:url('../../../systems/dsa5/icons/dice/d20mu.svg'); }
 .dsa5-helpers-sheet .dsa5h-die-parry { background-image:url('../../../systems/dsa5/icons/dice/d20in.svg'); }
-.dsa5-helpers-sheet .dsa5h-grip { display:flex; gap:3px; justify-content:center; }
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-grip-btn { flex:0 0 28px; width:28px; height:28px; min-height:0; padding:0; font-size:var(--fs-meta); color:var(--muted); background:var(--field); border:1px solid var(--line); }
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-grip-btn.active { color:var(--ink); border-color:var(--accent); background:var(--panel); font-weight:bold; }
 /* Nah-/Fernkampftechniken sitzen als zwei .grid-2-Spalten nebeneinander (wie im Click-Dummy) — bei den bisherigen
    Spaltenbreiten (minmax 140px Name + 90/96/55/55px) passten beide Tabellen zusammen nicht mehr in die
    Sheet-Breite und erzeugten horizontales Scrollen (Nutzer-Feedback 2026-09-16). Deutlich schmaler, angelehnt an
@@ -1250,9 +1240,6 @@
 /* Waffenbild im Kampf-Tab deutlich größer als das generische .dsa5h-item-image (Inventar/Zauber bleiben klein) —
    Nutzer-Feedback 2026-09-16: "Bild der Waffen immer noch sehr klein". Erste Spalte von .dsa5h-weapon-row wächst
    entsprechend mit (siehe die beiden grid-template-columns-Regeln weiter unten). */
-.dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image { width:56px; height:60px; }
-.dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image img { width:56px; height:56px; }
-.dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image meter { width:56px; }
 /* Kleines Erweiterungs-Badge klar außerhalb der Zauber-/Talent-Grafik statt sie zu überlappen (Nutzer-Feedback
    2026-09-16: "Icon ist viel zu nah am Bild"). */
 .dsa5-helpers-sheet .dsa5h-extensions { position:absolute; right:-6px; top:-6px; width:15px; height:15px; line-height:15px; font-size:10px; text-align:center; color:#1c1917; background:#e0c080; border-radius:50%; box-shadow:0 0 0 1px var(--paper); cursor:help; }
@@ -1487,11 +1474,7 @@
   .dsa5-helpers-sheet .dsa5h-money-panel { flex-basis:100%; }
   .dsa5-helpers-sheet .dsa5h-carry-panel { flex-basis:100%; }
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns:40px minmax(90px,1fr) 92px 70px 48px 88px 70px 22px; gap:4px; font-size:12px; }
-  .dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-row { grid-template-columns:44px minmax(90px,1fr) 38px 38px 66px 64px 60px 20px 20px; gap:4px; }
   /* Not enough width here for the Kampf-Tab's enlarged 56px weapon image — back to the shared default size. */
-  .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image { width:40px; height:44px; }
-  .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image img { width:40px; height:40px; }
-  .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-item-image meter { width:40px; }
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns:26px minmax(90px,1fr) 92px 68px 80px 22px; gap:4px; }
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-talent { grid-template-columns:26px minmax(90px,1fr) 92px 48px; gap:4px; }
   .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main { grid-template-columns:150px minmax(0,1fr); }
@@ -1795,8 +1778,27 @@
 .dsa5-helpers-sheet .dsa5h-body-top { display:flex; align-items:center; gap:10px 18px; padding:0 12px; border-bottom:1px solid var(--line); }
 .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-quick-actions { flex:1; justify-content:flex-start; }
 .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-ini { flex:none; align-items:center; text-align:center; padding:0; }
-/* Rüstungszeile unter der Figur: Schutz/Belastung | Kacheln (ersetzt die frühere Wertezeile). */
+.dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-shield { margin:8px 0; }
+/* Rüstungsschild oben rechts neben der Initiative (Issue #29, Nutzer-Entscheidung 2026-10-02), Tooltip mit Aufschlüsselung. */
+.dsa5-helpers-sheet .dsa5h-body-shield { position:relative; flex:none; display:flex; flex-direction:column; align-items:center; gap:1px; width:64px; padding:6px 0 14px; background:var(--paper); border:2px solid var(--accent); border-radius:5px 5px 32px 32px; box-shadow:0 1px 4px rgba(0,0,0,.25); cursor:help; }
+.dsa5-helpers-sheet .dsa5h-body-shield > span { display:flex; flex-direction:column; align-items:center; line-height:1.05; }
+.dsa5-helpers-sheet .dsa5h-body-shield small { font-size:11px; color:var(--muted); letter-spacing:.05em; }
+.dsa5-helpers-sheet .dsa5h-body-shield-rs strong { font-size:24px; }
+.dsa5-helpers-sheet .dsa5h-body-shield-be strong { font-size:var(--fs-data); }
+.dsa5-helpers-sheet .dsa5h-body-shield .dsa5h-body-shield-magic { position:absolute; top:4px; right:4px; font-weight:bold; color:var(--accent); }
+/* Rüstungskacheln unter der Figur (Summe im Schild oben). */
 .dsa5-helpers-sheet .dsa5h-body-armor-row { display:grid; grid-template-columns:auto minmax(0, 1fr); align-items:start; gap:18px; padding:10px 12px; border-top:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-body-armor-row > .dsa5h-figure-col-title { padding-top:2px; }
+/* Kurzübersicht „Weitere Waffen“: Bild | Name + Technik | Würfel | TP | Stern, zweispaltig. */
+.dsa5-helpers-sheet .dsa5h-short-weapons { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); column-gap:14px; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-short-weapon { display:grid; grid-template-columns:32px minmax(0, 1fr) auto auto 28px; align-items:center; gap:8px; padding:4px 8px; }
+.dsa5-helpers-sheet .dsa5h-short-dice { display:inline-flex; gap:4px; }
+.dsa5-helpers-sheet .dsa5h-short-weapon .dsa5h-item-image { position:relative; width:30px; height:32px; }
+.dsa5-helpers-sheet .dsa5h-short-weapon .dsa5h-item-image img { width:30px; height:30px; margin:0; }
+.dsa5-helpers-sheet .dsa5h-short-weapon .dsa5h-item-image meter { position:absolute; left:0; bottom:0; width:30px; height:3px; }
+.dsa5-helpers-sheet .dsa5h-short-weapon .withContext small { display:block; color:var(--muted); font-size:var(--fs-meta); }
+.dsa5-helpers-sheet .dsa5h-short-weapon .dsa5h-ct-link { display:flex; }
+.dsa5-helpers-sheet .dsa5h-hand-ranged .dsa5h-ammo-pick { position:relative; flex-basis:100%; }
 .dsa5-helpers-sheet :is(.dsa5h-body-armor-sum, .dsa5h-body-ini) { display:flex; flex-direction:column; gap:6px; }
 .dsa5-helpers-sheet .dsa5h-body-ini { align-items:flex-end; text-align:right; padding-top:19px; }
 .dsa5-helpers-sheet .dsa5h-body-armor-row > .dsa5h-empty { align-self:center; justify-self:center; margin:0; }

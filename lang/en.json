@@ -219,6 +219,7 @@
         "To": "to"
       },
       "NoConsent": "You have not agreed to your rolls being evaluated. You can change this in the module settings."
-    }
+    },
+    "OtherWeapons": "Other weapons"
   }
 }
