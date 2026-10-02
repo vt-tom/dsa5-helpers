@@ -107,9 +107,13 @@ test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the 
  context.dsa5h.editMode=false;assert(!render(context).includes('data-action="dsa5hBodyFigure"'),'figure switch only in edit mode');
  assert(elements(html,el=>el.name==='img'&&String(el.attribs?.class??'').includes('dsa5h-body-figure')&&el.attribs.src===context.dsa5h.body.figure).length===1,'figure is a real img, not a CSS url() variable');assert(!html.includes('--figure'));
  const armor=n=>Array.from({length:n},(_,i)=>{const a=item('a'+i,'armor');a.system.protection={value:1};a.system.calculatedEncumbrance=0;return a;});
- p.wornArmor=armor(2);context=await sheet._prepareContext({});html=render(context);assert(!context.dsa5h.body.armorTable);assert(!html.includes('dsa5h-body-armor-table'));assert(html.includes('dsa5h-body-armor-item'));
- p.wornArmor=armor(3);context=await sheet._prepareContext({});html=render(context);assert(context.dsa5h.body.armorTable,'table from three armor pieces');
- assert.equal(elements(html,el=>el.name==='tr'&&el.attribs?.['data-item-id']).length,3);assert(!html.includes('dsa5h-body-armor-item'));
+ // Rüstung unter der Figur (Issue #29, Variante A): immer Kacheln in einer Zeile, Initiative rechts daneben, keine Wertezeile/Badge mehr.
+ p.wornArmor=armor(4);context=await sheet._prepareContext({});html=render(context);
+ const armorRow=elements(html,el=>el.attribs?.class==='dsa5h-body-armor-row')[0];assert(armorRow,'armor row');
+ assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-body-armor-item'),armorRow.children).length,4,'tiles also from three pieces on');
+ assert(dom.findAll(el=>el.attribs?.class==='dsa5h-body-ini',armorRow.children).length===1,'initiative next to the armor');
+ assert(!html.includes('dsa5h-figure-badge')&&!html.includes('dsa5h-figure-stats')&&!html.includes('dsa5h-body-armor-table'));
+ const panelHtml=html.slice(html.indexOf('dsa5h-body-panel'));assert(panelHtml.indexOf('dsa5h-body-actions')<panelHtml.indexOf('dsa5h-body-armor-row'),'quick actions above the armor');
  await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hBodyFigure.call(sheet,{}, {dataset:{figure:'portrait'}});assert.deepEqual(actor.saved,{scope:'dsa5-helpers',key:'bodyFigure',value:'portrait'});
 });
 test('navigation rejects unknown tabs and preserves subtab selection',async()=>{
@@ -253,7 +257,7 @@ test('body tab: a free off hand renders compactly below the main hand, its tile 
  const {sheet,actor}=await prepare();const p=sheet.context.prepare;
  const main=item('main','meleeweapon');main.system.worn={value:true,offHand:false};p.wornMeleeWeapons=[main];p.wornRangedWeapons=[];actor.items.set('main',main);
  let context=await sheet._prepareContext({});let html=render(context);
- assert(context.dsa5h.body.offFree);assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-figure-hands off-free')).length,1);
+ assert(context.dsa5h.body.offFree);assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-body-side right off-free')).length,1,'free off hand on the right');
  const free=elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-free'))[0];assert(free);
  const select=dom.findAll(el=>el.name==='select'&&el.attribs['data-dsa5h-hand']==='offhand',free.children);assert.equal(select.length,1);assert(select[0].attribs['aria-label']);
  const off=item('off','meleeweapon');off.system.worn={value:true,offHand:true};p.wornMeleeWeapons=[main,off];actor.items.set('off',off);
@@ -410,4 +414,46 @@ test('Würfelstatistik (#28): Einstellungen und Texte',()=>{
  assert(/userId !== game\.userId/.test(src),'Zustimmung nur vom eigenen Client spiegeln');
  for(const lang of ['de','en']){const l=JSON.parse(read(`lang/${lang}.json`)).DSA5HELPERS.DiceStats;
   for(const key of [...src.matchAll(/'DSA5HELPERS\.DiceStats\.([\w.]+)'/g)].map(m=>m[1]))assert(lookup(l,key),`${lang}: DiceStats.${key}`);}
+});
+test('body tab (#29): main hand left, off hand right; a two-handed weapon sits on the chosen side, moved only in edit mode',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;
+ const main=item('main','meleeweapon'),off=item('off','meleeweapon');main.system.worn={value:true,offHand:false};off.system.worn={value:true,offHand:true};
+ p.wornMeleeWeapons=[main,off];p.wornRangedWeapons=[];actor.items.set('main',main);actor.items.set('off',off);
+ const side=(html,cls)=>elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-body-side '+cls))[0];
+ const selects=node=>dom.findAll(el=>el.name==='select',node.children).map(el=>el.attribs['data-dsa5h-hand']);
+ let html=render(await sheet._prepareContext({}));
+ assert.deepEqual(selects(side(html,'left')),['main']);assert.deepEqual(selects(side(html,'right')),['offhand']);
+ assert(!html.includes('data-action="dsa5hTwoHandedSide"'),'no swap button for one-handed weapons');
+ main.wieldedTwoHand=true;let context=await sheet._prepareContext({});html=render(context);
+ assert.equal(context.dsa5h.body.twoHandedSide,'left');assert.deepEqual(selects(side(html,'left')),['main']);
+ assert(dom.findAll(el=>el.attribs?.class==='dsa5h-hand-2h-note',side(html,'right').children).length===1,'note on the free side');
+ const swap=elements(html,el=>el.attribs?.['data-action']==='dsa5hTwoHandedSide')[0];assert.equal(swap.attribs['data-side'],'right');assert(swap.attribs['aria-label']);
+ context.dsa5h.editMode=false;assert(!render(context).includes('data-action="dsa5hTwoHandedSide"'),'swap only in edit mode');
+ await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hTwoHandedSide.call(sheet,{},{dataset:{side:'right'}});assert.deepEqual(actor.saved,{scope:'dsa5-helpers',key:'twoHandedSide',value:'right'});
+ actor.flags.twoHandedSide='right';
+ context=await sheet._prepareContext({});html=render(context);
+ assert.equal(context.dsa5h.body.twoHandedSide,'right');assert.deepEqual(selects(side(html,'right')),['main']);assert.deepEqual(selects(side(html,'left')),[]);
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='dsa5hTwoHandedSide')[0].attribs['data-side'],'left');
+});
+test('Würfelstatistik (#28): Fenster „Karten“ – Karten je Spieler, Diagramm, Tabelle nur aufgeklappt, Zurücksetzen nur für die SL',async()=>{
+ const {buildCards}=await esm('scripts/apps/dice-stats.js');
+ const w20=Array.from({length:20},(_,i)=>i===0?14:i===19?2:5);
+ const players=[{id:'a',name:'Anna',color:'#3f7fbf',stats:{v:1,since:0,d:{20:w20,6:[1,1,1,1,1,1]},m:{}}},{id:'b',name:'Ben',color:'#b3473b',stats:{v:1,since:0,d:{6:[2,0,0,0,0,0]},m:{}}}];
+ const cards=buildCards(players,20,'d',{open:new Set(['a'])});
+ assert.equal(cards.length,1,'Spieler ohne Würfe dieses Typs erscheinen nicht');
+ const [card]=cards;assert.equal(card.n,106);assert.equal(card.bars.length,20);assert(card.bars[0].key&&card.bars[19].key&&!card.bars[1].key,'1 und 20 hervorgehoben');
+ assert.deepEqual(card.bars.filter(b=>b.label).map(b=>b.face),[1,5,10,15,20]);assert(card.bars[0].h>card.bars[1].h);
+ assert.deepEqual(card.figures.map(f=>f.label),['n','mean','ones','twenties']);
+ assert.deepEqual(buildCards(players,6,'d').map(c=>c.figures.length),[2,2],'1en/20en nur beim W20');
+ const tpl=H.compile(read('templates/dice-stats.hbs'));
+ const ctx=isGM=>({enabled:true,isGM,faces:20,method:'d',types:[{faces:20,active:true},{faces:6,active:false}],methods:[{id:'d',active:true,label:'DSA5HELPERS.DiceStats.Method.d'},{id:'m',active:false,label:'DSA5HELPERS.DiceStats.Method.m'}],since:'1.10.2026',cards,hidden:'Eva',slight:'0,05',strong:'0,01',hist:{width:300,height:70,total:84,labelY:82}});
+ missing.clear();let html=tpl(ctx(false));
+ assert.deepEqual([...missing].filter(k=>k.startsWith('DSA5HELPERS')),[],'alle Texte lokalisiert');
+ assert.equal(elements(html,el=>el.name==='section'&&el.attribs.class==='dsa5h-ds-card').length,1);
+ assert.equal(elements(html,el=>el.name==='rect').length,20);assert.equal(elements(html,el=>el.name==='table').length,1,'Tabelle der aufgeklappten Karte');
+ assert(!html.includes('data-action="reset"'),'kein Zurücksetzen für Spieler');assert(html.includes('Eva'));
+ html=tpl(ctx(true));assert.equal(elements(html,el=>el.attribs?.['data-action']==='reset').length,2,'je Karte + alle');
+ for(const lang of ['de','en']){const l=JSON.parse(read(`lang/${lang}.json`)).DSA5HELPERS.DiceStats;for(const v of ['normal','slight','strong','few','empty'])assert(l.Verdict[v],`${lang} Verdict.${v}`);for(const f of ['n','mean','ones','twenties'])assert(l.Figure[f]);}
+ assert(/registerMenu\('dsa5-helpers', 'diceStats'[\s\S]*?restricted: false/.test(read('scripts/dsa5-helpers.js')),'für alle über die Moduleinstellungen erreichbar');
+ assert(read('scripts/dsa5-helpers.js').includes('"modules/dsa5-helpers/templates/dice-stats.hbs"'));
 });

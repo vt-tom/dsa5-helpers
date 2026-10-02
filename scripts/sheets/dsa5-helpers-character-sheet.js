@@ -73,6 +73,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       traditionItemDelete: this._deleteTraditionItem,
       selectTraditionItem: this._selectTraditionItem,
       dsa5hBodyFigure: this._setBodyFigure,
+      dsa5hTwoHandedSide: this._setTwoHandedSide,
     },
     // Foundry concatenates majorButtons across the inheritance chain (ApplicationV2#_initializeApplicationOptions),
     // so this adds a third header-control icon next to DSA5's own eye/lock buttons instead of replacing them.
@@ -446,10 +447,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     });
   }
 
-  // Reiter „Körper“ (Kampf-Unterreiter, Issue #6): Rüstung links, Hände rechts, Figur dahinter. Haupt-/Nebenhand
-  // kommen aus den vom System vorbereiteten getragenen Waffen (system.worn.offHand); beidhändig wie im System
-  // (weapon_hands.js isTwoHandedWeapon: Nahkampf über RuleChaos, Fernkampf über worn.requiresBothHands). Führt die
-  // Haupthand eine beidhändige Waffe, entfällt die Nebenhand (Rückmeldung 2026-09-30).
+  // Reiter „Körper“ (Kampf-Unterreiter, Issue #6/#29): Hände links und rechts der Figur (Haupthand links, Nebenhand
+  // rechts), Rüstung darunter. Haupt-/Nebenhand kommen aus den vom System vorbereiteten getragenen Waffen
+  // (system.worn.offHand); beidhändig wie im System (weapon_hands.js isTwoHandedWeapon: Nahkampf über RuleChaos,
+  // Fernkampf über worn.requiresBothHands). Eine beidhändige Waffe steht auf der per Actor-Flag gewählten Seite, die
+  // andere Seite zeigt nur einen Hinweis.
   _bodyContext(prepare) {
     const RuleChaos = globalThis.dsa5?.apps?.RuleChaos;
     const twoHanded = item => item.type === 'meleeweapon'
@@ -472,14 +474,18 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const species = String(this.actor.system?.details?.species?.value ?? '');
     const placeholder = /elf/i.test(species) ? 'Elf' : /zwerg|dwarf/i.test(species) ? 'Zwerg' : 'Mensch';
     const portrait = this.actor.getFlag?.(MODULE_ID, 'bodyFigure') === 'portrait';
+    const hands = mainTwoHanded ? [slot('main', main)] : [slot('main', main), slot('offhand', off)];
+    const twoHandedSide = this.actor.getFlag?.(MODULE_ID, 'twoHandedSide') === 'right' ? 'right' : 'left';
+    const weaponSide = { slot: hands[0], twoHanded: true, moveTo: twoHandedSide === 'left' ? 'right' : 'left' };
     return {
       armor,
-      // Ab drei Rüstungsteilen Tabelle statt Kacheln (Rückmeldung 2026-09-30).
-      armorTable: armor.length >= 3,
       encumbrance: armor.reduce((sum, item) => sum + (Number(item.system?.calculatedEncumbrance) || 0), 0),
-      hands: mainTwoHanded ? [slot('main', main)] : [slot('main', main), slot('offhand', off)],
+      hands,
       single: mainTwoHanded,
-      // Freie Nebenhand kompakt unter der Haupthand statt als volle Spalte (Rückmeldung 2026-09-30).
+      left: !mainTwoHanded ? { slot: hands[0] } : twoHandedSide === 'left' ? weaponSide : { note: true },
+      right: !mainTwoHanded ? { slot: hands[1] } : twoHandedSide === 'right' ? weaponSide : { note: true },
+      twoHandedSide,
+      // Freie Nebenhand kompakt (40-px-Kachel „+“) statt einer leeren großen Kachel (Rückmeldung 2026-09-30).
       offFree: !mainTwoHanded && !off,
       portrait,
       figure: portrait ? this.actor.img : `systems/dsa5/icons/species/${placeholder}.webp`,
@@ -521,6 +527,12 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static async _setBodyFigure(_event, target) {
     if (!this.isEditable) return;
     await this.actor.setFlag(MODULE_ID, 'bodyFigure', target.dataset.figure === 'portrait' ? 'portrait' : 'placeholder');
+  }
+
+  // Seite der beidhändigen Waffe im Reiter „Körper“ (Issue #29): Actor-Flag, Knopf nur im Bearbeiten-Modus.
+  static async _setTwoHandedSide(_event, target) {
+    if (!this.isEditable) return;
+    await this.actor.setFlag(MODULE_ID, 'twoHandedSide', target.dataset.side === 'right' ? 'right' : 'left');
   }
 
   // Charakterbauer (#10): wie im System, merkt sich aber die bisherige Bogenwahl ('' = Standard), die der

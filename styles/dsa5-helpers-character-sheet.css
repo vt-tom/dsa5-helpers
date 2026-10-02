@@ -1719,34 +1719,32 @@
 .dsa5-helpers-sheet [data-tab-panel="status"] > .panel + .panel { margin-top:12px; }
 @container (max-width:560px) { .dsa5-helpers-sheet .dsa5h-two-col { grid-template-columns:1fr; } .dsa5-helpers-sheet .dsa5h-head-dup { display:none; } }
 
-/* ===== Kampf-Unterreiter „Körper“ (body.hbs, Issue #6; Clickdummy renderBody()) =====
-   Rüstung links, Figur in der Mitte (Artenbild als Platzhalter oder Akteur-Porträt, abgeblendet), Hände rechts
-   nebeneinander (Variante B, Nutzer-Entscheidung 2026-09-30). Beidhändige Waffe: nur die Haupthand. */
+/* ===== Kampf-Unterreiter „Körper“ (body.hbs, Issue #6/#29; Clickdummy renderBody()) =====
+   Figur in der Mitte (Artenbild als Platzhalter oder Akteur-Porträt, abgeblendet), Haupthand links, Nebenhand rechts;
+   darunter Schnellaktionen und die Rüstungszeile (Variante A, Nutzer-Entscheidung 2026-10-02). */
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-btns { display:flex; gap:6px; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-btn { display:inline-flex; align-items:center; gap:5px; flex:none; width:auto; height:26px; min-height:0; padding:0 9px; border:1px solid rgba(255,255,255,.45); border-radius:3px; background:rgba(255,255,255,.12); color:inherit; font-size:var(--fs-meta); line-height:1; cursor:pointer; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-btn > span { flex:none; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-btn:is(:hover, :focus-visible) { border-color:#fff; background:rgba(255,255,255,.25); }
-.dsa5-helpers-sheet .dsa5h-body-grid { position:relative; isolation:isolate; display:grid; grid-template-columns:120px minmax(0, 1fr) 250px; gap:14px; align-items:start; align-content:center; min-height:330px; padding:12px; }
+.dsa5-helpers-sheet .dsa5h-body-grid { position:relative; isolation:isolate; display:grid; grid-template-columns:minmax(0, 1fr) 110px minmax(0, 1fr); gap:14px; align-items:start; align-content:center; min-height:330px; padding:12px; }
 /* Figur als echtes <img>: eine relative url() in einer CSS-Variable (früher --figure im style-Attribut) löst Chrome gegen
    den Pfad dieses Stylesheets auf (modules/dsa5-helpers/styles/…) — in Foundry blieb die Figur deshalb leer (2026-09-30). */
 .dsa5-helpers-sheet .dsa5h-body-grid > .dsa5h-body-figure { position:absolute; inset:0; z-index:-1; width:100%; height:100%; max-width:none; margin:0; border:0; object-fit:contain; object-position:center; pointer-events:none; opacity:.3; -webkit-mask-image:linear-gradient(90deg, transparent 12%, #000 35%, #000 65%, transparent 88%); mask-image:linear-gradient(90deg, transparent 12%, #000 35%, #000 65%, transparent 88%); }
 .dsa5-helpers-sheet[data-theme="dark"] .dsa5h-body-grid > .dsa5h-body-figure { opacity:.22; }
-/* Rüstung in Spalte 1, Hände in Spalte 3; die Mitte bleibt frei für die Figur, die Plakette sitzt über der Mitte der ganzen Fläche.
-   Beide Spalten oben bündig (Titel und Kacheln auf einer Höhe), die Zeile als Ganzes vertikal zentriert (align-content, Rückmeldung 2026-09-30). */
-.dsa5-helpers-sheet .dsa5h-figure-armor { grid-column:1; grid-row:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
-.dsa5-helpers-sheet .dsa5h-figure-hands { grid-column:3; grid-row:1; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); column-gap:12px; align-items:start; }
-/* Beidhändige Waffe: die eine Hand rechtsbündig an der Außenkante statt mittig (Rückmeldung 2026-09-30). */
-/* Freie Nebenhand (off-free) ebenso: eine Spalte, alles rechtsbündig (Rückmeldung 2026-09-30). */
-.dsa5-helpers-sheet .dsa5h-figure-hands:is(.single, .off-free) { grid-template-columns:minmax(0, 1fr); justify-items:end; }
-.dsa5-helpers-sheet .dsa5h-figure-hands:is(.single, .off-free) .dsa5h-hand-slot { align-items:flex-end; text-align:right; }
-/* Kompakte freie Nebenhand: Kachel an der Außenkante, Text links daneben. */
-.dsa5-helpers-sheet .dsa5h-figure-hands.off-free .dsa5h-hand-slot.dsa5h-hand-free { flex-direction:row-reverse; align-items:center; }
-/* Kampftechnik-Knopf sitzt sonst per align-self:flex-start links (Live-Rückmeldung 2026-09-30). */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-figure-hands:is(.single, .off-free) .dsa5h-ct-link { align-self:flex-end; text-align:right; }
+/* Hände links und rechts der Figur (Issue #29): die rechte Seite gespiegelt, alles an der Außenkante. */
+.dsa5-helpers-sheet .dsa5h-body-side { display:flex; flex-direction:column; gap:16px; min-width:0; }
+.dsa5-helpers-sheet .dsa5h-body-side.left { grid-column:1; grid-row:1; align-items:flex-start; }
+.dsa5-helpers-sheet .dsa5h-body-side.right { grid-column:3; grid-row:1; align-items:flex-end; text-align:right; }
+.dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot { width:100%; max-width:210px; }
+.dsa5-helpers-sheet .dsa5h-body-side.right .dsa5h-hand-slot { align-items:flex-end; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side.right .dsa5h-ct-link { align-self:flex-end; text-align:right; }
+.dsa5-helpers-sheet .dsa5h-body-side.right :is(.dsa5h-hand-ranged, .dsa5h-hand-ranged > .dsa5h-mag) { justify-content:flex-end; }
+/* Kompakte freie Nebenhand: Kachel an der Außenkante, Text innen daneben. */
+.dsa5-helpers-sheet .dsa5h-body-side.right .dsa5h-hand-slot.dsa5h-hand-free { flex-direction:row-reverse; }
+.dsa5-helpers-sheet .dsa5h-hand-2h-note { max-width:150px; margin-top:28px; font-size:var(--fs-meta); font-style:italic; line-height:1.3; color:var(--muted); }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-swap { width:auto; height:auto; min-height:0; margin:2px 0 0; padding:2px 8px; border:1px solid var(--line); border-radius:3px; background:var(--field); color:var(--ink); font-size:var(--fs-meta); line-height:1.4; }
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-swap:is(:hover, :focus-visible) { border-color:var(--accent); color:var(--accent); }
 .dsa5-helpers-sheet .dsa5h-figure-col-title { display:block; font-size:var(--fs-meta); color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
-.dsa5-helpers-sheet .dsa5h-figure-badge { position:absolute; left:50%; top:34%; z-index:2; transform:translate(-50%, -50%); display:flex; flex-direction:column; align-items:center; padding:4px 10px; border:1px solid var(--accent); border-radius:4px; background:var(--paper); box-shadow:0 1px 4px rgba(0,0,0,.25); }
-.dsa5-helpers-sheet .dsa5h-figure-badge strong { font-size:var(--fs-big); }
-.dsa5-helpers-sheet .dsa5h-figure-badge small { font-size:var(--fs-meta); color:var(--muted); }
 .dsa5-helpers-sheet .dsa5h-body-seg { position:absolute; top:6px; left:50%; z-index:2; transform:translateX(-50%); display:inline-flex; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-seg button { width:auto; height:auto; min-height:0; margin:0; padding:2px 8px; border:0; border-radius:0; background:var(--field); color:var(--ink); font-size:var(--fs-meta); line-height:1.4; box-shadow:none; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-seg button + button { border-left:1px solid var(--line); }
@@ -1754,23 +1752,11 @@
 /* Namen über Rüstungs- und Handkacheln: Datenschrift, fett, darf umbrechen. */
 .dsa5-helpers-sheet .dsa5h-body-item-name { max-width:100%; font-weight:bold; font-size:var(--fs-data); line-height:1.15; overflow-wrap:anywhere; }
 .dsa5-helpers-sheet .dsa5h-body-item-name a { color:inherit; }
-.dsa5-helpers-sheet .dsa5h-body-armor { display:flex; flex-direction:column; align-items:center; gap:8px; }
-.dsa5-helpers-sheet .dsa5h-body-armor-item { display:flex; flex-direction:column; align-items:center; gap:3px; max-width:116px; text-align:center; }
+.dsa5-helpers-sheet .dsa5h-body-armor { display:flex; flex-wrap:wrap; justify-content:center; gap:10px; }
+.dsa5-helpers-sheet .dsa5h-body-armor-item { display:flex; flex-direction:column; align-items:center; gap:3px; max-width:110px; text-align:center; }
+.dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot { width:76px; height:76px; }
+.dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-body-item-name { display:block; font-size:var(--fs-small); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot { background:var(--paper); }
-/* Ab drei Rüstungsteilen: Tabelle (Bild | Name | RS | BE) statt Kacheln, breitere Spalte, Namen einzeilig mit „…“ + Tooltip (2026-09-30). */
-.dsa5-helpers-sheet .dsa5h-body-grid.armor-table { grid-template-columns:230px minmax(0, 1fr) 250px; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table { width:100%; margin:0; border-collapse:collapse; table-layout:fixed; background:var(--paper); border:1px solid var(--line); border-radius:4px; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table th { padding:2px 4px; font-size:var(--fs-meta); font-weight:normal; color:var(--muted); text-align:center; border-bottom:1px solid var(--line); background:none; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table th:first-child { text-align:left; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table col.dsa5h-col-img { width:34px; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table col.dsa5h-col-val { width:34px; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table td { padding:2px 4px; font-size:var(--fs-data); font-weight:bold; text-align:center; border-bottom:1px solid var(--line); }
-.dsa5-helpers-sheet .dsa5h-body-armor-table tr:last-child td { border-bottom:0; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table td.dsa5h-body-armor-img { padding:2px; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table td.dsa5h-body-armor-img img { display:block; width:28px; height:28px; margin:0; border:1px solid var(--line); border-radius:3px; object-fit:cover; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table td.dsa5h-body-armor-name { text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table td.dsa5h-body-armor-name a { color:inherit; }
-.dsa5-helpers-sheet .dsa5h-body-armor-table td.dsa5h-body-armor-name meter { display:block; width:100%; height:3px; }
 /* Hand: Titel, Name, Kachel (Waffenbild, AT/PA-Würfel auf der Unterkante), darunter TP-Knopf und Auswahl. */
 .dsa5-helpers-sheet .dsa5h-hand-slot { display:flex; flex-direction:column; align-items:flex-start; gap:3px; min-width:0; }
 .dsa5-helpers-sheet .dsa5h-hand-tile { position:relative; flex:none; width:96px; height:96px; margin-bottom:14px; border:1px solid var(--line); border-radius:4px; background:var(--paper); }
@@ -1786,17 +1772,15 @@
    (Vorschlag aus dem Click-Dummy, freigegeben 2026-09-30). Munitionswahl bleibt in der Übersicht. */
 .dsa5-helpers-sheet .dsa5h-hand-ranged { display:flex; flex-wrap:wrap; align-items:center; gap:5px; margin-top:4px; font-size:var(--fs-meta); }
 /* Nachladen und Zielen nebeneinander, solange die Spalte reicht (Live-Rückmeldung 2026-09-30: spart Höhe), Magazin
-   in eigener Zeile; bei beidhändiger Waffe (eine Hand, rechtsbündig) alles an die rechte Kante. */
+   in eigener Zeile; auf der rechten Seite an der Außenkante (siehe .dsa5h-body-side.right). */
 .dsa5-helpers-sheet .dsa5h-hand-ranged > .dsa5h-mag { flex-basis:100%; }
-.dsa5-helpers-sheet .dsa5h-figure-hands:is(.single, .off-free) :is(.dsa5h-hand-ranged, .dsa5h-hand-ranged > .dsa5h-mag) { justify-content:flex-end; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-ranged :is(.dsa5h-reload-btn, .dsa5h-aim) { display:grid; grid-template-columns:auto auto; align-items:center; column-gap:5px; row-gap:2px; min-height:0; padding:2px 6px; font-size:12px; line-height:1.2; }
 .dsa5-helpers-sheet .dsa5h-hand-ranged :is(.dsa5h-reload-btn, .dsa5h-aim) > span:first-child { grid-column:1 / -1; }
 .dsa5-helpers-sheet .dsa5h-hand-ranged .dsa5h-reload-bar { max-width:56px; }
 .dsa5-helpers-sheet .dsa5h-hand-ranged .dsa5h-mag { font-size:12px; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-select { width:100%; max-width:100%; margin-top:6px; font-size:var(--fs-meta); }
-/* Freie Nebenhand kompakt unter der Haupthand (Rückmeldung 2026-09-30; als eigene Spalte schob sie die Haupthand nach
-   rechts): 40-px-Kachel mit „+“, die Kachel ist die Auswahl (unsichtbares <select> darüber), daneben „Nebenhand · frei“. */
-.dsa5-helpers-sheet .dsa5h-figure-hands.off-free { grid-template-columns:minmax(0, 1fr); row-gap:12px; }
+/* Freie Nebenhand kompakt (Rückmeldung 2026-09-30): 40-px-Kachel mit „+“, die Kachel ist die Auswahl (unsichtbares
+   <select> darüber), daneben „Nebenhand · frei“. */
 .dsa5-helpers-sheet .dsa5h-hand-slot.dsa5h-hand-free { flex-direction:row; align-items:center; gap:8px; }
 .dsa5-helpers-sheet .dsa5h-hand-free-text { display:flex; flex-direction:column; line-height:1.2; }
 .dsa5-helpers-sheet .dsa5h-hand-free-text small:last-child { font-size:var(--fs-meta); color:var(--muted); }
@@ -1816,10 +1800,14 @@
 @media (prefers-reduced-motion: reduce) { .dsa5-helpers-sheet .dsa5h-die-seal { transition:none; } }
 .dsa5-helpers-sheet .dsa5h-body-actions { padding:0 12px; border-top:1px solid var(--line); }
 .dsa5-helpers-sheet .dsa5h-body-actions .dsa5h-quick-actions { justify-content:center; }
-.dsa5-helpers-sheet .dsa5h-figure-stats { display:flex; justify-content:center; gap:28px; padding:0 12px 10px; }
-.dsa5-helpers-sheet .dsa5h-figure-stats > span { display:flex; flex-direction:column; align-items:center; }
-.dsa5-helpers-sheet .dsa5h-figure-stats small { font-size:var(--fs-meta); color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
-.dsa5-helpers-sheet .dsa5h-figure-stats strong { font-size:var(--fs-big); }
+/* Rüstungszeile unter den Schnellaktionen: Schutz/Belastung | Kacheln | Initiative (ersetzt die frühere Wertezeile). */
+.dsa5-helpers-sheet .dsa5h-body-armor-row { display:grid; grid-template-columns:auto minmax(0, 1fr) auto; align-items:start; gap:18px; padding:10px 12px; }
+.dsa5-helpers-sheet :is(.dsa5h-body-armor-sum, .dsa5h-body-ini) { display:flex; flex-direction:column; gap:6px; }
+.dsa5-helpers-sheet .dsa5h-body-ini { align-items:flex-end; text-align:right; padding-top:19px; }
+.dsa5-helpers-sheet .dsa5h-body-armor-row > .dsa5h-empty { align-self:center; justify-self:center; margin:0; }
+.dsa5-helpers-sheet .dsa5h-body-stat { display:flex; flex-direction:column; line-height:1.15; }
+.dsa5-helpers-sheet .dsa5h-body-stat small { font-size:var(--fs-meta); color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.dsa5-helpers-sheet .dsa5h-body-stat strong { font-size:var(--fs-big); }
 /* Zauber-/Liturgieliste als natives <dialog> im Bogen (Top-Layer, liegt über allem). */
 .dsa5-helpers-sheet .dsa5h-cast-dialog { width:min(560px, 92vw); max-height:80vh; padding:0; border:1px solid var(--accent); border-radius:4px; background:var(--paper); color:var(--ink); box-shadow:0 10px 30px rgba(0,0,0,.5); }
 .dsa5-helpers-sheet .dsa5h-cast-dialog::backdrop { background:rgba(0,0,0,.35); }
@@ -1949,3 +1937,65 @@
    keinen Platz hat (Eigenschaften, LeP/AsP/KaP — der Planer hängt sie dort in den Knopf). */
 .dsa5-helpers-sheet .steigerungsplaner-badge { background:var(--accent); font-family:'GentiumBasic', serif; }
 .dsa5-helpers-sheet .steigerungsplaner-badge-above { top:-.95rem; right:-.5rem; z-index:1; pointer-events:auto; }
+
+/* ===== Würfelstatistik-Fenster (Issue #28, Darstellung B „Karten“; scripts/apps/dice-stats.js, templates/dice-stats.hbs) =====
+   Eigene Farbvariablen nach dem Vorbild des Bogens, Hell/Dunkel folgt der Modul-Einstellung „theme“ (data-theme).
+   Abweichung/Einstufung: Symbol + Text, nie nur Farbe. Nur der Kartenbereich scrollt. */
+.dsa5-helpers-dice-stats {
+  --paper:#ece2d2; --ink:#2b2721; --muted:rgba(43,39,33,.72); --line:rgba(43,39,33,.2); --panel:rgba(255,255,255,.4);
+  --field:rgba(255,255,255,.55); --accent:#8b6f3f; --dmg:#b3241a; --ds-bar:#6b5a3e;
+  --ds-good:#0ca30c; --ds-warn:#fab219; --ds-serious:#ec835a;
+  --fs-data:15px; --fs-small:14px; --fs-meta:12px; --fs-big:18px;
+}
+.dsa5-helpers-dice-stats[data-theme="dark"] {
+  --paper:#272320; --ink:#e9dfcd; --muted:#b9ad9b; --line:#ffffff2e; --panel:#ffffff08; --field:#ffffff0d; --accent:#d0b276;
+  --dmg:#d0574b; --ds-bar:#c2a267; color-scheme:dark;
+}
+.dsa5-helpers-dice-stats .window-content { display:flex; flex-direction:column; overflow:hidden; padding:0; background:var(--paper); color:var(--ink); font-family:'GentiumBasic', Georgia, serif; }
+.dsa5-helpers-dice-stats .dsa5h-ds { display:flex; flex-direction:column; min-height:0; height:100%; }
+.dsa5-helpers-dice-stats .dsa5h-ds-off { margin:10px 12px 0; padding:6px 10px; border:1px solid var(--accent); border-radius:4px; font-size:var(--fs-small); }
+.dsa5-helpers-dice-stats .dsa5h-ds-filters { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:10px 12px; border-bottom:1px solid var(--line); }
+.dsa5-helpers-dice-stats .dsa5h-ds-since { margin-left:auto; font-size:var(--fs-meta); color:var(--muted); }
+.dsa5-helpers-dice-stats .dsa5h-ds-seg { display:inline-flex; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+.dsa5-helpers-dice-stats .dsa5h-ds-seg button { width:auto; height:auto; min-height:0; margin:0; padding:3px 10px; border:0; border-radius:0; background:var(--field); color:var(--ink); font:inherit; font-size:var(--fs-small); line-height:1.4; box-shadow:none; cursor:pointer; }
+.dsa5-helpers-dice-stats .dsa5h-ds-seg button + button { border-left:1px solid var(--line); }
+.dsa5-helpers-dice-stats .dsa5h-ds-seg button.active { background:var(--accent); color:#fff; font-weight:bold; }
+.dsa5-helpers-dice-stats .dsa5h-ds-body { flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:12px; }
+.dsa5-helpers-dice-stats .dsa5h-ds-body p { margin:0; line-height:1.45; }
+.dsa5-helpers-dice-stats .dsa5h-ds-cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(310px, 1fr)); align-items:start; gap:10px; }
+.dsa5-helpers-dice-stats .dsa5h-ds-card { display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:10px; border:1px solid var(--line); border-radius:4px; background:var(--panel); }
+.dsa5-helpers-dice-stats .dsa5h-ds-card-head { display:flex; align-items:center; justify-content:space-between; align-self:stretch; gap:8px; }
+.dsa5-helpers-dice-stats .dsa5h-ds-name { display:inline-flex; align-items:center; min-width:0; font-weight:bold; font-size:var(--fs-data); }
+.dsa5-helpers-dice-stats .dsa5h-ds-name > span:last-child { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dsa5-helpers-dice-stats .dsa5h-ds-swatch { flex:none; width:10px; height:10px; margin-right:6px; border-radius:50%; box-shadow:0 0 0 1px var(--line); }
+.dsa5-helpers-dice-stats :is(.dsa5h-ds-reset, .dsa5h-ds-reset-all) { flex:none; width:auto; height:26px; min-height:0; margin:0; padding:0 8px; border:1px solid var(--line); border-radius:3px; background:var(--field); color:var(--ink); font-size:var(--fs-small); line-height:1; cursor:pointer; }
+.dsa5-helpers-dice-stats :is(.dsa5h-ds-reset, .dsa5h-ds-reset-all):is(:hover, :focus-visible) { border-color:var(--accent); color:var(--accent); }
+.dsa5-helpers-dice-stats .dsa5h-ds-reset-all { border-color:var(--dmg); color:var(--dmg); }
+.dsa5-helpers-dice-stats .dsa5h-ds-verdict { display:inline-flex; align-items:center; gap:5px; padding:1px 8px 1px 2px; border:1px solid var(--line); border-radius:999px; background:var(--field); font-size:var(--fs-small); white-space:nowrap; }
+.dsa5-helpers-dice-stats .dsa5h-ds-verdict small { color:var(--muted); }
+.dsa5-helpers-dice-stats .dsa5h-ds-verdict-icon { display:inline-grid; place-items:center; min-width:18px; height:18px; padding:0 3px; border-radius:999px; font-size:11px; font-weight:bold; color:#fff; background:var(--muted); }
+.dsa5-helpers-dice-stats .dsa5h-ds-verdict.good .dsa5h-ds-verdict-icon { background:var(--ds-good); }
+.dsa5-helpers-dice-stats .dsa5h-ds-verdict.warn { border-color:var(--ds-warn); }
+.dsa5-helpers-dice-stats .dsa5h-ds-verdict.warn .dsa5h-ds-verdict-icon { background:var(--ds-warn); color:#2b2721; }
+.dsa5-helpers-dice-stats .dsa5h-ds-verdict.serious { border-color:var(--ds-serious); }
+.dsa5-helpers-dice-stats .dsa5h-ds-verdict.serious .dsa5h-ds-verdict-icon { background:var(--ds-serious); color:#2b2721; }
+.dsa5-helpers-dice-stats .dsa5h-ds-hist { display:block; width:100%; height:auto; overflow:visible; }
+.dsa5-helpers-dice-stats .dsa5h-ds-bar { fill:var(--ds-bar); opacity:.8; }
+.dsa5-helpers-dice-stats .dsa5h-ds-bar.key, .dsa5-helpers-dice-stats .dsa5h-ds-bar:hover { opacity:1; }
+.dsa5-helpers-dice-stats .dsa5h-ds-bar:hover { fill:var(--accent); }
+.dsa5-helpers-dice-stats .dsa5h-ds-base { stroke:var(--line); stroke-width:1; }
+.dsa5-helpers-dice-stats .dsa5h-ds-expected { stroke:var(--ink); stroke-width:1.5; stroke-dasharray:4 3; }
+.dsa5-helpers-dice-stats .dsa5h-ds-label { fill:var(--muted); font-size:10px; text-anchor:middle; }
+.dsa5-helpers-dice-stats .dsa5h-ds-figures { display:flex; flex-wrap:wrap; gap:6px 22px; }
+.dsa5-helpers-dice-stats .dsa5h-ds-figures > span { display:flex; flex-direction:column; line-height:1.2; }
+.dsa5-helpers-dice-stats .dsa5h-ds-figures small { font-size:var(--fs-meta); color:var(--muted); }
+.dsa5-helpers-dice-stats .dsa5h-ds-figures strong { font-size:var(--fs-big); }
+.dsa5-helpers-dice-stats .dsa5h-ds-more { width:auto; height:auto; min-height:0; margin:0; padding:0; border:0; background:none; color:var(--accent); font:inherit; font-size:var(--fs-small); text-decoration:underline; box-shadow:none; cursor:pointer; }
+.dsa5-helpers-dice-stats .dsa5h-ds-table { width:100%; margin:0; border-collapse:collapse; font-size:var(--fs-small); font-variant-numeric:tabular-nums; background:none; border:0; }
+.dsa5-helpers-dice-stats .dsa5h-ds-table th { padding:2px 6px; font-size:var(--fs-meta); font-weight:normal; color:var(--muted); text-align:right; border-bottom:1px solid var(--line); background:none; }
+.dsa5-helpers-dice-stats .dsa5h-ds-table td { padding:1px 6px; text-align:right; border-bottom:1px solid var(--line); }
+.dsa5-helpers-dice-stats .dsa5h-ds-table :is(th, td):first-child { text-align:left; }
+.dsa5-helpers-dice-stats .dsa5h-ds-table :is(tr.key td, td.big) { font-weight:bold; }
+.dsa5-helpers-dice-stats :is(.dsa5h-ds-test, .dsa5h-ds-note) { font-size:var(--fs-meta); color:var(--muted); }
+.dsa5-helpers-dice-stats .dsa5h-ds-empty { padding:20px; text-align:center; color:var(--muted); }
+.dsa5-helpers-dice-stats .dsa5h-ds-footer { display:flex; justify-content:flex-end; padding:8px 12px; border-top:1px solid var(--line); }

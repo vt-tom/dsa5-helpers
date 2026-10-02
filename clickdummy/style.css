@@ -1002,25 +1002,12 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .combat-stat strong{font-size:var(--fs-big);font-variant-numeric:tabular-nums}
 .combat-figure-grid{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);gap:12px;align-items:center;padding:10px 12px 4px}
 .figure-col-title{display:block;margin-bottom:4px;font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.figure-armor-item,.hand-slot-weapon{display:flex;align-items:center;gap:8px;padding:4px 0}
-.figure-armor-item>span,.hand-slot-weapon>span{display:flex;flex-direction:column;min-width:0;flex:1}
-.figure-armor-item small,.hand-slot-weapon small{font-size:var(--fs-meta);color:var(--muted)}
-.figure-armor-item .item-icon,.figure-armor-item>img,.hand-slot-weapon .item-icon,.hand-slot-weapon>img{width:36px;height:36px;flex:none}
-.figure-armor-item .item-icon img,.hand-slot-weapon .item-icon img{width:100%;height:100%;object-fit:cover;border:1px solid var(--line)}
 /* Linke Figur des Artenbilds, abgedunkelt zur Silhouette (brightness(0)) und leicht transparent wie Tinte auf Papier. */
 /* Nur die linke Figur: das Artenbild ist quadratisch, die linke Figur liegt etwa bei 21–50 % der Breite — bei
    240px Bildhöhe ein 72px breites Fenster ab -50px. */
-.figure-body{position:relative;height:240px}
-.figure-body::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:64px;margin-left:-32px;background:var(--figure) no-repeat -52px 0/auto 100%;filter:brightness(0);opacity:.28}
-.sheet[data-theme="dark"] .figure-body::before{filter:brightness(0) invert(1);opacity:.2}
-.figure-badge{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;padding:4px 10px;border:1px solid var(--accent);border-radius:4px;background:var(--paper);box-shadow:0 1px 4px rgba(0,0,0,.25)}
-.figure-badge strong{font-size:var(--fs-big)}
-.figure-badge small{font-size:var(--fs-meta);color:var(--muted)}
 .hand-slot{padding:4px 8px;margin-bottom:6px;border:1px solid var(--line);border-radius:4px;background:var(--field)}
 .hand-slot>small{font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .hand-slot.empty{border-style:dashed;background:none}
-.figure-others{display:block;font-size:var(--fs-meta)}
-.figure-stats{display:flex;justify-content:center;gap:28px;padding:6px 12px 10px;border-top:1px solid var(--line)}
 
 /* ===== Paket G: Detailpunkte pro Reiter ===== */
 .table-legend{padding:5px 11px;border-top:1px solid var(--line);font-size:var(--fs-meta);color:var(--muted)}
@@ -1067,9 +1054,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .body-grid{position:relative;isolation:isolate;min-height:330px}
 .body-grid>.body-figure{position:absolute;inset:0;z-index:-1;width:100%;height:100%;max-width:none;margin:0;border:0;object-fit:contain;object-position:center;pointer-events:none;opacity:.3;-webkit-mask-image:linear-gradient(90deg,transparent 12%,#000 35%,#000 65%,transparent 88%);mask-image:linear-gradient(90deg,transparent 12%,#000 35%,#000 65%,transparent 88%)}
 .sheet[data-theme="dark"] .body-grid>.body-figure{opacity:.22}
-.body-grid .figure-body{height:0;position:static}
-.body-grid>.figure-badge{z-index:2}
-.body-grid .figure-body::before{content:none}
 .body-grid .armor-slots{gap:8px}
 .body-grid .armor-slot{background:var(--paper)}
 .panel-title .cast-btns{display:flex;gap:6px}
@@ -1078,10 +1062,7 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .cast-modal{width:min(560px,92vw)}
 .cast-row{grid-template-columns:26px minmax(0,1fr) 84px 40px 44px}
 .cast-row img{width:24px;height:24px}
-.hand-slot-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
 .hand-select{max-width:170px;font-size:var(--fs-small)}
-.hand-slot-weapon>.hand-dice{display:flex;flex-direction:row;flex:none;gap:4px}
-.hand-note{padding:6px 0;font-size:var(--fs-small)}
 .body-others{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--line)}
 .body-others .chip img{width:18px;height:18px}
 
@@ -1129,18 +1110,10 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 /* ===== "Körper" als Kampf-Unterreiter (2026-09-28): Rüstung untereinander, Hände als Kacheln ===== */
 /* Beide Spalten oben bündig (Titel und Kacheln auf einer Höhe), die Zeile als Ganzes vertikal zentriert (Rückmeldung 2026-09-30). */
 .body-grid{grid-template-columns:120px minmax(0,1fr) 250px;align-items:start;align-content:center}
-.body-grid .figure-armor{display:flex;flex-direction:column;align-items:center;gap:3px}
-.body-grid .figure-armor .figure-col-title{margin-bottom:0}
-.body-grid .figure-armor .armor-slots{flex-direction:column;flex-wrap:nowrap;align-items:center;margin:0}
-.body-grid .figure-armor .body-armor-table{margin:0}
 /* Hände nebeneinander (Variante B, Nutzer-Entscheidung 2026-09-30); je Hand: Titel, Name groß, Kachel, darunter
    TP-Knopf und Auswahl untereinander. Beidhändige Waffe: nur die Haupthand, rechtsbündig. */
-.body-grid .figure-hands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;column-gap:12px}
 /* Beidhändige Waffe: die eine Hand rechtsbündig an der Außenkante statt mittig (Rückmeldung 2026-09-30). */
 /* Freie Nebenhand (off-free) ebenso rechtsbündig (Rückmeldung 2026-09-30), deren Kachel an der Außenkante. */
-.body-grid .figure-hands:is(.single,.off-free){grid-template-columns:minmax(0,1fr);justify-items:end}
-.body-grid .figure-hands:is(.single,.off-free) :is(.hand-slot,.hand-slot-body,.hand-slot-side){align-items:flex-end;text-align:right}
-.body-grid .figure-hands.off-free .hand-slot.hand-slot-free{flex-direction:row-reverse;align-items:center}
 .body-grid .hand-slot{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:0;margin:0;border:0;background:none}
 .body-grid .hand-slot .figure-col-title{margin-bottom:0}
 .hand-slot-body{display:flex;flex-direction:column;align-items:flex-start;gap:14px;align-self:stretch}
@@ -1148,7 +1121,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .body-grid .hand-select{max-width:100%;width:100%;font-size:var(--fs-meta)}
 /* Freie Nebenhand kompakt unter der Haupthand (Vorschlag 2026-09-30, Rückmeldung: daneben schob sie die Haupthand
    nach rechts): eine Spalte, 40-px-Kachel mit „+“ (die Kachel ist die Auswahl), daneben „Nebenhand · frei“. */
-.body-grid .figure-hands.off-free{grid-template-columns:minmax(0,1fr);row-gap:12px}
 .body-grid .hand-slot.hand-slot-free{flex-direction:row;align-items:center;gap:8px}
 .hand-free-text{display:flex;flex-direction:column;line-height:1.2}
 .hand-tile.empty.compact{position:relative;width:40px;height:40px;cursor:pointer}
@@ -1165,7 +1137,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .body-figure-switch{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:2}
 .body-actions{padding:10px 12px 0;border-top:1px solid var(--line)}
 .body-actions .actions-row{justify-content:center;margin-bottom:0}
-.body-actions+.figure-stats{border-top:0}
 /* Namen über Rüstungs- und Handkacheln: Datenschrift, fett, darf umbrechen (Nutzer-Feedback 2026-09-30: zu klein im Bild). */
 .body-item-name{max-width:100%;font-weight:bold;font-size:var(--fs-data);line-height:1.15;overflow-wrap:anywhere}
 .body-armor-item{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:116px;text-align:center}
@@ -1189,7 +1160,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 /* Nachladen + Zielen nebeneinander, Magazin darunter; bei schmaler Spalte (zwei Hände) bricht Zielen um. */
 .hand-ranged-extras{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
 .hand-ranged-extras>.mag{flex-basis:100%}
-.figure-hands:is(.single,.off-free) .hand-ranged-extras,.figure-hands:is(.single,.off-free) .hand-ranged-extras>.mag{justify-content:flex-end}
 .hand-ranged :is(.reload-btn,.aim){display:grid;grid-template-columns:auto auto;align-items:center;column-gap:5px;row-gap:2px;min-height:0;padding:2px 6px;font-size:12px;line-height:1.2}
 .hand-ranged :is(.reload-btn,.aim)>span:first-child{grid-column:1 / -1}
 .hand-ranged .reload-bar{max-width:56px}
@@ -1208,17 +1178,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 @media (prefers-reduced-motion:reduce){.die-seal{transition:none}}
 /* Ab drei Rüstungsteilen Tabelle statt Kacheln (Rückmeldung 2026-09-30, ersetzt „kleinere Kacheln zu zweit“):
    Bild | Name (einzeilig, „…“ + Tooltip, Strukturbalken darunter) | RS | BE. */
-.body-grid.armor-table{grid-template-columns:230px minmax(0,1fr) 250px}
-.body-armor-table{width:100%;margin:4px 0 0;border-collapse:collapse;table-layout:fixed;background:var(--paper);border:1px solid var(--line)}
-.body-armor-table col.col-img,.body-armor-table col.col-val{width:34px}
-.body-armor-table th{padding:2px 4px;font-size:var(--fs-meta);font-weight:normal;color:var(--muted);text-align:center;border-bottom:1px solid var(--line)}
-.body-armor-table th:first-child{text-align:left}
-.body-armor-table td{padding:2px 4px;font-size:var(--fs-data);font-weight:bold;text-align:center;border-bottom:1px solid var(--line)}
-.body-armor-table tr:last-child td{border-bottom:0}
-.body-armor-table td.body-armor-img{padding:2px}
-.body-armor-table td.body-armor-img img{display:block;width:28px;height:28px;border:1px solid var(--line);border-radius:3px;object-fit:cover}
-.body-armor-table td.body-armor-name{text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.body-armor-table td.body-armor-name meter{display:block;width:100%;height:3px}
 
 /* ===== Status: Tabellen zweispaltig (twoColPanel(), Nutzer-Feedback 2026-09-28) ===== */
 .status-stack>.panel+.panel{margin-top:14px}
@@ -1279,47 +1238,31 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .body-side.right :is(.hand-slot,.hand-slot-body,.hand-slot-side){align-items:flex-end;text-align:right}
 .body-side .hand-slot.hand-slot-free{flex-direction:row;align-items:center;gap:8px}
 .body-side.right .hand-slot.hand-slot-free{flex-direction:row-reverse}
+.body-side.right :is(.hand-ranged-extras,.hand-ranged-extras>.mag){justify-content:flex-end}
 .hand-2h-note{max-width:150px;margin-top:28px;font-size:var(--fs-meta);font-style:italic;line-height:1.3}
 .hand-swap-btn{border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font:inherit;font-size:var(--fs-meta);padding:2px 8px;cursor:pointer}
 .hand-swap-btn:hover,.hand-swap-btn:focus-visible{border-color:var(--accent);color:var(--accent)}
 .hand-swap-btn span{margin-right:3px}
 
-/* TEST-VARIANTEN Rüstung (Issue #29, nach der Entscheidung die verworfenen löschen) */
-/* A – Kachelreihe unter der Figur, Schutz/Belastung links daneben */
-.body-armor-row{display:flex;align-items:flex-start;justify-content:center;gap:18px;padding:10px 12px;border-top:1px solid var(--line)}
-.body-armor-row-sum{display:flex;flex-direction:column;gap:6px;flex:none}
-.body-armor-row-tiles{display:flex;flex-wrap:wrap;gap:10px}
-.body-armor-item.small{max-width:92px}
-.body-armor-item.small .armor-slot{width:76px;height:76px}
-.body-armor-item.small{max-width:110px}
-.body-armor-item.small .body-item-name{display:block;font-size:var(--fs-small);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* B – schmale Leiste über der Figur */
-.body-armor-strip{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;padding:8px 12px;border-bottom:1px solid var(--line)}
-.body-armor-mini{display:flex;align-items:center;gap:7px;min-width:0}
-.armor-slot.mini{flex:none;width:46px;height:46px}
-.body-armor-mini-text{display:flex;flex-direction:column;min-width:0;line-height:1.2}
-.body-armor-mini-name{max-width:150px;font-weight:bold;font-size:var(--fs-data);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.body-armor-mini-text small{font-size:var(--fs-meta);color:var(--muted)}
-/* C – Rüstung in den Seitenspalten unter den Händen */
-.body-side-armor{display:flex;flex-direction:column;gap:4px;width:100%;max-width:210px;text-align:left}
-.body-side.right .body-side-armor .figure-col-title{text-align:right}
-.body-armor-line{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:6px;padding:2px 4px;border:1px solid var(--line);border-radius:3px;background:var(--paper)}
-.body-armor-line img{width:28px;height:28px;border:1px solid var(--line);border-radius:3px;object-fit:cover}
-.body-armor-line-name{font-weight:bold;font-size:var(--fs-data);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.body-armor-line-text{display:flex;flex-direction:column;min-width:0;line-height:1.2}
-.body-armor-line small{font-size:var(--fs-meta);color:var(--muted);white-space:nowrap}
-/* D – eigenes Panel unter dem Körper-Panel */
-.body-armor-panel .armor-slots{margin:11px}
-.body-armor-panel-table{padding:4px 11px 11px}
-.body-armor-empty{padding:4px 0;font-size:var(--fs-small)}
+/* Rüstung unter der Figur (Issue #29, Variante A, Nutzer-Entscheidung 2026-10-02): Schnellaktionen darüber, dann
+   eine Zeile Schutz/Belastung | Kacheln | Initiative. */
+.body-actions{border-top:1px solid var(--line)}
+.body-armor-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:18px;padding:10px 12px}
+.body-armor-row-sum,.body-armor-row-ini{display:flex;flex-direction:column;gap:6px}
+.body-armor-row-ini{align-items:flex-end;text-align:right;padding-top:19px}
+.body-armor-row-tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.body-armor-row .body-armor-item{max-width:110px}
+.body-armor-row .armor-slot{width:76px;height:76px}
+.body-armor-row .body-item-name{display:block;font-size:var(--fs-small);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.body-armor-empty{align-self:center;justify-self:center;font-size:var(--fs-small)}
 
 /* ===== Würfelstatistik (Issue #28): eigenes Fenster + Zustimmungsdialog, clickdummy/dice-stats.js ===== */
 /* Nachbau eines Foundry-Fensters (ApplicationV2) über der Seite; Inhalt im Stil des Bogens (Papier, Panels).
-   Abweichungsfarben: Blau/Rot mit grauer Mitte, Einstufung mit Symbol + Text (nie nur Farbe). */
+   Einstufung mit Symbol + Text (nie nur Farbe). */
 .ds-window{--fs-data:15px;--fs-small:14px;--fs-meta:12px;--fs-big:18px;
-  --ds-less:#2a78d6;--ds-more:#d03b3b;--ds-neutral:#f0efec;--ds-good:#0ca30c;--ds-warn:#fab219;--ds-serious:#ec835a;--ds-bar:#6b5a3e;
+  --ds-good:#0ca30c;--ds-warn:#fab219;--ds-serious:#ec835a;--ds-bar:#6b5a3e;
   position:fixed;top:60px;left:50%;z-index:50;transform:translateX(-50%);display:flex;flex-direction:column;width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 90px);background:var(--paper);color:var(--ink);border:1px solid #000;border-radius:5px;box-shadow:0 18px 48px rgba(0,0,0,.6);font-family:'GentiumBasic',Georgia,serif}
-.ds-window[data-theme='dark']{--ds-neutral:#383835;--ds-bar:#c2a267}
+.ds-window[data-theme='dark']{--ds-bar:#c2a267}
 .ds-window.ds-dialog{top:160px;width:min(440px,calc(100vw - 32px));z-index:60}
 .ds-window-header{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--head);color:var(--headink);border-radius:4px 4px 0 0}
 .ds-window-header h2{flex:1;margin:0;font-family:'Andalus',serif;font-size:17px;font-weight:normal}
@@ -1335,7 +1278,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .ds-seg button.active{background:var(--accent);color:#fff;font-weight:bold}
 .ds-swatch{display:inline-block;flex:none;width:10px;height:10px;margin-right:6px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
 .ds-name{display:inline-flex;align-items:center;min-width:0;font-weight:bold;font-size:var(--fs-data)}
-.ds-name-text{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ds-verdict{justify-self:start;display:inline-flex;align-items:center;gap:5px;padding:1px 8px 1px 2px;border:1px solid var(--line);border-radius:999px;background:var(--field);font-size:var(--fs-small);white-space:nowrap}
 .ds-verdict small{color:var(--muted)}
 .ds-verdict-icon{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 3px;border-radius:999px;font-size:11px;font-weight:bold;color:#fff;background:var(--muted)}
@@ -1373,40 +1315,9 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .ds-btn.danger{border-color:var(--dmg);color:var(--dmg)}
 .ds-dialog-buttons{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
 .ds-dialog-buttons .ds-btn{flex:1}
-/* A – Zeilen */
-.ds-rows{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
-.ds-row+.ds-row{border-top:1px solid var(--line)}
-.ds-row-line{display:flex;align-items:center;gap:6px;padding-right:8px}
-.ds-row-head{flex:1;display:grid;grid-template-columns:minmax(110px,1fr) 46px 92px 180px 168px 12px;align-items:center;gap:10px;min-width:0;padding:6px 8px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
-.ds-row-head:hover{background:var(--odd)}
-.ds-num{display:flex;flex-direction:column;line-height:1.15}
-.ds-num strong{font-size:var(--fs-data)}
-.ds-num small{font-size:var(--fs-meta);color:var(--muted);white-space:nowrap}
-.ds-chevron{color:var(--muted)}
-.ds-row-body{display:flex;flex-direction:column;gap:10px;padding:6px 12px 12px}
-.ds-row-body .ds-hist{width:100%;height:auto}
-/* B – Karten */
-.ds-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px}
+/* Karten (Darstellung B, Nutzer-Entscheidung 2026-10-02) */
+.ds-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));align-items:start;gap:10px}
 .ds-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:10px;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
 .ds-card-head{display:flex;align-items:center;justify-content:space-between;align-self:stretch;gap:8px}
 .ds-card .ds-hist{width:100%;height:auto}
 .ds-more{border:0;background:none;color:var(--accent);font:inherit;font-size:var(--fs-small);padding:0;cursor:pointer;text-decoration:underline}
-/* C – Abweichungs-Raster */
-.ds-grid-wrap{display:flex;flex-direction:column;gap:6px;overflow-x:auto}
-.ds-grid-legend{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;font-size:var(--fs-meta)}
-.ds-grid-legend span{display:inline-flex;align-items:center;gap:5px}
-.ds-grid-legend i{display:inline-block;width:14px;height:14px;border-radius:2px;box-shadow:0 0 0 1px var(--line)}
-.ds-grid-legend small{color:var(--muted)}
-.ds-grid{border-collapse:separate;border-spacing:2px;font-size:var(--fs-small)}
-.ds-grid th{font-size:var(--fs-meta);font-weight:normal;color:var(--muted);padding:0 2px}
-.ds-grid th.ds-key-col{font-weight:bold;color:var(--ink)}
-.ds-grid th.ds-grid-name{text-align:left;font-size:var(--fs-data);font-weight:bold;color:var(--ink);white-space:nowrap;padding-right:8px}
-.ds-grid thead th.ds-grid-name{font-size:var(--fs-meta);font-weight:normal;color:var(--muted)}
-.ds-grid-row{cursor:pointer}
-.ds-grid-row:hover th,.ds-grid-row:focus-visible th{color:var(--accent)}
-.ds-grid-n{padding:0 6px;text-align:right;font-variant-numeric:tabular-nums}
-.ds-cell{width:22px;height:26px;border-radius:2px}
-.ds-grid.dense .ds-cell{width:18px}
-.ds-grid-detail td{padding:6px 4px 10px}
-/* Zu wenige Würfe: Farben blass, damit Zufallsschwankungen nicht wie Befunde aussehen. */
-.ds-grid-row.few .ds-cell{opacity:.35}

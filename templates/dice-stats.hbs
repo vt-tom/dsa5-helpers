@@ -1,0 +1,49 @@
+<div class="dsa5h-ds">
+  {{!-- Würfelstatistik (Issue #28, Darstellung B „Karten“). Kopf bleibt stehen, nur der Inhalt scrollt. --}}
+  {{#unless enabled}}<p class="dsa5h-ds-off">{{localize 'DSA5HELPERS.DiceStats.Disabled'}}</p>{{/unless}}
+  <div class="dsa5h-ds-filters">
+    {{#if types.length}}
+    <div class="dsa5h-ds-seg" role="group" aria-label="{{localize 'DSA5HELPERS.DiceStats.DieType'}}">
+      {{#each types}}<button type="button" data-action="setFaces" data-faces="{{faces}}" class="{{#if active}}active{{/if}}" aria-pressed="{{#if active}}true{{else}}false{{/if}}">{{localize 'DSA5HELPERS.DiceStats.Die' faces=faces}}</button>{{/each}}
+    </div>
+    {{/if}}
+    <div class="dsa5h-ds-seg" role="group" aria-label="{{localize 'DSA5HELPERS.DiceStats.MethodLabel'}}">
+      {{#each methods}}<button type="button" data-action="setMethod" data-method="{{id}}" class="{{#if active}}active{{/if}}" aria-pressed="{{#if active}}true{{else}}false{{/if}}">{{localize label}}</button>{{/each}}
+    </div>
+    {{#if since}}<span class="dsa5h-ds-since">{{localize 'DSA5HELPERS.DiceStats.Since' date=since}}</span>{{/if}}
+  </div>
+  <div class="dsa5h-ds-body">
+    {{#if cards.length}}
+    <div class="dsa5h-ds-cards">
+      {{#each cards as |card|}}
+      <section class="dsa5h-ds-card" data-user-id="{{card.id}}">
+        <header class="dsa5h-ds-card-head">
+          <span class="dsa5h-ds-name"><span class="dsa5h-ds-swatch" style="background:{{card.color}}"></span><span>{{card.name}}</span></span>
+          {{#if @root.isGM}}<button type="button" class="dsa5h-ds-reset" data-action="reset" data-user-id="{{card.id}}" aria-label="{{localize 'DSA5HELPERS.DiceStats.Reset.OneLabel' name=card.name}}" data-tooltip="{{localize 'DSA5HELPERS.DiceStats.Reset.OneLabel' name=card.name}}"><i class="fas fa-rotate-left"></i></button>{{/if}}
+        </header>
+        <span class="dsa5h-ds-verdict {{card.verdictClass}}"{{#if card.p}} data-tooltip="{{localize 'DSA5HELPERS.DiceStats.PTooltip' p=card.p}}"{{/if}}><span class="dsa5h-ds-verdict-icon" aria-hidden="true">{{card.verdictIcon}}</span>{{localize (concat 'DSA5HELPERS.DiceStats.Verdict.' card.verdict)}}{{#if (eq card.verdict 'few')}} <small>({{card.n}}/{{card.minRolls}})</small>{{/if}}</span>
+        <svg class="dsa5h-ds-hist" viewBox="0 0 {{@root.hist.width}} {{@root.hist.total}}" role="img" aria-label="{{localize 'DSA5HELPERS.DiceStats.ChartLabel' faces=@root.faces expected=card.expectedPerFace}}">
+          <line class="dsa5h-ds-base" x1="0" x2="{{@root.hist.width}}" y1="{{@root.hist.height}}" y2="{{@root.hist.height}}"></line>
+          {{#each card.bars as |bar|}}<rect class="dsa5h-ds-bar{{#if bar.key}} key{{/if}}" x="{{bar.x}}" y="{{bar.y}}" width="{{bar.w}}" height="{{bar.h}}" rx="2"><title>{{bar.face}}: {{bar.count}} ({{bar.deviation}})</title></rect>{{#if bar.label}}<text class="dsa5h-ds-label" x="{{bar.cx}}" y="{{@root.hist.labelY}}">{{bar.face}}</text>{{/if}}{{/each}}
+          <line class="dsa5h-ds-expected" x1="0" x2="{{@root.hist.width}}" y1="{{card.expectedY}}" y2="{{card.expectedY}}"></line>
+        </svg>
+        <div class="dsa5h-ds-figures">{{#each card.figures}}<span><small>{{localize (concat 'DSA5HELPERS.DiceStats.Figure.' label)}}</small><strong>{{value}}</strong>{{#if expected}}<small>{{localize 'DSA5HELPERS.DiceStats.Expected' value=expected}}</small>{{/if}}</span>{{/each}}</div>
+        <button type="button" class="dsa5h-ds-more" data-action="toggleTable" data-user-id="{{card.id}}" aria-expanded="{{#if card.open}}true{{else}}false{{/if}}">{{#if card.open}}{{localize 'DSA5HELPERS.DiceStats.HideTable'}}{{else}}{{localize 'DSA5HELPERS.DiceStats.ShowTable'}}{{/if}}</button>
+        {{#if card.open}}
+        <table class="dsa5h-ds-table">
+          <thead><tr><th>{{localize 'DSA5HELPERS.DiceStats.Face'}}</th><th>{{localize 'DSA5HELPERS.DiceStats.Count'}}</th><th>{{localize 'DSA5HELPERS.DiceStats.ExpectedCol'}}</th><th>{{localize 'DSA5HELPERS.DiceStats.Deviation'}}</th></tr></thead>
+          <tbody>{{#each card.bars as |bar|}}<tr class="{{#if bar.key}}key{{/if}}"><td>{{bar.face}}</td><td>{{bar.count}}</td><td>{{card.expectedPerFace}}</td><td class="{{#if bar.big}}big{{/if}}">{{bar.deviation}}</td></tr>{{/each}}</tbody>
+        </table>
+        {{#if card.p}}<p class="dsa5h-ds-test">{{localize 'DSA5HELPERS.DiceStats.TestText' chi2=card.chi2 df=card.df p=card.p slight=@root.slight strong=@root.strong}}</p>{{/if}}
+        {{/if}}
+      </section>
+      {{/each}}
+    </div>
+    {{else}}
+    <p class="dsa5h-ds-empty">{{localize 'DSA5HELPERS.DiceStats.Empty'}}</p>
+    {{/if}}
+    <p class="dsa5h-ds-note">{{localize 'DSA5HELPERS.DiceStats.Note'}}</p>
+    {{#if hidden}}<p class="dsa5h-ds-note">{{localize 'DSA5HELPERS.DiceStats.Hidden' names=hidden}}</p>{{/if}}
+  </div>
+  {{#if isGM}}<footer class="dsa5h-ds-footer"><button type="button" class="dsa5h-ds-reset-all" data-action="reset"><i class="fas fa-rotate-left"></i> {{localize 'DSA5HELPERS.DiceStats.Reset.AllLabel'}}</button></footer>{{/if}}
+</div>

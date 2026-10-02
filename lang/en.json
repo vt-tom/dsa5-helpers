@@ -117,6 +117,12 @@
     "BodyFigure": "Background figure",
     "BodyFigurePlaceholder": "Placeholder",
     "BodyFigurePortrait": "Actor portrait",
+    "BothHands": "Both hands",
+    "BodyTwoHandedNote": "Off hand: taken by the two-handed weapon",
+    "BodyMoveRight": "to the right",
+    "BodyMoveLeft": "to the left",
+    "BodyMoveRightLabel": "Move two-handed weapon to the right",
+    "BodyMoveLeftLabel": "Move two-handed weapon to the left",
     "CastSpells": "Spells …",
     "CastLiturgies": "Liturgies …",
     "CastSpellsTitle": "Spells, rituals & cantrips",
@@ -160,6 +166,52 @@
           "Yes": "Yes",
           "No": "No"
         }
+      },
+      "Menu": {
+        "Label": "Open dice statistics",
+        "Hint": "Shows per player and die type how often each face came up and whether that is statistically unusual."
+      },
+      "Disabled": "Dice statistics are switched off. The GM can switch them on in the module settings; existing data stays visible.",
+      "DieType": "Die type",
+      "Die": "d{faces}",
+      "MethodLabel": "Dice",
+      "Method": {
+        "d": "Digital",
+        "m": "Physical dice"
+      },
+      "Since": "since {date}",
+      "Verdict": {
+        "normal": "unremarkable",
+        "slight": "slightly unusual",
+        "strong": "clearly unusual",
+        "few": "too few rolls",
+        "empty": "no rolls"
+      },
+      "PTooltip": "Chi-squared test: p = {p}",
+      "ChartLabel": "Frequency of each face on the d{faces}, expected {expected} each",
+      "Figure": {
+        "n": "Rolls",
+        "mean": "Avg",
+        "ones": "1s",
+        "twenties": "20s"
+      },
+      "Expected": "expected {value}",
+      "ShowTable": "Show table",
+      "HideTable": "Hide table",
+      "Face": "Face",
+      "Count": "Count",
+      "ExpectedCol": "Expected",
+      "Deviation": "Deviation",
+      "TestText": "Chi-squared goodness-of-fit test: χ² = {chi2} with {df} degrees of freedom, p = {p}. “slightly unusual” from p < {slight}, “clearly unusual” from p < {strong}.",
+      "Empty": "No rolls yet for this die type and dice.",
+      "Note": "Digital and physical dice are evaluated separately. With many players and die types, single outliers are pure chance – “unusual” only means a closer look is worthwhile.",
+      "Hidden": "Not evaluated (no consent): {names}.",
+      "Reset": {
+        "Title": "Reset dice statistics",
+        "One": "The statistics of {name} will be deleted. This cannot be undone.",
+        "All": "The statistics of all players will be deleted. This cannot be undone.",
+        "OneLabel": "Reset statistics of {name}",
+        "AllLabel": "Reset all"
       }
     }
   }

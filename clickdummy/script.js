@@ -1604,28 +1604,6 @@ function handSlot(hand) {
 // Seite der beidhändigen Waffe (Issue #29): bleibt im Spielmodus auf der zuletzt gewählten Seite.
 let TWO_HANDED_SIDE = "left";
 
-// TEST-UMSCHALTER Issue #29 (nach der Entscheidung löschen): Platz der Rüstung im Reiter „Körper“ und Anzahl der
-// Rüstungsteile (ARMOR wird in place gekürzt, damit alle Reiter dieselbe Rüstung zeigen). Toolbar in index.html.
-let BODY_ARMOR_VARIANT = "A";
-const ARMOR_ALL = [...ARMOR, { name: "Lederarmschienen", rs: 1, be: 0 }];
-let ARMOR_COUNT = ARMOR.length;
-function applyArmorCount() {
-  ARMOR.splice(0, ARMOR.length, ...ARMOR_ALL.slice(0, ARMOR_COUNT));
-}
-function initBodyArmorToggles() {
-  const wire = (id, attr, apply) => {
-    const group = document.getElementById(id);
-    group.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
-      group.querySelectorAll("button").forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", String(x === b)); });
-      apply(b.dataset[attr]);
-      renderHeader();
-      renderContent();
-    }));
-  };
-  wire("bodyArmorVariant", "variant", (v) => { BODY_ARMOR_VARIANT = v; });
-  wire("bodyArmorCount", "count", (v) => { ARMOR_COUNT = Number(v); applyArmorCount(); });
-}
-
 // Zauber-/Liturgieliste als Dialog direkt aus dem Reiter "Körper" (Nutzer-Feedback 2026-09-28): im Kampf würfeln,
 // ohne auf Magie/Religion zu wechseln. Zeile = Bild | Name | Probe (würfelbar) | FW | Kosten. Gegliedert nach
 // Zauber/Rituale/Zaubertricks bzw. Liturgien/Zeremonien/Segnungen (Nutzer-Feedback 2026-09-30: Rituale, Zeremonien,
@@ -1692,10 +1670,10 @@ function renderBody() {
   const figureSwitch = editMode
     ? segmented([["species", "Platzhalter"], ["portrait", "Akteur-Porträt"]], BODY_FIGURE, (v) => { BODY_FIGURE = v; renderContent(); }, "body-figure-switch", "Figur im Hintergrund")
     : null;
-  // Rüstungsteil als Kachel (Bild füllt die Kachel, RS/BE als Ecken), Name groß darüber (Nutzer-Feedback 2026-09-30).
-  const armorTile = (a, cls = "") => {
+  // Rüstungsteil als Kachel (Bild füllt die Kachel, RS/BE als Ecken), Name darüber (Nutzer-Feedback 2026-09-30).
+  const armorTile = (a) => {
     const st = effectiveArmor(a);
-    return el("div", { class: ("body-armor-item " + cls).trim() }, [
+    return el("div", { class: "body-armor-item" }, [
       el("span", { class: "body-item-name", title: a.name }, a.name),
       el("div", { class: "armor-slot" }, [
         itemIcon(A.armor, a.name, a.structure, "armor"),
@@ -1705,35 +1683,6 @@ function renderBody() {
       ]),
     ]);
   };
-  // Kompakte Zeile Bild | Name | RS/BE (Variante C in den schmalen Seitenspalten).
-  const armorLine = (a) => {
-    const st = effectiveArmor(a);
-    return el("div", { class: "body-armor-line" }, [
-      el("img", { src: A.armor, alt: "" }),
-      el("span", { class: "body-armor-line-text" }, [
-        el("span", { class: "body-armor-line-name", title: a.name }, [onUseBtn(a.name), a.name]),
-        el("small", {}, `RS ${st.rs} · BE ${st.be}`),
-      ]),
-    ]);
-  };
-  const armorTableEl = () => el("table", { class: "body-armor-table" }, [
-    el("colgroup", {}, [el("col", { class: "col-img" }), el("col"), el("col", { class: "col-val" }), el("col", { class: "col-val" })]),
-    el("thead", {}, [el("tr", {}, [el("th", { colspan: "2" }, "Name"), el("th", { title: "Rüstungsschutz" }, "RS"), el("th", { title: "Belastung" }, "BE")])]),
-    el("tbody", {}, ARMOR.map((a) => {
-      const st = effectiveArmor(a);
-      return el("tr", {}, [
-        el("td", { class: "body-armor-img" }, [el("img", { src: A.armor, alt: "" })]),
-        el("td", { class: "body-armor-name", title: a.name }, [
-          onUseBtn(a.name),
-          el("span", {}, a.name),
-          a.structure ? el("meter", { min: "0", max: String(a.structure.max), value: String(a.structure.value) }) : null,
-        ]),
-        el("td", {}, String(st.rs)),
-        el("td", {}, String(st.be)),
-      ]);
-    })),
-  ]);
-  const noArmor = () => el("div", { class: "muted body-armor-empty" }, "Keine Rüstung getragen");
   const sumText = armorSumText(armorSum).replace("Schutz gesamt ", "");
   // Zauber/Liturgien nur für Figuren mit AsP/KaP (hier: nicht im "Nur LeP"-Test) — im Modul magic.hasSpells/hasPrayers.
   const castButtons = ONLY_LEP
@@ -1748,8 +1697,7 @@ function renderBody() {
       });
 
   // Hände links und rechts der Figur (Issue #29): wie man es als Betrachter liest — Haupthand links, Nebenhand
-  // rechts. Eine beidhändige Waffe steht auf EINER Seite (TWO_HANDED_SIDE), die andere Seite bleibt frei.
-  const v = BODY_ARMOR_VARIANT;
+  // rechts. Eine beidhändige Waffe steht auf EINER Seite (TWO_HANDED_SIDE), die andere zeigt nur einen Hinweis.
   let left, right;
   if (twoHanded) {
     const slot = handSlot("main");
@@ -1759,42 +1707,10 @@ function renderBody() {
     left = [handSlot("main")];
     right = [handSlot("off")];
   }
-  // Variante C: Rüstung in den Seitenspalten unter den Händen, abwechselnd links/rechts.
-  if (v === "C" && ARMOR.length) {
-    const block = (list) => list.length ? el("div", { class: "body-side-armor" }, [el("small", { class: "figure-col-title" }, "Rüstung"), ...list.map(armorLine)]) : null;
-    left.push(block(ARMOR.filter((_, i) => i % 2 === 0)));
-    right.push(block(ARMOR.filter((_, i) => i % 2 === 1)));
-  }
-  // Variante A: Kachelreihe zwischen Figur und Zusammenfassung, Schutz/Belastung direkt daneben.
-  const armorRowA = el("div", { class: "body-armor-row" }, [
-    el("div", { class: "body-armor-row-sum" }, [el("small", { class: "figure-col-title" }, "Rüstung"), stat("Schutz", sumText), stat("Belastung", be)]),
-    ARMOR.length ? el("div", { class: "body-armor-row-tiles" }, ARMOR.map((a) => armorTile(a, "small"))) : noArmor(),
-  ]);
-  // Variante B: schmale Leiste über der ganzen Breite, kleine Bilder, daneben Name und RS/BE.
-  const armorStripB = el("div", { class: "body-armor-strip" }, [
-    el("small", { class: "figure-col-title" }, "Rüstung"),
-    ...(ARMOR.length ? ARMOR.map((a) => {
-      const st = effectiveArmor(a);
-      return el("div", { class: "body-armor-mini" }, [
-        el("div", { class: "armor-slot mini" }, [itemIcon(A.armor, a.name, a.structure, "armor")]),
-        el("span", { class: "body-armor-mini-text" }, [
-          el("span", { class: "body-armor-mini-name", title: a.name }, [onUseBtn(a.name), a.name]),
-          el("small", {}, `RS ${st.rs} · BE ${st.be}`),
-        ]),
-      ]);
-    }) : [noArmor()]),
-  ]);
-
-  const statsLine = el("div", { class: "figure-stats" }, [
-    stat("Initiative", COMBAT_DERIVED[1].max),
-    v === "A" ? null : stat("Schutz gesamt", sumText),
-    v === "A" ? null : stat("Belastung", be),
-  ]);
 
   return el("div", {}, [
     el("div", { class: "panel body-panel" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, "Ausrüstung am Körper"), castButtons.length ? el("span", { class: "cast-btns" }, castButtons) : null]),
-      v === "B" ? armorStripB : null,
       // Komplettes Artenbild als Hintergrund der ganzen Fläche, abgeblendet (Nutzer-Feedback 2026-09-28); als echtes
       // <img> (url() in einer CSS-Variable löst Chrome gegen den Stylesheet-Pfad auf, 2026-09-30).
       el("div", { class: "body-grid sides" + (twoHanded ? " two-handed" : ""), "data-figure": BODY_FIGURE }, [
@@ -1803,22 +1719,19 @@ function renderBody() {
         el("div", { class: "body-side left" }, left),
         el("div", { class: "body-side right" + (!twoHanded && !HANDS.off ? " off-free" : "") }, right),
       ]),
-      v === "A" ? armorRowA : null,
-      // Die vier Schnellwürfe wie in der Übersicht (Rückmeldung 2026-09-30).
+      // Die vier Schnellwürfe wie in der Übersicht, über der Rüstung (Rückmeldung 2026-10-02).
       el("div", { class: "body-actions" }, [renderCombatActions()]),
-      statsLine,
+      // Rüstung unter der Figur (Issue #29, Variante A, Nutzer-Entscheidung 2026-10-02): links Schutz/Belastung,
+      // mittig die Kacheln (umbrechend, auch bei vielen Teilen), rechts die Initiative. Ersetzt die frühere Wertezeile.
+      el("div", { class: "body-armor-row" }, [
+        el("div", { class: "body-armor-row-sum" }, [el("small", { class: "figure-col-title" }, "Rüstung"), stat("Schutz", sumText), stat("Belastung", be)]),
+        ARMOR.length ? el("div", { class: "body-armor-row-tiles" }, ARMOR.map(armorTile)) : el("div", { class: "muted body-armor-empty" }, "Keine Rüstung getragen"),
+        el("div", { class: "body-armor-row-ini" }, [stat("Initiative", COMBAT_DERIVED[1].max)]),
+      ]),
       others.length
         ? el("div", { class: "body-others" }, [el("small", { class: "muted" }, "Ausgerüstet, aber nicht in der Hand:"), ...others.map((w) => el("span", { class: "chip" }, [el("img", { src: w.img, alt: "" }), w.name]))])
         : null,
     ]),
-    // Variante D: Rüstung als eigenes Panel unter dem Körper-Panel (Kacheln bis zwei Teile, ab drei die Tabelle).
-    v === "D"
-      ? el("div", { class: "panel body-armor-panel" }, [
-          el("div", { class: "panel-title" }, "Rüstung"),
-          el("div", { class: "armor-sum-line" }, armorSumText(armorSum) + ` · Belastung ${be}`),
-          ARMOR.length >= 3 ? el("div", { class: "body-armor-panel-table" }, [armorTableEl()]) : ARMOR.length ? el("div", { class: "armor-slots" }, ARMOR.map((a) => armorTile(a))) : noArmor(),
-        ])
-      : null,
     // Kampfsonderfertigkeiten auch hier, damit im Kampf alles auf einer Seite steht (Nutzer-Feedback 2026-09-30).
     specialsBlock("Kampfsonderfertigkeiten", COMBAT_SPECIALS),
   ]);
@@ -3568,7 +3481,6 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
-initBodyArmorToggles();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
 document.fonts.ready.then(fitName);
 initWindowMenu();
