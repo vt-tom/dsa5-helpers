@@ -326,6 +326,7 @@ function setTab(id) {
   document.querySelector(".sheet").setAttribute("data-tab", id);
   // Talente starten oben — also ist die erste Gruppe markiert.
   if (id === "skills") currentSkillGroup = 0;
+  if (SECTION_TABS[id]) currentSection[id] = SECTION_TABS[id][0][0];
   renderRail();
   renderContent();
   renderSubNav();
@@ -743,7 +744,21 @@ function jumpToSkillGroup(g) {
 // (die Sammelproben sind meist zu kurz, um bis nach oben zu kommen).
 function initSkillScrollSpy() {
   const content = document.getElementById("content");
-  content.addEventListener("scrollend", () => { skillJumping = false; });
+  content.addEventListener("scrollend", () => { skillJumping = false; sectionJumping = false; });
+  // Abschnitts-Reiter (Issue #32): dieselbe Mitführung über die data-section-Elemente.
+  content.addEventListener("scroll", () => {
+    if (!SECTION_TABS[currentTab] || sectionJumping) return;
+    const sections = [...content.querySelectorAll("[data-section]")];
+    if (!sections.length) return;
+    const top = content.getBoundingClientRect().top + 40;
+    let current = sections[0].dataset.section;
+    if (content.scrollTop + content.clientHeight >= content.scrollHeight - 2) current = sections.at(-1).dataset.section;
+    else sections.forEach((sec) => { if (sec.getBoundingClientRect().top <= top) current = sec.dataset.section; });
+    if (current !== currentSection[currentTab]) {
+      currentSection[currentTab] = current;
+      renderSubNav();
+    }
+  });
   content.addEventListener("scroll", () => {
     if (currentTab !== "skills" || skillSearchQuery.trim() || skillJumping) return;
     const panels = [...content.querySelectorAll("[data-skill-group]")];
@@ -758,17 +773,6 @@ function initSkillScrollSpy() {
       renderSubNav();
     }
   });
-}
-
-// Kampf-Unterreiter: "Kampf" (Kampfwerte/Waffen/Rüstung) und "Kampftalente" (Kampftechniken), gleiches Muster
-// wie die Talentgruppen oben (siehe PLANNING.md "Design-Muster (wiederverwendbar über alle Tabs)").
-let currentCombatSection = "kampf";
-
-function setCombatSection(section) {
-  currentCombatSection = section;
-  renderContent();
-  renderSubNav();
-  document.getElementById("content").scrollTop = 0;
 }
 
 // Belastung (system.burden.value im echten Skill-Datenmodell, s. Kommentar über SKILL_GROUPS in data.js): nur
@@ -880,62 +884,6 @@ function buildSkillSubTabs() {
   );
 }
 
-// Kampf-Unterreiter: nur zwei gleichwertige Bereiche, schon immer ohne Kategoriefarben — sonst 1:1 dasselbe
-// .sub-tabs/.sub-tab-Muster wie bei den Talenten.
-function buildCombatSubTabs() {
-  return el("div", { class: "sub-tabs" }, [
-    ["kampf", "Übersicht"], ["koerper", "Körper"], ["kampftalente", "Kampftalente"],
-  ].map(([id, label]) => {
-    const active = currentCombatSection === id;
-    const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
-    btn.addEventListener("click", () => setCombatSection(id));
-    return btn;
-  }));
-}
-
-// Magie-/Religions-Unterreiter (2026-09-13, Nutzerwunsch): Proben+Sonderfertigkeiten vs. Traditionsgegenstände,
-// dasselbe zwei-gleichwertige-Bereiche-Muster wie bei Kampf/Kampftalente. Zwei getrennte Zustände statt einem
-// gemeinsamen, da Magie- und Religions-Tab unabhängig voneinander umgeschaltet werden sollen.
-let currentMagicSection = "spells";
-
-function setMagicSection(section) {
-  currentMagicSection = section;
-  renderContent();
-  renderSubNav();
-  document.getElementById("content").scrollTop = 0;
-}
-
-let currentReligionSection = "liturgies";
-
-function setReligionSection(section) {
-  currentReligionSection = section;
-  renderContent();
-  renderSubNav();
-  document.getElementById("content").scrollTop = 0;
-}
-
-function buildMagicSubTabs() {
-  return el("div", { class: "sub-tabs" }, [
-    ["spells", "Zauber"], ["items", "Ausrüstung"],
-  ].map(([id, label]) => {
-    const active = currentMagicSection === id;
-    const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
-    btn.addEventListener("click", () => setMagicSection(id));
-    return btn;
-  }));
-}
-
-function buildReligionSubTabs() {
-  return el("div", { class: "sub-tabs" }, [
-    ["liturgies", "Liturgien"], ["items", "Ausrüstung"],
-  ].map(([id, label]) => {
-    const active = currentReligionSection === id;
-    const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
-    btn.addEventListener("click", () => setReligionSection(id));
-    return btn;
-  }));
-}
-
 // Notizen-Unterreiter (wie im Foundry-Modul, notes-Subnav): vier Freitextfelder als gleichwertige Bereiche, dazu
 // seit Issue #26 die persönlichen Daten als eigener, erster Unterreiter (kein Freitext, daher ohne get/set).
 const NOTES_SECTIONS = [
@@ -945,18 +893,40 @@ const NOTES_SECTIONS = [
   { id: "ownernotes", label: "Private Notizen", get: () => PRIVATE_NOTES_TEXT, set: (v) => { PRIVATE_NOTES_TEXT = v; } },
   { id: "gmnotes", label: "GM-Notizen", get: () => GM_NOTES_TEXT, set: (v) => { GM_NOTES_TEXT = v; } },
 ];
-let currentNotesSection = "details";
+// Unterreiter als Sprungmarken in allen Reitern (Issue #32, wie bei den Talenten seit 2026-09-30): jeder Reiter zeigt
+// alle Abschnitte untereinander (Element mit data-section), ein Unterreiter scrollt nur dorthin, beim Scrollen wandert
+// die Markierung mit (initSkillScrollSpy). Modul: _jumpSections()/_jumpTo()/_onContentScroll().
+const SECTION_TABS = {
+  combat: [["koerper", "Körper"], ["kampftalente", "Kampftalente"]],
+  magic: [["spells", "Zauber"], ["items", "Ausrüstung"]],
+  religion: [["liturgies", "Liturgien"], ["items", "Ausrüstung"]],
+  notes: NOTES_SECTIONS.map(({ id, label }) => [id, label]),
+};
+const currentSection = Object.fromEntries(Object.entries(SECTION_TABS).map(([tab, list]) => [tab, list[0][0]]));
+let sectionJumping = false;
 
-function buildNotesSubTabs() {
-  return el("div", { class: "sub-tabs" }, NOTES_SECTIONS.map(({ id, label }) => {
-    const active = currentNotesSection === id;
+// Abschnitt eines Reiters als Sprungziel.
+function section(id, children) {
+  return el("div", { class: "jump-section", "data-section": id }, [].concat(children));
+}
+
+function jumpToSection(tab, id) {
+  currentSection[tab] = id;
+  renderSubNav();
+  const content = document.getElementById("content");
+  const target = content.querySelector(`[data-section="${id}"]`);
+  if (!target) return;
+  const wanted = content.scrollTop + target.getBoundingClientRect().top - content.getBoundingClientRect().top - 4;
+  const top = Math.max(0, Math.min(wanted, content.scrollHeight - content.clientHeight));
+  sectionJumping = Math.abs(top - content.scrollTop) > 1;
+  content.scrollTo({ top, behavior: "smooth" });
+}
+
+function buildSectionSubTabs(tab) {
+  return el("div", { class: "sub-tabs" }, SECTION_TABS[tab].map(([id, label]) => {
+    const active = currentSection[tab] === id;
     const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
-    btn.addEventListener("click", () => {
-      currentNotesSection = id;
-      renderContent();
-      renderSubNav();
-      document.getElementById("content").scrollTop = 0;
-    });
+    btn.addEventListener("click", () => jumpToSection(tab, id));
     return btn;
   }));
 }
@@ -966,10 +936,7 @@ function renderSubNav() {
   const nav = document.getElementById("tabSubNav");
   nav.innerHTML = "";
   if (currentTab === "skills") nav.appendChild(buildSkillSubTabs());
-  else if (currentTab === "combat") nav.appendChild(buildCombatSubTabs());
-  else if (currentTab === "magic") nav.appendChild(buildMagicSubTabs());
-  else if (currentTab === "religion") nav.appendChild(buildReligionSubTabs());
-  else if (currentTab === "notes") nav.appendChild(buildNotesSubTabs());
+  else if (SECTION_TABS[currentTab]) nav.appendChild(buildSectionSubTabs(currentTab));
 }
 
 // Nutzer-Feedback 2026-09-14: die Suche filterte bisher nur innerhalb der gerade aktiven Talentgruppe — ein Treffer
@@ -1219,118 +1186,6 @@ function ammoMenu(children) {
   return menu;
 }
 
-function renderAmmoCell(w) {
-  // Waffen ohne eigene Munitionsgruppe (z.B. Wurfmesser) haben weiterhin nur eine einfache Anzahl.
-  if (!w.ammoTypes) return el("span", { class: "muted center" }, w.ammo);
-  const ammo = selectedAmmo(w);
-  return el("span", { class: "ammo-cell inline" }, [
-    el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]),
-    w.reloadTime ? reloadWidget(w) : null,
-    aimWidget(w),
-    magWidget(w),
-  ]);
-}
-
-// "Wie die Waffe geführt wird" (system.worn.requiresBothHands/.offHand, siehe combat_weapon.hbs/
-// combat_rangeweapon.hbs ".combat-item-grip"): zweihändig geführte Waffen zeigen nur ein festes Symbol (nicht
-// umschaltbar, wie im System — dort erscheint dann nur der eine "wrongGrip.twoHanded"-Knopf statt zweier),
-// alles andere zwei umschaltbare Knöpfe (Haupthand/Nebenhand). In BEIDEN Modi bedienbar (BEARBEITEN.md
-// Spielmodus-Abschnitt "Einstellung wie die Waffe geführt wird") — eine laufende Kampfentscheidung, kein Setup.
-function gripCell(w) {
-  // Wurfwaffen-Kontextmenü (siehe THROWABLE_GROUPS-Kommentar bei MELEE in data.js) sitzt im echten System in
-  // derselben "combatGripControls"-Zelle wie die Haupt-/Nebenhand-Knöpfe (combat_weapon.hbs:32-61), daher hier
-  // ebenfalls dort angehängt statt in einer eigenen Spalte — das hielte die Favoriten-Wiederverwendung der Zeile
-  // auf dem Titelblatt (meleeRow-Kommentar) sonst nicht mehr grid-kompatibel.
-  const throwMenu = throwMenuCell(w);
-  if (!w.worn) return el("span", { class: "grip-cell" }, throwMenu ? [throwMenu] : []); // Waffenlos: kein Item, keine Griff-Einstellung
-  if (w.worn.requiresBothHands) {
-    return el("span", { class: "grip-cell" }, [el("span", { class: "grip-btn active", title: "Beidhändig geführt" }, "✋✋"), throwMenu]);
-  }
-  const mainBtn = el("button", { type: "button", class: "grip-btn" + (!w.worn.offHand ? " active" : ""), title: "Haupthand", "aria-label": `${w.name} in der Haupthand führen`, "aria-pressed": String(!w.worn.offHand) }, "H");
-  const offBtn = el("button", { type: "button", class: "grip-btn" + (w.worn.offHand ? " active" : ""), title: "Nebenhand", "aria-label": `${w.name} in der Nebenhand führen`, "aria-pressed": String(!!w.worn.offHand) }, "N");
-  mainBtn.addEventListener("click", (e) => { e.stopPropagation(); w.worn.offHand = false; renderContent(); });
-  offBtn.addEventListener("click", (e) => { e.stopPropagation(); w.worn.offHand = true; renderContent(); });
-  return el("span", { class: "grip-cell" }, [mainBtn, offBtn, throwMenu]);
-}
-
-// Wurfwaffen-Kontextaktion (siehe THROWABLE_GROUPS-Kommentar bei MELEE in data.js): kleiner "⋮"-Knopf öffnet ein
-// Mini-Menü mit der einen Wurf-Option, analog zum weaponContextMenu-Ellipsis-Button in combat_weapon.hbs. Nur
-// vorhanden, wenn die Kampftechnik überhaupt wurfwaffenfähig ist — sonst bräuchte der Knopf gar keinen Eintrag.
-let openThrowMenu = null;
-
-function throwMenuCell(w) {
-  const reach = THROWABLE_GROUPS[w.group];
-  if (!reach) return null;
-  const isOpen = openThrowMenu === w;
-  const btn = el("button", { type: "button", class: "grip-btn context-btn" + (isOpen ? " open" : ""), title: "Weitere Aktionen" }, "⋮");
-  btn.addEventListener("click", (e) => { e.stopPropagation(); openThrowMenu = isOpen ? null : w; renderContent(); });
-  if (!isOpen) return el("span", { class: "throw-cell" }, [btn]);
-  const throwBtn = el("button", { type: "button", class: "reload-btn" }, `Als Wurfwaffe (AT −8, RW ${reach})`);
-  throwBtn.addEventListener("click", (e) => { e.stopPropagation(); openThrowMenu = null; renderContent(); });
-  const menu = el("div", { class: "ammo-menu" }, [throwBtn]);
-  menu.addEventListener("click", (e) => e.stopPropagation());
-  return el("span", { class: "throw-cell open" }, [btn, menu]);
-}
-
-// "+"-Knopf zum direkten Ausrüsten (unequippedWeaponMenu, siehe UNEQUIPPED_WEAPONS-Kommentar in data.js) und
-// Handschuh-/Gliedmaßenlimit-Umschalter (IGNORE_WEAPON_HAND_LIMITS) — beide sitzen im echten System in der
-// Tabellenkopfzeile der jeweiligen Waffentabelle, hier im Panel-Titel statt im Grid-Kopf, da unser Grid keine
-// eigene Spalte dafür vorsieht.
-let openEquipMenu = null;
-
-function equipWeapon(category, item) {
-  const pool = UNEQUIPPED_WEAPONS[category];
-  const idx = pool.indexOf(item);
-  if (idx === -1) return;
-  pool.splice(idx, 1);
-  (category === "melee" ? MELEE : RANGED).push(item);
-  openEquipMenu = null;
-  renderContent();
-}
-
-function ignoreHandLimitsBtn() {
-  const btn = el(
-    "button",
-    { type: "button", class: "title-icon-btn" + (IGNORE_WEAPON_HAND_LIMITS ? " active" : ""), title: "Handschuh-/Gliedmaßenlimit ignorieren" },
-    IGNORE_WEAPON_HAND_LIMITS ? "☑" : "☐"
-  );
-  btn.addEventListener("click", () => { IGNORE_WEAPON_HAND_LIMITS = !IGNORE_WEAPON_HAND_LIMITS; renderContent(); });
-  return btn;
-}
-
-function equipMenuBtn(category) {
-  const pool = UNEQUIPPED_WEAPONS[category];
-  const isOpen = openEquipMenu === category;
-  const btn = el("button", { type: "button", class: "title-icon-btn" + (isOpen ? " active" : ""), title: "Waffe ausrüsten" }, "+");
-  if (pool.length) btn.addEventListener("click", () => { openEquipMenu = isOpen ? null : category; renderContent(); });
-  else btn.disabled = true;
-  if (!isOpen) return btn;
-  const menu = el(
-    "div",
-    { class: "ammo-menu" },
-    pool.map((item) => {
-      const chip = el("button", { type: "button", class: "reload-btn" }, item.name);
-      chip.addEventListener("click", (e) => { e.stopPropagation(); equipWeapon(category, item); });
-      return chip;
-    })
-  );
-  menu.addEventListener("click", (e) => e.stopPropagation());
-  return el("span", { class: "title-menu-wrap open" }, [btn, menu]);
-}
-
-function combatPanelTitle(text, actions) {
-  return el("div", { class: "panel-title flex" }, [el("span", {}, text), el("div", { class: "panel-title-actions" }, actions)]);
-}
-
-// Waffenzeilen (Paket C, UI/UX-Review 2026-09-25): die Fernkampftabelle lief nach rechts aus dem Bogen, weil Technik,
-// Munition und Reichweite je eine eigene Spalte hatten. Jetzt wie im Foundry-Modul (weapon.hbs): Technik klein unter
-// dem Namen, Munition/Nachladen/Zielen in einer zweiten Zeile — AT/PA/FK und TP bleiben immer nebeneinander.
-// Reichweite als eigene Spalte zwischen TP und Griff (Nutzer-Entscheidung 2026-09-25, Variante A statt "RW klein
-// unter dem Namen").
-function weaponNameCell(name, group) {
-  return el("span", { class: "left weapon-name" }, [el("span", {}, [name, onUseBtn(name)]), combatSkillLink(group) || el("small", { class: "weapon-sub" }, group)]);
-}
-
 // Kampftechnik der Waffe mit Kampftechnikwert (Tester-Rückmeldung 2026-09-30), Klick springt zur Zeile im Unterreiter
 // „Kampftalente“. Modul später: Waffe kennt ihre Technik (system.combatskill.value), Technik-Item per Name wie im
 // System. Liefert null, wenn es keine passende Technik gibt (z. B. „Angeboren“ bei Angriffen).
@@ -1347,7 +1202,9 @@ function combatSkillLink(group) {
 // Sprung: Unterreiter wechseln, Suche leeren, Zeile hinscrollen + kurz aufleuchten lassen (wie nach einer Änderung).
 function jumpToCombatSkill(name) {
   combatSkillQuery = "";
-  setCombatSection("kampftalente");
+  currentSection.combat = "kampftalente";
+  renderContent();
+  renderSubNav();
   const row = [...document.querySelectorAll("#content .combatskill-row")].find((r) => r.querySelector(".cs-name")?.textContent === name);
   if (!row) return;
   // Nur den Inhaltsbereich scrollen — scrollIntoView() verschiebt auch die Seite um den Bogen herum.
@@ -1357,74 +1214,6 @@ function jumpToCombatSkill(name) {
   row.classList.remove("just-changed");
   void row.offsetWidth;
   row.classList.add("just-changed");
-}
-
-function weaponReachCell(reach) {
-  return el("span", { class: "muted center" }, reach || "–");
-}
-
-// Zweite Zeile unter Name bis Zeilenende (nur Fernkampf mit Munition): Auswahl/Nachladen/Zielen über renderAmmoCell().
-function weaponDetails(w) {
-  if (!w.ammoTypes && !w.ammo) return null;
-  return el("div", { class: "weapon-details" }, [el("span", { class: "muted" }, "Munition"), renderAmmoCell(w)]);
-}
-
-// Angeborene Kampfwerte (TRAITS-Kommentar in data.js): eigene Zeilen ohne Griff-/Favoriten-Zelle (nicht
-// ausrüstbar), AT/PA bzw. AT sind hier reine Anzeigewerte ohne Verschleiß (trait-Items haben kein structure-Feld).
-function traitMeleeRow(t) {
-  return el("div", { class: "row weapon-row" }, [
-    el("img", { src: t.img || A.combatSkill, alt: "" }),
-    weaponNameCell(t.name, "Angeboren"),
-    el("span", { class: "center" }, [combatDie(t.at, "d20mu", `Attacke mit ${t.name} würfeln`)]),
-    el("span", { class: "center" }, t.pa !== undefined ? [combatDie(t.pa, "d20in", `Parade mit ${t.name} würfeln`)] : "–"),
-    el("span", { class: "center" }, [damageBtn(t.tp, t.name)]),
-    weaponReachCell(t.reach || "kurz"),
-    el("span", {}),
-    el("span", {}),
-  ]);
-}
-
-function traitRangedRow(t) {
-  return el("div", { class: "row weapon-row" }, [
-    el("img", { src: t.img || A.combatSkill, alt: "" }),
-    weaponNameCell(t.name, "Angeboren"),
-    el("span", { class: "center", style: "grid-column:span 2" }, [combatDie(t.at, "d20mu", `Fernkampf mit ${t.name} würfeln`)]),
-    el("span", { class: "center" }, [damageBtn(t.tp, t.name)]),
-    weaponReachCell(t.reach),
-    el("span", {}),
-    el("span", {}),
-  ]);
-}
-
-// Je eine Nah-/Fernkampfwaffen-Zeile — eigene Funktionen statt Inline-Map (Nah-/Fernkampf-Panel, Traits daneben).
-function meleeRow(w) {
-  const stats = effectiveMeleeStats(w);
-  return el("div", { class: "row weapon-row" }, [
-    itemIcon(w.img, "", w.structure, "meleeweapon"),
-    weaponNameCell(w.name, w.group),
-    el("span", { class: "center" }, [combatDie(stats.at, "d20mu", `Attacke mit ${w.name} würfeln`)]),
-    el("span", { class: "center" }, [combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`)]),
-    el("span", { class: "center" }, [damageBtn(w.tp, w.name)]),
-    weaponReachCell(w.reach),
-    gripCell(w),
-    favStar(w),
-  ]);
-}
-
-function rangedRow(w) {
-  const stats = effectiveRangedStats(w);
-  return el("div", { class: "row weapon-row" }, [
-    itemIcon(w.img, "", w.structure, "rangeweapon"),
-    weaponNameCell(w.name, w.group),
-    // FK spannt über AT+PA-Spaltenbreite (Fernkampf hat keine Parade), damit der Wert mittig zwischen AT und PA
-    // der Nahkampftabelle sitzt statt an der AT-Position zu kleben.
-    el("span", { class: "center", style: "grid-column:span 2" }, [combatDie(stats.at, "d20mu", `Fernkampf mit ${w.name} würfeln`)]),
-    el("span", { class: "center" }, [damageBtn(w.tp, w.name)]),
-    weaponReachCell(w.reach),
-    gripCell(w),
-    favStar(w),
-    weaponDetails(w),
-  ]);
 }
 
 // Vier Schnellwurf-Buttons (Ausweichen/Waffenloser Angriff/Waffenlose Verteidigung/Sturzschaden), siehe COMBAT_ACTIONS.
@@ -1456,48 +1245,6 @@ function computeArmorSum() {
   if (MAGIC_ARMOR.spell) magicParts.push(`+${MAGIC_ARMOR.spell} Zauber`);
   if (MAGIC_ARMOR.liturgy) magicParts.push(`+${MAGIC_ARMOR.liturgy} Liturgie`);
   return { sum, magicParts };
-}
-
-function armorSumText({ sum, magicParts }) {
-  return `Schutz gesamt ${sum}${magicParts.length ? ` (${magicParts.join(", ")})` : ""}`;
-}
-
-// Angeborene Rüstung (TRAITS.armor, z.B. Naturpanzer bei Verwandlungen) ist unabhängig von der Darstellung immer
-// als einfache Zeile zu sehen.
-function armorTraitRows() {
-  return TRAITS.armor.map((t) =>
-    el("div", { class: "row armor-row" }, [
-      el("img", { src: t.img || A.armor, alt: "" }),
-      el("span", { class: "left" }, t.name),
-      el("span", { class: "big center" }, String(t.at)),
-      el("span", { class: "muted center" }, "–"),
-    ])
-  );
-}
-
-// Rüstung bleibt neben den Kampfwerten stehen (siehe .combat-top in renderCombatMain()). Jedes getragene
-// Rüstungsteil ein gleichwertiger Icon-Slot statt einer Sonderkachel nur fürs erste Teil, RS/BE direkt sichtbar
-// darunter (nicht erst per Hover).
-function renderArmorPanel() {
-  const armorSum = computeArmorSum();
-  // Bild füllt die ganze Kachel, Name oben zentriert (Lesbarkeits-Gradient), RS/BE als Badges unten
-  // links/rechts über dem Bild statt als Textzeile darunter (Nutzer-Feedback 2026-09-18).
-  const slots = ARMOR.map((a) => {
-    const stats = effectiveArmor(a);
-    return el("div", { class: "armor-slot" }, [
-      itemIcon(A.armor, a.name, a.structure, "armor"),
-      el("span", { class: "armor-slot-name" }, a.name),
-      onUseBtn(a.name),
-      el("span", { class: "armor-slot-rs" }, `RS ${stats.rs}`),
-      el("span", { class: "armor-slot-be" }, `BE ${stats.be}`),
-    ]);
-  });
-  return el("div", { class: "panel" }, [
-    el("div", { class: "panel-title" }, "Rüstung"),
-    el("div", { class: "armor-sum-line" }, armorSumText(armorSum)),
-    el("div", { class: "armor-slots" }, slots.length ? slots : [el("div", { class: "armor-empty" }, "Keine Rüstung getragen")]),
-    ...armorTraitRows(),
-  ]);
 }
 
 // Reiter "Körper" (GitHub-Issue #6, Vorbild DSA4-Heldenbogen; Nutzerwunsch 2026-09-25: als eigener Reiter
@@ -1570,7 +1317,10 @@ function handSlot(hand) {
     // TP-Knopf (Vorschlag 2026-09-30, AUFGABEN.md). Nachladen und Zielen nebeneinander, solange die Spalte reicht
     // (Live-Rückmeldung 2026-09-30: spart Höhe), Magazin in eigener Zeile. Modul: .dsa5h-hand-ranged in body.hbs.
     if (ranged) {
-      const extras = [w.reloadTime ? reloadWidget(w) : null, aimWidget(w), magWidget(w)].filter(Boolean);
+      // Munitionswahl hier, seit die Waffentabellen entfallen sind (Issue #29, 2026-10-02).
+      const ammo = w.ammoTypes ? selectedAmmo(w) : null;
+      const ammoPick = w.ammoTypes ? el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]) : null;
+      const extras = [ammoPick, w.reloadTime ? reloadWidget(w) : null, aimWidget(w), magWidget(w)].filter(Boolean);
       if (extras.length) tp = el("div", { class: "hand-ranged" }, [tp, el("div", { class: "hand-ranged-extras" }, extras)]);
     }
   }
@@ -1584,13 +1334,25 @@ function handSlot(hand) {
       el("span", { class: "hand-free-text" }, [el("small", { class: "figure-col-title" }, "Nebenhand"), el("small", { class: "hand-free-note" }, "frei")]),
     ]);
   }
+  // Beidhändige Waffe: Knopf „⇄“ verschiebt sie auf die andere Seite der Figur (Issue #29, nur Bearbeiten-Modus;
+  // Modul: Actor-Flag, Umschalten nur für Owner).
+  const editMode = document.querySelector(".sheet").getAttribute("data-mode") === "edit";
+  let swap = null;
+  if (isMain && w && w.worn.requiresBothHands && editMode) {
+    const target = TWO_HANDED_SIDE === "left" ? "rechts" : "links";
+    swap = el("button", { type: "button", class: "hand-swap-btn", title: `Waffe nach ${target} verschieben`, "aria-label": `Beidhändige Waffe nach ${target} verschieben` }, [el("span", { "aria-hidden": "true" }, "⇄"), ` nach ${target}`]);
+    swap.addEventListener("click", () => { TWO_HANDED_SIDE = TWO_HANDED_SIDE === "left" ? "right" : "left"; renderContent(); });
+  }
   return el("div", { class: "hand-slot" }, [
-    el("small", { class: "figure-col-title" }, isMain ? "Haupthand" : "Nebenhand"),
+    el("small", { class: "figure-col-title" }, isMain ? (w && w.worn.requiresBothHands ? "Beide Hände" : "Haupthand") : "Nebenhand"),
     el("span", { class: "body-item-name" }, w ? w.name : "—"),
     w ? combatSkillLink(w.group) : null,
-    el("div", { class: "hand-slot-body" }, [tile, el("div", { class: "hand-slot-side" }, [tp, select])]),
+    el("div", { class: "hand-slot-body" }, [tile, el("div", { class: "hand-slot-side" }, [tp, select, swap])]),
   ]);
 }
+
+// Seite der beidhändigen Waffe (Issue #29): bleibt im Spielmodus auf der zuletzt gewählten Seite.
+let TWO_HANDED_SIDE = "left";
 
 // Zauber-/Liturgieliste als Dialog direkt aus dem Reiter "Körper" (Nutzer-Feedback 2026-09-28): im Kampf würfeln,
 // ohne auf Magie/Religion zu wechseln. Zeile = Bild | Name | Probe (würfelbar) | FW | Kosten. Gegliedert nach
@@ -1658,11 +1420,9 @@ function renderBody() {
   const figureSwitch = editMode
     ? segmented([["species", "Platzhalter"], ["portrait", "Akteur-Porträt"]], BODY_FIGURE, (v) => { BODY_FIGURE = v; renderContent(); }, "body-figure-switch", "Figur im Hintergrund")
     : null;
-  // Rüstung als große Kacheln wie im Rüstungs-Panel (Bild füllt die Kachel, RS/BE unten links/rechts) — Nutzer-
-  // Feedback 2026-09-28: "Rüstung sollte größer dargestellt werden".
-  const armorTiles = ARMOR.map((a) => {
+  // Rüstungsteil als Kachel (Bild füllt die Kachel, RS/BE als Ecken), Name darüber (Nutzer-Feedback 2026-09-30).
+  const armorTile = (a) => {
     const st = effectiveArmor(a);
-    // Name groß über der Kachel statt klein im Bild (Nutzer-Feedback 2026-09-30).
     return el("div", { class: "body-armor-item" }, [
       el("span", { class: "body-item-name", title: a.name }, a.name),
       el("div", { class: "armor-slot" }, [
@@ -1672,26 +1432,9 @@ function renderBody() {
         el("span", { class: "armor-slot-be" }, `BE ${st.be}`),
       ]),
     ]);
-  });
-  // Ab drei Rüstungsteilen Tabelle statt Kacheln (Bild | Name | RS | BE), Namen einzeilig mit „…“ (Rückmeldung 2026-09-30).
-  const armorTable = ARMOR.length >= 3;
-  const armorTableEl = el("table", { class: "body-armor-table" }, [
-    el("colgroup", {}, [el("col", { class: "col-img" }), el("col"), el("col", { class: "col-val" }), el("col", { class: "col-val" })]),
-    el("thead", {}, [el("tr", {}, [el("th", { colspan: "2" }, "Name"), el("th", { title: "Rüstungsschutz" }, "RS"), el("th", { title: "Belastung" }, "BE")])]),
-    el("tbody", {}, ARMOR.map((a) => {
-      const st = effectiveArmor(a);
-      return el("tr", {}, [
-        el("td", { class: "body-armor-img" }, [el("img", { src: A.armor, alt: "" })]),
-        el("td", { class: "body-armor-name", title: a.name }, [
-          onUseBtn(a.name),
-          el("span", {}, a.name),
-          a.structure ? el("meter", { min: "0", max: String(a.structure.max), value: String(a.structure.value) }) : null,
-        ]),
-        el("td", {}, String(st.rs)),
-        el("td", {}, String(st.be)),
-      ]);
-    })),
-  ]);
+  };
+  const magicText = armorSum.magicParts.length ? armorSum.magicParts.join(", ") : "";
+  const ini = COMBAT_DERIVED[1].max;
   // Zauber/Liturgien nur für Figuren mit AsP/KaP (hier: nicht im "Nur LeP"-Test) — im Modul magic.hasSpells/hasPrayers.
   const castButtons = ONLY_LEP
     ? []
@@ -1703,86 +1446,79 @@ function renderBody() {
         btn.addEventListener("click", () => openCastListModal(kind));
         return btn;
       });
+
+  // Hände links und rechts der Figur (Issue #29): wie man es als Betrachter liest — Haupthand links, Nebenhand
+  // rechts. Eine beidhändige Waffe steht auf EINER Seite (TWO_HANDED_SIDE), die andere zeigt nur einen Hinweis.
+  let left, right;
+  if (twoHanded) {
+    const slot = handSlot("main");
+    const note = el("small", { class: "muted hand-2h-note" }, "Nebenhand: von der beidhändigen Waffe belegt");
+    [left, right] = TWO_HANDED_SIDE === "left" ? [[slot], [note]] : [[note], [slot]];
+  } else {
+    left = [handSlot("main")];
+    right = [handSlot("off")];
+  }
+
+  // Rüstungsschild (Issue #29, Nutzer-Entscheidung 2026-10-02): rechtsbündig in der Rüstungszeile, der Tooltip
+  // schlüsselt Rüstungsschutz und Belastung auf. Ganz oben nur Schnellaktionen + Initiative.
+  const shieldTip = [
+    `Rüstungsschutz ${armorSum.sum}${magicText ? ` (${magicText})` : ""}`,
+    ...ARMOR.map((a) => { const st = effectiveArmor(a); return `  ${a.name}: RS ${st.rs}, BE ${st.be}`; }),
+    `Belastung ${be}`,
+  ].join("\n");
+  const shield = el("div", { class: "body-shield", title: shieldTip, tabindex: "0", "aria-label": shieldTip.replace(/\n\s*/g, "; ") }, [
+    el("span", { class: "body-shield-rs" }, [el("small", {}, "RS"), el("strong", {}, String(armorSum.sum)), magicText ? el("small", { class: "body-shield-magic" }, `+${armorSum.magicParts.map((m) => m.match(/\d+/)[0]).reduce((a, b) => a + Number(b), 0)}`) : null]),
+    el("span", { class: "body-shield-be" }, [el("small", {}, "BE"), el("strong", {}, String(be))]),
+  ]);
+  const top = el("div", { class: "body-top" }, [
+    renderCombatActions(),
+    el("div", { class: "body-top-stats" }, [el("div", { class: "body-bigstat" }, [el("small", {}, "Initiative"), el("strong", {}, String(ini))])]),
+  ]);
+  const armorRow = el("div", { class: "body-armor-row" }, [
+    el("small", { class: "figure-col-title" }, "Rüstung"),
+    ARMOR.length ? el("div", { class: "body-armor-row-tiles" }, ARMOR.map(armorTile)) : el("div", { class: "muted body-armor-empty" }, "Keine Rüstung getragen"),
+    shield,
+  ]);
+
+  // Kurzübersicht der übrigen Waffen statt der früheren Waffentabellen (Rückmeldung 2026-10-02: die Hände wählen die
+  // Waffe, darunter reicht ein Überblick). Würfel bleiben, damit auch Angriffe aus Eigenschaften (Biss …) würfelbar sind.
+  const shortRow = (w, kind) => {
+    const ranged = kind === "ranged";
+    const trait = !!w.trait;
+    const stats = trait ? { at: w.at, pa: w.pa } : ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
+    return el("div", { class: "row short-weapon-row" }, [
+      trait ? el("img", { src: w.img || A.combatSkill, alt: "" }) : itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
+      el("span", { class: "left weapon-name" }, [el("span", {}, w.name), el("small", { class: "weapon-sub" }, trait ? "Angeboren" : w.group)]),
+      el("span", { class: "short-weapon-dice" }, [
+        combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
+        !ranged && stats.pa !== undefined ? combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`) : null,
+      ]),
+      damageBtn(w.tp, w.name),
+      trait ? el("span", {}) : favStar(w),
+    ]);
+  };
+  const shortList = [
+    ...handWeapons().filter((w) => !inHands.includes(w)).map((w) => shortRow(w, RANGED.includes(w) ? "ranged" : "melee")),
+    ...TRAITS.meleeAttack.map((t) => shortRow({ ...t, trait: true }, "melee")),
+    ...TRAITS.rangeAttack.map((t) => shortRow({ ...t, trait: true }, "ranged")),
+  ];
+
   return el("div", {}, [
     el("div", { class: "panel body-panel" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, "Ausrüstung am Körper"), castButtons.length ? el("span", { class: "cast-btns" }, castButtons) : null]),
-      // Komplettes Artenbild als Hintergrund der ganzen Fläche (statt ausgeschnittener, geschwärzter Silhouette —
-      // Nutzer-Feedback 2026-09-28), abgeblendet; Rüstung links, Hände rechts, Gesamtschutz in der Mitte.
-      // Figur als echtes <img> (nicht url() in einer CSS-Variable — die löst Chrome gegen den Stylesheet-Pfad auf,
-      // in Foundry blieb die Figur deshalb leer, 2026-09-30).
-      el("div", { class: "body-grid" + (armorTable ? " armor-table" : ""), "data-figure": BODY_FIGURE }, [
+      top,
+      // Komplettes Artenbild als Hintergrund der ganzen Fläche, abgeblendet (Nutzer-Feedback 2026-09-28); als echtes
+      // <img> (url() in einer CSS-Variable löst Chrome gegen den Stylesheet-Pfad auf, 2026-09-30).
+      el("div", { class: "body-grid sides" + (twoHanded ? " two-handed" : ""), "data-figure": BODY_FIGURE }, [
         el("img", { class: "body-figure", src: figureSrc, alt: "", "aria-hidden": "true" }),
         figureSwitch,
-        el("div", { class: "figure-armor" }, [
-          el("small", { class: "figure-col-title" }, "Rüstung"),
-          armorTable ? armorTableEl : ARMOR.length ? el("div", { class: "armor-slots" }, armorTiles) : el("div", { class: "muted" }, "Keine Rüstung getragen"),
-        ]),
-        // Plakette absolut über der Mitte der ganzen Fläche (nicht der mittleren Spalte), damit sie über der Figur
-        // zentriert bleibt, auch wenn Rüstungs- und Händespalte verschieden breit sind (Rückmeldung 2026-09-30).
-        el("div", { class: "figure-body" }),
-        el("span", { class: "figure-badge" }, [el("strong", {}, `RS ${armorSum.sum}`), el("small", {}, `BE ${be}`)]),
-        twoHanded
-          ? el("div", { class: "figure-hands single" }, [handSlot("main")])
-          : el("div", { class: "figure-hands" + (HANDS.off ? "" : " off-free") }, [handSlot("main"), handSlot("off")]),
+        el("div", { class: "body-side left" }, left),
+        el("div", { class: "body-side right" + (!twoHanded && !HANDS.off ? " off-free" : "") }, right),
       ]),
-      // Die vier Schnellwürfe wie in der Übersicht (Rückmeldung 2026-09-30); Ausweichen steht dort mit Wert, daher
-      // nicht mehr zusätzlich in der Wertezeile.
-      el("div", { class: "body-actions" }, [renderCombatActions()]),
-      el("div", { class: "figure-stats" }, [
-        stat("Initiative", COMBAT_DERIVED[1].max),
-        stat("Schutz gesamt", armorSumText(armorSum).replace("Schutz gesamt ", "")),
-        stat("Belastung", be),
-      ]),
-      others.length
-        ? el("div", { class: "body-others" }, [el("small", { class: "muted" }, "Ausgerüstet, aber nicht in der Hand:"), ...others.map((w) => el("span", { class: "chip" }, [el("img", { src: w.img, alt: "" }), w.name]))])
-        : null,
+      armorRow,
     ]),
+    shortList.length ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Weitere Waffen"), el("div", { class: "short-weapons" }, shortList)]) : null,
     // Kampfsonderfertigkeiten auch hier, damit im Kampf alles auf einer Seite steht (Nutzer-Feedback 2026-09-30).
-    specialsBlock("Kampfsonderfertigkeiten", COMBAT_SPECIALS),
-  ]);
-}
-
-// Kampf-Unterreiter: Schnellwürfe, Kampfwerte + Rüstung, darunter die Waffentabellen (WAFFEN-TAB.md).
-function renderCombatMain() {
-  // Ausweichen/Initiative sind vom Eigenschaften-Tab hierher gewandert (EIGENSCHAFTEN-TAB.md: "Sollen auf den Kampf Tab wandern").
-  const combatValuesPanel = () =>
-    el("div", { class: "panel" }, [
-      el("div", { class: "panel-title" }, "Kampfwerte"),
-      el("div", { class: "row-head simple-row" }, head("", "Basis", "Mod", "Max")),
-      ...COMBAT_DERIVED.map(buildSimpleRow),
-    ]);
-
-  // AT/PA (Nahkampf) und FK (Fernkampf) sowie TP stehen bewusst als letzte Spalten in beiden Tabellen, mit exakt
-  // derselben Gesamtbreite (siehe .weapon-row in style.css) — so liegen die beiden "Aktionen" (Angriffs-
-  // würfel + Schadenswert) beim Scannen durch Nah- und Fernkampfwaffen immer an derselben Bildschirmposition,
-  // unabhängig davon, was in den Spalten davor steht (Technik/Reichweite bzw. Munition).
-  const meleePanel = el("div", { class: "panel" }, [
-    combatPanelTitle("Nahkampfwaffen", [ignoreHandLimitsBtn(), equipMenuBtn("melee")]),
-    el("div", { class: "row-head weapon-row" }, head("", "Waffe", "AT", "PA", "TP", "RW", "Griff", "")),
-    ...MELEE.map(meleeRow),
-    ...TRAITS.meleeAttack.map(traitMeleeRow),
-  ]);
-
-  const rangedPanel = el("div", { class: "panel" }, [
-    combatPanelTitle("Fernkampfwaffen", [ignoreHandLimitsBtn(), equipMenuBtn("ranged")]),
-    el("div", { class: "row-head weapon-row" }, [
-      ...head("", "Waffe"),
-      el("span", { class: "center", style: "grid-column:span 2" }, "FK"),
-      ...head("TP", "RW", "Griff", ""),
-    ]),
-    ...RANGED.map(rangedRow),
-    ...TRAITS.rangeAttack.map(traitRangedRow),
-  ]);
-
-  // Kampfwerte + Rüstung als zwei Panels (Nutzer-Entscheidung 2026-09-28 gegen die kompakte "Leiste"); die
-  // Silhouette (Issue #6) ist der eigene Reiter "Körper" (renderBody()).
-  const topArea = el("div", { class: "combat-top" }, [combatValuesPanel(), renderArmorPanel()]);
-
-  return el("div", {}, [
-    renderCombatActions(),
-    topArea,
-    meleePanel,
-    rangedPanel,
     specialsBlock("Kampfsonderfertigkeiten", COMBAT_SPECIALS),
   ]);
 }
@@ -1841,8 +1577,8 @@ function renderCombatSkills() {
 
 function renderCombat() {
   // "Körper" als Unterreiter (Nutzerwunsch 2026-09-28) — ob er die Übersicht ablöst, entscheidet der Nutzer später.
-  if (currentCombatSection === "koerper") return renderBody();
-  return currentCombatSection === "kampftalente" ? renderCombatSkills() : renderCombatMain();
+  // „Körper“ ersetzt die frühere Übersicht (Issue #29, Nutzer-Entscheidung 2026-10-02).
+  return el("div", {}, [section("koerper", renderBody()), section("kampftalente", renderCombatSkills())]);
 }
 
 // Erweiterungen-Icon (spell-section.hbs: item.extensions → Overlay-Icon mit Tooltip) und Mehrrunden-Auflade-
@@ -2060,9 +1796,9 @@ function traditionHeader(t, kind) {
 // Unter-Tab "Zauber": Traditions-Kopfleiste → Proben-Tabellen → Zaubertricks (TODOS.md: direkt unter Rituale,
 // vor den Sonderfertigkeiten) → Sonderfertigkeiten (Kategorie "magical"). Traditionsgegenstände/Magische
 // Zeichen sind auf den zweiten Unter-Tab gewandert (renderMagicItems).
-function renderMagicSpells() {
+function renderMagicSpells(withHeader = true) {
   return el("div", {}, [
-    traditionHeader(MAGIC_TRADITION, "magic"),
+    withHeader ? traditionHeader(MAGIC_TRADITION, "magic") : null,
     magicTable("Zauber", SPELLS),
     magicTable("Rituale", RITUALS),
     el("div", { class: "panel" }, [
@@ -2078,9 +1814,9 @@ function renderMagicSpells() {
 }
 
 // Unter-Tab "Ausrüstung": Traditions-Kopfleiste → Traditionsgegenstände → Magische Zeichen.
-function renderMagicItems() {
+function renderMagicItems(withHeader = true) {
   return el("div", {}, [
-    traditionHeader(MAGIC_TRADITION, "magic"),
+    withHeader ? traditionHeader(MAGIC_TRADITION, "magic") : null,
     artifactTable("Traditionsgegenstände", TRADITION_ARTIFACTS, true),
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title" }, "Magische Zeichen"),
@@ -2090,14 +1826,15 @@ function renderMagicItems() {
 }
 
 function renderMagic() {
-  return currentMagicSection === "items" ? renderMagicItems() : renderMagicSpells();
+  // Traditions-Kopf einmal über beiden Abschnitten (Issue #32).
+  return el("div", {}, [traditionHeader(MAGIC_TRADITION, "magic"), section("spells", renderMagicSpells(false)), section("items", renderMagicItems(false))]);
 }
 
 // Unter-Tab "Liturgien": Traditions-Kopfleiste → Proben-Tabellen → Segnungen (TODOS.md: direkt unter
 // Zeremonien, vor den Sonderfertigkeiten) → Sonderfertigkeiten (Kategorie "clerical").
-function renderReligionLiturgies() {
+function renderReligionLiturgies(withHeader = true) {
   return el("div", {}, [
-    traditionHeader(RELIGION_TRADITION, "religion"),
+    withHeader ? traditionHeader(RELIGION_TRADITION, "religion") : null,
     magicTable("Liturgien", LITURGIES),
     magicTable("Zeremonien", CEREMONIES),
     el("div", { class: "panel" }, [
@@ -2110,12 +1847,12 @@ function renderReligionLiturgies() {
 
 // Unter-Tab "Ausrüstung": Traditions-Kopfleiste → Kirchengeräte. Kein Äquivalent zu "Magische Zeichen" bei
 // Religion, daher hier nur ein Panel statt zwei wie bei renderMagicItems.
-function renderReligionItems() {
-  return el("div", {}, [traditionHeader(RELIGION_TRADITION, "religion"), artifactTable("Kirchengeräte", CEREMONIAL_ITEMS, false)]);
+function renderReligionItems(withHeader = true) {
+  return el("div", {}, [withHeader ? traditionHeader(RELIGION_TRADITION, "religion") : null, artifactTable("Kirchengeräte", CEREMONIAL_ITEMS, false)]);
 }
 
 function renderReligion() {
-  return currentReligionSection === "items" ? renderReligionItems() : renderReligionLiturgies();
+  return el("div", {}, [traditionHeader(RELIGION_TRADITION, "religion"), section("liturgies", renderReligionLiturgies(false)), section("items", renderReligionItems(false))]);
 }
 
 // Nahkampfwaffen/Fernkampfwaffen/Rüstung tragen hier dieselben structure-Werte wie ihr Gegenstück in
@@ -2625,12 +2362,15 @@ function renderDiseasePanel() {
 // Notizen-Fließtexte und Verbindungen (Name+Rolle) sind daher alle im Bearbeiten-Modus editierbar (kein
 // separater Spielmodus-Punkt dazu, also wie überall sonst nur dort).
 function renderNotes() {
+  return el("div", {}, NOTES_SECTIONS.map((n) => section(n.id, renderNotesSection(n))));
+}
+
+function renderNotesSection(section) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
 
   // Wie im Foundry-Modul (notes.hbs): je Unter-Tab genau ein Panel — das Persönliche-Daten-Grid (Issue #26) oder
   // ein Freitextfeld (Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen, Nutzer-Feedback 2026-09-19).
   // Wesenszug, GM-Geheimnisse und Verbindungen gibt es dort nicht (kommen im offiziellen Bogen nicht vor).
-  const section = NOTES_SECTIONS.find((n) => n.id === currentNotesSection) || NOTES_SECTIONS[0];
   if (section.id === "details") {
     return el("div", { class: "panel" }, [
       el("div", { class: "panel-title" }, section.label),

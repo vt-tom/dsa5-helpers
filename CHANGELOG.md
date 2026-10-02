@@ -2,6 +2,19 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.4.0] — 2026-10-02
+
+### Neu
+
+- Würfelstatistik: Die Spielleitung kann sie in den Moduleinstellungen einschalten (standardmäßig aus). Jeder Spieler wird dann beim Verbinden gefragt, ob seine Würfe ausgewertet werden dürfen; die Antwort lässt sich jederzeit in den Moduleinstellungen ändern. Gezählt wird nur, wie oft welche Augenzahl je Würfeltyp fällt, getrennt nach digitalen und echten Würfeln – keine einzelnen Würfe. Das Fenster „Würfelstatistik öffnen“ (Moduleinstellungen) zeigt eine Karte mit Balkendiagramm, Durchschnitt, Anteil der 1en und 20en und einer Einschätzung, ob die Verteilung statistisch auffällig ist; die Tabelle mit allen Augenzahlen lässt sich aufklappen. Spieler sehen ihre eigene Statistik, die Spielleitung die aller Spieler. Ausgewertet werden kann alles, ein einzelner Tag oder ein eigener Zeitraum; Tage, die älter als 12 Monate sind, werden zusammengefasst und zählen nur noch zur Gesamtstatistik. Die Spielleitung kann die Statistik einzelner oder aller Spieler löschen. Für Makros: `game.modules.get('dsa5-helpers').api.openDiceStats()` ([#28](https://github.com/vt-tom/dsa5-helpers/issues/28)).
+
+### Geändert
+
+- Die Unterreiter in Kampf, Magie, Religion und Notizen funktionieren jetzt wie bei den Talenten: alle Abschnitte stehen untereinander, ein Klick auf einen Unterreiter springt dorthin, und beim Scrollen wandert die Markierung mit ([#32](https://github.com/vt-tom/dsa5-helpers/issues/32)).
+
+- Kampf › Körper: Die Hände stehen links und rechts neben der Figur (Haupthand links, Nebenhand rechts). Eine beidhändige Waffe steht auf einer Seite und lässt sich im Bearbeiten-Modus per „⇄“ auf die andere Seite verschieben. Ganz oben stehen die Schnellaktionen (Ausweichen, Waffenlos, Sturzschaden) und die Initiative. Die Rüstung steht als Kachelreihe unter der Figur, rechts daneben ein Schild mit Rüstungsschutz und Belastung; beim Darüberfahren schlüsselt es die Werte je Rüstungsteil auf, inklusive Schutz aus Zaubern und Liturgien ([#29](https://github.com/vt-tom/dsa5-helpers/issues/29)).
+- Kampf: Der Unterreiter „Übersicht“ entfällt, „Körper“ ersetzt ihn. Statt der Waffentabellen zeigt „Weitere Waffen“ kurz die getragenen Waffen, die gerade nicht in einer Hand sind, sowie Angriffe aus Eigenschaften (z. B. Biss) – jeweils würfelbar. Die Munition wird jetzt direkt an der Fernkampfhand gewählt ([#29](https://github.com/vt-tom/dsa5-helpers/issues/29)).
+
 ## [0.3.3] — 2026-10-01
 
 ### Neu
@@ -94,6 +107,7 @@ Erste Version, installierbar über die Manifest-URL.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
 
+[0.4.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.0...v0.3.1

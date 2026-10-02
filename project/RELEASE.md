@@ -23,8 +23,59 @@ danach bei jedem Release genau diese Schritte.
   2. setzt `url`, `manifest` und `download` (Download zeigt fest auf das ZIP dieses Tags),
   3. packt `module.zip` nur aus `module.json`, `LICENSE`, `README.md`, `CHANGELOG.md`, `scripts/`, `styles/`, `templates/`, `lang/`
      (**nicht** enthalten: `clickdummy/`, `project/`, `tests/`, `tools/`, `.claude/`, `.github/`),
-  4. hängt `module.json` und `module.zip` an das Release.
+  4. hängt `module.json`, `module.zip` und `module-beta.zip` an das Release und ersetzt das `module.json` des
+     Beta-Kanals (siehe „Beta-Kanal“).
 - Das Repo muss **öffentlich** sein — Foundry lädt ohne Anmeldung.
+
+---
+
+## Beta-Kanal (seit 0.4.0)
+
+Zwei Manifest-URLs, zwei Kanäle:
+
+| Kanal | Manifest-URL | Bekommt |
+|---|---|---|
+| Stabil | `https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json` | nur normale Releases |
+| Beta | `https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json` | Pre-releases **und** normale Releases |
+
+- Eine Beta ist ein ganz normales Release mit normaler Versionsnummer (z. B. `0.4.0`), nur auf GitHub als
+  **Pre-release** veröffentlicht. `latest` ignoriert Pre-releases, stabile Nutzer merken also nichts.
+- Ist die Beta gut, wird **dasselbe Release** zum normalen Release erklärt (Häkchen „Set as a pre-release“ entfernen,
+  bzw. `gh release edit v0.4.0 --prerelease=false --latest`). Die Action baut es dann für den stabilen Kanal neu; die
+  Versionsnummer bleibt gleich, Beta-Tester haben die Version schon.
+- Braucht die Beta eine Korrektur, gibt es eine **neue** Versionsnummer (z. B. `0.4.1`) als weiteren Pre-release; die
+  fehlerhafte Beta wird nie zum normalen Release erklärt.
+- **Keine** Suffixe wie `0.4.0-beta.1`: Foundry vergleicht Versionen teilweise als Text und hält `0.4.0` dann *nicht*
+  für neuer als `0.4.0-beta.1` — Tester bekämen das fertige Release nicht angeboten (geprüft 2026-10-02 gegen
+  `foundry.utils.isNewerVersion`).
+- Foundry übernimmt nach der Installation die Manifest-URL aus dem `module.json` **im ZIP**. Deshalb hängt die Action
+  an jedes Release zwei ZIPs mit gleichem Inhalt: `module.zip` (stabiles Manifest) und `module-beta.zip`
+  (Beta-Manifest). Der feste Pre-release `beta` enthält nur das `module.json` des Beta-Kanals und wird bei jedem
+  Release (Pre-release und normal) ersetzt; die Action legt ihn beim ersten Mal selbst an.
+- Arbeit an einer Beta läuft auf dem Branch `release/<version>` (der „Beta-Branch“). Der Tag kommt von dort, nicht
+  von `main`; nach `main` wird erst gemergt, wenn die Version zum normalen Release erklärt wird.
+
+### Beta veröffentlichen (Kurzfassung)
+
+```sh
+git checkout release/0.4.0 && git status && node tests/sheet.test.cjs
+# module.json: "version": "0.4.0"; CHANGELOG.md: Datum + Vergleichslink
+git push origin release/0.4.0
+git tag -a v0.4.0 -m "v0.4.0" && git push origin v0.4.0
+gh release create v0.4.0 --verify-tag --prerelease --title "v0.4.0 (Beta)" --notes-file notes.md
+gh run list --workflow release.yml --limit 1
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json   # neue Version, download → module-beta.zip
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json # unverändert die alte stabile Version
+```
+
+### Beta zum normalen Release machen
+
+```sh
+gh release edit v0.4.0 --prerelease=false --latest --title "v0.4.0"
+gh run list --workflow release.yml --limit 1      # Action baut neu („released“)
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json  # jetzt 0.4.0, download → module.zip
+git checkout main && git merge --no-ff release/0.4.0 && git push origin main
+```
 
 ---
 
@@ -151,7 +202,7 @@ Stattdessen in einer zweiten Foundry-Installation / einem zweiten Data-Ordner:
 | Action rot (fehlgeschlagen) | `gh run list --workflow release.yml` → Run-ID, dann `gh run view <run-id> --log-failed` zeigt den Fehler. Nach Behebung: `gh run rerun <run-id>` (ID aus `gh run list`). |
 | Release versehentlich als Entwurf gespeichert | Im Browser Release bearbeiten → **Publish release**. Die Action startet dann. |
 | Falsche Version / kaputtes Release | Release + Tag löschen: `gh release delete v0.2.0 --cleanup-tag --yes`, lokal `git tag -d v0.2.0`, korrigieren, ab Schritt 3 neu. Hat es schon jemand installiert, lieber eine **neue** höhere Version (z. B. 0.2.1) veröffentlichen statt dieselbe Nummer wiederzuverwenden — Foundry bietet sonst kein Update an. |
-| Foundry bietet kein Update an | Version im Release-`module.json` (Schritt 7) nicht höher als die installierte, oder das neue Release ist als „Pre-release“ markiert — `latest` zeigt nur auf normale Releases. |
+| Foundry bietet kein Update an | Version im Release-`module.json` (Schritt 7) nicht höher als die installierte, oder das neue Release ist als „Pre-release“ markiert — `latest` zeigt nur auf normale Releases (gewollt für Betas, siehe „Beta-Kanal“). |
 | Foundry: Installation schlägt fehl / 404 | Repo nicht mehr öffentlich (`gh repo view --json visibility`) oder Assets fehlen am Release (Schritt 7). |
 | Datei fehlt im installierten Modul | Neuer Ordner auf oberster Ebene? Dann in `release.yml` beim `zip`-Befehl ergänzen. |
 

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=148">
+<link rel="stylesheet" href="style.css?v=161">
 </head>
 <body>
 
@@ -18,6 +18,9 @@
   <!-- Test-Schalter: Vorschau, wie die Ressourcengruppe aussieht, wenn eine Figur nur Lebenskraft hat (kein
        Zauberer/Geweihter, kein AsP/KaP) — siehe initOnlyLepToggle(). Rein visuell, ändert data.js nicht. -->
   <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
+  <!-- Würfelstatistik (Issue #28): in Foundry eigenes Fenster aus den Moduleinstellungen, hier per Knopf. -->
+  <button type="button" id="diceStatsBtn">Würfelstatistik</button>
+  <button type="button" id="diceConsentBtn">Zustimmung (Dialog)</button>
   <button type="button" id="themeToggle">Dunkles Thema</button>
 </div>
 
@@ -121,7 +124,8 @@
      (führt zu einem leeren Content-Bereich, weil script.js dann Datenformen aus data.js erwartet, die die
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
 <script src="assets-map.js?v=15"></script>
-<script src="data.js?v=27"></script>
-<script src="script.js?v=110"></script>
+<script src="data.js?v=28"></script>
+<script src="script.js?v=117"></script>
+<script type="module" src="dice-stats.js?v=6"></script>
 </body>
 </html>

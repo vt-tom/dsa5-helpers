@@ -22,7 +22,6 @@
     "Empty": "No entries.",
     "More": "more",
     "Contents": "Contents",
-    "CombatValues": "Combat values",
     "MeleeSkills": "Melee combat techniques",
     "RangeSkills": "Ranged combat techniques",
     "MeleeWeapons": "Melee weapons",
@@ -85,7 +84,6 @@
       "train": "Trick",
       "mount": "Mount"
     },
-    "Overview": "Overview",
     "SearchCombatSkills": "Search combat techniques …",
     "NoSearchResults": "No matches.",
     "JumpToCombatSkill": "{name}, combat technique rating {value} — go to combat technique",
@@ -117,6 +115,12 @@
     "BodyFigure": "Background figure",
     "BodyFigurePlaceholder": "Placeholder",
     "BodyFigurePortrait": "Actor portrait",
+    "BothHands": "Both hands",
+    "BodyTwoHandedNote": "Off hand: taken by the two-handed weapon",
+    "BodyMoveRight": "to the right",
+    "BodyMoveLeft": "to the left",
+    "BodyMoveRightLabel": "Move two-handed weapon to the right",
+    "BodyMoveLeftLabel": "Move two-handed weapon to the left",
     "CastSpells": "Spells …",
     "CastLiturgies": "Liturgies …",
     "CastSpellsTitle": "Spells, rituals & cantrips",
@@ -138,6 +142,84 @@
       "OnGitHub": "Changelog on GitHub",
       "Missing": "The changelog could not be loaded.",
       "Versions": "Versions"
-    }
+    },
+    "DiceStats": {
+      "Title": "Dice statistics",
+      "Consent": {
+        "Question": "May your rolls be included in the dice statistics?",
+        "Info": "Only how often each face comes up per day is counted – no individual rolls. You see your own statistics, the GM sees everyone’s.",
+        "Change": "You can change this at any time in the module settings. If you withdraw consent, nothing is counted any more and your statistics are hidden.",
+        "Yes": "Yes, include them",
+        "No": "No"
+      },
+      "Settings": {
+        "Enabled": {
+          "Name": "Dice statistics",
+          "Hint": "Counts per player and die type how often each face comes up and shows whether the distribution is statistically unusual. Every player is asked for consent first and only sees their own statistics; the GM sees everyone’s. Only counters per day are stored; days older than 12 months are merged."
+        },
+        "Consent": {
+          "Name": "Dice statistics: include my rolls",
+          "Hint": "Whether your rolls are included in the dice statistics. Without consent nothing is counted; existing data is kept but hidden.",
+          "Undecided": "Not decided yet",
+          "Yes": "Yes",
+          "No": "No"
+        }
+      },
+      "Menu": {
+        "Label": "Open dice statistics",
+        "Hint": "Shows how often each face came up and whether that is statistically unusual – players see their own statistics, the GM sees everyone’s."
+      },
+      "Disabled": "Dice statistics are switched off. The GM can switch them on in the module settings; existing data stays visible.",
+      "DieType": "Die type",
+      "Die": "d{faces}",
+      "MethodLabel": "Dice",
+      "Method": {
+        "d": "Digital",
+        "m": "Physical dice"
+      },
+      "Verdict": {
+        "normal": "unremarkable",
+        "slight": "slightly unusual",
+        "strong": "clearly unusual",
+        "few": "too few rolls",
+        "empty": "no rolls"
+      },
+      "PTooltip": "Chi-squared test: p = {p}",
+      "ChartLabel": "Frequency of each face on the d{faces}, expected {expected} each",
+      "Figure": {
+        "n": "Rolls",
+        "mean": "Avg",
+        "ones": "1s",
+        "twenties": "20s"
+      },
+      "Expected": "expected {value}",
+      "ShowTable": "Show table",
+      "HideTable": "Hide table",
+      "Face": "Face",
+      "Count": "Count",
+      "ExpectedCol": "Expected",
+      "Deviation": "Deviation",
+      "TestText": "Chi-squared goodness-of-fit test: χ² = {chi2} with {df} degrees of freedom, p = {p}. “slightly unusual” from p < {slight}, “clearly unusual” from p < {strong}.",
+      "Empty": "No rolls yet for this die type and dice.",
+      "Note": "Digital and physical dice are evaluated separately. With many players and die types, single outliers are pure chance – “unusual” only means a closer look is worthwhile.",
+      "Hidden": "Not evaluated (no consent): {names}.",
+      "Reset": {
+        "Title": "Delete dice statistics",
+        "One": "All statistics of {name} will be deleted. This cannot be undone.",
+        "All": "All statistics of all players will be deleted. This cannot be undone.",
+        "OneLabel": "Delete statistics of {name}",
+        "AllLabel": "Delete all statistics"
+      },
+      "Range": {
+        "Label": "Period",
+        "All": "All time",
+        "Day": "{date}",
+        "Custom": "Custom period …",
+        "From": "from",
+        "To": "to"
+      },
+      "NoConsent": "You have not agreed to your rolls being evaluated. You can change this in the module settings."
+    },
+    "OtherWeapons": "Other weapons"
   }
 }

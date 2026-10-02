@@ -506,11 +506,8 @@ input,button{font-family:inherit;color:inherit}
 .actions-row .glyph{width:18px;text-align:center;font-size:15px;color:var(--muted)}
 
 /* Kampfwerte und Rüstung nebeneinander (WAFFEN-TAB.md). */
-.combat-top{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.combat-top .panel{display:flex;flex-direction:column}
 /* .panel + .panel (allgemeiner Abstand zwischen gestapelten Panels) griff hier fälschlich auch auf das zweite,
    nebeneinanderstehende Panel und schob es 16px nach unten. */
-.combat-top .panel + .panel{margin-top:0}
 
 /* .armor-hero/.armor-name/.badge-rs/.badge-be: großes Bild mit RS/BE als Badges direkt aufs Bild gelegt — nicht
    mehr für den Kampf-Tab (siehe Rüstung als Ausrüstungsreihe unten), aber weiterhin von den Reittier-/Begleiter-
@@ -525,19 +522,16 @@ input,button{font-family:inherit;color:inherit}
 .armor-name{padding:0 11px 10px;font-size:var(--fs-data);text-align:center}
 
 /* Leerzustand "Keine Rüstung getragen" (0 Rüstungsteile). */
-.armor-empty{padding:8px 11px;font-size:var(--fs-small);color:var(--muted)}
 
 /* Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich, siehe Git-Historie
    "UI-Vergleich 2026-09-17, Runde 3"): Wiederverwendung des .companion-slot-Icon-Rasters (companionHotbar()), hier
    um Name+RS/BE ergänzt, da die Werte hier — anders als bei den reinen Hotbar-Symbolen — auch ohne Hover ablesbar
    sein müssen. flex-wrap statt fester Spaltenzahl: 0 bis viele Slots passen sich ein. */
-.armor-slots{display:flex;flex-wrap:wrap;gap:10px;margin:11px}
 /* Bildfüllung/Overlay-Badges (Nutzer-Feedback 2026-09-18): das Bild füllt die ganze Kachel, Name als
    Lesbarkeits-Gradient oben zentriert, RS/BE als kleine Badges unten links/rechts direkt über dem Bild. */
 .armor-slot{position:relative;width:100px;height:100px;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--field)}
 .armor-slot .item-icon,.armor-slot > img{position:absolute;inset:0;width:100%;height:100%}
 .armor-slot .item-icon img{width:100%;height:100%;object-fit:cover;border:none}
-.armor-slot-name{position:absolute;top:0;left:0;right:0;z-index:1;padding:3px 5px;font-size:var(--fs-meta);text-align:center;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85);background:linear-gradient(180deg,rgba(0,0,0,.65),transparent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .armor-slot-rs,.armor-slot-be{position:absolute;bottom:4px;z-index:1;padding:1px 5px;border-radius:3px;background:rgba(0,0,0,.55);color:#fff;font-size:var(--fs-meta);font-weight:bold;text-shadow:0 1px 2px rgba(0,0,0,.85)}
 .armor-slot-rs{left:4px}
 .armor-slot-be{right:4px}
@@ -599,8 +593,6 @@ input,button{font-family:inherit;color:inherit}
    verbreitert, damit AT/PA/TP/Griff/Favorit weiterhin exakt auf derselben Breite wie zuvor beschrieben ausgerichtet bleiben. */
 /* Waffenzeilen (weaponNameCell()/weaponDetails() in script.js, Paket C): Bild | Name+Technik | AT | PA | TP | (RW) |
    Griff | Stern, Munition als zweite Zeile unter dem Namen. Name minmax(0,1fr) — nie mehr breiter als der Bogen. */
-.weapon-row{grid-template-columns:48px minmax(0,1fr) 46px 46px 72px 76px 88px 24px}
-.row-head.weapon-row>span{white-space:nowrap}
 .weapon-name{display:flex;flex-direction:column;min-width:0}
 .weapon-sub{font-size:var(--fs-meta);color:var(--muted)}
 /* Kampftechnik unter dem Waffennamen als Sprungknopf zu den Kampftalenten (2026-09-30): sieht aus wie der bisherige
@@ -609,22 +601,13 @@ input,button{font-family:inherit;color:inherit}
 .ct-link:hover,.ct-link:focus-visible{color:var(--accent);text-decoration:underline}
 .ct-link-ktw{font-weight:bold}
 .weapon-name>.ct-link{align-self:flex-start}
-.weapon-details{grid-column:2/-1;display:flex;align-items:center;gap:8px;font-size:var(--fs-meta);margin-top:-2px}
-.weapon-details .ammo-cell{position:relative;display:flex;align-items:center;flex:0 1 300px;min-width:0}
 
 /* "Griff"-Spalte (gripCell() in script.js): zweihändig geführte Waffen zeigen nur ein festes, nicht klickbares
    Symbol; alles andere zwei umschaltbare Haupthand-/Nebenhand-Knöpfe. In BEIDEN Modi bedienbar. */
-.grip-cell{display:flex;align-items:center;justify-content:center;gap:3px}
 /* 28×28 (UI/UX-Review 2026-09-25, Punkt 1); die 88px-Griffspalte fasst H + N + ⋮ (Paket C). */
-.grip-btn{border:1px solid var(--line);background:var(--field);color:var(--muted);width:28px;height:28px;flex:none;line-height:1;font-size:12px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-.grip-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);cursor:default}
-span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 
 /* Wurfwaffen-Kontextknopf (throwMenuCell()) neben den Griff-Knöpfen; öffnet dasselbe .ammo-menu-Popover-Muster
    wie die Munitionsauswahl, hier rechtsbündig verankert, damit es nicht über den Panelrand hinausragt. */
-.grip-btn.context-btn{width:22px}
-.throw-cell{position:relative;display:inline-flex}
-.throw-cell .ammo-menu{left:auto;right:0}
 .context-btn{opacity:.75}
 .context-btn:hover,.context-btn.open{opacity:1}
 
@@ -635,8 +618,6 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .title-icon-btn:hover{border-color:#fff}
 .title-icon-btn.active{background:rgba(255,255,255,.25)}
 .title-icon-btn:disabled{opacity:.35;cursor:default}
-.title-menu-wrap{position:relative;display:inline-flex}
-.title-menu-wrap .ammo-menu{left:auto;right:0;color:var(--ink)}
 
 /* Gesamtschutz-Zeile unter dem Rüstung-Panel-Titel (siehe renderArmorPanel()). */
 .armor-sum-line{padding:4px 11px;font-size:var(--fs-meta);color:var(--muted);border-bottom:1px solid var(--line)}
@@ -662,7 +643,6 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 .reload-btn:hover{border-color:var(--accent)}
 .reload-btn.done{color:#3a8f3a;border-color:#3a8f3a;cursor:default;opacity:.8}
 .reload-btn:disabled:not(.done){opacity:.55;cursor:default}
-.armor-row{grid-template-columns:28px 1fr 46px 46px}
 /* FW-Spalte breiter als früher (war 40px): muss jetzt Stepper+Zahl fassen (.skill-fw, wie auf dem Talente-Tab). */
 .combatskill-row{grid-template-columns:28px 1fr 60px 40px 40px}
 .combatskill-row > :nth-child(2){min-width:0;overflow-wrap:break-word}
@@ -672,9 +652,7 @@ span.grip-btn{cursor:default;width:auto;padding:0 4px;font-size:13px}
 /* nur Hilfe-Cursor, die gepunktete Unterstreichung gefiel nicht (Nutzer 2026-09-30) */
 .formula-hint{cursor:help}
 .row img{width:26px;height:26px;border:1px solid var(--line);object-fit:cover}
-.weapon-row img{width:44px;height:44px}
 .row .item-icon{width:26px;height:26px}
-.weapon-row .item-icon{width:44px;height:44px}
 .row .item-icon img{width:100%;height:100%;border:1px solid var(--line);object-fit:cover}
 
 /* Waffen-/Rüstungsverschleiß (siehe wearLevel()/itemIcon() in script.js): schmaler Balken am unteren Bildrand
@@ -1002,25 +980,12 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .combat-stat strong{font-size:var(--fs-big);font-variant-numeric:tabular-nums}
 .combat-figure-grid{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);gap:12px;align-items:center;padding:10px 12px 4px}
 .figure-col-title{display:block;margin-bottom:4px;font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.figure-armor-item,.hand-slot-weapon{display:flex;align-items:center;gap:8px;padding:4px 0}
-.figure-armor-item>span,.hand-slot-weapon>span{display:flex;flex-direction:column;min-width:0;flex:1}
-.figure-armor-item small,.hand-slot-weapon small{font-size:var(--fs-meta);color:var(--muted)}
-.figure-armor-item .item-icon,.figure-armor-item>img,.hand-slot-weapon .item-icon,.hand-slot-weapon>img{width:36px;height:36px;flex:none}
-.figure-armor-item .item-icon img,.hand-slot-weapon .item-icon img{width:100%;height:100%;object-fit:cover;border:1px solid var(--line)}
 /* Linke Figur des Artenbilds, abgedunkelt zur Silhouette (brightness(0)) und leicht transparent wie Tinte auf Papier. */
 /* Nur die linke Figur: das Artenbild ist quadratisch, die linke Figur liegt etwa bei 21–50 % der Breite — bei
    240px Bildhöhe ein 72px breites Fenster ab -50px. */
-.figure-body{position:relative;height:240px}
-.figure-body::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:64px;margin-left:-32px;background:var(--figure) no-repeat -52px 0/auto 100%;filter:brightness(0);opacity:.28}
-.sheet[data-theme="dark"] .figure-body::before{filter:brightness(0) invert(1);opacity:.2}
-.figure-badge{position:absolute;left:50%;top:34%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;padding:4px 10px;border:1px solid var(--accent);border-radius:4px;background:var(--paper);box-shadow:0 1px 4px rgba(0,0,0,.25)}
-.figure-badge strong{font-size:var(--fs-big)}
-.figure-badge small{font-size:var(--fs-meta);color:var(--muted)}
 .hand-slot{padding:4px 8px;margin-bottom:6px;border:1px solid var(--line);border-radius:4px;background:var(--field)}
 .hand-slot>small{font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .hand-slot.empty{border-style:dashed;background:none}
-.figure-others{display:block;font-size:var(--fs-meta)}
-.figure-stats{display:flex;justify-content:center;gap:28px;padding:6px 12px 10px;border-top:1px solid var(--line)}
 
 /* ===== Paket G: Detailpunkte pro Reiter ===== */
 .table-legend{padding:5px 11px;border-top:1px solid var(--line);font-size:var(--fs-meta);color:var(--muted)}
@@ -1067,10 +1032,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .body-grid{position:relative;isolation:isolate;min-height:330px}
 .body-grid>.body-figure{position:absolute;inset:0;z-index:-1;width:100%;height:100%;max-width:none;margin:0;border:0;object-fit:contain;object-position:center;pointer-events:none;opacity:.3;-webkit-mask-image:linear-gradient(90deg,transparent 12%,#000 35%,#000 65%,transparent 88%);mask-image:linear-gradient(90deg,transparent 12%,#000 35%,#000 65%,transparent 88%)}
 .sheet[data-theme="dark"] .body-grid>.body-figure{opacity:.22}
-.body-grid .figure-body{height:0;position:static}
-.body-grid>.figure-badge{z-index:2}
-.body-grid .figure-body::before{content:none}
-.body-grid .armor-slots{gap:8px}
 .body-grid .armor-slot{background:var(--paper)}
 .panel-title .cast-btns{display:flex;gap:6px}
 .cast-btn{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border:1px solid rgba(255,255,255,.45);border-radius:3px;background:rgba(255,255,255,.12);color:inherit;font:inherit;font-size:var(--fs-meta);cursor:pointer}
@@ -1078,12 +1039,7 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .cast-modal{width:min(560px,92vw)}
 .cast-row{grid-template-columns:26px minmax(0,1fr) 84px 40px 44px}
 .cast-row img{width:24px;height:24px}
-.hand-slot-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
 .hand-select{max-width:170px;font-size:var(--fs-small)}
-.hand-slot-weapon>.hand-dice{display:flex;flex-direction:row;flex:none;gap:4px}
-.hand-note{padding:6px 0;font-size:var(--fs-small)}
-.body-others{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 12px;border-top:1px solid var(--line)}
-.body-others .chip img{width:18px;height:18px}
 
 /* Schadenswurf (damageBtn()/favCard() in script.js, Nutzer-Feedback 2026-09-28): rote Kante + rotes W6-Quadrat
    (Farbe des System-Schadenswürfels d6red.svg), Zoom bei Hover wie die übrigen Proben (breit, daher 1,3×). */
@@ -1105,8 +1061,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 @media (prefers-reduced-motion:reduce){.damage-roll{transition:none}}
 
 /* Munitionszeile, Variante "Mischform" (renderAmmoCell(), Nutzer-Entscheidung 2026-09-28). */
-.weapon-details .ammo-cell.inline{flex:1 1 auto;gap:8px;flex-wrap:wrap}
-.ammo-cell.inline .reload-btn{min-height:24px;padding:1px 7px}
 .ammo-pick{position:relative;display:flex;flex:0 1 auto;min-width:0;max-width:220px}
 .ammo-pick .ammo-toggle{width:auto;max-width:100%}
 .mag{display:inline-flex;align-items:center;gap:6px}
@@ -1129,18 +1083,10 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 /* ===== "Körper" als Kampf-Unterreiter (2026-09-28): Rüstung untereinander, Hände als Kacheln ===== */
 /* Beide Spalten oben bündig (Titel und Kacheln auf einer Höhe), die Zeile als Ganzes vertikal zentriert (Rückmeldung 2026-09-30). */
 .body-grid{grid-template-columns:120px minmax(0,1fr) 250px;align-items:start;align-content:center}
-.body-grid .figure-armor{display:flex;flex-direction:column;align-items:center;gap:3px}
-.body-grid .figure-armor .figure-col-title{margin-bottom:0}
-.body-grid .figure-armor .armor-slots{flex-direction:column;flex-wrap:nowrap;align-items:center;margin:0}
-.body-grid .figure-armor .body-armor-table{margin:0}
 /* Hände nebeneinander (Variante B, Nutzer-Entscheidung 2026-09-30); je Hand: Titel, Name groß, Kachel, darunter
    TP-Knopf und Auswahl untereinander. Beidhändige Waffe: nur die Haupthand, rechtsbündig. */
-.body-grid .figure-hands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;column-gap:12px}
 /* Beidhändige Waffe: die eine Hand rechtsbündig an der Außenkante statt mittig (Rückmeldung 2026-09-30). */
 /* Freie Nebenhand (off-free) ebenso rechtsbündig (Rückmeldung 2026-09-30), deren Kachel an der Außenkante. */
-.body-grid .figure-hands:is(.single,.off-free){grid-template-columns:minmax(0,1fr);justify-items:end}
-.body-grid .figure-hands:is(.single,.off-free) :is(.hand-slot,.hand-slot-body,.hand-slot-side){align-items:flex-end;text-align:right}
-.body-grid .figure-hands.off-free .hand-slot.hand-slot-free{flex-direction:row-reverse;align-items:center}
 .body-grid .hand-slot{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:0;margin:0;border:0;background:none}
 .body-grid .hand-slot .figure-col-title{margin-bottom:0}
 .hand-slot-body{display:flex;flex-direction:column;align-items:flex-start;gap:14px;align-self:stretch}
@@ -1148,7 +1094,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .body-grid .hand-select{max-width:100%;width:100%;font-size:var(--fs-meta)}
 /* Freie Nebenhand kompakt unter der Haupthand (Vorschlag 2026-09-30, Rückmeldung: daneben schob sie die Haupthand
    nach rechts): eine Spalte, 40-px-Kachel mit „+“ (die Kachel ist die Auswahl), daneben „Nebenhand · frei“. */
-.body-grid .figure-hands.off-free{grid-template-columns:minmax(0,1fr);row-gap:12px}
 .body-grid .hand-slot.hand-slot-free{flex-direction:row;align-items:center;gap:8px}
 .hand-free-text{display:flex;flex-direction:column;line-height:1.2}
 .hand-tile.empty.compact{position:relative;width:40px;height:40px;cursor:pointer}
@@ -1163,9 +1108,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .body-seg button.active{background:var(--accent);color:#fff}
 /* Figur-Umschalter (nur Bearbeiten-Modus) schwebt oben mittig über der Figur statt eine Rasterzelle zu belegen. */
 .body-figure-switch{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:2}
-.body-actions{padding:10px 12px 0;border-top:1px solid var(--line)}
-.body-actions .actions-row{justify-content:center;margin-bottom:0}
-.body-actions+.figure-stats{border-top:0}
 /* Namen über Rüstungs- und Handkacheln: Datenschrift, fett, darf umbrechen (Nutzer-Feedback 2026-09-30: zu klein im Bild). */
 .body-item-name{max-width:100%;font-weight:bold;font-size:var(--fs-data);line-height:1.15;overflow-wrap:anywhere}
 .body-armor-item{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:116px;text-align:center}
@@ -1189,7 +1131,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 /* Nachladen + Zielen nebeneinander, Magazin darunter; bei schmaler Spalte (zwei Hände) bricht Zielen um. */
 .hand-ranged-extras{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
 .hand-ranged-extras>.mag{flex-basis:100%}
-.figure-hands:is(.single,.off-free) .hand-ranged-extras,.figure-hands:is(.single,.off-free) .hand-ranged-extras>.mag{justify-content:flex-end}
 .hand-ranged :is(.reload-btn,.aim){display:grid;grid-template-columns:auto auto;align-items:center;column-gap:5px;row-gap:2px;min-height:0;padding:2px 6px;font-size:12px;line-height:1.2}
 .hand-ranged :is(.reload-btn,.aim)>span:first-child{grid-column:1 / -1}
 .hand-ranged .reload-bar{max-width:56px}
@@ -1208,17 +1149,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 @media (prefers-reduced-motion:reduce){.die-seal{transition:none}}
 /* Ab drei Rüstungsteilen Tabelle statt Kacheln (Rückmeldung 2026-09-30, ersetzt „kleinere Kacheln zu zweit“):
    Bild | Name (einzeilig, „…“ + Tooltip, Strukturbalken darunter) | RS | BE. */
-.body-grid.armor-table{grid-template-columns:230px minmax(0,1fr) 250px}
-.body-armor-table{width:100%;margin:4px 0 0;border-collapse:collapse;table-layout:fixed;background:var(--paper);border:1px solid var(--line)}
-.body-armor-table col.col-img,.body-armor-table col.col-val{width:34px}
-.body-armor-table th{padding:2px 4px;font-size:var(--fs-meta);font-weight:normal;color:var(--muted);text-align:center;border-bottom:1px solid var(--line)}
-.body-armor-table th:first-child{text-align:left}
-.body-armor-table td{padding:2px 4px;font-size:var(--fs-data);font-weight:bold;text-align:center;border-bottom:1px solid var(--line)}
-.body-armor-table tr:last-child td{border-bottom:0}
-.body-armor-table td.body-armor-img{padding:2px}
-.body-armor-table td.body-armor-img img{display:block;width:28px;height:28px;border:1px solid var(--line);border-radius:3px;object-fit:cover}
-.body-armor-table td.body-armor-name{text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.body-armor-table td.body-armor-name meter{display:block;width:100%;height:3px}
 
 /* ===== Status: Tabellen zweispaltig (twoColPanel(), Nutzer-Feedback 2026-09-28) ===== */
 .status-stack>.panel+.panel{margin-top:14px}
@@ -1226,7 +1156,8 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .two-col>.show-all-btn,.two-col>.drop-zone{grid-column:1/-1}
 
 /* ===== Notizen (renderNotes()): persönliche Daten seit Issue #26 als eigener Unterreiter in voller Breite ===== */
-.notes-text .notes-text-wrap{min-height:360px}
+/* Notizen stehen seit Issue #32 untereinander — Mindesthöhe 200 statt 360 px, sonst wird die Liste sehr lang. */
+.notes-text .notes-text-wrap{min-height:200px}
 
 /* hidden-Attribut schlägt eigene display-Werte (z. B. .row{display:grid}) — wie im Modul (.dsa5-helpers-sheet [hidden]). */
 .sheet [hidden]{display:none!important}
@@ -1267,3 +1198,123 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .fwc-menu{position:absolute;top:100%;right:6px;z-index:20;min-width:220px;padding:4px 0;background:#1c1917;border:1px solid rgba(224,192,128,.45);border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.5);pointer-events:auto}
 .fwc-menu button{display:block;width:100%;padding:6px 12px;border:0;background:none;color:#ecd8b1;font:14px 'GentiumBasic',serif;text-align:left;cursor:pointer}
 .fwc-menu button:hover,.fwc-menu button:focus-visible{background:rgba(224,192,128,.18)}
+
+/* ===== Kampf › Körper: Hände links/rechts der Figur (Issue #29) ===== */
+/* Haupthand links, Nebenhand rechts (wie man es als Betrachter liest); die Mitte bleibt für die Figur frei. Die rechte
+   Seite ist gespiegelt: alles an der Außenkante. Beidhändige Waffe auf einer Seite, die andere zeigt nur einen Hinweis. */
+.body-grid.sides{grid-template-columns:minmax(0,1fr) 110px minmax(0,1fr);align-items:start}
+.body-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+.body-side.left{grid-column:1;align-items:flex-start}
+.body-side.right{grid-column:3;align-items:flex-end;text-align:right}
+.body-side .hand-slot{width:100%;max-width:210px}
+.body-side.right :is(.hand-slot,.hand-slot-body,.hand-slot-side){align-items:flex-end;text-align:right}
+.body-side .hand-slot.hand-slot-free{flex-direction:row;align-items:center;gap:8px}
+.body-side.right .hand-slot.hand-slot-free{flex-direction:row-reverse}
+.body-side.right :is(.hand-ranged-extras,.hand-ranged-extras>.mag){justify-content:flex-end}
+.hand-2h-note{max-width:150px;margin-top:28px;font-size:var(--fs-meta);font-style:italic;line-height:1.3}
+.hand-swap-btn{border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font:inherit;font-size:var(--fs-meta);padding:2px 8px;cursor:pointer}
+.hand-swap-btn:hover,.hand-swap-btn:focus-visible{border-color:var(--accent);color:var(--accent)}
+.hand-swap-btn span{margin-right:3px}
+
+/* Körper-Reiter (Issue #29, Rückmeldung 2026-10-02): ganz oben Schnellaktionen + Initiative, dann Figur mit den Händen,
+   darunter die Rüstung. */
+.body-top{display:flex;align-items:center;gap:10px 18px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.body-top .actions-row{flex:1;justify-content:flex-start;margin:0}
+.body-top-stats{display:flex;gap:18px;flex:none}
+.body-bigstat{display:flex;flex-direction:column;align-items:center;line-height:1.1;text-align:center}
+.body-bigstat small{font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.body-bigstat strong{font-size:calc(var(--fs-big) + 4px)}
+.body-armor-row{display:flex;align-items:flex-start;gap:18px;padding:10px 12px;border-top:1px solid var(--line)}
+.body-armor-row>.figure-col-title{flex:none;padding-top:2px}
+.body-armor-row-tiles{flex:1;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+.body-armor-row .body-armor-item{max-width:110px}
+.body-armor-row .armor-slot{width:76px;height:76px}
+.body-armor-row .body-item-name{display:block;font-size:var(--fs-small);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.body-armor-empty{align-self:center;margin:auto;font-size:var(--fs-small)}
+/* Rüstungsschild rechtsbündig in der Rüstungszeile (Issue #29, Nutzer-Entscheidung 2026-10-02), Tooltip mit der
+   Aufschlüsselung je Rüstungsteil. */
+.body-armor-row>.body-shield{flex:none;margin-left:auto}
+.body-top-stats .body-bigstat{padding-top:2px}
+.body-shield{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;width:64px;padding:6px 0 14px;background:var(--paper);border:2px solid var(--accent);border-radius:5px 5px 32px 32px;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:help}
+.body-shield span{display:flex;flex-direction:column;align-items:center;line-height:1.05}
+.body-shield small{font-size:11px;color:var(--muted);letter-spacing:.05em}
+.body-shield-rs strong{font-size:24px}
+.body-shield-be strong{font-size:var(--fs-data)}
+.body-shield .body-shield-magic{position:absolute;top:4px;right:4px;font-weight:bold;color:var(--accent)}
+/* Kurzübersicht der übrigen Waffen (statt der Waffentabellen): Bild | Name + Technik | Würfel | TP | Stern */
+.short-weapons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px}
+.row.short-weapon-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto auto 28px;align-items:center;gap:8px;padding:4px 8px}
+.short-weapon-row>img,.short-weapon-row>.item-icon{width:30px;height:30px}
+.short-weapon-dice{display:inline-flex;gap:4px}
+.hand-ranged-extras .ammo-pick{position:relative}
+
+/* ===== Würfelstatistik (Issue #28): eigenes Fenster + Zustimmungsdialog, clickdummy/dice-stats.js ===== */
+/* Nachbau eines Foundry-Fensters (ApplicationV2) über der Seite; Inhalt im Stil des Bogens (Papier, Panels).
+   Einstufung mit Symbol + Text (nie nur Farbe). */
+.ds-window{--fs-data:15px;--fs-small:14px;--fs-meta:12px;--fs-big:18px;
+  --ds-good:#0ca30c;--ds-warn:#fab219;--ds-serious:#ec835a;--ds-bar:#6b5a3e;
+  position:fixed;top:60px;left:50%;z-index:50;transform:translateX(-50%);display:flex;flex-direction:column;width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 90px);background:var(--paper);color:var(--ink);border:1px solid #000;border-radius:5px;box-shadow:0 18px 48px rgba(0,0,0,.6);font-family:'GentiumBasic',Georgia,serif}
+.ds-window[data-theme='dark']{--ds-bar:#c2a267}
+.ds-window.ds-dialog{top:160px;width:min(440px,calc(100vw - 32px));z-index:60}
+.ds-window-header{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--head);color:var(--headink);border-radius:4px 4px 0 0}
+.ds-window-header h2{flex:1;margin:0;font-family:'Andalus',serif;font-size:17px;font-weight:normal}
+.ds-close{border:0;background:none;color:inherit;font-size:16px;cursor:pointer}
+.ds-body{display:flex;flex-direction:column;gap:10px;padding:12px;overflow:auto}
+.ds-body p{margin:0;line-height:1.45}
+.ds-test-bar{display:flex;align-items:center;gap:8px;padding:4px 8px;border:1px dashed var(--line);border-radius:4px;font-size:var(--fs-meta)}
+.ds-filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.ds-range{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:var(--fs-small)}
+.ds-range select,.ds-dates input{padding:2px 6px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font:inherit;font-size:var(--fs-small)}
+.ds-dates{display:inline-flex;align-items:center;gap:6px;flex-basis:100%;justify-content:flex-end}
+.ds-seg{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.ds-seg button{border:0;background:var(--field);color:var(--ink);font:inherit;font-size:var(--fs-small);padding:3px 10px;cursor:pointer}
+.ds-seg button+button{border-left:1px solid var(--line)}
+.ds-seg button.active{background:var(--accent);color:#fff;font-weight:bold}
+.ds-swatch{display:inline-block;flex:none;width:10px;height:10px;margin-right:6px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+.ds-name{display:inline-flex;align-items:center;min-width:0;font-weight:bold;font-size:var(--fs-data)}
+.ds-verdict{justify-self:start;display:inline-flex;align-items:center;gap:5px;padding:1px 8px 1px 2px;border:1px solid var(--line);border-radius:999px;background:var(--field);font-size:var(--fs-small);white-space:nowrap}
+.ds-verdict small{color:var(--muted)}
+.ds-verdict-icon{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 3px;border-radius:999px;font-size:11px;font-weight:bold;color:#fff;background:var(--muted)}
+.ds-verdict.good .ds-verdict-icon{background:var(--ds-good)}
+.ds-verdict.warn .ds-verdict-icon{background:var(--ds-warn);color:#2b2721}
+.ds-verdict.serious .ds-verdict-icon{background:var(--ds-serious);color:#2b2721}
+.ds-verdict.warn{border-color:var(--ds-warn)}
+.ds-verdict.serious{border-color:var(--ds-serious)}
+.ds-hist{display:block;overflow:visible}
+.ds-hist-bar{fill:var(--ds-bar);opacity:.8}
+.ds-hist-bar.ds-key{opacity:1}
+.ds-hist-bar:hover{opacity:1;fill:var(--accent)}
+.ds-hist-base{stroke:var(--line);stroke-width:1}
+.ds-hist-expected{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:4 3}
+.ds-hist-label{fill:var(--muted);font-size:10px;text-anchor:middle;font-family:'GentiumBasic',Georgia,serif}
+.ds-figures{display:flex;flex-wrap:wrap;gap:6px 22px}
+.ds-figures>span{display:flex;flex-direction:column;line-height:1.2}
+.ds-figures small{font-size:var(--fs-meta);color:var(--muted)}
+.ds-figures strong{font-size:var(--fs-big)}
+.ds-details{display:flex;flex-direction:column;gap:6px}
+.ds-table{width:100%;border-collapse:collapse;font-size:var(--fs-small);font-variant-numeric:tabular-nums}
+.ds-table th{padding:2px 6px;font-size:var(--fs-meta);font-weight:normal;color:var(--muted);text-align:right;border-bottom:1px solid var(--line)}
+.ds-table td{padding:1px 6px;text-align:right;border-bottom:1px solid var(--line)}
+.ds-table :is(th,td):first-child{text-align:left}
+.ds-table tr.ds-key-row td{font-weight:bold}
+.ds-table td.ds-dev-big{font-weight:bold}
+.ds-test{font-size:var(--fs-meta);color:var(--muted)}
+.ds-note{font-size:var(--fs-meta);color:var(--muted)}
+.ds-empty{padding:20px;text-align:center;color:var(--muted)}
+.ds-reset{flex:none;width:26px;height:26px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);cursor:pointer}
+.ds-reset:hover{border-color:var(--accent);color:var(--accent)}
+.ds-footer{display:flex;justify-content:flex-end}
+.ds-btn{padding:4px 14px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font:inherit;cursor:pointer}
+.ds-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:bold}
+.ds-btn.danger{border-color:var(--dmg);color:var(--dmg)}
+.ds-dialog-buttons{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.ds-dialog-buttons .ds-btn{flex:1}
+/* Karten (Darstellung B, Nutzer-Entscheidung 2026-10-02) */
+.ds-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));align-items:start;gap:10px}
+.ds-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:10px;border:1px solid var(--line);border-radius:4px;background:var(--panel)}
+.ds-card-head{display:flex;align-items:center;justify-content:space-between;align-self:stretch;gap:8px}
+.ds-card .ds-hist{width:100%;height:auto}
+.ds-more{border:0;background:none;color:var(--accent);font:inherit;font-size:var(--fs-small);padding:0;cursor:pointer;text-decoration:underline}
+
+/* Abschnitte eines Reiters als Sprungmarken untereinander (Issue #32): Abstand wie zwischen Panels. */
+.jump-section+.jump-section{margin-top:16px}

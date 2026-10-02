@@ -73,6 +73,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       traditionItemDelete: this._deleteTraditionItem,
       selectTraditionItem: this._selectTraditionItem,
       dsa5hBodyFigure: this._setBodyFigure,
+      dsa5hTwoHandedSide: this._setTwoHandedSide,
     },
     // Foundry concatenates majorButtons across the inheritance chain (ApplicationV2#_initializeApplicationOptions),
     // so this adds a third header-control icon next to DSA5's own eye/lock buttons instead of replacing them.
@@ -105,7 +106,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { id: PLANNER_TAB_ID, label: "Steigerungsplaner", icon: "systems/dsa5/icons/categories/Career.webp", hint: "" },
     ];
   _currentTab = 'cover';
-  _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells', notes: 'details' };
+  _subtabs = { skills: 'body', combat: 'body', magic: 'spells', religion: 'spells', notes: 'details' };
   _search = { talent: '', gear: '', combatskill: '' };
   _favoritePending = false;
   // Wohlgefällige Talente (Religion-Tab) starten eingeklappt im Spielmodus, Klick blendet den vollen Text ein —
@@ -243,9 +244,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Own SKILL.* strings ("Körpertalente" etc.) end in "-talente" — dropped here to keep the sub-tabs compact,
       // matching the click-dummy's buildSkillSubTabs() (the full name still shows in the panel title below).
       { tab: 'skills', items: [...skillGroups.map(group => ({ id: group.id, label: localize('SKILL.' + group.id).replace(/s?talente$/i, '') })), { id: 'aggregated', label: localize('aggregatedTests') }] },
-      // Erster Kampf-Unterreiter heißt „Übersicht“ statt nochmals „Kampf“ neben dem Reitertitel (Paket F).
-      // „Körper“ steht vorerst neben der Übersicht, damit Testende beide vergleichen können (Rückmeldung 2026-09-30).
-      { tab: 'combat', items: [{ id: 'combat', label: localize('DSA5HELPERS.Overview') }, { id: 'body', label: localize('DSA5HELPERS.Body') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
+      // „Körper“ ersetzt die frühere „Übersicht“ (Issue #29, Nutzer-Entscheidung 2026-10-02); deren Waffentabellen
+      // stehen jetzt unter dem Körper-Panel.
+      { tab: 'combat', items: [{ id: 'body', label: localize('DSA5HELPERS.Body') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
       ...['magic', 'religion'].map(tab => ({ tab, items: [{ id: 'spells', label: localize(tab === 'magic' ? 'spells' : 'liturgies') }, { id: 'equipment', label: localize('DSA5HELPERS.Tabs.inventory') }] })),
       { tab: 'notes', items: noteSubtabs },
     ];
@@ -279,10 +280,6 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // initiative.value has no .max and carries a fractional tie-breaker for the combat tracker's sort order
       // (baseactor.js calcInitiative(): Math.round(value) + 0.01*value) — floored here exactly like every real
       // system template does ({{floor document.system.status.initiative.value}} in actor-main.hbs etc.).
-      combatValues: ['dodge', 'initiative'].map(id => {
-        const raw = status[id]?.max ?? status[id]?.value;
-        return { label: id, value: raw === undefined ? '–' : Math.floor(raw) };
-      }),
       // Grundwerte (Eigenschaften-Reiter): Initiative abgerundet wie oben und im Systembogen.
       initiative: Math.floor(status.initiative?.value ?? 0),
       regenerations: ['wounds', 'astralenergy', 'karmaenergy'].filter(id => this.actor.system.repeatingEffects?.startOfRound?.[id]?.length).map(id => ({ id, active: !this.actor.system.repeatingEffects.disabled?.[id] })),
@@ -383,7 +380,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         if (event.target?.classList?.contains('dsa5h-content')) this._onContentScroll();
       }, { capture: true, passive: true });
       this.element.addEventListener('scrollend', event => {
-        if (event.target?.classList?.contains('dsa5h-content')) this._skillJumping = false;
+        if (event.target?.classList?.contains('dsa5h-content')) this._jumping = false;
       }, { capture: true, passive: true });
       // Munitionswahl (<details class="dsa5h-ammo-pick">) schließt sich bei einem Klick daneben wie ein Dropdown.
       this.element.addEventListener('click', event => {
@@ -446,10 +443,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     });
   }
 
-  // Reiter „Körper“ (Kampf-Unterreiter, Issue #6): Rüstung links, Hände rechts, Figur dahinter. Haupt-/Nebenhand
-  // kommen aus den vom System vorbereiteten getragenen Waffen (system.worn.offHand); beidhändig wie im System
-  // (weapon_hands.js isTwoHandedWeapon: Nahkampf über RuleChaos, Fernkampf über worn.requiresBothHands). Führt die
-  // Haupthand eine beidhändige Waffe, entfällt die Nebenhand (Rückmeldung 2026-09-30).
+  // Reiter „Körper“ (Kampf-Unterreiter, Issue #6/#29): Hände links und rechts der Figur (Haupthand links, Nebenhand
+  // rechts), Rüstung darunter. Haupt-/Nebenhand kommen aus den vom System vorbereiteten getragenen Waffen
+  // (system.worn.offHand); beidhändig wie im System (weapon_hands.js isTwoHandedWeapon: Nahkampf über RuleChaos,
+  // Fernkampf über worn.requiresBothHands). Eine beidhändige Waffe steht auf der per Actor-Flag gewählten Seite, die
+  // andere Seite zeigt nur einen Hinweis.
   _bodyContext(prepare) {
     const RuleChaos = globalThis.dsa5?.apps?.RuleChaos;
     const twoHanded = item => item.type === 'meleeweapon'
@@ -472,14 +470,39 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const species = String(this.actor.system?.details?.species?.value ?? '');
     const placeholder = /elf/i.test(species) ? 'Elf' : /zwerg|dwarf/i.test(species) ? 'Zwerg' : 'Mensch';
     const portrait = this.actor.getFlag?.(MODULE_ID, 'bodyFigure') === 'portrait';
+    const hands = mainTwoHanded ? [slot('main', main)] : [slot('main', main), slot('offhand', off)];
+    const twoHandedSide = this.actor.getFlag?.(MODULE_ID, 'twoHandedSide') === 'right' ? 'right' : 'left';
+    const weaponSide = { slot: hands[0], twoHanded: true, moveTo: twoHandedSide === 'left' ? 'right' : 'left' };
+    const encumbrance = armor.reduce((sum, item) => sum + (Number(item.system?.calculatedEncumbrance) || 0), 0);
+    // Schild-Tooltip: Rüstungsschutz der Teile (prepare.armorSum) und getrennt Zauber-/Liturgie-Schutz wie im
+    // Systembogen (actor-combat.hbs „protection (armorSum, spellArmor, liturgyArmor)“), dazu die Belastung je Teil.
+    const esc = text => String(text ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const magicArmor = (Number(prepare.spellArmor) || 0) + (Number(prepare.liturgyArmor) || 0);
+    const armorTooltip = [
+      `<strong>${esc(game.i18n.localize('protection'))} ${prepare.armorSum ?? 0}</strong>`,
+      ...armor.map(item => `${esc(item.name)}: ${esc(game.i18n.localize('CHARAbbrev.RS'))} ${item.system?.protection?.value ?? 0}, ${esc(game.i18n.localize('DSA5HELPERS.EncumbranceAbbr'))} ${item.system?.calculatedEncumbrance ?? 0}`),
+      ...(prepare.spellArmor ? [`${esc(game.i18n.localize('spellArmor'))}: +${prepare.spellArmor}`] : []),
+      ...(prepare.liturgyArmor ? [`${esc(game.i18n.localize('liturgyArmor'))}: +${prepare.liturgyArmor}`] : []),
+      `<strong>${esc(game.i18n.localize('encumbrance'))} ${encumbrance}</strong>`,
+    ].join('<br>');
+    // Kurzübersicht „Weitere Waffen“: getragene Waffen, die nicht in einer Hand sind, und Angriffe aus Eigenschaften.
+    const others = [
+      ...worn.filter(w => w !== main && w !== off).map(item => ({ item, ranged: item.type === 'rangeweapon' })),
+      ...(prepare.traits?.meleeAttack ?? []).map(item => ({ item, ranged: false })),
+      ...(prepare.traits?.rangeAttack ?? []).map(item => ({ item, ranged: true })),
+    ];
     return {
       armor,
-      // Ab drei Rüstungsteilen Tabelle statt Kacheln (Rückmeldung 2026-09-30).
-      armorTable: armor.length >= 3,
-      encumbrance: armor.reduce((sum, item) => sum + (Number(item.system?.calculatedEncumbrance) || 0), 0),
-      hands: mainTwoHanded ? [slot('main', main)] : [slot('main', main), slot('offhand', off)],
+      encumbrance,
+      armorTooltip,
+      magicArmor,
+      others,
+      hands,
       single: mainTwoHanded,
-      // Freie Nebenhand kompakt unter der Haupthand statt als volle Spalte (Rückmeldung 2026-09-30).
+      left: !mainTwoHanded ? { slot: hands[0] } : twoHandedSide === 'left' ? weaponSide : { note: true },
+      right: !mainTwoHanded ? { slot: hands[1] } : twoHandedSide === 'right' ? weaponSide : { note: true },
+      twoHandedSide,
+      // Freie Nebenhand kompakt (40-px-Kachel „+“) statt einer leeren großen Kachel (Rückmeldung 2026-09-30).
       offFree: !mainTwoHanded && !off,
       portrait,
       figure: portrait ? this.actor.img : `systems/dsa5/icons/species/${placeholder}.webp`,
@@ -521,6 +544,12 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static async _setBodyFigure(_event, target) {
     if (!this.isEditable) return;
     await this.actor.setFlag(MODULE_ID, 'bodyFigure', target.dataset.figure === 'portrait' ? 'portrait' : 'placeholder');
+  }
+
+  // Seite der beidhändigen Waffe im Reiter „Körper“ (Issue #29): Actor-Flag, Knopf nur im Bearbeiten-Modus.
+  static async _setTwoHandedSide(_event, target) {
+    if (!this.isEditable) return;
+    await this.actor.setFlag(MODULE_ID, 'twoHandedSide', target.dataset.side === 'right' ? 'right' : 'left');
   }
 
   // Charakterbauer (#10): wie im System, merkt sich aber die bisherige Bogenwahl ('' = Standard), die der
@@ -620,14 +649,12 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this._currentTab = target.dataset.tab;
     this._applyCurrentTab();
     this.element.querySelector('.dsa5h-content')?.scrollTo({ top: 0 });
+    // Die Liste steht wieder oben — also ist der erste Abschnitt markiert (Talente und alle Reiter mit Unterreitern, #32).
+    const first = this._jumpSections(this._currentTab)[0];
+    if (first) this._subtabs[this._currentTab] = first.id;
+    this._applySubTabButtons();
     // Switching to Talente should let the user start typing a search immediately, no extra click needed.
-    if (this._currentTab === 'skills') {
-      // Die Liste steht wieder oben — also ist die erste Gruppe markiert.
-      const first = this.element.querySelector('.allTalents [data-skill-panel]')?.dataset.skillPanel;
-      if (first) this._subtabs.skills = first;
-      this._applySubTabButtons();
-      this.element.querySelector('.talentSearch')?.focus();
-    }
+    if (this._currentTab === 'skills') this.element.querySelector('.talentSearch')?.focus();
   }
 
   static _setSubTab(_event, target) {
@@ -638,45 +665,53 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // Gruppenwahl beendet eine laufende Talentsuche (wie im Click-Dummy jumpToSkillGroup()).
     if (tab === 'skills') this._resetTalentSearch();
     this._applyCurrentTab();
-    if (tab === 'skills') this._jumpToSkillGroup(id);
+    this._jumpTo(tab, id);
   }
 
-  // Talente „Sprungmarken“ (Tester-Rückmeldung 2026-09-30): die Liste zeigt immer alle Gruppen untereinander, die
-  // Gruppen-Reiter scrollen nur an die passende Stelle. Seit der Live-Rückmeldung 2026-09-30 gehören auch die
-  // Sammelproben als letzter Abschnitt dazu; Suche + „Nur gesteigerte“ kleben oben (CSS), deshalb wird ihre Höhe
-  // abgezogen. Solange der Sprung läuft, führt _onContentScroll() die Markierung nicht mit (sonst flackert sie über
-  // die Gruppen dazwischen) — Ende über das scrollend-Ereignis (Listener in _onRender).
-  _skillPanels() {
-    return [...(this.element?.querySelectorAll('[data-tab-panel="skills"] [data-skill-panel]') ?? [])].filter(panel => !panel.hidden);
+  // Unterreiter als „Sprungmarken“ (Talente seit der Tester-Rückmeldung 2026-09-30, alle anderen Reiter seit Issue #32):
+  // jeder Reiter zeigt alle Abschnitte untereinander, die Unterreiter scrollen nur an die passende Stelle. Bei den
+  // Talenten sind das die Gruppen ([data-skill-panel], die Sammelproben als letzter Abschnitt), sonst die Unterreiter-
+  // Abschnitte ([data-sub-panel="tab:id"]). Suche + „Nur gesteigerte“ kleben bei den Talenten oben (CSS), deshalb wird
+  // ihre Höhe abgezogen. Solange ein Sprung läuft, führt _onContentScroll() die Markierung nicht mit (sonst flackert sie
+  // über die Abschnitte dazwischen) — Ende über das scrollend-Ereignis (Listener in _onRender).
+  _jumpSections(tab) {
+    const root = this.element;
+    if (!root) return [];
+    if (tab === 'skills') {
+      return [...root.querySelectorAll('[data-tab-panel="skills"] [data-skill-panel]')].filter(panel => !panel.hidden).map(el => ({ id: el.dataset.skillPanel, el }));
+    }
+    return [...root.querySelectorAll(`[data-tab-panel="${tab}"] [data-sub-panel^="${tab}:"]`)].filter(panel => !panel.hidden).map(el => ({ id: el.dataset.subPanel.split(':')[1], el }));
   }
 
-  _skillStickyOffset(content) {
-    return content.querySelector('[data-tab-panel="skills"] > .dsa5h-search-bar')?.offsetHeight ?? 0;
+  _jumpStickyOffset(tab, content) {
+    return tab === 'skills' ? content.querySelector('[data-tab-panel="skills"] > .dsa5h-search-bar')?.offsetHeight ?? 0 : 0;
   }
 
-  _jumpToSkillGroup(id) {
+  _jumpTo(tab, id) {
     const content = this.element?.querySelector('.dsa5h-content');
-    const panel = this._skillPanels().find(entry => entry.dataset.skillPanel === id);
-    if (!content || !panel) return;
-    const wanted = panel.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop - this._skillStickyOffset(content) - 4;
+    const section = this._jumpSections(tab).find(entry => entry.id === id);
+    if (!content || !section) return;
+    const wanted = section.el.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop - this._jumpStickyOffset(tab, content) - 4;
     const top = Math.max(0, Math.min(wanted, content.scrollHeight - content.clientHeight));
-    this._skillJumping = Math.abs(top - content.scrollTop) > 1;
+    this._jumping = Math.abs(top - content.scrollTop) > 1;
     content.scrollTo({ top, behavior: 'smooth' });
   }
 
-  // Scroll-Mitführung: markiert die Gruppe, deren Panel gerade oben im Inhaltsbereich steht; ganz unten die letzte
-  // (die Sammelproben sind meist zu kurz, um bis nach oben zu kommen).
+  // Scroll-Mitführung: markiert den Abschnitt, der gerade oben im Inhaltsbereich steht; ganz unten den letzten
+  // (kurze letzte Abschnitte wie die Sammelproben kommen sonst nie nach oben). Während einer Talentsuche ist keine
+  // Gruppe markiert.
   _onContentScroll() {
-    if (this._currentTab !== 'skills' || this._search.talent.trim() || this._skillJumping) return;
+    const tab = this._currentTab;
+    if (!Object.hasOwn(this._subtabs, tab) || this._jumping || (tab === 'skills' && this._search.talent.trim())) return;
     const content = this.element?.querySelector('.dsa5h-content');
-    const panels = this._skillPanels();
-    if (!content || !panels.length) return;
-    const top = content.getBoundingClientRect().top + this._skillStickyOffset(content) + 40;
-    let current = panels[0].dataset.skillPanel;
-    if (content.scrollTop + content.clientHeight >= content.scrollHeight - 2) current = panels.at(-1).dataset.skillPanel;
-    else panels.forEach(panel => { if (panel.getBoundingClientRect().top <= top) current = panel.dataset.skillPanel; });
-    if (current === this._subtabs.skills) return;
-    this._subtabs.skills = current;
+    const sections = this._jumpSections(tab);
+    if (!content || !sections.length) return;
+    const top = content.getBoundingClientRect().top + this._jumpStickyOffset(tab, content) + 40;
+    let current = sections[0].id;
+    if (content.scrollTop + content.clientHeight >= content.scrollHeight - 2) current = sections.at(-1).id;
+    else sections.forEach(section => { if (section.el.getBoundingClientRect().top <= top) current = section.id; });
+    if (current === this._subtabs[tab]) return;
+    this._subtabs[tab] = current;
     this._applySubTabButtons();
   }
 
@@ -742,10 +777,6 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     });
     root.querySelectorAll('[data-subnav]').forEach(el => { el.hidden = el.dataset.subnav !== this._currentTab; });
     this._applySubTabButtons();
-    root.querySelectorAll('[data-sub-panel]').forEach(el => {
-      const [tab, id] = el.dataset.subPanel.split(':');
-      el.hidden = this._subtabs[tab] !== id;
-    });
     this._applyTalentSearch();
     // Wohlgefällige Talente (Religion-Tab): im Bearbeiten-Modus immer aufgeklappt (sonst kein Zugriff aufs Feld
     // ohne Extra-Klick), im Spielmodus per _happyTalentsExpanded gesteuert.
