@@ -1244,17 +1244,47 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .hand-swap-btn:hover,.hand-swap-btn:focus-visible{border-color:var(--accent);color:var(--accent)}
 .hand-swap-btn span{margin-right:3px}
 
-/* Rüstung unter der Figur (Issue #29, Variante A, Nutzer-Entscheidung 2026-10-02): Schnellaktionen darüber, dann
-   eine Zeile Schutz/Belastung | Kacheln | Initiative. */
-.body-actions{border-top:1px solid var(--line)}
-.body-armor-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:18px;padding:10px 12px}
-.body-armor-row-sum,.body-armor-row-ini{display:flex;flex-direction:column;gap:6px}
-.body-armor-row-ini{align-items:flex-end;text-align:right;padding-top:19px}
-.body-armor-row-tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+/* Körper-Reiter (Issue #29, Rückmeldung 2026-10-02): ganz oben Schnellaktionen + Initiative, dann Figur mit den Händen,
+   darunter die Rüstung. */
+.body-top{display:flex;align-items:center;gap:10px 18px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.body-top .actions-row{flex:1;justify-content:flex-start;margin:0}
+.body-top-stats{display:flex;gap:18px;flex:none}
+.body-bigstat{display:flex;flex-direction:column;align-items:center;line-height:1.1;text-align:center}
+.body-bigstat small{font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.body-bigstat strong{font-size:calc(var(--fs-big) + 4px)}
+.body-bigstat .body-bigstat-sub{text-transform:none;letter-spacing:0}
+.body-armor-row{display:flex;align-items:flex-start;gap:18px;padding:10px 12px;border-top:1px solid var(--line)}
+.body-armor-row>.figure-col-title{flex:none;padding-top:2px}
+.body-armor-row-tiles{flex:1;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
 .body-armor-row .body-armor-item{max-width:110px}
 .body-armor-row .armor-slot{width:76px;height:76px}
 .body-armor-row .body-item-name{display:block;font-size:var(--fs-small);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.body-armor-empty{align-self:center;justify-self:center;font-size:var(--fs-small)}
+.body-armor-empty{align-self:center;margin:auto;font-size:var(--fs-small)}
+/* TEST-VARIANTEN RS/BE (Issue #29, nach der Entscheidung die verworfenen löschen) */
+/* A – Siegel: zwei große Wachssiegel (Fassung wie die Eigenschaftswürfel im Kopf) links neben den Kacheln */
+.body-seals{display:flex;gap:16px;flex:none;padding:4px 8px 0}
+.body-seal{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;line-height:1.15}
+.body-seal-face{position:relative;display:grid;place-items:center;width:58px;height:64px;margin-bottom:4px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);background:var(--accent)}
+.body-seal-face::before{content:"";position:absolute;inset:3px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);background:var(--head-base)}
+.body-seal-face strong{position:relative;font-size:26px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.body-seal small{font-size:var(--fs-meta);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.body-seal .body-bigstat-sub{text-transform:none;letter-spacing:0}
+/* B – Kopfleiste: INI | RS | BE groß oben rechts, Trenner dazwischen */
+.body-top-stats .body-bigstat+.body-bigstat{padding-left:18px;border-left:1px solid var(--line)}
+
+/* C – Brustschild: Schild mittig auf der Figur */
+.body-chest-shield{position:absolute;left:50%;top:30%;z-index:2;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;width:84px;padding:10px 0 18px;background:var(--paper);border:2px solid var(--accent);border-radius:6px 6px 42px 42px;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.body-chest-shield span{display:flex;flex-direction:column;align-items:center;line-height:1.05}
+.body-chest-shield small{font-size:var(--fs-meta);color:var(--muted);letter-spacing:.05em}
+.body-chest-rs strong{font-size:28px}
+.body-chest-be strong{font-size:var(--fs-big)}
+/* D – Rüstungsband: Titelband wie ein Panel-Kopf, Werte groß darin */
+.body-armor-band{display:flex;align-items:baseline;gap:18px;padding:6px 12px;border-top:1px solid var(--line);background:var(--title);color:#fff}
+.body-armor-band-title{flex:1;font-family:'Andalus',serif;font-size:17px}
+.body-armor-band-val{display:inline-flex;align-items:baseline;gap:5px}
+.body-armor-band-val small{font-size:var(--fs-meta);opacity:.85}
+.body-armor-band-val strong{font-size:22px}
+.body-armor-band-wrap .body-armor-row{border-top:0}
 
 /* ===== Würfelstatistik (Issue #28): eigenes Fenster + Zustimmungsdialog, clickdummy/dice-stats.js ===== */
 /* Nachbau eines Foundry-Fensters (ApplicationV2) über der Seite; Inhalt im Stil des Bogens (Papier, Panels).
@@ -1271,7 +1301,9 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .ds-body p{margin:0;line-height:1.45}
 .ds-test-bar{display:flex;align-items:center;gap:8px;padding:4px 8px;border:1px dashed var(--line);border-radius:4px;font-size:var(--fs-meta)}
 .ds-filters{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
-.ds-since{margin-left:auto;font-size:var(--fs-meta);color:var(--muted)}
+.ds-range{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:var(--fs-small)}
+.ds-range select,.ds-dates input{padding:2px 6px;border:1px solid var(--line);border-radius:3px;background:var(--field);color:var(--ink);font:inherit;font-size:var(--fs-small)}
+.ds-dates{display:inline-flex;align-items:center;gap:6px;flex-basis:100%;justify-content:flex-end}
 .ds-seg{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
 .ds-seg button{border:0;background:var(--field);color:var(--ink);font:inherit;font-size:var(--fs-small);padding:3px 10px;cursor:pointer}
 .ds-seg button+button{border-left:1px solid var(--line)}

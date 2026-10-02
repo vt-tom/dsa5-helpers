@@ -3,8 +3,9 @@
 // Moduldatei scripts/dice-stats/stats.js, damit Click-Dummy und Modul dieselbe Rechnung zeigen.
 //
 // Darstellung B „Karten“ (Nutzer-Entscheidung 2026-10-02; verworfen: A „Zeilen“ mit Mini-Diagramm, C „Raster“
-// Spieler × Augenzahl). Der Schalter „Ansicht“ oben im Fenster zeigt die Spieler- bzw. SL-Sicht (Zurücksetzen).
-import { evaluateDie, dieTypes, mergeCounts, P_SLIGHT, P_STRONG } from "../scripts/dice-stats/stats.js";
+// Spieler × Augenzahl). Der Schalter „Ansicht“ oben im Fenster zeigt die Spieler-Sicht (nur die eigene Karte) bzw.
+// die SL-Sicht (alle Karten, Löschen).
+import { evaluateDie, dieTypes, mergeCounts, playDays, sumCounts, P_SLIGHT, P_STRONG } from "../scripts/dice-stats/stats.js";
 
 // ---------- Demo-Daten ----------
 // Deterministischer Zufall (mulberry32), damit die Bilder bei jedem Laden gleich aussehen.
@@ -28,8 +29,14 @@ function roll(faces, n, seed, weights) {
   return counts;
 }
 const tilt = (faces, face, factor) => Array.from({ length: faces }, (_, i) => (i + 1 === face ? factor : 1));
-const SINCE = new Date(2026, 9, 1, 19, 30).getTime();
-const stats = (d, m = {}) => mergeCounts(null, { d, m }, SINCE);
+// Drei Spielabende; die Würfe eines Spielers werden etwa 45/35/20 % darauf verteilt (Speicherformat je Abend, stats.js).
+const DAYS = ["2026-10-02", "2026-09-25", "2026-09-18"];
+const SHARES = [0.45, 0.35];
+function stats(d, m = {}) {
+  const part = (counts, k) => counts.map((c) => (k < SHARES.length ? Math.floor(c * SHARES[k]) : c - SHARES.reduce((sum, f) => sum + Math.floor(c * f), 0)));
+  const split = (group, k) => Object.fromEntries(Object.entries(group).map(([faces, counts]) => [faces, part(counts, k)]));
+  return mergeCounts(null, Object.fromEntries(DAYS.map((day, k) => [day, { d: split(d, k), m: split(m, k) }])));
+}
 
 // Farben wie die Foundry-Benutzerfarben (Spielerliste) — Identität, nicht Wertung.
 const PLAYERS = [
@@ -48,7 +55,9 @@ const PLAYERS = [
 ];
 
 // ---------- Zustand ----------
-const state = { gm: true, method: "d", faces: 20, open: new Set() };
+// Spieleransicht: nur die eigene Karte (Nutzer-Entscheidung 2026-10-02); im Click-Dummy ist „man selbst“ Anna.
+const OWN_ID = "u2";
+const state = { gm: true, method: "d", faces: 20, range: "all", from: "", to: "", open: new Set() };
 let win = null;
 
 // ---------- Helfer ----------
@@ -143,15 +152,16 @@ function detailsTable(ev, counts) {
 
 function gmReset(player) {
   if (!state.gm) return null;
-  return el("button", { type: "button", class: "ds-reset", title: `Statistik von ${player.name} zurücksetzen`, onclick: (e) => { e.stopPropagation(); confirmReset(player); } }, "↺");
+  // Mülleimer statt Kreispfeil: der sah aus wie „neu laden“ (Rückmeldung 2026-10-02).
+  return el("button", { type: "button", class: "ds-reset", title: `Statistik von ${player.name} löschen`, "aria-label": `Statistik von ${player.name} löschen`, onclick: (e) => { e.stopPropagation(); confirmReset(player); } }, "🗑");
 }
 
 function confirmReset(player) {
   const who = player ? `von ${player.name}` : "aller Spieler";
   dialog({
-    title: "Würfelstatistik zurücksetzen",
-    body: [el("p", {}, `Die Statistik ${who} wird gelöscht. Das lässt sich nicht rückgängig machen.`)],
-    buttons: [["Zurücksetzen", () => { (player ? [player] : PLAYERS).forEach((p) => { if (p.stats) p.stats = mergeCounts(null, {}, Date.now()); }); render(); }, "danger"], ["Abbrechen", null]],
+    title: "Würfelstatistik löschen",
+    body: [el("p", {}, `Die gesamte Statistik ${who} wird gelöscht (alle Spielabende). Das lässt sich nicht rückgängig machen.`)],
+    buttons: [["Löschen", () => { (player ? [player] : PLAYERS).forEach((p) => { if (p.stats) p.stats = mergeCounts(null, {}); }); render(); }, "danger"], ["Abbrechen", null]],
   });
 }
 
@@ -179,28 +189,38 @@ function render() {
   if (!win) return;
   const theme = document.querySelector(".sheet")?.getAttribute("data-theme") || "light";
   win.setAttribute("data-theme", theme);
-  const visible = PLAYERS.filter((p) => p.consent === "yes" && p.stats);
-  const types = dieTypes(visible.map((p) => p.stats), state.method);
+  const shown = state.gm ? PLAYERS : PLAYERS.filter((p) => p.id === OWN_ID);
+  const visible = shown.filter((p) => p.consent === "yes" && p.stats);
+  // Zeitraum: gesamt, ein Spielabend oder eigener Zeitraum (von/bis, Spielabend-Schlüssel einschließlich).
+  const days = playDays(visible.map((p) => p.stats));
+  if (!["all", "custom", ...days].includes(state.range)) state.range = "all";
+  const bounds = state.range === "all" ? {} : state.range === "custom" ? { from: state.from || null, to: state.to || null } : { from: state.range, to: state.range };
+  const sums = new Map(visible.map((p) => [p, sumCounts(p.stats, bounds)]));
+  const types = dieTypes([...sums.values()], state.method);
   if (!types.includes(state.faces)) state.faces = types[0] ?? 20;
   const list = visible
     .map((p) => {
-      const counts = p.stats[state.method][state.faces] ?? Array(state.faces).fill(0);
+      const counts = sums.get(p)[state.method][state.faces] ?? Array(state.faces).fill(0);
       return { p, counts, ev: evaluateDie(counts) };
     })
     .filter(({ ev }) => ev.n > 0);
-  const hidden = PLAYERS.filter((p) => p.consent !== "yes");
-  const since = Math.min(...visible.map((p) => p.stats.since));
+  const hidden = state.gm ? PLAYERS.filter((p) => p.consent !== "yes") : [];
+  const dayLabel = (key) => new Date(`${key}T12:00:00`).toLocaleDateString("de-DE");
+  const rangeSelect = el("select", { class: "ds-range-select", "aria-label": "Zeitraum", onchange: (e) => { state.range = e.target.value; render(); } },
+    [["all", "Gesamt"], ...days.map((d) => [d, `Spielabend ${dayLabel(d)}`]), ["custom", "Eigener Zeitraum …"]].map(([v, t]) => el("option", { value: v, selected: v === state.range }, t)));
+  const dateInput = (key, label) => el("input", { type: "date", value: state[key], min: days.at(-1) ?? "", max: days[0] ?? "", "aria-label": label, onchange: (e) => { state[key] = e.target.value; render(); } });
 
   const body = win.querySelector(".ds-body");
   body.replaceChildren(...[ 
     el("div", { class: "ds-test-bar" }, [
       el("small", {}, "Ansicht (nur Click-Dummy):"),
-      seg([[false, "Spieler"], [true, "Spielleitung"]], state.gm, (v) => { state.gm = v; render(); }, "Ansicht"),
+      seg([[false, "Spieler (Anna)"], [true, "Spielleitung"]], state.gm, (v) => { state.gm = v; render(); }, "Ansicht"),
     ]),
     el("div", { class: "ds-filters" }, [
       seg(types.map((f) => [f, dieLabel(f)]), state.faces, (v) => { state.faces = v; render(); }, "Würfeltyp"),
       seg([["d", methodLabel.d], ["m", methodLabel.m]], state.method, (v) => { state.method = v; render(); }, "Würfelart"),
-      el("span", { class: "ds-since" }, `seit ${new Date(since).toLocaleDateString("de-DE")}`),
+      el("label", { class: "ds-range" }, [el("span", {}, "Zeitraum"), rangeSelect]),
+      state.range === "custom" ? el("span", { class: "ds-dates" }, [dateInput("from", "von"), el("span", { "aria-hidden": "true" }, "–"), dateInput("to", "bis")]) : null,
     ]),
     list.length
       ? cardsB(list)
@@ -209,7 +229,7 @@ function render() {
       "Digitale und echte Würfel werden getrennt ausgewertet. Bei vielen Spielern und Würfeltypen sind einzelne Ausreißer reiner Zufall – „auffällig“ heißt nur, dass sich ein genauerer Blick lohnt.",
     ]),
     hidden.length ? el("p", { class: "ds-note muted" }, `Nicht ausgewertet (keine Zustimmung): ${hidden.map((p) => p.name).join(", ")}.`) : null,
-    state.gm ? el("div", { class: "ds-footer" }, [el("button", { type: "button", class: "ds-btn danger", onclick: () => confirmReset(null) }, "↺ Alle zurücksetzen")]) : null,
+    state.gm ? el("div", { class: "ds-footer" }, [el("button", { type: "button", class: "ds-btn danger", onclick: () => confirmReset(null) }, "🗑 Alle Statistiken löschen")]) : null,
   ].filter(Boolean));
 }
 
@@ -244,7 +264,7 @@ export function openConsent() {
     title: "Würfelstatistik",
     body: [
       el("p", {}, [el("strong", {}, "Dürfen deine Würfe für die Würfelstatistik ausgewertet werden?")]),
-      el("p", {}, "Gezählt wird nur, wie oft welche Augenzahl fällt – keine einzelnen Würfe. Alle Mitspieler können deine Statistik sehen."),
+      el("p", {}, "Gezählt wird nur, wie oft welche Augenzahl je Spielabend fällt – keine einzelnen Würfe. Du siehst deine eigene Statistik, die Spielleitung die aller Spieler."),
       el("p", { class: "muted" }, "Du kannst das jederzeit in den Moduleinstellungen ändern. Ziehst du die Zustimmung zurück, wird nichts mehr gezählt und deine Statistik ausgeblendet."),
     ],
     buttons: [["Ja, auswerten", null, "primary"], ["Nein", null]],

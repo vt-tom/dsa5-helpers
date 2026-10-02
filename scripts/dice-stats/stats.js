@@ -86,30 +86,73 @@ export function evaluateDie(counts) {
   };
 }
 
-/** Leeres Statistik-Objekt im Speicherformat (User-Flag `dsa5-helpers.diceStats`). */
-export function emptyStats(now = Date.now()) {
-  return { v: 1, since: now, d: {}, m: {} };
+// ---------- Speicherformat ----------
+// User-Flag `dsa5-helpers.diceStats`, Version 2 (2026-10-02, für den Zeitraum-Filter): ein Zähler-Topf je Spielabend.
+//   { v: 2, days: { "2026-10-02": { d: { "20": [..20 Zähler..], "6": [..] }, m: { … } } } }
+// d = digitale Würfel, m = echte Würfel. Ein Spielabend kostet je Spieler gut 100 Byte, unabhängig von der Zahl der Würfe.
+// Version 1 (ein einziger Topf { v:1, since, d, m }) wird beim Lesen als ein Abend am Tag von `since` übernommen.
+
+/** Ein Spielabend reicht bis 6 Uhr morgens: Würfe nach Mitternacht zählen noch zum Vorabend. */
+export const DAY_START_HOUR = 6;
+
+/** Schlüssel des Spielabends (lokales Datum, YYYY-MM-DD) zu einem Zeitpunkt. */
+export function dayKey(time = Date.now()) {
+  const d = new Date(time - DAY_START_HOUR * 3600_000);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Gespeicherte Statistik in Version 2 (ältere Formate werden umgewandelt, ungültige ergeben eine leere). */
+export function normalizeStats(stats) {
+  if (stats?.v === 2 && stats.days) return stats;
+  if (stats?.v === 1) return { v: 2, days: { [dayKey(stats.since ?? Date.now())]: { d: { ...stats.d }, m: { ...stats.m } } } };
+  return { v: 2, days: {} };
+}
+
+function addCounts(target, delta) {
+  for (const method of ['d', 'm']) {
+    target[method] ??= {};
+    for (const [faces, add] of Object.entries(delta?.[method] ?? {})) {
+      const prev = target[method][faces];
+      target[method][faces] = Array.from({ length: Number(faces) }, (_, i) => (prev?.[i] ?? 0) + (add[i] ?? 0));
+    }
+  }
+  return target;
 }
 
 /**
- * Addiert neue Würfe (Zähler-Delta) auf eine gespeicherte Statistik und gibt eine neue zurück.
- * delta: { d: { "20": [..] }, m: { "6": [..] } } — nur Arrays in Länge der Seitenzahl.
+ * Addiert neue Würfe auf eine gespeicherte Statistik und gibt eine neue zurück (Eingabe bleibt unverändert).
+ * deltaByDay: { "2026-10-02": { d: { "20": [..] }, m: {} } }
  */
-export function mergeCounts(stats, delta, now = Date.now()) {
-  const out = stats?.v === 1 ? { v: 1, since: stats.since ?? now, d: { ...stats.d }, m: { ...stats.m } } : emptyStats(now);
-  for (const method of ['d', 'm']) {
-    for (const [faces, add] of Object.entries(delta?.[method] ?? {})) {
-      const prev = out[method][faces];
-      const next = Array.from({ length: Number(faces) }, (_, i) => (prev?.[i] ?? 0) + (add[i] ?? 0));
-      out[method][faces] = next;
-    }
+export function mergeCounts(stats, deltaByDay) {
+  const base = normalizeStats(stats);
+  const days = { ...base.days };
+  for (const [day, delta] of Object.entries(deltaByDay ?? {})) {
+    const prev = days[day] ?? {};
+    days[day] = addCounts({ d: { ...prev.d }, m: { ...prev.m } }, delta);
+  }
+  return { v: 2, days };
+}
+
+/** Spielabende mit Würfen (Schlüssel), neueste zuerst. */
+export function playDays(statsList) {
+  const set = new Set();
+  for (const s of statsList) for (const day of Object.keys(normalizeStats(s).days)) set.add(day);
+  return [...set].sort().reverse();
+}
+
+/** Summe der Zähler im Zeitraum (Schlüssel einschließlich; ohne Grenze = alles): { d: {...}, m: {...} }. */
+export function sumCounts(stats, { from = null, to = null } = {}) {
+  const out = { d: {}, m: {} };
+  for (const [day, counts] of Object.entries(normalizeStats(stats).days)) {
+    if ((from && day < from) || (to && day > to)) continue;
+    addCounts(out, counts);
   }
   return out;
 }
 
-/** Würfeltypen, die in mindestens einer Statistik vorkommen, aufsteigend sortiert (W20 vorne, weil DSA5-Hauptwürfel). */
-export function dieTypes(statsList, method) {
+/** Würfeltypen mit Würfen in mindestens einer Summe (sumCounts), aufsteigend, W20 vorne (DSA5-Hauptwürfel). */
+export function dieTypes(countsList, method) {
   const set = new Set();
-  for (const s of statsList) for (const [faces, counts] of Object.entries(s?.[method] ?? {})) if (counts.some(Boolean)) set.add(Number(faces));
+  for (const s of countsList) for (const [faces, counts] of Object.entries(s?.[method] ?? {})) if (counts.some(Boolean)) set.add(Number(faces));
   return [...set].sort((a, b) => (a === 20 ? -1 : b === 20 ? 1 : a - b));
 }

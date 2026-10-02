@@ -1,10 +1,11 @@
 // Würfelstatistik-Fenster (Issue #28, Darstellung B „Karten“, Nutzer-Entscheidung 2026-10-02; Clickdummy
 // clickdummy/dice-stats.js). Je Spieler mit Zustimmung eine Karte: Einstufung, Balkendiagramm der Augenzahlen mit
-// Erwartungslinie, Kennzahlen, aufklappbare Tabelle. Oben Würfeltyp und Würfelart (digital / echte Würfel).
+// Erwartungslinie, Kennzahlen, aufklappbare Tabelle. Oben Würfeltyp, Würfelart (digital / echte Würfel) und Zeitraum
+// (gesamt, ein Spielabend oder eigener Zeitraum). Spieler sehen nur die eigene Statistik, die SL alle (2026-10-02).
 // Geöffnet über die Moduleinstellungen (registerMenu) oder game.modules.get('dsa5-helpers').api.openDiceStats().
-import { evaluateDie, dieTypes, P_SLIGHT, P_STRONG } from '../dice-stats/stats.js';
+import { evaluateDie, dieTypes, playDays, sumCounts, P_SLIGHT, P_STRONG } from '../dice-stats/stats.js';
 import { MODULE_ID, STATS_FLAG } from '../dice-stats/recorder.js';
-import { CONSENT_FLAG, isEnabled } from '../dice-stats/settings.js';
+import { CONSENT_FLAG, consentOf, isEnabled } from '../dice-stats/settings.js';
 
 const HIST = { width: 300, height: 70, total: 84, labelY: 82 };
 const VERDICT_ICON = { normal: '✓', slight: '!', strong: '!!', few: '…', empty: '–' };
@@ -12,11 +13,11 @@ const VERDICT_CLASS = { normal: 'good', slight: 'warn', strong: 'serious', few: 
 
 /**
  * Bereitet die Karten für einen Würfeltyp/eine Würfelart auf. Reine Funktion (Test-Harness).
- * @param {{id:string,name:string,color:string,stats:object}[]} players  Spieler mit Zustimmung
+ * @param {{id:string,name:string,color:string,counts:{d:object,m:object}}[]} players  Spieler mit Zustimmung, Zähler im Zeitraum (sumCounts)
  */
 export function buildCards(players, faces, method, { open = new Set(), fmt = (x, d) => x.toFixed(d) } = {}) {
   return players.map(player => {
-    const counts = player.stats?.[method]?.[faces] ?? Array(faces).fill(0);
+    const counts = player.counts?.[method]?.[faces] ?? Array(faces).fill(0);
     const ev = evaluateDie(counts);
     if (!ev.n) return null;
     const max = Math.max(...counts, ev.expectedPerFace) * 1.08;
@@ -63,32 +64,50 @@ export function getDiceStatsApp() {
       window: { title: 'DSA5HELPERS.DiceStats.Title', icon: 'fas fa-dice-d20', resizable: true },
       position: { width: 720, height: 680 },
       actions: { setFaces: this._setFaces, setMethod: this._setMethod, toggleTable: this._toggleTable, reset: this._reset },
+      form: { handler: this._onChangeForm, submitOnChange: true, closeOnSubmit: false },
+      tag: 'form',
     };
 
     static PARTS = { main: { template: `modules/${MODULE_ID}/templates/dice-stats.hbs`, scrollable: ['.dsa5h-ds-body'] } };
 
-    state = { faces: 20, method: 'd', open: new Set() };
+    // range: 'all' | Spielabend-Schlüssel (YYYY-MM-DD) | 'custom' (from/to, Schlüssel einschließlich)
+    state = { faces: 20, method: 'd', range: 'all', from: '', to: '', open: new Set() };
 
     async _prepareContext(options) {
       const context = await super._prepareContext(options);
-      const users = [...game.users];
-      const consenting = users.filter(u => u.getFlag(MODULE_ID, CONSENT_FLAG) === 'yes' && u.getFlag(MODULE_ID, STATS_FLAG));
-      const players = consenting.map(u => ({ id: u.id, name: u.name, color: u.color?.css ?? String(u.color ?? '#888'), stats: u.getFlag(MODULE_ID, STATS_FLAG) }));
-      const types = dieTypes(players.map(p => p.stats), this.state.method);
-      if (!types.includes(this.state.faces)) this.state.faces = types[0] ?? 20;
+      const isGM = game.user.isGM;
+      // Spieler sehen nur sich selbst; die Daten liegen zwar in allen Clients vor, angezeigt wird aber nur das Eigene.
+      const users = isGM ? [...game.users] : [game.user];
+      const consenting = users.filter(u => (u === game.user ? consentOf() : u.getFlag(MODULE_ID, CONSENT_FLAG)) === 'yes' && u.getFlag(MODULE_ID, STATS_FLAG));
       const lang = game.i18n.lang;
       const fmt = (x, d) => x.toLocaleString(lang, { minimumFractionDigits: d, maximumFractionDigits: d });
-      const since = Math.min(...players.map(p => p.stats.since).filter(Number.isFinite));
+      const dayLabel = key => new Date(`${key}T12:00:00`).toLocaleDateString(lang);
+      const days = playDays(consenting.map(u => u.getFlag(MODULE_ID, STATS_FLAG)));
+      const { range } = this.state;
+      if (range !== 'all' && range !== 'custom' && !days.includes(range)) this.state.range = 'all';
+      const bounds = this.state.range === 'all' ? {} : this.state.range === 'custom' ? { from: this.state.from || null, to: this.state.to || null } : { from: this.state.range, to: this.state.range };
+      const players = consenting.map(u => ({ id: u.id, name: u.name, color: u.color?.css ?? String(u.color ?? '#888'), counts: sumCounts(u.getFlag(MODULE_ID, STATS_FLAG), bounds) }));
+      const types = dieTypes(players.map(p => p.counts), this.state.method);
+      if (!types.includes(this.state.faces)) this.state.faces = types[0] ?? 20;
       return Object.assign(context, {
         enabled: isEnabled(),
-        isGM: game.user.isGM,
+        isGM,
+        ownConsent: consentOf(),
         faces: this.state.faces,
         method: this.state.method,
         types: types.map(f => ({ faces: f, active: f === this.state.faces })),
         methods: ['d', 'm'].map(m => ({ id: m, active: m === this.state.method, label: `DSA5HELPERS.DiceStats.Method.${m}` })),
-        since: Number.isFinite(since) ? new Date(since).toLocaleDateString(lang) : null,
+        ranges: [
+          { value: 'all', label: game.i18n.localize('DSA5HELPERS.DiceStats.Range.All'), selected: this.state.range === 'all' },
+          ...days.map(day => ({ value: day, label: game.i18n.format('DSA5HELPERS.DiceStats.Range.Day', { date: dayLabel(day) }), selected: this.state.range === day })),
+          { value: 'custom', label: game.i18n.localize('DSA5HELPERS.DiceStats.Range.Custom'), selected: this.state.range === 'custom' },
+        ],
+        custom: this.state.range === 'custom',
+        from: this.state.from, to: this.state.to,
+        firstDay: days.length ? days.at(-1) : '', lastDay: days[0] ?? '',
         cards: buildCards(players, this.state.faces, this.state.method, { open: this.state.open, fmt }),
-        hidden: users.filter(u => !consenting.includes(u) && u.getFlag(MODULE_ID, CONSENT_FLAG) !== 'yes').map(u => u.name).join(', '),
+        // Nur für die SL: wer nicht ausgewertet wird.
+        hidden: isGM ? users.filter(u => !consenting.includes(u) && u.getFlag(MODULE_ID, CONSENT_FLAG) !== 'yes').map(u => u.name).join(', ') : '',
         slight: fmt(P_SLIGHT, 2), strong: fmt(P_STRONG, 2),
         hist: HIST,
       });
@@ -99,6 +118,15 @@ export function getDiceStatsApp() {
       this.element.dataset.theme = game.settings.get(MODULE_ID, 'theme');
     }
 
+    /** Zeitraum-Auswahl und Datumsfelder (submitOnChange). */
+    static _onChangeForm(_event, _form, formData) {
+      const data = formData.object;
+      if (typeof data.range === 'string') this.state.range = data.range;
+      if (typeof data.from === 'string') this.state.from = data.from;
+      if (typeof data.to === 'string') this.state.to = data.to;
+      this.render();
+    }
+
     static _setFaces(_event, target) { this.state.faces = Number(target.dataset.faces); this.render(); }
     static _setMethod(_event, target) { this.state.method = target.dataset.method === 'm' ? 'm' : 'd'; this.render(); }
     static _toggleTable(_event, target) {
@@ -107,7 +135,7 @@ export function getDiceStatsApp() {
       this.render();
     }
 
-    /** Nur Spielleitung: Statistik eines Spielers (data-user-id) oder aller zurücksetzen. */
+    /** Nur Spielleitung: Statistik eines Spielers (data-user-id) oder aller löschen (immer der ganze Zeitraum). */
     static async _reset(_event, target) {
       if (!game.user.isGM) return;
       const user = target.dataset.userId ? game.users.get(target.dataset.userId) : null;

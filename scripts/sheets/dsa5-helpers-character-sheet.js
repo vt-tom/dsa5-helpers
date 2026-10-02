@@ -106,7 +106,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { id: PLANNER_TAB_ID, label: "Steigerungsplaner", icon: "systems/dsa5/icons/categories/Career.webp", hint: "" },
     ];
   _currentTab = 'cover';
-  _subtabs = { skills: 'body', combat: 'combat', magic: 'spells', religion: 'spells', notes: 'details' };
+  _subtabs = { skills: 'body', combat: 'body', magic: 'spells', religion: 'spells', notes: 'details' };
   _search = { talent: '', gear: '', combatskill: '' };
   _favoritePending = false;
   // Wohlgefällige Talente (Religion-Tab) starten eingeklappt im Spielmodus, Klick blendet den vollen Text ein —
@@ -244,9 +244,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Own SKILL.* strings ("Körpertalente" etc.) end in "-talente" — dropped here to keep the sub-tabs compact,
       // matching the click-dummy's buildSkillSubTabs() (the full name still shows in the panel title below).
       { tab: 'skills', items: [...skillGroups.map(group => ({ id: group.id, label: localize('SKILL.' + group.id).replace(/s?talente$/i, '') })), { id: 'aggregated', label: localize('aggregatedTests') }] },
-      // Erster Kampf-Unterreiter heißt „Übersicht“ statt nochmals „Kampf“ neben dem Reitertitel (Paket F).
-      // „Körper“ steht vorerst neben der Übersicht, damit Testende beide vergleichen können (Rückmeldung 2026-09-30).
-      { tab: 'combat', items: [{ id: 'combat', label: localize('DSA5HELPERS.Overview') }, { id: 'body', label: localize('DSA5HELPERS.Body') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
+      // „Körper“ ersetzt die frühere „Übersicht“ (Issue #29, Nutzer-Entscheidung 2026-10-02); deren Waffentabellen
+      // stehen jetzt unter dem Körper-Panel.
+      { tab: 'combat', items: [{ id: 'body', label: localize('DSA5HELPERS.Body') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
       ...['magic', 'religion'].map(tab => ({ tab, items: [{ id: 'spells', label: localize(tab === 'magic' ? 'spells' : 'liturgies') }, { id: 'equipment', label: localize('DSA5HELPERS.Tabs.inventory') }] })),
       { tab: 'notes', items: noteSubtabs },
     ];
@@ -280,10 +280,6 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // initiative.value has no .max and carries a fractional tie-breaker for the combat tracker's sort order
       // (baseactor.js calcInitiative(): Math.round(value) + 0.01*value) — floored here exactly like every real
       // system template does ({{floor document.system.status.initiative.value}} in actor-main.hbs etc.).
-      combatValues: ['dodge', 'initiative'].map(id => {
-        const raw = status[id]?.max ?? status[id]?.value;
-        return { label: id, value: raw === undefined ? '–' : Math.floor(raw) };
-      }),
       // Grundwerte (Eigenschaften-Reiter): Initiative abgerundet wie oben und im Systembogen.
       initiative: Math.floor(status.initiative?.value ?? 0),
       regenerations: ['wounds', 'astralenergy', 'karmaenergy'].filter(id => this.actor.system.repeatingEffects?.startOfRound?.[id]?.length).map(id => ({ id, active: !this.actor.system.repeatingEffects.disabled?.[id] })),

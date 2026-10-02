@@ -1159,7 +1159,6 @@
 .dsa5-helpers-sheet .dsa5h-content .row > * { min-width:0; }
 .dsa5-helpers-sheet .dsa5h-content .grid-2 > .panel { margin:0; }
 .dsa5-helpers-sheet .dsa5h-empty { padding:14px; color:var(--muted); margin:0; }
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-pair { grid-template-columns:minmax(0,1fr) auto; }
 .dsa5-helpers-sheet .dsa5h-probe-die { display:inline-block; flex:0 0 28px; width:28px; height:30px; line-height:30px; background:center/contain no-repeat; color:white; text-align:center; font-size:11px; text-shadow:0 1px 2px #000; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-favorite { border:0; background:none; color:var(--muted); font-size:20px; padding:0; width:28px; height:28px; margin:-4px -2px; border-radius:50%; min-height:0; line-height:1; }
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-favorite[aria-pressed=true] { color:var(--accent); }
@@ -1170,7 +1169,6 @@
 .dsa5-helpers-sheet .dsa5h-quick-actions button { display:flex; align-items:center; gap:6px; }
 .dsa5-helpers-sheet .dsa5h-quick-actions img { width:20px; height:20px; object-fit:contain; }
 .dsa5-helpers-sheet .dsa5h-quick-glyph { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; font-size:15px; line-height:1; color:var(--muted); }
-.dsa5-helpers-sheet .dsa5h-combat-top { align-items:stretch; margin-bottom:16px; }
 /* Griffspalte fasst zwei 28px-Knöpfe (UI/UX-Review 2026-09-25, Paket A/C); FK spannt bei Fernkampf über AT+PA wie im Click-Dummy. */
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-weapon-row { grid-template-columns:60px minmax(100px,1fr) 50px 50px 72px 76px 62px 24px 24px; }
 .dsa5-helpers-sheet .dsa5h-weapon-row .dsa5h-span-2 { grid-column:span 2; display:flex; justify-content:center; }
@@ -1239,17 +1237,13 @@
    Tabellenhöhe wächst/schrumpft einfach mit der Stückzahl. Bildfüllung/Overlay-Badges (Nutzer-Feedback
    2026-09-18, siehe NOTIZEN.md): das Bild füllt die ganze Kachel, Name als Lesbarkeits-Gradient oben zentriert,
    RS/BE als kleine Badges unten links/rechts direkt über dem Bild statt als Textzeile darunter. */
-.dsa5-helpers-sheet .dsa5h-armor-slots { display:flex; flex-wrap:wrap; gap:10px; padding:8px 11px; }
 .dsa5-helpers-sheet .dsa5h-armor-slot { position:relative; width:100px; height:100px; border:1px solid var(--line); border-radius:4px; overflow:hidden; background:var(--field); }
 .dsa5-helpers-sheet .dsa5h-armor-slot-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; margin:0; border:none; }
 .dsa5-helpers-sheet .dsa5h-armor-slot meter { position:absolute; bottom:0; left:0; width:100%; height:3px; z-index:1; }
-.dsa5-helpers-sheet .dsa5h-armor-slot-name { position:absolute; top:0; left:0; right:0; z-index:1; padding:3px 5px; font-size:var(--fs-meta); text-align:center; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.85); background:linear-gradient(180deg, rgba(0,0,0,.65), transparent); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.dsa5-helpers-sheet .dsa5h-armor-slot-name a { color:inherit; }
 .dsa5-helpers-sheet .dsa5h-armor-slot-rs,
 .dsa5-helpers-sheet .dsa5h-armor-slot-be { position:absolute; bottom:4px; z-index:1; padding:1px 5px; border-radius:3px; background:rgba(0,0,0,.55); color:#fff; font-size:var(--fs-meta); font-weight:bold; text-shadow:0 1px 2px rgba(0,0,0,.85); }
 .dsa5-helpers-sheet .dsa5h-armor-slot-rs { left:4px; }
 .dsa5-helpers-sheet .dsa5h-armor-slot-be { right:4px; }
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-total { border-top:2px solid var(--line); font-family:'GentiumBasic', Georgia, serif; }
 .dsa5-helpers-sheet .dsa5h-item-image { position:relative; display:block; width:40px; height:44px; }
 .dsa5-helpers-sheet .dsa5h-item-image img { width:40px; height:40px; object-fit:cover; border:1px solid var(--line); }
 .dsa5-helpers-sheet .dsa5h-item-image meter { position:absolute; bottom:0; left:0; width:40px; height:5px; }
@@ -1552,7 +1546,7 @@
    (nie unter 12px), --fs-big hervorgehobene Zahlen. 15px nach Vergleich im Click-Dummy (Nutzer-Entscheidung). */
 .dsa5-helpers-sheet { --fs-data:15px; --fs-small:calc(var(--fs-data) - 1px); --fs-meta:max(12px, calc(var(--fs-data) - 3px)); --fs-big:calc(var(--fs-data) + 3px); }
 /* Zahlen in Textschrift statt Andalus (Überschriften bleiben Andalus). */
-.dsa5-helpers-sheet .dsa5h-content :is(.big, .xp-num, .dsa5h-armor-total), .dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-label { font-family:'GentiumBasic', Georgia, serif; font-weight:700; font-variant-numeric:tabular-nums; }
+.dsa5-helpers-sheet .dsa5h-content :is(.big, .xp-num), .dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-label { font-family:'GentiumBasic', Georgia, serif; font-weight:700; font-variant-numeric:tabular-nums; }
 /* Würfelzahlen überall weiß mit dunkler Kontur — trägt auch auf den hellen FF/GE/KO/KK-Würfeln — die Kampfwürfel brauchen .dsa5h-content, sonst gewinnt ihre ältere Regel mit 0 1px 2px-Schatten (Nutzer-Entscheidung
    2026-09-25 nach Vergleich im Click-Dummy, Variante A). */
 .dsa5-helpers-sheet :is(.dsa5h-probe-die, .dsa5h-attr-die, .dsa5h-attr-die-mini-face), .dsa5-helpers-sheet .dsa5h-content .dsa5h-combat-die { color:#fff; text-shadow:0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b, 1px 1px 1px #140f0b, -1px -1px 1px #140f0b, 1px -1px 1px #140f0b, -1px 1px 1px #140f0b; }
@@ -1798,10 +1792,11 @@
 .dsa5-helpers-sheet .dsa5h-die-seal::after { inset:-5px; z-index:-1; background:var(--head-base); filter:drop-shadow(0 1px 2px rgba(0,0,0,.55)); }
 .dsa5-helpers-sheet .dsa5h-die-seal::before { inset:-7px; z-index:-2; background:var(--accent); filter:drop-shadow(0 1px 2px rgba(0,0,0,.5)); }
 @media (prefers-reduced-motion: reduce) { .dsa5-helpers-sheet .dsa5h-die-seal { transition:none; } }
-.dsa5-helpers-sheet .dsa5h-body-actions { padding:0 12px; border-top:1px solid var(--line); }
-.dsa5-helpers-sheet .dsa5h-body-actions .dsa5h-quick-actions { justify-content:center; }
-/* Rüstungszeile unter den Schnellaktionen: Schutz/Belastung | Kacheln | Initiative (ersetzt die frühere Wertezeile). */
-.dsa5-helpers-sheet .dsa5h-body-armor-row { display:grid; grid-template-columns:auto minmax(0, 1fr) auto; align-items:start; gap:18px; padding:10px 12px; }
+.dsa5-helpers-sheet .dsa5h-body-top { display:flex; align-items:center; gap:10px 18px; padding:0 12px; border-bottom:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-body-top .dsa5h-quick-actions { flex:1; justify-content:flex-start; }
+.dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-ini { flex:none; align-items:center; text-align:center; padding:0; }
+/* Rüstungszeile unter der Figur: Schutz/Belastung | Kacheln (ersetzt die frühere Wertezeile). */
+.dsa5-helpers-sheet .dsa5h-body-armor-row { display:grid; grid-template-columns:auto minmax(0, 1fr); align-items:start; gap:18px; padding:10px 12px; border-top:1px solid var(--line); }
 .dsa5-helpers-sheet :is(.dsa5h-body-armor-sum, .dsa5h-body-ini) { display:flex; flex-direction:column; gap:6px; }
 .dsa5-helpers-sheet .dsa5h-body-ini { align-items:flex-end; text-align:right; padding-top:19px; }
 .dsa5-helpers-sheet .dsa5h-body-armor-row > .dsa5h-empty { align-self:center; justify-self:center; margin:0; }
@@ -1955,7 +1950,6 @@
 .dsa5-helpers-dice-stats .dsa5h-ds { display:flex; flex-direction:column; min-height:0; height:100%; }
 .dsa5-helpers-dice-stats .dsa5h-ds-off { margin:10px 12px 0; padding:6px 10px; border:1px solid var(--accent); border-radius:4px; font-size:var(--fs-small); }
 .dsa5-helpers-dice-stats .dsa5h-ds-filters { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; padding:10px 12px; border-bottom:1px solid var(--line); }
-.dsa5-helpers-dice-stats .dsa5h-ds-since { margin-left:auto; font-size:var(--fs-meta); color:var(--muted); }
 .dsa5-helpers-dice-stats .dsa5h-ds-seg { display:inline-flex; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
 .dsa5-helpers-dice-stats .dsa5h-ds-seg button { width:auto; height:auto; min-height:0; margin:0; padding:3px 10px; border:0; border-radius:0; background:var(--field); color:var(--ink); font:inherit; font-size:var(--fs-small); line-height:1.4; box-shadow:none; cursor:pointer; }
 .dsa5-helpers-dice-stats .dsa5h-ds-seg button + button { border-left:1px solid var(--line); }
@@ -1999,3 +1993,7 @@
 .dsa5-helpers-dice-stats :is(.dsa5h-ds-test, .dsa5h-ds-note) { font-size:var(--fs-meta); color:var(--muted); }
 .dsa5-helpers-dice-stats .dsa5h-ds-empty { padding:20px; text-align:center; color:var(--muted); }
 .dsa5-helpers-dice-stats .dsa5h-ds-footer { display:flex; justify-content:flex-end; padding:8px 12px; border-top:1px solid var(--line); }
+.dsa5-helpers-dice-stats .dsa5h-ds-range { display:inline-flex; align-items:center; gap:6px; margin-left:auto; font-size:var(--fs-small); }
+.dsa5-helpers-dice-stats .dsa5h-ds-range select { width:auto; height:auto; min-height:0; padding:2px 6px; background:var(--field); color:var(--ink); border:1px solid var(--line); font:inherit; font-size:var(--fs-small); }
+.dsa5-helpers-dice-stats .dsa5h-ds-dates { display:inline-flex; align-items:center; gap:6px; flex-basis:100%; justify-content:flex-end; }
+.dsa5-helpers-dice-stats .dsa5h-ds-dates input { width:auto; height:auto; padding:2px 6px; background:var(--field); color:var(--ink); border:1px solid var(--line); font:inherit; font-size:var(--fs-small); }

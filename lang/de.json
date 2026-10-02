@@ -22,7 +22,6 @@
     "Empty": "Keine Einträge vorhanden.",
     "More": "weitere",
     "Contents": "Inhalt",
-    "CombatValues": "Kampfwerte",
     "MeleeSkills": "Nahkampftechniken",
     "RangeSkills": "Fernkampftechniken",
     "MeleeWeapons": "Nahkampfwaffen",
@@ -85,7 +84,6 @@
       "train": "Trick",
       "mount": "Reittier"
     },
-    "Overview": "Übersicht",
     "SearchCombatSkills": "Kampftechniken suchen …",
     "NoSearchResults": "Keine Treffer.",
     "JumpToCombatSkill": "{name}, Kampftechnikwert {value} — zur Kampftechnik springen",
@@ -149,7 +147,7 @@
       "Title": "Würfelstatistik",
       "Consent": {
         "Question": "Dürfen deine Würfe für die Würfelstatistik ausgewertet werden?",
-        "Info": "Gezählt wird nur, wie oft welche Augenzahl fällt – keine einzelnen Würfe. Alle Mitspieler können deine Statistik sehen.",
+        "Info": "Gezählt wird nur, wie oft welche Augenzahl je Spielabend fällt – keine einzelnen Würfe. Du siehst deine eigene Statistik, die Spielleitung die aller Spieler.",
         "Change": "Du kannst das jederzeit in den Moduleinstellungen ändern. Ziehst du die Zustimmung zurück, wird nichts mehr gezählt und deine Statistik ausgeblendet.",
         "Yes": "Ja, auswerten",
         "No": "Nein"
@@ -157,7 +155,7 @@
       "Settings": {
         "Enabled": {
           "Name": "Würfelstatistik",
-          "Hint": "Zählt je Spieler und Würfeltyp, wie oft welche Augenzahl fällt, und zeigt, ob die Verteilung statistisch auffällig ist. Jeder Spieler wird vorher um Zustimmung gefragt. Gespeichert werden nur Zähler."
+          "Hint": "Zählt je Spieler und Würfeltyp, wie oft welche Augenzahl fällt, und zeigt, ob die Verteilung statistisch auffällig ist. Jeder Spieler wird vorher um Zustimmung gefragt und sieht nur seine eigene Statistik, die Spielleitung alle. Gespeichert werden nur Zähler je Spielabend."
         },
         "Consent": {
           "Name": "Würfelstatistik: meine Würfe auswerten",
@@ -169,7 +167,7 @@
       },
       "Menu": {
         "Label": "Würfelstatistik öffnen",
-        "Hint": "Zeigt je Spieler und Würfeltyp, wie oft welche Augenzahl gefallen ist und ob das statistisch auffällig ist."
+        "Hint": "Zeigt, wie oft welche Augenzahl gefallen ist und ob das statistisch auffällig ist – Spieler ihre eigene Statistik, die Spielleitung alle."
       },
       "Disabled": "Die Würfelstatistik ist ausgeschaltet. Die Spielleitung kann sie in den Moduleinstellungen einschalten; bisherige Daten bleiben sichtbar.",
       "DieType": "Würfeltyp",
@@ -179,7 +177,6 @@
         "d": "Digital",
         "m": "Echte Würfel"
       },
-      "Since": "seit {date}",
       "Verdict": {
         "normal": "unauffällig",
         "slight": "leicht auffällig",
@@ -207,12 +204,21 @@
       "Note": "Digitale und echte Würfel werden getrennt ausgewertet. Bei vielen Spielern und Würfeltypen sind einzelne Ausreißer reiner Zufall – „auffällig“ heißt nur, dass sich ein genauerer Blick lohnt.",
       "Hidden": "Nicht ausgewertet (keine Zustimmung): {names}.",
       "Reset": {
-        "Title": "Würfelstatistik zurücksetzen",
-        "One": "Die Statistik von {name} wird gelöscht. Das lässt sich nicht rückgängig machen.",
-        "All": "Die Statistik aller Spieler wird gelöscht. Das lässt sich nicht rückgängig machen.",
-        "OneLabel": "Statistik von {name} zurücksetzen",
-        "AllLabel": "Alle zurücksetzen"
-      }
+        "Title": "Würfelstatistik löschen",
+        "One": "Die gesamte Statistik von {name} wird gelöscht (alle Spielabende). Das lässt sich nicht rückgängig machen.",
+        "All": "Die gesamte Statistik aller Spieler wird gelöscht (alle Spielabende). Das lässt sich nicht rückgängig machen.",
+        "OneLabel": "Statistik von {name} löschen",
+        "AllLabel": "Alle Statistiken löschen"
+      },
+      "Range": {
+        "Label": "Zeitraum",
+        "All": "Gesamt",
+        "Day": "Spielabend {date}",
+        "Custom": "Eigener Zeitraum …",
+        "From": "von",
+        "To": "bis"
+      },
+      "NoConsent": "Du hast der Auswertung deiner Würfe nicht zugestimmt. Das kannst du in den Moduleinstellungen ändern."
     }
   }
 }
