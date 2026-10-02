@@ -72,7 +72,7 @@ test('Heldenname (#25): Tooltip im Spielmodus, Schrift wird bis 22px eingepasst,
  try{assert.equal(fit('Kurz',400),undefined,'short name keeps the CSS size');assert.equal(fit('x'.repeat(20),300),'29px');assert.equal(fit('x'.repeat(30),300),'22px','never below 22px');}
  finally{global.getComputedStyle=savedStyle;}
 });
-test('personal details are the first, default notes sub-tab (issue #26)',async()=>{const {sheet,context}=await prepare();const html=render(context);assert.deepEqual(context.dsa5h.subnav.find(n=>n.tab==='notes').items.slice(0,3).map(i=>i.id),['details','biography','notes']);assert.equal(sheet._subtabs.notes,'details');assert(!html.includes('dsa5h-notes-layout'));const panel=id=>elements(html,el=>el.attribs?.['data-sub-panel']==='notes:'+id)[0];assert(panel('details')&&!('hidden' in panel('details').attribs));assert('hidden' in panel('biography').attribs);assert.equal(elements(html,el=>el.name==='input'&&/^system\.details\.(gender|family|age|height|weight|Home|socialstate|haircolor|eyecolor|distinguishingmark)\.value$/.test(el.attribs?.name||'')).length,10);});
+test('personal details are the first, default notes sub-tab (issue #26)',async()=>{const {sheet,context}=await prepare();const html=render(context);assert.deepEqual(context.dsa5h.subnav.find(n=>n.tab==='notes').items.slice(0,3).map(i=>i.id),['details','biography','notes']);assert.equal(sheet._subtabs.notes,'details');assert(!html.includes('dsa5h-notes-layout'));const panel=id=>elements(html,el=>el.attribs?.['data-sub-panel']==='notes:'+id)[0];assert(panel('details')&&!('hidden' in panel('details').attribs));assert(!('hidden' in panel('biography').attribs),'all notes sections stacked (#32)');assert.equal(elements(html,el=>el.name==='input'&&/^system\.details\.(gender|family|age|height|weight|Home|socialstate|haircolor|eyecolor|distinguishingmark)\.value$/.test(el.attribs?.name||'')).length,10);});
 test('notes editors and coin inputs follow the real ApplicationV2 context flag "editable"',async()=>{const {context}=await prepare();delete context.isEditable;context.editable=true;let html=render(context);const coin=()=>elements(html,el=>el.attribs?.class==='money-change')[0];const editors=()=>elements(html,el=>['system.details.biography.value','system.details.notes.value','system.details.notes.ownerdescription','system.details.notes.gmdescription'].includes(el.attribs?.name));assert(coin());assert(!('disabled' in coin().attribs));assert.equal(editors().length,4);assert(editors().every(el=>!('disabled' in el.attribs)));context.editable=false;html=render(context);assert('disabled' in coin().attribs);assert(editors().every(el=>'disabled' in el.attribs));});
 test('play mode disables FW correction, preserves rolls',async()=>{const {sheet}=await prepare();sheet.context.prepare.sheetLocked=true;sheet.context.prepare.canAdvance=false;const context=await sheet._prepareContext({});const html=render(context);const values=elements(html,el=>el.attribs?.class==='skill-advances');assert(values.length);assert(values.every(el=>Object.hasOwn(el.attribs,'disabled')));assert(html.includes('data-action="skillSelect"'));assert(!html.includes('data-fct="_advanceItem"'));});
 test('favorites use actor flags, remove missing items and enforce ownership',async()=>{const {sheet,actor,context}=await prepare();assert.equal(context.dsa5h.favorites.missing,undefined);assert.equal(context.dsa5h.favoriteGroups.length,2);await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'skill'}});assert.deepEqual(actor.saved.value,['weapon']);delete actor.saved;sheet.isEditable=false;await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'spell'}});assert.equal(actor.saved,undefined);});
@@ -123,7 +123,7 @@ test('navigation rejects unknown tabs and preserves subtab selection',async()=>{
  const {sheet}=await prepare();const panel={dataset:{tabPanel:'combat'}};const sub={dataset:{subPanel:'combat:skills'}};const button={dataset:{parentTab:'combat',subtab:'skills'},classList:{toggle(_key,value){this.active=value;}},setAttribute(k,v){this[k]=v;}};
  sheet.element={dataset:{},querySelector(){return null;},querySelectorAll(selector){return selector==='[data-tab-panel]'?[panel]:selector==='[data-sub-panel]'?[sub]:selector==='[data-subtab]'?[button]:[];}};
  Sheet.DEFAULT_OPTIONS.actions.dsa5hSetTab.call(sheet,{}, {dataset:{tab:'invalid'}});assert.equal(sheet._currentTab,'cover');
- Sheet.DEFAULT_OPTIONS.actions.dsa5hSetTab.call(sheet,{}, {dataset:{tab:'combat'}});Sheet.DEFAULT_OPTIONS.actions.dsa5hSetSubTab.call(sheet,{},button);assert.equal(panel.hidden,false);assert.equal(sub.hidden,false);assert.equal(button['aria-pressed'],'true');await sheet._prepareContext({});assert.equal(sheet._subtabs.combat,'skills');
+ Sheet.DEFAULT_OPTIONS.actions.dsa5hSetTab.call(sheet,{}, {dataset:{tab:'combat'}});Sheet.DEFAULT_OPTIONS.actions.dsa5hSetSubTab.call(sheet,{},button);assert.equal(panel.hidden,false);assert(!sub.hidden,'sub-panels are never hidden (#32)');assert.equal(button['aria-pressed'],'true');await sheet._prepareContext({});assert.equal(sheet._subtabs.combat,'skills');
  Sheet.DEFAULT_OPTIONS.actions.dsa5hSetTab.call(sheet,{}, {dataset:{tab:'companion'}});assert.equal(sheet.tabGroups.sheet,'companion','inherited _onDropActor recognises the companion tab via tabGroups.sheet (#15)');
 });
 test('bags expose the category required by the inherited drop handler',async()=>{const {context}=await prepare();const html=render(context);const bag=elements(html,el=>el.attribs?.class==='item dsa5h-bag')[0];assert.equal(bag.attribs['data-category'],'bags');assert.equal(bag.attribs['data-item-id'],'bag');});
@@ -375,12 +375,12 @@ test('Würfelstatistik (#28): Chi-Quadrat-p-Werte gegen Tabellenwerte, Einstufun
  assert.equal(s.evaluateDie([32,10,12,14,16,16]).verdict,'strong');
  const ev=s.evaluateDie([2,1,1]);assert.equal(ev.n,4);assert.deepEqual(ev.deviations.map(d=>+d.toFixed(2)),[.5,-.25,-.25]);
 });
-test('Würfelstatistik (#28): Speicherformat je Spielabend bleibt klein, Zeitraum-Summen und Übernahme des alten Formats',async()=>{
- const s=await esm('scripts/dice-stats/stats.js');
+test('Würfelstatistik (#28): Speicherformat je Tag bleibt klein, Zeitraum-Summen und Übernahme des alten Formats',async()=>{
+ const s=await esm('scripts/dice-stats/stats.js');const NOW=new Date(2026,9,2,22).getTime();
  const w=(i,v,n=20)=>Array.from({length:n},(_,k)=>k===i?v:0);
- const a=s.mergeCounts(null,{'2026-10-01':{d:{20:w(0,1)}}});
+ const a=s.mergeCounts(null,{'2026-10-01':{d:{20:w(0,1)}}},NOW);
  assert.deepEqual(a,{v:2,days:{'2026-10-01':{d:{20:w(0,1)},m:{}}}});
- const b=s.mergeCounts(a,{'2026-10-01':{d:{20:[1]},m:{6:[0,0,3,0,0,0]}},'2026-10-02':{d:{20:w(19,2)}}});
+ const b=s.mergeCounts(a,{'2026-10-01':{d:{20:[1]},m:{6:[0,0,3,0,0,0]}},'2026-10-02':{d:{20:w(19,2)}}},NOW);
  assert.equal(b.days['2026-10-01'].d[20][0],2);assert.equal(b.days['2026-10-01'].d[20].length,20);assert.deepEqual(b.days['2026-10-01'].m[6],[0,0,3,0,0,0]);
  assert.equal(a.days['2026-10-01'].d[20][0],1,'Eingabe wird nicht verändert');
  assert.deepEqual(s.playDays([b,{v:2,days:{'2026-09-24':{d:{},m:{}}}}]),['2026-10-02','2026-10-01','2026-09-24'],'neueste zuerst');
@@ -388,14 +388,14 @@ test('Würfelstatistik (#28): Speicherformat je Spielabend bleibt klein, Zeitrau
  const day=s.sumCounts(b,{from:'2026-10-02',to:'2026-10-02'});assert.equal(day.d[20][0],0);assert.equal(day.d[20][19],2);assert.deepEqual(day.m,{});
  assert.equal(s.sumCounts(b,{from:'2026-10-02'}).d[20][19],2);assert.equal(s.sumCounts(b,{to:'2026-10-01'}).d[20][19],0,'offene Grenzen');
  assert.deepEqual(s.dieTypes([all,{d:{6:[1,0,0,0,0,0],3:[0,0,0]}}],'d'),[20,6],'leere Zähler und fremde Würfelart zählen nicht; W20 vorn');
- // Spielabend reicht bis 6 Uhr: 1 Uhr nachts zählt zum Vortag.
+ // Ein Tag reicht bis 6 Uhr: 1 Uhr nachts zählt zum Vortag.
  assert.equal(s.dayKey(new Date(2026,9,3,1,30).getTime()),'2026-10-02');assert.equal(s.dayKey(new Date(2026,9,2,19,0).getTime()),'2026-10-02');
  // Version 1 (ein Topf) wird als ein Abend am Tag von since übernommen.
  const old={v:1,since:new Date(2026,9,1,20).getTime(),d:{6:[1,2,3,4,5,6]},m:{}};
  assert.deepEqual(s.normalizeStats(old),{v:2,days:{'2026-10-01':{d:{6:[1,2,3,4,5,6]},m:{}}}});
- assert.equal(s.mergeCounts(old,{'2026-10-02':{d:{6:[1,0,0,0,0,0]}}}).days['2026-10-01'].d[6][5],6,'alte Daten bleiben erhalten');
+ assert.equal(s.mergeCounts(old,{'2026-10-02':{d:{6:[1,0,0,0,0,0]}}},NOW).days['2026-10-01'].d[6][5],6,'alte Daten bleiben erhalten');
  // Ein typischer Spielabend (W20, W6, W3) braucht gut 100 Byte.
- const evening=s.mergeCounts(null,{'2026-10-02':{d:{20:Array(20).fill(8),6:Array(6).fill(10),3:[3,3,4]}}});
+ const evening=s.mergeCounts(null,{'2026-10-02':{d:{20:Array(20).fill(8),6:Array(6).fill(10),3:[3,3,4]}}},NOW);
  assert(JSON.stringify(evening.days['2026-10-02']).length<160,JSON.stringify(evening).length);
 });
 test('Würfelstatistik (#28): Erfassung nur mit Aktivierung + Zustimmung, ohne Mindest-/Höchstwerte, echte Würfel getrennt, gebündelt gespeichert',async()=>{
@@ -479,7 +479,7 @@ test('Würfelstatistik (#28): Fenster „Karten“ – Karten je Spieler, Diagra
  assert(/registerMenu\('dsa5-helpers', 'diceStats'[\s\S]*?restricted: false/.test(read('scripts/dsa5-helpers.js')),'für alle über die Moduleinstellungen erreichbar');
  assert(read('scripts/dsa5-helpers.js').includes('"modules/dsa5-helpers/templates/dice-stats.hbs"'));
 });
-test('body tab (#29): armor shield at the top with breakdown tooltip, ammo picker in the ranged hand, short list of other weapons and trait attacks',async()=>{
+test('body tab (#29): armor shield in the armor row with breakdown tooltip, ammo picker in the ranged hand, short list of other weapons and trait attacks',async()=>{
  const {sheet,actor}=await prepare();const p=sheet.context.prepare;
  const armor=(id,rs,be,name)=>{const a=item(id,'armor');a.name=name;a.system.protection={value:rs};a.system.calculatedEncumbrance=be;return a;};
  p.wornArmor=[armor('a1',2,1,'Kettenhemd'),armor('a2',1,0,'Helm <b>')];p.armorSum=3;p.spellArmor=1;p.liturgyArmor=0;
@@ -490,8 +490,8 @@ test('body tab (#29): armor shield at the top with breakdown tooltip, ammo picke
  p.wornMeleeWeapons=[dagger,spare];p.wornRangedWeapons=[ranged];p.traits={meleeAttack:[bite],rangeAttack:[]};
  for(const w of [ranged,dagger,spare])actor.items.set(w._id,w);
  const context=await sheet._prepareContext({});const html=render(context);
- const top=elements(html,el=>el.attribs?.class==='dsa5h-body-top')[0];
- const shield=dom.findAll(el=>el.attribs?.class==='dsa5h-body-shield',top.children)[0];assert(shield,'shield in the top bar');
+ const armorRow=elements(html,el=>el.attribs?.class==='dsa5h-body-armor-row')[0];
+ const shield=dom.findAll(el=>el.attribs?.class==='dsa5h-body-shield',armorRow.children)[0];assert(shield,'shield in the armor row');assert.equal(armorRow.children.filter(n=>n.type==='tag').at(-1),shield,'right-aligned at the end');
  assert(dom.textContent(shield).includes('3')&&dom.textContent(shield).includes('+1'),'RS sum and magic bonus');
  const tip=shield.attribs['data-tooltip'];assert(tip.includes('Kettenhemd')&&tip.includes('Helm &amp;lt;b&amp;gt;')||tip.includes('Helm &lt;b&gt;'),'pieces listed, names escaped');assert(!tip.includes('<b>'));
  assert.equal(context.dsa5h.body.magicArmor,1);assert(shield.attribs['aria-label']);
@@ -501,4 +501,36 @@ test('body tab (#29): armor shield at the top with breakdown tooltip, ammo picke
  assert.deepEqual(short.map(r=>r.attribs['data-item-id']),['spare','bite'],'worn weapon outside the hands + trait attack');
  assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='chRollCombat',short[1].children).length,3,'trait attack stays rollable (AT, PA, TP)');
  assert(dom.findAll(el=>String(el.attribs?.class??'').includes('withContext'),short[0].children).length,'context menu target');
+});
+test('sub-tabs as jump marks in every tab (#32): all sections render, a sub-tab scrolls to its section, scrolling moves the mark',async()=>{
+ const {sheet,context}=await prepare();const html=render(context);
+ for(const [tab,ids] of [['combat',['body','skills']],['magic',['spells','equipment']],['religion',['spells','equipment']],['notes',['details','biography','notes']]]){
+  for(const id of ids){const panel=elements(html,el=>el.attribs?.['data-sub-panel']===tab+':'+id)[0];assert(panel,tab+':'+id);assert(!('hidden' in panel.attribs),tab+':'+id+' visible');}
+ }
+ // Scroll-Mitführung und Sprung an einem nachgebauten Inhaltsbereich (Abschnitte bei 0/400/900 px, Fenster 300 px hoch).
+ const mk=(id,top)=>({dataset:{subPanel:'magic:'+id},hidden:false,getBoundingClientRect:()=>({top:top-content.scrollTop})});
+ const content={scrollTop:0,clientHeight:300,scrollHeight:1400,getBoundingClientRect:()=>({top:0}),scrollTo({top}){this.target=top;},querySelector:()=>null};
+ const sections=[mk('spells',0),mk('equipment',400)];
+ const buttons=[];sheet.element={dataset:{},querySelector:sel=>sel==='.dsa5h-content'?content:null,querySelectorAll:sel=>sel.startsWith('[data-tab-panel="magic"] [data-sub-panel^="magic:"]')?sections:sel==='[data-subtab]'?buttons:[]};
+ sheet._currentTab='magic';sheet._subtabs.magic='spells';
+ Sheet.DEFAULT_OPTIONS.actions.dsa5hSetSubTab.call(sheet,{},{dataset:{parentTab:'magic',subtab:'equipment'}});
+ assert.equal(sheet._subtabs.magic,'equipment');assert.equal(content.target,396,'scrolls to the section top');assert(sheet._jumping,'mark frozen while jumping');
+ sheet._jumping=false;content.scrollTop=380;sheet._onContentScroll();assert.equal(sheet._subtabs.magic,'equipment');
+ content.scrollTop=100;sheet._onContentScroll();assert.equal(sheet._subtabs.magic,'spells','mark follows scrolling back');
+ content.scrollTop=1100;sheet._onContentScroll();assert.equal(sheet._subtabs.magic,'equipment','bottom marks the last section');
+});
+test('Würfelstatistik (#28): Tage älter als 12 Monate werden zusammengefasst, Gesamtsumme bleibt richtig',async()=>{
+ const s=await esm('scripts/dice-stats/stats.js');const NOW=new Date(2026,9,2,22).getTime();
+ const w=(i,v)=>Array.from({length:6},(_,k)=>k===i?v:0);
+ let st=s.mergeCounts(null,{'2025-09-01':{d:{6:w(0,2)}},'2025-10-01':{d:{6:w(1,3)}},'2025-10-10':{d:{6:w(2,4)}},'2026-10-01':{d:{6:w(3,5)}}},NOW);
+ assert.deepEqual(Object.keys(st.days).sort(),['2025-10-10','2026-10-01'],'nur die letzten 12 Monate einzeln');
+ assert.deepEqual(st.older.d[6],[2,3,0,0,0,0]);assert.equal(st.olderUntil,'2025-10-01');
+ assert.deepEqual(s.sumCounts(st).d[6],[2,3,4,5,0,0],'Gesamt inkl. zusammengefasster Tage');
+ assert.deepEqual(s.sumCounts(st,{from:'2025-10-10'}).d[6],[0,0,4,5,0,0],'Zeitraum mit Anfang ohne den Sammeltopf');
+ assert.deepEqual(s.sumCounts(st,{to:'2026-01-01'}).d[6],[2,3,4,0,0,0],'ohne Anfang mit Sammeltopf');
+ assert.deepEqual(s.playDays([st]),['2026-10-01','2025-10-10']);
+ // Ein Jahr später rutscht der nächste Tag in den Sammeltopf, ohne dass etwas verloren geht.
+ st=s.mergeCounts(st,{'2026-10-20':{d:{6:w(5,1)}}},new Date(2026,9,20,22).getTime());
+ assert.deepEqual(Object.keys(st.days).sort(),['2026-10-01','2026-10-20']);assert.deepEqual(st.older.d[6],[2,3,4,0,0,0]);assert.equal(st.olderUntil,'2025-10-10');
+ assert.deepEqual(s.sumCounts(st).d[6],[2,3,4,5,0,1]);
 });

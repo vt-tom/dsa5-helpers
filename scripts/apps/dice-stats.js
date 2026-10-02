@@ -1,7 +1,7 @@
 // Würfelstatistik-Fenster (Issue #28, Darstellung B „Karten“, Nutzer-Entscheidung 2026-10-02; Clickdummy
 // clickdummy/dice-stats.js). Je Spieler mit Zustimmung eine Karte: Einstufung, Balkendiagramm der Augenzahlen mit
 // Erwartungslinie, Kennzahlen, aufklappbare Tabelle. Oben Würfeltyp, Würfelart (digital / echte Würfel) und Zeitraum
-// (gesamt, ein Spielabend oder eigener Zeitraum). Spieler sehen nur die eigene Statistik, die SL alle (2026-10-02).
+// (gesamt, ein Tag oder eigener Zeitraum). Spieler sehen nur die eigene Statistik, die SL alle (2026-10-02).
 // Geöffnet über die Moduleinstellungen (registerMenu) oder game.modules.get('dsa5-helpers').api.openDiceStats().
 import { evaluateDie, dieTypes, playDays, sumCounts, P_SLIGHT, P_STRONG } from '../dice-stats/stats.js';
 import { MODULE_ID, STATS_FLAG } from '../dice-stats/recorder.js';
@@ -70,7 +70,7 @@ export function getDiceStatsApp() {
 
     static PARTS = { main: { template: `modules/${MODULE_ID}/templates/dice-stats.hbs`, scrollable: ['.dsa5h-ds-body'] } };
 
-    // range: 'all' | Spielabend-Schlüssel (YYYY-MM-DD) | 'custom' (from/to, Schlüssel einschließlich)
+    // range: 'all' | Tages-Schlüssel (YYYY-MM-DD) | 'custom' (from/to, Schlüssel einschließlich)
     state = { faces: 20, method: 'd', range: 'all', from: '', to: '', open: new Set() };
 
     async _prepareContext(options) {

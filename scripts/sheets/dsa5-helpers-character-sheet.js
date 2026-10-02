@@ -380,7 +380,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         if (event.target?.classList?.contains('dsa5h-content')) this._onContentScroll();
       }, { capture: true, passive: true });
       this.element.addEventListener('scrollend', event => {
-        if (event.target?.classList?.contains('dsa5h-content')) this._skillJumping = false;
+        if (event.target?.classList?.contains('dsa5h-content')) this._jumping = false;
       }, { capture: true, passive: true });
       // Munitionswahl (<details class="dsa5h-ammo-pick">) schließt sich bei einem Klick daneben wie ein Dropdown.
       this.element.addEventListener('click', event => {
@@ -649,14 +649,12 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this._currentTab = target.dataset.tab;
     this._applyCurrentTab();
     this.element.querySelector('.dsa5h-content')?.scrollTo({ top: 0 });
+    // Die Liste steht wieder oben — also ist der erste Abschnitt markiert (Talente und alle Reiter mit Unterreitern, #32).
+    const first = this._jumpSections(this._currentTab)[0];
+    if (first) this._subtabs[this._currentTab] = first.id;
+    this._applySubTabButtons();
     // Switching to Talente should let the user start typing a search immediately, no extra click needed.
-    if (this._currentTab === 'skills') {
-      // Die Liste steht wieder oben — also ist die erste Gruppe markiert.
-      const first = this.element.querySelector('.allTalents [data-skill-panel]')?.dataset.skillPanel;
-      if (first) this._subtabs.skills = first;
-      this._applySubTabButtons();
-      this.element.querySelector('.talentSearch')?.focus();
-    }
+    if (this._currentTab === 'skills') this.element.querySelector('.talentSearch')?.focus();
   }
 
   static _setSubTab(_event, target) {
@@ -667,45 +665,53 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // Gruppenwahl beendet eine laufende Talentsuche (wie im Click-Dummy jumpToSkillGroup()).
     if (tab === 'skills') this._resetTalentSearch();
     this._applyCurrentTab();
-    if (tab === 'skills') this._jumpToSkillGroup(id);
+    this._jumpTo(tab, id);
   }
 
-  // Talente „Sprungmarken“ (Tester-Rückmeldung 2026-09-30): die Liste zeigt immer alle Gruppen untereinander, die
-  // Gruppen-Reiter scrollen nur an die passende Stelle. Seit der Live-Rückmeldung 2026-09-30 gehören auch die
-  // Sammelproben als letzter Abschnitt dazu; Suche + „Nur gesteigerte“ kleben oben (CSS), deshalb wird ihre Höhe
-  // abgezogen. Solange der Sprung läuft, führt _onContentScroll() die Markierung nicht mit (sonst flackert sie über
-  // die Gruppen dazwischen) — Ende über das scrollend-Ereignis (Listener in _onRender).
-  _skillPanels() {
-    return [...(this.element?.querySelectorAll('[data-tab-panel="skills"] [data-skill-panel]') ?? [])].filter(panel => !panel.hidden);
+  // Unterreiter als „Sprungmarken“ (Talente seit der Tester-Rückmeldung 2026-09-30, alle anderen Reiter seit Issue #32):
+  // jeder Reiter zeigt alle Abschnitte untereinander, die Unterreiter scrollen nur an die passende Stelle. Bei den
+  // Talenten sind das die Gruppen ([data-skill-panel], die Sammelproben als letzter Abschnitt), sonst die Unterreiter-
+  // Abschnitte ([data-sub-panel="tab:id"]). Suche + „Nur gesteigerte“ kleben bei den Talenten oben (CSS), deshalb wird
+  // ihre Höhe abgezogen. Solange ein Sprung läuft, führt _onContentScroll() die Markierung nicht mit (sonst flackert sie
+  // über die Abschnitte dazwischen) — Ende über das scrollend-Ereignis (Listener in _onRender).
+  _jumpSections(tab) {
+    const root = this.element;
+    if (!root) return [];
+    if (tab === 'skills') {
+      return [...root.querySelectorAll('[data-tab-panel="skills"] [data-skill-panel]')].filter(panel => !panel.hidden).map(el => ({ id: el.dataset.skillPanel, el }));
+    }
+    return [...root.querySelectorAll(`[data-tab-panel="${tab}"] [data-sub-panel^="${tab}:"]`)].filter(panel => !panel.hidden).map(el => ({ id: el.dataset.subPanel.split(':')[1], el }));
   }
 
-  _skillStickyOffset(content) {
-    return content.querySelector('[data-tab-panel="skills"] > .dsa5h-search-bar')?.offsetHeight ?? 0;
+  _jumpStickyOffset(tab, content) {
+    return tab === 'skills' ? content.querySelector('[data-tab-panel="skills"] > .dsa5h-search-bar')?.offsetHeight ?? 0 : 0;
   }
 
-  _jumpToSkillGroup(id) {
+  _jumpTo(tab, id) {
     const content = this.element?.querySelector('.dsa5h-content');
-    const panel = this._skillPanels().find(entry => entry.dataset.skillPanel === id);
-    if (!content || !panel) return;
-    const wanted = panel.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop - this._skillStickyOffset(content) - 4;
+    const section = this._jumpSections(tab).find(entry => entry.id === id);
+    if (!content || !section) return;
+    const wanted = section.el.getBoundingClientRect().top - content.getBoundingClientRect().top + content.scrollTop - this._jumpStickyOffset(tab, content) - 4;
     const top = Math.max(0, Math.min(wanted, content.scrollHeight - content.clientHeight));
-    this._skillJumping = Math.abs(top - content.scrollTop) > 1;
+    this._jumping = Math.abs(top - content.scrollTop) > 1;
     content.scrollTo({ top, behavior: 'smooth' });
   }
 
-  // Scroll-Mitführung: markiert die Gruppe, deren Panel gerade oben im Inhaltsbereich steht; ganz unten die letzte
-  // (die Sammelproben sind meist zu kurz, um bis nach oben zu kommen).
+  // Scroll-Mitführung: markiert den Abschnitt, der gerade oben im Inhaltsbereich steht; ganz unten den letzten
+  // (kurze letzte Abschnitte wie die Sammelproben kommen sonst nie nach oben). Während einer Talentsuche ist keine
+  // Gruppe markiert.
   _onContentScroll() {
-    if (this._currentTab !== 'skills' || this._search.talent.trim() || this._skillJumping) return;
+    const tab = this._currentTab;
+    if (!Object.hasOwn(this._subtabs, tab) || this._jumping || (tab === 'skills' && this._search.talent.trim())) return;
     const content = this.element?.querySelector('.dsa5h-content');
-    const panels = this._skillPanels();
-    if (!content || !panels.length) return;
-    const top = content.getBoundingClientRect().top + this._skillStickyOffset(content) + 40;
-    let current = panels[0].dataset.skillPanel;
-    if (content.scrollTop + content.clientHeight >= content.scrollHeight - 2) current = panels.at(-1).dataset.skillPanel;
-    else panels.forEach(panel => { if (panel.getBoundingClientRect().top <= top) current = panel.dataset.skillPanel; });
-    if (current === this._subtabs.skills) return;
-    this._subtabs.skills = current;
+    const sections = this._jumpSections(tab);
+    if (!content || !sections.length) return;
+    const top = content.getBoundingClientRect().top + this._jumpStickyOffset(tab, content) + 40;
+    let current = sections[0].id;
+    if (content.scrollTop + content.clientHeight >= content.scrollHeight - 2) current = sections.at(-1).id;
+    else sections.forEach(section => { if (section.el.getBoundingClientRect().top <= top) current = section.id; });
+    if (current === this._subtabs[tab]) return;
+    this._subtabs[tab] = current;
     this._applySubTabButtons();
   }
 
@@ -771,10 +777,6 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     });
     root.querySelectorAll('[data-subnav]').forEach(el => { el.hidden = el.dataset.subnav !== this._currentTab; });
     this._applySubTabButtons();
-    root.querySelectorAll('[data-sub-panel]').forEach(el => {
-      const [tab, id] = el.dataset.subPanel.split(':');
-      el.hidden = this._subtabs[tab] !== id;
-    });
     this._applyTalentSearch();
     // Wohlgefällige Talente (Religion-Tab): im Bearbeiten-Modus immer aufgeklappt (sonst kein Zugriff aufs Feld
     // ohne Extra-Klick), im Spielmodus per _happyTalentsExpanded gesteuert.

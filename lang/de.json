@@ -147,7 +147,7 @@
       "Title": "Würfelstatistik",
       "Consent": {
         "Question": "Dürfen deine Würfe für die Würfelstatistik ausgewertet werden?",
-        "Info": "Gezählt wird nur, wie oft welche Augenzahl je Spielabend fällt – keine einzelnen Würfe. Du siehst deine eigene Statistik, die Spielleitung die aller Spieler.",
+        "Info": "Gezählt wird nur, wie oft welche Augenzahl je Tag fällt – keine einzelnen Würfe. Du siehst deine eigene Statistik, die Spielleitung die aller Spieler.",
         "Change": "Du kannst das jederzeit in den Moduleinstellungen ändern. Ziehst du die Zustimmung zurück, wird nichts mehr gezählt und deine Statistik ausgeblendet.",
         "Yes": "Ja, auswerten",
         "No": "Nein"
@@ -155,7 +155,7 @@
       "Settings": {
         "Enabled": {
           "Name": "Würfelstatistik",
-          "Hint": "Zählt je Spieler und Würfeltyp, wie oft welche Augenzahl fällt, und zeigt, ob die Verteilung statistisch auffällig ist. Jeder Spieler wird vorher um Zustimmung gefragt und sieht nur seine eigene Statistik, die Spielleitung alle. Gespeichert werden nur Zähler je Spielabend."
+          "Hint": "Zählt je Spieler und Würfeltyp, wie oft welche Augenzahl fällt, und zeigt, ob die Verteilung statistisch auffällig ist. Jeder Spieler wird vorher um Zustimmung gefragt und sieht nur seine eigene Statistik, die Spielleitung alle. Gespeichert werden nur Zähler je Tag; Tage älter als 12 Monate werden zusammengefasst."
         },
         "Consent": {
           "Name": "Würfelstatistik: meine Würfe auswerten",
@@ -205,15 +205,15 @@
       "Hidden": "Nicht ausgewertet (keine Zustimmung): {names}.",
       "Reset": {
         "Title": "Würfelstatistik löschen",
-        "One": "Die gesamte Statistik von {name} wird gelöscht (alle Spielabende). Das lässt sich nicht rückgängig machen.",
-        "All": "Die gesamte Statistik aller Spieler wird gelöscht (alle Spielabende). Das lässt sich nicht rückgängig machen.",
+        "One": "Die gesamte Statistik von {name} wird gelöscht. Das lässt sich nicht rückgängig machen.",
+        "All": "Die gesamte Statistik aller Spieler wird gelöscht. Das lässt sich nicht rückgängig machen.",
         "OneLabel": "Statistik von {name} löschen",
         "AllLabel": "Alle Statistiken löschen"
       },
       "Range": {
         "Label": "Zeitraum",
         "All": "Gesamt",
-        "Day": "Spielabend {date}",
+        "Day": "{date}",
         "Custom": "Eigener Zeitraum …",
         "From": "von",
         "To": "bis"
