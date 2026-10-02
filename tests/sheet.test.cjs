@@ -84,7 +84,7 @@ test('localization keys used by nonempty hero resolve',async()=>{missing.clear()
 
 test('ranged weapons, charged magic, tradition items and companions render populated',async()=>{
  const {sheet}=await prepare();const p=sheet.context.prepare;
- const ranged=item('ranged','rangeweapon');ranged.LZ=3;ranged.progress=1;ranged.ammo=[{pickId:'ammo-id',name:'Bolts',selected:true}];p.wornRangedWeapons=[ranged];
+ const ranged=item('ranged','rangeweapon');ranged.LZ=3;ranged.progress=1;ranged.ammo=[{pickId:'ammo-id',name:'Bolts',selected:true}];p.wornMeleeWeapons=[];p.wornRangedWeapons=[ranged];
  const spell=p.magic.spellList[0];spell.LZ=2;spell.progress=1;spell.extensions='Test extension';
  p.magic.ritualList=[item('ritual','ritual')];p.magic.ceremony=[item('ceremony','ceremony')];
  const artifact=item('staff','specialability');artifact.system.artifact='staff';artifact.abilities=[{...item('ability','specialability'),AEpayable:true,OnUseEffect:true}];p.traditionArtifacts=[artifact];
@@ -116,7 +116,7 @@ test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the 
  const panelHtml=html.slice(html.indexOf('dsa5h-body-panel'));assert(panelHtml.indexOf('dsa5h-body-top')<panelHtml.indexOf('dsa5h-body-grid'),'quick actions above everything');
  // Übersicht entfällt (Issue #29): ihre Waffentabellen stehen im Körper-Reiter.
  assert(!html.includes('data-sub-panel="combat:combat"'));assert.deepEqual(context.dsa5h.subnav.find(n=>n.tab==='combat').items.map(i=>i.id),['body','skills']);assert.equal(sheet._subtabs.combat,'body');
- const bodyPanel=elements(html,el=>el.attribs?.['data-sub-panel']==='combat:body')[0];assert(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-weapon-row')&&el.attribs['data-item-id']==='main',bodyPanel.children).length===1,'weapon table inside the body tab');
+ assert(!html.includes('dsa5h-weapon-row'),'no weapon tables any more');
  await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hBodyFigure.call(sheet,{}, {dataset:{figure:'portrait'}});assert.deepEqual(actor.saved,{scope:'dsa5-helpers',key:'bodyFigure',value:'portrait'});
 });
 test('navigation rejects unknown tabs and preserves subtab selection',async()=>{
@@ -169,7 +169,7 @@ test('talent search spans all groups without marking one, Sammelproben are part 
 });
 test('reload shows the system progress once, reset reuses the system handler with right-click semantics',async()=>{
  const {sheet}=await prepare();const p=sheet.context.prepare;
- const ranged=item('ranged','rangeweapon');ranged.LZ=3;ranged.progress='1/3';ranged.title='Ladestatus: 1/3';ranged.system.reloadTime={progress:1};p.wornRangedWeapons=[ranged];
+ const ranged=item('ranged','rangeweapon');ranged.LZ=3;ranged.progress='1/3';ranged.title='Ladestatus: 1/3';ranged.system.reloadTime={progress:1};p.wornMeleeWeapons=[];p.wornRangedWeapons=[ranged];
  const html=render(await sheet._prepareContext({}));
  const load=elements(html,el=>el.attribs?.['data-action']==='loadWeapon');assert.equal(load.length,1);
  assert(!/1\/3\s*\/\s*3/.test(html),'progress must not repeat LZ');
@@ -191,7 +191,7 @@ test('aggregated tests can be added in play mode',async()=>{
 });
 test('ammo row: selection inside a dropdown incl. "no ammunition", magazine count with swap button',async()=>{
  const {sheet}=await prepare();const p=sheet.context.prepare;
- const ranged=item('ranged','rangeweapon');ranged.LZ=2;ranged.progress='0/2';ranged.system.reloadTime={progress:0};ranged.ammo=[{pickId:'mag-id',name:'Magazin',count:'2',selected:true}];ranged.selectedAmmo={pickId:'mag-id',img:'x.webp',tooltip:'Magazin',count:'2'};ranged.clearAmmo={pickId:'clear',selected:false};ranged.ammoCurrent=10;ranged.ammoMax=10;p.wornRangedWeapons=[ranged];
+ const ranged=item('ranged','rangeweapon');ranged.LZ=2;ranged.progress='0/2';ranged.system.reloadTime={progress:0};ranged.ammo=[{pickId:'mag-id',name:'Magazin',count:'2',selected:true}];ranged.selectedAmmo={pickId:'mag-id',img:'x.webp',tooltip:'Magazin',count:'2'};ranged.clearAmmo={pickId:'clear',selected:false};ranged.ammoCurrent=10;ranged.ammoMax=10;p.wornMeleeWeapons=[];p.wornRangedWeapons=[ranged];
  const html=render(await sheet._prepareContext({}));
  const picker=elements(html,el=>el.name==='details'&&String(el.attribs?.class).includes('dsa5h-ammo-pick'));assert.equal(picker.length,1);
  const picks=dom.findAll(el=>el.attribs?.['data-action']==='selectAmmo',picker[0].children).map(el=>el.attribs['data-ammo-id']);assert.deepEqual(picks,['mag-id','clear']);
@@ -216,11 +216,11 @@ test('OnUse die button (issue #9): same system action on weapons, armor, body ta
  for(const b of buttons){assert(String(b.attribs.class).includes('dsa5h-onuse'));assert(b.attribs['aria-label']);assert(!dom.textContent(b).includes('▶'));}
  const owners=new Set(buttons.map(b=>{let n=b.parent;while(n&&!n.attribs?.['data-item-id'])n=n.parent;return n?.attribs['data-item-id'];}));
  for(const id of ['main','armor2','general'])assert(owners.has(id),'onUse button inside [data-item-id='+id+']');
- assert(buttons.length>=4,'weapon row, body armor, body hand, chip');
+ assert(buttons.length>=3,'body armor, body hand, chip');
 });
 test('aim progress (issue #8) shows only once the weapon is aimed, with the system texts',async()=>{
  const {sheet}=await prepare();const p=sheet.context.prepare;
- const ranged=item('ranged','rangeweapon');ranged.LZ=2;ranged.progress='2/2';ranged.system.reloadTime={progress:2};ranged.system.aimTime={progress:0};p.wornRangedWeapons=[ranged];
+ const ranged=item('ranged','rangeweapon');ranged.LZ=2;ranged.progress='2/2';ranged.system.reloadTime={progress:2};ranged.system.aimTime={progress:0};p.wornMeleeWeapons=[];p.wornRangedWeapons=[ranged];
  let html=render(await sheet._prepareContext({}));assert(!html.includes('dsa5h-aim'));
  ranged.system.aimTime.progress=1;ranged.aimProgress='1/2';ranged.aimTitle='Zielen (1/2)';html=render(await sheet._prepareContext({}));
  const aim=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-aim'));assert.equal(aim.length,1);assert(dom.textContent(aim[0]).includes('1/2'));assert.equal(aim[0].attribs['data-tooltip'],'Zielen (1/2)');assert(!aim[0].attribs.class.includes('dsa5h-aim-done'));
@@ -249,12 +249,12 @@ test('weapons link their combat technique with KtW; the ranged hand on the body 
  p.wornMeleeWeapons=[];p.wornRangedWeapons=[ranged];actor.items.set('ranged',ranged);
  let html=render(await sheet._prepareContext({}));
  const links=elements(html,el=>el.attribs?.['data-action']==='dsa5hJumpCombatSkill');
- assert.equal(links.length,2,'weapon row + hand');assert(links.every(l=>l.attribs['data-skill-id']==='combatskill'&&dom.textContent(l).includes('7')&&l.attribs['aria-label']));
+ assert.equal(links.length,1,'hand (the weapon tables are gone, #29)');assert(links.every(l=>l.attribs['data-skill-id']==='combatskill'&&dom.textContent(l).includes('7')&&l.attribs['aria-label']));
  assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-ranged')).length,1);
- assert.equal(elements(html,el=>el.attribs?.['data-action']==='loadWeapon').length,2,'weapon row + hand');
- assert.equal(elements(html,el=>el.attribs?.['data-action']==='itemSwapMag').length,2,'weapon row + hand');
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='loadWeapon').length,1,'hand');
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='itemSwapMag').length,1,'hand');
  p.combatskills[0].name='Other';html=render(await sheet._prepareContext({}));
- assert.equal(elements(html,el=>el.attribs?.['data-action']==='dsa5hJumpCombatSkill').length,0);assert(html.includes('<small>Swords</small>'),'plain technique name without a matching item');
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='dsa5hJumpCombatSkill').length,0,'no jump link without a matching technique');
 });
 test('body tab: a free off hand renders compactly below the main hand, its tile is the weapon picker',async()=>{
  const {sheet,actor}=await prepare();const p=sheet.context.prepare;
@@ -478,4 +478,27 @@ test('Würfelstatistik (#28): Fenster „Karten“ – Karten je Spieler, Diagra
  for(const lang of ['de','en']){const l=JSON.parse(read(`lang/${lang}.json`)).DSA5HELPERS.DiceStats;for(const v of ['normal','slight','strong','few','empty'])assert(l.Verdict[v],`${lang} Verdict.${v}`);for(const f of ['n','mean','ones','twenties'])assert(l.Figure[f]);}
  assert(/registerMenu\('dsa5-helpers', 'diceStats'[\s\S]*?restricted: false/.test(read('scripts/dsa5-helpers.js')),'für alle über die Moduleinstellungen erreichbar');
  assert(read('scripts/dsa5-helpers.js').includes('"modules/dsa5-helpers/templates/dice-stats.hbs"'));
+});
+test('body tab (#29): armor shield at the top with breakdown tooltip, ammo picker in the ranged hand, short list of other weapons and trait attacks',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;
+ const armor=(id,rs,be,name)=>{const a=item(id,'armor');a.name=name;a.system.protection={value:rs};a.system.calculatedEncumbrance=be;return a;};
+ p.wornArmor=[armor('a1',2,1,'Kettenhemd'),armor('a2',1,0,'Helm <b>')];p.armorSum=3;p.spellArmor=1;p.liturgyArmor=0;
+ const ranged=item('ranged','rangeweapon');ranged.system.worn={value:true,offHand:false,requiresBothHands:false};ranged.ammo=[{pickId:'ammo-id',name:'Bolts',selected:true}];ranged.selectedAmmo={pickId:'ammo-id',img:'x.webp',tooltip:'Bolts',count:'5'};ranged.clearAmmo={pickId:'clear',selected:false};
+ const dagger=item('dagger','meleeweapon');dagger.system.worn={value:true,offHand:true};dagger.wieldedTwoHand=false;
+ const spare=item('spare','meleeweapon');spare.system.worn={value:true,offHand:true};
+ const bite=item('bite','trait');bite.name='Biss';
+ p.wornMeleeWeapons=[dagger,spare];p.wornRangedWeapons=[ranged];p.traits={meleeAttack:[bite],rangeAttack:[]};
+ for(const w of [ranged,dagger,spare])actor.items.set(w._id,w);
+ const context=await sheet._prepareContext({});const html=render(context);
+ const top=elements(html,el=>el.attribs?.class==='dsa5h-body-top')[0];
+ const shield=dom.findAll(el=>el.attribs?.class==='dsa5h-body-shield',top.children)[0];assert(shield,'shield in the top bar');
+ assert(dom.textContent(shield).includes('3')&&dom.textContent(shield).includes('+1'),'RS sum and magic bonus');
+ const tip=shield.attribs['data-tooltip'];assert(tip.includes('Kettenhemd')&&tip.includes('Helm &amp;lt;b&amp;gt;')||tip.includes('Helm &lt;b&gt;'),'pieces listed, names escaped');assert(!tip.includes('<b>'));
+ assert.equal(context.dsa5h.body.magicArmor,1);assert(shield.attribs['aria-label']);
+ const hands=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-body-side'));
+ assert.equal(dom.findAll(el=>el.name==='details'&&String(el.attribs?.class).includes('dsa5h-ammo-pick'),hands[0].children).length,1,'ammo picker in the ranged main hand');
+ const short=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-short-weapon'));
+ assert.deepEqual(short.map(r=>r.attribs['data-item-id']),['spare','bite'],'worn weapon outside the hands + trait attack');
+ assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='chRollCombat',short[1].children).length,3,'trait attack stays rollable (AT, PA, TP)');
+ assert(dom.findAll(el=>String(el.attribs?.class??'').includes('withContext'),short[0].children).length,'context menu target');
 });

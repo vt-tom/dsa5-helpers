@@ -10,8 +10,8 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 ### Geändert
 
-- Kampf › Körper: Die Hände stehen links und rechts neben der Figur (Haupthand links, Nebenhand rechts). Eine beidhändige Waffe steht auf einer Seite und lässt sich im Bearbeiten-Modus per „⇄“ auf die andere Seite verschieben. Schnellaktionen (Ausweichen, Waffenlos, Sturzschaden) und Initiative stehen ganz oben, die Rüstung als Kachelreihe unter der Figur. Das RS/BE-Schild über der Figur entfällt ([#29](https://github.com/vt-tom/dsa5-helpers/issues/29)).
-- Kampf: Der Unterreiter „Übersicht“ entfällt, „Körper“ ersetzt ihn. Die Waffentabellen (alle Waffen, Munitionswahl, Griff, Ausrüsten über „+“) stehen jetzt unter der Figur im Reiter „Körper“ ([#29](https://github.com/vt-tom/dsa5-helpers/issues/29)).
+- Kampf › Körper: Die Hände stehen links und rechts neben der Figur (Haupthand links, Nebenhand rechts). Eine beidhändige Waffe steht auf einer Seite und lässt sich im Bearbeiten-Modus per „⇄“ auf die andere Seite verschieben. Ganz oben stehen die Schnellaktionen (Ausweichen, Waffenlos, Sturzschaden), die Initiative und ein Schild mit Rüstungsschutz und Belastung; beim Darüberfahren schlüsselt es die Werte je Rüstungsteil auf, inklusive Schutz aus Zaubern und Liturgien. Die Rüstung steht als Kachelreihe unter der Figur ([#29](https://github.com/vt-tom/dsa5-helpers/issues/29)).
+- Kampf: Der Unterreiter „Übersicht“ entfällt, „Körper“ ersetzt ihn. Statt der Waffentabellen zeigt „Weitere Waffen“ kurz die getragenen Waffen, die gerade nicht in einer Hand sind, sowie Angriffe aus Eigenschaften (z. B. Biss) – jeweils würfelbar. Die Munition wird jetzt direkt an der Fernkampfhand gewählt ([#29](https://github.com/vt-tom/dsa5-helpers/issues/29)).
 
 ## [0.3.3] — 2026-10-01
 

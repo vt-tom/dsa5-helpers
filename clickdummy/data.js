@@ -293,38 +293,16 @@ const COMBAT_ACTIONS = [
 // im System (item.attack/item.parry kommen dort bereits mit eingerechnetem weaponWearModifier). Waffenlos hat kein
 // Item und damit keine Struktur. Bruchfaktor(BF)/die Bruchfaktorprobe selbst (Dialog+Würfelwurf) sind reine
 // Item-Sheet-Funktionalität und bleiben außerhalb des Bogens.
-// worn.requiresBothHands/.offHand (system.worn im echten Waffen-Datenmodell, gripCell() in script.js, siehe
+// worn.requiresBothHands/.offHand (system.worn im echten Waffen-Datenmodell, siehe
 // combat_weapon.hbs/combat_rangeweapon.hbs ".combat-item-grip"): steuert, ob eine Waffe zweihändig geführt wird
 // (fest, nicht umschaltbar) oder wahlweise in Haupt-/Nebenhand — in BEIDEN Modi bedienbar, da laufende
 // Kampfentscheidung. Waffenlos hat im System kein Item und damit auch keine Griff-Einstellung.
-// Wurfwaffen-Aktion (meleeweapon.js:27,185-198 THROWABLE_WEAPON_TYPES/getContextOptions/throwMelee): Nahkampfwaffen
-// bestimmter Kampftechniken können improvisiert als Fernkampfangriff geworfen werden (AT −8, mit der
-// Sonderfertigkeit "Wurfwaffen" nur −4 — unsere Demo-Figur hat diese SF nicht, siehe SPECIALS/COMBAT_SPECIALS,
-// daher immer −8), Reichweite aus DSA5.meleeAsRangeReach je Kampftechnik. Nur als Kontextmenü-Aktion pro Zeile
-// sichtbar (weaponContextMenu-Button in combat_weapon.hbs), keine eigene Spalte — siehe throwMeleeMenu() in
-// script.js. Raufen/Waffenlos ist im System nicht wurfwaffenfähig.
-const THROWABLE_GROUPS = { Schwerter: "1/3/10", Dolche: "1/5/12" };
 
 const MELEE = [
   { name: "Elfischer Säbel", group: "Schwerter", at: 12, pa: 6, tp: "1W6+3", reach: "mittel", img: A.meleeWeapon, structure: { value: 6, max: 6 }, fav: true, worn: { requiresBothHands: false, offHand: false } },
   { name: "Waldläuferdolch", group: "Dolche", at: 11, pa: 5, tp: "1W6+1", reach: "kurz", img: A.meleeWeapon, structure: { value: 3, max: 5 }, worn: { requiresBothHands: false, offHand: false } },
   { name: "Waffenlos", group: "Raufen", at: 8, pa: 6, tp: "1W6-1", reach: "kurz", img: A.weaponless },
 ];
-
-// Noch nicht ausgerüstete Waffen (system.worn.value:false im echten Item — hier als eigene kleine Demo-Pools statt
-// eines vollen zweiten Item-Datensatzes, da MELEE/RANGED und die Ausrüstung-Tab-Liste (INVENTORY_CATEGORIES) im
-// Click-Dummy bewusst getrennte Demo-Arrays sind, kein gemeinsames Item-Modell). "+"-Knopf (unequippedWeaponMenu,
-// actor-combat.hbs:32,94) verschiebt einen Eintrag von hier direkt in MELEE/RANGED, siehe equipWeapon() in script.js.
-const UNEQUIPPED_WEAPONS = {
-  melee: [{ name: "Ersatzklinge", group: "Schwerter", at: 10, pa: 5, tp: "1W6+2", reach: "mittel", img: A.meleeWeapon, worn: { requiresBothHands: false, offHand: false } }],
-  ranged: [],
-};
-
-// Handschuh-/Gliedmaßenlimit ignorieren (system.config.ignoreWeaponHandLimits, actor-combat.hbs:31,93 +
-// actor-sheet.js:683-686 _toggleIgnoreWeaponHandLimits) — für Figuren mit mehr als zwei Händen/Extra-Gliedmaßen,
-// die dadurch mehr Waffen gleichzeitig führen dürfen als das Handlimit sonst erlaubt. Ein Schalter für beide
-// Waffentabellen (dieselbe Einstellung, im System zweimal angezeigt), siehe ignoreHandLimitsBtn() in script.js.
-let IGNORE_WEAPON_HAND_LIMITS = false;
 
 // Angeborene Kampfwerte (trait-Items, z.B. bei Verwandlungen, Flüchen oder Kreaturen mit natürlichen Waffen) —
 // eigener Block neben den normalen Waffen-/Rüstungstabellen, nicht ausrüstbar (kein worn/grip), siehe

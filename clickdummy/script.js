@@ -1219,118 +1219,6 @@ function ammoMenu(children) {
   return menu;
 }
 
-function renderAmmoCell(w) {
-  // Waffen ohne eigene Munitionsgruppe (z.B. Wurfmesser) haben weiterhin nur eine einfache Anzahl.
-  if (!w.ammoTypes) return el("span", { class: "muted center" }, w.ammo);
-  const ammo = selectedAmmo(w);
-  return el("span", { class: "ammo-cell inline" }, [
-    el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]),
-    w.reloadTime ? reloadWidget(w) : null,
-    aimWidget(w),
-    magWidget(w),
-  ]);
-}
-
-// "Wie die Waffe geführt wird" (system.worn.requiresBothHands/.offHand, siehe combat_weapon.hbs/
-// combat_rangeweapon.hbs ".combat-item-grip"): zweihändig geführte Waffen zeigen nur ein festes Symbol (nicht
-// umschaltbar, wie im System — dort erscheint dann nur der eine "wrongGrip.twoHanded"-Knopf statt zweier),
-// alles andere zwei umschaltbare Knöpfe (Haupthand/Nebenhand). In BEIDEN Modi bedienbar (BEARBEITEN.md
-// Spielmodus-Abschnitt "Einstellung wie die Waffe geführt wird") — eine laufende Kampfentscheidung, kein Setup.
-function gripCell(w) {
-  // Wurfwaffen-Kontextmenü (siehe THROWABLE_GROUPS-Kommentar bei MELEE in data.js) sitzt im echten System in
-  // derselben "combatGripControls"-Zelle wie die Haupt-/Nebenhand-Knöpfe (combat_weapon.hbs:32-61), daher hier
-  // ebenfalls dort angehängt statt in einer eigenen Spalte — das hielte die Favoriten-Wiederverwendung der Zeile
-  // auf dem Titelblatt (meleeRow-Kommentar) sonst nicht mehr grid-kompatibel.
-  const throwMenu = throwMenuCell(w);
-  if (!w.worn) return el("span", { class: "grip-cell" }, throwMenu ? [throwMenu] : []); // Waffenlos: kein Item, keine Griff-Einstellung
-  if (w.worn.requiresBothHands) {
-    return el("span", { class: "grip-cell" }, [el("span", { class: "grip-btn active", title: "Beidhändig geführt" }, "✋✋"), throwMenu]);
-  }
-  const mainBtn = el("button", { type: "button", class: "grip-btn" + (!w.worn.offHand ? " active" : ""), title: "Haupthand", "aria-label": `${w.name} in der Haupthand führen`, "aria-pressed": String(!w.worn.offHand) }, "H");
-  const offBtn = el("button", { type: "button", class: "grip-btn" + (w.worn.offHand ? " active" : ""), title: "Nebenhand", "aria-label": `${w.name} in der Nebenhand führen`, "aria-pressed": String(!!w.worn.offHand) }, "N");
-  mainBtn.addEventListener("click", (e) => { e.stopPropagation(); w.worn.offHand = false; renderContent(); });
-  offBtn.addEventListener("click", (e) => { e.stopPropagation(); w.worn.offHand = true; renderContent(); });
-  return el("span", { class: "grip-cell" }, [mainBtn, offBtn, throwMenu]);
-}
-
-// Wurfwaffen-Kontextaktion (siehe THROWABLE_GROUPS-Kommentar bei MELEE in data.js): kleiner "⋮"-Knopf öffnet ein
-// Mini-Menü mit der einen Wurf-Option, analog zum weaponContextMenu-Ellipsis-Button in combat_weapon.hbs. Nur
-// vorhanden, wenn die Kampftechnik überhaupt wurfwaffenfähig ist — sonst bräuchte der Knopf gar keinen Eintrag.
-let openThrowMenu = null;
-
-function throwMenuCell(w) {
-  const reach = THROWABLE_GROUPS[w.group];
-  if (!reach) return null;
-  const isOpen = openThrowMenu === w;
-  const btn = el("button", { type: "button", class: "grip-btn context-btn" + (isOpen ? " open" : ""), title: "Weitere Aktionen" }, "⋮");
-  btn.addEventListener("click", (e) => { e.stopPropagation(); openThrowMenu = isOpen ? null : w; renderContent(); });
-  if (!isOpen) return el("span", { class: "throw-cell" }, [btn]);
-  const throwBtn = el("button", { type: "button", class: "reload-btn" }, `Als Wurfwaffe (AT −8, RW ${reach})`);
-  throwBtn.addEventListener("click", (e) => { e.stopPropagation(); openThrowMenu = null; renderContent(); });
-  const menu = el("div", { class: "ammo-menu" }, [throwBtn]);
-  menu.addEventListener("click", (e) => e.stopPropagation());
-  return el("span", { class: "throw-cell open" }, [btn, menu]);
-}
-
-// "+"-Knopf zum direkten Ausrüsten (unequippedWeaponMenu, siehe UNEQUIPPED_WEAPONS-Kommentar in data.js) und
-// Handschuh-/Gliedmaßenlimit-Umschalter (IGNORE_WEAPON_HAND_LIMITS) — beide sitzen im echten System in der
-// Tabellenkopfzeile der jeweiligen Waffentabelle, hier im Panel-Titel statt im Grid-Kopf, da unser Grid keine
-// eigene Spalte dafür vorsieht.
-let openEquipMenu = null;
-
-function equipWeapon(category, item) {
-  const pool = UNEQUIPPED_WEAPONS[category];
-  const idx = pool.indexOf(item);
-  if (idx === -1) return;
-  pool.splice(idx, 1);
-  (category === "melee" ? MELEE : RANGED).push(item);
-  openEquipMenu = null;
-  renderContent();
-}
-
-function ignoreHandLimitsBtn() {
-  const btn = el(
-    "button",
-    { type: "button", class: "title-icon-btn" + (IGNORE_WEAPON_HAND_LIMITS ? " active" : ""), title: "Handschuh-/Gliedmaßenlimit ignorieren" },
-    IGNORE_WEAPON_HAND_LIMITS ? "☑" : "☐"
-  );
-  btn.addEventListener("click", () => { IGNORE_WEAPON_HAND_LIMITS = !IGNORE_WEAPON_HAND_LIMITS; renderContent(); });
-  return btn;
-}
-
-function equipMenuBtn(category) {
-  const pool = UNEQUIPPED_WEAPONS[category];
-  const isOpen = openEquipMenu === category;
-  const btn = el("button", { type: "button", class: "title-icon-btn" + (isOpen ? " active" : ""), title: "Waffe ausrüsten" }, "+");
-  if (pool.length) btn.addEventListener("click", () => { openEquipMenu = isOpen ? null : category; renderContent(); });
-  else btn.disabled = true;
-  if (!isOpen) return btn;
-  const menu = el(
-    "div",
-    { class: "ammo-menu" },
-    pool.map((item) => {
-      const chip = el("button", { type: "button", class: "reload-btn" }, item.name);
-      chip.addEventListener("click", (e) => { e.stopPropagation(); equipWeapon(category, item); });
-      return chip;
-    })
-  );
-  menu.addEventListener("click", (e) => e.stopPropagation());
-  return el("span", { class: "title-menu-wrap open" }, [btn, menu]);
-}
-
-function combatPanelTitle(text, actions) {
-  return el("div", { class: "panel-title flex" }, [el("span", {}, text), el("div", { class: "panel-title-actions" }, actions)]);
-}
-
-// Waffenzeilen (Paket C, UI/UX-Review 2026-09-25): die Fernkampftabelle lief nach rechts aus dem Bogen, weil Technik,
-// Munition und Reichweite je eine eigene Spalte hatten. Jetzt wie im Foundry-Modul (weapon.hbs): Technik klein unter
-// dem Namen, Munition/Nachladen/Zielen in einer zweiten Zeile — AT/PA/FK und TP bleiben immer nebeneinander.
-// Reichweite als eigene Spalte zwischen TP und Griff (Nutzer-Entscheidung 2026-09-25, Variante A statt "RW klein
-// unter dem Namen").
-function weaponNameCell(name, group) {
-  return el("span", { class: "left weapon-name" }, [el("span", {}, [name, onUseBtn(name)]), combatSkillLink(group) || el("small", { class: "weapon-sub" }, group)]);
-}
-
 // Kampftechnik der Waffe mit Kampftechnikwert (Tester-Rückmeldung 2026-09-30), Klick springt zur Zeile im Unterreiter
 // „Kampftalente“. Modul später: Waffe kennt ihre Technik (system.combatskill.value), Technik-Item per Name wie im
 // System. Liefert null, wenn es keine passende Technik gibt (z. B. „Angeboren“ bei Angriffen).
@@ -1357,74 +1245,6 @@ function jumpToCombatSkill(name) {
   row.classList.remove("just-changed");
   void row.offsetWidth;
   row.classList.add("just-changed");
-}
-
-function weaponReachCell(reach) {
-  return el("span", { class: "muted center" }, reach || "–");
-}
-
-// Zweite Zeile unter Name bis Zeilenende (nur Fernkampf mit Munition): Auswahl/Nachladen/Zielen über renderAmmoCell().
-function weaponDetails(w) {
-  if (!w.ammoTypes && !w.ammo) return null;
-  return el("div", { class: "weapon-details" }, [el("span", { class: "muted" }, "Munition"), renderAmmoCell(w)]);
-}
-
-// Angeborene Kampfwerte (TRAITS-Kommentar in data.js): eigene Zeilen ohne Griff-/Favoriten-Zelle (nicht
-// ausrüstbar), AT/PA bzw. AT sind hier reine Anzeigewerte ohne Verschleiß (trait-Items haben kein structure-Feld).
-function traitMeleeRow(t) {
-  return el("div", { class: "row weapon-row" }, [
-    el("img", { src: t.img || A.combatSkill, alt: "" }),
-    weaponNameCell(t.name, "Angeboren"),
-    el("span", { class: "center" }, [combatDie(t.at, "d20mu", `Attacke mit ${t.name} würfeln`)]),
-    el("span", { class: "center" }, t.pa !== undefined ? [combatDie(t.pa, "d20in", `Parade mit ${t.name} würfeln`)] : "–"),
-    el("span", { class: "center" }, [damageBtn(t.tp, t.name)]),
-    weaponReachCell(t.reach || "kurz"),
-    el("span", {}),
-    el("span", {}),
-  ]);
-}
-
-function traitRangedRow(t) {
-  return el("div", { class: "row weapon-row" }, [
-    el("img", { src: t.img || A.combatSkill, alt: "" }),
-    weaponNameCell(t.name, "Angeboren"),
-    el("span", { class: "center", style: "grid-column:span 2" }, [combatDie(t.at, "d20mu", `Fernkampf mit ${t.name} würfeln`)]),
-    el("span", { class: "center" }, [damageBtn(t.tp, t.name)]),
-    weaponReachCell(t.reach),
-    el("span", {}),
-    el("span", {}),
-  ]);
-}
-
-// Je eine Nah-/Fernkampfwaffen-Zeile — eigene Funktionen statt Inline-Map (Nah-/Fernkampf-Panel, Traits daneben).
-function meleeRow(w) {
-  const stats = effectiveMeleeStats(w);
-  return el("div", { class: "row weapon-row" }, [
-    itemIcon(w.img, "", w.structure, "meleeweapon"),
-    weaponNameCell(w.name, w.group),
-    el("span", { class: "center" }, [combatDie(stats.at, "d20mu", `Attacke mit ${w.name} würfeln`)]),
-    el("span", { class: "center" }, [combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`)]),
-    el("span", { class: "center" }, [damageBtn(w.tp, w.name)]),
-    weaponReachCell(w.reach),
-    gripCell(w),
-    favStar(w),
-  ]);
-}
-
-function rangedRow(w) {
-  const stats = effectiveRangedStats(w);
-  return el("div", { class: "row weapon-row" }, [
-    itemIcon(w.img, "", w.structure, "rangeweapon"),
-    weaponNameCell(w.name, w.group),
-    // FK spannt über AT+PA-Spaltenbreite (Fernkampf hat keine Parade), damit der Wert mittig zwischen AT und PA
-    // der Nahkampftabelle sitzt statt an der AT-Position zu kleben.
-    el("span", { class: "center", style: "grid-column:span 2" }, [combatDie(stats.at, "d20mu", `Fernkampf mit ${w.name} würfeln`)]),
-    el("span", { class: "center" }, [damageBtn(w.tp, w.name)]),
-    weaponReachCell(w.reach),
-    gripCell(w),
-    favStar(w),
-    weaponDetails(w),
-  ]);
 }
 
 // Vier Schnellwurf-Buttons (Ausweichen/Waffenloser Angriff/Waffenlose Verteidigung/Sturzschaden), siehe COMBAT_ACTIONS.
@@ -1456,10 +1276,6 @@ function computeArmorSum() {
   if (MAGIC_ARMOR.spell) magicParts.push(`+${MAGIC_ARMOR.spell} Zauber`);
   if (MAGIC_ARMOR.liturgy) magicParts.push(`+${MAGIC_ARMOR.liturgy} Liturgie`);
   return { sum, magicParts };
-}
-
-function armorSumText({ sum, magicParts }) {
-  return `Schutz gesamt ${sum}${magicParts.length ? ` (${magicParts.join(", ")})` : ""}`;
 }
 
 // Reiter "Körper" (GitHub-Issue #6, Vorbild DSA4-Heldenbogen; Nutzerwunsch 2026-09-25: als eigener Reiter
@@ -1532,7 +1348,10 @@ function handSlot(hand) {
     // TP-Knopf (Vorschlag 2026-09-30, AUFGABEN.md). Nachladen und Zielen nebeneinander, solange die Spalte reicht
     // (Live-Rückmeldung 2026-09-30: spart Höhe), Magazin in eigener Zeile. Modul: .dsa5h-hand-ranged in body.hbs.
     if (ranged) {
-      const extras = [w.reloadTime ? reloadWidget(w) : null, aimWidget(w), magWidget(w)].filter(Boolean);
+      // Munitionswahl hier, seit die Waffentabellen entfallen sind (Issue #29, 2026-10-02).
+      const ammo = w.ammoTypes ? selectedAmmo(w) : null;
+      const ammoPick = w.ammoTypes ? el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]) : null;
+      const extras = [ammoPick, w.reloadTime ? reloadWidget(w) : null, aimWidget(w), magWidget(w)].filter(Boolean);
       if (extras.length) tp = el("div", { class: "hand-ranged" }, [tp, el("div", { class: "hand-ranged-extras" }, extras)]);
     }
   }
@@ -1671,42 +1490,48 @@ function renderBody() {
     right = [handSlot("off")];
   }
 
-  // TEST-UMSCHALTER Issue #29 (nach der Entscheidung löschen): wie Rüstungsschutz und Belastung hervorgehoben werden.
-  // A „Siegel“: große Wachssiegel links neben den Rüstungskacheln · B „Kopfleiste“: INI | RS | BE groß oben neben den
-  // Schnellaktionen · C „Brustschild“: Schild mittig auf der Figur · D „Rüstungsband“: Titelband der Rüstungszeile.
-  const v = BODY_ARMOR_STYLE;
-  const bigStat = (label, value, sub, cls = "") => el("div", { class: ("body-bigstat " + cls).trim() }, [el("small", {}, label), el("strong", {}, String(value)), sub ? el("small", { class: "body-bigstat-sub" }, sub) : null]);
-  const seal = (label, value, sub) => el("div", { class: "body-seal" }, [el("span", { class: "body-seal-face" }, [el("strong", {}, String(value))]), el("small", {}, label), sub ? el("small", { class: "body-bigstat-sub" }, sub) : null]);
-
-  // Ganz oben: Schnellaktionen und Initiative (Rückmeldung 2026-10-02: über allen anderen Punkten).
+  // Ganz oben: Schnellaktionen, daneben Initiative und das Rüstungsschild (Issue #29, Nutzer-Entscheidung 2026-10-02:
+  // Kombination aus „Kopfleiste“ und „Brustschild“). Der Tooltip schlüsselt Rüstungsschutz und Belastung auf.
+  const shieldTip = [
+    `Rüstungsschutz ${armorSum.sum}${magicText ? ` (${magicText})` : ""}`,
+    ...ARMOR.map((a) => { const st = effectiveArmor(a); return `  ${a.name}: RS ${st.rs}, BE ${st.be}`; }),
+    `Belastung ${be}`,
+  ].join("\n");
+  const shield = el("div", { class: "body-shield", title: shieldTip, tabindex: "0", "aria-label": shieldTip.replace(/\n\s*/g, "; ") }, [
+    el("span", { class: "body-shield-rs" }, [el("small", {}, "RS"), el("strong", {}, String(armorSum.sum)), magicText ? el("small", { class: "body-shield-magic" }, `+${armorSum.magicParts.map((m) => m.match(/\d+/)[0]).reduce((a, b) => a + Number(b), 0)}`) : null]),
+    el("span", { class: "body-shield-be" }, [el("small", {}, "BE"), el("strong", {}, String(be))]),
+  ]);
   const top = el("div", { class: "body-top" }, [
     renderCombatActions(),
-    v === "B"
-      ? el("div", { class: "body-top-stats" }, [bigStat("Initiative", ini), bigStat("Rüstungsschutz", armorSum.sum, magicText, "rs"), bigStat("Belastung", be, null, "be")])
-      : el("div", { class: "body-top-stats" }, [bigStat("Initiative", ini)]),
+    el("div", { class: "body-top-stats" }, [el("div", { class: "body-bigstat" }, [el("small", {}, "Initiative"), el("strong", {}, String(ini))]), shield]),
   ]);
-  const tiles = ARMOR.length ? el("div", { class: "body-armor-row-tiles" }, ARMOR.map(armorTile)) : el("div", { class: "muted body-armor-empty" }, "Keine Rüstung getragen");
-  let armorRow;
-  if (v === "A") {
-    armorRow = el("div", { class: "body-armor-row seals" }, [el("div", { class: "body-seals" }, [seal("Rüstungsschutz", armorSum.sum, magicText), seal("Belastung", be)]), tiles]);
-  } else if (v === "D") {
-    armorRow = el("div", { class: "body-armor-band-wrap" }, [
-      el("div", { class: "body-armor-band" }, [
-        el("span", { class: "body-armor-band-title" }, "Rüstung"),
-        el("span", { class: "body-armor-band-val" }, [el("small", {}, "RS"), el("strong", {}, String(armorSum.sum)), magicText ? el("small", {}, `(${magicText})`) : null]),
-        el("span", { class: "body-armor-band-val" }, [el("small", {}, "BE"), el("strong", {}, String(be))]),
+  const armorRow = el("div", { class: "body-armor-row" }, [
+    el("small", { class: "figure-col-title" }, "Rüstung"),
+    ARMOR.length ? el("div", { class: "body-armor-row-tiles" }, ARMOR.map(armorTile)) : el("div", { class: "muted body-armor-empty" }, "Keine Rüstung getragen"),
+  ]);
+
+  // Kurzübersicht der übrigen Waffen statt der früheren Waffentabellen (Rückmeldung 2026-10-02: die Hände wählen die
+  // Waffe, darunter reicht ein Überblick). Würfel bleiben, damit auch Angriffe aus Eigenschaften (Biss …) würfelbar sind.
+  const shortRow = (w, kind) => {
+    const ranged = kind === "ranged";
+    const trait = !!w.trait;
+    const stats = trait ? { at: w.at, pa: w.pa } : ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
+    return el("div", { class: "row short-weapon-row" }, [
+      trait ? el("img", { src: w.img || A.combatSkill, alt: "" }) : itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
+      el("span", { class: "left weapon-name" }, [el("span", {}, w.name), el("small", { class: "weapon-sub" }, trait ? "Angeboren" : w.group)]),
+      el("span", { class: "short-weapon-dice" }, [
+        combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
+        !ranged && stats.pa !== undefined ? combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`) : null,
       ]),
-      el("div", { class: "body-armor-row" }, [tiles]),
+      damageBtn(w.tp, w.name),
+      trait ? el("span", {}) : favStar(w),
     ]);
-  } else {
-    armorRow = el("div", { class: "body-armor-row" }, [el("small", { class: "figure-col-title" }, "Rüstung"), tiles]);
-  }
-  const chestShield = v === "C"
-    ? el("div", { class: "body-chest-shield", title: magicText ? `Rüstungsschutz ${armorSum.sum} (${magicText}), Belastung ${be}` : `Rüstungsschutz ${armorSum.sum}, Belastung ${be}` }, [
-        el("span", { class: "body-chest-rs" }, [el("small", {}, "RS"), el("strong", {}, String(armorSum.sum))]),
-        el("span", { class: "body-chest-be" }, [el("small", {}, "BE"), el("strong", {}, String(be))]),
-      ])
-    : null;
+  };
+  const shortList = [
+    ...handWeapons().filter((w) => !inHands.includes(w)).map((w) => shortRow(w, RANGED.includes(w) ? "ranged" : "melee")),
+    ...TRAITS.meleeAttack.map((t) => shortRow({ ...t, trait: true }, "melee")),
+    ...TRAITS.rangeAttack.map((t) => shortRow({ ...t, trait: true }, "ranged")),
+  ];
 
   return el("div", {}, [
     el("div", { class: "panel body-panel" }, [
@@ -1717,57 +1542,15 @@ function renderBody() {
       el("div", { class: "body-grid sides" + (twoHanded ? " two-handed" : ""), "data-figure": BODY_FIGURE }, [
         el("img", { class: "body-figure", src: figureSrc, alt: "", "aria-hidden": "true" }),
         figureSwitch,
-        chestShield,
         el("div", { class: "body-side left" }, left),
         el("div", { class: "body-side right" + (!twoHanded && !HANDS.off ? " off-free" : "") }, right),
       ]),
       armorRow,
     ]),
-    // Waffentabellen aus der früheren Übersicht (die Hände zeigen nur, was gerade geführt wird): alle Waffen inkl.
-    // nicht geführter, Munitionswahl, Griff, Kontextmenü, Favoriten, Angriffe aus Eigenschaften (Rückmeldung 2026-10-02).
-    ...combatWeaponPanels(),
+    shortList.length ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Weitere Waffen"), el("div", { class: "short-weapons" }, shortList)]) : null,
     // Kampfsonderfertigkeiten auch hier, damit im Kampf alles auf einer Seite steht (Nutzer-Feedback 2026-09-30).
     specialsBlock("Kampfsonderfertigkeiten", COMBAT_SPECIALS),
   ]);
-}
-
-// TEST-UMSCHALTER Issue #29: Darstellung von Rüstungsschutz/Belastung im Körper-Reiter (Toolbar „RS/BE A–D“).
-let BODY_ARMOR_STYLE = "A";
-function initBodyArmorStyleToggle() {
-  const group = document.getElementById("bodyArmorStyle");
-  group.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
-    group.querySelectorAll("button").forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", String(x === b)); });
-    BODY_ARMOR_STYLE = b.dataset.style;
-    renderContent();
-  }));
-}
-
-// Waffentabellen (Nah-/Fernkampf) unter dem Körper-Panel — früher in der „Übersicht“, die mit Issue #29 entfällt
-// (Körper ersetzt sie, Nutzer-Entscheidung 2026-10-02).
-function combatWeaponPanels() {
-  // AT/PA (Nahkampf) und FK (Fernkampf) sowie TP stehen bewusst als letzte Spalten in beiden Tabellen, mit exakt
-  // derselben Gesamtbreite (siehe .weapon-row in style.css) — so liegen die beiden "Aktionen" (Angriffs-
-  // würfel + Schadenswert) beim Scannen durch Nah- und Fernkampfwaffen immer an derselben Bildschirmposition,
-  // unabhängig davon, was in den Spalten davor steht (Technik/Reichweite bzw. Munition).
-  const meleePanel = el("div", { class: "panel" }, [
-    combatPanelTitle("Nahkampfwaffen", [ignoreHandLimitsBtn(), equipMenuBtn("melee")]),
-    el("div", { class: "row-head weapon-row" }, head("", "Waffe", "AT", "PA", "TP", "RW", "Griff", "")),
-    ...MELEE.map(meleeRow),
-    ...TRAITS.meleeAttack.map(traitMeleeRow),
-  ]);
-
-  const rangedPanel = el("div", { class: "panel" }, [
-    combatPanelTitle("Fernkampfwaffen", [ignoreHandLimitsBtn(), equipMenuBtn("ranged")]),
-    el("div", { class: "row-head weapon-row" }, [
-      ...head("", "Waffe"),
-      el("span", { class: "center", style: "grid-column:span 2" }, "FK"),
-      ...head("TP", "RW", "Griff", ""),
-    ]),
-    ...RANGED.map(rangedRow),
-    ...TRAITS.rangeAttack.map(traitRangedRow),
-  ]);
-
-  return [meleePanel, rangedPanel];
 }
 
 // Kampftalente-Unterreiter: die Kampftechniken einfach abgebildet (WAFFEN-TAB.md), aufgeteilt nach Waffentyp
@@ -3469,7 +3252,6 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
-initBodyArmorStyleToggle();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
 document.fonts.ready.then(fitName);
 initWindowMenu();
