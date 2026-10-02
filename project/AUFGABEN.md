@@ -11,9 +11,9 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 Branch `release/0.4.0` (von `main`, 0.3.3 ist veröffentlicht). Reihenfolge:
 
-1. **#28 Würfelstatistik** — im Modul und Click-Dummy umgesetzt (2026-10-02, Darstellung B „Karten“). **Live zu prüfen** mit mindestens zwei Benutzern: Zustimmungsdialog beim Verbinden und beim Einschalten durch die SL; Zustimmung ja/nein/zurückgezogen (Daten ausgeblendet, bei erneuter Zustimmung wieder da); Proben, Schaden, Schips-Neuwurf, Initiative, `/roll`, blinde/SL-Würfe; echte Würfel (Würfeleinstellung „manuell“) getrennt; Neuladen kurz nach einem Wurf (wird gespeichert?); Fenster aktualisiert sich live; Zurücksetzen durch die SL (einzeln/alle); Hell/Dunkel.
-   - **Offene Frage (Nutzer):** zusätzlicher Einstieg außer den Moduleinstellungen? Siehe Antwort 2026-10-02 (Vorschlag: Knopf in der Spielerliste unten links oder in der Chat-Leiste; das eigene HUD des Moduls kommt später).
-2. **#29 Kampf › Körper** — im Modul und Click-Dummy umgesetzt (2026-10-02, Variante A mit Schnellaktionen über der Rüstung, Initiative rechts). **Live zu prüfen:** Hände links/rechts, beidhändige Waffe verschieben (Bearbeiten-Modus, Flag `twoHandedSide`), freie Nebenhand rechts, Fernkampfhand rechts (Nachladen/Zielen rechtsbündig), viele Rüstungsteile (Umbruch), schmale Fensterbreite, Hell/Dunkel.
+1. **#28 Würfelstatistik** — umgesetzt (2026-10-02, Darstellung B „Karten“), live zu prüfen (siehe unten).
+   - **Offene Frage (Nutzer):** zusätzlicher Einstieg außer den Moduleinstellungen? Vorschlag 2026-10-02: Knopf in der Spielerliste unten links oder in der Chat-Leiste; das eigene HUD des Moduls kommt später.
+2. **#29 Kampf › Körper** — umgesetzt (2026-10-02, Variante A mit Schnellaktionen über der Rüstung, Initiative rechts), live zu prüfen (siehe unten).
 
 **#7 CSS aufräumen** auf 0.5.0 verschoben (Nutzer-Entscheidung 2026-10-02, Meilenstein gesetzt) — vorher mit `feature/mobile` abstimmen, dort wird dieselbe CSS-Datei stark umgebaut.
 
@@ -21,6 +21,11 @@ Kandidaten, noch ohne Meilenstein:
 - **#1 Animation zwischen Titelblatt und den anderen Seiten** (von @Lyynix, ohne Beschreibung) — klären, was gemeint ist.
 - **#27 Persönliche Daten auf dem Titelblatt** — nur, wenn bis dahin eine passende Lösung gefunden ist.
 - **HUD des Moduls** (siehe Backlog) — würde zum Einstieg der Würfelstatistik passen, ist aber eigenständig zu planen.
+
+## Live in Foundry prüfen (0.4.0)
+
+- **#28 Würfelstatistik** (mindestens zwei Benutzer, Spieler + SL): Zustimmungsdialog beim Verbinden und beim Einschalten durch die SL; Zustimmung ja/nein/zurückgezogen (Daten ausgeblendet, bei erneuter Zustimmung wieder da und weitergezählt); gezählt werden Proben, Schaden, Schips-Neuwurf, Initiative, `/roll`, blinde/SL-Würfe; echte Würfel (Würfeleinstellung „manuell“) getrennt; Neuladen kurz nach einem Wurf (wird noch gespeichert?); Fenster aktualisiert sich live; Zurücksetzen durch die SL (einzeln/alle); Spieler sehen keinen Zurücksetzen-Knopf; Hell/Dunkel.
+- **#29 Kampf › Körper:** Haupthand links, Nebenhand rechts; beidhändige Waffe per „⇄“ verschieben (nur Bearbeiten-Modus, bleibt nach Neuladen auf der Seite); freie Nebenhand rechts; Fernkampfhand rechts (Nachladen/Zielen rechtsbündig); Schnellaktionen über der Rüstung, Initiative rechts; viele Rüstungsteile (Umbruch); schmale Fensterbreite; Hell/Dunkel.
 
 ## Offene Entscheidungen
 
