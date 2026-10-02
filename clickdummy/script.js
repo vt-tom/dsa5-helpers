@@ -326,6 +326,7 @@ function setTab(id) {
   document.querySelector(".sheet").setAttribute("data-tab", id);
   // Talente starten oben — also ist die erste Gruppe markiert.
   if (id === "skills") currentSkillGroup = 0;
+  if (SECTION_TABS[id]) currentSection[id] = SECTION_TABS[id][0][0];
   renderRail();
   renderContent();
   renderSubNav();
@@ -743,7 +744,21 @@ function jumpToSkillGroup(g) {
 // (die Sammelproben sind meist zu kurz, um bis nach oben zu kommen).
 function initSkillScrollSpy() {
   const content = document.getElementById("content");
-  content.addEventListener("scrollend", () => { skillJumping = false; });
+  content.addEventListener("scrollend", () => { skillJumping = false; sectionJumping = false; });
+  // Abschnitts-Reiter (Issue #32): dieselbe Mitführung über die data-section-Elemente.
+  content.addEventListener("scroll", () => {
+    if (!SECTION_TABS[currentTab] || sectionJumping) return;
+    const sections = [...content.querySelectorAll("[data-section]")];
+    if (!sections.length) return;
+    const top = content.getBoundingClientRect().top + 40;
+    let current = sections[0].dataset.section;
+    if (content.scrollTop + content.clientHeight >= content.scrollHeight - 2) current = sections.at(-1).dataset.section;
+    else sections.forEach((sec) => { if (sec.getBoundingClientRect().top <= top) current = sec.dataset.section; });
+    if (current !== currentSection[currentTab]) {
+      currentSection[currentTab] = current;
+      renderSubNav();
+    }
+  });
   content.addEventListener("scroll", () => {
     if (currentTab !== "skills" || skillSearchQuery.trim() || skillJumping) return;
     const panels = [...content.querySelectorAll("[data-skill-group]")];
@@ -758,17 +773,6 @@ function initSkillScrollSpy() {
       renderSubNav();
     }
   });
-}
-
-// Kampf-Unterreiter: "Kampf" (Kampfwerte/Waffen/Rüstung) und "Kampftalente" (Kampftechniken), gleiches Muster
-// wie die Talentgruppen oben (siehe PLANNING.md "Design-Muster (wiederverwendbar über alle Tabs)").
-let currentCombatSection = "koerper";
-
-function setCombatSection(section) {
-  currentCombatSection = section;
-  renderContent();
-  renderSubNav();
-  document.getElementById("content").scrollTop = 0;
 }
 
 // Belastung (system.burden.value im echten Skill-Datenmodell, s. Kommentar über SKILL_GROUPS in data.js): nur
@@ -880,62 +884,6 @@ function buildSkillSubTabs() {
   );
 }
 
-// Kampf-Unterreiter: nur zwei gleichwertige Bereiche, schon immer ohne Kategoriefarben — sonst 1:1 dasselbe
-// .sub-tabs/.sub-tab-Muster wie bei den Talenten.
-function buildCombatSubTabs() {
-  return el("div", { class: "sub-tabs" }, [
-    ["koerper", "Körper"], ["kampftalente", "Kampftalente"],
-  ].map(([id, label]) => {
-    const active = currentCombatSection === id;
-    const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
-    btn.addEventListener("click", () => setCombatSection(id));
-    return btn;
-  }));
-}
-
-// Magie-/Religions-Unterreiter (2026-09-13, Nutzerwunsch): Proben+Sonderfertigkeiten vs. Traditionsgegenstände,
-// dasselbe zwei-gleichwertige-Bereiche-Muster wie bei Kampf/Kampftalente. Zwei getrennte Zustände statt einem
-// gemeinsamen, da Magie- und Religions-Tab unabhängig voneinander umgeschaltet werden sollen.
-let currentMagicSection = "spells";
-
-function setMagicSection(section) {
-  currentMagicSection = section;
-  renderContent();
-  renderSubNav();
-  document.getElementById("content").scrollTop = 0;
-}
-
-let currentReligionSection = "liturgies";
-
-function setReligionSection(section) {
-  currentReligionSection = section;
-  renderContent();
-  renderSubNav();
-  document.getElementById("content").scrollTop = 0;
-}
-
-function buildMagicSubTabs() {
-  return el("div", { class: "sub-tabs" }, [
-    ["spells", "Zauber"], ["items", "Ausrüstung"],
-  ].map(([id, label]) => {
-    const active = currentMagicSection === id;
-    const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
-    btn.addEventListener("click", () => setMagicSection(id));
-    return btn;
-  }));
-}
-
-function buildReligionSubTabs() {
-  return el("div", { class: "sub-tabs" }, [
-    ["liturgies", "Liturgien"], ["items", "Ausrüstung"],
-  ].map(([id, label]) => {
-    const active = currentReligionSection === id;
-    const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
-    btn.addEventListener("click", () => setReligionSection(id));
-    return btn;
-  }));
-}
-
 // Notizen-Unterreiter (wie im Foundry-Modul, notes-Subnav): vier Freitextfelder als gleichwertige Bereiche, dazu
 // seit Issue #26 die persönlichen Daten als eigener, erster Unterreiter (kein Freitext, daher ohne get/set).
 const NOTES_SECTIONS = [
@@ -945,18 +893,40 @@ const NOTES_SECTIONS = [
   { id: "ownernotes", label: "Private Notizen", get: () => PRIVATE_NOTES_TEXT, set: (v) => { PRIVATE_NOTES_TEXT = v; } },
   { id: "gmnotes", label: "GM-Notizen", get: () => GM_NOTES_TEXT, set: (v) => { GM_NOTES_TEXT = v; } },
 ];
-let currentNotesSection = "details";
+// Unterreiter als Sprungmarken in allen Reitern (Issue #32, wie bei den Talenten seit 2026-09-30): jeder Reiter zeigt
+// alle Abschnitte untereinander (Element mit data-section), ein Unterreiter scrollt nur dorthin, beim Scrollen wandert
+// die Markierung mit (initSkillScrollSpy). Modul: _jumpSections()/_jumpTo()/_onContentScroll().
+const SECTION_TABS = {
+  combat: [["koerper", "Körper"], ["kampftalente", "Kampftalente"]],
+  magic: [["spells", "Zauber"], ["items", "Ausrüstung"]],
+  religion: [["liturgies", "Liturgien"], ["items", "Ausrüstung"]],
+  notes: NOTES_SECTIONS.map(({ id, label }) => [id, label]),
+};
+const currentSection = Object.fromEntries(Object.entries(SECTION_TABS).map(([tab, list]) => [tab, list[0][0]]));
+let sectionJumping = false;
 
-function buildNotesSubTabs() {
-  return el("div", { class: "sub-tabs" }, NOTES_SECTIONS.map(({ id, label }) => {
-    const active = currentNotesSection === id;
+// Abschnitt eines Reiters als Sprungziel.
+function section(id, children) {
+  return el("div", { class: "jump-section", "data-section": id }, [].concat(children));
+}
+
+function jumpToSection(tab, id) {
+  currentSection[tab] = id;
+  renderSubNav();
+  const content = document.getElementById("content");
+  const target = content.querySelector(`[data-section="${id}"]`);
+  if (!target) return;
+  const wanted = content.scrollTop + target.getBoundingClientRect().top - content.getBoundingClientRect().top - 4;
+  const top = Math.max(0, Math.min(wanted, content.scrollHeight - content.clientHeight));
+  sectionJumping = Math.abs(top - content.scrollTop) > 1;
+  content.scrollTo({ top, behavior: "smooth" });
+}
+
+function buildSectionSubTabs(tab) {
+  return el("div", { class: "sub-tabs" }, SECTION_TABS[tab].map(([id, label]) => {
+    const active = currentSection[tab] === id;
     const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
-    btn.addEventListener("click", () => {
-      currentNotesSection = id;
-      renderContent();
-      renderSubNav();
-      document.getElementById("content").scrollTop = 0;
-    });
+    btn.addEventListener("click", () => jumpToSection(tab, id));
     return btn;
   }));
 }
@@ -966,10 +936,7 @@ function renderSubNav() {
   const nav = document.getElementById("tabSubNav");
   nav.innerHTML = "";
   if (currentTab === "skills") nav.appendChild(buildSkillSubTabs());
-  else if (currentTab === "combat") nav.appendChild(buildCombatSubTabs());
-  else if (currentTab === "magic") nav.appendChild(buildMagicSubTabs());
-  else if (currentTab === "religion") nav.appendChild(buildReligionSubTabs());
-  else if (currentTab === "notes") nav.appendChild(buildNotesSubTabs());
+  else if (SECTION_TABS[currentTab]) nav.appendChild(buildSectionSubTabs(currentTab));
 }
 
 // Nutzer-Feedback 2026-09-14: die Suche filterte bisher nur innerhalb der gerade aktiven Talentgruppe — ein Treffer
@@ -1235,7 +1202,9 @@ function combatSkillLink(group) {
 // Sprung: Unterreiter wechseln, Suche leeren, Zeile hinscrollen + kurz aufleuchten lassen (wie nach einer Änderung).
 function jumpToCombatSkill(name) {
   combatSkillQuery = "";
-  setCombatSection("kampftalente");
+  currentSection.combat = "kampftalente";
+  renderContent();
+  renderSubNav();
   const row = [...document.querySelectorAll("#content .combatskill-row")].find((r) => r.querySelector(".cs-name")?.textContent === name);
   if (!row) return;
   // Nur den Inhaltsbereich scrollen — scrollIntoView() verschiebt auch die Seite um den Bogen herum.
@@ -1490,8 +1459,8 @@ function renderBody() {
     right = [handSlot("off")];
   }
 
-  // Ganz oben: Schnellaktionen, daneben Initiative und das Rüstungsschild (Issue #29, Nutzer-Entscheidung 2026-10-02:
-  // Kombination aus „Kopfleiste“ und „Brustschild“). Der Tooltip schlüsselt Rüstungsschutz und Belastung auf.
+  // Rüstungsschild (Issue #29, Nutzer-Entscheidung 2026-10-02): rechtsbündig in der Rüstungszeile, der Tooltip
+  // schlüsselt Rüstungsschutz und Belastung auf. Ganz oben nur Schnellaktionen + Initiative.
   const shieldTip = [
     `Rüstungsschutz ${armorSum.sum}${magicText ? ` (${magicText})` : ""}`,
     ...ARMOR.map((a) => { const st = effectiveArmor(a); return `  ${a.name}: RS ${st.rs}, BE ${st.be}`; }),
@@ -1503,11 +1472,12 @@ function renderBody() {
   ]);
   const top = el("div", { class: "body-top" }, [
     renderCombatActions(),
-    el("div", { class: "body-top-stats" }, [el("div", { class: "body-bigstat" }, [el("small", {}, "Initiative"), el("strong", {}, String(ini))]), shield]),
+    el("div", { class: "body-top-stats" }, [el("div", { class: "body-bigstat" }, [el("small", {}, "Initiative"), el("strong", {}, String(ini))])]),
   ]);
   const armorRow = el("div", { class: "body-armor-row" }, [
     el("small", { class: "figure-col-title" }, "Rüstung"),
     ARMOR.length ? el("div", { class: "body-armor-row-tiles" }, ARMOR.map(armorTile)) : el("div", { class: "muted body-armor-empty" }, "Keine Rüstung getragen"),
+    shield,
   ]);
 
   // Kurzübersicht der übrigen Waffen statt der früheren Waffentabellen (Rückmeldung 2026-10-02: die Hände wählen die
@@ -1608,7 +1578,7 @@ function renderCombatSkills() {
 function renderCombat() {
   // "Körper" als Unterreiter (Nutzerwunsch 2026-09-28) — ob er die Übersicht ablöst, entscheidet der Nutzer später.
   // „Körper“ ersetzt die frühere Übersicht (Issue #29, Nutzer-Entscheidung 2026-10-02).
-  return currentCombatSection === "kampftalente" ? renderCombatSkills() : renderBody();
+  return el("div", {}, [section("koerper", renderBody()), section("kampftalente", renderCombatSkills())]);
 }
 
 // Erweiterungen-Icon (spell-section.hbs: item.extensions → Overlay-Icon mit Tooltip) und Mehrrunden-Auflade-
@@ -1826,9 +1796,9 @@ function traditionHeader(t, kind) {
 // Unter-Tab "Zauber": Traditions-Kopfleiste → Proben-Tabellen → Zaubertricks (TODOS.md: direkt unter Rituale,
 // vor den Sonderfertigkeiten) → Sonderfertigkeiten (Kategorie "magical"). Traditionsgegenstände/Magische
 // Zeichen sind auf den zweiten Unter-Tab gewandert (renderMagicItems).
-function renderMagicSpells() {
+function renderMagicSpells(withHeader = true) {
   return el("div", {}, [
-    traditionHeader(MAGIC_TRADITION, "magic"),
+    withHeader ? traditionHeader(MAGIC_TRADITION, "magic") : null,
     magicTable("Zauber", SPELLS),
     magicTable("Rituale", RITUALS),
     el("div", { class: "panel" }, [
@@ -1844,9 +1814,9 @@ function renderMagicSpells() {
 }
 
 // Unter-Tab "Ausrüstung": Traditions-Kopfleiste → Traditionsgegenstände → Magische Zeichen.
-function renderMagicItems() {
+function renderMagicItems(withHeader = true) {
   return el("div", {}, [
-    traditionHeader(MAGIC_TRADITION, "magic"),
+    withHeader ? traditionHeader(MAGIC_TRADITION, "magic") : null,
     artifactTable("Traditionsgegenstände", TRADITION_ARTIFACTS, true),
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title" }, "Magische Zeichen"),
@@ -1856,14 +1826,15 @@ function renderMagicItems() {
 }
 
 function renderMagic() {
-  return currentMagicSection === "items" ? renderMagicItems() : renderMagicSpells();
+  // Traditions-Kopf einmal über beiden Abschnitten (Issue #32).
+  return el("div", {}, [traditionHeader(MAGIC_TRADITION, "magic"), section("spells", renderMagicSpells(false)), section("items", renderMagicItems(false))]);
 }
 
 // Unter-Tab "Liturgien": Traditions-Kopfleiste → Proben-Tabellen → Segnungen (TODOS.md: direkt unter
 // Zeremonien, vor den Sonderfertigkeiten) → Sonderfertigkeiten (Kategorie "clerical").
-function renderReligionLiturgies() {
+function renderReligionLiturgies(withHeader = true) {
   return el("div", {}, [
-    traditionHeader(RELIGION_TRADITION, "religion"),
+    withHeader ? traditionHeader(RELIGION_TRADITION, "religion") : null,
     magicTable("Liturgien", LITURGIES),
     magicTable("Zeremonien", CEREMONIES),
     el("div", { class: "panel" }, [
@@ -1876,12 +1847,12 @@ function renderReligionLiturgies() {
 
 // Unter-Tab "Ausrüstung": Traditions-Kopfleiste → Kirchengeräte. Kein Äquivalent zu "Magische Zeichen" bei
 // Religion, daher hier nur ein Panel statt zwei wie bei renderMagicItems.
-function renderReligionItems() {
-  return el("div", {}, [traditionHeader(RELIGION_TRADITION, "religion"), artifactTable("Kirchengeräte", CEREMONIAL_ITEMS, false)]);
+function renderReligionItems(withHeader = true) {
+  return el("div", {}, [withHeader ? traditionHeader(RELIGION_TRADITION, "religion") : null, artifactTable("Kirchengeräte", CEREMONIAL_ITEMS, false)]);
 }
 
 function renderReligion() {
-  return currentReligionSection === "items" ? renderReligionItems() : renderReligionLiturgies();
+  return el("div", {}, [traditionHeader(RELIGION_TRADITION, "religion"), section("liturgies", renderReligionLiturgies(false)), section("items", renderReligionItems(false))]);
 }
 
 // Nahkampfwaffen/Fernkampfwaffen/Rüstung tragen hier dieselben structure-Werte wie ihr Gegenstück in
@@ -2391,12 +2362,15 @@ function renderDiseasePanel() {
 // Notizen-Fließtexte und Verbindungen (Name+Rolle) sind daher alle im Bearbeiten-Modus editierbar (kein
 // separater Spielmodus-Punkt dazu, also wie überall sonst nur dort).
 function renderNotes() {
+  return el("div", {}, NOTES_SECTIONS.map((n) => section(n.id, renderNotesSection(n))));
+}
+
+function renderNotesSection(section) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
 
   // Wie im Foundry-Modul (notes.hbs): je Unter-Tab genau ein Panel — das Persönliche-Daten-Grid (Issue #26) oder
   // ein Freitextfeld (Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen, Nutzer-Feedback 2026-09-19).
   // Wesenszug, GM-Geheimnisse und Verbindungen gibt es dort nicht (kommen im offiziellen Bogen nicht vor).
-  const section = NOTES_SECTIONS.find((n) => n.id === currentNotesSection) || NOTES_SECTIONS[0];
   if (section.id === "details") {
     return el("div", { class: "panel" }, [
       el("div", { class: "panel-title" }, section.label),

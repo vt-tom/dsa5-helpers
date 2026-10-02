@@ -87,15 +87,20 @@ export function evaluateDie(counts) {
 }
 
 // ---------- Speicherformat ----------
-// User-Flag `dsa5-helpers.diceStats`, Version 2 (2026-10-02, für den Zeitraum-Filter): ein Zähler-Topf je Spielabend.
-//   { v: 2, days: { "2026-10-02": { d: { "20": [..20 Zähler..], "6": [..] }, m: { … } } } }
-// d = digitale Würfel, m = echte Würfel. Ein Spielabend kostet je Spieler gut 100 Byte, unabhängig von der Zahl der Würfe.
-// Version 1 (ein einziger Topf { v:1, since, d, m }) wird beim Lesen als ein Abend am Tag von `since` übernommen.
+// User-Flag `dsa5-helpers.diceStats`, Version 2 (2026-10-02, für den Zeitraum-Filter): ein Zähler-Topf je Tag.
+//   { v: 2, days: { "2026-10-02": { d: { "20": [..20 Zähler..], "6": [..] }, m: { … } } }, older?: { d, m }, olderUntil?: "YYYY-MM-DD" }
+// d = digitale Würfel, m = echte Würfel. Ein Tag mit Würfen kostet je Spieler gut 100 Byte, unabhängig von der Zahl der
+// Würfe. Tage, die älter als 12 Monate sind, werden beim nächsten Speichern in `older` zusammengefasst (Nutzer-Entscheidung
+// 2026-10-02): die Gesamtsumme bleibt richtig, nur sind diese Tage nicht mehr einzeln filterbar. Damit bleibt die
+// Statistik bei höchstens rund 365 Töpfen je Spieler.
+// Version 1 (ein einziger Topf { v:1, since, d, m }) wird beim Lesen als ein Tag am Datum von `since` übernommen.
 
-/** Ein Spielabend reicht bis 6 Uhr morgens: Würfe nach Mitternacht zählen noch zum Vorabend. */
+/** Ein Tag reicht bis 6 Uhr morgens: Würfe einer Runde nach Mitternacht zählen noch zum Vortag. */
 export const DAY_START_HOUR = 6;
+/** Tage mit eigenem Topf; ältere werden zusammengefasst. */
+export const RETENTION_DAYS = 365;
 
-/** Schlüssel des Spielabends (lokales Datum, YYYY-MM-DD) zu einem Zeitpunkt. */
+/** Schlüssel des Tages (lokales Datum, YYYY-MM-DD) zu einem Zeitpunkt. */
 export function dayKey(time = Date.now()) {
   const d = new Date(time - DAY_START_HOUR * 3600_000);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -120,30 +125,45 @@ function addCounts(target, delta) {
 }
 
 /**
- * Addiert neue Würfe auf eine gespeicherte Statistik und gibt eine neue zurück (Eingabe bleibt unverändert).
+ * Addiert neue Würfe auf eine gespeicherte Statistik und gibt eine neue zurück (Eingabe bleibt unverändert). Tage älter
+ * als RETENTION_DAYS (gerechnet ab `now`) wandern dabei in den Topf `older`.
  * deltaByDay: { "2026-10-02": { d: { "20": [..] }, m: {} } }
  */
-export function mergeCounts(stats, deltaByDay) {
+export function mergeCounts(stats, deltaByDay, now = Date.now()) {
   const base = normalizeStats(stats);
   const days = { ...base.days };
   for (const [day, delta] of Object.entries(deltaByDay ?? {})) {
     const prev = days[day] ?? {};
     days[day] = addCounts({ d: { ...prev.d }, m: { ...prev.m } }, delta);
   }
-  return { v: 2, days };
+  const cutoff = dayKey(now - RETENTION_DAYS * 86400_000);
+  let older = base.older ? { d: { ...base.older.d }, m: { ...base.older.m } } : null;
+  let olderUntil = base.olderUntil ?? null;
+  for (const day of Object.keys(days).sort()) {
+    if (day > cutoff) break;
+    older = addCounts(older ?? { d: {}, m: {} }, days[day]);
+    if (!olderUntil || day > olderUntil) olderUntil = day;
+    delete days[day];
+  }
+  return older ? { v: 2, days, older, olderUntil } : { v: 2, days };
 }
 
-/** Spielabende mit Würfen (Schlüssel), neueste zuerst. */
+/** Tage mit eigenem Topf (Schlüssel), neueste zuerst. */
 export function playDays(statsList) {
   const set = new Set();
   for (const s of statsList) for (const day of Object.keys(normalizeStats(s).days)) set.add(day);
   return [...set].sort().reverse();
 }
 
-/** Summe der Zähler im Zeitraum (Schlüssel einschließlich; ohne Grenze = alles): { d: {...}, m: {...} }. */
+/**
+ * Summe der Zähler im Zeitraum (Schlüssel einschließlich; ohne Grenze = alles): { d: {...}, m: {...} }. Der Topf der
+ * zusammengefassten älteren Tage zählt nur mit, wenn der Zeitraum keinen Anfang hat (er lässt sich nicht aufteilen).
+ */
 export function sumCounts(stats, { from = null, to = null } = {}) {
   const out = { d: {}, m: {} };
-  for (const [day, counts] of Object.entries(normalizeStats(stats).days)) {
+  const base = normalizeStats(stats);
+  if (base.older && !from && (!to || to >= base.olderUntil)) addCounts(out, base.older);
+  for (const [day, counts] of Object.entries(base.days)) {
     if ((from && day < from) || (to && day > to)) continue;
     addCounts(out, counts);
   }

@@ -29,13 +29,14 @@ function roll(faces, n, seed, weights) {
   return counts;
 }
 const tilt = (faces, face, factor) => Array.from({ length: faces }, (_, i) => (i + 1 === face ? factor : 1));
-// Drei Spielabende; die Würfe eines Spielers werden etwa 45/35/20 % darauf verteilt (Speicherformat je Abend, stats.js).
+// Drei Tage mit Würfen; die Würfe eines Spielers werden etwa 45/35/20 % darauf verteilt (Speicherformat je Tag, stats.js).
 const DAYS = ["2026-10-02", "2026-09-25", "2026-09-18"];
+const NOW = new Date(2026, 9, 2, 22).getTime(); // fester Bezugspunkt, sonst fasst die 12-Monats-Grenze die Demo-Tage irgendwann zusammen
 const SHARES = [0.45, 0.35];
 function stats(d, m = {}) {
   const part = (counts, k) => counts.map((c) => (k < SHARES.length ? Math.floor(c * SHARES[k]) : c - SHARES.reduce((sum, f) => sum + Math.floor(c * f), 0)));
   const split = (group, k) => Object.fromEntries(Object.entries(group).map(([faces, counts]) => [faces, part(counts, k)]));
-  return mergeCounts(null, Object.fromEntries(DAYS.map((day, k) => [day, { d: split(d, k), m: split(m, k) }])));
+  return mergeCounts(null, Object.fromEntries(DAYS.map((day, k) => [day, { d: split(d, k), m: split(m, k) }])), NOW);
 }
 
 // Farben wie die Foundry-Benutzerfarben (Spielerliste) — Identität, nicht Wertung.
@@ -160,7 +161,7 @@ function confirmReset(player) {
   const who = player ? `von ${player.name}` : "aller Spieler";
   dialog({
     title: "Würfelstatistik löschen",
-    body: [el("p", {}, `Die gesamte Statistik ${who} wird gelöscht (alle Spielabende). Das lässt sich nicht rückgängig machen.`)],
+    body: [el("p", {}, `Die gesamte Statistik ${who} wird gelöscht. Das lässt sich nicht rückgängig machen.`)],
     buttons: [["Löschen", () => { (player ? [player] : PLAYERS).forEach((p) => { if (p.stats) p.stats = mergeCounts(null, {}); }); render(); }, "danger"], ["Abbrechen", null]],
   });
 }
@@ -191,7 +192,7 @@ function render() {
   win.setAttribute("data-theme", theme);
   const shown = state.gm ? PLAYERS : PLAYERS.filter((p) => p.id === OWN_ID);
   const visible = shown.filter((p) => p.consent === "yes" && p.stats);
-  // Zeitraum: gesamt, ein Spielabend oder eigener Zeitraum (von/bis, Spielabend-Schlüssel einschließlich).
+  // Zeitraum: gesamt, ein Tag oder eigener Zeitraum (von/bis, Tages-Schlüssel einschließlich).
   const days = playDays(visible.map((p) => p.stats));
   if (!["all", "custom", ...days].includes(state.range)) state.range = "all";
   const bounds = state.range === "all" ? {} : state.range === "custom" ? { from: state.from || null, to: state.to || null } : { from: state.range, to: state.range };
@@ -207,7 +208,7 @@ function render() {
   const hidden = state.gm ? PLAYERS.filter((p) => p.consent !== "yes") : [];
   const dayLabel = (key) => new Date(`${key}T12:00:00`).toLocaleDateString("de-DE");
   const rangeSelect = el("select", { class: "ds-range-select", "aria-label": "Zeitraum", onchange: (e) => { state.range = e.target.value; render(); } },
-    [["all", "Gesamt"], ...days.map((d) => [d, `Spielabend ${dayLabel(d)}`]), ["custom", "Eigener Zeitraum …"]].map(([v, t]) => el("option", { value: v, selected: v === state.range }, t)));
+    [["all", "Gesamt"], ...days.map((d) => [d, dayLabel(d)]), ["custom", "Eigener Zeitraum …"]].map(([v, t]) => el("option", { value: v, selected: v === state.range }, t)));
   const dateInput = (key, label) => el("input", { type: "date", value: state[key], min: days.at(-1) ?? "", max: days[0] ?? "", "aria-label": label, onchange: (e) => { state[key] = e.target.value; render(); } });
 
   const body = win.querySelector(".ds-body");
@@ -264,7 +265,7 @@ export function openConsent() {
     title: "Würfelstatistik",
     body: [
       el("p", {}, [el("strong", {}, "Dürfen deine Würfe für die Würfelstatistik ausgewertet werden?")]),
-      el("p", {}, "Gezählt wird nur, wie oft welche Augenzahl je Spielabend fällt – keine einzelnen Würfe. Du siehst deine eigene Statistik, die Spielleitung die aller Spieler."),
+      el("p", {}, "Gezählt wird nur, wie oft welche Augenzahl je Tag fällt – keine einzelnen Würfe. Du siehst deine eigene Statistik, die Spielleitung die aller Spieler."),
       el("p", { class: "muted" }, "Du kannst das jederzeit in den Moduleinstellungen ändern. Ziehst du die Zustimmung zurück, wird nichts mehr gezählt und deine Statistik ausgeblendet."),
     ],
     buttons: [["Ja, auswerten", null, "primary"], ["Nein", null]],

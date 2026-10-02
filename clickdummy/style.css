@@ -1156,7 +1156,8 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .two-col>.show-all-btn,.two-col>.drop-zone{grid-column:1/-1}
 
 /* ===== Notizen (renderNotes()): persönliche Daten seit Issue #26 als eigener Unterreiter in voller Breite ===== */
-.notes-text .notes-text-wrap{min-height:360px}
+/* Notizen stehen seit Issue #32 untereinander — Mindesthöhe 200 statt 360 px, sonst wird die Liste sehr lang. */
+.notes-text .notes-text-wrap{min-height:200px}
 
 /* hidden-Attribut schlägt eigene display-Werte (z. B. .row{display:grid}) — wie im Modul (.dsa5-helpers-sheet [hidden]). */
 .sheet [hidden]{display:none!important}
@@ -1230,8 +1231,9 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .body-armor-row .armor-slot{width:76px;height:76px}
 .body-armor-row .body-item-name{display:block;font-size:var(--fs-small);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .body-armor-empty{align-self:center;margin:auto;font-size:var(--fs-small)}
-/* Rüstungsschild oben rechts neben der Initiative (Issue #29, Nutzer-Entscheidung 2026-10-02: Kopfleiste + Brustschild),
-   Tooltip mit der Aufschlüsselung je Rüstungsteil. */
+/* Rüstungsschild rechtsbündig in der Rüstungszeile (Issue #29, Nutzer-Entscheidung 2026-10-02), Tooltip mit der
+   Aufschlüsselung je Rüstungsteil. */
+.body-armor-row>.body-shield{flex:none;margin-left:auto}
 .body-top-stats .body-bigstat{padding-top:2px}
 .body-shield{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;width:64px;padding:6px 0 14px;background:var(--paper);border:2px solid var(--accent);border-radius:5px 5px 32px 32px;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:help}
 .body-shield span{display:flex;flex-direction:column;align-items:center;line-height:1.05}
@@ -1313,3 +1315,6 @@ button.fav-chip-roll{border:0;background-color:transparent;padding:0;font-family
 .ds-card-head{display:flex;align-items:center;justify-content:space-between;align-self:stretch;gap:8px}
 .ds-card .ds-hist{width:100%;height:auto}
 .ds-more{border:0;background:none;color:var(--accent);font:inherit;font-size:var(--fs-small);padding:0;cursor:pointer;text-decoration:underline}
+
+/* Abschnitte eines Reiters als Sprungmarken untereinander (Issue #32): Abstand wie zwischen Panels. */
+.jump-section+.jump-section{margin-top:16px}

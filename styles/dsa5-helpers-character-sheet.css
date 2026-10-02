@@ -1686,7 +1686,10 @@
    Persönliche Daten seit Issue #26 als eigener Unterreiter (notes:details) statt schmaler Spalte links — die
    Textreiter haben dadurch die volle Breite, das Datenraster nutzt die Grundregel .dsa5h-details-grid. */
 .dsa5-helpers-sheet .dsa5h-notes-text .panel { margin-top:0; }
-.dsa5-helpers-sheet .dsa5h-notes-text .dsa5h-richtext, .dsa5-helpers-sheet .dsa5h-notes-text .dsa5h-richtext prose-mirror { min-height:360px; }
+/* Seit Issue #32 stehen alle Notizen untereinander — Mindesthöhe 200 statt 360 px, sonst wird die Liste sehr lang. */
+.dsa5-helpers-sheet .dsa5h-notes-text .dsa5h-richtext, .dsa5-helpers-sheet .dsa5h-notes-text .dsa5h-richtext prose-mirror { min-height:200px; }
+/* Unterreiter-Abschnitte untereinander (Issue #32): Abstand wie zwischen Panels. */
+.dsa5-helpers-sheet [data-sub-panel] + [data-sub-panel] { margin-top:16px; }
 
 /* ===== STATUS: Tabellen zweispaltig (Nutzer-Feedback 2026-09-28) =====
    Jede Tabelle volle Breite, Zeilen füllen abwechselnd die linke und rechte Spalte (wie „row-section wrap“ im
@@ -1778,8 +1781,7 @@
 .dsa5-helpers-sheet .dsa5h-body-top { display:flex; align-items:center; gap:10px 18px; padding:0 12px; border-bottom:1px solid var(--line); }
 .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-quick-actions { flex:1; justify-content:flex-start; }
 .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-ini { flex:none; align-items:center; text-align:center; padding:0; }
-.dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-shield { margin:8px 0; }
-/* Rüstungsschild oben rechts neben der Initiative (Issue #29, Nutzer-Entscheidung 2026-10-02), Tooltip mit Aufschlüsselung. */
+/* Rüstungsschild rechtsbündig in der Rüstungszeile (Issue #29, Nutzer-Entscheidung 2026-10-02), Tooltip mit Aufschlüsselung. */
 .dsa5-helpers-sheet .dsa5h-body-shield { position:relative; flex:none; display:flex; flex-direction:column; align-items:center; gap:1px; width:64px; padding:6px 0 14px; background:var(--paper); border:2px solid var(--accent); border-radius:5px 5px 32px 32px; box-shadow:0 1px 4px rgba(0,0,0,.25); cursor:help; }
 .dsa5-helpers-sheet .dsa5h-body-shield > span { display:flex; flex-direction:column; align-items:center; line-height:1.05; }
 .dsa5-helpers-sheet .dsa5h-body-shield small { font-size:11px; color:var(--muted); letter-spacing:.05em; }
@@ -1787,7 +1789,7 @@
 .dsa5-helpers-sheet .dsa5h-body-shield-be strong { font-size:var(--fs-data); }
 .dsa5-helpers-sheet .dsa5h-body-shield .dsa5h-body-shield-magic { position:absolute; top:4px; right:4px; font-weight:bold; color:var(--accent); }
 /* Rüstungskacheln unter der Figur (Summe im Schild oben). */
-.dsa5-helpers-sheet .dsa5h-body-armor-row { display:grid; grid-template-columns:auto minmax(0, 1fr); align-items:start; gap:18px; padding:10px 12px; border-top:1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-body-armor-row { display:grid; grid-template-columns:auto minmax(0, 1fr) auto; align-items:start; gap:18px; padding:10px 12px; border-top:1px solid var(--line); }
 .dsa5-helpers-sheet .dsa5h-body-armor-row > .dsa5h-figure-col-title { padding-top:2px; }
 /* Kurzübersicht „Weitere Waffen“: Bild | Name + Technik | Würfel | TP | Stern, zweispaltig. */
 .dsa5-helpers-sheet .dsa5h-short-weapons { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); column-gap:14px; }
