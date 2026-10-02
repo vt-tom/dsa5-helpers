@@ -117,6 +117,12 @@
     "BodyFigure": "Figur im Hintergrund",
     "BodyFigurePlaceholder": "Platzhalter",
     "BodyFigurePortrait": "Akteur-Porträt",
+    "BothHands": "Beide Hände",
+    "BodyTwoHandedNote": "Nebenhand: von der beidhändigen Waffe belegt",
+    "BodyMoveRight": "nach rechts",
+    "BodyMoveLeft": "nach links",
+    "BodyMoveRightLabel": "Beidhändige Waffe nach rechts verschieben",
+    "BodyMoveLeftLabel": "Beidhändige Waffe nach links verschieben",
     "CastSpells": "Zauber …",
     "CastLiturgies": "Liturgien …",
     "CastSpellsTitle": "Zauber, Rituale & Zaubertricks",
@@ -160,6 +166,52 @@
           "Yes": "Ja",
           "No": "Nein"
         }
+      },
+      "Menu": {
+        "Label": "Würfelstatistik öffnen",
+        "Hint": "Zeigt je Spieler und Würfeltyp, wie oft welche Augenzahl gefallen ist und ob das statistisch auffällig ist."
+      },
+      "Disabled": "Die Würfelstatistik ist ausgeschaltet. Die Spielleitung kann sie in den Moduleinstellungen einschalten; bisherige Daten bleiben sichtbar.",
+      "DieType": "Würfeltyp",
+      "Die": "W{faces}",
+      "MethodLabel": "Würfelart",
+      "Method": {
+        "d": "Digital",
+        "m": "Echte Würfel"
+      },
+      "Since": "seit {date}",
+      "Verdict": {
+        "normal": "unauffällig",
+        "slight": "leicht auffällig",
+        "strong": "deutlich auffällig",
+        "few": "zu wenige Würfe",
+        "empty": "keine Würfe"
+      },
+      "PTooltip": "Chi-Quadrat-Test: p = {p}",
+      "ChartLabel": "Häufigkeit jeder Augenzahl beim W{faces}, erwartet je {expected}",
+      "Figure": {
+        "n": "Würfe",
+        "mean": "Ø",
+        "ones": "1en",
+        "twenties": "20en"
+      },
+      "Expected": "erwartet {value}",
+      "ShowTable": "Tabelle zeigen",
+      "HideTable": "Tabelle ausblenden",
+      "Face": "Augenzahl",
+      "Count": "Anzahl",
+      "ExpectedCol": "Erwartet",
+      "Deviation": "Abweichung",
+      "TestText": "Chi-Quadrat-Test auf Gleichverteilung: χ² = {chi2} bei {df} Freiheitsgraden, p = {p}. „leicht auffällig“ ab p < {slight}, „deutlich auffällig“ ab p < {strong}.",
+      "Empty": "Für diesen Würfeltyp und diese Würfelart gibt es noch keine Würfe.",
+      "Note": "Digitale und echte Würfel werden getrennt ausgewertet. Bei vielen Spielern und Würfeltypen sind einzelne Ausreißer reiner Zufall – „auffällig“ heißt nur, dass sich ein genauerer Blick lohnt.",
+      "Hidden": "Nicht ausgewertet (keine Zustimmung): {names}.",
+      "Reset": {
+        "Title": "Würfelstatistik zurücksetzen",
+        "One": "Die Statistik von {name} wird gelöscht. Das lässt sich nicht rückgängig machen.",
+        "All": "Die Statistik aller Spieler wird gelöscht. Das lässt sich nicht rückgängig machen.",
+        "OneLabel": "Statistik von {name} zurücksetzen",
+        "AllLabel": "Alle zurücksetzen"
       }
     }
   }

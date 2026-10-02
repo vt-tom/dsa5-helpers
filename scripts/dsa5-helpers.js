@@ -2,6 +2,7 @@ import { Dsa5HelpersCharacterSheet } from './sheets/dsa5-helpers-character-sheet
 import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
 import { initSteigerungsplaner } from './compat/steigerungsplaner.js';
 import { registerDiceStatsSettings, readyDiceStats } from './dice-stats/settings.js';
+import { getDiceStatsApp, openDiceStats, initDiceStatsLiveUpdate } from './apps/dice-stats.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -27,6 +28,10 @@ Hooks.once('init', async () => {
   game.settings.register('dsa5-helpers', 'lastSeenVersion', { scope: 'client', config: false, type: String, default: '' });
   // Würfelstatistik (Issue #28): Einstellungen, Zustimmung, Erfassung — unabhängig vom Bogen.
   registerDiceStatsSettings();
+  game.settings.registerMenu('dsa5-helpers', 'diceStats', { name: 'DSA5HELPERS.DiceStats.Title', label: 'DSA5HELPERS.DiceStats.Menu.Label', hint: 'DSA5HELPERS.DiceStats.Menu.Hint', icon: 'fas fa-dice-d20', type: getDiceStatsApp(), restricted: false });
+  initDiceStatsLiveUpdate();
+  // Für Makros und das spätere HUD des Moduls.
+  game.modules.get('dsa5-helpers').api = { ...(game.modules.get('dsa5-helpers').api ?? {}), openDiceStats };
   game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
@@ -37,8 +42,10 @@ Hooks.once('init', async () => {
   Handlebars.registerHelper('dsa5hTraditionIcon', (text, kind) => findTraditionIcon(text, kind === 'religion' ? GOD_ICONS : MAGIC_TRADITION_ICONS, kind === 'religion' ? 'months' : 'traditionen'));
   await foundry.applications.handlebars.loadTemplates([
   "modules/dsa5-helpers/templates/changelog.hbs",
+  "modules/dsa5-helpers/templates/dice-stats.hbs",
   "modules/dsa5-helpers/templates/actors/dsa5-helpers-character-sheet.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/body-hand.hbs",
   "modules/dsa5-helpers/templates/actors/parts/cast-list.hbs",
   "modules/dsa5-helpers/templates/actors/parts/chips.hbs",
   "modules/dsa5-helpers/templates/actors/parts/combat.hbs",

@@ -2,8 +2,8 @@
 // Moduleinstellungen) und der Zustimmungsdialog beim Verbinden — mit Demo-Daten. Die Auswertung kommt aus der echten
 // Moduldatei scripts/dice-stats/stats.js, damit Click-Dummy und Modul dieselbe Rechnung zeigen.
 //
-// TEST-UMSCHALTER (nach der Entscheidung löschen): Darstellung A „Zeilen“ / B „Karten“ / C „Abweichungs-Raster“ und
-// Ansicht Spieler/Spielleitung stehen oben im Fenster.
+// Darstellung B „Karten“ (Nutzer-Entscheidung 2026-10-02; verworfen: A „Zeilen“ mit Mini-Diagramm, C „Raster“
+// Spieler × Augenzahl). Der Schalter „Ansicht“ oben im Fenster zeigt die Spieler- bzw. SL-Sicht (Zurücksetzen).
 import { evaluateDie, dieTypes, mergeCounts, P_SLIGHT, P_STRONG } from "../scripts/dice-stats/stats.js";
 
 // ---------- Demo-Daten ----------
@@ -48,7 +48,7 @@ const PLAYERS = [
 ];
 
 // ---------- Zustand ----------
-const state = { variant: "A", gm: true, method: "d", faces: 20, open: new Set() };
+const state = { gm: true, method: "d", faces: 20, open: new Set() };
 let win = null;
 
 // ---------- Helfer ----------
@@ -156,28 +156,6 @@ function confirmReset(player) {
 }
 
 // ---------- Darstellungen ----------
-function rowsA(list) {
-  return el("div", { class: "ds-rows" }, list.map(({ p, counts, ev }) => {
-    const open = state.open.has(p.id);
-    const head = el("button", { type: "button", class: "ds-row-head", "aria-expanded": String(open), onclick: () => { open ? state.open.delete(p.id) : state.open.add(p.id); render(); } }, [
-      el("span", { class: "ds-name", title: p.name }, [el("span", { class: "ds-swatch", style: `background:${p.color}` }), el("span", { class: "ds-name-text" }, p.name)]),
-      el("span", { class: "ds-num" }, [el("strong", {}, ev.n.toLocaleString("de-DE")), el("small", {}, "Würfe")]),
-      el("span", { class: "ds-num" }, [el("strong", {}, ev.mean === null ? "–" : fmt(ev.mean, 2)), el("small", {}, `Ø (erw. ${fmt(ev.expectedMean, 1)})`)]),
-      histogram(counts, ev, { width: 180, height: 34, labels: "none" }),
-      verdictPill(ev),
-      el("span", { class: "ds-chevron", "aria-hidden": "true" }, open ? "▾" : "▸"),
-    ]);
-    return el("div", { class: "ds-row" + (open ? " open" : "") }, [
-      el("div", { class: "ds-row-line" }, [head, gmReset(p)]),
-      open ? el("div", { class: "ds-row-body" }, [
-        el("div", { class: "ds-figures" }, keyFigures(ev, counts).map(([l, v, s]) => el("span", {}, [el("small", {}, l), el("strong", {}, v), s ? el("small", {}, s) : null]))),
-        histogram(counts, ev, { width: 560, height: 90, labels: "all" }),
-        detailsTable(ev, counts),
-      ]) : null,
-    ]);
-  }));
-}
-
 function cardsB(list) {
   return el("div", { class: "ds-cards" }, list.map(({ p, counts, ev }) => {
     const open = state.open.has(p.id);
@@ -190,40 +168,6 @@ function cardsB(list) {
       open ? detailsTable(ev, counts) : null,
     ]);
   }));
-}
-
-// Raster: Zeile = Spieler, Spalte = Augenzahl, Zelle = Abweichung von der Erwartung (divergierend: blau = seltener,
-// rot = häufiger, grau = wie erwartet). Kompakt bei vielen Spielern; Zahlen im Tooltip und in der Tabelle.
-function gridC(list) {
-  const faces = state.faces;
-  const cellColor = (dev) => {
-    const a = Math.min(1, Math.abs(dev) / 0.5);
-    return dev >= 0 ? `color-mix(in oklab, var(--ds-neutral), var(--ds-more) ${Math.round(a * 100)}%)` : `color-mix(in oklab, var(--ds-neutral), var(--ds-less) ${Math.round(a * 100)}%)`;
-  };
-  const table = el("table", { class: "ds-grid" + (faces > 12 ? " dense" : "") }, [
-    el("thead", {}, [el("tr", {}, [el("th", { class: "ds-grid-name" }, "Spieler"), el("th", {}, "Würfe"), ...Array.from({ length: faces }, (_, i) => el("th", { class: faces === 20 && (i === 0 || i === 19) ? "ds-key-col" : "" }, String(i + 1))), el("th", {}, "Einschätzung"), state.gm ? el("th", {}, "") : null])]),
-    el("tbody", {}, list.flatMap(({ p, counts, ev }) => {
-      const open = state.open.has(p.id);
-      const row = el("tr", { class: "ds-grid-row" + (ev.verdict === "few" ? " few" : ""), tabindex: "0", "aria-expanded": String(open), onclick: () => { open ? state.open.delete(p.id) : state.open.add(p.id); render(); }, onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } } }, [
-        el("th", { class: "ds-grid-name", scope: "row" }, [el("span", { class: "ds-swatch", style: `background:${p.color}` }), p.name]),
-        el("td", { class: "ds-grid-n" }, ev.n.toLocaleString("de-DE")),
-        ...counts.map((c, i) => el("td", { class: "ds-cell", style: ev.n ? `background:${cellColor(ev.deviations[i])}` : "", title: `${p.name}, ${i + 1}: ${c}× (erwartet ${fmt(ev.expectedPerFace)}, ${ev.deviations[i] >= 0 ? "+" : "−"}${pct(Math.abs(ev.deviations[i]), 0)})` })),
-        el("td", {}, verdictPill(ev)),
-        state.gm ? el("td", {}, gmReset(p)) : null,
-      ]);
-      return open ? [row, el("tr", { class: "ds-grid-detail" }, [el("td", { colspan: String(faces + 3 + (state.gm ? 1 : 0)) }, [
-        el("div", { class: "ds-figures" }, keyFigures(ev, counts).map(([l, v, s]) => el("span", {}, [el("small", {}, l), el("strong", {}, v), s ? el("small", {}, s) : null]))),
-        detailsTable(ev, counts),
-      ])])] : [row];
-    })),
-  ]);
-  const legend = el("div", { class: "ds-grid-legend" }, [
-    el("span", {}, [el("i", { style: "background:var(--ds-less)" }), "seltener als erwartet"]),
-    el("span", {}, [el("i", { style: "background:var(--ds-neutral)" }), "wie erwartet"]),
-    el("span", {}, [el("i", { style: "background:var(--ds-more)" }), "häufiger als erwartet"]),
-    el("small", {}, "volle Farbe ab ±50 %"),
-  ]);
-  return el("div", { class: "ds-grid-wrap" }, [legend, table]);
 }
 
 // ---------- Fenster ----------
@@ -250,8 +194,7 @@ function render() {
   const body = win.querySelector(".ds-body");
   body.replaceChildren(...[ 
     el("div", { class: "ds-test-bar" }, [
-      el("small", {}, "Test:"),
-      seg([["A", "A Zeilen"], ["B", "B Karten"], ["C", "C Raster"]], state.variant, (v) => { state.variant = v; render(); }, "Darstellung"),
+      el("small", {}, "Ansicht (nur Click-Dummy):"),
       seg([[false, "Spieler"], [true, "Spielleitung"]], state.gm, (v) => { state.gm = v; render(); }, "Ansicht"),
     ]),
     el("div", { class: "ds-filters" }, [
@@ -260,7 +203,7 @@ function render() {
       el("span", { class: "ds-since" }, `seit ${new Date(since).toLocaleDateString("de-DE")}`),
     ]),
     list.length
-      ? state.variant === "A" ? rowsA(list) : state.variant === "B" ? cardsB(list) : gridC(list)
+      ? cardsB(list)
       : el("p", { class: "ds-empty" }, `Noch keine Würfe mit ${dieLabel(state.faces)} (${methodLabel[state.method]}).`),
     el("p", { class: "ds-note" }, [
       "Digitale und echte Würfel werden getrennt ausgewertet. Bei vielen Spielern und Würfeltypen sind einzelne Ausreißer reiner Zufall – „auffällig“ heißt nur, dass sich ein genauerer Blick lohnt.",

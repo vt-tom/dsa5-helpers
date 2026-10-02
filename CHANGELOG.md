@@ -6,7 +6,11 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 ### Neu
 
-- Würfelstatistik (in Arbeit): Die Spielleitung kann in den Moduleinstellungen eine Würfelstatistik einschalten (standardmäßig aus). Jeder Spieler wird dann beim Verbinden gefragt, ob seine Würfe ausgewertet werden dürfen; die Antwort lässt sich jederzeit in den Moduleinstellungen ändern. Gezählt wird nur, wie oft welche Augenzahl je Würfeltyp fällt, getrennt nach digitalen und echten Würfeln – keine einzelnen Würfe ([#28](https://github.com/vt-tom/dsa5-helpers/issues/28)).
+- Würfelstatistik: Die Spielleitung kann sie in den Moduleinstellungen einschalten (standardmäßig aus). Jeder Spieler wird dann beim Verbinden gefragt, ob seine Würfe ausgewertet werden dürfen; die Antwort lässt sich jederzeit in den Moduleinstellungen ändern. Gezählt wird nur, wie oft welche Augenzahl je Würfeltyp fällt, getrennt nach digitalen und echten Würfeln – keine einzelnen Würfe. Das Fenster „Würfelstatistik öffnen“ (Moduleinstellungen, für alle) zeigt je Spieler eine Karte mit Balkendiagramm, Durchschnitt, Anteil der 1en und 20en und einer Einschätzung, ob die Verteilung statistisch auffällig ist; die Tabelle mit allen Augenzahlen lässt sich aufklappen. Die Spielleitung kann die Statistik einzelner oder aller Spieler zurücksetzen. Für Makros: `game.modules.get('dsa5-helpers').api.openDiceStats()` ([#28](https://github.com/vt-tom/dsa5-helpers/issues/28)).
+
+### Geändert
+
+- Kampf › Körper: Die Hände stehen links und rechts neben der Figur (Haupthand links, Nebenhand rechts). Eine beidhändige Waffe steht auf einer Seite und lässt sich im Bearbeiten-Modus per „⇄“ auf die andere Seite verschieben. Die Rüstung steht jetzt als Kachelreihe unter der Figur, links daneben Rüstungsschutz und Belastung, rechts die Initiative; die Schnellaktionen (Ausweichen, Waffenlos, Sturzschaden) stehen darüber. Das RS/BE-Schild über der Figur entfällt ([#29](https://github.com/vt-tom/dsa5-helpers/issues/29)).
 
 ## [0.3.3] — 2026-10-01
 
