@@ -1,43 +1,80 @@
 # Baut beim Veröffentlichen eines GitHub-Releases das installierbare Modul:
-# Version aus dem Tag (v0.1.0 → 0.1.0), manifest-/download-URL in module.json, module.zip nur mit den
-# Moduldateien (ohne clickdummy/, project/, tests/, tools/), beides als Release-Assets.
-# Manifest-URL für Foundry: https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json
+# Version aus dem Tag (v0.1.0 → 0.1.0), manifest-/download-URL in module.json, ZIP nur mit den Moduldateien
+# (ohne clickdummy/, project/, tests/, tools/), alles als Release-Assets.
+#
+# Zwei Kanäle (seit 0.4.0, siehe project/RELEASE.md):
+# - Stabil:  https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json
+#            `latest` zeigt nur auf normale Releases, nie auf Pre-releases.
+# - Beta:    https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json
+#            Fester Pre-release „beta“, dessen module.json bei JEDEM Release ersetzt wird (Pre-release und normal),
+#            damit Beta-Tester auch die stabilen Versionen bekommen.
+# Foundry übernimmt nach der Installation die Manifest-URL aus dem module.json IM ZIP — deshalb zwei ZIPs mit gleichem
+# Inhalt, aber eigenem Manifest: module.zip (stabil) und module-beta.zip (Beta-Kanal). So bleibt jeder in seinem Kanal.
+# Ein Pre-release (prereleased) zeigt mit seinem module.json auf den Beta-Kanal; wird es später zum normalen Release
+# erklärt (released), baut die Action dasselbe Release neu und das module.json zeigt auf den stabilen Kanal.
 name: Release
 
 on:
   release:
-    types: [published]
+    types: [prereleased, released]
 
 permissions:
   contents: write
 
 jobs:
   build:
+    # Der Beta-Kanal selbst ist auch ein Pre-release — dafür nichts bauen.
+    if: github.event.release.tag_name != 'beta'
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name }}
+      REPO: ${{ github.repository }}
+      PRERELEASE: ${{ github.event.release.prerelease }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: module.json für dieses Release setzen
-        env:
-          TAG: ${{ github.event.release.tag_name }}
-          REPO: ${{ github.repository }}
+      - name: module.json je Kanal erzeugen
         run: |
           node -e '
             const fs = require("fs");
+            const { TAG: tag, REPO: repo, PRERELEASE: pre } = process.env;
+            const base = `https://github.com/${repo}/releases`;
             const m = JSON.parse(fs.readFileSync("module.json", "utf8"));
-            const tag = process.env.TAG, repo = process.env.REPO;
             m.version = tag.replace(/^v/, "");
             m.url = `https://github.com/${repo}`;
-            m.manifest = `https://github.com/${repo}/releases/latest/download/module.json`;
-            m.download = `https://github.com/${repo}/releases/download/${tag}/module.zip`;
-            fs.writeFileSync("module.json", JSON.stringify(m, null, 2) + "\n");
+            const channel = beta => ({
+              ...m,
+              manifest: beta ? `${base}/download/beta/module.json` : `${base}/latest/download/module.json`,
+              download: `${base}/download/${tag}/${beta ? "module-beta.zip" : "module.zip"}`,
+            });
+            const write = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
+            fs.mkdirSync("stable"); fs.mkdirSync("beta");
+            write("stable/module.json", channel(false));
+            write("beta/module.json", channel(true));
+            // module.json am Release: Pre-release → Beta-Kanal, normales Release → stabiler Kanal.
+            write("module.json", channel(pre === "true"));
           '
           cat module.json
 
-      - name: module.zip packen
-        run: zip -r module.zip module.json LICENSE README.md CHANGELOG.md scripts styles templates lang
+      - name: ZIPs packen
+        run: |
+          for ch in stable beta; do
+            rm -rf pkg && mkdir pkg && cp -r LICENSE README.md CHANGELOG.md scripts styles templates lang pkg/
+            cp "$ch/module.json" pkg/module.json
+            (cd pkg && zip -qr "../$([ "$ch" = beta ] && echo module-beta.zip || echo module.zip)" .)
+          done
+          unzip -p module.zip module.json | grep -E '"(version|manifest|download)"'
+          unzip -p module-beta.zip module.json | grep -E '"(version|manifest|download)"'
 
       - name: Assets an das Release hängen
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" module.json module.zip --clobber
+        run: gh release upload "$TAG" module.json module.zip module-beta.zip --clobber
+
+      - name: Beta-Kanal aktualisieren
+        run: |
+          # Beta-Tester bleiben im Beta-Kanal und bekommen jede neue Version, ob Pre-release oder normales Release.
+          if ! gh release view beta >/dev/null 2>&1; then
+            gh release create beta --prerelease --target "$GITHUB_SHA" --title "Beta-Kanal" \
+              --notes "Nicht über diese Seite installieren: in Foundry die Beta-Manifest-URL eintragen – https://github.com/$REPO/releases/download/beta/module.json"
+          fi
+          gh release upload beta beta/module.json --clobber

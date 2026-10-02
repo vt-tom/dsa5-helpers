@@ -12,6 +12,16 @@ In Foundry unter **Add-on-Module → Modul installieren** diese Manifest-URL ein
 https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json
 ```
 
+**Beta-Kanal (für Tester):** Wer neue Versionen vorab testen möchte, trägt stattdessen diese Manifest-URL ein. Darüber
+kommen Beta-Versionen und auch alle stabilen Versionen:
+
+```text
+https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json
+```
+
+Zurück zum stabilen Kanal: Modul deinstallieren und mit der ersten URL neu installieren (Einstellungen bleiben in der
+Welt erhalten).
+
 Danach das Modul in der Welt aktivieren und beim Helden über **Bogen → Bogenkonfiguration** den Bogen „DSA5 Helfer-Heldenbogen“
 wählen.
 
@@ -19,8 +29,9 @@ wählen.
 
 ## Funktionen
 
-- Zehn Reiter: Titelblatt, Eigenschaften, Talente, Kampf (Übersicht, Körper, Kampftechniken), Magie, Religion,
+- Zehn Reiter: Titelblatt, Eigenschaften, Talente, Kampf (Körper, Kampftechniken), Magie, Religion,
   Ausrüstung, Status, Notizen, Gefährten.
+- Würfelstatistik (von der Spielleitung einschaltbar, jeder Spieler stimmt selbst zu).
 - Spiel- und Bearbeiten-Modus, Favoriten (Stern) auf dem Titelblatt.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
@@ -30,7 +41,8 @@ wählen.
 ## Neue Version veröffentlichen
 
 1. `version` in `module.json` hochzählen, [`CHANGELOG.md`](CHANGELOG.md) abschließen, committen, nach `main` pushen.
-2. Auf GitHub ein Release mit Tag `v<version>` (z. B. `v0.1.0`) veröffentlichen.
+2. Auf GitHub ein Release mit Tag `v<version>` (z. B. `v0.1.0`) veröffentlichen — als **Pre-release** erscheint es
+   nur im Beta-Kanal, als normales Release für alle.
 3. Die Action [`release.yml`](.github/workflows/release.yml) setzt Version und URLs in `module.json`, packt
    `module.zip` (nur Moduldateien) und hängt beides an das Release. Foundry findet das Update danach über die
    Manifest-URL.
