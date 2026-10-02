@@ -7,13 +7,13 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-## Version 0.4.0 (Plan, Änderungen vorbehalten)
+## Version 0.4.0 — veröffentlicht 2026-10-02
 
-Branch `release/0.4.0` (von `main`, 0.3.3 ist veröffentlicht) — zugleich der Beta-Branch. **Stand 2026-10-02:** Version 0.4.0 als Beta veröffentlicht (Pre-release `v0.4.0`, nur über die Beta-Manifest-URL `https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json`, siehe RELEASE.md „Beta-Kanal“); stabiler Kanal zeigt weiter 0.3.3. Nach dem Beta-Test: dasselbe Release zum normalen erklären, dann nach `main` mergen.
+Zuerst als Beta (Pre-release, Beta-Kanal), am selben Tag zum normalen Release erklärt (Nutzer-Entscheidung) und `release/0.4.0` nach `main` gemergt. Enthalten: #28 Würfelstatistik, #29 Kampf › Körper (ersetzt die Übersicht), #32 Sprungmarken in allen Reitern, Beta-Kanal. Live-Prüfung steht noch aus (siehe unten).
 
-1. **#28 Würfelstatistik** — umgesetzt (Darstellung B „Karten“), live zu prüfen (siehe unten). Rückmeldungen vom 2026-10-02 eingearbeitet: Spieler sehen nur die eigene Statistik, die SL alle; Löschen mit Mülleimer statt Kreispfeil; Zeitraum-Filter (Gesamt / Tag / eigener Zeitraum) mit einem Zähler-Topf je Tag (Tag reicht bis 6 Uhr, altes Format wird übernommen); Tage älter als 12 Monate werden beim Speichern zusammengefasst (Gesamt bleibt richtig, höchstens rund 365 Töpfe ≈ 40 KB je Spieler, bei wöchentlichem Spiel eher 5–8 KB). Einstieg bleibt vorerst nur über die Moduleinstellungen (Nutzer-Entscheidung 2026-10-02), später kommt die Statistik in eine eigene Modul-Oberfläche (siehe Backlog „HUD“).
-2. **#29 Kampf › Körper** — umgesetzt (Modul + Click-Dummy, 2026-10-02): oben Schnellaktionen und Initiative; Rüstungsschild (RS groß, BE, Zauber-/Liturgie-Bonus klein; Tooltip mit allen Rüstungsteilen) rechtsbündig in der Rüstungszeile. Die Übersicht ist entfallen; statt ihrer Waffentabellen eine Kurzübersicht „Weitere Waffen“ (getragene Waffen außerhalb der Hände und Angriffe aus Eigenschaften, mit Würfeln, TP, Stern, Kontextmenü). Munitionswahl jetzt in der Fernkampfhand. Nicht mehr im Körper-Reiter: „+“-Menü zum Ausrüsten (geht über die Hand-Auswahl) und Griff-Knöpfe (geht über die Hand-Auswahl bzw. Rechtsklick im Ausrüstungs-Reiter).
-3. **#32 Unterreiter wie bei den Talenten (Sprungmarken) in allen Reitern** — umgesetzt (Modul + Click-Dummy, 2026-10-02): Kampf, Magie, Religion und Notizen zeigen alle Abschnitte untereinander, Unterreiter springen hin, die Markierung wandert beim Scrollen mit. Notizfelder dafür mindestens 200 statt 360 px hoch. Live zu prüfen (siehe unten); das Notizen-Konzept (#31) bleibt davon unberührt offen.
+## Nächste Version (0.5.0)
+
+Noch kein Branch. Für neue Arbeit `release/0.5.0` von `main` anlegen.
 
 **#7 CSS aufräumen** auf 0.5.0 verschoben (Nutzer-Entscheidung 2026-10-02, Meilenstein gesetzt) — vorher mit `feature/mobile` abstimmen, dort wird dieselbe CSS-Datei stark umgebaut.
 
@@ -22,7 +22,7 @@ Kandidaten, noch ohne Meilenstein:
 - **#27 Persönliche Daten auf dem Titelblatt** — nur, wenn bis dahin eine passende Lösung gefunden ist.
 - **HUD des Moduls** (siehe Backlog) — würde zum Einstieg der Würfelstatistik passen, ist aber eigenständig zu planen.
 
-## Live in Foundry prüfen (0.4.0)
+## Live in Foundry prüfen (0.4.0, veröffentlicht)
 
 - **#28 Würfelstatistik** (mindestens zwei Benutzer, Spieler + SL): Zustimmungsdialog beim Verbinden und beim Einschalten durch die SL; Zustimmung ja/nein/zurückgezogen (Daten ausgeblendet, bei erneuter Zustimmung wieder da und weitergezählt); gezählt werden Proben, Schaden, Schips-Neuwurf, Initiative, `/roll`, blinde/SL-Würfe; echte Würfel (Würfeleinstellung „manuell“) getrennt; Neuladen kurz nach einem Wurf (wird noch gespeichert?); Fenster aktualisiert sich live; Zurücksetzen durch die SL (einzeln/alle); Spieler sehen keinen Zurücksetzen-Knopf; Hell/Dunkel.
 - **#28 Würfelstatistik, Nachtrag:** Spieler sehen nur die eigene Karte (kein Löschen, keine Liste ohne Zustimmung), ohne Zustimmung Hinweis statt Karte; Zeitraum-Auswahl (Spielabende, eigener Zeitraum mit Datumsfeldern); Würfe nach Mitternacht landen beim Vorabend; bestehende Statistik aus dem ersten Format bleibt erhalten.
