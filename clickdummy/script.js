@@ -762,7 +762,7 @@ function initSkillScrollSpy() {
 
 // Kampf-Unterreiter: "Kampf" (Kampfwerte/Waffen/Rüstung) und "Kampftalente" (Kampftechniken), gleiches Muster
 // wie die Talentgruppen oben (siehe PLANNING.md "Design-Muster (wiederverwendbar über alle Tabs)").
-let currentCombatSection = "kampf";
+let currentCombatSection = "koerper";
 
 function setCombatSection(section) {
   currentCombatSection = section;
@@ -884,7 +884,7 @@ function buildSkillSubTabs() {
 // .sub-tabs/.sub-tab-Muster wie bei den Talenten.
 function buildCombatSubTabs() {
   return el("div", { class: "sub-tabs" }, [
-    ["kampf", "Übersicht"], ["koerper", "Körper"], ["kampftalente", "Kampftalente"],
+    ["koerper", "Körper"], ["kampftalente", "Kampftalente"],
   ].map(([id, label]) => {
     const active = currentCombatSection === id;
     const btn = el("button", { type: "button", class: "sub-tab" + (active ? " active" : ""), "aria-pressed": String(active) }, label);
@@ -1462,44 +1462,6 @@ function armorSumText({ sum, magicParts }) {
   return `Schutz gesamt ${sum}${magicParts.length ? ` (${magicParts.join(", ")})` : ""}`;
 }
 
-// Angeborene Rüstung (TRAITS.armor, z.B. Naturpanzer bei Verwandlungen) ist unabhängig von der Darstellung immer
-// als einfache Zeile zu sehen.
-function armorTraitRows() {
-  return TRAITS.armor.map((t) =>
-    el("div", { class: "row armor-row" }, [
-      el("img", { src: t.img || A.armor, alt: "" }),
-      el("span", { class: "left" }, t.name),
-      el("span", { class: "big center" }, String(t.at)),
-      el("span", { class: "muted center" }, "–"),
-    ])
-  );
-}
-
-// Rüstung bleibt neben den Kampfwerten stehen (siehe .combat-top in renderCombatMain()). Jedes getragene
-// Rüstungsteil ein gleichwertiger Icon-Slot statt einer Sonderkachel nur fürs erste Teil, RS/BE direkt sichtbar
-// darunter (nicht erst per Hover).
-function renderArmorPanel() {
-  const armorSum = computeArmorSum();
-  // Bild füllt die ganze Kachel, Name oben zentriert (Lesbarkeits-Gradient), RS/BE als Badges unten
-  // links/rechts über dem Bild statt als Textzeile darunter (Nutzer-Feedback 2026-09-18).
-  const slots = ARMOR.map((a) => {
-    const stats = effectiveArmor(a);
-    return el("div", { class: "armor-slot" }, [
-      itemIcon(A.armor, a.name, a.structure, "armor"),
-      el("span", { class: "armor-slot-name" }, a.name),
-      onUseBtn(a.name),
-      el("span", { class: "armor-slot-rs" }, `RS ${stats.rs}`),
-      el("span", { class: "armor-slot-be" }, `BE ${stats.be}`),
-    ]);
-  });
-  return el("div", { class: "panel" }, [
-    el("div", { class: "panel-title" }, "Rüstung"),
-    el("div", { class: "armor-sum-line" }, armorSumText(armorSum)),
-    el("div", { class: "armor-slots" }, slots.length ? slots : [el("div", { class: "armor-empty" }, "Keine Rüstung getragen")]),
-    ...armorTraitRows(),
-  ]);
-}
-
 // Reiter "Körper" (GitHub-Issue #6, Vorbild DSA4-Heldenbogen; Nutzerwunsch 2026-09-25: als eigener Reiter
 // weiterentwickeln). Figur aus dem Artenbild des Helden, links die getragenen Rüstungsteile, rechts die beiden
 // Hände. DSA5 kennt ohne Trefferzonen-Regel keine Körperzonen für Rüstungen — die Teile stehen deshalb als Liste
@@ -1683,7 +1645,8 @@ function renderBody() {
       ]),
     ]);
   };
-  const sumText = armorSumText(armorSum).replace("Schutz gesamt ", "");
+  const magicText = armorSum.magicParts.length ? armorSum.magicParts.join(", ") : "";
+  const ini = COMBAT_DERIVED[1].max;
   // Zauber/Liturgien nur für Figuren mit AsP/KaP (hier: nicht im "Nur LeP"-Test) — im Modul magic.hasSpells/hasPrayers.
   const castButtons = ONLY_LEP
     ? []
@@ -1708,45 +1671,80 @@ function renderBody() {
     right = [handSlot("off")];
   }
 
+  // TEST-UMSCHALTER Issue #29 (nach der Entscheidung löschen): wie Rüstungsschutz und Belastung hervorgehoben werden.
+  // A „Siegel“: große Wachssiegel links neben den Rüstungskacheln · B „Kopfleiste“: INI | RS | BE groß oben neben den
+  // Schnellaktionen · C „Brustschild“: Schild mittig auf der Figur · D „Rüstungsband“: Titelband der Rüstungszeile.
+  const v = BODY_ARMOR_STYLE;
+  const bigStat = (label, value, sub, cls = "") => el("div", { class: ("body-bigstat " + cls).trim() }, [el("small", {}, label), el("strong", {}, String(value)), sub ? el("small", { class: "body-bigstat-sub" }, sub) : null]);
+  const seal = (label, value, sub) => el("div", { class: "body-seal" }, [el("span", { class: "body-seal-face" }, [el("strong", {}, String(value))]), el("small", {}, label), sub ? el("small", { class: "body-bigstat-sub" }, sub) : null]);
+
+  // Ganz oben: Schnellaktionen und Initiative (Rückmeldung 2026-10-02: über allen anderen Punkten).
+  const top = el("div", { class: "body-top" }, [
+    renderCombatActions(),
+    v === "B"
+      ? el("div", { class: "body-top-stats" }, [bigStat("Initiative", ini), bigStat("Rüstungsschutz", armorSum.sum, magicText, "rs"), bigStat("Belastung", be, null, "be")])
+      : el("div", { class: "body-top-stats" }, [bigStat("Initiative", ini)]),
+  ]);
+  const tiles = ARMOR.length ? el("div", { class: "body-armor-row-tiles" }, ARMOR.map(armorTile)) : el("div", { class: "muted body-armor-empty" }, "Keine Rüstung getragen");
+  let armorRow;
+  if (v === "A") {
+    armorRow = el("div", { class: "body-armor-row seals" }, [el("div", { class: "body-seals" }, [seal("Rüstungsschutz", armorSum.sum, magicText), seal("Belastung", be)]), tiles]);
+  } else if (v === "D") {
+    armorRow = el("div", { class: "body-armor-band-wrap" }, [
+      el("div", { class: "body-armor-band" }, [
+        el("span", { class: "body-armor-band-title" }, "Rüstung"),
+        el("span", { class: "body-armor-band-val" }, [el("small", {}, "RS"), el("strong", {}, String(armorSum.sum)), magicText ? el("small", {}, `(${magicText})`) : null]),
+        el("span", { class: "body-armor-band-val" }, [el("small", {}, "BE"), el("strong", {}, String(be))]),
+      ]),
+      el("div", { class: "body-armor-row" }, [tiles]),
+    ]);
+  } else {
+    armorRow = el("div", { class: "body-armor-row" }, [el("small", { class: "figure-col-title" }, "Rüstung"), tiles]);
+  }
+  const chestShield = v === "C"
+    ? el("div", { class: "body-chest-shield", title: magicText ? `Rüstungsschutz ${armorSum.sum} (${magicText}), Belastung ${be}` : `Rüstungsschutz ${armorSum.sum}, Belastung ${be}` }, [
+        el("span", { class: "body-chest-rs" }, [el("small", {}, "RS"), el("strong", {}, String(armorSum.sum))]),
+        el("span", { class: "body-chest-be" }, [el("small", {}, "BE"), el("strong", {}, String(be))]),
+      ])
+    : null;
+
   return el("div", {}, [
     el("div", { class: "panel body-panel" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, "Ausrüstung am Körper"), castButtons.length ? el("span", { class: "cast-btns" }, castButtons) : null]),
+      top,
       // Komplettes Artenbild als Hintergrund der ganzen Fläche, abgeblendet (Nutzer-Feedback 2026-09-28); als echtes
       // <img> (url() in einer CSS-Variable löst Chrome gegen den Stylesheet-Pfad auf, 2026-09-30).
       el("div", { class: "body-grid sides" + (twoHanded ? " two-handed" : ""), "data-figure": BODY_FIGURE }, [
         el("img", { class: "body-figure", src: figureSrc, alt: "", "aria-hidden": "true" }),
         figureSwitch,
+        chestShield,
         el("div", { class: "body-side left" }, left),
         el("div", { class: "body-side right" + (!twoHanded && !HANDS.off ? " off-free" : "") }, right),
       ]),
-      // Die vier Schnellwürfe wie in der Übersicht, über der Rüstung (Rückmeldung 2026-10-02).
-      el("div", { class: "body-actions" }, [renderCombatActions()]),
-      // Rüstung unter der Figur (Issue #29, Variante A, Nutzer-Entscheidung 2026-10-02): links Schutz/Belastung,
-      // mittig die Kacheln (umbrechend, auch bei vielen Teilen), rechts die Initiative. Ersetzt die frühere Wertezeile.
-      el("div", { class: "body-armor-row" }, [
-        el("div", { class: "body-armor-row-sum" }, [el("small", { class: "figure-col-title" }, "Rüstung"), stat("Schutz", sumText), stat("Belastung", be)]),
-        ARMOR.length ? el("div", { class: "body-armor-row-tiles" }, ARMOR.map(armorTile)) : el("div", { class: "muted body-armor-empty" }, "Keine Rüstung getragen"),
-        el("div", { class: "body-armor-row-ini" }, [stat("Initiative", COMBAT_DERIVED[1].max)]),
-      ]),
-      others.length
-        ? el("div", { class: "body-others" }, [el("small", { class: "muted" }, "Ausgerüstet, aber nicht in der Hand:"), ...others.map((w) => el("span", { class: "chip" }, [el("img", { src: w.img, alt: "" }), w.name]))])
-        : null,
+      armorRow,
     ]),
+    // Waffentabellen aus der früheren Übersicht (die Hände zeigen nur, was gerade geführt wird): alle Waffen inkl.
+    // nicht geführter, Munitionswahl, Griff, Kontextmenü, Favoriten, Angriffe aus Eigenschaften (Rückmeldung 2026-10-02).
+    ...combatWeaponPanels(),
     // Kampfsonderfertigkeiten auch hier, damit im Kampf alles auf einer Seite steht (Nutzer-Feedback 2026-09-30).
     specialsBlock("Kampfsonderfertigkeiten", COMBAT_SPECIALS),
   ]);
 }
 
-// Kampf-Unterreiter: Schnellwürfe, Kampfwerte + Rüstung, darunter die Waffentabellen (WAFFEN-TAB.md).
-function renderCombatMain() {
-  // Ausweichen/Initiative sind vom Eigenschaften-Tab hierher gewandert (EIGENSCHAFTEN-TAB.md: "Sollen auf den Kampf Tab wandern").
-  const combatValuesPanel = () =>
-    el("div", { class: "panel" }, [
-      el("div", { class: "panel-title" }, "Kampfwerte"),
-      el("div", { class: "row-head simple-row" }, head("", "Basis", "Mod", "Max")),
-      ...COMBAT_DERIVED.map(buildSimpleRow),
-    ]);
+// TEST-UMSCHALTER Issue #29: Darstellung von Rüstungsschutz/Belastung im Körper-Reiter (Toolbar „RS/BE A–D“).
+let BODY_ARMOR_STYLE = "A";
+function initBodyArmorStyleToggle() {
+  const group = document.getElementById("bodyArmorStyle");
+  group.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
+    group.querySelectorAll("button").forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", String(x === b)); });
+    BODY_ARMOR_STYLE = b.dataset.style;
+    renderContent();
+  }));
+}
 
+// Waffentabellen (Nah-/Fernkampf) unter dem Körper-Panel — früher in der „Übersicht“, die mit Issue #29 entfällt
+// (Körper ersetzt sie, Nutzer-Entscheidung 2026-10-02).
+function combatWeaponPanels() {
   // AT/PA (Nahkampf) und FK (Fernkampf) sowie TP stehen bewusst als letzte Spalten in beiden Tabellen, mit exakt
   // derselben Gesamtbreite (siehe .weapon-row in style.css) — so liegen die beiden "Aktionen" (Angriffs-
   // würfel + Schadenswert) beim Scannen durch Nah- und Fernkampfwaffen immer an derselben Bildschirmposition,
@@ -1769,17 +1767,7 @@ function renderCombatMain() {
     ...TRAITS.rangeAttack.map(traitRangedRow),
   ]);
 
-  // Kampfwerte + Rüstung als zwei Panels (Nutzer-Entscheidung 2026-09-28 gegen die kompakte "Leiste"); die
-  // Silhouette (Issue #6) ist der eigene Reiter "Körper" (renderBody()).
-  const topArea = el("div", { class: "combat-top" }, [combatValuesPanel(), renderArmorPanel()]);
-
-  return el("div", {}, [
-    renderCombatActions(),
-    topArea,
-    meleePanel,
-    rangedPanel,
-    specialsBlock("Kampfsonderfertigkeiten", COMBAT_SPECIALS),
-  ]);
+  return [meleePanel, rangedPanel];
 }
 
 // Kampftalente-Unterreiter: die Kampftechniken einfach abgebildet (WAFFEN-TAB.md), aufgeteilt nach Waffentyp
@@ -1836,8 +1824,8 @@ function renderCombatSkills() {
 
 function renderCombat() {
   // "Körper" als Unterreiter (Nutzerwunsch 2026-09-28) — ob er die Übersicht ablöst, entscheidet der Nutzer später.
-  if (currentCombatSection === "koerper") return renderBody();
-  return currentCombatSection === "kampftalente" ? renderCombatSkills() : renderCombatMain();
+  // „Körper“ ersetzt die frühere Übersicht (Issue #29, Nutzer-Entscheidung 2026-10-02).
+  return currentCombatSection === "kampftalente" ? renderCombatSkills() : renderBody();
 }
 
 // Erweiterungen-Icon (spell-section.hbs: item.extensions → Overlay-Icon mit Tooltip) und Mehrrunden-Auflade-
@@ -3481,6 +3469,7 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
+initBodyArmorStyleToggle();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
 document.fonts.ready.then(fitName);
 initWindowMenu();

@@ -2,14 +2,14 @@
 // (Proben, Schaden, Schips-Neuwürfe, Initiative, /roll — DSA5 legt für alles ein neues Roll-Objekt an und ruft
 // evaluate()). Dort und nicht in DiceTerm#roll wird gezählt, weil der RollResolver echte Würfel (manuelle Eingabe)
 // direkt in term.results schreibt, ohne roll() aufzurufen. Gezählt wird beim würfelnden Client in den eigenen
-// User-Flag; nur Zähler, keine einzelnen Würfe. Schreibzugriffe werden gebündelt.
-import { mergeCounts } from './stats.js';
+// User-Flag (je Spielabend ein Topf, siehe stats.js); nur Zähler, keine einzelnen Würfe. Schreibzugriffe werden gebündelt.
+import { mergeCounts, dayKey } from './stats.js';
 
 export const MODULE_ID = 'dsa5-helpers';
 export const STATS_FLAG = 'diceStats';
 const FLUSH_DELAY = 10_000;
 
-/** Noch nicht gespeicherte Würfe: { d: { "20": [..] }, m: {} } */
+/** Noch nicht gespeicherte Würfe je Spielabend: { "2026-10-02": { d: { "20": [..] }, m: {} } } */
 let pending = null;
 let timer = null;
 let flushing = null;
@@ -66,8 +66,9 @@ export function initRecorder(isActive) {
     try {
       // Mindest-/Höchstwerte sind Berechnungen, keine Würfe. Nur echte Würfel (Die), keine Münzen/Fate-Würfel.
       if (!options.minimize && !options.maximize && this instanceof Die && isActive()) {
-        const delta = countResults(this, before, methodOf(this), pending);
-        if (delta) { pending = delta; schedule(); }
+        const day = dayKey();
+        const delta = countResults(this, before, methodOf(this), pending?.[day] ?? null);
+        if (delta) { pending = { ...pending, [day]: delta }; schedule(); }
       }
     } catch (err) {
       console.error('DSA5 Helpers | Würfelstatistik: Erfassung fehlgeschlagen.', err);

@@ -11,9 +11,11 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 Branch `release/0.4.0` (von `main`, 0.3.3 ist veröffentlicht). Reihenfolge:
 
-1. **#28 Würfelstatistik** — umgesetzt (2026-10-02, Darstellung B „Karten“), live zu prüfen (siehe unten).
-   - **Offene Frage (Nutzer):** zusätzlicher Einstieg außer den Moduleinstellungen? Vorschlag 2026-10-02: Knopf in der Spielerliste unten links oder in der Chat-Leiste; das eigene HUD des Moduls kommt später.
-2. **#29 Kampf › Körper** — umgesetzt (2026-10-02, Variante A mit Schnellaktionen über der Rüstung, Initiative rechts), live zu prüfen (siehe unten).
+1. **#28 Würfelstatistik** — umgesetzt (Darstellung B „Karten“), live zu prüfen (siehe unten). Rückmeldungen vom 2026-10-02 eingearbeitet: Spieler sehen nur die eigene Statistik, die SL alle; Löschen mit Mülleimer statt Kreispfeil; Zeitraum-Filter (Gesamt / Spielabend / eigener Zeitraum) mit einem Zähler-Topf je Spielabend (Abend reicht bis 6 Uhr, altes Format wird übernommen). Platzbedarf: ein Spielabend gut 100 Byte je Spieler, wöchentlich gespielt etwa 5–8 KB je Spieler und Jahr.
+   - **Offene Frage (Nutzer):** zusätzlicher Einstieg außer den Moduleinstellungen? Vorschlag: Knopf in der Spielerliste unten links oder in der Chat-Leiste; das eigene HUD des Moduls kommt später.
+2. **#29 Kampf › Körper** — Schnellaktionen und Initiative ganz oben (Modul + Click-Dummy). Die Übersicht ist entfallen (Modul + Click-Dummy): ihre Waffentabellen (alle Waffen inkl. nicht geführter, Angriffe aus Eigenschaften, Munitionswahl, Griff, Kontextmenü, Favorit, „+“ zum Ausrüsten) stehen unter dem Körper-Panel; Kampfwerte (Ausweichen/Initiative) sind durch Schnellaktion bzw. Kopfzeile abgedeckt.
+   - **Entscheidung offen:** Darstellung von Rüstungsschutz/Belastung — Click-Dummy-Toolbar „RS/BE A–D“: A Siegel (zwei große Wachssiegel links neben den Rüstungskacheln) · B Kopfleiste (INI | RS | BE groß oben rechts) · C Brustschild (Schild mittig auf der Figur) · D Rüstungsband (Titelband der Rüstungszeile mit großen Werten). Im Modul steht bis dahin die bisherige Zeile (Schutz/Belastung links der Kacheln).
+3. **#32 Unterreiter wie bei den Talenten (Sprungmarken) in allen Reitern** — neu (2026-10-02), Plan im Issue. Nach der RS/BE-Entscheidung, weil sich der Kampf-Reiter gerade ändert; Notizen hängen mit #31 zusammen.
 
 **#7 CSS aufräumen** auf 0.5.0 verschoben (Nutzer-Entscheidung 2026-10-02, Meilenstein gesetzt) — vorher mit `feature/mobile` abstimmen, dort wird dieselbe CSS-Datei stark umgebaut.
 
@@ -25,12 +27,12 @@ Kandidaten, noch ohne Meilenstein:
 ## Live in Foundry prüfen (0.4.0)
 
 - **#28 Würfelstatistik** (mindestens zwei Benutzer, Spieler + SL): Zustimmungsdialog beim Verbinden und beim Einschalten durch die SL; Zustimmung ja/nein/zurückgezogen (Daten ausgeblendet, bei erneuter Zustimmung wieder da und weitergezählt); gezählt werden Proben, Schaden, Schips-Neuwurf, Initiative, `/roll`, blinde/SL-Würfe; echte Würfel (Würfeleinstellung „manuell“) getrennt; Neuladen kurz nach einem Wurf (wird noch gespeichert?); Fenster aktualisiert sich live; Zurücksetzen durch die SL (einzeln/alle); Spieler sehen keinen Zurücksetzen-Knopf; Hell/Dunkel.
-- **#29 Kampf › Körper:** Haupthand links, Nebenhand rechts; beidhändige Waffe per „⇄“ verschieben (nur Bearbeiten-Modus, bleibt nach Neuladen auf der Seite); freie Nebenhand rechts; Fernkampfhand rechts (Nachladen/Zielen rechtsbündig); Schnellaktionen über der Rüstung, Initiative rechts; viele Rüstungsteile (Umbruch); schmale Fensterbreite; Hell/Dunkel.
+- **#28 Würfelstatistik, Nachtrag:** Spieler sehen nur die eigene Karte (kein Löschen, keine Liste ohne Zustimmung), ohne Zustimmung Hinweis statt Karte; Zeitraum-Auswahl (Spielabende, eigener Zeitraum mit Datumsfeldern); Würfe nach Mitternacht landen beim Vorabend; bestehende Statistik aus dem ersten Format bleibt erhalten.
+- **#29 Kampf › Körper:** Haupthand links, Nebenhand rechts; beidhändige Waffe per „⇄“ verschieben (nur Bearbeiten-Modus, bleibt nach Neuladen auf der Seite); freie Nebenhand rechts; Fernkampfhand rechts (Nachladen/Zielen rechtsbündig); Schnellaktionen + Initiative ganz oben; viele Rüstungsteile (Umbruch); schmale Fensterbreite; Hell/Dunkel. Ohne Übersicht: Waffentabellen unter dem Körper-Panel (Ausrüsten über „+“, Munitionswahl, Kontextmenü, Favoriten-Stern, Waffen mit Unterwaffen), Kampf-Reiter öffnet mit „Körper“, Sprung aus der Waffenzeile zu den Kampftechniken.
 
 ## Offene Entscheidungen
 
 - **#27 Persönliche Daten auf dem Titelblatt:** wieder ausgebaut (2026-10-01), erst klären, ob und wie es aufs Titelblatt passt. Bisherige Versuche siehe PROJEKTDOKU.md (Design-Entscheidungen, „Titelblatt, persönliche Daten“).
-- **Ersetzt „Körper“ später die Übersicht?** Erst nach dem Feedback der Tester entscheiden (Rückmeldung 2026-09-30: vorerst beide Bögen).
 
 ## Features / Backlog
 
@@ -43,16 +45,16 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-02 04:59 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-02 09:43 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (7)**
+**Offen (8)**
 
 - **[#1](https://github.com/vt-tom/dsa5-helpers/issues/1) feat: Animation zwischen Titelblatt und den anderen seiten**
   - offen · Bearbeiter: niemand · von @Lyynix · 0 Kommentare · zuletzt geändert 2026-09-17
 - **[#7](https://github.com/vt-tom/dsa5-helpers/issues/7) chore: CSS-Datei aufräumen**
-  - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
+  - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 0 Kommentare · zuletzt geändert 2026-10-02
 - **[#27](https://github.com/vt-tom/dsa5-helpers/issues/27) feat: Persönliche Daten auf dem Titelblatt anzeigen**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#28](https://github.com/vt-tom/dsa5-helpers/issues/28) feat: Würfelstatistik – Ergebnisse je Spieler und Würfeltyp auswerten**
@@ -63,6 +65,8 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-02 04:59 UTC) — ni
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-02
 - **[#31](https://github.com/vt-tom/dsa5-helpers/issues/31) feat: Konzept für die Aufteilung des Reiters Notizen**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-02
+- **[#32](https://github.com/vt-tom/dsa5-helpers/issues/32) feat: Unterreiter in allen Reitern wie bei den Talenten (Sprungmarken)**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-02
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 

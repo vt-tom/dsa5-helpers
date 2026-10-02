@@ -22,7 +22,6 @@
     "Empty": "No entries.",
     "More": "more",
     "Contents": "Contents",
-    "CombatValues": "Combat values",
     "MeleeSkills": "Melee combat techniques",
     "RangeSkills": "Ranged combat techniques",
     "MeleeWeapons": "Melee weapons",
@@ -85,7 +84,6 @@
       "train": "Trick",
       "mount": "Mount"
     },
-    "Overview": "Overview",
     "SearchCombatSkills": "Search combat techniques …",
     "NoSearchResults": "No matches.",
     "JumpToCombatSkill": "{name}, combat technique rating {value} — go to combat technique",
@@ -149,7 +147,7 @@
       "Title": "Dice statistics",
       "Consent": {
         "Question": "May your rolls be included in the dice statistics?",
-        "Info": "Only how often each face comes up is counted – no individual rolls. All players can see your statistics.",
+        "Info": "Only how often each face comes up per session is counted – no individual rolls. You see your own statistics, the GM sees everyone’s.",
         "Change": "You can change this at any time in the module settings. If you withdraw consent, nothing is counted any more and your statistics are hidden.",
         "Yes": "Yes, include them",
         "No": "No"
@@ -157,7 +155,7 @@
       "Settings": {
         "Enabled": {
           "Name": "Dice statistics",
-          "Hint": "Counts per player and die type how often each face comes up and shows whether the distribution is statistically unusual. Every player is asked for consent first. Only counters are stored."
+          "Hint": "Counts per player and die type how often each face comes up and shows whether the distribution is statistically unusual. Every player is asked for consent first and only sees their own statistics; the GM sees everyone’s. Only counters per session are stored."
         },
         "Consent": {
           "Name": "Dice statistics: include my rolls",
@@ -169,7 +167,7 @@
       },
       "Menu": {
         "Label": "Open dice statistics",
-        "Hint": "Shows per player and die type how often each face came up and whether that is statistically unusual."
+        "Hint": "Shows how often each face came up and whether that is statistically unusual – players see their own statistics, the GM sees everyone’s."
       },
       "Disabled": "Dice statistics are switched off. The GM can switch them on in the module settings; existing data stays visible.",
       "DieType": "Die type",
@@ -179,7 +177,6 @@
         "d": "Digital",
         "m": "Physical dice"
       },
-      "Since": "since {date}",
       "Verdict": {
         "normal": "unremarkable",
         "slight": "slightly unusual",
@@ -207,12 +204,21 @@
       "Note": "Digital and physical dice are evaluated separately. With many players and die types, single outliers are pure chance – “unusual” only means a closer look is worthwhile.",
       "Hidden": "Not evaluated (no consent): {names}.",
       "Reset": {
-        "Title": "Reset dice statistics",
-        "One": "The statistics of {name} will be deleted. This cannot be undone.",
-        "All": "The statistics of all players will be deleted. This cannot be undone.",
-        "OneLabel": "Reset statistics of {name}",
-        "AllLabel": "Reset all"
-      }
+        "Title": "Delete dice statistics",
+        "One": "All statistics of {name} will be deleted (all sessions). This cannot be undone.",
+        "All": "All statistics of all players will be deleted (all sessions). This cannot be undone.",
+        "OneLabel": "Delete statistics of {name}",
+        "AllLabel": "Delete all statistics"
+      },
+      "Range": {
+        "Label": "Period",
+        "All": "All time",
+        "Day": "Session {date}",
+        "Custom": "Custom period …",
+        "From": "from",
+        "To": "to"
+      },
+      "NoConsent": "You have not agreed to your rolls being evaluated. You can change this in the module settings."
     }
   }
 }

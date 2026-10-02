@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=155">
+<link rel="stylesheet" href="style.css?v=157">
 </head>
 <body>
 
@@ -18,6 +18,14 @@
   <!-- Test-Schalter: Vorschau, wie die Ressourcengruppe aussieht, wenn eine Figur nur Lebenskraft hat (kein
        Zauberer/Geweihter, kein AsP/KaP) — siehe initOnlyLepToggle(). Rein visuell, ändert data.js nicht. -->
   <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
+  <!-- TEST-UMSCHALTER Issue #29 (nach der Entscheidung löschen): Rüstungsschutz/Belastung im Körper-Reiter —
+       siehe initBodyArmorStyleToggle(). -->
+  <div class="mode-switch" id="bodyArmorStyle" role="group" aria-label="Rüstungsschutz/Belastung im Körper-Reiter">
+    <button type="button" data-style="A" class="active" aria-pressed="true" title="Siegel neben den Rüstungskacheln">RS/BE A</button>
+    <button type="button" data-style="B" aria-pressed="false" title="Kopfleiste oben neben den Schnellaktionen">B</button>
+    <button type="button" data-style="C" aria-pressed="false" title="Schild auf der Brust der Figur">C</button>
+    <button type="button" data-style="D" aria-pressed="false" title="Titelband der Rüstungszeile">D</button>
+  </div>
   <!-- Würfelstatistik (Issue #28): in Foundry eigenes Fenster aus den Moduleinstellungen, hier per Knopf. -->
   <button type="button" id="diceStatsBtn">Würfelstatistik</button>
   <button type="button" id="diceConsentBtn">Zustimmung (Dialog)</button>
@@ -125,7 +133,7 @@
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
 <script src="assets-map.js?v=15"></script>
 <script src="data.js?v=27"></script>
-<script src="script.js?v=113"></script>
-<script type="module" src="dice-stats.js?v=4"></script>
+<script src="script.js?v=114"></script>
+<script type="module" src="dice-stats.js?v=5"></script>
 </body>
 </html>

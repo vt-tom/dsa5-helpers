@@ -111,9 +111,12 @@ test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the 
  p.wornArmor=armor(4);context=await sheet._prepareContext({});html=render(context);
  const armorRow=elements(html,el=>el.attribs?.class==='dsa5h-body-armor-row')[0];assert(armorRow,'armor row');
  assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-body-armor-item'),armorRow.children).length,4,'tiles also from three pieces on');
- assert(dom.findAll(el=>el.attribs?.class==='dsa5h-body-ini',armorRow.children).length===1,'initiative next to the armor');
+ const top=elements(html,el=>el.attribs?.class==='dsa5h-body-top')[0];assert(top,'top bar');assert(dom.findAll(el=>el.attribs?.class==='dsa5h-body-ini',top.children).length===1,'initiative at the top');assert(dom.findAll(el=>el.attribs?.class==='dsa5h-quick-actions',top.children).length===1,'quick actions at the top');
  assert(!html.includes('dsa5h-figure-badge')&&!html.includes('dsa5h-figure-stats')&&!html.includes('dsa5h-body-armor-table'));
- const panelHtml=html.slice(html.indexOf('dsa5h-body-panel'));assert(panelHtml.indexOf('dsa5h-body-actions')<panelHtml.indexOf('dsa5h-body-armor-row'),'quick actions above the armor');
+ const panelHtml=html.slice(html.indexOf('dsa5h-body-panel'));assert(panelHtml.indexOf('dsa5h-body-top')<panelHtml.indexOf('dsa5h-body-grid'),'quick actions above everything');
+ // Übersicht entfällt (Issue #29): ihre Waffentabellen stehen im Körper-Reiter.
+ assert(!html.includes('data-sub-panel="combat:combat"'));assert.deepEqual(context.dsa5h.subnav.find(n=>n.tab==='combat').items.map(i=>i.id),['body','skills']);assert.equal(sheet._subtabs.combat,'body');
+ const bodyPanel=elements(html,el=>el.attribs?.['data-sub-panel']==='combat:body')[0];assert(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-weapon-row')&&el.attribs['data-item-id']==='main',bodyPanel.children).length===1,'weapon table inside the body tab');
  await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hBodyFigure.call(sheet,{}, {dataset:{figure:'portrait'}});assert.deepEqual(actor.saved,{scope:'dsa5-helpers',key:'bodyFigure',value:'portrait'});
 });
 test('navigation rejects unknown tabs and preserves subtab selection',async()=>{
@@ -213,7 +216,7 @@ test('OnUse die button (issue #9): same system action on weapons, armor, body ta
  for(const b of buttons){assert(String(b.attribs.class).includes('dsa5h-onuse'));assert(b.attribs['aria-label']);assert(!dom.textContent(b).includes('▶'));}
  const owners=new Set(buttons.map(b=>{let n=b.parent;while(n&&!n.attribs?.['data-item-id'])n=n.parent;return n?.attribs['data-item-id'];}));
  for(const id of ['main','armor2','general'])assert(owners.has(id),'onUse button inside [data-item-id='+id+']');
- assert(buttons.length>=5,'weapon row, overview armor, body armor, body hand, chip');
+ assert(buttons.length>=4,'weapon row, body armor, body hand, chip');
 });
 test('aim progress (issue #8) shows only once the weapon is aimed, with the system texts',async()=>{
  const {sheet}=await prepare();const p=sheet.context.prepare;
@@ -372,15 +375,28 @@ test('Würfelstatistik (#28): Chi-Quadrat-p-Werte gegen Tabellenwerte, Einstufun
  assert.equal(s.evaluateDie([32,10,12,14,16,16]).verdict,'strong');
  const ev=s.evaluateDie([2,1,1]);assert.equal(ev.n,4);assert.deepEqual(ev.deviations.map(d=>+d.toFixed(2)),[.5,-.25,-.25]);
 });
-test('Würfelstatistik (#28): Speicherformat bleibt klein (nur Zähler) und wird korrekt zusammengeführt',async()=>{
+test('Würfelstatistik (#28): Speicherformat je Spielabend bleibt klein, Zeitraum-Summen und Übernahme des alten Formats',async()=>{
  const s=await esm('scripts/dice-stats/stats.js');
- const a=s.mergeCounts(null,{d:{20:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2]}},1000);
- assert.deepEqual(Object.keys(a),['v','since','d','m']);assert.equal(a.v,1);assert.equal(a.since,1000);
- const b=s.mergeCounts(a,{d:{20:[1]},m:{6:[0,0,3,0,0,0]}},2000);
- assert.equal(b.since,1000,'since bleibt beim ersten Wurf');assert.equal(b.d[20][0],2);assert.equal(b.d[20][19],2);assert.equal(b.d[20].length,20);assert.deepEqual(b.m[6],[0,0,3,0,0,0]);
- assert.equal(a.d[20][0],1,'Eingabe wird nicht verändert');
- assert.deepEqual(s.dieTypes([b,{d:{6:[1,0,0,0,0,0],3:[0,0,0]}}],'d'),[20,6],'leere Zähler und fremde Würfelart zählen nicht; W20 vorn');
- assert(JSON.stringify(b).length<200,'wenige hundert Byte');
+ const w=(i,v,n=20)=>Array.from({length:n},(_,k)=>k===i?v:0);
+ const a=s.mergeCounts(null,{'2026-10-01':{d:{20:w(0,1)}}});
+ assert.deepEqual(a,{v:2,days:{'2026-10-01':{d:{20:w(0,1)},m:{}}}});
+ const b=s.mergeCounts(a,{'2026-10-01':{d:{20:[1]},m:{6:[0,0,3,0,0,0]}},'2026-10-02':{d:{20:w(19,2)}}});
+ assert.equal(b.days['2026-10-01'].d[20][0],2);assert.equal(b.days['2026-10-01'].d[20].length,20);assert.deepEqual(b.days['2026-10-01'].m[6],[0,0,3,0,0,0]);
+ assert.equal(a.days['2026-10-01'].d[20][0],1,'Eingabe wird nicht verändert');
+ assert.deepEqual(s.playDays([b,{v:2,days:{'2026-09-24':{d:{},m:{}}}}]),['2026-10-02','2026-10-01','2026-09-24'],'neueste zuerst');
+ const all=s.sumCounts(b);assert.equal(all.d[20][0],2);assert.equal(all.d[20][19],2);
+ const day=s.sumCounts(b,{from:'2026-10-02',to:'2026-10-02'});assert.equal(day.d[20][0],0);assert.equal(day.d[20][19],2);assert.deepEqual(day.m,{});
+ assert.equal(s.sumCounts(b,{from:'2026-10-02'}).d[20][19],2);assert.equal(s.sumCounts(b,{to:'2026-10-01'}).d[20][19],0,'offene Grenzen');
+ assert.deepEqual(s.dieTypes([all,{d:{6:[1,0,0,0,0,0],3:[0,0,0]}}],'d'),[20,6],'leere Zähler und fremde Würfelart zählen nicht; W20 vorn');
+ // Spielabend reicht bis 6 Uhr: 1 Uhr nachts zählt zum Vortag.
+ assert.equal(s.dayKey(new Date(2026,9,3,1,30).getTime()),'2026-10-02');assert.equal(s.dayKey(new Date(2026,9,2,19,0).getTime()),'2026-10-02');
+ // Version 1 (ein Topf) wird als ein Abend am Tag von since übernommen.
+ const old={v:1,since:new Date(2026,9,1,20).getTime(),d:{6:[1,2,3,4,5,6]},m:{}};
+ assert.deepEqual(s.normalizeStats(old),{v:2,days:{'2026-10-01':{d:{6:[1,2,3,4,5,6]},m:{}}}});
+ assert.equal(s.mergeCounts(old,{'2026-10-02':{d:{6:[1,0,0,0,0,0]}}}).days['2026-10-01'].d[6][5],6,'alte Daten bleiben erhalten');
+ // Ein typischer Spielabend (W20, W6, W3) braucht gut 100 Byte.
+ const evening=s.mergeCounts(null,{'2026-10-02':{d:{20:Array(20).fill(8),6:Array(6).fill(10),3:[3,3,4]}}});
+ assert(JSON.stringify(evening.days['2026-10-02']).length<160,JSON.stringify(evening).length);
 });
 test('Würfelstatistik (#28): Erfassung nur mit Aktivierung + Zustimmung, ohne Mindest-/Höchstwerte, echte Würfel getrennt, gebündelt gespeichert',async()=>{
  class DiceTerm{constructor(faces,method){this.faces=faces;this.method=method;this.results=[];}async _evaluateAsync(options={}){for(const v of this.next)this.results.push({result:v,active:true});return this;}}
@@ -402,9 +418,11 @@ test('Würfelstatistik (#28): Erfassung nur mit Aktivierung + Zustimmung, ohne M
   assert.equal(timers.length,1,'ein gebündelter Speichertermin');assert.equal(updates.length,0,'noch nichts gespeichert');
   await r.flush();
   assert.equal(updates.length,1,'ein einziges Update');
-  assert.deepEqual(flag.d[6],[0,1,0,0,0,0],'nur neue Ergebnisse im gültigen Bereich');
-  assert.equal(flag.d[20][0],2);assert.equal(flag.d[20][19],1);assert.equal(flag.m[20][4],1,'echte Würfel getrennt');assert.equal(flag.d[20][4],0);
-  await roll(new Die(20),[7]);await r.flush();assert.equal(flag.d[20][6],1);assert.equal(flag.d[20][0],2,'weitergezählt');
+  const today=(await esm('scripts/dice-stats/stats.js')).dayKey();assert.deepEqual(Object.keys(flag.days),[today],'Topf des aktuellen Spielabends');
+  const c=()=>flag.days[today];
+  assert.deepEqual(c().d[6],[0,1,0,0,0,0],'nur neue Ergebnisse im gültigen Bereich');
+  assert.equal(c().d[20][0],2);assert.equal(c().d[20][19],1);assert.equal(c().m[20][4],1,'echte Würfel getrennt');assert.equal(c().d[20][4],0);
+  await roll(new Die(20),[7]);await r.flush();assert.equal(c().d[20][6],1);assert.equal(c().d[20][0],2,'weitergezählt');
  }finally{Object.assign(global,saved);}
 });
 test('Würfelstatistik (#28): Einstellungen und Texte',()=>{
@@ -438,7 +456,7 @@ test('body tab (#29): main hand left, off hand right; a two-handed weapon sits o
 test('Würfelstatistik (#28): Fenster „Karten“ – Karten je Spieler, Diagramm, Tabelle nur aufgeklappt, Zurücksetzen nur für die SL',async()=>{
  const {buildCards}=await esm('scripts/apps/dice-stats.js');
  const w20=Array.from({length:20},(_,i)=>i===0?14:i===19?2:5);
- const players=[{id:'a',name:'Anna',color:'#3f7fbf',stats:{v:1,since:0,d:{20:w20,6:[1,1,1,1,1,1]},m:{}}},{id:'b',name:'Ben',color:'#b3473b',stats:{v:1,since:0,d:{6:[2,0,0,0,0,0]},m:{}}}];
+ const players=[{id:'a',name:'Anna',color:'#3f7fbf',counts:{d:{20:w20,6:[1,1,1,1,1,1]},m:{}}},{id:'b',name:'Ben',color:'#b3473b',counts:{d:{6:[2,0,0,0,0,0]},m:{}}}];
  const cards=buildCards(players,20,'d',{open:new Set(['a'])});
  assert.equal(cards.length,1,'Spieler ohne Würfe dieses Typs erscheinen nicht');
  const [card]=cards;assert.equal(card.n,106);assert.equal(card.bars.length,20);assert(card.bars[0].key&&card.bars[19].key&&!card.bars[1].key,'1 und 20 hervorgehoben');
@@ -446,13 +464,17 @@ test('Würfelstatistik (#28): Fenster „Karten“ – Karten je Spieler, Diagra
  assert.deepEqual(card.figures.map(f=>f.label),['n','mean','ones','twenties']);
  assert.deepEqual(buildCards(players,6,'d').map(c=>c.figures.length),[2,2],'1en/20en nur beim W20');
  const tpl=H.compile(read('templates/dice-stats.hbs'));
- const ctx=isGM=>({enabled:true,isGM,faces:20,method:'d',types:[{faces:20,active:true},{faces:6,active:false}],methods:[{id:'d',active:true,label:'DSA5HELPERS.DiceStats.Method.d'},{id:'m',active:false,label:'DSA5HELPERS.DiceStats.Method.m'}],since:'1.10.2026',cards,hidden:'Eva',slight:'0,05',strong:'0,01',hist:{width:300,height:70,total:84,labelY:82}});
+ const ctx=isGM=>({enabled:true,isGM,faces:20,method:'d',types:[{faces:20,active:true},{faces:6,active:false}],methods:[{id:'d',active:true,label:'DSA5HELPERS.DiceStats.Method.d'},{id:'m',active:false,label:'DSA5HELPERS.DiceStats.Method.m'}],ownConsent:'yes',ranges:[{value:'all',label:'Gesamt',selected:true},{value:'2026-10-02',label:'Spielabend 2.10.2026'},{value:'custom',label:'Eigener Zeitraum'}],custom:false,cards,hidden:isGM?'Eva':'',slight:'0,05',strong:'0,01',hist:{width:300,height:70,total:84,labelY:82}});
  missing.clear();let html=tpl(ctx(false));
  assert.deepEqual([...missing].filter(k=>k.startsWith('DSA5HELPERS')),[],'alle Texte lokalisiert');
  assert.equal(elements(html,el=>el.name==='section'&&el.attribs.class==='dsa5h-ds-card').length,1);
  assert.equal(elements(html,el=>el.name==='rect').length,20);assert.equal(elements(html,el=>el.name==='table').length,1,'Tabelle der aufgeklappten Karte');
- assert(!html.includes('data-action="reset"'),'kein Zurücksetzen für Spieler');assert(html.includes('Eva'));
- html=tpl(ctx(true));assert.equal(elements(html,el=>el.attribs?.['data-action']==='reset').length,2,'je Karte + alle');
+ assert(!html.includes('data-action="reset"'),'kein Löschen für Spieler');assert(!html.includes('Eva'),'Spieler sehen nicht, wer nicht ausgewertet wird');
+ assert.equal(elements(html,el=>el.name==='select'&&el.attribs.name==='range').length,1);assert(!html.includes('type="date"'),'Datumsfelder nur bei eigenem Zeitraum');
+ html=tpl({...ctx(false),custom:true,from:'2026-10-01',to:'2026-10-02'});assert.equal(elements(html,el=>el.attribs?.type==='date').length,2);
+ html=tpl(ctx(true));const resets=elements(html,el=>el.attribs?.['data-action']==='reset');assert.equal(resets.length,2,'je Karte + alle');assert(html.includes('Eva'));
+ assert(resets.every(b=>dom.findAll(el=>String(el.attribs?.class??'').includes('fa-trash-can'),b.children).length),'Mülleimer statt Neu-laden-Pfeil');
+ missing.clear();html=tpl({...ctx(false),cards:[],ownConsent:'no'});assert(html.includes(localize('DSA5HELPERS.DiceStats.NoConsent')));assert.deepEqual([...missing],[]);
  for(const lang of ['de','en']){const l=JSON.parse(read(`lang/${lang}.json`)).DSA5HELPERS.DiceStats;for(const v of ['normal','slight','strong','few','empty'])assert(l.Verdict[v],`${lang} Verdict.${v}`);for(const f of ['n','mean','ones','twenties'])assert(l.Figure[f]);}
  assert(/registerMenu\('dsa5-helpers', 'diceStats'[\s\S]*?restricted: false/.test(read('scripts/dsa5-helpers.js')),'für alle über die Moduleinstellungen erreichbar');
  assert(read('scripts/dsa5-helpers.js').includes('"modules/dsa5-helpers/templates/dice-stats.hbs"'));
