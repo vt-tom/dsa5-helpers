@@ -138,6 +138,29 @@
       "OnGitHub": "Changelog auf GitHub",
       "Missing": "Der Changelog konnte nicht geladen werden.",
       "Versions": "Versionen"
+    },
+    "DiceStats": {
+      "Title": "Würfelstatistik",
+      "Consent": {
+        "Question": "Dürfen deine Würfe für die Würfelstatistik ausgewertet werden?",
+        "Info": "Gezählt wird nur, wie oft welche Augenzahl fällt – keine einzelnen Würfe. Alle Mitspieler können deine Statistik sehen.",
+        "Change": "Du kannst das jederzeit in den Moduleinstellungen ändern. Ziehst du die Zustimmung zurück, wird nichts mehr gezählt und deine Statistik ausgeblendet.",
+        "Yes": "Ja, auswerten",
+        "No": "Nein"
+      },
+      "Settings": {
+        "Enabled": {
+          "Name": "Würfelstatistik",
+          "Hint": "Zählt je Spieler und Würfeltyp, wie oft welche Augenzahl fällt, und zeigt, ob die Verteilung statistisch auffällig ist. Jeder Spieler wird vorher um Zustimmung gefragt. Gespeichert werden nur Zähler."
+        },
+        "Consent": {
+          "Name": "Würfelstatistik: meine Würfe auswerten",
+          "Hint": "Ob deine Würfe in die Würfelstatistik eingehen. Ohne Zustimmung wird nichts gezählt; bisherige Daten bleiben erhalten, werden aber ausgeblendet.",
+          "Undecided": "Noch nicht entschieden",
+          "Yes": "Ja",
+          "No": "Nein"
+        }
+      }
     }
   }
 }

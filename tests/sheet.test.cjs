@@ -354,3 +354,60 @@ test('Titelleisten-Plakette (#24): kein eigenes ::before/::after an Foundrys Kop
  root.walkRules(rule=>{for(const sel of rule.selectors)if(/\.header-control[^,\s]*::?(before|after)/.test(sel))bad.push(sel);});
  assert.deepEqual(bad,[]);
 });
+// ---- Würfelstatistik (Issue #28) ----
+const {pathToFileURL}=require('node:url');
+const esm=p=>import(pathToFileURL(path.join(root,p)).href);
+test('Würfelstatistik (#28): Chi-Quadrat-p-Werte gegen Tabellenwerte, Einstufung und Mindestanzahl',async()=>{
+ const s=await esm('scripts/dice-stats/stats.js');
+ for(const [chi2,df,p] of [[30.144,19,.05],[36.191,19,.01],[11.0705,5,.05],[3.8415,1,.05],[2,4,Math.exp(-1)*2]])assert(Math.abs(s.chiSquarePValue(chi2,df)-p)<5e-5,`chi2=${chi2} df=${df}`);
+ assert.equal(s.evaluateDie(Array(6).fill(0)).verdict,'empty');
+ const few=s.evaluateDie([5,5,5,5,5,4]);assert.equal(few.verdict,'few');assert.equal(few.minRolls,30);
+ const fair=s.evaluateDie(Array(20).fill(10));assert.equal(fair.verdict,'normal');assert.equal(fair.mean,10.5);assert.equal(fair.p,1);
+ // 100 Würfe W6, Abweichung so gewählt, dass chi² knapp über der 5-%- bzw. 1-%-Schwelle liegt (df=5: 11,07 bzw. 15,09).
+ assert.equal(s.evaluateDie([30,10,14,14,16,16]).verdict,'slight');
+ assert.equal(s.evaluateDie([32,10,12,14,16,16]).verdict,'strong');
+ const ev=s.evaluateDie([2,1,1]);assert.equal(ev.n,4);assert.deepEqual(ev.deviations.map(d=>+d.toFixed(2)),[.5,-.25,-.25]);
+});
+test('Würfelstatistik (#28): Speicherformat bleibt klein (nur Zähler) und wird korrekt zusammengeführt',async()=>{
+ const s=await esm('scripts/dice-stats/stats.js');
+ const a=s.mergeCounts(null,{d:{20:[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2]}},1000);
+ assert.deepEqual(Object.keys(a),['v','since','d','m']);assert.equal(a.v,1);assert.equal(a.since,1000);
+ const b=s.mergeCounts(a,{d:{20:[1]},m:{6:[0,0,3,0,0,0]}},2000);
+ assert.equal(b.since,1000,'since bleibt beim ersten Wurf');assert.equal(b.d[20][0],2);assert.equal(b.d[20][19],2);assert.equal(b.d[20].length,20);assert.deepEqual(b.m[6],[0,0,3,0,0,0]);
+ assert.equal(a.d[20][0],1,'Eingabe wird nicht verändert');
+ assert.deepEqual(s.dieTypes([b,{d:{6:[1,0,0,0,0,0],3:[0,0,0]}}],'d'),[20,6],'leere Zähler und fremde Würfelart zählen nicht; W20 vorn');
+ assert(JSON.stringify(b).length<200,'wenige hundert Byte');
+});
+test('Würfelstatistik (#28): Erfassung nur mit Aktivierung + Zustimmung, ohne Mindest-/Höchstwerte, echte Würfel getrennt, gebündelt gespeichert',async()=>{
+ class DiceTerm{constructor(faces,method){this.faces=faces;this.method=method;this.results=[];}async _evaluateAsync(options={}){for(const v of this.next)this.results.push({result:v,active:true});return this;}}
+ class Die extends DiceTerm{} class Coin extends DiceTerm{}
+ const updates=[];let flag;const timers=[];
+ const saved={foundry:global.foundry,game:global.game,CONFIG:global.CONFIG,window:global.window,document:global.document,setTimeout:global.setTimeout};
+ global.foundry={dice:{terms:{DiceTerm,Die}}};global.CONFIG={Dice:{fulfillment:{methods:{mersenne:{interactive:false},manual:{interactive:true}}}}};
+ global.game={user:{getFlag:()=>flag,setFlag:async(scope,key,value)=>{updates.push(value);flag=value;}}};
+ global.window={addEventListener(){}};global.document={addEventListener(){}};global.setTimeout=fn=>{timers.push(fn);return 1;};
+ try{
+  const r=await esm('scripts/dice-stats/recorder.js');let active=false;r.initRecorder(()=>active);
+  const roll=async(term,values,options)=>{term.next=values;await term._evaluateAsync(options);};
+  await roll(new Die(20),[1,20]);assert.equal(timers.length,0,'ohne Aktivierung/Zustimmung nichts erfasst');
+  active=true;
+  await roll(new Die(20),[20],{maximize:true});await roll(new Die(20),[1],{minimize:true});assert.equal(timers.length,0,'Mindest-/Höchstwerte sind keine Würfe');
+  await roll(new Coin(2),[1]);assert.equal(timers.length,0,'Münzen zählen nicht');
+  const t=new Die(6);t.results.push({result:6});await roll(t,[2,9]);
+  await roll(new Die(20),[1,1,20]);await roll(new Die(20,'manual'),[5]);
+  assert.equal(timers.length,1,'ein gebündelter Speichertermin');assert.equal(updates.length,0,'noch nichts gespeichert');
+  await r.flush();
+  assert.equal(updates.length,1,'ein einziges Update');
+  assert.deepEqual(flag.d[6],[0,1,0,0,0,0],'nur neue Ergebnisse im gültigen Bereich');
+  assert.equal(flag.d[20][0],2);assert.equal(flag.d[20][19],1);assert.equal(flag.m[20][4],1,'echte Würfel getrennt');assert.equal(flag.d[20][4],0);
+  await roll(new Die(20),[7]);await r.flush();assert.equal(flag.d[20][6],1);assert.equal(flag.d[20][0],2,'weitergezählt');
+ }finally{Object.assign(global,saved);}
+});
+test('Würfelstatistik (#28): Einstellungen und Texte',()=>{
+ const src=read('scripts/dice-stats/settings.js');
+ assert(/'diceStatsEnabled'[\s\S]*?scope: 'world'[\s\S]*?restricted: true[\s\S]*?default: false/.test(src),'Welt-Einstellung nur SL, Standard aus');
+ assert(/'diceStatsConsent'[\s\S]*?scope: 'user'[\s\S]*?default: 'undecided'/.test(src),'Zustimmung je Benutzer');
+ assert(/userId !== game\.userId/.test(src),'Zustimmung nur vom eigenen Client spiegeln');
+ for(const lang of ['de','en']){const l=JSON.parse(read(`lang/${lang}.json`)).DSA5HELPERS.DiceStats;
+  for(const key of [...src.matchAll(/'DSA5HELPERS\.DiceStats\.([\w.]+)'/g)].map(m=>m[1]))assert(lookup(l,key),`${lang}: DiceStats.${key}`);}
+});

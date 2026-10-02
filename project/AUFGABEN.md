@@ -12,10 +12,10 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 Branch `release/0.4.0` (von `main`, 0.3.3 ist veröffentlicht). Reihenfolge:
 
 1. **#28 Würfelstatistik** — Hauptfeature, Plan im Issue.
-   1. Click-Dummy: Statistikfenster + Zustimmungsdialog mit Demo-Daten, 2–3 Varianten der Darstellung → Auswahl.
-   2. Modul: Einstellungen + Zustimmung → Erfassung (`DiceTerm#roll`) → Speichern (ein User-Flag, nur Zähler) → Auswertung (Chi-Quadrat) → Fenster.
-   3. Tests, Lokalisierung, Live-Test mit mindestens zwei Benutzern (Spieler + SL, blinde Würfe, echte Würfel, Zustimmung ja/nein).
-2. **#29 Kampf › Körper** — RS/BE-Badge über der Figur weg, Hände links/rechts der Figur, beidhändige Waffe per Knopf seitlich verschiebbar. Für die Rüstung zuerst 2–3 Varianten im Click-Dummy, der Nutzer entscheidet. Kann parallel zu #28 laufen (andere Dateien).
+   1. ✔ Click-Dummy (2026-10-02): Toolbar „Würfelstatistik“ / „Zustimmung (Dialog)“, `clickdummy/dice-stats.js` mit Demo-Daten (unauffällig, leicht/deutlich auffällig, zu wenige Würfe, Zustimmung zurückgezogen/offen). **Entscheidung offen:** Darstellung A „Zeilen“ (Mini-Diagramm, Klick klappt Details auf) / B „Karten“ (je Spieler eine Karte mit großem Diagramm) / C „Raster“ (Spieler × Augenzahl, Farbe = Abweichung). Umschalter oben im Fenster, dazu Ansicht Spieler/SL.
+   2. ✔ Modul (ohne Fenster): `scripts/dice-stats/` — `stats.js` (Chi-Quadrat, Speicherformat; vom Click-Dummy mitbenutzt), `recorder.js`, `settings.js` (Welt-Einstellung, Zustimmung `scope:"user"` + Flag, DialogV2 beim Verbinden). Erfassung an `DiceTerm#_evaluateAsync` statt `#roll`: der RollResolver schreibt echte Würfel direkt in `term.results`. Offen: Fenster (`scripts/apps/dice-stats.js` + Template) nach der Darstellungs-Entscheidung, `registerMenu`, API `openDiceStats()`, Zurücksetzen (SL), Live-Aktualisierung (`updateUser`).
+   3. Live-Test mit mindestens zwei Benutzern (Spieler + SL, blinde Würfe, echte Würfel, Zustimmung ja/nein/zurückgezogen, Schips-Neuwurf, Neuladen kurz nach einem Wurf).
+2. **#29 Kampf › Körper** — ✔ Click-Dummy (2026-10-02): Badge entfernt, Haupthand links / Nebenhand rechts, beidhändige Waffe auf einer Seite mit „⇄ nach rechts/links“ (nur Bearbeiten-Modus). **Entscheidung offen:** Rüstung A unter der Figur (Kachelreihe + Schutz/Belastung) / B Leiste über der Figur / C in den Seitenspalten unter den Händen / D eigenes Panel darunter — Toolbar „Rüstung A–D“ und „Teile 0–4“. Danach Modul (`body.hbs`, Actor-Flag für die Seite).
 3. **#7 CSS aufräumen** — bewusst zuletzt, wenn keine weiteren Styles mehr dazukommen; danach gründlicher Live-Test aller Reiter. Vorher mit `feature/mobile` abstimmen: dort wird dieselbe CSS-Datei stark umgebaut, ein Umsortieren erzeugt sonst große Merge-Konflikte. Vorschlag: #7 erst, wenn klar ist, wann Mobile erscheint, oder auf 0.5.0 verschieben.
 
 Kandidaten, noch ohne Meilenstein:
@@ -39,11 +39,11 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 17:11 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-02 04:59 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (5)**
+**Offen (7)**
 
 - **[#1](https://github.com/vt-tom/dsa5-helpers/issues/1) feat: Animation zwischen Titelblatt und den anderen seiten**
   - offen · Bearbeiter: niemand · von @Lyynix · 0 Kommentare · zuletzt geändert 2026-09-17
@@ -55,6 +55,10 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-01 17:11 UTC) — ni
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
 - **[#29](https://github.com/vt-tom/dsa5-helpers/issues/29) feat: Kampf › Körper – Hände links/rechts der Figur, RS/BE-Badge entfernen, Rüstung neu platzieren**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 0 Kommentare · zuletzt geändert 2026-10-01
+- **[#30](https://github.com/vt-tom/dsa5-helpers/issues/30) feat: Ausrüstung und Sonderfertigkeiten als Favoriten markieren**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-02
+- **[#31](https://github.com/vt-tom/dsa5-helpers/issues/31) feat: Konzept für die Aufteilung des Reiters Notizen**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-02
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 
