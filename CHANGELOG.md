@@ -21,6 +21,10 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 - Kampf › Körper: „Weitere Waffen“ zeigt jetzt alle Waffen des Helden, die gerade nicht in einer Hand sind – bisher fehlten dort die nicht ausgerüsteten, sodass die Liste meist leer blieb. Jede Waffe ist würfelbar und lässt sich über das Schild in die Hand nehmen (Rechtsklick: Hand wählen), wie im Reiter Ausrüstung.
 - Kampf › Körper: Eine Nahkampfwaffe in der Hand lässt sich jetzt direkt dort zwischen einhändiger und beidhändiger Führung umschalten („Beidhändig führen“ / „Einhändig führen“). Bei beidhändiger Führung wird die Waffe der Nebenhand abgelegt. Dolche und Fechtwaffen lassen sich wie im System nicht umschalten.
 
+### Behoben
+
+- Nach einer Eingabe in einem Feld (z. B. unter Notizen › Persönliche Daten) bleibt der Fokus jetzt im nächsten Feld, sodass man mit der Tab-Taste durch die Felder wechseln kann – bisher sprang er auf die Reiterleiste.
+
 ## [0.4.0] — 2026-10-02
 
 ### Neu
