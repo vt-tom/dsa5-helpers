@@ -5,6 +5,7 @@ import { registerDiceStatsSettings, readyDiceStats } from './dice-stats/settings
 import { getDiceStatsApp, openDiceStats, initDiceStatsLiveUpdate } from './apps/dice-stats.js';
 import { registerHouseRules } from './house-rules/rules.js';
 import { getHouseRulesApp, openHouseRules } from './apps/house-rules.js';
+import { initSheetSwitcher } from './sheet-switcher.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -37,6 +38,8 @@ Hooks.once('init', async () => {
   game.settings.registerMenu('dsa5-helpers', 'houseRules', { name: 'DSA5HELPERS.HouseRules.Title', label: 'DSA5HELPERS.HouseRules.Menu.Label', hint: 'DSA5HELPERS.HouseRules.Menu.Hint', icon: 'fas fa-book', type: getHouseRulesApp(), restricted: false });
   // Für Makros und das spätere HUD des Moduls.
   game.modules.get('dsa5-helpers').api = { ...(game.modules.get('dsa5-helpers').api ?? {}), openDiceStats, openHouseRules };
+  // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
+  initSheetSwitcher();
   game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
