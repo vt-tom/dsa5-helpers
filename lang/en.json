@@ -225,6 +225,75 @@
       },
       "NoConsent": "You have not agreed to your rolls being evaluated. You can change this in the module settings."
     },
-    "OtherWeapons": "Other weapons"
+    "OtherWeapons": "Other weapons",
+    "HouseRules": {
+      "Title": "House Rules",
+      "Menu": {
+        "Label": "Open house rules",
+        "Hint": "Read optional house rules and (as GM) enable them for this world."
+      },
+      "Views": "View",
+      "List": "List",
+      "Book": "Book",
+      "Intro": "House rules extend the official rules. A rule only applies once the GM enables it for the world.",
+      "GMOnly": "Only the GM can turn them on or off.",
+      "Credit": "Idea: {name}",
+      "CreditLong": "This house rule was created by {name} – thank you!",
+      "Read": "Read in book",
+      "Number": "House rule {number}",
+      "Active": "Active",
+      "Inactive": "Not active",
+      "Prev": "Previous page",
+      "Next": "Next page",
+      "Page": "Page {page} of {count}",
+      "HowTo": "How it works",
+      "Notes": "Good to know",
+      "woundCheck": {
+        "Title": "Wound Assessment",
+        "Summary": "With a hidden Treat Wounds check, a hero estimates how badly a target is hurt – the more QL, the more precise.",
+        "HudButton": "Assess the wounds of the targeted token",
+        "NoTarget": "Please target a token first.",
+        "NoViewer": "No character assigned and no token selected.",
+        "NoSkill": "{name} does not know Treat Wounds.",
+        "AlreadyChecked": "{name} has already been examined: {text}",
+        "ChatTitle": "Wound assessment: {name}",
+        "ChatGM": "{viewer} assessed the wounds of {name}.",
+        "HoverTitle": "Health",
+        "NotChecked": "not examined",
+        "Stale": "assessment outdated",
+        "Text": {
+          "none": "no reliable assessment",
+          "unhurt": "unhurt",
+          "hurt": "hurt",
+          "incapacitated": "incapacitated",
+          "critical": "critically wounded",
+          "severe": "badly wounded",
+          "marked": "clearly wounded",
+          "light": "lightly wounded",
+          "range": "Estimated LP: {range}",
+          "about": "Estimated LP: about {lep}"
+        },
+        "Page": {
+          "Intro": "How bad is it for the enemy – or for the companion who just went down? A hero with Treat Wounds can tell. How precisely depends on the quality level of the check.",
+          "Step1": "Target the token (key T or double right-click on the token).",
+          "Step2": "Right-click your own hero's token and choose the heart button (“Assess the wounds of the targeted token”) on the left of the token menu.",
+          "Step3": "Roll the Treat Wounds check. It is hidden: only the roller sees the result, the GM only learns that an assessment was made.",
+          "Step4": "The assessment appears as a whisper in the chat.",
+          "TableTitle": "Result by quality level",
+          "QS": "QL",
+          "Result": "Assessment",
+          "QS0": "Check failed: no reliable assessment",
+          "QS1": "only “hurt” or “unhurt”",
+          "QS2": "the condition (see below)",
+          "QS3": "condition and LP range in steps of ten (e.g. 10–20)",
+          "QS4": "condition and LP range in steps of five (e.g. 15–20)",
+          "QS5": "condition and approximate LP",
+          "Conditions": "Conditions by remaining LP: unhurt (full LP) · lightly wounded (above 75 %) · clearly wounded (up to 75 %) · badly wounded (up to 50 %) · critically wounded (up to 25 %) · incapacitated (0 LP or less).",
+          "Note1": "The hero remembers the assessment. Only when the target's LP have changed by at least a quarter of its maximum LP can the hero assess again; until then the button shows the previous assessment.",
+          "Note2": "With the module “Token Note Hover”, the assessment also appears when hovering over the token – or the note “not examined” or “assessment outdated”.",
+          "Note3": "Effects placed on the skill itself do not count for this check."
+        }
+      }
+    }
   }
 }

@@ -225,6 +225,75 @@
       },
       "NoConsent": "Du hast der Auswertung deiner Würfe nicht zugestimmt. Das kannst du in den Moduleinstellungen ändern."
     },
-    "OtherWeapons": "Weitere Waffen"
+    "OtherWeapons": "Weitere Waffen",
+    "HouseRules": {
+      "Title": "Hausregelbuch",
+      "Menu": {
+        "Label": "Hausregelbuch öffnen",
+        "Hint": "Optionale Hausregeln lesen und (als Spielleitung) für diese Welt einschalten."
+      },
+      "Views": "Ansicht",
+      "List": "Liste",
+      "Book": "Buch",
+      "Intro": "Hausregeln ergänzen die offiziellen Regeln. Jede Regel gilt erst, wenn die Spielleitung sie für die Welt einschaltet.",
+      "GMOnly": "Ein- und ausschalten kann nur die Spielleitung.",
+      "Credit": "Idee: {name}",
+      "CreditLong": "Diese Hausregel stammt von {name} – vielen Dank!",
+      "Read": "Im Buch lesen",
+      "Number": "Hausregel {number}",
+      "Active": "Aktiv",
+      "Inactive": "Nicht aktiv",
+      "Prev": "Vorige Seite",
+      "Next": "Nächste Seite",
+      "Page": "Seite {page} von {count}",
+      "HowTo": "So funktioniert es",
+      "Notes": "Gut zu wissen",
+      "woundCheck": {
+        "Title": "Wundeinschätzung",
+        "Summary": "Mit einer verdeckten Probe auf Heilkunde Wunden schätzt ein Held ein, wie schwer ein Ziel verletzt ist – je mehr QS, desto genauer.",
+        "HudButton": "Wunden des markierten Ziels einschätzen",
+        "NoTarget": "Bitte zuerst ein Ziel markieren.",
+        "NoViewer": "Kein Charakter zugewiesen und kein Token ausgewählt.",
+        "NoSkill": "{name} beherrscht Heilkunde Wunden nicht.",
+        "AlreadyChecked": "{name} wurde bereits untersucht: {text}",
+        "ChatTitle": "Wundeinschätzung: {name}",
+        "ChatGM": "{viewer} hat die Wunden von {name} eingeschätzt.",
+        "HoverTitle": "Gesundheitszustand",
+        "NotChecked": "nicht untersucht",
+        "Stale": "Einschätzung veraltet",
+        "Text": {
+          "none": "keine verlässliche Einschätzung",
+          "unhurt": "unverletzt",
+          "hurt": "verletzt",
+          "incapacitated": "kampfunfähig",
+          "critical": "lebensgefährlich verletzt",
+          "severe": "schwer verletzt",
+          "marked": "deutlich verletzt",
+          "light": "leicht verletzt",
+          "range": "Geschätzte LeP: {range}",
+          "about": "Geschätzte LeP: etwa {lep}"
+        },
+        "Page": {
+          "Intro": "Wie schlimm steht es um den Gegner – oder um den Gefährten, der gerade zu Boden gegangen ist? Ein Held mit Heilkunde Wunden kann es einschätzen. Wie genau, hängt von der Qualitätsstufe seiner Probe ab.",
+          "Step1": "Das Ziel markieren (Taste T oder Doppel-Rechtsklick auf das Token).",
+          "Step2": "Rechtsklick auf das Token des eigenen Helden und im Token-Menü links den Knopf mit dem Herz („Wunden des markierten Ziels einschätzen“) wählen.",
+          "Step3": "Die Probe auf Heilkunde Wunden würfeln. Sie ist verdeckt: nur der Würfelnde sieht das Ergebnis, die Spielleitung erfährt nur, dass eingeschätzt wurde.",
+          "Step4": "Die Einschätzung erscheint als Flüsternachricht im Chat.",
+          "TableTitle": "Ergebnis nach Qualitätsstufe",
+          "QS": "QS",
+          "Result": "Einschätzung",
+          "QS0": "Probe misslungen: keine verlässliche Einschätzung",
+          "QS1": "nur „verletzt“ oder „unverletzt“",
+          "QS2": "der Zustand (siehe unten)",
+          "QS3": "Zustand und LeP-Spanne in Zehnerschritten (z. B. 10–20)",
+          "QS4": "Zustand und LeP-Spanne in Fünferschritten (z. B. 15–20)",
+          "QS5": "Zustand und ungefähre LeP",
+          "Conditions": "Zustände nach verbleibenden LeP: unverletzt (volle LeP) · leicht verletzt (über 75 %) · deutlich verletzt (bis 75 %) · schwer verletzt (bis 50 %) · lebensgefährlich verletzt (bis 25 %) · kampfunfähig (0 LeP oder weniger).",
+          "Note1": "Der Held merkt sich seine Einschätzung. Erst wenn sich die LeP des Ziels um mindestens ein Viertel seiner maximalen LeP geändert haben, kann er erneut einschätzen; bis dahin zeigt der Knopf die bisherige Einschätzung.",
+          "Note2": "Wer das Modul „Token Note Hover“ nutzt, sieht die Einschätzung zusätzlich beim Darüberfahren über das Token – oder den Hinweis „nicht untersucht“ bzw. „Einschätzung veraltet“.",
+          "Note3": "Effekte, die auf dem Talent selbst liegen, zählen bei dieser Probe nicht."
+        }
+      }
+    }
   }
 }

@@ -1,0 +1,44 @@
+<div class="dsa5h-hr">
+  {{!-- Hausregelbuch: Ansicht „Liste“ (alle Regeln, Schalter, Sprung ins Buch) oder „Buch“ (eine Seite je Regel).
+        Umschalten darf nur die SL; Spieler sehen den Stand. Nur der Inhalt scrollt, Kopf und Blätterleiste stehen. --}}
+  <nav class="dsa5h-hr-views" role="group" aria-label="{{localize 'DSA5HELPERS.HouseRules.Views'}}">
+    <button type="button" data-action="setView" data-view="list" class="{{#if list}}active{{/if}}" aria-pressed="{{#if list}}true{{else}}false{{/if}}"><i class="fas fa-list" inert></i> {{localize 'DSA5HELPERS.HouseRules.List'}}</button>
+    <button type="button" data-action="setView" data-view="book" class="{{#unless list}}active{{/unless}}" aria-pressed="{{#if list}}false{{else}}true{{/if}}"><i class="fas fa-book-open" inert></i> {{localize 'DSA5HELPERS.HouseRules.Book'}}</button>
+  </nav>
+  <div class="dsa5h-hr-body">
+    {{#if list}}
+    <p class="dsa5h-hr-intro">{{localize 'DSA5HELPERS.HouseRules.Intro'}}{{#unless isGM}} {{localize 'DSA5HELPERS.HouseRules.GMOnly'}}{{/unless}}</p>
+    <ul class="dsa5h-hr-list">
+      {{#each rules as |rule|}}
+      <li class="dsa5h-hr-entry{{#if rule.active}} active{{/if}}">
+        <i class="{{rule.icon}} dsa5h-hr-icon" inert></i>
+        <div class="dsa5h-hr-entry-text">
+          <strong>{{localize (concat rule.key '.Title')}}</strong>
+          <span>{{localize (concat rule.key '.Summary')}}</span>
+          <small>{{localize 'DSA5HELPERS.HouseRules.Credit' name=rule.credit}}</small>
+        </div>
+        {{> "modules/dsa5-helpers/templates/house-rules/toggle.hbs" rule=rule isGM=../isGM}}
+        <button type="button" class="dsa5h-hr-read" data-action="openPage" data-index="{{rule.index}}"><i class="fas fa-book-open" inert></i> {{localize 'DSA5HELPERS.HouseRules.Read'}}</button>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <article class="dsa5h-hr-page{{#if rule.active}} active{{/if}}">
+      <header class="dsa5h-hr-page-head">
+        <small>{{localize 'DSA5HELPERS.HouseRules.Number' number=rule.number}}</small>
+        <h2><i class="{{rule.icon}}" inert></i> {{localize (concat rule.key '.Title')}}</h2>
+        <p class="dsa5h-hr-credit">{{localize 'DSA5HELPERS.HouseRules.CreditLong' name=rule.credit}}</p>
+      </header>
+      {{> (lookup rule 'page') rule=rule}}
+      <footer class="dsa5h-hr-page-foot">{{> "modules/dsa5-helpers/templates/house-rules/toggle.hbs" rule=rule isGM=isGM}}</footer>
+    </article>
+    {{/if}}
+  </div>
+  {{#unless list}}
+  <div class="dsa5h-hr-pager">
+    <button type="button" data-action="turnPage" data-index="{{prev}}" {{#if (eq prev null)}}disabled{{/if}} aria-label="{{localize 'DSA5HELPERS.HouseRules.Prev'}}"><i class="fas fa-chevron-left" inert></i></button>
+    <span>{{localize 'DSA5HELPERS.HouseRules.Page' page=rule.number count=pageCount}}</span>
+    <button type="button" data-action="turnPage" data-index="{{next}}" {{#if (eq next null)}}disabled{{/if}} aria-label="{{localize 'DSA5HELPERS.HouseRules.Next'}}"><i class="fas fa-chevron-right" inert></i></button>
+  </div>
+  {{/unless}}
+</div>
