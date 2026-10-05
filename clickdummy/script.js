@@ -858,9 +858,9 @@ function belastungCell(s) {
 // Regel. Ohne markiertes Ziel ein Tooltip mit der Aufforderung (im Modul game.tooltip), sonst der Probendialog des
 // Systems und das Ergebnis im Chat. Der Click-Dummy hat keine Tokens, daher „Ziel markieren (Demo)“ im Tooltip.
 let WOUND_DEMO_TARGET = false;
-function woundCheckHint(s) {
+function woundCheckHint(s, iconOnly = false) {
   if (s.name !== "Heilkunde Wunden" || !window.dsa5hHouseRules?.state.active.woundCheck) return null;
-  const btn = el("button", { type: "button", class: "house-hint", title: "Hausregel Wundeinschätzung: Ziel markieren, dann klicken – schätzt per Probe auf Heilkunde Wunden ein, wie schwer das Ziel verletzt ist." }, "♥ Wundeinschätzung");
+  const btn = el("button", { type: "button", class: "house-hint" + (iconOnly ? " house-hint-icon" : ""), title: "Hausregel Wundeinschätzung: Ziel markieren, dann klicken – schätzt per Probe auf Heilkunde Wunden ein, wie schwer das Ziel verletzt ist.", "aria-label": "Wundeinschätzung" }, iconOnly ? "♥" : "♥ Wundeinschätzung");
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     document.querySelector(".house-hint-tip")?.remove();
@@ -2492,12 +2492,17 @@ function renderNotes() {
 //   Notizen unverändert.
 // - F „Reiter Held“: eigener Reiter „Held“ (Persönliche Daten + Hintergrundgeschichte), Notizen nur noch Notizen,
 //   Private Notizen, GM-Notizen. Titelblatt unverändert.
+// - G „Leiste mit Reitern“ (Nutzerwunsch 2026-10-05, Fähnchen-Idee vom 2026-10-01 neu aufgegriffen): LeP/AsP/KaP in der
+//   Titelblatt-Leiste kompakter (flache Leisten, Schips + Regeneration in einer Zeile), darunter EIN Kasten mit zwei
+//   echten Reitern „Zustände | Persönliche Daten“, der den Rest der Leiste füllt; aktive Effekte als Zeile unter den
+//   Zuständen. Notizen unverändert (dort werden die Daten bearbeitet).
 let NOTES_CONCEPT = "d";
 const ALL_NOTES_TABS = NOTES_SECTIONS.map(({ id, label }) => [id, label]);
 const NOTES_SECTION_TABS = {
   d: ALL_NOTES_TABS.filter(([id]) => id !== "details"),
   e: ALL_NOTES_TABS,
   f: ALL_NOTES_TABS.filter(([id]) => id !== "details" && id !== "biography"),
+  g: ALL_NOTES_TABS,
 };
 const HERO_TAB = { id: "hero", label: "Held", icon: ICONS + "/categories/Weltliche.webp", title: "Held", hint: "" };
 const filledAppearance = () => APPEARANCE.filter((a) => String(a.v ?? "").trim());
@@ -2508,6 +2513,43 @@ function coverProfileSection() {
   const panel = renderNotesSection(notesSection("details"));
   panel.querySelector(".panel-title").textContent = "Steckbrief";
   return panel;
+}
+
+// Konzept G: kompakte Ressourcen + Reiterkasten in der Titelblatt-Leiste.
+let COVER_SIDE_TAB = "conditions";
+function coverResourcesCompact() {
+  const group = resourceGroup(true);
+  const regen = group.querySelector(".regen-btn");
+  regen.remove();
+  return el("div", { class: "cover-resources compact" }, [group, el("div", { class: "cover-res-row" }, [fatePointsRow(), regen])]);
+}
+
+function coverSideTabs() {
+  const tabs = [["conditions", "Zustände"], ["details", "Persönliche Daten"]];
+  const bar = el("div", { class: "side-tabs", role: "tablist", "aria-label": "Titelblatt-Leiste" }, tabs.map(([id, label]) => {
+    const on = COVER_SIDE_TAB === id;
+    const b = el("button", { type: "button", role: "tab", class: "side-tab" + (on ? " active" : ""), "aria-selected": String(on) }, label);
+    b.addEventListener("click", () => { COVER_SIDE_TAB = id; renderContent(); });
+    return b;
+  }));
+  let body;
+  if (COVER_SIDE_TAB === "conditions") {
+    const list = buildConditionsPanel();
+    list.querySelector(".panel-title").remove();
+    const effects = buildActiveEffectsSummary().querySelector(".show-all-btn");
+    body = [...list.childNodes, effects];
+  } else {
+    const fields = filledAppearance();
+    const edit = el("button", { type: "button", class: "show-all-btn" }, "Bearbeiten → Notizen");
+    edit.addEventListener("click", () => { setTab("notes"); jumpToSection("notes", "details"); });
+    body = [
+      fields.length
+        ? el("dl", { class: "side-details" }, fields.map((a) => el("div", { title: `${a.k}: ${a.v}` }, [el("dt", {}, a.k), el("dd", {}, a.v)])))
+        : el("p", { class: "muted side-empty" }, "Noch keine persönlichen Daten eingetragen."),
+      edit,
+    ];
+  }
+  return el("div", { class: "panel side-tabs-panel" }, [bar, el("div", { class: "side-tabs-body", role: "tabpanel" }, body)]);
 }
 
 // Konzept F: Reiter „Held“.
@@ -2998,7 +3040,9 @@ function favCard(item, kind) {
   }
   // Reihenfolge Name | Probe | Wert | Stern (Nutzer-Feedback 2026-09-28); Waffen: AT/FK-Würfel als Probe, TP als Wert.
   const star = kind === "special" ? specFavStar(item.name) : favStar(item);
-  return el("div", { class: "fav-card" }, [icon, name, roll, value, star]);
+  // Hausregel Wundeinschätzung: Herz neben Heilkunde Wunden auch hier (Rückmeldung 2026-10-05).
+  const nameCell = el("span", { class: "fav-card-name-cell" }, [name, kind === "talent" ? woundCheckHint(item, true) : null]);
+  return el("div", { class: "fav-card" }, [icon, nameCell, roll, value, star]);
 }
 
 // Stellvertreter für das DSA5-Item-Sheet, das im Modul ein Klick auf den Favoriten-Namen öffnet (itemEdit). Bei
@@ -3162,6 +3206,11 @@ function renderCoverSidebar() {
   const portrait = document.getElementById("portrait");
   sidebar.innerHTML = "";
   sidebar.appendChild(portrait);
+  // Konzept G (Issues #27/#31): kompakte Ressourcen + Reiterkasten statt Zustände-/Effekte-Panels.
+  if (NOTES_CONCEPT === "g") {
+    sidebar.append(coverResourcesCompact(), coverSideTabs());
+    return;
+  }
   sidebar.appendChild(coverResourcesBlock());
   sidebar.appendChild(buildConditionsPanel(4));
   sidebar.appendChild(buildActiveEffectsSummary());

@@ -1909,6 +1909,24 @@
   object-fit: cover;
 }
 
+/* Namenszelle: Name + ggf. Herz der Hausregel Wundeinschätzung (bei Heilkunde Wunden, nur bei aktiver Regel). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-house-hint.dsa5h-house-hint-icon {
+  flex: none;
+  justify-content: center;
+  width: var(--hit-sm);
+  height: var(--hit-sm);
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+}
+
 /* Name ist ein Knopf: öffnet das Item-Fenster des Systems (itemEdit) — für alle Favoriten (Issue #30, 2026-10-05). */
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-name {
   justify-self: start;
