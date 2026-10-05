@@ -104,32 +104,11 @@ export async function woundCheck(viewer) {
 }
 
 /**
- * Hooks der Hausregel. `isActive()` wird bei jedem Aufruf gefragt, damit das Ein-/Ausschalten im Hausregelbuch ohne
- * Neuladen wirkt.
+ * Hooks der Hausregel (Hover, Chat). Ausgelöst wird sie im Heldenbogen über den Hinweis am Talent Heilkunde Wunden
+ * (Nutzer-Entscheidung 2026-10-05, statt eines Knopfs im Token-HUD: dsa5hWoundCheck in der Sheet-Klasse).
+ * `isActive()` wird bei jedem Aufruf gefragt, damit das Ein-/Ausschalten im Hausregelbuch ohne Neuladen wirkt.
  */
 export function initWoundCheck(isActive) {
-  // Knopf im Token-HUD des eigenen Helden (Spieler können das HUD nur bei eigenen Tokens öffnen); wirkt auf das
-  // markierte Ziel wie das Makro. Nur, wenn der Held Heilkunde Wunden hat.
-  Hooks.on('renderTokenHUD', (hud, element) => {
-    const actor = hud.document?.actor;
-    if (!isActive() || !actor || !findTreatWounds(actor)) return;
-    const html = element instanceof HTMLElement ? element : element?.[0];
-    const column = html?.querySelector('.col.left');
-    if (!column || column.querySelector('.dsa5h-wound-check')) return;
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'control-icon dsa5h-wound-check';
-    button.dataset.tooltip = loc('HudButton');
-    button.setAttribute('aria-label', loc('HudButton'));
-    button.innerHTML = '<i class="fas fa-heart-pulse" inert></i>';
-    button.addEventListener('click', event => {
-      event.preventDefault();
-      event.stopPropagation();
-      woundCheck(actor);
-    });
-    column.append(button);
-  });
-
   // Hover-Anzeige über das Modul „Token Note Hover“ (falls installiert), wie im World Script.
   Hooks.on('tokenNoteHover.createContent', (actor, _displayImages, contentMap) => {
     if (!isActive() || !actor) return;

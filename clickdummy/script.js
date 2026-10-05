@@ -854,6 +854,28 @@ function belastungCell(s) {
 // Talentwert (FW) ist direkt editierbar (Freitext-Korrektur ohne AP-Abzug) UND per +/- Stepper mit echten
 // AP-Kosten steigerbar (advanceStepper(), Steigerungsfaktor aus s.stf — 1:1 aus dem Talent-Kompendium, siehe
 // SKILL_GROUPS-Kommentar in data.js), analog zum Eigenschaften-Tab.
+// Hausregel Wundeinschätzung (Hausregelbuch, house-rules.js): Hinweis am Talent Heilkunde Wunden, nur bei aktiver
+// Regel. Ohne markiertes Ziel ein Tooltip mit der Aufforderung (im Modul game.tooltip), sonst der Probendialog des
+// Systems und das Ergebnis im Chat. Der Click-Dummy hat keine Tokens, daher „Ziel markieren (Demo)“ im Tooltip.
+let WOUND_DEMO_TARGET = false;
+function woundCheckHint(s) {
+  if (s.name !== "Heilkunde Wunden" || !window.dsa5hHouseRules?.state.active.woundCheck) return null;
+  const btn = el("button", { type: "button", class: "house-hint", title: "Hausregel Wundeinschätzung: Ziel markieren, dann klicken – schätzt per Probe auf Heilkunde Wunden ein, wie schwer das Ziel verletzt ist." }, "♥ Wundeinschätzung");
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.querySelector(".house-hint-tip")?.remove();
+    if (WOUND_DEMO_TARGET) { flashNotice("🎲 Probendialog Heilkunde Wunden (Ork) → Ergebnis als Flüsternachricht im Chat"); return; }
+    const mark = el("button", { type: "button" }, "Ziel markieren (Demo)");
+    const tip = el("div", { class: "house-hint-tip", role: "tooltip" }, ["Bitte zuerst ein Ziel markieren (Token anklicken und T drücken), dann erneut klicken.", mark]);
+    mark.addEventListener("click", () => { WOUND_DEMO_TARGET = true; tip.remove(); });
+    const r = btn.getBoundingClientRect();
+    Object.assign(tip.style, { left: `${r.left + scrollX}px`, top: `${r.bottom + scrollY + 6}px` });
+    document.body.append(tip);
+    setTimeout(() => document.addEventListener("click", function off(ev) { if (!tip.contains(ev.target)) { tip.remove(); document.removeEventListener("click", off); } }), 0);
+  });
+  return btn;
+}
+
 function skillRow(s) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
   const [minus, plus] = advanceStepper(() => s.fw, (v) => { s.fw = v; }, s.stf, 0, () => { renderContent(); renderHeader(); }, s.name);
@@ -861,7 +883,7 @@ function skillRow(s) {
   if (mode === "edit") makeEditable(fwSpan, s.fw, (v) => { s.fw = v; renderContent(); renderHeader(); }, { type: "number", min: 0, max: 99 });
   return el("div", { class: "row skill-row" }, [
     el("img", { src: s.img, alt: "" }),
-    el("span", { class: "left" }, s.name),
+    el("span", { class: "left" }, [s.name, woundCheckHint(s)]),
     probeDice(s.probe, s.name),
     belastungCell(s),
     el("span", { class: "skill-fw" }, [minus, fwSpan, plus]),
@@ -2456,110 +2478,68 @@ function renderDiseasePanel() {
 // Notizen-Fließtexte und Verbindungen (Name+Rolle) sind daher alle im Bearbeiten-Modus editierbar (kein
 // separater Spielmodus-Punkt dazu, also wie überall sonst nur dort).
 function renderNotes() {
-  if (NOTES_CONCEPT === "b") return renderNotesB();
-  if (NOTES_CONCEPT === "c") return renderNotesC();
-  return el("div", {}, NOTES_SECTIONS.map((n) => section(n.id, renderNotesSection(n))));
+  const ids = SECTION_TABS.notes.map(([id]) => id);
+  return el("div", {}, NOTES_SECTIONS.filter((n) => ids.includes(n.id)).map((n) => section(n.id, renderNotesSection(n))));
 }
 
-// --- Issues #31 (Aufteilung Notizen) + #27 (Persönliche Daten auf dem Titelblatt): drei Konzepte zum Vergleich ---
-// Umschalter „Notizen: A | B | C“ in der Werkzeugleiste (initNotesConceptToggle(), nach der Entscheidung entfernen).
-// Beide Issues hängen zusammen: wo die Daten auf dem Titelblatt stehen, bestimmt, wie viel Gewicht sie im Reiter
-// Notizen noch brauchen. Frühere Versuche in der Seitenleiste (eigener Kasten, Fähnchen am Zustandskasten) scheiterten
-// am Platz (PROJEKTDOKU „Titelblatt, persönliche Daten“) — keines der Konzepte nimmt der Leiste daher Höhe weg.
-// - A „Steckbrief“: Titelblatt bekommt rechts über den Favoriten einen kompakten Steckbrief (nur ausgefüllte Felder,
-//   Titel springt zu Notizen › Persönliche Daten). Notizen bleiben wie heute (fünf Unterreiter).
-// - B „Porträt-Rückseite“: Knopf am Porträt dreht es um, auf der Rückseite stehen die Daten — kein zusätzlicher Platz.
-//   Notizen: Hintergrund zuerst, dann Persönliche Daten, Notizen + Private Notizen nebeneinander, SL-Notizen.
-// - C „Kopfzeile“: Titelblatt zeigt die wichtigsten Daten als eine Zeile unter Spezies/Kultur/Profession (alle im
-//   Tooltip). Notizen: nur zwei Unterreiter, „Held“ (Daten + Hintergrund in einem Panel) und „Notizen“ (alle drei
-//   Notizfelder untereinander mit Sichtbarkeits-Hinweis).
-let NOTES_CONCEPT = "a";
+// --- Issues #31 (Aufteilung Notizen) + #27 (Persönliche Daten auf dem Titelblatt): zweite Runde, drei Konzepte ---
+// Erste Runde (2026-10-05) verworfen: A Steckbrief-Kasten über den Favoriten (zu viel Platz), B Porträt-Rückseite,
+// C Datenzeile im Kopf. Umschalter „Notizen: D | E | F“ (initNotesConceptToggle(), nach der Entscheidung entfernen).
+// Keines nimmt dem Titelblatt dauerhaft Platz weg:
+// - D „Unterreiter“: das Titelblatt bekommt Unterreiter wie die anderen Reiter (Favoriten | Steckbrief), der Steckbrief
+//   steht als eigener Abschnitt unter den Favoriten (Sprungmarke). Notizen ohne Persönliche Daten.
+// - E „Hover-Karte“: Darüberfahren oder Fokus auf das Porträt im Titelblatt zeigt die Daten als Karte daneben.
+//   Notizen unverändert.
+// - F „Reiter Held“: eigener Reiter „Held“ (Persönliche Daten + Hintergrundgeschichte), Notizen nur noch Notizen,
+//   Private Notizen, GM-Notizen. Titelblatt unverändert.
+let NOTES_CONCEPT = "d";
+const ALL_NOTES_TABS = NOTES_SECTIONS.map(({ id, label }) => [id, label]);
 const NOTES_SECTION_TABS = {
-  a: NOTES_SECTIONS.map(({ id, label }) => [id, label]),
-  b: [["biography", "Hintergrundgeschichte"], ["details", "Persönliche Daten"], ["notes", "Notizen"], ["gmnotes", "GM-Notizen"]],
-  c: [["hero", "Held"], ["notes", "Notizen"]],
+  d: ALL_NOTES_TABS.filter(([id]) => id !== "details"),
+  e: ALL_NOTES_TABS,
+  f: ALL_NOTES_TABS.filter(([id]) => id !== "details" && id !== "biography"),
 };
+const HERO_TAB = { id: "hero", label: "Held", icon: ICONS + "/categories/Weltliche.webp", title: "Held", hint: "" };
 const filledAppearance = () => APPEARANCE.filter((a) => String(a.v ?? "").trim());
 const notesSection = (id) => NOTES_SECTIONS.find((n) => n.id === id);
 
-function jumpToPersonalDetails() {
-  setTab("notes");
-  jumpToSection("notes", NOTES_CONCEPT === "c" ? "hero" : "details");
+// Konzept D: Steckbrief-Abschnitt auf dem Titelblatt (bearbeitbar wie unter Notizen).
+function coverProfileSection() {
+  const panel = renderNotesSection(notesSection("details"));
+  panel.querySelector(".panel-title").textContent = "Steckbrief";
+  return panel;
 }
 
-function renderNotesB() {
-  return el("div", {}, [
-    section("biography", renderNotesSection(notesSection("biography"))),
-    section("details", renderNotesSection(notesSection("details"))),
-    section("notes", el("div", { class: "notes-pair" }, [renderNotesSection(notesSection("notes")), renderNotesSection(notesSection("ownernotes"))])),
-    section("gmnotes", renderNotesSection(notesSection("gmnotes"))),
-  ]);
+// Konzept F: Reiter „Held“.
+function renderHero() {
+  return el("div", {}, ["details", "biography"].map((id) => section(id, renderNotesSection(notesSection(id)))));
 }
 
-function renderNotesC() {
-  const details = renderNotesSection(notesSection("details"));
-  const bio = renderNotesSection(notesSection("biography"));
-  // Ein Panel „Held“: Datenraster oben, Hintergrund darunter (dessen Titel als Unterüberschrift).
-  const hero = el("div", { class: "panel" }, [
-    el("div", { class: "panel-title" }, "Held"),
-    details.querySelector(".details-grid"),
-    el("div", { class: "subhead" }, "Hintergrundgeschichte"),
-    ...[...bio.children].slice(1),
-  ]);
-  const texts = ["notes", "ownernotes", "gmnotes"].map((id) => {
-    const panel = renderNotesSection(notesSection(id));
-    const label = panel.querySelector(".panel-title").textContent;
-    return el("div", { class: "notes-block" }, [el("div", { class: "subhead" }, label), ...[...panel.children].slice(1)]);
-  });
-  return el("div", {}, [
-    section("hero", hero),
-    section("notes", el("div", { class: "panel notes-text" }, [el("div", { class: "panel-title" }, "Notizen"), ...texts])),
-  ]);
-}
-
-// Konzept A: Steckbrief über den Favoriten.
-function coverProfilePanel() {
-  const fields = filledAppearance();
-  if (!fields.length) return null;
-  const title = el("button", { type: "button", class: "panel-title cover-profile-title", title: "Zu Notizen › Persönliche Daten" }, [el("span", {}, "Persönliche Daten"), el("span", { class: "cover-profile-go", "aria-hidden": "true" }, "→")]);
-  title.addEventListener("click", jumpToPersonalDetails);
-  return el("div", { class: "panel cover-profile" }, [
-    title,
-    el("dl", { class: "cover-profile-grid" }, fields.map((a) => el("div", { class: "cover-profile-field", title: `${a.k}: ${a.v}` }, [el("dt", {}, a.k), el("dd", {}, a.v)]))),
-  ]);
-}
-
-// Konzept B: Rückseite des Porträts (nur auf dem Titelblatt, das Porträt wandert sonst in die Kopfzeile).
-let PORTRAIT_FLIPPED = false;
-function syncPortraitBack() {
+// Konzept E: Karte neben dem Porträt (nur Titelblatt).
+function syncPortraitCard() {
   const portrait = document.getElementById("portrait");
-  portrait.querySelectorAll(".portrait-flip, .portrait-back").forEach((n) => n.remove());
-  const show = NOTES_CONCEPT === "b" && currentTab === "cover" && filledAppearance().length > 0;
-  portrait.classList.toggle("flipped", show && PORTRAIT_FLIPPED);
-  if (!show) return;
-  const label = PORTRAIT_FLIPPED ? "Porträt zeigen" : "Persönliche Daten zeigen";
-  const flip = el("button", { type: "button", class: "portrait-flip", title: label, "aria-label": label, "aria-pressed": String(PORTRAIT_FLIPPED) }, PORTRAIT_FLIPPED ? "↺" : "i");
-  flip.addEventListener("click", (e) => { e.stopPropagation(); PORTRAIT_FLIPPED = !PORTRAIT_FLIPPED; syncPortraitBack(); });
-  const more = el("button", { type: "button", class: "portrait-back-more" }, "Notizen →");
-  more.addEventListener("click", jumpToPersonalDetails);
-  const back = el("div", { class: "portrait-back", "aria-hidden": String(!PORTRAIT_FLIPPED) }, [
-    el("dl", {}, filledAppearance().map((a) => el("div", { title: `${a.k}: ${a.v}` }, [el("dt", {}, a.k), el("dd", {}, a.v)]))),
-    more,
-  ]);
-  portrait.append(back, flip);
+  document.querySelector(".portrait-card")?.remove();
+  const on = NOTES_CONCEPT === "e" && currentTab === "cover" && filledAppearance().length > 0;
+  portrait.classList.toggle("has-card", on);
+  if (on) portrait.tabIndex = 0; else portrait.removeAttribute("tabindex");
+  if (on) portrait.setAttribute("aria-label", "Porträt – Persönliche Daten anzeigen"); else portrait.removeAttribute("aria-label");
+  portrait.onmouseenter = portrait.onfocus = on ? showPortraitCard : null;
+  portrait.onmouseleave = portrait.onblur = on ? () => document.querySelector(".portrait-card")?.remove() : null;
 }
 
-// Konzept C: eine Zeile unter Spezies/Kultur/Profession, nur auf dem Titelblatt (CSS), alle Felder im Tooltip.
-const HEAD_FACT_KEYS = ["Alter", "Größe", "Gewicht", "Haarfarbe", "Augenfarbe", "Heimat"];
-function syncHeadFacts() {
-  document.getElementById("headFacts")?.remove();
-  if (NOTES_CONCEPT !== "c") return;
-  const facts = filledAppearance().filter((a) => HEAD_FACT_KEYS.includes(a.k));
-  if (!facts.length) return;
-  const line = el("button", { type: "button", class: "head-facts", id: "headFacts", title: filledAppearance().map((a) => `${a.k}: ${a.v}`).join("\n") },
-    facts.map((a) => el("span", {}, a.v)));
-  line.addEventListener("click", jumpToPersonalDetails);
-  document.getElementById("headBadges").after(line);
+function showPortraitCard() {
+  document.querySelector(".portrait-card")?.remove();
+  const portrait = document.getElementById("portrait");
+  const card = el("div", { class: "portrait-card", role: "tooltip" }, [
+    el("strong", {}, "Persönliche Daten"),
+    el("dl", {}, filledAppearance().map((a) => el("div", {}, [el("dt", {}, a.k), el("dd", {}, a.v)]))),
+  ]);
+  // Erst nach dem Gleiten (#1) messen, sonst sitzt die Karte über dem Porträt.
+  Promise.all(portrait.getAnimations().map((a) => a.finished.catch(() => {}))).then(() => {
+    const r = portrait.getBoundingClientRect();
+    Object.assign(card.style, { left: `${r.right + scrollX + 10}px`, top: `${r.top + scrollY}px` });
+    document.body.append(card);
+  });
 }
 
 function renderNotesSection(section) {
@@ -3196,7 +3176,7 @@ function leaveCoverSidebar() {
 }
 
 function renderCover() {
-  if (NOTES_CONCEPT === "a") return el("div", {}, [coverProfilePanel(), favoritesPanel()].filter(Boolean));
+  if (NOTES_CONCEPT === "d") return el("div", {}, [section("favorites", favoritesPanel()), section("profile", coverProfileSection())]);
   return favoritesPanel();
 }
 
@@ -3264,8 +3244,7 @@ function renderContent() {
   // Verlassen des Tabs holt leaveCoverSidebar() das Porträt zurück in die Kopfzeile.
   if (currentTab === "cover") renderCoverSidebar();
   else leaveCoverSidebar();
-  syncPortraitBack();
-  syncHeadFacts();
+  syncPortraitCard();
   restoreFocus();
 }
 
@@ -3410,15 +3389,27 @@ function initWindowMenu() {
 // Vergleichsschalter Issues #31/#27 (wird nach der Entscheidung wieder entfernt): Konzept Notizen + Titelblatt.
 function initNotesConceptToggle() {
   const wrap = document.getElementById("notesConceptSwitch");
-  wrap.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
-    NOTES_CONCEPT = b.dataset.variant;
+  const apply = () => {
     SECTION_TABS.notes = NOTES_SECTION_TABS[NOTES_CONCEPT];
     currentSection.notes = SECTION_TABS.notes[0][0];
-    PORTRAIT_FLIPPED = false;
+    if (NOTES_CONCEPT === "d") { SECTION_TABS.cover = [["favorites", "Favoriten"], ["profile", "Steckbrief"]]; currentSection.cover = "favorites"; } else delete SECTION_TABS.cover;
+    if (NOTES_CONCEPT === "f") { SECTION_TABS.hero = [["details", "Persönliche Daten"], ["biography", "Hintergrundgeschichte"]]; currentSection.hero = "details"; }
+    const heroIdx = TABS.findIndex((t) => t.id === "hero");
+    if (NOTES_CONCEPT === "f" && heroIdx < 0) TABS.splice(TABS.findIndex((t) => t.id === "notes"), 0, HERO_TAB);
+    if (NOTES_CONCEPT !== "f" && heroIdx >= 0) { TABS.splice(heroIdx, 1); if (currentTab === "hero") currentTab = "notes"; }
+    RENDERERS.hero = renderHero;
+  };
+  wrap.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
+    NOTES_CONCEPT = b.dataset.variant;
+    apply();
     wrap.querySelectorAll("button").forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", String(x === b)); });
+    renderRail();
     renderContent();
     renderSubNav();
   }));
+  apply();
+  renderSubNav();
+  renderContent();
 }
 
 function initOnlyLepToggle() {

@@ -251,7 +251,6 @@
       "woundCheck": {
         "Title": "Wound Assessment",
         "Summary": "With a hidden Treat Wounds check, a hero estimates how badly a target is hurt – the more QL, the more precise.",
-        "HudButton": "Assess the wounds of the targeted token",
         "NoTarget": "Please target a token first.",
         "NoViewer": "No character assigned and no token selected.",
         "NoSkill": "{name} does not know Treat Wounds.",
@@ -275,9 +274,9 @@
         },
         "Page": {
           "Intro": "How bad is it for the enemy – or for the companion who just went down? A hero with Treat Wounds can tell. How precisely depends on the quality level of the check.",
-          "Step1": "Target the token (key T or double right-click on the token).",
-          "Step2": "Right-click your own hero's token and choose the heart button (“Assess the wounds of the targeted token”) on the left of the token menu.",
-          "Step3": "Roll the Treat Wounds check. It is hidden: only the roller sees the result, the GM only learns that an assessment was made.",
+          "Step1": "Target the token (click it and press T).",
+          "Step2": "In the hero sheet (DSA5 Helpers), click “Wound Assessment” next to the skill Treat Wounds. Without a target, a hint appears.",
+          "Step3": "Choose modifiers in the usual check dialog and roll. The check is hidden: only the roller sees the result, the GM only learns that an assessment was made.",
           "Step4": "The assessment appears as a whisper in the chat.",
           "TableTitle": "Result by quality level",
           "QS": "QL",
@@ -289,11 +288,15 @@
           "QS4": "condition and LP range in steps of five (e.g. 15–20)",
           "QS5": "condition and approximate LP",
           "Conditions": "Conditions by remaining LP: unhurt (full LP) · lightly wounded (above 75 %) · clearly wounded (up to 75 %) · badly wounded (up to 50 %) · critically wounded (up to 25 %) · incapacitated (0 LP or less).",
-          "Note1": "The hero remembers the assessment. Only when the target's LP have changed by at least a quarter of its maximum LP can the hero assess again; until then the button shows the previous assessment.",
+          "Note1": "The hero remembers the assessment. Only when the target's LP have changed by at least a quarter of its maximum LP can the hero assess again; until then a message shows the previous assessment.",
           "Note2": "With the module “Token Note Hover”, the assessment also appears when hovering over the token – or the note “not examined” or “assessment outdated”.",
           "Note3": "Effects placed on the skill itself do not count for this check."
-        }
-      }
+        },
+        "PickTarget": "Please target a token first (click the token and press T), then click again.",
+        "HintTooltip": "House rule Wound Assessment: target a token, then click – a Treat Wounds check estimates how badly the target is hurt."
+      },
+      "Contents": "Contents",
+      "KeysHint": "Turn pages with ← → too"
     }
   }
 }
