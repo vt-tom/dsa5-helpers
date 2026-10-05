@@ -13,14 +13,19 @@ Zuerst als Beta (Pre-release, Beta-Kanal), am selben Tag zum normalen Release er
 
 ## Nächste Version (0.5.0)
 
-Noch kein Branch. Für neue Arbeit `release/0.5.0` von `main` anlegen.
+Branch `release/0.5.0` (angelegt 2026-10-05). Reihenfolge (Nutzer, 2026-10-05): erst #7, danach die übrigen Issues für 0.5.0 auswählen.
 
-**#7 CSS aufräumen** auf 0.5.0 verschoben (Nutzer-Entscheidung 2026-10-02, Meilenstein gesetzt) — vorher mit `feature/mobile` abstimmen, dort wird dieselbe CSS-Datei stark umgebaut.
+**#7 CSS aufräumen** (Meilenstein 0.5.0). Abstimmung mit `feature/mobile` erledigt (2026-10-05): dort gibt es bisher nur die Planung, am CSS wurde nichts geändert. #7 kommt vor dem Mobil-CSS (MOBILE.md, E12). Umfang (Nutzer-Entscheidung 2026-10-05):
+- `styles/dsa5-helpers-character-sheet.css` bleibt **eine Datei**, wird aber fest gegliedert: Tokens → Rahmen/Fenster → Rail → Kopf → gemeinsame Bausteine → je Reiter (in Rail-Reihenfolge) → Dunkles Thema/Zustände → Responsive. Nachgeschobene Abschnitte („continued…“, „UI/UX-Review Paket A/B/D“, „Paket G“) kommen zu ihrem Reiter oder Baustein. Wo die Reihenfolge das Verhalten bestimmt, bleibt sie erhalten (Spezifität vorher prüfen).
+- **Mobil-Vorbereitung, ohne sichtbare Änderung am Desktop:** zentrale Variablen für Trefferflächen und Schriftgrößen (mobil später nur umstellen), alle `:hover`-Regeln in `@media (hover: hover)`.
+- `clickdummy/style.css` im selben Zug genauso gliedern.
+- Danach gründlicher Live-Test aller Reiter in Foundry (Hell/Dunkel, schmales Fenster).
 
-Kandidaten, noch ohne Meilenstein:
+Kandidaten, noch ohne Meilenstein (nach #7 auswählen):
 - **#1 Animation zwischen Titelblatt und den anderen Seiten** (von @Lyynix, ohne Beschreibung) — klären, was gemeint ist.
 - **#27 Persönliche Daten auf dem Titelblatt** — nur, wenn bis dahin eine passende Lösung gefunden ist.
 - **HUD des Moduls** (siehe Backlog) — würde zum Einstieg der Würfelstatistik passen, ist aber eigenständig zu planen.
+- **#30 Favoriten für Ausrüstung und Sonderfertigkeiten**, **#31 Konzept Aufteilung Notizen** (beide offen, ohne Meilenstein).
 
 ## Live in Foundry prüfen (0.4.0, veröffentlicht)
 
@@ -45,7 +50,7 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-02 14:55 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-05 04:56 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
@@ -116,6 +121,4 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-02 14:55 UTC) — ni
   - erledigt · Bearbeiter: niemand · von @vt-tom · 1 Kommentar · geschlossen 2026-09-30
 - **[#6](https://github.com/vt-tom/dsa5-helpers/issues/6) Kampf Tab: Alternatives Layout**
   - erledigt · Bearbeiter: niemand · von @vt-tom · 1 Kommentar · geschlossen 2026-09-30
-- **[#2](https://github.com/vt-tom/dsa5-helpers/issues/2) bug: Größenveränderung bei Hover führt zu Neuanordnung der Elemente**
-  - erledigt · Bearbeiter: niemand · von @Lyynix · 1 Kommentar · geschlossen 2026-09-19
 <!-- GITHUB-ISSUES:END -->
