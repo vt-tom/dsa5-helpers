@@ -14,6 +14,7 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 ### Geändert
 
+- Titelblatt: Die Leiste links ist neu aufgeteilt. LeP, AsP und KaP sind flacher, Schicksalspunkte und Regeneration stehen in einer Zeile. Darunter liegt ein Kasten mit zwei Reitern: „Statuseffekte“ zeigt jetzt alle Zustände (statt höchstens vier), „Persönliche Daten“ die ausgefüllten Angaben aus den Notizen, mit einem Sprung zum Bearbeiten ([#27](https://github.com/vt-tom/dsa5-helpers/issues/27), [#31](https://github.com/vt-tom/dsa5-helpers/issues/31)).
 - Waffen-Favoriten erscheinen auf dem Titelblatt jetzt auch, wenn die Waffe gerade nicht in der Hand ist.
 
 - Auf Touch-Geräten (Tablet, Touch-Laptop im Tabletmodus) bleiben Hover-Effekte wie der Würfel-Zoom nach dem Antippen nicht mehr hängen. Am Desktop sieht der Bogen unverändert aus; die Stildatei wurde dafür neu gegliedert ([#7](https://github.com/vt-tom/dsa5-helpers/issues/7)).

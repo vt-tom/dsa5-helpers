@@ -606,3 +606,19 @@ test('Wundeinschätzung im Bogen: Hinweis am Talent Heilkunde Wunden nur bei akt
  await handler.call(sheet,{},target);assert.equal(setup?.s,skill,'normaler Probendialog des Systems');assert.equal(setup.o.messageMode,'self');
  assert(!read('scripts/house-rules/wound-check.js').includes('renderTokenHUD'),'kein Knopf mehr im Token-HUD');
 });
+test('Titelblatt-Leiste Variante G (#27/#31): Reiter Zustände | Persönliche Daten, alle Zustände, nur ausgefüllte Daten, Regeneration neben den Schips',async()=>{
+ await loadSheet();global.game={i18n:{localize},settings:{get:()=> 'light'},user:{targets:{first:()=>undefined}}};
+ const {sheet,actor}=await prepare();actor.system.details.gender={value:'Weiblich'};actor.system.details.Home={value:'  '};actor.system.details.haircolor={value:'Silberblond'};
+ sheet.context.conditions=Array.from({length:6},(_,i)=>({_id:'c'+i,name:'CONDITION.inpain',value:1,img:'x.svg',editable:4,manual:1}));
+ const context=await sheet._prepareContext({});assert.deepEqual(context.dsa5h.personalDetails.map(f=>f.value),['Weiblich','Silberblond']);
+ const html=render(context);const aside=elements(html,el=>el.name==='aside')[0];
+ assert.deepEqual(dom.findAll(el=>el.attribs?.role==='tab',aside.children).map(t=>t.attribs['data-side-tab']),['conditions','details']);
+ assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-cover-condition'),aside.children).length,6,'alle Zustände, der Inhalt scrollt');
+ assert.equal(dom.findAll(el=>el.name==='dd',aside.children).length,2);assert(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hOpenDetails',aside.children).length===1);
+ assert(dom.findAll(el=>el.attribs?.['data-cover-slot']==='regen',aside.children).length===1,'Platz für die Regeneration in der Schips-Zeile');
+ assert(elements(html,el=>el.attribs?.['data-cover-move']==='regen'&&el.attribs['data-action']==='chRegenerate').length===1);
+ assert(elements(html,el=>el.attribs?.['data-header-slot']==='regen').length===1,'Rückweg in den Kopf');
+ Sheet.DEFAULT_OPTIONS.actions.dsa5hCoverSideTab.call(sheet,{},{dataset:{sideTab:'details'}});assert.equal(sheet._coverSideTab,'details');
+ Sheet.DEFAULT_OPTIONS.actions.dsa5hCoverSideTab.call(sheet,{},{dataset:{sideTab:'x'}});assert.equal(sheet._coverSideTab,'conditions');
+ for(const k of ['NoConditions','ConditionsToStatus','NoPersonalDetails','EditInNotes'])assert(lookup(own,'DSA5HELPERS.'+k),k);
+});

@@ -20,24 +20,18 @@ Branch `release/0.5.0` (angelegt 2026-10-05). Reihenfolge (Nutzer, 2026-10-05): 
 Für 0.5.0 ausgewählt (Nutzer, 2026-10-05; Meilenstein 0.5.0, Bearbeiter vt-tom): #30, #31, #1, #27. Reihenfolge: #30 → #1 → #31 + #27 zusammen (beide betreffen „Persönliche Daten“).
 
 - **#30** und **#1** umgesetzt und live bestätigt (2026-10-05). Issues erst schließen, wenn der Nutzer den Release freigibt (Nutzer 2026-10-05).
-- **Hausregelbuch** (Nutzerwunsch 2026-10-05, kein Issue): in Modul und Click-Dummy umgesetzt, nach Rückmeldung überarbeitet (Buch mit Inhaltsverzeichnis, Blätterpfeile neben der Seite, Pfeiltasten, Umblätter-Animation, Aktiv/Nicht aktiv oben rechts im Seitenkopf; Wundeinschätzung jetzt über den Hinweis am Talent Heilkunde Wunden statt Token-Menü). Live zu prüfen (siehe unten).
-- **#31 Konzept Aufteilung Notizen** + **#27 Persönliche Daten auf dem Titelblatt** — zweite Runde im Click-Dummy (2026-10-05), **Entscheidung offen**. Erste Runde verworfen (A Steckbrief-Kasten: zu viel Platz; B Porträt-Rückseite; C Zeile im Kopf). Umschalter „Notizen: D | E | F | G“:
-  - **D Unterreiter:** Titelblatt bekommt Unterreiter wie die anderen Reiter („Favoriten | Steckbrief“), der Steckbrief steht als Abschnitt unter den Favoriten (Sprungmarke, im Bearbeiten-Modus editierbar). Notizen: Hintergrundgeschichte | Notizen | Private Notizen | GM-Notizen.
-  - **E Hover-Karte:** Darüberfahren oder Tastaturfokus auf das Porträt im Titelblatt zeigt die Daten als Karte daneben. Notizen unverändert.
-  - **F Reiter Held:** eigener Reiter „Held“ vor Notizen (Persönliche Daten + Hintergrundgeschichte), Notizen nur noch Notizen | Private Notizen | GM-Notizen. Titelblatt unverändert (#27 dann nicht umgesetzt).
-  - **G Leiste mit Reitern** (Nutzerwunsch 2026-10-05, Reiter-Idee aus der ersten Umsetzung vom 2026-10-01 neu aufgegriffen): Titelblatt-Leiste mit flacheren LeP/AsP/KaP-Leisten (24 statt 34 px), Schips und Regeneration in einer Zeile, darunter ein Kasten mit zwei Reitern „Zustände | Persönliche Daten“, der den Rest der Leiste füllt (aktive Effekte als Zeile unter den Zuständen; Daten nur lesend, „Bearbeiten → Notizen“). Leiste scrollt bei Standardgröße nicht. Notizen unverändert.
-  - Kombinierbar, z. B. E + F oder G + F.
+- **Hausregelbuch** (Nutzerwunsch 2026-10-05, kein Issue): in Modul und Click-Dummy umgesetzt, nach Rückmeldung überarbeitet (Buch mit Inhaltsverzeichnis, Blätterpfeile neben der Seite, Pfeiltasten, Umblätter-Animation, Aktiv/Nicht aktiv oben rechts im Seitenkopf; Wundeinschätzung über den Hinweis am Talent Heilkunde Wunden und das Herz bei den Favoriten — live bestätigt 2026-10-05). Buch-Überarbeitung live zu prüfen (siehe unten).
+- **#31 + #27** umgesetzt als Variante G „Leiste mit Reitern“ (Nutzer-Entscheidung 2026-10-05) in Modul und Click-Dummy, live zu prüfen (siehe unten). Notizen-Reiter bleibt unverändert (fünf Unterreiter, dort werden die Daten bearbeitet). Issues erst bei Release-Freigabe schließen.
 
 ## Live in Foundry prüfen (0.5.0, release/0.5.0)
 
 - **Hausregelbuch:** Moduleinstellungen → „Hausregelbuch öffnen“ (auch als Spieler). Liste ↔ Buch, „Im Buch lesen“ springt auf die Regelseite; Buch beginnt mit dem Inhaltsverzeichnis, Blättern über die Pfeile neben der Seite, das Inhaltsverzeichnis und ← → (Fokus im Fenster), Umblätter-Animation (aus bei „Bewegung reduzieren“). Schalter nur als SL (Liste und oben rechts im Seitenkopf), Spieler sehen „Aktiv/Nicht aktiv“; offenes Fenster bei Spielern aktualisiert sich beim Umschalten. Hell/Dunkel, Font-Awesome-Symbole.
-- **Wundeinschätzung** (Regel aktiv): Reiter Talente → bei Heilkunde Wunden der Hinweis „♥ Wundeinschätzung“ (nur bei aktiver Regel; offene Bögen zeichnen sich beim Umschalten im Buch neu). Ohne markiertes Ziel → Tooltip am Knopf. Mit Ziel → normaler Probendialog, Probe verdeckt (nur Würfelnder), Ergebnis-Flüstern beim Spieler ohne „An: …“, SL bekommt nur den Hinweis (bei Spielern unsichtbar). Zweiter Versuch ohne LeP-Änderung → Meldung mit bisheriger Einschätzung; nach ≥ ¼ max LeP Änderung wieder möglich. Optional mit „Token Note Hover“ die Hover-Anzeige. Hinweis an Knigge: World Script + Makro abschalten (Flags jetzt unter `dsa5-helpers`).
-- **Wundeinschätzung bei den Favoriten:** Ist Heilkunde Wunden ein Favorit und die Regel aktiv, steht auf dem Titelblatt neben dem Namen ein Herz-Knopf mit demselben Ablauf (Tooltip ohne Ziel, sonst Probendialog).
+- **Titelblatt-Leiste Variante G (#27/#31):** LeP/AsP/KaP flacher (24 px, Eingabe im Spielmodus und Bearbeiten-Modus lesbar), Schips links + Regeneration-Mond rechts in einer Zeile (Mond wandert beim Reiterwechsel zurück in den Kopf, Gleiten #1 ok?). Darunter Kasten „Statuseffekte | Persönliche Daten“: füllt den Rest der Leiste, Reiterwechsel ohne Flackern, bleibt nach Würfeln/Neurendern auf dem gewählten Reiter; Statuseffekte zeigen alle Zustände (scrollt bei vielen), +/− funktionieren, „Alle Zustände und Effekte → Status“; Persönliche Daten nur ausgefüllte Felder, lange Werte mit „…“ + Tooltip, „Bearbeiten → Notizen“ springt zu Notizen › Persönliche Daten. Leiste scrollt bei Standardgröße nicht; schmales Fenster (Leiste über dem Kopf, Kasten max. 220 px); Hell/Dunkel; Beobachter können die Reiter umschalten.
 - **#7 Touch:** Antippen auf einem Touch-Gerät lässt keinen Hover-Zoom stehen — derzeit kein Gerät zum Testen (passt zu `feature/mobile`).
 
 ## Offene Entscheidungen
 
-- **#27/#31:** siehe oben unter 0.5.0 (D/E/F/G im Click-Dummy).
+- Derzeit keine.
 
 ## Features / Backlog
 

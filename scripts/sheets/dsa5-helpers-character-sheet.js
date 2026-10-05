@@ -29,6 +29,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hOpenCast: this._openCastDialog,
       dsa5hCloseCast: this._closeCastDialog,
       dsa5hJumpCombatSkill: this._jumpToCombatSkill,
+      dsa5hCoverSideTab: this._setCoverSideTab,
+      dsa5hOpenDetails: this._openPersonalDetails,
     },
     // DSA5's own roll/damage actions (attribute dice, combat rolls, advances, item toggles, …) live in
     // ownerRollActions/ownerActions, not the plain `actions` table above — a separate permission-gated dispatch
@@ -110,6 +112,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { id: PLANNER_TAB_ID, label: "Steigerungsplaner", icon: "systems/dsa5/icons/categories/Career.webp", hint: "" },
     ];
   _currentTab = 'cover';
+  // Reiter im Kasten der Titelblatt-Leiste: 'conditions' | 'details' (Variante G, Issues #27/#31).
+  _coverSideTab = 'conditions';
   _subtabs = { skills: 'body', combat: 'body', magic: 'spells', religion: 'spells', notes: 'details' };
   _search = { talent: '', gear: '', combatskill: '' };
   _favoritePending = false;
@@ -126,7 +130,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   _toggleDisabled(disabled) {
     super._toggleDisabled(disabled);
     // Observers may still navigate tabs even when Foundry disables document edits.
-    this.element?.querySelectorAll('[data-action^="dsa5hSet"], [data-action="dsa5hTheme"], [data-action="dsa5hOnlyLearned"], [data-action="dsa5hClearTalentSearch"], [data-action="dsa5hJumpCombatSkill"]')
+    this.element?.querySelectorAll('[data-action^="dsa5hSet"], [data-action="dsa5hTheme"], [data-action="dsa5hOnlyLearned"], [data-action="dsa5hClearTalentSearch"], [data-action="dsa5hJumpCombatSkill"], [data-action="dsa5hCoverSideTab"], [data-action="dsa5hOpenDetails"]')
       .forEach(button => { button.disabled = false; });
   }
 
@@ -298,10 +302,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Grundwerte (Eigenschaften-Reiter): Initiative abgerundet wie oben und im Systembogen.
       initiative: Math.floor(status.initiative?.value ?? 0),
       regenerations: ['wounds', 'astralenergy', 'karmaenergy'].filter(id => this.actor.system.repeatingEffects?.startOfRound?.[id]?.length).map(id => ({ id, active: !this.actor.system.repeatingEffects.disabled?.[id] })),
-      // Cover tab's compact conditions panel (click-dummy buildConditionsPanel(4)): caps the list so the sidebar
-      // never needs to scroll, with a jump button to the full Status tab for the rest.
-      coverConditions: (context.conditions ?? []).slice(0, 4),
-      coverConditionsMore: Math.max(0, (context.conditions ?? []).length - 4),
+      // Reiter „Persönliche Daten“ in der Titelblatt-Leiste (Variante G, Issues #27/#31): nur ausgefüllte Felder,
+      // dieselben Felder und Beschriftungen wie unter Notizen › Persönliche Daten (notes.hbs).
+      personalDetails: [['Gender', 'gender'], ['Family', 'family'], ['Age', 'age'], ['Height', 'height'], ['Weight', 'weight'], ['Home', 'Home'], ['Socialstate', 'socialstate'], ['Hair_color', 'haircolor'], ['Eye_color', 'eyecolor'], ['Distinguishing_mark', 'distinguishingmark']]
+        .map(([label, key]) => ({ label: localize(label), value: String(this.actor.system.details?.[key]?.value ?? '').trim() }))
+        .filter(field => field.value).map(field => ({ ...field, value: localize(field.value) })),
       happyTalentsExpanded: this._happyTalentsExpanded,
       // Hausregel Wundeinschätzung: Hinweis am Talent Heilkunde Wunden, nur wenn die SL die Regel eingeschaltet hat.
       woundCheckSkill: !limited && isRuleActive('woundCheck') ? findTreatWounds(this.actor)?.id ?? null : null,
@@ -762,6 +767,19 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     }
   }
 
+  static _setCoverSideTab(_event, target) {
+    this._coverSideTab = target.dataset.sideTab === 'details' ? 'details' : 'conditions';
+    this._applyCurrentTab();
+  }
+
+  // „Bearbeiten → Notizen“ im Reiter Persönliche Daten der Titelblatt-Leiste: zum Abschnitt Persönliche Daten springen.
+  static _openPersonalDetails(event) {
+    this.constructor._setTab.call(this, event, { dataset: { tab: 'notes' } });
+    this._subtabs.notes = 'details';
+    this._applyCurrentTab();
+    this._jumpTo('notes', 'details');
+  }
+
   static _setSubTab(_event, target) {
     const tab = target.dataset.parentTab;
     const id = target.dataset.subtab;
@@ -895,6 +913,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     }
     const happyField = root.querySelector('[data-happy-talents-field]');
     if (happyField) happyField.hidden = !happyExpanded;
+    root.querySelectorAll('[data-side-tab]').forEach(el => el.setAttribute('aria-selected', String(el.dataset.sideTab === this._coverSideTab)));
+    root.querySelectorAll('[data-side-panel]').forEach(el => { el.hidden = el.dataset.sidePanel !== this._coverSideTab; });
     root.querySelector('[data-attr-overlay]')?.toggleAttribute('hidden', this._currentTab === 'main');
     // Move the same controls, so the overview never duplicates named form fields.
     root.querySelectorAll('[data-cover-move]').forEach(el => {

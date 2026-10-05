@@ -297,6 +297,10 @@
       },
       "Contents": "Contents",
       "KeysHint": "Turn pages with ← → too"
-    }
+    },
+    "NoConditions": "No conditions.",
+    "ConditionsToStatus": "All conditions and effects → Status",
+    "NoPersonalDetails": "No personal details yet.",
+    "EditInNotes": "Edit → Notes"
   }
 }
