@@ -1343,11 +1343,23 @@ function handSlot(hand) {
     swap = el("button", { type: "button", class: "hand-swap-btn", title: `Waffe nach ${target} verschieben`, "aria-label": `Beidhändige Waffe nach ${target} verschieben` }, [el("span", { "aria-hidden": "true" }, "⇄"), ` nach ${target}`]);
     swap.addEventListener("click", () => { TWO_HANDED_SIDE = TWO_HANDED_SIDE === "left" ? "right" : "left"; renderContent(); });
   }
+  // Griffwechsel ein-/beidhändig (Rückmeldung 2026-10-05), in beiden Modi; nur Nahkampf, nicht Dolche/Fechtwaffen
+  // (wie das System). Beidhändig belegt die Haupthand und macht die Nebenhand frei. Modul: dsa5hSwapGrip in body-hand.hbs.
+  let grip = null;
+  if (w && MELEE.includes(w) && !["Dolche", "Fechtwaffen"].includes(w.group)) {
+    const toTwo = !w.worn.requiresBothHands;
+    grip = el("button", { type: "button", class: "hand-swap-btn" }, toTwo ? "Beidhändig führen" : "Einhändig führen");
+    grip.addEventListener("click", () => {
+      w.worn.requiresBothHands = toTwo;
+      if (toTwo) { HANDS.main = w; HANDS.off = null; }
+      renderContent();
+    });
+  }
   return el("div", { class: "hand-slot" }, [
     el("small", { class: "figure-col-title" }, isMain ? (w && w.worn.requiresBothHands ? "Beide Hände" : "Haupthand") : "Nebenhand"),
     el("span", { class: "body-item-name" }, w ? w.name : "—"),
     w ? combatSkillLink(w.group) : null,
-    el("div", { class: "hand-slot-body" }, [tile, el("div", { class: "hand-slot-side" }, [tp, select, swap])]),
+    el("div", { class: "hand-slot-body" }, [tile, el("div", { class: "hand-slot-side" }, [tp, select, grip, swap])]),
   ]);
 }
 
