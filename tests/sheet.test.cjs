@@ -56,8 +56,8 @@ function fixture() {
 let Sheet;
 // data:-URLs, weil die Modul-.js hier sonst als CommonJS gälten; der eine relative Import wird mit ersetzt.
 const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
-// Hausregeln: rules.js importiert wound-check.js relativ — beides als data:-URL.
-function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))));}
+// Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
+function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))));}
 async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
@@ -553,8 +553,8 @@ test('Würfelstatistik (#28): Tage älter als 12 Monate werden zusammengefasst, 
  assert.deepEqual(s.sumCounts(st).d[6],[2,3,4,5,0,1]);
 });
 // Hausregelbuch (2026-10-05): relative Importe werden wie bei loadSheet() durch data:-URLs ersetzt.
-const houseRuleModules=async()=>{const wound=dataUrl(read('scripts/house-rules/wound-check.js'));const rules=dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(wound)));const app=dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(rules)));return {wound:await import(wound),rules:await import(rules),app:await import(app)};};
-for(const p of ['templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs'])H.registerPartial('modules/dsa5-helpers/'+p,read(p));
+const houseRuleModules=async()=>{const wound=dataUrl(read('scripts/house-rules/wound-check.js'));const help=dataUrl(read('scripts/house-rules/help-action.js'));const rules=houseRulesUrl();const app=dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(rules)));return {wound:await import(wound),help:await import(help),rules:await import(rules),app:await import(app)};};
+for(const p of ['templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs','templates/house-rules/help-action.hbs'])H.registerPartial('modules/dsa5-helpers/'+p,read(p));
 test('Hausregel Wundeinschätzung: QS-Staffel und Veralten wie in Knigges World Script',async()=>{
  const {wound}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;const w=(qs,cur,max=40)=>wound.woundText(qs,cur,max,t);
  assert.equal(w(0,10),'Text.none');assert.equal(w(1,40),'Text.unhurt');assert.equal(w(1,39),'Text.hurt');
@@ -570,11 +570,12 @@ test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, 
  global.game={i18n:{localize},settings:{get:(_m,k)=>settings[k],async set(_m,k,v){settings[k]=v;}},get user(){return {isGM};}};
  global.foundry={applications:{api:{ApplicationV2:class{async _prepareContext(){return {};}_onRender(){}render(){this.rendered=(this.rendered??0)+1;}},HandlebarsApplicationMixin:B=>B},instances:new Map()}};
  const {rules,app}=await houseRuleModules();const App=app.getHouseRulesApp();const tpl=H.compile(read('templates/house-rules.hbs'));
- assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge']]);
+ assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','']]);
  const sheet=new App();missing.clear();let html=tpl(await sheet._prepareContext({}));
- assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,1);
- assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,1);
- assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,1);
+ assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,2);
+ assert.equal((html.match(/Idee: Knigge/g)??[]).length,1,'Urheber nur, wo einer angegeben ist');
+ assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,2);
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,2);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true});assert(rules.isRuleActive('woundCheck'));
  App.DEFAULT_OPTIONS.actions.setView.call(sheet,{},{dataset:{view:'book'}});html=tpl(await sheet._prepareContext({}));
  assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-toc')).length,1,'Buch beginnt mit dem Inhaltsverzeichnis');
@@ -583,7 +584,7 @@ test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, 
  App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'1'}});html=tpl(await sheet._prepareContext({}));
  const top=elements(html,el=>el.attribs?.class==='dsa5h-hr-page-top')[0];assert(top&&dom.findAll(el=>el.attribs?.role==='switch',top.children).length===1,'Schalter oben rechts im Seitenkopf');
  assert(html.includes('Knigge'),'Urheber auf der Buchseite');assert.equal(elements(html,el=>el.name==='tr').length,7,'Kopf + 6 QS-Zeilen');
- assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 2'));
+ assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 3'));
  isGM=false;html=tpl(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.role==='switch').length,0);assert.equal(elements(html,el=>el.attribs?.class==='dsa5h-hr-state active').length,1);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true},'Spieler schalten nichts um');
  assert.deepEqual([...missing].filter(k=>k.startsWith('DSA5HELPERS')),[]);
@@ -621,4 +622,24 @@ test('Titelblatt-Leiste Variante G (#27/#31): Reiter Zustände | Persönliche Da
  Sheet.DEFAULT_OPTIONS.actions.dsa5hCoverSideTab.call(sheet,{},{dataset:{sideTab:'details'}});assert.equal(sheet._coverSideTab,'details');
  Sheet.DEFAULT_OPTIONS.actions.dsa5hCoverSideTab.call(sheet,{},{dataset:{sideTab:'x'}});assert.equal(sheet._coverSideTab,'conditions');
  for(const k of ['NoConditions','ConditionsToStatus','NoPersonalDetails','EditInNotes'])assert(lookup(own,'DSA5HELPERS.'+k),k);
+});
+test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel, Talentwahl, Probe über das System, QS-Hinweis im Chat',async()=>{
+ const {help}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;
+ assert.equal(help.helpMessage({helper:'Alrik',skill:'Einschüchtern',target:'Gerion',qs:2},t),'<strong>Title</strong><br>Chat.Success:Alrik,Einschüchtern,Chat.Target:Gerion,2<br><small>Chat.Manual</small>');
+ assert.equal(help.helpMessage({helper:'Alrik',skill:'Einschüchtern',target:null,qs:0},t),'<strong>Title</strong><br>Chat.Failure:Alrik,Einschüchtern');
+ const {sheet,actor}=await prepare();let active=false,chat=null,setup=null,dialog=null;
+ const skill=actor.items.get('skill');skill.system.group={value:'social'};const other=item('other','skill');other.name='Klettern';other.system.group={value:'body'};actor.items.set('other',other);
+ global.game={i18n:{localize,format:(k,d)=>localize(k).replace(/\{(\w+)\}/g,(m,x)=>d[x]??m),lang:'de'},settings:{get:(_m,k)=>k==='houseRules'?{helpAction:active}:'light'},user:{targets:{first:()=>({name:'Gerion'})}}};
+ assert.deepEqual(help.skillOptions(actor).map(g=>[g.group,g.items.map(i=>i.id)]),[['body',['other']],['social',['skill']]],'Gruppen in Systemreihenfolge');
+ const btn=html=>elements(html,el=>el.attribs?.['data-action']==='dsa5hHelpAction');
+ assert.equal(btn(render(await sheet._prepareContext({}))).length,0,'Regel aus: kein Knopf');
+ active=true;const html=render(await sheet._prepareContext({}));assert.equal(btn(html).length,1);
+ let p=btn(html)[0];while(p&&!p.attribs?.['data-sub-panel'])p=p.parent;assert.equal(p?.attribs['data-sub-panel'],'combat:body','im Kampf-Reiter');
+ global.foundry={utils:{escapeHTML:x=>String(x)},applications:{api:{DialogV2:{prompt:async o=>{dialog=o;return 'skill';}}}}};
+ global.ChatMessage={getSpeaker:()=>({alias:'x'}),create:async m=>{chat=m;}};global.ui={notifications:{warn(){}}};
+ actor.setupSkill=async(s,o)=>{setup={s,o};return {testData:{},cardOptions:{}};};actor.basicTest=async()=>({result:{successLevel:1,qualityStep:3}});actor.name='Alrik';
+ await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hHelpAction.call(sheet,{},{});
+ assert(dialog.content.includes('<optgroup')&&dialog.content.includes('Gerion'),'Talentauswahl nach Gruppen, markiertes Ziel genannt');
+ assert.equal(setup.s,skill,'Probe über den Probendialog des Systems');assert(chat.content.includes('3')&&chat.content.includes('Gerion'),'QS und Ziel im Chat');
+ assert(!chat.whisper,'öffentlich, damit der Unterstützte es sieht');
 });

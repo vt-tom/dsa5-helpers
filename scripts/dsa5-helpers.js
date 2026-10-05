@@ -51,6 +51,7 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/house-rules.hbs",
   "modules/dsa5-helpers/templates/house-rules/toggle.hbs",
   "modules/dsa5-helpers/templates/house-rules/wound-check.hbs",
+  "modules/dsa5-helpers/templates/house-rules/help-action.hbs",
   "modules/dsa5-helpers/templates/actors/dsa5-helpers-character-sheet.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body-hand.hbs",

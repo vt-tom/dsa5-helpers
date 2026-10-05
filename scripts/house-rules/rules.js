@@ -1,15 +1,18 @@
 // Hausregelbuch (2026-10-05): optionale Hausregeln, die die SL für die ganze Welt einschaltet. Jede Regel hat einen
-// Eintrag hier (Symbol, Urheber, Seite im Buch) und Texte unter DSA5HELPERS.HouseRules.<id>.* in lang/*.json.
+// Eintrag hier (Symbol, Urheber — optional, Seite im Buch) und Texte unter DSA5HELPERS.HouseRules.<id>.* in lang/*.json.
 // Fenster: scripts/apps/house-rules.js (Ansichten Liste und Buch).
 import { initWoundCheck, woundCheck, findTreatWounds } from './wound-check.js';
+import { helpAction } from './help-action.js';
 
-export { woundCheck, findTreatWounds };
+export { woundCheck, findTreatWounds, helpAction };
 
 const MODULE_ID = 'dsa5-helpers';
 export const SETTING = 'houseRules';
 
 export const HOUSE_RULES = [
   { id: 'woundCheck', icon: 'fas fa-heart-pulse', credit: 'Knigge', page: `modules/${MODULE_ID}/templates/house-rules/wound-check.hbs` },
+  // Ohne Urheber-Angabe: Idee aus dem Projekt selbst (credit leer → keine „Idee:“-Zeile).
+  { id: 'helpAction', icon: 'fas fa-handshake-angle', credit: '', page: `modules/${MODULE_ID}/templates/house-rules/help-action.hbs` },
 ];
 
 /** Aktive Regeln der Welt als { id: true }. */

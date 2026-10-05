@@ -2954,6 +2954,24 @@ button.fav-chip-roll {
   object-fit: cover;
 }
 
+/* Hausregel Helfen: Knopf in den Kampf-Schnellaktionen (helpActionButton()) und Talentwahl im Dialog. */
+.actions-row .house-quick {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.help-action-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 12px;
+}
+
+.help-action-field select {
+  flex: 1;
+  font: inherit;
+}
+
 /* Hinweis auf die Hausregel Wundeinschätzung am Talent Heilkunde Wunden (house-rules.js, nur bei aktiver Regel). */
 .house-hint {
   margin-left: 8px;
