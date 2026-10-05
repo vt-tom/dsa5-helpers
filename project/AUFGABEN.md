@@ -11,13 +11,13 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 Erst als Beta (Pre-release), nach Live-Prüfung am selben Tag zum normalen Release erklärt, `release/0.5.0` nach `main` gemergt, Issues #1, #27, #30, #31 geschlossen. Enthalten: #7 CSS aufräumen, #30 Favoriten Ausrüstung/SF, #1 Gleiten beim Reiterwechsel, #27/#31 Titelblatt-Leiste mit Reitern, Hausregelbuch mit Wundeinschätzung (Knigge) und Helfen, Fokus-Fix bei Eingaben. Release v0.5.0 am selben Tag auf Nutzerwunsch ersetzt (Tag neu gesetzt), um den Urheber „VTTom“ bei „Helfen“ aufzunehmen — wer die erste Fassung schon installiert hatte, bekommt kein Update angeboten.
 
-## Nächste Version
+## Nächste Version: 0.5.1 (Branch `release/0.5.1`)
 
-Noch nicht geplant. Neue Arbeit auf einem Branch `release/<version>` (siehe PROJEKTDOKU.md).
+Angelegt 2026-10-05 (Wunsch VTTom). Enthalten bisher: Bogen-Umschalter mit Vorschau. `module.json` steht noch auf 0.5.0, hochgezählt wird beim Release (RELEASE.md).
 
 ## Live in Foundry prüfen
 
-- **Bogen-Umschalter** (Branch `feature/sheet-switcher`, noch keiner Version zugeordnet): Knopf ⇄ in der Titelleiste von Helfer- und Systembogen, Menü-Einträge (Systemstandard, Helfer-Heldenbogen, ggf. weitere), Wechsel als Spieler, neuer Bogen an derselben Stelle, Menü-Position an der Plakette. Vorschau beim Darüberfahren: Wartezeit beim Aufbau, kein Aufblitzen beim Wechsel, keine liegengebliebenen unsichtbaren Fenster (z. B. `foundry.applications.instances` nach dem Schließen des Menüs), keine ungewollten Akteur-Updates durch die Vorschau-Instanzen.
+- **Bogen-Umschalter** (0.5.1): Knopf ⇄ in der Titelleiste von Helfer- und Systembogen, Menü-Einträge (Systemstandard, Helfer-Heldenbogen, ggf. weitere), Wechsel als Spieler, neuer Bogen an derselben Stelle, Menü-Position an der Plakette. Vorschau beim Darüberfahren: Wartezeit beim Aufbau, kein Aufblitzen beim Wechsel, keine liegengebliebenen unsichtbaren Fenster (z. B. `foundry.applications.instances` nach dem Schließen des Menüs), keine ungewollten Akteur-Updates durch die Vorschau-Instanzen.
 - **#7 Touch:** erst mit dem Mobil-UI (`feature/mobile`).
 
 ## Offene Entscheidungen
