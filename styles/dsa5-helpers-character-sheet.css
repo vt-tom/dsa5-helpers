@@ -239,6 +239,15 @@
   visibility: hidden !important;
 }
 
+/* Elemente mit eigener transition (z. B. "all .2s") würden visibility erst nach Ablauf ausblenden — beim Wechsel des
+   Hover-Ziels blieben Teile des vorigen Bogens kurz stehen (Rückmeldung 2026-10-05). Darum ohne Übergänge. */
+.application.dsa5h-sheet-preview,
+.application.dsa5h-sheet-preview *,
+.application.dsa5h-preview-hidden,
+.application.dsa5h-preview-hidden * {
+  transition: none !important;
+}
+
 /* --- Fensterinhalt & Grundschrift --- */
 
 .dsa5-helpers-sheet.dsa5-helpers-sheet .window-content {
