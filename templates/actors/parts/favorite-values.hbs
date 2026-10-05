@@ -1,7 +1,9 @@
 {{! Favoritenraster (Paket E / Issue #5): liefert die zwei festen Spalten Probe | Wert einer .dsa5h-fav-card
     (Reihenfolge Name, Probe, Wert, Stern — Nutzer-Feedback 2026-09-28).
     Talente/Zauber/Liturgien: Fertigkeitswert + 3W20-Probe (probe.hbs); Waffen: AT- bzw. FK-Würfel mit sichtbarem
-    Kürzel + Schadenswurf mit "TP"-Kürzel. Dieselben System-Aktionen wie auf den Fachreitern (skillSelect/chRollCombat). }}
+    Kürzel + Schadenswurf mit "TP"-Kürzel. Dieselben System-Aktionen wie auf den Fachreitern (skillSelect/chRollCombat).
+    Ausrüstung (Issue #30): „Verbrauchen“ bei Verbrauchsgegenständen (wie im Kontextmenü des Systems), sonst der
+    OnUse-Würfel; Anzahl als Wert. Sonderfertigkeiten: OnUse-Würfel, kein Wert. }}
 {{#if weapon}}
 {{#if (or (eq item.type 'rangeweapon') (eq item.system.traitType.value 'rangeAttack'))}}
 <span class="dsa5h-fav-card-roll dsa5h-fav-card-weapon"><small>{{localize 'CHARAbbrev.FK'}}</small><button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'CHARAbbrev.FK'}}" aria-label="{{localize 'DSA5HELPERS.RollRangedWith' name=item.name}}">{{item.attack}}</button></span>
@@ -9,6 +11,12 @@
 <span class="dsa5h-fav-card-roll dsa5h-fav-card-weapon"><small>{{localize 'CHARAbbrev.AT'}}</small><button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'CHARAbbrev.AT'}}" aria-label="{{localize 'DSA5HELPERS.RollAttackWith' name=item.name}}">{{item.attack}}</button></span>
 {{/if}}
 <span class="dsa5h-fav-card-value"><button type="button" class="dsa5h-damage" data-action="chRollCombat" data-mode="damage" title="{{localize 'CHARAbbrev.damage'}}" aria-label="{{localize 'DSA5HELPERS.RollDamageOf' name=item.name}}"><small>{{localize 'CHARAbbrev.damage'}}</small>{{item.damagedie}}{{item.damageAdd}}</button></span>
+{{else if equipment}}
+<span class="dsa5h-fav-card-roll">{{#if item.dsa5hConsumable}}<button type="button" class="dsa5h-fav-use" data-action="dsa5hConsume" aria-label="{{localize 'DSA5HELPERS.ConsumeItemOf' name=item.name}}">{{localize 'DSA5HELPERS.Consume'}}</button>{{else if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}</span>
+<span class="dsa5h-fav-card-value" title="{{localize 'quantity'}}">×{{item.system.quantity.value}}</span>
+{{else if special}}
+<span class="dsa5h-fav-card-roll">{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}</span>
+<span class="dsa5h-fav-card-value"></span>
 {{else}}
 <span class="dsa5h-fav-card-roll">{{> "modules/dsa5-helpers/templates/actors/parts/probe.hbs" item=item}}</span>
 <span class="dsa5h-fav-card-value" title="{{localize 'Fw'}}">{{item.system.talentValue.value}}</span>

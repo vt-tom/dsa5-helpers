@@ -4,7 +4,15 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 ## [0.5.0] — unveröffentlicht
 
+### Neu
+
+- Favoriten für Ausrüstung und Sonderfertigkeiten: Gegenstände im Reiter Ausrüstung und Sonderfertigkeiten (Eigenschaften, Kampf, Magie, Religion) haben jetzt einen Stern. Auf dem Titelblatt erscheinen sie in eigenen Gruppen: Ausrüstung mit Anzahl und „Verbrauchen“ bei Verbrauchsgegenständen wie Tränken (mit Rückfrage, wie im Kontextmenü des Systems), sonst mit dem Anwendungs-Würfel, falls vorhanden; Sonderfertigkeiten mit dem Anwendungs-Würfel ([#30](https://github.com/vt-tom/dsa5-helpers/issues/30)).
+- Titelblatt: Ein Klick auf den Namen eines Favoriten öffnet sein Fenster (z. B. den Regeltext einer Sonderfertigkeit) ([#30](https://github.com/vt-tom/dsa5-helpers/issues/30)).
+- Beim Reiterwechsel gleiten Porträt, Name, Schicksalspunkte, LeP/AsP/KaP und Eigenschaftswürfel an ihren neuen Platz, der übrige Inhalt blendet sanft ein. Mit der Systemeinstellung „Bewegung reduzieren“ entfällt die Animation ([#1](https://github.com/vt-tom/dsa5-helpers/issues/1)).
+
 ### Geändert
+
+- Waffen-Favoriten erscheinen auf dem Titelblatt jetzt auch, wenn die Waffe gerade nicht in der Hand ist.
 
 - Auf Touch-Geräten (Tablet, Touch-Laptop im Tabletmodus) bleiben Hover-Effekte wie der Würfel-Zoom nach dem Antippen nicht mehr hängen. Am Desktop sieht der Bogen unverändert aus; die Stildatei wurde dafür neu gegliedert ([#7](https://github.com/vt-tom/dsa5-helpers/issues/7)).
 - Kampf › Körper: „Weitere Waffen“ zeigt jetzt alle Waffen des Helden, die gerade nicht in einer Hand sind – bisher fehlten dort die nicht ausgerüsteten, sodass die Liste meist leer blieb. Jede Waffe ist würfelbar und lässt sich über das Schild in die Hand nehmen (Rechtsklick: Hand wählen), wie im Reiter Ausrüstung.

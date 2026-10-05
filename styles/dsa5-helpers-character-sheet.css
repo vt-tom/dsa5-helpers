@@ -1256,6 +1256,14 @@
   font-weight: bold;
 }
 
+/* Favoritenstern in SF-Chips (Issue #30): kleiner als in Zeilen, steht vorn in den Chip-Aktionen. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-favorite.dsa5h-chip-fav {
+  width: 22px;
+  height: 22px;
+  margin: -3px 0;
+  font-size: 15px;
+}
+
 /* Einfarbiges SVG (fill:currentColor statt fixer Farbe) statt des 💬-Emojis fürs Im-Chat-Posten — folgt damit
    automatisch der button-Textfarbe (var(--muted)/var(--accent) bei Hover) in Hell- UND Dunkelmodus, statt sich
    auf die Emoji-Schriftart des Betriebssystems zu verlassen, die je nach OS blass/winzig wirkte (Nutzer-Feedback
@@ -1900,10 +1908,34 @@
   object-fit: cover;
 }
 
-.dsa5-helpers-sheet .dsa5h-fav-name {
+/* Name ist ein Knopf: öffnet das Item-Fenster des Systems (itemEdit) — für alle Favoriten (Issue #30, 2026-10-05). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-name {
+  justify-self: start;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
   font-size: var(--fs-data);
   line-height: 1.2;
+  text-align: left;
   overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+/* „Verbrauchen“ bei Verbrauchsgegenständen (Issue #30). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-use {
+  width: auto;
+  min-height: 0;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1.3;
 }
 
 .dsa5-helpers-sheet .dsa5h-fav-card-value {
@@ -1967,6 +1999,18 @@
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-card .dsa5h-damage::before {
   display: none;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-name:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-use:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 }
 
 /* ==========================================================================
@@ -3735,8 +3779,9 @@
   min-width: 0;
 }
 
+/* Letzte Spalte: Favoritenstern (Issue #30). */
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row {
-  grid-template-columns: 44px minmax(130px,1fr) 75px 55px 65px 65px;
+  grid-template-columns: 44px minmax(130px,1fr) 75px 55px 65px 65px var(--hit-lg);
 }
 
 .dsa5-helpers-sheet .dsa5h-inventory-entry details {

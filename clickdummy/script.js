@@ -331,8 +331,8 @@ function renderRail() {
 
 function setTab(id) {
   const prev = currentTab;
-  // Issue #1: Lage der gemeinsamen Kopfteile VOR dem Wechsel merken (nur Variante „Gleiten“).
-  const flipFirst = TAB_ANIM === "flip" && prev !== id ? flipMeasure() : null;
+  // Issue #1: Lage der gemeinsamen Kopfteile VOR dem Wechsel merken („Gleiten“).
+  const flipFirst = prev !== id ? flipMeasure() : null;
   currentTab = id;
   const tab = TABS.find((t) => t.id === id);
   document.getElementById("tabTitle").textContent = tab.title;
@@ -349,18 +349,13 @@ function setTab(id) {
   renderAttrOverlay();
   fitName();
   document.getElementById("content").scrollTop = 0;
-  if (prev !== id) animateTabChange(prev, id, flipFirst);
+  if (prev !== id) animateTabChange(flipFirst);
 }
 
-// Issue #1 „Animation zwischen Titelblatt und den anderen Seiten“ (ohne Beschreibung, Nutzer: drei Vorschläge im
-// Click-Dummy, 2026-10-05). Umschalter in der Werkzeugleiste (initTabAnimToggle(), nach der Entscheidung entfernen):
-// - "page"  Blättern: die neue Seite schwingt wie ein Buchblatt um die linke Kante herein (zurück: um die rechte).
-// - "fade"  Überblenden: kurzes Ein-/Ausblenden mit leichtem Gleiten, nur der Inhalt.
-// - "flip"  Gleiten: Porträt, Name, LeP/AsP/KaP und Eigenschaftswürfel wandern von ihrem alten an den neuen Platz
-//           (Titelblatt ↔ Kopfzeile, FLIP-Technik), der übrige Inhalt blendet ein.
-// Im Modul ginge das mit der Web Animations API genauso (kein CSS-Umbau nötig); bei „reduzierter Bewegung“ aus.
-let TAB_ANIM = "page";
-
+// Issue #1 „Animation zwischen Titelblatt und den anderen Seiten“, Variante „Gleiten“ (Nutzer-Entscheidung
+// 2026-10-05; verworfen: Blättern, Überblenden): Porträt, Name, Schips, LeP/AsP/KaP und Eigenschaftswürfel wandern bei jedem
+// Reiterwechsel von ihrem alten an den neuen Platz (Titelblatt ↔ Kopfzeile, FLIP-Technik), der übrige Inhalt blendet
+// ein. Im Modul genauso mit der Web Animations API (_animateTabChange); bei „reduzierter Bewegung“ aus.
 function flipTargets() {
   const map = new Map();
   const add = (key, node) => {
@@ -370,6 +365,7 @@ function flipTargets() {
   };
   add("portrait", document.getElementById("portrait"));
   add("name", document.querySelector("#headName h1"));
+  add("fate", document.getElementById("fatePoints"));
   add("attr", document.getElementById("attrOverlay"));
   document.querySelectorAll(".bar").forEach((bar) => add(bar.querySelector("[data-fkey^='res:']")?.dataset.fkey || "", bar));
   return map;
@@ -379,33 +375,9 @@ function flipMeasure() {
   return new Map([...flipTargets()].map(([k, v]) => [k, v.r]));
 }
 
-function animateTabChange(prev, id, flipFirst) {
-  if (TAB_ANIM === "none" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const sheet = document.querySelector(".sheet");
-  const parts = [...sheet.children].filter((c) => !c.classList.contains("fake-window-chrome") && !c.classList.contains("sheet-resize") && c.getBoundingClientRect().height);
-  const order = (t) => TABS.findIndex((x) => x.id === t);
-  if (TAB_ANIM === "page") {
-    // Alle Teile drehen um dieselbe Achse (linke bzw. rechte Kante des Bogens), damit es wie EIN Blatt wirkt.
-    const forward = order(id) > order(prev);
-    const sr = sheet.getBoundingClientRect();
-    parts.forEach((p) => {
-      const r = p.getBoundingClientRect();
-      const ox = (forward ? sr.left : sr.right) - r.left;
-      const oy = sr.top + sr.height / 2 - r.top;
-      p.animate([
-        { transform: `perspective(1800px) rotateY(${forward ? 70 : -70}deg)`, transformOrigin: `${ox}px ${oy}px`, opacity: 0.25, filter: "brightness(.8)" },
-        { transform: "perspective(1800px) rotateY(0deg)", transformOrigin: `${ox}px ${oy}px`, opacity: 1, filter: "brightness(1)" },
-      ], { duration: 420, easing: "cubic-bezier(.25,.8,.3,1)" });
-    });
-    return;
-  }
-  if (TAB_ANIM === "fade") {
-    ["content", "coverSidebar"].map((x) => document.getElementById(x)).concat([document.querySelector(".tab-title")]).filter(Boolean).forEach((p) =>
-      p.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 220, easing: "ease-out" }));
-    return;
-  }
-  // "flip": gemeinsame Teile gleiten von der alten an die neue Stelle, Rest blendet ein. Die Seitenleiste scrollt
-  // senkrecht; ohne overflow-x:hidden blitzt während des Gleitens ein waagerechter Rollbalken auf.
+function animateTabChange(flipFirst) {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // Die Seitenleiste scrollt senkrecht; ohne overflow-x:hidden blitzt während des Gleitens ein waagerechter Rollbalken auf.
   const moved = new Set();
   const sidebar = document.getElementById("coverSidebar");
   sidebar.style.overflowX = "hidden";
@@ -2484,7 +2456,110 @@ function renderDiseasePanel() {
 // Notizen-Fließtexte und Verbindungen (Name+Rolle) sind daher alle im Bearbeiten-Modus editierbar (kein
 // separater Spielmodus-Punkt dazu, also wie überall sonst nur dort).
 function renderNotes() {
+  if (NOTES_CONCEPT === "b") return renderNotesB();
+  if (NOTES_CONCEPT === "c") return renderNotesC();
   return el("div", {}, NOTES_SECTIONS.map((n) => section(n.id, renderNotesSection(n))));
+}
+
+// --- Issues #31 (Aufteilung Notizen) + #27 (Persönliche Daten auf dem Titelblatt): drei Konzepte zum Vergleich ---
+// Umschalter „Notizen: A | B | C“ in der Werkzeugleiste (initNotesConceptToggle(), nach der Entscheidung entfernen).
+// Beide Issues hängen zusammen: wo die Daten auf dem Titelblatt stehen, bestimmt, wie viel Gewicht sie im Reiter
+// Notizen noch brauchen. Frühere Versuche in der Seitenleiste (eigener Kasten, Fähnchen am Zustandskasten) scheiterten
+// am Platz (PROJEKTDOKU „Titelblatt, persönliche Daten“) — keines der Konzepte nimmt der Leiste daher Höhe weg.
+// - A „Steckbrief“: Titelblatt bekommt rechts über den Favoriten einen kompakten Steckbrief (nur ausgefüllte Felder,
+//   Titel springt zu Notizen › Persönliche Daten). Notizen bleiben wie heute (fünf Unterreiter).
+// - B „Porträt-Rückseite“: Knopf am Porträt dreht es um, auf der Rückseite stehen die Daten — kein zusätzlicher Platz.
+//   Notizen: Hintergrund zuerst, dann Persönliche Daten, Notizen + Private Notizen nebeneinander, SL-Notizen.
+// - C „Kopfzeile“: Titelblatt zeigt die wichtigsten Daten als eine Zeile unter Spezies/Kultur/Profession (alle im
+//   Tooltip). Notizen: nur zwei Unterreiter, „Held“ (Daten + Hintergrund in einem Panel) und „Notizen“ (alle drei
+//   Notizfelder untereinander mit Sichtbarkeits-Hinweis).
+let NOTES_CONCEPT = "a";
+const NOTES_SECTION_TABS = {
+  a: NOTES_SECTIONS.map(({ id, label }) => [id, label]),
+  b: [["biography", "Hintergrundgeschichte"], ["details", "Persönliche Daten"], ["notes", "Notizen"], ["gmnotes", "GM-Notizen"]],
+  c: [["hero", "Held"], ["notes", "Notizen"]],
+};
+const filledAppearance = () => APPEARANCE.filter((a) => String(a.v ?? "").trim());
+const notesSection = (id) => NOTES_SECTIONS.find((n) => n.id === id);
+
+function jumpToPersonalDetails() {
+  setTab("notes");
+  jumpToSection("notes", NOTES_CONCEPT === "c" ? "hero" : "details");
+}
+
+function renderNotesB() {
+  return el("div", {}, [
+    section("biography", renderNotesSection(notesSection("biography"))),
+    section("details", renderNotesSection(notesSection("details"))),
+    section("notes", el("div", { class: "notes-pair" }, [renderNotesSection(notesSection("notes")), renderNotesSection(notesSection("ownernotes"))])),
+    section("gmnotes", renderNotesSection(notesSection("gmnotes"))),
+  ]);
+}
+
+function renderNotesC() {
+  const details = renderNotesSection(notesSection("details"));
+  const bio = renderNotesSection(notesSection("biography"));
+  // Ein Panel „Held“: Datenraster oben, Hintergrund darunter (dessen Titel als Unterüberschrift).
+  const hero = el("div", { class: "panel" }, [
+    el("div", { class: "panel-title" }, "Held"),
+    details.querySelector(".details-grid"),
+    el("div", { class: "subhead" }, "Hintergrundgeschichte"),
+    ...[...bio.children].slice(1),
+  ]);
+  const texts = ["notes", "ownernotes", "gmnotes"].map((id) => {
+    const panel = renderNotesSection(notesSection(id));
+    const label = panel.querySelector(".panel-title").textContent;
+    return el("div", { class: "notes-block" }, [el("div", { class: "subhead" }, label), ...[...panel.children].slice(1)]);
+  });
+  return el("div", {}, [
+    section("hero", hero),
+    section("notes", el("div", { class: "panel notes-text" }, [el("div", { class: "panel-title" }, "Notizen"), ...texts])),
+  ]);
+}
+
+// Konzept A: Steckbrief über den Favoriten.
+function coverProfilePanel() {
+  const fields = filledAppearance();
+  if (!fields.length) return null;
+  const title = el("button", { type: "button", class: "panel-title cover-profile-title", title: "Zu Notizen › Persönliche Daten" }, [el("span", {}, "Persönliche Daten"), el("span", { class: "cover-profile-go", "aria-hidden": "true" }, "→")]);
+  title.addEventListener("click", jumpToPersonalDetails);
+  return el("div", { class: "panel cover-profile" }, [
+    title,
+    el("dl", { class: "cover-profile-grid" }, fields.map((a) => el("div", { class: "cover-profile-field", title: `${a.k}: ${a.v}` }, [el("dt", {}, a.k), el("dd", {}, a.v)]))),
+  ]);
+}
+
+// Konzept B: Rückseite des Porträts (nur auf dem Titelblatt, das Porträt wandert sonst in die Kopfzeile).
+let PORTRAIT_FLIPPED = false;
+function syncPortraitBack() {
+  const portrait = document.getElementById("portrait");
+  portrait.querySelectorAll(".portrait-flip, .portrait-back").forEach((n) => n.remove());
+  const show = NOTES_CONCEPT === "b" && currentTab === "cover" && filledAppearance().length > 0;
+  portrait.classList.toggle("flipped", show && PORTRAIT_FLIPPED);
+  if (!show) return;
+  const label = PORTRAIT_FLIPPED ? "Porträt zeigen" : "Persönliche Daten zeigen";
+  const flip = el("button", { type: "button", class: "portrait-flip", title: label, "aria-label": label, "aria-pressed": String(PORTRAIT_FLIPPED) }, PORTRAIT_FLIPPED ? "↺" : "i");
+  flip.addEventListener("click", (e) => { e.stopPropagation(); PORTRAIT_FLIPPED = !PORTRAIT_FLIPPED; syncPortraitBack(); });
+  const more = el("button", { type: "button", class: "portrait-back-more" }, "Notizen →");
+  more.addEventListener("click", jumpToPersonalDetails);
+  const back = el("div", { class: "portrait-back", "aria-hidden": String(!PORTRAIT_FLIPPED) }, [
+    el("dl", {}, filledAppearance().map((a) => el("div", { title: `${a.k}: ${a.v}` }, [el("dt", {}, a.k), el("dd", {}, a.v)]))),
+    more,
+  ]);
+  portrait.append(back, flip);
+}
+
+// Konzept C: eine Zeile unter Spezies/Kultur/Profession, nur auf dem Titelblatt (CSS), alle Felder im Tooltip.
+const HEAD_FACT_KEYS = ["Alter", "Größe", "Gewicht", "Haarfarbe", "Augenfarbe", "Heimat"];
+function syncHeadFacts() {
+  document.getElementById("headFacts")?.remove();
+  if (NOTES_CONCEPT !== "c") return;
+  const facts = filledAppearance().filter((a) => HEAD_FACT_KEYS.includes(a.k));
+  if (!facts.length) return;
+  const line = el("button", { type: "button", class: "head-facts", id: "headFacts", title: filledAppearance().map((a) => `${a.k}: ${a.v}`).join("\n") },
+    facts.map((a) => el("span", {}, a.v)));
+  line.addEventListener("click", jumpToPersonalDetails);
+  document.getElementById("headBadges").after(line);
 }
 
 function renderNotesSection(section) {
@@ -2903,7 +2978,11 @@ function collectFavorites() {
 // echten Modul lösen die Würfel echte Proben/Angriffe aus (skillSelect/chRollCombat, favorite-values.hbs).
 function favCard(item, kind) {
   const icon = el("img", { class: "fav-card-icon", src: item.img, alt: "" });
-  const name = el("span", { class: "fav-card-name" }, item.name);
+  // Klick auf den Namen öffnet das Foundry-Fenster des Eintrags (Item-Sheet, Systemaktion itemEdit) — für alle
+  // Favoriten gleich (Nutzer-Entscheidung 2026-10-05, Issue #30; statt Tooltip/Aufklappen/eigenem Fenster für den
+  // SF-Regeltext). Der Click-Dummy zeigt stellvertretend eine Vorschau (openItemWindow()).
+  const name = el("button", { type: "button", class: "fav-card-name", title: `${item.name} öffnen` }, item.name);
+  name.addEventListener("click", () => openItemWindow(item));
   let value;
   let roll;
   if (kind === "weapon") {
@@ -2930,7 +3009,7 @@ function favCard(item, kind) {
     value = el("span", { class: "fav-card-value", title: "Anzahl" }, `×${item.qty}`);
   } else if (kind === "special") {
     roll = el("span", { class: "fav-card-roll" }, [onUseBtn(item.name)]);
-    value = el("span", { class: "fav-card-value" }, [specInfo(item)]);
+    value = el("span", { class: "fav-card-value" });
   } else {
     value = el("span", { class: "fav-card-value", title: "Fertigkeitswert" }, String(item.fw));
     const dice = probeDice(item.probe, item.name);
@@ -2942,37 +3021,21 @@ function favCard(item, kind) {
   return el("div", { class: "fav-card" }, [icon, name, roll, value, star]);
 }
 
-// Beschreibung einer Sonderfertigkeit auf dem Titelblatt (Issue #30, Nutzerwahl „Beschreibung zeigen“) — drei
-// Varianten zum Vergleich (FAV_DESC, Umschalter in der Werkzeugleiste): Tooltip beim Darüberfahren/Fokus,
-// Aufklappen unter der Karte, eigenes Fenster mit „Im Chat posten“. Im Modul Regeltext = system.rule.value.
-let FAV_DESC = "tooltip";
-const FAV_EXPANDED = new Set();
-function specInfo(item) {
-  const label = `Regel: ${item.name}`;
-  const btn = el("button", { type: "button", class: "fav-info-btn", "aria-label": label }, "ⓘ");
-  if (FAV_DESC === "tooltip") {
-    return el("span", { class: "fav-info" }, [btn, el("span", { class: "fav-info-tip", role: "tooltip" }, [el("strong", {}, item.name), el("span", {}, item.rule)])]);
-  }
-  if (FAV_DESC === "expand") {
-    const open = FAV_EXPANDED.has(item.name);
-    btn.setAttribute("aria-expanded", String(open));
-    btn.classList.toggle("active", open);
-    btn.addEventListener("click", () => { if (open) FAV_EXPANDED.delete(item.name); else FAV_EXPANDED.add(item.name); renderContent(); });
-    return btn;
-  }
-  btn.setAttribute("aria-haspopup", "dialog");
-  btn.addEventListener("click", () => {
-    const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
-    closeBtn.addEventListener("click", closeModal);
-    const post = el("button", { type: "button", class: "reload-btn" }, "Im Chat posten");
-    post.addEventListener("click", () => { flashNotice(`💬 ${item.name} im Chat gepostet`); closeModal(); });
-    openModal(el("div", { class: "panel fav-rule-modal" }, [
-      el("div", { class: "panel-title flex" }, [el("span", {}, item.name), closeBtn]),
-      el("p", { class: "fav-rule-text" }, item.rule),
-      el("div", { class: "fav-rule-actions" }, [post]),
-    ]), { label: item.name });
-  });
-  return btn;
+// Stellvertreter für das DSA5-Item-Sheet, das im Modul ein Klick auf den Favoriten-Namen öffnet (itemEdit). Bei
+// Sonderfertigkeiten steht dort der Regeltext (system.rule.value), „Im Chat posten“ entspricht postItem.
+function openItemWindow(item) {
+  const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
+  closeBtn.addEventListener("click", closeModal);
+  const post = el("button", { type: "button", class: "reload-btn" }, "Im Chat posten");
+  post.addEventListener("click", () => { flashNotice(`💬 ${item.name} im Chat gepostet`); closeModal(); });
+  openModal(el("div", { class: "panel fav-rule-modal" }, [
+    el("div", { class: "panel-title flex" }, [el("span", {}, item.name), closeBtn]),
+    el("div", { class: "identity-modal-body" }, [
+      el("img", { src: item.img, alt: "" }),
+      el("p", { class: "fav-rule-text" }, item.rule || "Hier öffnet sich in Foundry das Item-Fenster des Systems (Beschreibung, Werte, Effekte)."),
+    ]),
+    el("div", { class: "fav-rule-actions" }, [post]),
+  ]), { label: item.name });
 }
 
 // Ein Panel "Favoriten" mit einer Unterüberschrift je Kategorie (Talente/Waffen/Zauber/Liturgien), analog zu
@@ -2989,15 +3052,10 @@ function favoritesPanel() {
     { label: "Sonderfertigkeiten", items: fav.specials, kind: "special" },
   ];
   const active = groups.filter((g) => g.items.length);
-  // Variante „Aufklappen“: Regeltext als eigene Zeile über die ganze Rasterbreite direkt unter der Karte.
-  const cards = (g) => g.items.flatMap((it) => [
-    favCard(it, g.kind),
-    g.kind === "special" && FAV_DESC === "expand" && FAV_EXPANDED.has(it.name) ? el("div", { class: "fav-rule-expand" }, it.rule) : null,
-  ]).filter(Boolean);
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Favoriten"),
     ...(active.length
-      ? active.flatMap((g) => [el("div", { class: "subhead" }, g.label), el("div", { class: "fav-grid" }, cards(g))])
+      ? active.flatMap((g) => [el("div", { class: "subhead" }, g.label), el("div", { class: "fav-grid" }, g.items.map((it) => favCard(it, g.kind)))])
       : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern, Liturgien, Ausrüstung oder Sonderfertigkeiten anklicken")]),
   ]);
 }
@@ -3138,6 +3196,7 @@ function leaveCoverSidebar() {
 }
 
 function renderCover() {
+  if (NOTES_CONCEPT === "a") return el("div", {}, [coverProfilePanel(), favoritesPanel()].filter(Boolean));
   return favoritesPanel();
 }
 
@@ -3205,6 +3264,8 @@ function renderContent() {
   // Verlassen des Tabs holt leaveCoverSidebar() das Porträt zurück in die Kopfzeile.
   if (currentTab === "cover") renderCoverSidebar();
   else leaveCoverSidebar();
+  syncPortraitBack();
+  syncHeadFacts();
   restoreFocus();
 }
 
@@ -3346,22 +3407,17 @@ function initWindowMenu() {
 }
 
 // Testschalter "Nur LeP" (#onlyLepToggle in index.html) — siehe ONLY_LEP/resourceGroup()-Kommentar.
-// Vergleichsschalter Issue #1 (wird nach der Entscheidung wieder entfernt): Animation beim Reiterwechsel.
-function initTabAnimToggle() {
-  const wrap = document.getElementById("tabAnimSwitch");
+// Vergleichsschalter Issues #31/#27 (wird nach der Entscheidung wieder entfernt): Konzept Notizen + Titelblatt.
+function initNotesConceptToggle() {
+  const wrap = document.getElementById("notesConceptSwitch");
   wrap.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
-    TAB_ANIM = b.dataset.variant;
-    wrap.querySelectorAll("button").forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", String(x === b)); });
-  }));
-}
-
-// Vergleichsschalter Issue #30 (wird nach der Entscheidung wieder entfernt): Darstellung der SF-Beschreibung.
-function initFavDescToggle() {
-  const wrap = document.getElementById("favDescSwitch");
-  wrap.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
-    FAV_DESC = b.dataset.variant;
+    NOTES_CONCEPT = b.dataset.variant;
+    SECTION_TABS.notes = NOTES_SECTION_TABS[NOTES_CONCEPT];
+    currentSection.notes = SECTION_TABS.notes[0][0];
+    PORTRAIT_FLIPPED = false;
     wrap.querySelectorAll("button").forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", String(x === b)); });
     renderContent();
+    renderSubNav();
   }));
 }
 
@@ -3427,8 +3483,7 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
-initFavDescToggle();
-initTabAnimToggle();
+initNotesConceptToggle();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
 document.fonts.ready.then(fitName);
 initWindowMenu();

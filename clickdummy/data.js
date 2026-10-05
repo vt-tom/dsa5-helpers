@@ -467,7 +467,7 @@ const ON_USE_ITEMS = new Set(["Elfenbogen", "Waldläuferkluft", "Schicksalskind"
 const FAV_SPECIALS = new Set(["Finte", "Schicksalskind"]);
 
 // Regeltext je Sonderfertigkeit (im System system.rule.value des specialability-Items, im Item-Sheet „Regel“).
-// Demo-Platzhalter, nur zum Vergleich der Darstellung (Issue #30).
+// Demo-Platzhalter für das Item-Fenster, das ein Klick auf den Favoriten-Namen öffnet (Issue #30).
 const SPEC_RULES = {
   "Finte": "Der Angriff wird um bis zu 3 Punkte erschwert, die Verteidigung des Gegners um denselben Wert. (Demo-Text)",
   "Kampfreflexe": "Initiative +2. (Demo-Text)",
