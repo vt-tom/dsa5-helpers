@@ -2381,6 +2381,24 @@ button.probe-die:focus-visible,
   object-fit: cover;
 }
 
+/* Namenszelle: Name + ggf. Herz der Hausregel Wundeinschätzung (woundCheckHint(item, true)). */
+.fav-card-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.house-hint.house-hint-icon {
+  flex: none;
+  width: var(--hit-sm);
+  height: var(--hit-sm);
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  line-height: 1;
+}
+
 /* Name ist ein Knopf: öffnet das Item-Fenster (Issue #30, Nutzer-Entscheidung 2026-10-05). */
 .fav-card-name {
   justify-self: start;
@@ -2567,6 +2585,119 @@ button.fav-chip-roll {
 }
 
 /* --- Persönliche Daten: Vergleich Konzepte D/E/F (Issues #27/#31, nach Entscheidung aufräumen) --- */
+
+/* G „Leiste mit Reitern“: flache LeP/AsP/KaP-Leisten, Schips + Regeneration in einer Zeile, darunter ein Kasten mit
+   zwei Reitern, der den Rest der Leiste füllt (nur der Inhalt scrollt, falls nötig). */
+.cover-resources.compact {
+  gap: 6px;
+}
+
+.cover-resources.compact .resource-frame {
+  gap: 4px;
+}
+
+.cover-resources.compact .bar {
+  height: 24px;
+}
+
+.cover-resources.compact .bar-label {
+  font-size: 14px;
+}
+
+.cover-res-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cover-res-row .fate-points {
+  padding-top: 0;
+}
+
+#coverSidebar .side-tabs-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 140px;
+}
+
+.side-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(224,192,128,.3);
+}
+
+.side-tab {
+  flex: 1;
+  padding: 6px 4px 5px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--headmuted);
+  font-family: 'Andalus',serif;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.side-tab.active {
+  border-bottom-color: var(--accent);
+  color: var(--headink);
+}
+
+.side-tabs-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.side-details {
+  margin: 0;
+  padding: 6px 10px;
+}
+
+.side-details div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+  border-top: 1px solid rgba(224,192,128,.12);
+  color: var(--headink);
+  font-size: var(--fs-small);
+}
+
+.side-details div:first-child {
+  border-top: 0;
+}
+
+.side-details dt {
+  flex: none;
+  color: var(--headmuted);
+}
+
+.side-details dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-weight: bold;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.side-empty {
+  margin: 8px 10px;
+  font-size: var(--fs-small);
+}
+
+.side-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .side-tab:not(.active):hover {
+    color: var(--accent);
+  }
+}
 
 /* E „Hover-Karte“: Karte rechts neben dem Porträt (syncPortraitCard()/showPortraitCard() in script.js). */
 .portrait.has-card {

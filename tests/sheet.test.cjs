@@ -597,8 +597,9 @@ test('Wundeinschätzung im Bogen: Hinweis am Talent Heilkunde Wunden nur bei akt
  global.game={i18n:{localize},settings:{get:(_m,k)=>k==='houseRules'?{woundCheck:active}:'light'},tooltip:{activate:(el,o)=>{tip=o.text;},deactivate(){}},user:{targets:{first:()=>targets[0]}}};
  const hint=html=>elements(html,el=>el.attribs?.['data-action']==='dsa5hWoundCheck');
  assert.equal(hint(render(await sheet._prepareContext({}))).length,0,'Regel aus: kein Hinweis');
- active=true;const html=render(await sheet._prepareContext({}));const btn=hint(html);assert.equal(btn.length,1);
- let row=btn[0];while(row&&row.attribs?.['data-item-id']!=='skill')row=row.parent;assert(row,'Hinweis steht in der Zeile von Heilkunde Wunden');
+ active=true;const html=render(await sheet._prepareContext({}));const btn=hint(html);assert.equal(btn.length,2,'Talentzeile + Favoritenkarte (Heilkunde Wunden ist Favorit)');
+ assert(btn.some(b=>{let p=b;while(p&&!String(p.attribs?.class??'').includes('dsa5h-fav-card'))p=p.parent;return !!p;}),'Herz auch bei den Favoriten');
+ let row=btn.find(b=>{let p=b;while(p&&!String(p.attribs?.class??'').includes('dsa5h-skill-row'))p=p.parent;return !!p;});while(row&&row.attribs?.['data-item-id']!=='skill')row=row.parent;assert(row,'Hinweis steht in der Zeile von Heilkunde Wunden');
  const handler=Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hWoundCheck;const target={addEventListener(){}};
  await handler.call(sheet,{},target);assert.equal(tip,localize('DSA5HELPERS.HouseRules.woundCheck.PickTarget'));
  targets=[{name:'Ork',actor:{id:'ork',system:{status:{wounds:{value:20,max:30}}}}}];skill.clone=()=>skill;actor.setupSkill=async(s,o)=>{setup={s,o};return null;};

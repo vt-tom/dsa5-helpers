@@ -236,7 +236,7 @@ const SKILL_GROUPS = [
     { name: "Heilkunde Gift", icon: "HeilkundeGift", probe: "MU/KL/IN", fw: 0, belastung: "no", stf: "B" },
     { name: "Heilkunde Krankheiten", icon: "HeilkundeKrankheiten", probe: "MU/IN/KO", fw: 0, belastung: "yes", stf: "B" },
     { name: "Heilkunde Seele", icon: "HeilkundeSeele", probe: "IN/CH/KO", fw: 0, belastung: "no", stf: "B" },
-    { name: "Heilkunde Wunden", icon: "HeilkundeWunden", probe: "KL/FF/FF", fw: 0, belastung: "yes", stf: "D" },
+    { name: "Heilkunde Wunden", icon: "HeilkundeWunden", probe: "KL/FF/FF", fw: 6, fav: true, belastung: "yes", stf: "D" },
     { name: "Holzbearbeitung", icon: "Holzbearbeitung", probe: "FF/GE/KK", fw: 5, belastung: "yes", stf: "B" },
     { name: "Lebensmittelbearbeitung", icon: "Lebensmittelbearbeitung", probe: "IN/FF/FF", fw: 0, belastung: "no", stf: "A" },
     { name: "Lederbearbeitung", icon: "Lederbearbeitung", probe: "FF/GE/KO", fw: 4, belastung: "yes", stf: "B" },
