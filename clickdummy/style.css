@@ -2380,10 +2380,19 @@ button.probe-die:focus-visible,
   object-fit: cover;
 }
 
+/* Name ist ein Knopf: öffnet das Item-Fenster (Issue #30, Nutzer-Entscheidung 2026-10-05). */
 .fav-card-name {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
   font-size: var(--fs-data);
   line-height: 1.2;
+  text-align: left;
   overflow-wrap: anywhere;
+  cursor: pointer;
 }
 
 .fav-card-value {
@@ -2428,84 +2437,7 @@ button.probe-die:focus-visible,
   cursor: pointer;
 }
 
-.fav-info {
-  position: relative;
-  display: inline-flex;
-}
-
-.fav-info-btn {
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--paper);
-  color: var(--muted);
-  font-size: 15px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.fav-info-btn.active {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-/* Variante „Tooltip“: erscheint bei Maus-Hover und Tastaturfokus über dem Knopf. */
-.fav-info-tip {
-  position: absolute;
-  right: -8px;
-  bottom: calc(100% + 8px);
-  z-index: 20;
-  display: none;
-  width: 260px;
-  padding: 8px 10px;
-  border: 1px solid var(--accent);
-  border-radius: 4px;
-  background: var(--paper);
-  color: var(--ink);
-  box-shadow: 0 4px 14px rgba(0,0,0,.3);
-  font-size: var(--fs-small);
-  font-weight: normal;
-  line-height: 1.35;
-  text-align: left;
-}
-
-.fav-info-tip strong {
-  display: block;
-  margin-bottom: 3px;
-}
-
-.fav-info:focus-within .fav-info-tip {
-  display: block;
-}
-
-@media (hover: hover) {
-  .fav-info:hover .fav-info-tip {
-    display: block;
-  }
-
-  .fav-use-btn:hover,
-  .fav-info-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-}
-
-/* Variante „Aufklappen“: Regeltext über die ganze Rasterbreite unter der Karte. */
-.fav-rule-expand {
-  grid-column: 1 / -1;
-  margin-top: -4px;
-  padding: 6px 10px;
-  border: 1px solid var(--line);
-  border-top: 0;
-  border-radius: 0 0 3px 3px;
-  background: var(--paper);
-  font-size: var(--fs-small);
-  line-height: 1.4;
-}
-
-/* Variante „Fenster“. */
+/* Stellvertreter für das Item-Fenster (openItemWindow()). */
 .fav-rule-modal {
   width: min(420px, 90vw);
 }
@@ -2519,6 +2451,18 @@ button.probe-die:focus-visible,
   display: flex;
   justify-content: flex-end;
   padding: 0 12px 12px;
+}
+
+@media (hover: hover) {
+  .fav-card-name:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .fav-use-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 }
 
 .fav-card-roll {
@@ -2618,6 +2562,180 @@ button.fav-chip-roll {
   .fav-remove-btn:hover {
     border-color: var(--accent);
     color: var(--accent);
+  }
+}
+
+/* --- Persönliche Daten: Vergleich Konzepte A/B/C (Issues #27/#31, nach Entscheidung aufräumen) --- */
+
+/* A „Steckbrief“: kompaktes Raster über den Favoriten, Titel ist der Sprung zu Notizen › Persönliche Daten. */
+.cover-profile-title {
+  display: flex;
+  align-items: baseline;
+  width: 100%;
+  border: 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cover-profile-title span:first-child {
+  flex: 1;
+}
+
+.cover-profile-go {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.cover-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(130px,1fr));
+  gap: 6px 14px;
+  margin: 0;
+  padding: 8px 11px 10px;
+}
+
+.cover-profile-field {
+  min-width: 0;
+}
+
+.cover-profile-field dt {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.cover-profile-field dd {
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--fs-small);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* B „Porträt-Rückseite“: Knopf oben rechts dreht das Porträt, die Rückseite liegt als Papierfläche darüber. */
+.portrait-flip {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--hit-md);
+  height: var(--hit-md);
+  padding: 0;
+  border: 1px solid rgba(224,192,128,.6);
+  border-radius: 50%;
+  background: rgba(43,39,33,.75);
+  color: #ecd8b1;
+  font-family: 'GentiumBasic',Georgia,serif;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.portrait-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px 8px;
+  background: var(--paper);
+  color: var(--ink);
+  opacity: 0;
+  transform: perspective(600px) rotateY(90deg);
+  transition: transform .25s ease, opacity .25s ease;
+  pointer-events: none;
+}
+
+.portrait.flipped .portrait-back {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* Oben Platz für den Umdreh-Knopf. */
+.portrait-back dl {
+  flex: 1;
+  margin: 22px 0 0;
+  overflow: hidden;
+}
+
+.portrait-back dl div {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.portrait-back dt {
+  flex: 0 0 auto;
+  color: var(--muted);
+}
+
+.portrait-back dd {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-weight: bold;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.portrait-back-more {
+  align-self: flex-end;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+
+/* C „Kopfzeile“: eine Zeile mit den wichtigsten Daten unter den Badges, nur auf dem Titelblatt. */
+.head-facts {
+  display: none;
+  align-self: flex-start;
+  max-width: 100%;
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: rgba(236,216,177,.85);
+  font: inherit;
+  font-size: var(--fs-small);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sheet[data-tab="cover"] .head-facts {
+  display: block;
+}
+
+.head-facts span + span::before {
+  content: " · ";
+  color: rgba(224,192,128,.6);
+}
+
+@media (hover: hover) {
+  .cover-profile-title:hover .cover-profile-go,
+  .portrait-back-more:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .portrait-flip:hover {
+    border-color: #ecd8b1;
+  }
+
+  .head-facts:hover {
+    color: #fff;
   }
 }
 
@@ -4876,6 +4994,23 @@ button.fav-chip-roll {
 .details-field .k {
   color: var(--muted);
   font-size: var(--fs-small);
+}
+
+/* Vergleich Konzepte B/C (Issues #27/#31): B Notizen + Private Notizen nebeneinander, C drei Notizfelder in einem
+   Panel untereinander. */
+.notes-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.notes-pair > .panel + .panel {
+  margin-top: 0;
+}
+
+.notes-block + .notes-block {
+  border-top: 1px solid var(--line);
 }
 
 .notes-text-wrap {

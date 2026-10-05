@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=163">
+<link rel="stylesheet" href="style.css?v=166">
 </head>
 <body>
 
@@ -17,18 +17,12 @@
   </div>
   <!-- Test-Schalter: Vorschau, wie die Ressourcengruppe aussieht, wenn eine Figur nur Lebenskraft hat (kein
        Zauberer/Geweihter, kein AsP/KaP) — siehe initOnlyLepToggle(). Rein visuell, ändert data.js nicht. -->
-  <!-- Vergleich Issue #1: Animation beim Reiterwechsel (initTabAnimToggle(), nach Entscheidung entfernen). -->
-  <div class="mode-switch" id="tabAnimSwitch" role="group" aria-label="Animation beim Reiterwechsel">
-    <button type="button" data-variant="none" aria-pressed="false">Anim: aus</button>
-    <button type="button" data-variant="page" class="active" aria-pressed="true">Blättern</button>
-    <button type="button" data-variant="fade" aria-pressed="false">Überblenden</button>
-    <button type="button" data-variant="flip" aria-pressed="false">Gleiten</button>
-  </div>
-  <!-- Vergleich Issue #30: SF-Beschreibung auf dem Titelblatt (initFavDescToggle(), nach Entscheidung entfernen). -->
-  <div class="mode-switch" id="favDescSwitch" role="group" aria-label="SF-Beschreibung">
-    <button type="button" data-variant="tooltip" class="active" aria-pressed="true">SF: Tooltip</button>
-    <button type="button" data-variant="expand" aria-pressed="false">Aufklappen</button>
-    <button type="button" data-variant="dialog" aria-pressed="false">Fenster</button>
+  <!-- Vergleich Issues #31/#27: Aufteilung Notizen + persönliche Daten auf dem Titelblatt (initNotesConceptToggle(),
+       nach Entscheidung entfernen). -->
+  <div class="mode-switch" id="notesConceptSwitch" role="group" aria-label="Konzept Notizen und persönliche Daten">
+    <button type="button" data-variant="a" class="active" aria-pressed="true">Notizen: A Steckbrief</button>
+    <button type="button" data-variant="b" aria-pressed="false">B Porträt-Rückseite</button>
+    <button type="button" data-variant="c" aria-pressed="false">C Kopfzeile</button>
   </div>
   <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
   <!-- Würfelstatistik (Issue #28): in Foundry eigenes Fenster aus den Moduleinstellungen, hier per Knopf. -->
@@ -137,8 +131,8 @@
      (führt zu einem leeren Content-Bereich, weil script.js dann Datenformen aus data.js erwartet, die die
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
 <script src="assets-map.js?v=15"></script>
-<script src="data.js?v=29"></script>
-<script src="script.js?v=118"></script>
+<script src="data.js?v=30"></script>
+<script src="script.js?v=122"></script>
 <script type="module" src="dice-stats.js?v=6"></script>
 </body>
 </html>

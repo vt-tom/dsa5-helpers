@@ -187,6 +187,20 @@ test('favorites render as grid cards with value, roll and star; weapon damage is
  for(const card of cards){assert(card.attribs['data-item-id']);assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',card.children).length,1);}
  const damage=elements(html,el=>el.attribs?.['data-mode']==='damage');assert(damage.length>=2);for(const b of damage)assert(String(b.attribs.class).includes('dsa5h-damage'));
 });
+test('favorites for equipment and special abilities (#30): stars on inventory rows and SF chips, consume via the system, names open the item sheet',async()=>{
+ const C=await loadSheet(),f=fixture(),sheet=new C();
+ const potion=item('potion','consumable');f.context.prepare.inventory.consumables={show:true,dataType:'consumable',items:[potion]};f.actor.items.set('potion',potion);for(const i of [f.context.prepare.inventory.tools.items[0],...Object.values(f.context.prepare.specAbs).flat()])f.actor.items.set(i._id,i);
+ f.actor.flags.favorites=['tool','bag-child','potion','general','combat','weapon'];Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});
+ const context=await sheet._prepareContext({});const groups=Object.fromEntries(context.dsa5h.favoriteGroups.map(g=>[g.label,g.items.map(i=>i._id)]));
+ assert.deepEqual(groups['DSA5HELPERS.Tabs.inventory'].sort(),['bag-child','potion','tool']);assert.deepEqual(groups['DSA5HELPERS.SpecialAbilities'].sort(),['combat','general']);assert.deepEqual(groups['DSA5HELPERS.Weapons'],['weapon']);
+ const html=render(context);
+ const rows=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-inventory-row')&&el.name==='div'&&!String(el.attribs.class).includes('row-head'));assert.equal(rows.length,2);
+ for(const row of rows)assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',row.children).length,1);
+ assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-chip-fav')).length,2);
+ const consume=elements(html,el=>el.attribs?.['data-action']==='dsa5hConsume');assert.equal(consume.length,1);
+ const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name'));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
+ let consumed;sheet.consumeItem=async i=>{consumed=i;};sheet._getItemId=()=>'potion';await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hConsume.call(sheet,{},{});assert.equal(consumed,potion);
+});
 test('aggregated tests can be added in play mode',async()=>{
  const {sheet}=await prepare();sheet.context.prepare.sheetLocked=true;const ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.editMode,false);
  assert.equal(elements(render(ctx),el=>el.attribs?.['data-action']==='itemCreate' && el.attribs['data-type']==='aggregatedTest').length,1);

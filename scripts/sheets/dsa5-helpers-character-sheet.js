@@ -75,6 +75,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hBodyFigure: this._setBodyFigure,
       dsa5hTwoHandedSide: this._setTwoHandedSide,
       dsa5hSwapGrip: this._swapGrip,
+      dsa5hConsume: this._consume,
     },
     // Foundry concatenates majorButtons across the inheritance chain (ApplicationV2#_initializeApplicationOptions),
     // so this adds a third header-control icon next to DSA5's own eye/lock buttons instead of replacing them.
@@ -224,12 +225,23 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // Kampftechnik je Waffe (parts/combatskill-link.hbs): wie im System per Name gesucht (actor-dsa5.js
     // combatskills.find(s => s.name === item.system.combatskill.value)), mit Kampftechnikwert für die Anzeige.
     const combatSkillIndex = Object.fromEntries((prepare.combatskills ?? []).map(item => [item.name, { id: item._id, name: item.name, value: item.system.talentValue?.value }]));
+    const body = limited ? null : this._bodyContext(prepare);
+    // Favoriten-Waffen: alle Waffen wie unter „Weitere Waffen“, nicht nur getragene — das System führt nur Waffen in
+    // den Händen als getragen (Issue #30). Ausrüstung samt Inhalt der Behältnisse, ohne Waffen (die stehen oben);
+    // Sonderfertigkeiten aus allen Reitern (Issue #30).
+    const unique = items => [...new Map(items.map(item => [item._id, item])).values()];
+    const withChildren = items => items.flatMap(item => [item, ...withChildren(item.children ?? [])]);
+    const equipment = withChildren(Object.values(prepare.inventory ?? {}).flatMap(section => section?.items ?? []))
+      .filter(item => !['meleeweapon', 'rangeweapon'].includes(item.type))
+      .map(item => Object.assign(item, { dsa5hConsumable: ['consumable', 'plant'].includes(item.type) }));
     const favoriteGroups = [
       { label: 'skills', items: skillGroups.flatMap(group => group.items) },
-      { label: 'DSA5HELPERS.Weapons', weapon: true, items: weaponGroups.flatMap(group => group.items) },
+      { label: 'DSA5HELPERS.Weapons', weapon: true, items: [...weaponGroups.flatMap(group => group.items), ...(body?.others ?? []).map(other => other.item)] },
       { label: 'spells', items: [...(magic.spellList ?? []), ...(magic.ritualList ?? []), ...(magic.spellActions ?? []).flatMap(group => group.items), ...(magic.ritualActions ?? []).flatMap(group => group.items)] },
       { label: 'liturgies', items: [...(magic.liturgy ?? []), ...(magic.ceremony ?? [])] },
-    ].map(group => ({ ...group, items: group.items.filter(item => favorites[item._id]) })).filter(group => group.items.length);
+      { label: 'DSA5HELPERS.Tabs.inventory', equipment: true, items: equipment },
+      { label: 'DSA5HELPERS.SpecialAbilities', special: true, items: Object.values(specs).flatMap(groups => groups.flatMap(group => group.items)) },
+    ].map(group => ({ ...group, items: unique(group.items.filter(item => favorites[item._id])) })).filter(group => group.items.length);
     // Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen als Unter-Tabs statt vier gestapelter Volltext-Panels
     // (Nutzer-Feedback 2026-09-19) — Sichtbarkeit der letzten beiden Reiter folgt denselben Bedingungen wie bisher
     // die Panels selbst ({{#if owner}}/{{#if isGM}} in notes.hbs).
@@ -289,7 +301,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       coverConditions: (context.conditions ?? []).slice(0, 4),
       coverConditionsMore: Math.max(0, (context.conditions ?? []).length - 4),
       happyTalentsExpanded: this._happyTalentsExpanded,
-      body: limited ? null : this._bodyContext(prepare),
+      body,
       happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
     // The original sheet prepares this only for its separate companion part.
@@ -682,8 +694,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
 
   static _setTab(_event, target) {
     if (!this.constructor.HELPER_TABS.some(tab => tab.id === target.dataset.tab)) return;
+    const changed = this._currentTab !== target.dataset.tab;
+    const before = changed ? this._measureGlide() : null;
     this._currentTab = target.dataset.tab;
     this._applyCurrentTab();
+    if (changed) this._animateTabChange(before);
     this.element.querySelector('.dsa5h-content')?.scrollTo({ top: 0 });
     // Die Liste steht wieder oben — also ist der erste Abschnitt markiert (Talente und alle Reiter mit Unterreitern, #32).
     const first = this._jumpSections(this._currentTab)[0];
@@ -691,6 +706,56 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this._applySubTabButtons();
     // Switching to Talente should let the user start typing a search immediately, no extra click needed.
     if (this._currentTab === 'skills') this.element.querySelector('.talentSearch')?.focus();
+  }
+
+  // Reiterwechsel „Gleiten“ (Issue #1, Nutzer-Entscheidung 2026-10-05 nach drei Varianten im Click-Dummy; verworfen:
+  // Blättern, Überblenden): Porträt, Name, Schips, LeP/AsP/KaP und Eigenschaftswürfel wandern von ihrem alten an den
+  // neuen Platz (Titelblatt-Seitenleiste ↔ Kopfzeile), der übrige Inhalt blendet ein. FLIP-Technik über die Web
+  // Animations API: Lage vor dem Wechsel messen, danach die Verschiebung als Startwert animieren. Kein Umbau des DOM,
+  // bei „reduzierter Bewegung“ aus.
+  _glideTargets() {
+    const root = this.element;
+    const map = new Map();
+    const selectors = { portrait: '.dsa5h-portrait', name: '.dsa5h-name', fate: '.dsa5h-fate-points', attr: '[data-attr-overlay]', lep: '.dsa5h-res-lep', asp: '.dsa5h-res-asp', kap: '.dsa5h-res-kap' };
+    for (const [key, selector] of Object.entries(selectors)) {
+      const node = root?.querySelector(selector);
+      const rect = node?.getBoundingClientRect();
+      if (rect?.width && rect.height) map.set(key, { node, rect });
+    }
+    return map;
+  }
+
+  _measureGlide() {
+    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return null;
+    return new Map([...this._glideTargets()].map(([key, { rect }]) => [key, rect]));
+  }
+
+  _animateTabChange(before) {
+    if (!before) return;
+    let moved = 0;
+    for (const [key, { node, rect }] of this._glideTargets()) {
+      const old = before.get(key);
+      if (!old) continue;
+      const dx = old.left - rect.left;
+      const dy = old.top - rect.top;
+      const sx = old.width / rect.width;
+      const sy = old.height / rect.height;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) continue;
+      moved++;
+      node.animate([
+        { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: '0 0' },
+        { transform: 'none', transformOrigin: '0 0' },
+      ], { duration: 380, easing: 'cubic-bezier(.2,.75,.25,1)' });
+    }
+    // Die Seitenleiste scrollt senkrecht; ohne overflow-x:hidden blitzt während des Gleitens ein waagerechter Rollbalken auf.
+    const sidebar = this.element.querySelector('[data-cover-sidebar]');
+    if (sidebar) {
+      sidebar.style.overflowX = 'hidden';
+      setTimeout(() => sidebar.style.removeProperty('overflow-x'), 450);
+    }
+    for (const part of this.element.querySelectorAll('.dsa5h-content, [data-cover-sidebar]')) {
+      part.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, easing: 'ease-out', delay: moved ? 60 : 0, fill: 'backwards' });
+    }
   }
 
   static _setSubTab(_event, target) {
@@ -938,6 +1003,13 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const headerButton = this.element.querySelector('.header-control[data-action="dsa5hTheme"]');
     headerButton?.classList.toggle('fa-sun', theme === 'dark');
     headerButton?.classList.toggle('fa-moon', theme !== 'dark');
+  }
+
+  // „Verbrauchen“ auf dem Titelblatt (Issue #30): derselbe Weg wie der Eintrag im Item-Kontextmenü des Systems
+  // (ActorSheetDsa5#consumeItem: Rückfrage, dann item.setupEffect).
+  static async _consume(_event, target) {
+    const item = this.actor.items.get(this._getItemId(target));
+    if (item) await this.consumeItem(item);
   }
 
   static async _toggleFavorite(_event, target) {
