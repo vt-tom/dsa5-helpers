@@ -2,19 +2,13 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
-## [0.5.1] — unveröffentlicht
-
-### Geändert
-
-- Hausregelbuch: Die Hausregel „Helfen“ nennt jetzt ihren Urheber (Idee: VTTom).
-
 ## [0.5.0] — 2026-10-05
 
 ### Neu
 
 - Hausregelbuch: In den Moduleinstellungen gibt es jetzt „Hausregelbuch öffnen“. Die Liste zeigt alle Hausregeln mit Kurzbeschreibung; jede lässt sich im Buch lesen. Das Buch beginnt mit einem Inhaltsverzeichnis, jede Regel hat eine eigene Seite, geblättert wird über die Pfeile neben der Seite oder mit den Pfeiltasten. Ob eine Regel gilt, steht oben rechts auf ihrer Seite. Die Spielleitung schaltet Hausregeln für die Welt ein und aus (in der Liste und auf der Buchseite), Spieler sehen, was gilt. Für Makros: `game.modules.get('dsa5-helpers').api.openHouseRules()`.
 - Erste Hausregel „Wundeinschätzung“ (Idee und erste Umsetzung: Knigge – danke!): Ein Held mit Heilkunde Wunden schätzt per verdeckter Probe ein, wie schwer das markierte Ziel verletzt ist – je mehr QS, desto genauer, von „verletzt“ bis zu den ungefähren LeP. Bei aktiver Regel steht im Reiter Talente neben Heilkunde Wunden der Hinweis „Wundeinschätzung“ (und ein Herz-Knopf auf dem Titelblatt, wenn Heilkunde Wunden ein Favorit ist): Ohne markiertes Ziel erinnert er daran, eines zu wählen, sonst öffnet er den gewohnten Probendialog. Das Ergebnis kommt als Flüsternachricht, die Spielleitung erhält nur einen Hinweis. Neu einschätzen lässt sich erst, wenn sich die LeP des Ziels um ein Viertel geändert haben. Mit dem Modul „Token Note Hover“ erscheint die Einschätzung auch beim Darüberfahren.
-- Zweite Hausregel „Helfen“: Im Kampf nutzt ein Held seine Aktion für eine passende Talentprobe, die übrig behaltenen QS erleichtern die nächste Probe eines Mitstreiters (z. B. Einschüchtern, um einen Gegner auf sich zu lenken). Bei aktiver Regel gibt es im Reiter Kampf bei den Schnellaktionen den Knopf „Helfen“: Talent wählen (mit Suche), im gewohnten Probendialog würfeln, die Erleichterung erscheint im Chat – ist ein Mitstreiter markiert, wird er genannt. Eintragen muss der Unterstützte die Erleichterung bei seiner nächsten Probe selbst.
+- Zweite Hausregel „Helfen“ (Idee: VTTom): Im Kampf nutzt ein Held seine Aktion für eine passende Talentprobe, die übrig behaltenen QS erleichtern die nächste Probe eines Mitstreiters (z. B. Einschüchtern, um einen Gegner auf sich zu lenken). Bei aktiver Regel gibt es im Reiter Kampf bei den Schnellaktionen den Knopf „Helfen“: Talent wählen (mit Suche), im gewohnten Probendialog würfeln, die Erleichterung erscheint im Chat – ist ein Mitstreiter markiert, wird er genannt. Eintragen muss der Unterstützte die Erleichterung bei seiner nächsten Probe selbst.
 - Favoriten für Ausrüstung und Sonderfertigkeiten: Gegenstände im Reiter Ausrüstung und Sonderfertigkeiten (Eigenschaften, Kampf, Magie, Religion) haben jetzt einen Stern. Auf dem Titelblatt erscheinen sie in eigenen Gruppen: Ausrüstung mit Anzahl und „Verbrauchen“ bei Verbrauchsgegenständen wie Tränken (mit Rückfrage, wie im Kontextmenü des Systems), sonst mit dem Anwendungs-Würfel, falls vorhanden; Sonderfertigkeiten mit dem Anwendungs-Würfel ([#30](https://github.com/vt-tom/dsa5-helpers/issues/30)).
 - Titelblatt: Ein Klick auf den Namen eines Favoriten öffnet sein Fenster (z. B. den Regeltext einer Sonderfertigkeit) ([#30](https://github.com/vt-tom/dsa5-helpers/issues/30)).
 - Beim Reiterwechsel gleiten Porträt, Name, Schicksalspunkte, LeP/AsP/KaP und Eigenschaftswürfel an ihren neuen Platz, der übrige Inhalt blendet sanft ein. Mit der Systemeinstellung „Bewegung reduzieren“ entfällt die Animation ([#1](https://github.com/vt-tom/dsa5-helpers/issues/1)).
