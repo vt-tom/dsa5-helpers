@@ -11,12 +11,13 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 Erst als Beta (Pre-release), nach Live-Prüfung am selben Tag zum normalen Release erklärt, `release/0.5.0` nach `main` gemergt, Issues #1, #27, #30, #31 geschlossen. Enthalten: #7 CSS aufräumen, #30 Favoriten Ausrüstung/SF, #1 Gleiten beim Reiterwechsel, #27/#31 Titelblatt-Leiste mit Reitern, Hausregelbuch mit Wundeinschätzung (Knigge) und Helfen, Fokus-Fix bei Eingaben. Release v0.5.0 am selben Tag auf Nutzerwunsch ersetzt (Tag neu gesetzt), um den Urheber „VTTom“ bei „Helfen“ aufzunehmen — wer die erste Fassung schon installiert hatte, bekommt kein Update angeboten.
 
-## Nächste Version
+## Nächste Version (0.5.1)
 
-Noch nicht geplant. Neue Arbeit auf einem Branch `release/<version>` (siehe PROJEKTDOKU.md).
+Branch `release/0.5.1` (angelegt 2026-10-05). Bisher: Anpassung an DSA5 8.1.9 (Sammelproben: Ziel-QS und „unbegrenzt“), `verified` 8.1.9. Versionsnummer vorläufig, der Nutzer legt sie beim Release fest.
 
 ## Live in Foundry prüfen
 
+- **DSA5 8.1.9, Sammelproben:** Talente › Sammelproben — eine Sammelprobe mit geänderter Ziel-QS (z. B. 5) zeigt „x / 5“, eine mit 0 erlaubten Proben „unbegrenzt“; normale Sammelproben weiter „x / 10“ und „x / 7“. Sonst einmal quer durch den Bogen (Gefährten-Reiter mit der neuen Loyalität je Besitzer, Zustände jetzt alphabetisch).
 - **#7 Touch:** erst mit dem Mobil-UI (`feature/mobile`).
 
 ## Offene Entscheidungen

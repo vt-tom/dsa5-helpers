@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.5.1] — unveröffentlicht
+
+### Geändert
+
+- Kompatibel mit DSA5 8.1.9: Sammelproben zeigen die im System einstellbare Ziel-QS (statt fest „/ 10“) und „unbegrenzt“, wenn keine Höchstzahl an Proben gesetzt ist – wie im Systembogen.
+
 ## [0.5.0] — 2026-10-05
 
 ### Neu
