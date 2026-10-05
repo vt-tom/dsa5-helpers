@@ -7,28 +7,18 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-## Version 0.4.0 — veröffentlicht 2026-10-02
+## Version 0.5.0 — veröffentlicht 2026-10-05
 
-Zuerst als Beta (Pre-release, Beta-Kanal), am selben Tag zum normalen Release erklärt (Nutzer-Entscheidung) und `release/0.4.0` nach `main` gemergt. Enthalten: #28 Würfelstatistik, #29 Kampf › Körper (ersetzt die Übersicht), #32 Sprungmarken in allen Reitern, Beta-Kanal. Live-Prüfung am 2026-10-05 abgeschlossen (bis auf „Weitere Waffen“, in 0.5.0 nachgebessert).
+Erst als Beta (Pre-release), nach Live-Prüfung am selben Tag zum normalen Release erklärt, `release/0.5.0` nach `main` gemergt, Issues #1, #27, #30, #31 geschlossen. Enthalten: #7 CSS aufräumen, #30 Favoriten Ausrüstung/SF, #1 Gleiten beim Reiterwechsel, #27/#31 Titelblatt-Leiste mit Reitern, Hausregelbuch mit Wundeinschätzung (Knigge) und Helfen, Fokus-Fix bei Eingaben.
 
-## Nächste Version (0.5.0)
+## Nächste Version
 
-Branch `release/0.5.0` (angelegt 2026-10-05). Reihenfolge (Nutzer, 2026-10-05): erst #7, danach die übrigen Issues für 0.5.0 auswählen.
+Noch nicht geplant. Neue Arbeit auf einem Branch `release/<version>` (siehe PROJEKTDOKU.md).
 
-**#7 CSS aufräumen** erledigt und live bestätigt (2026-10-05, Issue geschlossen; Konventionen in PROJEKTDOKU.md „CSS-Gliederung“).
+- Offen aus 0.5.0: Urheber für die Hausregel „Helfen“ im Buch (derzeit keiner, `credit` in `HOUSE_RULES`).
 
-Für 0.5.0 ausgewählt (Nutzer, 2026-10-05; Meilenstein 0.5.0, Bearbeiter vt-tom): #30, #31, #1, #27. Reihenfolge: #30 → #1 → #31 + #27 zusammen (beide betreffen „Persönliche Daten“).
+## Live in Foundry prüfen
 
-- **#30** und **#1** umgesetzt und live bestätigt (2026-10-05). Issues erst schließen, wenn der Nutzer den Release freigibt (Nutzer 2026-10-05).
-- **Hausregelbuch** (Nutzerwunsch 2026-10-05, kein Issue): in Modul und Click-Dummy umgesetzt, nach Rückmeldung überarbeitet (Buch mit Inhaltsverzeichnis, Blätterpfeile neben der Seite, Pfeiltasten, Umblätter-Animation, Aktiv/Nicht aktiv oben rechts im Seitenkopf; Wundeinschätzung über den Hinweis am Talent Heilkunde Wunden und das Herz bei den Favoriten — live bestätigt 2026-10-05). Buch-Überarbeitung live zu prüfen (siehe unten).
-- **Hausregel „Helfen“** (Nutzerwunsch 2026-10-05): umgesetzt in Modul und Click-Dummy (Knopf in Kampf › Schnellaktionen, Talentwahl, Probe, QS-Hinweis im Chat). Ohne Urheberangabe im Buch — falls jemand genannt werden soll, `credit` in `HOUSE_RULES` setzen. Live zu prüfen (siehe unten).
-- **#31 + #27** umgesetzt als Variante G „Leiste mit Reitern“ (Nutzer-Entscheidung 2026-10-05) in Modul und Click-Dummy, live zu prüfen (siehe unten). Notizen-Reiter bleibt unverändert (fünf Unterreiter, dort werden die Daten bearbeitet). Issues erst bei Release-Freigabe schließen.
-
-**Release 0.5.0 als Beta veröffentlicht (2026-10-05):** Tag `v0.5.0`, Pre-release „v0.5.0 (Beta)“, Action grün, Beta-Manifest zeigt 0.5.0, stabiler Kanal weiter 0.4.0. Live-Prüfung durch den Nutzer abgeschlossen (Titelblatt-Leiste G, Hausregelbuch, Helfen; Fokus-Fix nur im Code geprüft). Offen nach Freigabe: zum normalen Release erklären (`gh release edit v0.5.0 --prerelease=false --latest --title "v0.5.0"`), `release/0.5.0` nach `main` mergen und pushen, Issues #1, #27, #30, #31 schließen.
-
-## Live in Foundry prüfen (0.5.0, release/0.5.0)
-
-- **Fokus nach Eingaben:** In Notizen › Persönliche Daten (und anderen Feldern, z. B. LeP im Kopf, Geld) einen Wert ändern und mit Tab weiter — der Fokus muss im nächsten Feld landen, nicht auf der Reiterleiste.
 - **#7 Touch:** erst mit dem Mobil-UI (`feature/mobile`).
 
 ## Offene Entscheidungen
