@@ -297,6 +297,10 @@
       },
       "Contents": "Inhalt",
       "KeysHint": "Blättern auch mit ← →"
-    }
+    },
+    "NoConditions": "Keine Zustände.",
+    "ConditionsToStatus": "Alle Zustände und Effekte → Status",
+    "NoPersonalDetails": "Noch keine persönlichen Daten eingetragen.",
+    "EditInNotes": "Bearbeiten → Notizen"
   }
 }

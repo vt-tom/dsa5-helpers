@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=171">
+<link rel="stylesheet" href="style.css?v=172">
 </head>
 <body>
 
@@ -17,14 +17,6 @@
   </div>
   <!-- Test-Schalter: Vorschau, wie die Ressourcengruppe aussieht, wenn eine Figur nur Lebenskraft hat (kein
        Zauberer/Geweihter, kein AsP/KaP) — siehe initOnlyLepToggle(). Rein visuell, ändert data.js nicht. -->
-  <!-- Vergleich Issues #31/#27: Aufteilung Notizen + persönliche Daten auf dem Titelblatt (initNotesConceptToggle(),
-       nach Entscheidung entfernen). -->
-  <div class="mode-switch" id="notesConceptSwitch" role="group" aria-label="Konzept Notizen und persönliche Daten">
-    <button type="button" data-variant="d" class="active" aria-pressed="true">Notizen: D Unterreiter</button>
-    <button type="button" data-variant="e" aria-pressed="false">E Hover-Karte</button>
-    <button type="button" data-variant="f" aria-pressed="false">F Reiter Held</button>
-    <button type="button" data-variant="g" aria-pressed="false">G Leiste mit Reitern</button>
-  </div>
   <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
   <!-- Würfelstatistik (Issue #28): in Foundry eigenes Fenster aus den Moduleinstellungen, hier per Knopf. -->
   <button type="button" id="diceStatsBtn">Würfelstatistik</button>
@@ -94,7 +86,7 @@
 
           <!-- Gefüllt von renderHeader() aus RESOURCES["Lebenskraft"/"Astralenergie"/"Karmaenergie"] (data.js) —
                der aktuelle Wert (nicht Max) ist per Klick editierbar (vitalBar()/makeEditable() in script.js), in
-               BEIDEN Modi. Dieselben Bausteine füllen auch coverResourcesBlock() auf dem Titelblatt. -->
+               BEIDEN Modi. Dieselben Bausteine füllen auch coverResourcesCompact() auf dem Titelblatt. -->
           <div class="bars" id="bars"></div>
         </div>
       </div>
@@ -135,7 +127,7 @@
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
 <script src="assets-map.js?v=15"></script>
 <script src="data.js?v=31"></script>
-<script src="script.js?v=127"></script>
+<script src="script.js?v=128"></script>
 <script type="module" src="dice-stats.js?v=6"></script>
 <script type="module" src="house-rules.js?v=2"></script>
 </body>

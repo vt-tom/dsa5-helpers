@@ -1417,9 +1417,8 @@ button {
   outline-offset: 2px;
 }
 
-/* Ursprünglich für "Alle anzeigen"/"Weniger anzeigen"; seit 2026-09-14 auch von buildActiveEffectsSummary()
-   (script.js) als Sprung-Button "N aktive Effekte → Status" auf dem Titelblatt genutzt — dort ohne Liste
-   darunter, damit die linke Leiste unabhängig von der Effekt-Anzahl nie scrollen muss. */
+/* Ursprünglich für "Alle anzeigen"/"Weniger anzeigen"; auch die Sprung-Knöpfe in der Titelblatt-Leiste
+   („Alle Zustände und Effekte → Status“, „Bearbeiten → Notizen“, coverSideTabs()). */
 .show-all-btn {
   display: block;
   width: 100%;
@@ -2231,7 +2230,7 @@ button.probe-die:focus-visible,
 /* LeP/AsP/KaP/Schips direkt auf der dunklen Leiste, ohne eigene Panel-Box — .bar/.bar-fill/.bar-label/
    .resource-frame/.regen-btn sind ursprünglich schon für genau diesen dunklen Untergrund gestaltet (siehe .head
    weiter oben), brauchen hier also keine Anpassung, nur .resource-frame-col für die Spalten- statt Zeilen-
-   Anordnung in der schmalen Leiste (siehe coverResourcesBlock() in script.js). */
+   Anordnung in der schmalen Leiste (siehe coverResourcesCompact() in script.js). */
 .cover-resources {
   display: flex;
   flex-direction: column;
@@ -2584,10 +2583,10 @@ button.fav-chip-roll {
   }
 }
 
-/* --- Persönliche Daten: Vergleich Konzepte D/E/F (Issues #27/#31, nach Entscheidung aufräumen) --- */
+/* --- Titelblatt-Leiste, Variante G (Issues #27/#31, Nutzer-Entscheidung 2026-10-05) --- */
 
-/* G „Leiste mit Reitern“: flache LeP/AsP/KaP-Leisten, Schips + Regeneration in einer Zeile, darunter ein Kasten mit
-   zwei Reitern, der den Rest der Leiste füllt (nur der Inhalt scrollt, falls nötig). */
+/* Flache LeP/AsP/KaP-Leisten, Schips + Regeneration in einer Zeile, darunter ein Kasten mit zwei Reitern, der den
+   Rest der Leiste füllt (nur der Inhalt scrollt, falls nötig). */
 .cover-resources.compact {
   gap: 6px;
 }
@@ -2697,58 +2696,6 @@ button.fav-chip-roll {
   .side-tab:not(.active):hover {
     color: var(--accent);
   }
-}
-
-/* E „Hover-Karte“: Karte rechts neben dem Porträt (syncPortraitCard()/showPortraitCard() in script.js). */
-.portrait.has-card {
-  cursor: help;
-}
-
-.portrait-card {
-  position: absolute;
-  z-index: 40;
-  width: 250px;
-  padding: 8px 12px 10px;
-  border: 1px solid var(--accent);
-  border-radius: 4px;
-  background: var(--paper);
-  color: var(--ink);
-  box-shadow: 0 6px 18px rgba(0,0,0,.35);
-  font-size: var(--fs-small);
-}
-
-.portrait-card strong {
-  display: block;
-  margin-bottom: 4px;
-  font-family: 'Andalus',serif;
-  font-size: 16px;
-  font-weight: normal;
-}
-
-.portrait-card dl {
-  margin: 0;
-}
-
-.portrait-card dl div {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  line-height: 1.4;
-}
-
-.portrait-card dt {
-  color: var(--muted);
-}
-
-.portrait-card dd {
-  margin: 0;
-  font-weight: bold;
-  text-align: right;
-}
-
-.portrait.has-card:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
 }
 
 /* ==========================================================================

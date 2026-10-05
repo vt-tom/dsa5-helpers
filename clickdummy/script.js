@@ -2235,12 +2235,9 @@ function increaseStep(getValue, setValue, max, onChange, label = "Wert") {
   return btn;
 }
 
-// Zustände- und Aktive-Effekte-Panel als eigene Funktionen (statt Inline in renderStatus), damit das Titelblatt
-// (renderCover) dieselben Panels für seinen kompakten Status-Überblick wiederverwenden kann. Wert (gefüllte
-// Pips) in BEIDEN Modi reduzierbar, ganze Zeile nur im Bearbeiten-Modus löschbar. `limit` (nur von
-// renderCoverSidebar() übergeben, Status-Tab bleibt unlimitiert) deckelt die Liste auf dem Titelblatt — bei mehr
-// Zuständen als `limit` erscheint statt weiterer Zeilen ein Sprung-Button zum Status-Tab (Nutzer-Feedback
-// 2026-09-14, analog zu buildActiveEffectsSummary()), damit die linke Leiste nie scrollen muss.
+// Zustände-Panel als eigene Funktion (statt inline in renderStatus), damit die Titelblatt-Leiste dieselben Zeilen im
+// Reiter „Statuseffekte“ wiederverwenden kann (coverSideTabs()). Wert (gefüllte Pips) in BEIDEN Modi reduzierbar,
+// ganze Zeile nur im Bearbeiten-Modus löschbar. `limit` deckelt die Liste optional mit einem Sprung-Button zum Status-Tab.
 function buildConditionsPanel(limit) {
   const capped = limit && CONDITIONS.length > limit;
   const shown = capped ? CONDITIONS.slice(0, limit) : CONDITIONS;
@@ -2274,23 +2271,6 @@ function buildActiveEffectsPanel() {
     el("div", { class: "panel-title" }, "Aktive Effekte"),
     ...EFFECTS.map((e) => el("div", { class: "list-row" }, [el("span", { class: "name" }, e.name), el("span", { class: "cost" }, e.dur), rowDeleteBtn(EFFECTS, e)])),
   ]);
-}
-
-// Nutzer-Feedback 2026-09-14: auf dem Titelblatt sollen Aktive Effekte gar nicht mehr einzeln aufgelistet werden
-// (auch die vorherige "erste 4 + Alle anzeigen"-Begrenzung machte die linke Leiste noch scrollbar) — nur noch ein
-// knapper Hinweis, ob überhaupt welche aktiv sind, mit direktem Sprung zum Status-Tab (die volle Liste bleibt dort
-// über buildActiveEffectsPanel() unverändert). Damit bleibt die Höhe der Leiste unabhängig von der Effekt-Anzahl
-// konstant, siehe #coverSidebar-Kommentar in style.css.
-function buildActiveEffectsSummary() {
-  const count = EFFECTS.length;
-  const btn = el(
-    "button",
-    { type: "button", class: "show-all-btn" },
-    count ? `${count} aktive${count === 1 ? "r" : ""} Effekt${count === 1 ? "" : "e"} → Status` : "Keine aktiven Effekte"
-  );
-  if (count) btn.addEventListener("click", () => setTab("status"));
-  else btn.disabled = true;
-  return el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Aktive Effekte"), btn]);
 }
 
 function renderStatus() {
@@ -2478,45 +2458,18 @@ function renderDiseasePanel() {
 // Notizen-Fließtexte und Verbindungen (Name+Rolle) sind daher alle im Bearbeiten-Modus editierbar (kein
 // separater Spielmodus-Punkt dazu, also wie überall sonst nur dort).
 function renderNotes() {
-  const ids = SECTION_TABS.notes.map(([id]) => id);
-  return el("div", {}, NOTES_SECTIONS.filter((n) => ids.includes(n.id)).map((n) => section(n.id, renderNotesSection(n))));
+  return el("div", {}, NOTES_SECTIONS.map((n) => section(n.id, renderNotesSection(n))));
 }
 
-// --- Issues #31 (Aufteilung Notizen) + #27 (Persönliche Daten auf dem Titelblatt): zweite Runde, drei Konzepte ---
-// Erste Runde (2026-10-05) verworfen: A Steckbrief-Kasten über den Favoriten (zu viel Platz), B Porträt-Rückseite,
-// C Datenzeile im Kopf. Umschalter „Notizen: D | E | F“ (initNotesConceptToggle(), nach der Entscheidung entfernen).
-// Keines nimmt dem Titelblatt dauerhaft Platz weg:
-// - D „Unterreiter“: das Titelblatt bekommt Unterreiter wie die anderen Reiter (Favoriten | Steckbrief), der Steckbrief
-//   steht als eigener Abschnitt unter den Favoriten (Sprungmarke). Notizen ohne Persönliche Daten.
-// - E „Hover-Karte“: Darüberfahren oder Fokus auf das Porträt im Titelblatt zeigt die Daten als Karte daneben.
-//   Notizen unverändert.
-// - F „Reiter Held“: eigener Reiter „Held“ (Persönliche Daten + Hintergrundgeschichte), Notizen nur noch Notizen,
-//   Private Notizen, GM-Notizen. Titelblatt unverändert.
-// - G „Leiste mit Reitern“ (Nutzerwunsch 2026-10-05, Fähnchen-Idee vom 2026-10-01 neu aufgegriffen): LeP/AsP/KaP in der
-//   Titelblatt-Leiste kompakter (flache Leisten, Schips + Regeneration in einer Zeile), darunter EIN Kasten mit zwei
-//   echten Reitern „Zustände | Persönliche Daten“, der den Rest der Leiste füllt; aktive Effekte als Zeile unter den
-//   Zuständen. Notizen unverändert (dort werden die Daten bearbeitet).
-let NOTES_CONCEPT = "d";
-const ALL_NOTES_TABS = NOTES_SECTIONS.map(({ id, label }) => [id, label]);
-const NOTES_SECTION_TABS = {
-  d: ALL_NOTES_TABS.filter(([id]) => id !== "details"),
-  e: ALL_NOTES_TABS,
-  f: ALL_NOTES_TABS.filter(([id]) => id !== "details" && id !== "biography"),
-  g: ALL_NOTES_TABS,
-};
-const HERO_TAB = { id: "hero", label: "Held", icon: ICONS + "/categories/Weltliche.webp", title: "Held", hint: "" };
+// --- Titelblatt-Leiste, Variante G (Issues #27/#31, Nutzer-Entscheidung 2026-10-05) ---
+// LeP/AsP/KaP als flache Leisten, Schips + Regeneration in einer Zeile, darunter ein Kasten mit zwei Reitern
+// „Statuseffekte | Persönliche Daten“, der den Rest der Leiste füllt (nur der Inhalt scrollt). Die Daten werden
+// weiter unter Notizen bearbeitet. Verworfen: A Steckbrief-Kasten über den Favoriten (zu viel Platz),
+// B Porträt-Rückseite, C Datenzeile im Kopf, D Titelblatt-Unterreiter, E Hover-Karte am Porträt, F eigener Reiter „Held“.
+// Modul: parts/cover-sidebar.hbs, _coverSideTab/_applyCurrentTab, dsa5h.personalDetails.
 const filledAppearance = () => APPEARANCE.filter((a) => String(a.v ?? "").trim());
-const notesSection = (id) => NOTES_SECTIONS.find((n) => n.id === id);
-
-// Konzept D: Steckbrief-Abschnitt auf dem Titelblatt (bearbeitbar wie unter Notizen).
-function coverProfileSection() {
-  const panel = renderNotesSection(notesSection("details"));
-  panel.querySelector(".panel-title").textContent = "Steckbrief";
-  return panel;
-}
-
-// Konzept G: kompakte Ressourcen + Reiterkasten in der Titelblatt-Leiste.
 let COVER_SIDE_TAB = "conditions";
+
 function coverResourcesCompact() {
   const group = resourceGroup(true);
   const regen = group.querySelector(".regen-btn");
@@ -2525,8 +2478,8 @@ function coverResourcesCompact() {
 }
 
 function coverSideTabs() {
-  const tabs = [["conditions", "Zustände"], ["details", "Persönliche Daten"]];
-  const bar = el("div", { class: "side-tabs", role: "tablist", "aria-label": "Titelblatt-Leiste" }, tabs.map(([id, label]) => {
+  const tabs = [["conditions", "Statuseffekte"], ["details", "Persönliche Daten"]];
+  const bar = el("div", { class: "side-tabs", role: "tablist", "aria-label": "Titelblatt" }, tabs.map(([id, label]) => {
     const on = COVER_SIDE_TAB === id;
     const b = el("button", { type: "button", role: "tab", class: "side-tab" + (on ? " active" : ""), "aria-selected": String(on) }, label);
     b.addEventListener("click", () => { COVER_SIDE_TAB = id; renderContent(); });
@@ -2536,8 +2489,9 @@ function coverSideTabs() {
   if (COVER_SIDE_TAB === "conditions") {
     const list = buildConditionsPanel();
     list.querySelector(".panel-title").remove();
-    const effects = buildActiveEffectsSummary().querySelector(".show-all-btn");
-    body = [...list.childNodes, effects];
+    const more = el("button", { type: "button", class: "show-all-btn" }, "Alle Zustände und Effekte → Status");
+    more.addEventListener("click", () => setTab("status"));
+    body = [...list.childNodes, more];
   } else {
     const fields = filledAppearance();
     const edit = el("button", { type: "button", class: "show-all-btn" }, "Bearbeiten → Notizen");
@@ -2550,38 +2504,6 @@ function coverSideTabs() {
     ];
   }
   return el("div", { class: "panel side-tabs-panel" }, [bar, el("div", { class: "side-tabs-body", role: "tabpanel" }, body)]);
-}
-
-// Konzept F: Reiter „Held“.
-function renderHero() {
-  return el("div", {}, ["details", "biography"].map((id) => section(id, renderNotesSection(notesSection(id)))));
-}
-
-// Konzept E: Karte neben dem Porträt (nur Titelblatt).
-function syncPortraitCard() {
-  const portrait = document.getElementById("portrait");
-  document.querySelector(".portrait-card")?.remove();
-  const on = NOTES_CONCEPT === "e" && currentTab === "cover" && filledAppearance().length > 0;
-  portrait.classList.toggle("has-card", on);
-  if (on) portrait.tabIndex = 0; else portrait.removeAttribute("tabindex");
-  if (on) portrait.setAttribute("aria-label", "Porträt – Persönliche Daten anzeigen"); else portrait.removeAttribute("aria-label");
-  portrait.onmouseenter = portrait.onfocus = on ? showPortraitCard : null;
-  portrait.onmouseleave = portrait.onblur = on ? () => document.querySelector(".portrait-card")?.remove() : null;
-}
-
-function showPortraitCard() {
-  document.querySelector(".portrait-card")?.remove();
-  const portrait = document.getElementById("portrait");
-  const card = el("div", { class: "portrait-card", role: "tooltip" }, [
-    el("strong", {}, "Persönliche Daten"),
-    el("dl", {}, filledAppearance().map((a) => el("div", {}, [el("dt", {}, a.k), el("dd", {}, a.v)]))),
-  ]);
-  // Erst nach dem Gleiten (#1) messen, sonst sitzt die Karte über dem Porträt.
-  Promise.all(portrait.getAnimations().map((a) => a.finished.catch(() => {}))).then(() => {
-    const r = portrait.getBoundingClientRect();
-    Object.assign(card.style, { left: `${r.right + scrollX + 10}px`, top: `${r.top + scrollY}px` });
-    document.body.append(card);
-  });
 }
 
 function renderNotesSection(section) {
@@ -3089,7 +3011,7 @@ function resourceByLabel(label) {
 }
 
 // Eine LeP/AsP/KaP-Ressourcenleiste (Füllstand + "Aktuell / Max"-Zahl) — von renderHeader() (Kopfzeile) UND
-// coverResourcesBlock() (Titelblatt-Leiste) genutzt, da beide dieselben RESOURCES-Werte zeigen (siehe Kommentar
+// coverResourcesCompact() (Titelblatt-Leiste) genutzt, da beide dieselben RESOURCES-Werte zeigen (siehe Kommentar
 // über #coverSidebar in index.html). Der aktuelle Wert ist laut BEARBEITEN.md in BEIDEN Modi editierbar (anders
 // als z.B. die Mod/Zukauf-Felder auf dem Eigenschaften-Tab, die nur im Bearbeiten-Modus editierbar wirken) —
 // daher hier fest verdrahtet statt über die dortigen editMod-Flags gesteuert.
@@ -3153,17 +3075,6 @@ function fatePointsRow() {
   return wrap;
 }
 
-// LeP/AsP/KaP/Schips auf der dunklen Titelblatt-Leiste (#coverSidebar) — dieselben Bausteine wie die Kopfzeile
-// (resourceGroup()/fatePointsRow()), direkt auf dem dunklen Grund (kein eigenes .panel nötig, .bar/.bar-fill/
-// .bar-label/.resource-frame/.res-card/.regen-btn sind ohnehin schon für diesen Untergrund gestaltet, siehe .head
-// weiter oben in style.css).
-function coverResourcesBlock() {
-  return el("div", { class: "cover-resources" }, [
-    resourceGroup(true),
-    fatePointsRow(),
-  ]);
-}
-
 // Kopfzeile (Charaktername + LeP/AsP/KaP-Leisten + Schicksalspunkte): einzige Stelle, die #headName/#bars/
 // #fatePoints (index.html) befüllt — anders als der übrige Bogeninhalt liegt die Kopfzeile außerhalb von
 // #content und wird daher nicht von renderContent() mit erneuert, sondern separat bei jeder Änderung aufgerufen
@@ -3206,14 +3117,8 @@ function renderCoverSidebar() {
   const portrait = document.getElementById("portrait");
   sidebar.innerHTML = "";
   sidebar.appendChild(portrait);
-  // Konzept G (Issues #27/#31): kompakte Ressourcen + Reiterkasten statt Zustände-/Effekte-Panels.
-  if (NOTES_CONCEPT === "g") {
-    sidebar.append(coverResourcesCompact(), coverSideTabs());
-    return;
-  }
-  sidebar.appendChild(coverResourcesBlock());
-  sidebar.appendChild(buildConditionsPanel(4));
-  sidebar.appendChild(buildActiveEffectsSummary());
+  // Variante G (Issues #27/#31): kompakte Ressourcen + Reiterkasten „Statuseffekte | Persönliche Daten“.
+  sidebar.append(coverResourcesCompact(), coverSideTabs());
 }
 
 // Gegenstück zu renderCoverSidebar(): Porträt zurück an seinen Stammplatz in der Kopfzeile, bevor die (dann
@@ -3225,7 +3130,6 @@ function leaveCoverSidebar() {
 }
 
 function renderCover() {
-  if (NOTES_CONCEPT === "d") return el("div", {}, [section("favorites", favoritesPanel()), section("profile", coverProfileSection())]);
   return favoritesPanel();
 }
 
@@ -3293,7 +3197,6 @@ function renderContent() {
   // Verlassen des Tabs holt leaveCoverSidebar() das Porträt zurück in die Kopfzeile.
   if (currentTab === "cover") renderCoverSidebar();
   else leaveCoverSidebar();
-  syncPortraitCard();
   restoreFocus();
 }
 
@@ -3435,32 +3338,6 @@ function initWindowMenu() {
 }
 
 // Testschalter "Nur LeP" (#onlyLepToggle in index.html) — siehe ONLY_LEP/resourceGroup()-Kommentar.
-// Vergleichsschalter Issues #31/#27 (wird nach der Entscheidung wieder entfernt): Konzept Notizen + Titelblatt.
-function initNotesConceptToggle() {
-  const wrap = document.getElementById("notesConceptSwitch");
-  const apply = () => {
-    SECTION_TABS.notes = NOTES_SECTION_TABS[NOTES_CONCEPT];
-    currentSection.notes = SECTION_TABS.notes[0][0];
-    if (NOTES_CONCEPT === "d") { SECTION_TABS.cover = [["favorites", "Favoriten"], ["profile", "Steckbrief"]]; currentSection.cover = "favorites"; } else delete SECTION_TABS.cover;
-    if (NOTES_CONCEPT === "f") { SECTION_TABS.hero = [["details", "Persönliche Daten"], ["biography", "Hintergrundgeschichte"]]; currentSection.hero = "details"; }
-    const heroIdx = TABS.findIndex((t) => t.id === "hero");
-    if (NOTES_CONCEPT === "f" && heroIdx < 0) TABS.splice(TABS.findIndex((t) => t.id === "notes"), 0, HERO_TAB);
-    if (NOTES_CONCEPT !== "f" && heroIdx >= 0) { TABS.splice(heroIdx, 1); if (currentTab === "hero") currentTab = "notes"; }
-    RENDERERS.hero = renderHero;
-  };
-  wrap.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
-    NOTES_CONCEPT = b.dataset.variant;
-    apply();
-    wrap.querySelectorAll("button").forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", String(x === b)); });
-    renderRail();
-    renderContent();
-    renderSubNav();
-  }));
-  apply();
-  renderSubNav();
-  renderContent();
-}
-
 function initOnlyLepToggle() {
   const btn = document.getElementById("onlyLepToggle");
   btn.addEventListener("click", () => {
@@ -3523,7 +3400,6 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
-initNotesConceptToggle();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
 document.fonts.ready.then(fitName);
 initWindowMenu();

@@ -1781,9 +1781,23 @@
   color: var(--headink);
 }
 
+/* Variante G (Issues #27/#31): flachere Leisten, damit der Reiterkasten darunter Platz hat. */
 .dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-resource-frame {
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-bar {
+  height: 24px;
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-bar .dsa5h-bar-label {
+  font-size: 14px;
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-bar-label-value input {
+  padding: 0 3px;
+  font-size: 14px;
 }
 
 .dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-res-card {
@@ -1791,16 +1805,18 @@
   width: 100%;
 }
 
-/* Schicksalspunkte rücken dicht an den Regenerationsknopf (wie im Click-Dummy ~8px): sonst summieren sich
-   Leisten-gap (13px) + Ressourcen-Innenabstand + eigener Innenabstand zu einer großen Lücke (Nutzer-Feedback 2026-09-25). */
-.dsa5-helpers-sheet .dsa5h-cover-fate {
-  padding: 0 8px 4px;
-  margin-top: -5px;
-  background: var(--head-base);
+/* Schips links, Regeneration rechts in einer Zeile unter den Leisten (Variante G). */
+.dsa5-helpers-sheet .dsa5h-cover-res-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: -6px;
+  padding: 0 10px;
 }
 
 .dsa5-helpers-sheet .dsa5h-cover-fate .dsa5h-fate-points {
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .dsa5-helpers-sheet .dsa5h-cover-fate .dsa5h-fatepoint {
@@ -1810,11 +1826,98 @@
   background-size: 28px 28px;
 }
 
-/* --- Zustände in der Seitenleiste --- */
+/* --- Reiterkasten „Zustände | Persönliche Daten“ in der Seitenleiste (Variante G) --- */
 
-/* Kompaktes Zustände-Panel (Klick-Dummy buildConditionsPanel(4)): Icon + Link zum Statuseffekt (conditionShow,
-   von der Basis-Sheet-Klasse geerbt) + Wert; bei mehr als 4 Zuständen springt ein Button auf den Status-Tab
-   (dsa5h.coverConditionsMore, siehe _prepareContext) statt die Leiste scrollbar zu machen. */
+/* Füllt den Rest der Leiste, nur der Inhalt scrollt (Click-Dummy coverSideTabs()). */
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tabs-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 140px;
+}
+
+.dsa5-helpers-sheet .dsa5h-side-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(224, 192, 128, .3);
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tab {
+  flex: 1;
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 6px 4px 5px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--headmuted);
+  font-family: 'Andalus', serif;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tab[aria-selected="true"] {
+  border-bottom-color: var(--accent);
+  color: var(--headink);
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.dsa5-helpers-sheet .dsa5h-side-tabs-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.dsa5-helpers-sheet .dsa5h-side-tabs-body[hidden] {
+  display: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-side-details {
+  margin: 0;
+  padding: 6px 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-side-details div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 0;
+  border-top: 1px solid rgba(224, 192, 128, .12);
+  color: var(--headink);
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-sheet .dsa5h-side-details div:first-child {
+  border-top: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-side-details dt {
+  flex: none;
+  color: var(--headmuted);
+}
+
+.dsa5-helpers-sheet .dsa5h-side-details dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-weight: bold;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dsa5-helpers-sheet .dsa5h-side-empty {
+  margin: 8px 10px;
+  color: var(--headmuted);
+  font-size: var(--fs-small);
+}
+
+/* Zeilen im Reiter Zustände: Icon + Link zum Statuseffekt (conditionShow, von der Basis-Sheet-Klasse geerbt) +
+   Stufe; darunter der Sprung zum Status-Reiter. */
 .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-cover-condition {
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr) auto auto;
@@ -1873,6 +1976,10 @@
   .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-step:hover {
     color: var(--accent);
     background-color: rgba(224,192,128,.18);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tab[aria-selected="false"]:hover {
+    color: var(--accent);
   }
 }
 
@@ -4817,6 +4924,15 @@
 
   .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar {
     border-bottom: 1px solid rgba(224,192,128,.3);
+  }
+
+  /* Leiste steht hier über dem Kopf statt daneben: Reiterkasten mit fester Höhe statt „Rest füllen“. */
+  .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tabs-panel {
+    flex: none;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-side-tabs-body {
+    max-height: 220px;
   }
 
   .dsa5-helpers-sheet .dsa5h-head {
