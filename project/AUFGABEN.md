@@ -9,11 +9,11 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Version 0.5.0 — veröffentlicht 2026-10-05
 
-Erst als Beta (Pre-release), nach Live-Prüfung am selben Tag zum normalen Release erklärt, `release/0.5.0` nach `main` gemergt, Issues #1, #27, #30, #31 geschlossen. Enthalten: #7 CSS aufräumen, #30 Favoriten Ausrüstung/SF, #1 Gleiten beim Reiterwechsel, #27/#31 Titelblatt-Leiste mit Reitern, Hausregelbuch mit Wundeinschätzung (Knigge) und Helfen, Fokus-Fix bei Eingaben.
+Erst als Beta (Pre-release), nach Live-Prüfung am selben Tag zum normalen Release erklärt, `release/0.5.0` nach `main` gemergt, Issues #1, #27, #30, #31 geschlossen. Enthalten: #7 CSS aufräumen, #30 Favoriten Ausrüstung/SF, #1 Gleiten beim Reiterwechsel, #27/#31 Titelblatt-Leiste mit Reitern, Hausregelbuch mit Wundeinschätzung (Knigge) und Helfen, Fokus-Fix bei Eingaben. Release v0.5.0 am selben Tag auf Nutzerwunsch ersetzt (Tag neu gesetzt), um den Urheber „VTTom“ bei „Helfen“ aufzunehmen — wer die erste Fassung schon installiert hatte, bekommt kein Update angeboten.
 
-## Nächste Version (0.5.1)
+## Nächste Version
 
-Branch `release/0.5.1` (angelegt 2026-10-05). Bisher: Urheber „VTTom“ bei der Hausregel „Helfen“ (Nutzer 2026-10-05). Versionsnummer vorläufig, der Nutzer legt sie beim Release fest.
+Noch nicht geplant. Neue Arbeit auf einem Branch `release/<version>` (siehe PROJEKTDOKU.md).
 
 ## Live in Foundry prüfen
 
