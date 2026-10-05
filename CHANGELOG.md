@@ -6,7 +6,7 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 ### Neu
 
-- Bogen wechseln mit einem Klick: In der Titelleiste jedes Heldenbogens (auch des Systembogens) sitzt ein Knopf ⇄. Er zeigt die verfügbaren Heldenbögen – den Systembogen als „Systemstandard“ –, ein Klick wechselt sofort, der neue Bogen öffnet sich an derselben Stelle. Bisher ging das nur über ⋮ → „Bogen konfigurieren“. Den Knopf sehen alle, denen der Held gehört; die Wahl gilt wie dort für alle Nutzer dieses Helden.
+- Bogen wechseln mit einem Klick: In der Titelleiste jedes Heldenbogens (auch des Systembogens) sitzt ein Knopf ⇄. Er zeigt die verfügbaren Heldenbögen – den Systembogen als „Systemstandard“ –, ein Klick wechselt sofort, der neue Bogen öffnet sich an derselben Stelle. Fährt man mit der Maus über einen Eintrag, erscheint der Held an derselben Stelle schon im anderen Bogen (nur als Vorschau, nicht bedienbar); verlässt man das Menü, ist wieder der bisherige Bogen zu sehen. Bisher ging das nur über ⋮ → „Bogen konfigurieren“. Den Knopf sehen alle, denen der Held gehört; die Wahl gilt wie dort für alle Nutzer dieses Helden.
 
 ## [0.5.0] — 2026-10-05
 

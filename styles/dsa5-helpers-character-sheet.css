@@ -221,6 +221,24 @@
   white-space: nowrap;
 }
 
+/* --- Bogen-Umschalter: Vorschau --- */
+
+/* Vorschau beim Darüberfahren im Menü ⇄ (scripts/sheet-switcher.js): die anderen Bögen werden unsichtbar an derselben
+   Stelle aufgebaut und nur eingeblendet, der aktuelle Bogen solange ausgeblendet. Gilt für alle Heldenbögen, auch die des
+   Systems. Die Vorschau ist nicht bedienbar; das Menü liegt als Popover ohnehin darüber. */
+.application.dsa5h-sheet-preview {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.application.dsa5h-sheet-preview.dsa5h-preview-shown {
+  visibility: visible !important;
+}
+
+.application.dsa5h-preview-hidden {
+  visibility: hidden !important;
+}
+
 /* --- Fensterinhalt & Grundschrift --- */
 
 .dsa5-helpers-sheet.dsa5-helpers-sheet .window-content {

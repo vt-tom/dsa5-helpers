@@ -17,7 +17,7 @@ Noch nicht geplant. Neue Arbeit auf einem Branch `release/<version>` (siehe PROJ
 
 ## Live in Foundry prüfen
 
-- **Bogen-Umschalter** (Branch `feature/sheet-switcher`, noch keiner Version zugeordnet): Knopf ⇄ in der Titelleiste von Helfer- und Systembogen, Menü-Einträge (Systemstandard, Helfer-Heldenbogen, ggf. weitere), Wechsel als Spieler, neuer Bogen an derselben Stelle, Menü-Position an der Plakette.
+- **Bogen-Umschalter** (Branch `feature/sheet-switcher`, noch keiner Version zugeordnet): Knopf ⇄ in der Titelleiste von Helfer- und Systembogen, Menü-Einträge (Systemstandard, Helfer-Heldenbogen, ggf. weitere), Wechsel als Spieler, neuer Bogen an derselben Stelle, Menü-Position an der Plakette. Vorschau beim Darüberfahren: Wartezeit beim Aufbau, kein Aufblitzen beim Wechsel, keine liegengebliebenen unsichtbaren Fenster (z. B. `foundry.applications.instances` nach dem Schließen des Menüs), keine ungewollten Akteur-Updates durch die Vorschau-Instanzen.
 - **#7 Touch:** erst mit dem Mobil-UI (`feature/mobile`).
 
 ## Offene Entscheidungen
