@@ -462,6 +462,19 @@ const PATRONS = ["Patron (Demo)"];
 // weil viele Demo-Listen reine Namenslisten sind.
 const ON_USE_ITEMS = new Set(["Elfenbogen", "Waldläuferkluft", "Schicksalskind", "Naturverbundenheit I", "Reiseproviant", "Elfischer Säbel"]);
 
+// Favoriten bei Sonderfertigkeiten (Issue #30): die Demo-SF sind reine Namenslisten, daher Favoriten per Name. Im
+// Modul dasselbe Flag dsa5-helpers.favorites (Item-IDs) wie bei Talenten/Waffen.
+const FAV_SPECIALS = new Set(["Finte", "Schicksalskind"]);
+
+// Regeltext je Sonderfertigkeit (im System system.rule.value des specialability-Items, im Item-Sheet „Regel“).
+// Demo-Platzhalter, nur zum Vergleich der Darstellung (Issue #30).
+const SPEC_RULES = {
+  "Finte": "Der Angriff wird um bis zu 3 Punkte erschwert, die Verteidigung des Gegners um denselben Wert. (Demo-Text)",
+  "Kampfreflexe": "Initiative +2. (Demo-Text)",
+  "Schicksalskind": "Einmal pro Spielabend darf ein zusätzlicher Schicksalspunkt eingesetzt werden. (Demo-Text)",
+  "Abrichter": "Erlaubt das Abrichten von Tieren über die Fertigkeit Tierkunde. (Demo-Text)",
+};
+
 const TRADITION_ARTIFACTS = [
   { name: "Amulett aus Silberbirke", img: A.abilityStaff, category: "Lebensring", volume: "3 / 4", abilities: [{ name: "Naturverbundenheit I", cost: 2 }] },
 ];
@@ -536,6 +549,10 @@ const INVENTORY_CATEGORIES = [
   ]},
   { label: "Munition", items: [
     { name: "Pfeile", eq: false, qty: 18, weight: "0,9", price: "18 S", img: A.rangeWeapon },
+  ]},
+  // Verbrauchsgegenstand (im System Item-Typ consumable: Kontextmenü „Verbrauchen“, sheet.consumeItem), Issue #30.
+  { label: "Heilmittel", items: [
+    { name: "Heiltrank", qty: 2, weight: "0,2", price: "15 S", img: A.tabInventory, consumable: true, fav: true },
   ]},
   { label: "Taschen & Behältnisse", items: [
     { name: "Rucksack", eq: true, qty: 1, capacity: 20, weight: "1,0", price: "8 S", img: A.tabInventory, children: [
