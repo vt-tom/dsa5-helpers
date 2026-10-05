@@ -225,7 +225,7 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 - **Dateien:**
   - `scripts/mobile/mobile.js` — Einstellungen (`hybridPlay`, gemerkte Oberfläche), Umhüllen von `game.setupGame`, Auswahl-Overlay, `noCanvas`-Umschaltung, Body-Klasse, `CONFIG.ui`-Einträge, App-Shell (Kopf, untere Navigation), Umhängen von Chat/Kampf.
   - `scripts/mobile/ui/*.js` — Unterklassen für `CONFIG.ui`/`CONFIG.ux` (Notifications ohne Auflösungs-Warnung, ggf. Combat-Tracker, Touch-ContextMenu).
-  - `styles/dsa5-helpers-mobile.css` — Foundry-Shell + Fenster als Vollbild + Bogen-Mobil-Layout. Eigene Datei, damit die Desktop-CSS (Issue #7 „CSS aufräumen“) nicht noch größer wird. **Vor Mobil sinnvollerweise #7 erledigen** (siehe E12).
+  - `styles/dsa5-helpers-mobile.css` — Foundry-Shell + Fenster als Vollbild + Bogen-Mobil-Layout. Eigene Datei, damit die Desktop-CSS (Issue #7 „CSS aufräumen“) nicht noch größer wird. **#7 kommt vorher** (entschieden, siehe E12).
   - `templates/mobile/*.hbs` — nur für Kopf/Navigation der Shell.
 - **Kein Build-Schritt, kein Framework** (Grundsatz bleibt).
 - **Hooks:** `init` (Einstellungen registrieren, `setupGame` umhüllen), `ready` (Shell aufbauen, eigenen Akteur öffnen), `renderApplicationV2` (Fenster als Vollbild markieren), `renderChatMessage` / `updateCombat` (Badges).
@@ -248,7 +248,7 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 | **E9** | Wo sieht man das Würfelergebnis? | Toast mit Ergebnis + „Im Chat ansehen“, kein automatischer Reiterwechsel |
 | **E10** | Ein Bogen mit Mobil-Layout oder eigener Mobilbogen? | Ein Bogen, Mobil-Layout per CSS/Body-Klasse (eine Wahrheit, keine doppelte Pflege) |
 | **E11** | Drag & Drop mobil ersetzen? | v1 nur, wo es zwingend ist (Behälter), über Auswahl. Rest nicht |
-| **E12** | Erst CSS aufräumen (Issue #7)? | Ja, vorher. Das Mobil-CSS setzt auf sauberen Tokens/Strukturen auf |
+| **E12** | Erst CSS aufräumen (Issue #7)? | **Entschieden (Nutzer, 2026-10-05):** Ja, vorher, in 0.5.0 (`release/0.5.0`). #7 liefert schon: eine fest gegliederte Desktop-CSS-Datei, zentrale Variablen für Trefferflächen und Schriftgrößen (mobil nur umstellen) und alle `:hover`-Regeln in `@media (hover: hover)`. Das Mobil-CSS kommt danach als eigene Datei (Abschnitt 8) |
 | **E13** | Teil von `dsa5-helpers` oder eigenes Modul (z. B. `dsa5-mobile`)? | Teil von dsa5-helpers (braucht ohnehin unseren Bogen). Shell-Code aber in `scripts/mobile/` getrennt halten, damit eine spätere Auslagerung möglich bleibt |
 | **E14** | Click-Dummy mobil? | Ja: Click-Dummy um eine Mobil-Ansicht erweitern (Shell + Bogen, Gerätegrößen per Umschalter), Design dort iterieren wie bisher |
 | **E15** | Versionsplanung | Eigener Meilenstein `0.5.0` (o. ä.) mit Issues je Phase |
