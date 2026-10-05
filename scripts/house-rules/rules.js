@@ -11,8 +11,7 @@ export const SETTING = 'houseRules';
 
 export const HOUSE_RULES = [
   { id: 'woundCheck', icon: 'fas fa-heart-pulse', credit: 'Knigge', page: `modules/${MODULE_ID}/templates/house-rules/wound-check.hbs` },
-  // Ohne Urheber-Angabe: Idee aus dem Projekt selbst (credit leer → keine „Idee:“-Zeile).
-  { id: 'helpAction', icon: 'fas fa-handshake-angle', credit: '', page: `modules/${MODULE_ID}/templates/house-rules/help-action.hbs` },
+  { id: 'helpAction', icon: 'fas fa-handshake-angle', credit: 'VTTom', page: `modules/${MODULE_ID}/templates/house-rules/help-action.hbs` },
 ];
 
 /** Aktive Regeln der Welt als { id: true }. */

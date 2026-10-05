@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.5.1] — unveröffentlicht
+
+### Geändert
+
+- Hausregelbuch: Die Hausregel „Helfen“ nennt jetzt ihren Urheber (Idee: VTTom).
+
 ## [0.5.0] — 2026-10-05
 
 ### Neu

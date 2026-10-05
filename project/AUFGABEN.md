@@ -11,11 +11,9 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 Erst als Beta (Pre-release), nach Live-Prüfung am selben Tag zum normalen Release erklärt, `release/0.5.0` nach `main` gemergt, Issues #1, #27, #30, #31 geschlossen. Enthalten: #7 CSS aufräumen, #30 Favoriten Ausrüstung/SF, #1 Gleiten beim Reiterwechsel, #27/#31 Titelblatt-Leiste mit Reitern, Hausregelbuch mit Wundeinschätzung (Knigge) und Helfen, Fokus-Fix bei Eingaben.
 
-## Nächste Version
+## Nächste Version (0.5.1)
 
-Noch nicht geplant. Neue Arbeit auf einem Branch `release/<version>` (siehe PROJEKTDOKU.md).
-
-- Offen aus 0.5.0: Urheber für die Hausregel „Helfen“ im Buch (derzeit keiner, `credit` in `HOUSE_RULES`).
+Branch `release/0.5.1` (angelegt 2026-10-05). Bisher: Urheber „VTTom“ bei der Hausregel „Helfen“ (Nutzer 2026-10-05). Versionsnummer vorläufig, der Nutzer legt sie beim Release fest.
 
 ## Live in Foundry prüfen
 
