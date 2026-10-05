@@ -15,17 +15,17 @@ Zuerst als Beta (Pre-release, Beta-Kanal), am selben Tag zum normalen Release er
 
 Branch `release/0.5.0` (angelegt 2026-10-05). Reihenfolge (Nutzer, 2026-10-05): erst #7, danach die übrigen Issues für 0.5.0 auswählen.
 
-**#7 CSS aufräumen** (Meilenstein 0.5.0). Abstimmung mit `feature/mobile` erledigt (2026-10-05): dort gibt es bisher nur die Planung, am CSS wurde nichts geändert. #7 kommt vor dem Mobil-CSS (MOBILE.md, E12). Umfang (Nutzer-Entscheidung 2026-10-05):
-- `styles/dsa5-helpers-character-sheet.css` bleibt **eine Datei**, wird aber fest gegliedert: Tokens → Rahmen/Fenster → Rail → Kopf → gemeinsame Bausteine → je Reiter (in Rail-Reihenfolge) → Dunkles Thema/Zustände → Responsive. Nachgeschobene Abschnitte („continued…“, „UI/UX-Review Paket A/B/D“, „Paket G“) kommen zu ihrem Reiter oder Baustein. Wo die Reihenfolge das Verhalten bestimmt, bleibt sie erhalten (Spezifität vorher prüfen).
-- **Mobil-Vorbereitung, ohne sichtbare Änderung am Desktop:** zentrale Variablen für Trefferflächen und Schriftgrößen (mobil später nur umstellen), alle `:hover`-Regeln in `@media (hover: hover)`.
-- `clickdummy/style.css` im selben Zug genauso gliedern.
-- Danach gründlicher Live-Test aller Reiter in Foundry (Hell/Dunkel, schmales Fenster).
+**#7 CSS aufräumen** umgesetzt (2026-10-05, Konventionen in PROJEKTDOKU.md „CSS-Gliederung“). Statisch und per Stilvergleich in Chrome geprüft (alle Reiter, Hell/Dunkel, Spiel/Bearbeiten, schmale Fenster, Hover/Fokus, reduzierte Bewegung: berechnete Stile identisch) — live noch zu prüfen, siehe unten. Issue erst nach der Live-Prüfung schließen.
 
-Kandidaten, noch ohne Meilenstein (nach #7 auswählen):
+Kandidaten, noch ohne Meilenstein (jetzt auswählen):
 - **#1 Animation zwischen Titelblatt und den anderen Seiten** (von @Lyynix, ohne Beschreibung) — klären, was gemeint ist.
 - **#27 Persönliche Daten auf dem Titelblatt** — nur, wenn bis dahin eine passende Lösung gefunden ist.
 - **HUD des Moduls** (siehe Backlog) — würde zum Einstieg der Würfelstatistik passen, ist aber eigenständig zu planen.
 - **#30 Favoriten für Ausrüstung und Sonderfertigkeiten**, **#31 Konzept Aufteilung Notizen** (beide offen, ohne Meilenstein).
+
+## Live in Foundry prüfen (0.5.0, release/0.5.0)
+
+- **#7 CSS neu gegliedert:** Optik darf sich nirgends geändert haben. Alle 10 Reiter in Hell/Dunkel und Spiel/Bearbeiten durchklicken, schmales Fenster (Container-Queries), minimiertes Fenster, Titelleisten-Plakette, Hover-Effekte (Würfel-Zoom, Rail-Namen, Stepper, Schadensknopf, OnUse in Rüstungskacheln), Zauber-/Liturgie-Dialog im Körper-Reiter, Steigerungsplaner-Reiter, Changelog- und Würfelstatistik-Fenster. Mit Touch-Gerät (falls zur Hand): Antippen lässt keinen Hover-Zoom stehen.
 
 ## Live in Foundry prüfen (0.4.0, veröffentlicht)
 
