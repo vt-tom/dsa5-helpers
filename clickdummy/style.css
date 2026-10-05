@@ -3922,9 +3922,10 @@ button.fav-chip-roll {
 }
 
 /* Kurzübersicht der übrigen Waffen (statt der Waffentabellen): Bild | Name + Technik | Würfel | TP | Stern */
+/* Zweispaltig erst ab genug Breite (wie im Modul, Rückmeldung 2026-10-05). */
 .short-weapons {
   display: grid;
-  grid-template-columns: repeat(2,minmax(0,1fr));
+  grid-template-columns: repeat(auto-fill,minmax(380px,1fr));
   column-gap: 14px;
 }
 

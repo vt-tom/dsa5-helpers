@@ -25,7 +25,7 @@ Kandidaten, noch ohne Meilenstein (jetzt auswählen):
 
 ## Live in Foundry prüfen (0.5.0, release/0.5.0)
 
-- **Kampf › Körper, „Weitere Waffen“** (Rückmeldung 2026-10-05: fehlte in Foundry, weil das System nur Waffen in den Händen als getragen führt): listet jetzt alle Waffen außerhalb der Hände plus Angriffe aus Eigenschaften. Prüfen: nicht ausgerüstete Nah-/Fernkampfwaffen erscheinen mit plausiblen AT/PA/FK- und TP-Werten (wie im Probendialog), Würfeln funktioniert, Schild-Klick nimmt die Waffe in die Hand (verschwindet dann aus der Liste, die bisherige Waffe der Hand erscheint), Rechtsklick aufs Schild öffnet die Handwahl, lange Namen werden mit „…“ gekürzt (Tooltip), Hell/Dunkel, schmales Fenster.
+- **Kampf › Körper, „Weitere Waffen“** (Rückmeldung 2026-10-05: fehlte in Foundry, weil das System nur Waffen in den Händen als getragen führt): listet jetzt alle Waffen außerhalb der Hände plus Angriffe aus Eigenschaften. Prüfen: nicht ausgerüstete Nah-/Fernkampfwaffen erscheinen mit plausiblen AT/PA/FK- und TP-Werten (wie im Probendialog), Würfeln funktioniert, Schild-Klick nimmt die Waffe in die Hand (verschwindet dann aus der Liste, die bisherige Waffe der Hand erscheint), Rechtsklick aufs Schild öffnet die Handwahl, lange Namen und Kampftechniken werden mit „…“ gekürzt (Tooltip), Technik + KTW in einer Zeile, einspaltig bei normaler Breite und zweispaltig erst ab ca. 1000 px (Formatierung nach Rückmeldung 2026-10-05 korrigiert), Hell/Dunkel, schmales Fenster.
 - **#7 Touch:** Antippen auf einem Touch-Gerät lässt keinen Hover-Zoom stehen — derzeit kein Gerät zum Testen (passt zu `feature/mobile`).
 
 ## Offene Entscheidungen
