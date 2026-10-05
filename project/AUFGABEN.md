@@ -24,6 +24,8 @@ Für 0.5.0 ausgewählt (Nutzer, 2026-10-05; Meilenstein 0.5.0, Bearbeiter vt-tom
 - **Hausregel „Helfen“** (Nutzerwunsch 2026-10-05): umgesetzt in Modul und Click-Dummy (Knopf in Kampf › Schnellaktionen, Talentwahl, Probe, QS-Hinweis im Chat). Ohne Urheberangabe im Buch — falls jemand genannt werden soll, `credit` in `HOUSE_RULES` setzen. Live zu prüfen (siehe unten).
 - **#31 + #27** umgesetzt als Variante G „Leiste mit Reitern“ (Nutzer-Entscheidung 2026-10-05) in Modul und Click-Dummy, live zu prüfen (siehe unten). Notizen-Reiter bleibt unverändert (fünf Unterreiter, dort werden die Daten bearbeitet). Issues erst bei Release-Freigabe schließen.
 
+**Release 0.5.0 vorbereitet (2026-10-05):** `module.json` auf 0.5.0, CHANGELOG-Abschnitt datiert (2026-10-05 — bei späterer Veröffentlichung Datum anpassen) + Vergleichslink, Release-Notizen aus dem CHANGELOG. Offen, nur mit Freigabe des Nutzers: Branch pushen, Tag `v0.5.0`, Release (wie 0.4.0 erst als Beta/Pre-release, dann zum normalen Release erklären), `release/0.5.0` nach `main` mergen, danach Issues #1, #27, #30, #31 schließen und PROJEKTDOKU „Zuletzt veröffentlicht“ nachziehen. Ablauf: [RELEASE.md](RELEASE.md).
+
 ## Live in Foundry prüfen (0.5.0, release/0.5.0)
 
 - **Hausregelbuch:** Moduleinstellungen → „Hausregelbuch öffnen“ (auch als Spieler). Liste ↔ Buch, „Im Buch lesen“ springt auf die Regelseite; Buch beginnt mit dem Inhaltsverzeichnis, Blättern über die Pfeile neben der Seite, das Inhaltsverzeichnis und ← → (Fokus im Fenster), Umblätter-Animation (aus bei „Bewegung reduzieren“). Schalter nur als SL (Liste und oben rechts im Seitenkopf), Spieler sehen „Aktiv/Nicht aktiv“; offenes Fenster bei Spielern aktualisiert sich beim Umschalten. Hell/Dunkel, Font-Awesome-Symbole.
