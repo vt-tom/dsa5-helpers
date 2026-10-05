@@ -2,6 +2,7 @@
 const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
+import { isRuleActive, woundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -28,6 +29,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hOpenCast: this._openCastDialog,
       dsa5hCloseCast: this._closeCastDialog,
       dsa5hJumpCombatSkill: this._jumpToCombatSkill,
+      dsa5hCoverSideTab: this._setCoverSideTab,
+      dsa5hOpenDetails: this._openPersonalDetails,
     },
     // DSA5's own roll/damage actions (attribute dice, combat rolls, advances, item toggles, …) live in
     // ownerRollActions/ownerActions, not the plain `actions` table above — a separate permission-gated dispatch
@@ -44,6 +47,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       chRollCombat: this._chRollCombat,
       rollAggregatedProbe: { handler: this._handleAggregatedProbe, buttons: [0, 2] },
       rollDisease: this._rollDisease,
+      dsa5hWoundCheck: this._woundCheck,
+      dsa5hHelpAction: this._helpAction,
     },
     ownerActions: {
       schipUpdate: this._schipUdate,
@@ -74,6 +79,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       selectTraditionItem: this._selectTraditionItem,
       dsa5hBodyFigure: this._setBodyFigure,
       dsa5hTwoHandedSide: this._setTwoHandedSide,
+      dsa5hSwapGrip: this._swapGrip,
+      dsa5hConsume: this._consume,
     },
     // Foundry concatenates majorButtons across the inheritance chain (ApplicationV2#_initializeApplicationOptions),
     // so this adds a third header-control icon next to DSA5's own eye/lock buttons instead of replacing them.
@@ -106,6 +113,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { id: PLANNER_TAB_ID, label: "Steigerungsplaner", icon: "systems/dsa5/icons/categories/Career.webp", hint: "" },
     ];
   _currentTab = 'cover';
+  // Reiter im Kasten der Titelblatt-Leiste: 'conditions' | 'details' (Variante G, Issues #27/#31).
+  _coverSideTab = 'conditions';
   _subtabs = { skills: 'body', combat: 'body', magic: 'spells', religion: 'spells', notes: 'details' };
   _search = { talent: '', gear: '', combatskill: '' };
   _favoritePending = false;
@@ -122,7 +131,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   _toggleDisabled(disabled) {
     super._toggleDisabled(disabled);
     // Observers may still navigate tabs even when Foundry disables document edits.
-    this.element?.querySelectorAll('[data-action^="dsa5hSet"], [data-action="dsa5hTheme"], [data-action="dsa5hOnlyLearned"], [data-action="dsa5hClearTalentSearch"], [data-action="dsa5hJumpCombatSkill"]')
+    this.element?.querySelectorAll('[data-action^="dsa5hSet"], [data-action="dsa5hTheme"], [data-action="dsa5hOnlyLearned"], [data-action="dsa5hClearTalentSearch"], [data-action="dsa5hJumpCombatSkill"], [data-action="dsa5hCoverSideTab"], [data-action="dsa5hOpenDetails"]')
       .forEach(button => { button.disabled = false; });
   }
 
@@ -149,9 +158,23 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static DRAG_EXCLUDE = 'button, a, input:not([disabled]), select, textarea, label, details, [data-action], [contenteditable], [draggable="true"]';
   static FOCUS_KEYS = ['action', 'val', 'char', 'mode', 'hand', 'fct', 'attr', 'tab', 'subtab', 'parentTab', 'which'];
 
+  // Eingabefelder (Rückmeldung 2026-10-05: nach einer Änderung in Notizen › Persönliche Daten sprang Tab auf die
+  // Reiterleiste): Foundry stellt den Fokus selbst über id/name wieder her, aber noch bevor _applyCurrentTab() den Reiter
+  // sichtbar macht — alle Reiter stecken in einem Part und kommen „hidden“ an, ein verstecktes Feld lässt sich nicht
+  // fokussieren. Verschobene Kopfteile (Titelblatt) verlieren den Fokus beim Umhängen ebenfalls. Deshalb merken wir uns
+  // auch Felder (wie Foundry über id bzw. name, dazu die Cursorposition) und fokussieren sie nach _applyCurrentTab() neu.
   _focusKey() {
     const active = document.activeElement;
-    if (!active?.dataset?.action || !this.element?.contains(active)) return null;
+    if (!active || !this.element?.contains(active)) return null;
+    if (!active.dataset?.action) {
+      const named = active.id ? null : active.closest?.('[name]');
+      const selector = active.id ? `#${CSS.escape(active.id)}` : named?.name ? `${named.tagName}[name="${CSS.escape(named.name)}"]` : null;
+      if (!selector) return null;
+      let start = null;
+      let end = null;
+      try { start = active.selectionStart ?? null; end = active.selectionEnd ?? null; } catch { /* Feldtyp ohne Auswahl */ }
+      return { selector, start, end };
+    }
     const data = Object.fromEntries(this.constructor.FOCUS_KEYS.map(key => [key, active.dataset[key]]));
     data.itemId = active.closest('[data-item-id]')?.dataset.itemId;
     data.descriptor = active.closest('[data-descriptor]')?.dataset.descriptor;
@@ -161,6 +184,15 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
 
   _restoreFocus(key) {
     if (!key) return;
+    if (key.selector) {
+      const field = this.element.querySelector(key.selector);
+      if (!field || field === document.activeElement) return;
+      field.focus({ preventScroll: true });
+      if (key.start !== null) {
+        try { field.setSelectionRange(key.start, key.end); } catch { /* z. B. type=number */ }
+      }
+      return;
+    }
     const match = [...this.element.querySelectorAll(`[data-action="${CSS.escape(key.action)}"]`)].find(el =>
       this.constructor.FOCUS_KEYS.every(k => el.dataset[k] === key[k])
       && el.closest('[data-item-id]')?.dataset.itemId === key.itemId
@@ -223,12 +255,23 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // Kampftechnik je Waffe (parts/combatskill-link.hbs): wie im System per Name gesucht (actor-dsa5.js
     // combatskills.find(s => s.name === item.system.combatskill.value)), mit Kampftechnikwert für die Anzeige.
     const combatSkillIndex = Object.fromEntries((prepare.combatskills ?? []).map(item => [item.name, { id: item._id, name: item.name, value: item.system.talentValue?.value }]));
+    const body = limited ? null : this._bodyContext(prepare);
+    // Favoriten-Waffen: alle Waffen wie unter „Weitere Waffen“, nicht nur getragene — das System führt nur Waffen in
+    // den Händen als getragen (Issue #30). Ausrüstung samt Inhalt der Behältnisse, ohne Waffen (die stehen oben);
+    // Sonderfertigkeiten aus allen Reitern (Issue #30).
+    const unique = items => [...new Map(items.map(item => [item._id, item])).values()];
+    const withChildren = items => items.flatMap(item => [item, ...withChildren(item.children ?? [])]);
+    const equipment = withChildren(Object.values(prepare.inventory ?? {}).flatMap(section => section?.items ?? []))
+      .filter(item => !['meleeweapon', 'rangeweapon'].includes(item.type))
+      .map(item => Object.assign(item, { dsa5hConsumable: ['consumable', 'plant'].includes(item.type) }));
     const favoriteGroups = [
       { label: 'skills', items: skillGroups.flatMap(group => group.items) },
-      { label: 'DSA5HELPERS.Weapons', weapon: true, items: weaponGroups.flatMap(group => group.items) },
+      { label: 'DSA5HELPERS.Weapons', weapon: true, items: [...weaponGroups.flatMap(group => group.items), ...(body?.others ?? []).map(other => other.item)] },
       { label: 'spells', items: [...(magic.spellList ?? []), ...(magic.ritualList ?? []), ...(magic.spellActions ?? []).flatMap(group => group.items), ...(magic.ritualActions ?? []).flatMap(group => group.items)] },
       { label: 'liturgies', items: [...(magic.liturgy ?? []), ...(magic.ceremony ?? [])] },
-    ].map(group => ({ ...group, items: group.items.filter(item => favorites[item._id]) })).filter(group => group.items.length);
+      { label: 'DSA5HELPERS.Tabs.inventory', equipment: true, items: equipment },
+      { label: 'DSA5HELPERS.SpecialAbilities', special: true, items: Object.values(specs).flatMap(groups => groups.flatMap(group => group.items)) },
+    ].map(group => ({ ...group, items: unique(group.items.filter(item => favorites[item._id])) })).filter(group => group.items.length);
     // Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen als Unter-Tabs statt vier gestapelter Volltext-Panels
     // (Nutzer-Feedback 2026-09-19) — Sichtbarkeit der letzten beiden Reiter folgt denselben Bedingungen wie bisher
     // die Panels selbst ({{#if owner}}/{{#if isGM}} in notes.hbs).
@@ -283,12 +326,17 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Grundwerte (Eigenschaften-Reiter): Initiative abgerundet wie oben und im Systembogen.
       initiative: Math.floor(status.initiative?.value ?? 0),
       regenerations: ['wounds', 'astralenergy', 'karmaenergy'].filter(id => this.actor.system.repeatingEffects?.startOfRound?.[id]?.length).map(id => ({ id, active: !this.actor.system.repeatingEffects.disabled?.[id] })),
-      // Cover tab's compact conditions panel (click-dummy buildConditionsPanel(4)): caps the list so the sidebar
-      // never needs to scroll, with a jump button to the full Status tab for the rest.
-      coverConditions: (context.conditions ?? []).slice(0, 4),
-      coverConditionsMore: Math.max(0, (context.conditions ?? []).length - 4),
+      // Reiter „Persönliche Daten“ in der Titelblatt-Leiste (Variante G, Issues #27/#31): nur ausgefüllte Felder,
+      // dieselben Felder und Beschriftungen wie unter Notizen › Persönliche Daten (notes.hbs).
+      personalDetails: [['Gender', 'gender'], ['Family', 'family'], ['Age', 'age'], ['Height', 'height'], ['Weight', 'weight'], ['Home', 'Home'], ['Socialstate', 'socialstate'], ['Hair_color', 'haircolor'], ['Eye_color', 'eyecolor'], ['Distinguishing_mark', 'distinguishingmark']]
+        .map(([label, key]) => ({ label: localize(label), value: String(this.actor.system.details?.[key]?.value ?? '').trim() }))
+        .filter(field => field.value).map(field => ({ ...field, value: localize(field.value) })),
       happyTalentsExpanded: this._happyTalentsExpanded,
-      body: limited ? null : this._bodyContext(prepare),
+      // Hausregel Wundeinschätzung: Hinweis am Talent Heilkunde Wunden, nur wenn die SL die Regel eingeschaltet hat.
+      woundCheckSkill: !limited && isRuleActive('woundCheck') ? findTreatWounds(this.actor)?.id ?? null : null,
+      // Hausregel Helfen: Knopf in den Schnellaktionen des Kampf-Reiters (quick-actions.hbs).
+      helpAction: !limited && isRuleActive('helpAction'),
+      body,
       happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
     // The original sheet prepares this only for its separate companion part.
@@ -459,10 +507,18 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const off = mainTwoHanded ? null : worn.find(w => w !== main && w.system?.worn?.offHand) ?? null;
     const weapons = [...(this.actor.items?.values?.() ?? [])].filter(item => ['meleeweapon', 'rangeweapon'].includes(item.type))
       .sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang));
+    // Griffwechsel ein-/beidhändig an der Hand (Rückmeldung 2026-10-05): nur Nahkampfwaffen, die das System umschalten
+    // lässt (meleeweapon.js swapNumberWeaponHands: nicht Dolche/Fechtwaffen); 'two' = auf beidhändig wechseln.
+    const gripSwitch = data => {
+      const item = data && this.actor.items.get(data._id);
+      if (item?.type !== 'meleeweapon' || item.system.constructor.NOT_TWO_HANDED_WEAPON_TYPES?.has(game.i18n.localize('LocalizedCTs.' + item.system.combatskill.value))) return null;
+      return twoHanded(item) ? 'one' : 'two';
+    };
     const slot = (hand, item) => ({
       hand,
       label: hand === 'main' ? 'mainHand' : 'offHand',
       item,
+      gripSwitch: gripSwitch(item),
       ranged: item?.type === 'rangeweapon',
       options: weapons.filter(w => hand === 'main' || !twoHanded(w)).map(w => ({ id: w.id, name: w.name, twoHanded: twoHanded(w), selected: w.id === item?._id })),
     });
@@ -485,9 +541,26 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       ...(prepare.liturgyArmor ? [`${esc(game.i18n.localize('liturgyArmor'))}: +${prepare.liturgyArmor}`] : []),
       `<strong>${esc(game.i18n.localize('encumbrance'))} ${encumbrance}</strong>`,
     ].join('<br>');
-    // Kurzübersicht „Weitere Waffen“: getragene Waffen, die nicht in einer Hand sind, und Angriffe aus Eigenschaften.
+    // Kurzübersicht „Weitere Waffen“: alle Waffen außerhalb der Hände und Angriffe aus Eigenschaften. Das System führt
+    // nur Waffen in den Händen als getragen (equipWeaponToHand legt die bisherige ab), nicht getragene Waffen bereitet
+    // es nicht vor — ihre Werte daher wie im Probendialog über Actordsa5._prepareMeleeWeapon/_prepareRangeWeapon
+    // (ohne Nebenhand-Modifikator), auf einer frischen Kopie, damit die Inventardaten unberührt bleiben (Rückmeldung 2026-10-05).
+    const ActorClass = this.actor.constructor;
+    const ammo = [...(this.actor.items?.values?.() ?? [])].filter(item => item.type === 'ammunition').map(item => item.system.prepareEmbeddedItemSheet());
+    const unworn = weapons.filter(item => !item.system?.worn?.value).flatMap(item => {
+      try {
+        const data = item.system.prepareEmbeddedItemSheet();
+        return [item.type === 'meleeweapon'
+          ? ActorClass._prepareMeleeWeapon(data, prepare.combatskills ?? [], this.actor, [], false)
+          : ActorClass._prepareRangeWeapon(data, ammo, prepare.combatskills ?? [], this.actor, false)];
+      } catch (error) {
+        console.warn(`${MODULE_ID} | Waffe ${item.name} konnte nicht vorbereitet werden`, error);
+        return [];
+      }
+    });
     const others = [
-      ...worn.filter(w => w !== main && w !== off).map(item => ({ item, ranged: item.type === 'rangeweapon' })),
+      ...worn.filter(w => w !== main && w !== off).map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true })),
+      ...unworn.map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true })),
       ...(prepare.traits?.meleeAttack ?? []).map(item => ({ item, ranged: false })),
       ...(prepare.traits?.rangeAttack ?? []).map(item => ({ item, ranged: true })),
     ];
@@ -550,6 +623,16 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static async _setTwoHandedSide(_event, target) {
     if (!this.isEditable) return;
     await this.actor.setFlag(MODULE_ID, 'twoHandedSide', target.dataset.side === 'right' ? 'right' : 'left');
+  }
+
+  // Griffwechsel an der Hand im Reiter „Körper“ (Rückmeldung 2026-10-05: dort fehlte der Wechsel auf beidhändig).
+  // Nur System-Logik: swapNumberWeaponHands schaltet wrongGrip um; wird die Waffe dadurch beidhändig, legt
+  // equipWeaponToHand (Zweig „twohanded“) die übrigen Waffen ab und setzt sie in die Haupthand.
+  static async _swapGrip(_event, target) {
+    const item = this.actor.items.get(this._getItemId(target));
+    if (!this.actor.isOwner || item?.type !== 'meleeweapon') return;
+    await item.system.swapNumberWeaponHands();
+    if (item.system.worn.value && globalThis.dsa5.apps.RuleChaos.isWieldedTwohanded(item)) await this.actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
   }
 
   // Charakterbauer (#10): wie im System, merkt sich aber die bisherige Bogenwahl ('' = Standard), die der
@@ -646,8 +729,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
 
   static _setTab(_event, target) {
     if (!this.constructor.HELPER_TABS.some(tab => tab.id === target.dataset.tab)) return;
+    const changed = this._currentTab !== target.dataset.tab;
+    const before = changed ? this._measureGlide() : null;
     this._currentTab = target.dataset.tab;
     this._applyCurrentTab();
+    if (changed) this._animateTabChange(before);
     this.element.querySelector('.dsa5h-content')?.scrollTo({ top: 0 });
     // Die Liste steht wieder oben — also ist der erste Abschnitt markiert (Talente und alle Reiter mit Unterreitern, #32).
     const first = this._jumpSections(this._currentTab)[0];
@@ -655,6 +741,69 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this._applySubTabButtons();
     // Switching to Talente should let the user start typing a search immediately, no extra click needed.
     if (this._currentTab === 'skills') this.element.querySelector('.talentSearch')?.focus();
+  }
+
+  // Reiterwechsel „Gleiten“ (Issue #1, Nutzer-Entscheidung 2026-10-05 nach drei Varianten im Click-Dummy; verworfen:
+  // Blättern, Überblenden): Porträt, Name, Schips, LeP/AsP/KaP und Eigenschaftswürfel wandern von ihrem alten an den
+  // neuen Platz (Titelblatt-Seitenleiste ↔ Kopfzeile), der übrige Inhalt blendet ein. FLIP-Technik über die Web
+  // Animations API: Lage vor dem Wechsel messen, danach die Verschiebung als Startwert animieren. Kein Umbau des DOM,
+  // bei „reduzierter Bewegung“ aus.
+  _glideTargets() {
+    const root = this.element;
+    const map = new Map();
+    const selectors = { portrait: '.dsa5h-portrait', name: '.dsa5h-name', fate: '.dsa5h-fate-points', attr: '[data-attr-overlay]', lep: '.dsa5h-res-lep', asp: '.dsa5h-res-asp', kap: '.dsa5h-res-kap' };
+    for (const [key, selector] of Object.entries(selectors)) {
+      const node = root?.querySelector(selector);
+      const rect = node?.getBoundingClientRect();
+      if (rect?.width && rect.height) map.set(key, { node, rect });
+    }
+    return map;
+  }
+
+  _measureGlide() {
+    if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return null;
+    return new Map([...this._glideTargets()].map(([key, { rect }]) => [key, rect]));
+  }
+
+  _animateTabChange(before) {
+    if (!before) return;
+    let moved = 0;
+    for (const [key, { node, rect }] of this._glideTargets()) {
+      const old = before.get(key);
+      if (!old) continue;
+      const dx = old.left - rect.left;
+      const dy = old.top - rect.top;
+      const sx = old.width / rect.width;
+      const sy = old.height / rect.height;
+      if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) continue;
+      moved++;
+      node.animate([
+        { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: '0 0' },
+        { transform: 'none', transformOrigin: '0 0' },
+      ], { duration: 380, easing: 'cubic-bezier(.2,.75,.25,1)' });
+    }
+    // Die Seitenleiste scrollt senkrecht; ohne overflow-x:hidden blitzt während des Gleitens ein waagerechter Rollbalken auf.
+    const sidebar = this.element.querySelector('[data-cover-sidebar]');
+    if (sidebar) {
+      sidebar.style.overflowX = 'hidden';
+      setTimeout(() => sidebar.style.removeProperty('overflow-x'), 450);
+    }
+    for (const part of this.element.querySelectorAll('.dsa5h-content, [data-cover-sidebar]')) {
+      part.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, easing: 'ease-out', delay: moved ? 60 : 0, fill: 'backwards' });
+    }
+  }
+
+  static _setCoverSideTab(_event, target) {
+    this._coverSideTab = target.dataset.sideTab === 'details' ? 'details' : 'conditions';
+    this._applyCurrentTab();
+  }
+
+  // „Bearbeiten → Notizen“ im Reiter Persönliche Daten der Titelblatt-Leiste: zum Abschnitt Persönliche Daten springen.
+  static _openPersonalDetails(event) {
+    this.constructor._setTab.call(this, event, { dataset: { tab: 'notes' } });
+    this._subtabs.notes = 'details';
+    this._applyCurrentTab();
+    this._jumpTo('notes', 'details');
   }
 
   static _setSubTab(_event, target) {
@@ -790,6 +939,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     }
     const happyField = root.querySelector('[data-happy-talents-field]');
     if (happyField) happyField.hidden = !happyExpanded;
+    root.querySelectorAll('[data-side-tab]').forEach(el => el.setAttribute('aria-selected', String(el.dataset.sideTab === this._coverSideTab)));
+    root.querySelectorAll('[data-side-panel]').forEach(el => { el.hidden = el.dataset.sidePanel !== this._coverSideTab; });
     root.querySelector('[data-attr-overlay]')?.toggleAttribute('hidden', this._currentTab === 'main');
     // Move the same controls, so the overview never duplicates named form fields.
     root.querySelectorAll('[data-cover-move]').forEach(el => {
@@ -902,6 +1053,29 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const headerButton = this.element.querySelector('.header-control[data-action="dsa5hTheme"]');
     headerButton?.classList.toggle('fa-sun', theme === 'dark');
     headerButton?.classList.toggle('fa-moon', theme !== 'dark');
+  }
+
+  // „Verbrauchen“ auf dem Titelblatt (Issue #30): derselbe Weg wie der Eintrag im Item-Kontextmenü des Systems
+  // (ActorSheetDsa5#consumeItem: Rückfrage, dann item.setupEffect).
+  static async _consume(_event, target) {
+    const item = this.actor.items.get(this._getItemId(target));
+    if (item) await this.consumeItem(item);
+  }
+
+  // Hausregel Wundeinschätzung (Knigge): ohne markiertes Ziel nur ein Hinweis direkt am Knopf, sonst der normale
+  // Probendialog des Systems und danach der Ablauf aus scripts/house-rules/wound-check.js.
+  static async _woundCheck(_event, target) {
+    if (!game.user.targets.first()?.actor) {
+      game.tooltip.activate(target, { text: game.i18n.localize('DSA5HELPERS.HouseRules.woundCheck.PickTarget'), direction: 'UP' });
+      target.addEventListener('pointerleave', () => game.tooltip.deactivate(), { once: true });
+      return;
+    }
+    await woundCheck(this.actor);
+  }
+
+  // Hausregel Helfen: Talent wählen, Probe über den Probendialog des Systems, Hinweis im Chat (help-action.js).
+  static async _helpAction() {
+    await helpAction(this.actor, this.getTokenId?.());
   }
 
   static async _toggleFavorite(_event, target) {

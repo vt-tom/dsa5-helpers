@@ -1,0 +1,62 @@
+<div class="dsa5h-hr">
+  {{!-- Hausregelbuch: Ansicht „Liste“ (alle Regeln, Schalter, Sprung ins Buch) oder „Buch“ (Inhaltsverzeichnis, dann eine
+        Seite je Regel, Schalter oben rechts im Seitenkopf; Blättern über die Pfeile neben der Seite, das Inhaltsverzeichnis oder die Pfeiltasten).
+        Umschalten darf nur die SL; Spieler sehen den Stand. Nur der Inhalt scrollt, Kopf und Blätterleiste stehen. --}}
+  <nav class="dsa5h-hr-views" role="group" aria-label="{{localize 'DSA5HELPERS.HouseRules.Views'}}">
+    <button type="button" data-action="setView" data-view="list" class="{{#if list}}active{{/if}}" aria-pressed="{{#if list}}true{{else}}false{{/if}}"><i class="fas fa-list" inert></i> {{localize 'DSA5HELPERS.HouseRules.List'}}</button>
+    <button type="button" data-action="setView" data-view="book" class="{{#unless list}}active{{/unless}}" aria-pressed="{{#if list}}false{{else}}true{{/if}}"><i class="fas fa-book-open" inert></i> {{localize 'DSA5HELPERS.HouseRules.Book'}}</button>
+  </nav>
+  <div class="dsa5h-hr-body">
+    {{#if list}}
+    <p class="dsa5h-hr-intro">{{localize 'DSA5HELPERS.HouseRules.Intro'}}{{#unless isGM}} {{localize 'DSA5HELPERS.HouseRules.GMOnly'}}{{/unless}}</p>
+    <ul class="dsa5h-hr-list">
+      {{#each rules as |rule|}}
+      <li class="dsa5h-hr-entry{{#if rule.active}} active{{/if}}">
+        <i class="{{rule.icon}} dsa5h-hr-icon" inert></i>
+        <div class="dsa5h-hr-entry-text">
+          <strong>{{localize (concat rule.key '.Title')}}</strong>
+          <span>{{localize (concat rule.key '.Summary')}}</span>
+          {{#if rule.credit}}<small>{{localize 'DSA5HELPERS.HouseRules.Credit' name=rule.credit}}</small>{{/if}}
+        </div>
+        {{> "modules/dsa5-helpers/templates/house-rules/toggle.hbs" rule=rule isGM=../isGM}}
+        <button type="button" class="dsa5h-hr-read" data-action="openPage" data-page="{{rule.pageIndex}}"><i class="fas fa-book-open" inert></i> {{localize 'DSA5HELPERS.HouseRules.Read'}}</button>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <div class="dsa5h-hr-spread">
+      <button type="button" class="dsa5h-hr-turn" data-action="turnPage" data-page="{{prev}}" {{#if (eq prev null)}}disabled{{/if}} aria-label="{{localize 'DSA5HELPERS.HouseRules.Prev'}}"><i class="fas fa-chevron-left" inert></i></button>
+      {{#if toc}}
+      <article class="dsa5h-hr-page dsa5h-hr-toc">
+        <header class="dsa5h-hr-page-head">
+          <h2><i class="fas fa-book" inert></i> {{localize 'DSA5HELPERS.HouseRules.Title'}}</h2>
+          <p class="dsa5h-hr-credit">{{localize 'DSA5HELPERS.HouseRules.Intro'}}</p>
+        </header>
+        <h3 class="dsa5h-hr-toc-title">{{localize 'DSA5HELPERS.HouseRules.Contents'}}</h3>
+        <ol class="dsa5h-hr-toc-list">
+          {{#each rules as |rule|}}
+          <li><button type="button" data-action="turnPage" data-page="{{rule.pageIndex}}"><span>{{rule.number}}. {{localize (concat rule.key '.Title')}}</span>{{#if rule.credit}}<small>{{localize 'DSA5HELPERS.HouseRules.Credit' name=rule.credit}}</small>{{/if}}<span class="dsa5h-hr-toc-dots" aria-hidden="true"></span><span class="dsa5h-hr-state{{#if rule.active}} active{{/if}}">{{#if rule.active}}{{localize 'DSA5HELPERS.HouseRules.Active'}}{{else}}{{localize 'DSA5HELPERS.HouseRules.Inactive'}}{{/if}}</span></button></li>
+          {{/each}}
+        </ol>
+      </article>
+      {{else}}
+      <article class="dsa5h-hr-page{{#if rule.active}} active{{/if}}">
+        <header class="dsa5h-hr-page-head">
+          <div class="dsa5h-hr-page-top">
+            <small>{{localize 'DSA5HELPERS.HouseRules.Number' number=rule.number}}</small>
+            {{> "modules/dsa5-helpers/templates/house-rules/toggle.hbs" rule=rule isGM=isGM}}
+          </div>
+          <h2><i class="{{rule.icon}}" inert></i> {{localize (concat rule.key '.Title')}}</h2>
+          {{#if rule.credit}}<p class="dsa5h-hr-credit">{{localize 'DSA5HELPERS.HouseRules.CreditLong' name=rule.credit}}</p>{{/if}}
+        </header>
+        {{> (lookup rule 'page') rule=rule}}
+      </article>
+      {{/if}}
+      <button type="button" class="dsa5h-hr-turn" data-action="turnPage" data-page="{{next}}" {{#if (eq next null)}}disabled{{/if}} aria-label="{{localize 'DSA5HELPERS.HouseRules.Next'}}"><i class="fas fa-chevron-right" inert></i></button>
+    </div>
+    {{/if}}
+  </div>
+  {{#unless list}}
+  <div class="dsa5h-hr-pager" aria-live="polite">{{localize 'DSA5HELPERS.HouseRules.Page' page=pageNumber count=pageCount}} · <small>{{localize 'DSA5HELPERS.HouseRules.KeysHint'}}</small></div>
+  {{/unless}}
+</div>

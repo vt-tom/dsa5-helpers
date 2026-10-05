@@ -1,20 +1,34 @@
 <aside class="dsa5h-cover-sidebar" data-cover-sidebar>
+  {{!-- Titelblatt-Leiste, Variante G (Issues #27/#31, Nutzer-Entscheidung 2026-10-05): Porträt, flache LeP/AsP/KaP-Leisten,
+        Schips + Regeneration in einer Zeile, darunter ein Kasten mit zwei Reitern „Zustände | Persönliche Daten“, der den
+        Rest der Leiste füllt (nur sein Inhalt scrollt). Reiterwechsel ohne Neurendern (_coverSideTab, _applyCurrentTab). --}}
   <div data-cover-slot="portrait"></div>
   <div class="dsa5h-cover-resources" data-cover-slot="resources"></div>
-  <div class="dsa5h-cover-fate" data-cover-slot="fate"></div>
-  {{#if conditions.length}}
-  <section class="panel">
-    <div class="panel-title">{{localize 'statuseffects'}}</div>
-    {{#each dsa5h.coverConditions}}
-    <div class="row dsa5h-cover-condition" data-id="{{_id}}" {{#if descriptor}}data-descriptor="{{descriptor}}"{{/if}}>
-      <img src="{{img}}" alt="" />
-      <a data-action="conditionShow" data-id="{{_id}}">{{localize name}}</a>
-      <span class="dsa5h-cond-steps">{{#if editable}}{{#unless boolean}}<button type="button" class="dsa5h-step" data-action="dsa5hConditionDown" aria-label="{{localize 'DSA5HELPERS.ConditionDecrease' name=(localize name)}}"{{#unless manual}} aria-disabled="true"{{/unless}}>−</button><button type="button" class="dsa5h-step" data-action="conditionValue" aria-label="{{localize 'DSA5HELPERS.ConditionIncrease' name=(localize name)}}"{{#if (gte value editable)}} aria-disabled="true"{{/if}}>+</button>{{/unless}}{{/if}}</span><strong{{#if editable}}{{#unless boolean}} aria-label="{{localize 'DSA5HELPERS.ConditionLevel' value=value max=editable}}"{{/unless}}{{/if}}>{{value}}{{#if editable}}{{#unless boolean}}<small>/{{editable}}</small>{{/unless}}{{/if}}</strong>
+  <div class="dsa5h-cover-res-row"><div class="dsa5h-cover-fate" data-cover-slot="fate"></div><div data-cover-slot="regen"></div></div>
+  <section class="panel dsa5h-side-tabs-panel">
+    <div class="dsa5h-side-tabs" role="tablist" aria-label="{{localize 'DSA5HELPERS.Tabs.cover'}}">
+      <button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="conditions" aria-selected="true">{{localize 'statuseffects'}}</button>
+      <button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="details" aria-selected="false">{{localize 'personalDetails'}}</button>
     </div>
-    {{/each}}
-    {{#if dsa5h.coverConditionsMore}}
-    <button type="button" class="dsa5h-cover-more" data-action="dsa5hSetTab" data-tab="status">+{{dsa5h.coverConditionsMore}} {{localize 'DSA5HELPERS.More'}} → {{localize 'DSA5HELPERS.Tabs.status'}}</button>
-    {{/if}}
+    <div class="dsa5h-side-tabs-body" role="tabpanel" data-side-panel="conditions">
+      {{#each conditions}}
+      <div class="row dsa5h-cover-condition" data-id="{{_id}}" {{#if descriptor}}data-descriptor="{{descriptor}}"{{/if}}>
+        <img src="{{img}}" alt="" />
+        <a data-action="conditionShow" data-id="{{_id}}">{{localize name}}</a>
+        <span class="dsa5h-cond-steps">{{#if editable}}{{#unless boolean}}<button type="button" class="dsa5h-step" data-action="dsa5hConditionDown" aria-label="{{localize 'DSA5HELPERS.ConditionDecrease' name=(localize name)}}"{{#unless manual}} aria-disabled="true"{{/unless}}>−</button><button type="button" class="dsa5h-step" data-action="conditionValue" aria-label="{{localize 'DSA5HELPERS.ConditionIncrease' name=(localize name)}}"{{#if (gte value editable)}} aria-disabled="true"{{/if}}>+</button>{{/unless}}{{/if}}</span><strong{{#if editable}}{{#unless boolean}} aria-label="{{localize 'DSA5HELPERS.ConditionLevel' value=value max=editable}}"{{/unless}}{{/if}}>{{value}}{{#if editable}}{{#unless boolean}}<small>/{{editable}}</small>{{/unless}}{{/if}}</strong>
+      </div>
+      {{else}}
+      <p class="dsa5h-side-empty">{{localize 'DSA5HELPERS.NoConditions'}}</p>
+      {{/each}}
+      <button type="button" class="dsa5h-cover-more" data-action="dsa5hSetTab" data-tab="status">{{localize 'DSA5HELPERS.ConditionsToStatus'}}</button>
+    </div>
+    <div class="dsa5h-side-tabs-body" role="tabpanel" data-side-panel="details" hidden>
+      {{#if dsa5h.personalDetails.length}}
+      <dl class="dsa5h-side-details">{{#each dsa5h.personalDetails}}<div data-tooltip="{{label}}: {{value}}"><dt>{{label}}</dt><dd>{{value}}</dd></div>{{/each}}</dl>
+      {{else}}
+      <p class="dsa5h-side-empty">{{localize 'DSA5HELPERS.NoPersonalDetails'}}</p>
+      {{/if}}
+      <button type="button" class="dsa5h-cover-more" data-action="dsa5hOpenDetails">{{localize 'DSA5HELPERS.EditInNotes'}}</button>
+    </div>
   </section>
-  {{/if}}
 </aside>

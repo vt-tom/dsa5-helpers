@@ -56,10 +56,14 @@ function fixture() {
 let Sheet;
 // data:-URLs, weil die Modul-.js hier sonst als CommonJS gälten; der eine relative Import wird mit ersetzt.
 const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))))));return Sheet;}
+// Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
+function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))));}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
+// Issue #7: Hover-Effekte nur in @media (hover: hover), damit sie auf Touch-Geräten nicht hängen bleiben (Modul und Click-Dummy).
+test('every :hover rule sits inside @media (hover: hover)',()=>{for(const file of ['styles/dsa5-helpers-character-sheet.css','clickdummy/style.css']){const bad=[];postcss.parse(read(file)).walkRules(rule=>{if(!/:hover\b/.test(rule.selector))return;let ok=false;for(let p=rule.parent;p&&p.type==='atrule';p=p.parent)if(p.name==='media'&&/\(\s*hover\s*:\s*hover\s*\)/.test(p.params))ok=true;if(!ok)bad.push(rule.selector.replace(/\s+/g,' '));});assert.deepEqual(bad,[],file+': :hover outside @media (hover: hover)');}});
 test('full hero renders all ten tabs, real item bindings and no duplicate form names',async()=>{const {context}=await prepare();const html=render(context);const panels=elements(html,el=>el.attribs?.['data-tab-panel']);assert.equal(panels.length,10);assert(html.includes('data-action="rollAggregatedProbe"'));assert(html.includes('data-which="3"'));assert(!html.includes('data-item-id="bag-child"'),'bag contents belong to the DSA5 item sheet, not a sheet-side dialog');assert(html.includes('OWNER_SECRET'));assert(html.includes('GM_SECRET'));const names=elements(html,el=>el.attribs?.name).map(el=>el.attribs.name);assert.equal(names.length,new Set(names).size,'duplicate form field names');assert(!html.includes('TabInProgress'));});
 test('limited rendering excludes private actor data',async()=>{const {sheet}=await prepare();sheet.limited=true;const context=await sheet._prepareContext({});const html=render(context);assert(!html.includes('OWNER_SECRET'));assert(!html.includes('GM_SECRET'));assert(!html.includes('data-tab-panel'));assert(html.includes('Public biography'));assert.equal(Sheet.LIMITEDPARTS,Sheet.PARTS);});
 test('observer and player views exclude GM and owner notes appropriately',async()=>{const {context}=await prepare();context.isGM=false;let html=render(context);assert(!html.includes('GM_SECRET'));assert(html.includes('OWNER_SECRET'));context.owner=false;context.editable=false;context.dsa5h.editMode=false;html=render(context);assert(!html.includes('OWNER_SECRET'));assert(!html.includes('GM_SECRET'));assert(!html.includes('data-action="dsa5hFavorite"'));});
@@ -184,6 +188,20 @@ test('favorites render as grid cards with value, roll and star; weapon damage is
  const cards=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-card'));assert.equal(cards.length,2);
  for(const card of cards){assert(card.attribs['data-item-id']);assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',card.children).length,1);}
  const damage=elements(html,el=>el.attribs?.['data-mode']==='damage');assert(damage.length>=2);for(const b of damage)assert(String(b.attribs.class).includes('dsa5h-damage'));
+});
+test('favorites for equipment and special abilities (#30): stars on inventory rows and SF chips, consume via the system, names open the item sheet',async()=>{
+ const C=await loadSheet(),f=fixture(),sheet=new C();
+ const potion=item('potion','consumable');f.context.prepare.inventory.consumables={show:true,dataType:'consumable',items:[potion]};f.actor.items.set('potion',potion);for(const i of [f.context.prepare.inventory.tools.items[0],...Object.values(f.context.prepare.specAbs).flat()])f.actor.items.set(i._id,i);
+ f.actor.flags.favorites=['tool','bag-child','potion','general','combat','weapon'];Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});
+ const context=await sheet._prepareContext({});const groups=Object.fromEntries(context.dsa5h.favoriteGroups.map(g=>[g.label,g.items.map(i=>i._id)]));
+ assert.deepEqual(groups['DSA5HELPERS.Tabs.inventory'].sort(),['bag-child','potion','tool']);assert.deepEqual(groups['DSA5HELPERS.SpecialAbilities'].sort(),['combat','general']);assert.deepEqual(groups['DSA5HELPERS.Weapons'],['weapon']);
+ const html=render(context);
+ const rows=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-inventory-row')&&el.name==='div'&&!String(el.attribs.class).includes('row-head'));assert.equal(rows.length,2);
+ for(const row of rows)assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',row.children).length,1);
+ assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-chip-fav')).length,2);
+ const consume=elements(html,el=>el.attribs?.['data-action']==='dsa5hConsume');assert.equal(consume.length,1);
+ const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name'));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
+ let consumed;sheet.consumeItem=async i=>{consumed=i;};sheet._getItemId=()=>'potion';await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hConsume.call(sheet,{},{});assert.equal(consumed,potion);
 });
 test('aggregated tests can be added in play mode',async()=>{
  const {sheet}=await prepare();sheet.context.prepare.sheetLocked=true;const ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.editMode,false);
@@ -533,4 +551,118 @@ test('Würfelstatistik (#28): Tage älter als 12 Monate werden zusammengefasst, 
  st=s.mergeCounts(st,{'2026-10-20':{d:{6:w(5,1)}}},new Date(2026,9,20,22).getTime());
  assert.deepEqual(Object.keys(st.days).sort(),['2026-10-01','2026-10-20']);assert.deepEqual(st.older.d[6],[2,3,4,0,0,0]);assert.equal(st.olderUntil,'2025-10-10');
  assert.deepEqual(s.sumCounts(st).d[6],[2,3,4,5,0,1]);
+});
+// Hausregelbuch (2026-10-05): relative Importe werden wie bei loadSheet() durch data:-URLs ersetzt.
+const houseRuleModules=async()=>{const wound=dataUrl(read('scripts/house-rules/wound-check.js'));const help=dataUrl(read('scripts/house-rules/help-action.js'));const rules=houseRulesUrl();const app=dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(rules)));return {wound:await import(wound),help:await import(help),rules:await import(rules),app:await import(app)};};
+for(const p of ['templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs','templates/house-rules/help-action.hbs'])H.registerPartial('modules/dsa5-helpers/'+p,read(p));
+test('Hausregel Wundeinschätzung: QS-Staffel und Veralten wie in Knigges World Script',async()=>{
+ const {wound}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;const w=(qs,cur,max=40)=>wound.woundText(qs,cur,max,t);
+ assert.equal(w(0,10),'Text.none');assert.equal(w(1,40),'Text.unhurt');assert.equal(w(1,39),'Text.hurt');
+ assert.deepEqual([0,10,20,30,39,40].map(c=>w(2,c)),['Text.incapacitated','Text.critical','Text.severe','Text.marked','Text.light','Text.unhurt']);
+ assert.equal(w(3,27),'Text.marked<br><small>Text.range:20–30</small>');assert.equal(w(4,27),'Text.marked<br><small>Text.range:25–30</small>');
+ assert.equal(w(3,35),'Text.light<br><small>Text.range:30–40</small>');assert.equal(w(4,38,38),'Text.unhurt<br><small>Text.range:35–38</small>');
+ assert.equal(w(6,10),'Text.critical<br><small>Text.about:10</small>');
+ assert(wound.isFresh({lep:20},29,40),'Änderung unter einem Viertel bleibt gültig');assert(!wound.isFresh({lep:20},30,40),'ab einem Viertel veraltet');assert(!wound.isFresh(undefined,20,40));
+ for(const key of ['none','unhurt','hurt','incapacitated','critical','severe','marked','light','range','about'])assert(lookup(own,'DSA5HELPERS.HouseRules.woundCheck.Text.'+key),key);
+});
+test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, Einstellung je Welt',async()=>{
+ const settings={houseRules:{},theme:'light'};let isGM=true;
+ global.game={i18n:{localize},settings:{get:(_m,k)=>settings[k],async set(_m,k,v){settings[k]=v;}},get user(){return {isGM};}};
+ global.foundry={applications:{api:{ApplicationV2:class{async _prepareContext(){return {};}_onRender(){}render(){this.rendered=(this.rendered??0)+1;}},HandlebarsApplicationMixin:B=>B},instances:new Map()}};
+ const {rules,app}=await houseRuleModules();const App=app.getHouseRulesApp();const tpl=H.compile(read('templates/house-rules.hbs'));
+ assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','']]);
+ const sheet=new App();missing.clear();let html=tpl(await sheet._prepareContext({}));
+ assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,2);
+ assert.equal((html.match(/Idee: Knigge/g)??[]).length,1,'Urheber nur, wo einer angegeben ist');
+ assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,2);
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,2);
+ await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true});assert(rules.isRuleActive('woundCheck'));
+ App.DEFAULT_OPTIONS.actions.setView.call(sheet,{},{dataset:{view:'book'}});html=tpl(await sheet._prepareContext({}));
+ assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-toc')).length,1,'Buch beginnt mit dem Inhaltsverzeichnis');
+ const tocLink=elements(html,el=>el.attribs?.['data-action']==='turnPage'&&el.attribs['data-page']==='1');assert(tocLink.length>=2,'Inhalt und Pfeil führen zu Seite 1');
+ App.DEFAULT_OPTIONS.actions.turnPage.call(sheet,{},{dataset:{page:'1'}});assert.equal(sheet.state.turn,1,'Vorwärtsblättern merkt die Richtung für die Animation');
+ App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'1'}});html=tpl(await sheet._prepareContext({}));
+ const top=elements(html,el=>el.attribs?.class==='dsa5h-hr-page-top')[0];assert(top&&dom.findAll(el=>el.attribs?.role==='switch',top.children).length===1,'Schalter oben rechts im Seitenkopf');
+ assert(html.includes('Knigge'),'Urheber auf der Buchseite');assert.equal(elements(html,el=>el.name==='tr').length,7,'Kopf + 6 QS-Zeilen');
+ assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 3'));
+ isGM=false;html=tpl(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.role==='switch').length,0);assert.equal(elements(html,el=>el.attribs?.class==='dsa5h-hr-state active').length,1);
+ await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true},'Spieler schalten nichts um');
+ assert.deepEqual([...missing].filter(k=>k.startsWith('DSA5HELPERS')),[]);
+ const entry=read('scripts/dsa5-helpers.js');for(const p of ['templates/house-rules.hbs','templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs'])assert(entry.includes('modules/dsa5-helpers/'+p),p+' wird geladen');
+ assert(/registerMenu\('dsa5-helpers', 'houseRules'.*restricted: false/.test(entry),'Menü für alle lesbar');
+ const en=JSON.parse(read('lang/en.json'));const keys=o=>Object.entries(o).flatMap(([k,v])=>typeof v==='object'?keys(v).map(x=>k+'.'+x):[k]);assert.deepEqual(keys(en.DSA5HELPERS.HouseRules).sort(),keys(own.DSA5HELPERS.HouseRules).sort());
+});
+test('Wundeinschätzung im Bogen: Hinweis am Talent Heilkunde Wunden nur bei aktiver Regel, ohne Ziel ein Tooltip, sonst der Probendialog',async()=>{
+ const {sheet,actor}=await prepare();const skill=actor.items.get('skill');skill.name='Heilkunde Wunden';
+ let active=false,tip=null,targets=[],setup=null;
+ global.game={i18n:{localize},settings:{get:(_m,k)=>k==='houseRules'?{woundCheck:active}:'light'},tooltip:{activate:(el,o)=>{tip=o.text;},deactivate(){}},user:{targets:{first:()=>targets[0]}}};
+ const hint=html=>elements(html,el=>el.attribs?.['data-action']==='dsa5hWoundCheck');
+ assert.equal(hint(render(await sheet._prepareContext({}))).length,0,'Regel aus: kein Hinweis');
+ active=true;const html=render(await sheet._prepareContext({}));const btn=hint(html);assert.equal(btn.length,2,'Talentzeile + Favoritenkarte (Heilkunde Wunden ist Favorit)');
+ assert(btn.some(b=>{let p=b;while(p&&!String(p.attribs?.class??'').includes('dsa5h-fav-card'))p=p.parent;return !!p;}),'Herz auch bei den Favoriten');
+ let row=btn.find(b=>{let p=b;while(p&&!String(p.attribs?.class??'').includes('dsa5h-skill-row'))p=p.parent;return !!p;});while(row&&row.attribs?.['data-item-id']!=='skill')row=row.parent;assert(row,'Hinweis steht in der Zeile von Heilkunde Wunden');
+ const handler=Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hWoundCheck;const target={addEventListener(){}};
+ await handler.call(sheet,{},target);assert.equal(tip,localize('DSA5HELPERS.HouseRules.woundCheck.PickTarget'));
+ targets=[{name:'Ork',actor:{id:'ork',system:{status:{wounds:{value:20,max:30}}}}}];skill.clone=()=>skill;actor.setupSkill=async(s,o)=>{setup={s,o};return null;};
+ await handler.call(sheet,{},target);assert.equal(setup?.s,skill,'normaler Probendialog des Systems');assert.equal(setup.o.messageMode,'self');
+ assert(!read('scripts/house-rules/wound-check.js').includes('renderTokenHUD'),'kein Knopf mehr im Token-HUD');
+});
+test('Titelblatt-Leiste Variante G (#27/#31): Reiter Zustände | Persönliche Daten, alle Zustände, nur ausgefüllte Daten, Regeneration neben den Schips',async()=>{
+ await loadSheet();global.game={i18n:{localize},settings:{get:()=> 'light'},user:{targets:{first:()=>undefined}}};
+ const {sheet,actor}=await prepare();actor.system.details.gender={value:'Weiblich'};actor.system.details.Home={value:'  '};actor.system.details.haircolor={value:'Silberblond'};
+ sheet.context.conditions=Array.from({length:6},(_,i)=>({_id:'c'+i,name:'CONDITION.inpain',value:1,img:'x.svg',editable:4,manual:1}));
+ const context=await sheet._prepareContext({});assert.deepEqual(context.dsa5h.personalDetails.map(f=>f.value),['Weiblich','Silberblond']);
+ const html=render(context);const aside=elements(html,el=>el.name==='aside')[0];
+ assert.deepEqual(dom.findAll(el=>el.attribs?.role==='tab',aside.children).map(t=>t.attribs['data-side-tab']),['conditions','details']);
+ assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-cover-condition'),aside.children).length,6,'alle Zustände, der Inhalt scrollt');
+ assert.equal(dom.findAll(el=>el.name==='dd',aside.children).length,2);assert(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hOpenDetails',aside.children).length===1);
+ assert(dom.findAll(el=>el.attribs?.['data-cover-slot']==='regen',aside.children).length===1,'Platz für die Regeneration in der Schips-Zeile');
+ assert(elements(html,el=>el.attribs?.['data-cover-move']==='regen'&&el.attribs['data-action']==='chRegenerate').length===1);
+ assert(elements(html,el=>el.attribs?.['data-header-slot']==='regen').length===1,'Rückweg in den Kopf');
+ Sheet.DEFAULT_OPTIONS.actions.dsa5hCoverSideTab.call(sheet,{},{dataset:{sideTab:'details'}});assert.equal(sheet._coverSideTab,'details');
+ Sheet.DEFAULT_OPTIONS.actions.dsa5hCoverSideTab.call(sheet,{},{dataset:{sideTab:'x'}});assert.equal(sheet._coverSideTab,'conditions');
+ for(const k of ['NoConditions','ConditionsToStatus','NoPersonalDetails','EditInNotes'])assert(lookup(own,'DSA5HELPERS.'+k),k);
+});
+test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel, Talentwahl, Probe über das System, QS-Hinweis im Chat',async()=>{
+ const {help}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;
+ assert.equal(help.helpMessage({helper:'Alrik',skill:'Einschüchtern',target:'Gerion',qs:2},t),'<strong>Title</strong><br>Chat.Success:Alrik,Einschüchtern,Chat.Target:Gerion,2<br><small>Chat.Manual</small>');
+ assert.equal(help.helpMessage({helper:'Alrik',skill:'Einschüchtern',target:null,qs:0},t),'<strong>Title</strong><br>Chat.Failure:Alrik,Einschüchtern');
+ const {sheet,actor}=await prepare();let active=false,chat=null,setup=null,dialog=null;
+ const skill=actor.items.get('skill');skill.system.group={value:'social'};const other=item('other','skill');other.name='Klettern';other.system.group={value:'body'};actor.items.set('other',other);
+ global.game={i18n:{localize,format:(k,d)=>localize(k).replace(/\{(\w+)\}/g,(m,x)=>d[x]??m),lang:'de'},settings:{get:(_m,k)=>k==='houseRules'?{helpAction:active}:'light'},user:{targets:{first:()=>({name:'Gerion'})}}};
+ assert.deepEqual(help.skillOptions(actor).map(g=>[g.group,g.items.map(i=>i.id)]),[['body',['other']],['social',['skill']]],'Gruppen in Systemreihenfolge');
+ const btn=html=>elements(html,el=>el.attribs?.['data-action']==='dsa5hHelpAction');
+ assert.equal(btn(render(await sheet._prepareContext({}))).length,0,'Regel aus: kein Knopf');
+ active=true;const html=render(await sheet._prepareContext({}));assert.equal(btn(html).length,1);
+ let p=btn(html)[0];while(p&&!p.attribs?.['data-sub-panel'])p=p.parent;assert.equal(p?.attribs['data-sub-panel'],'combat:body','im Kampf-Reiter');
+ global.foundry={utils:{escapeHTML:x=>String(x)},applications:{api:{DialogV2:{prompt:async o=>{dialog=o;return 'skill';}}}}};
+ global.ChatMessage={getSpeaker:()=>({alias:'x'}),create:async m=>{chat=m;}};global.ui={notifications:{warn(){}}};
+ actor.setupSkill=async(s,o)=>{setup={s,o};return {testData:{},cardOptions:{}};};actor.basicTest=async()=>({result:{successLevel:1,qualityStep:3}});actor.name='Alrik';
+ await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hHelpAction.call(sheet,{},{});
+ assert(dialog.content.includes('<optgroup')&&dialog.content.includes('Gerion'),'Talentauswahl nach Gruppen, markiertes Ziel genannt');
+ assert(dialog.content.includes('name="search"')&&typeof dialog.render==='function','Suchfeld im Dialog');
+ // Suche ohne DOM: kleine Attrappe mit <option>/<optgroup>-Verhalten.
+ const opt=(v,t)=>({value:v,textContent:t,hidden:false,scrollIntoView(){},get selected(){return sel.value===v;}});
+ const g1={children:[opt('a','Klettern (6)'),opt('b','Kraftakt (2)')],hidden:false},g2={children:[opt('c','Einschüchtern (8)')],hidden:false};
+ const listeners={},inputL={};const input={value:'',addEventListener:(t,f)=>{inputL[t]=f;}};
+ const sel={value:'',options:[...g1.children,...g2.children],querySelectorAll:()=>[g1,g2],get selectedOptions(){return this.options.filter(o=>o.value===this.value);},addEventListener:(t,f)=>{listeners[t]=f;}};
+ let ok=0;help.attachSkillSearch({querySelector:q=>q.includes('search')?input:q.includes('select')?sel:{click(){ok++;}}});
+ assert.equal(sel.value,'a','ohne Auswahl der erste Eintrag');
+ input.value='einsch';inputL.input();assert.equal(sel.value,'c');assert(g1.hidden&&!g2.hidden,'leere Gruppe ausgeblendet');
+ input.value='kr';inputL.input();assert.equal(sel.value,'b');inputL.keydown({key:'ArrowUp',preventDefault(){}});assert.equal(sel.value,'b','nur sichtbare Treffer');
+ listeners.dblclick();assert.equal(ok,1,'Doppelklick würfelt');
+ assert.equal(setup.s,skill,'Probe über den Probendialog des Systems');assert(chat.content.includes('3')&&chat.content.includes('Gerion'),'QS und Ziel im Chat');
+ assert(!chat.whisper,'öffentlich, damit der Unterstützte es sieht');
+});
+test('Fokus in Eingabefeldern bleibt nach dem Neuzeichnen erhalten (Tab durch Notizen › Persönliche Daten)',async()=>{
+ const {sheet}=await prepare();global.CSS??={escape:x=>String(x)};
+ const field={dataset:{},id:'',name:'system.details.age.value',tagName:'INPUT',selectionStart:3,selectionEnd:3,closest(){return this;}};
+ const prevDoc=global.document;global.document={...prevDoc,activeElement:field};
+ sheet.element={contains:()=>true};const key=sheet._focusKey();
+ assert.deepEqual(key,{selector:'INPUT[name="system.details.age.value"]',start:3,end:3},'auch Felder ohne data-action werden gemerkt');
+ let focused=null,range=null;const fresh={focus(o){focused=o;},setSelectionRange(a,b){range=[a,b];}};
+ global.document={...prevDoc,activeElement:null};sheet.element={querySelector:sel=>sel===key.selector?fresh:null};
+ sheet._restoreFocus(key);assert(focused,'neues Feld fokussiert');assert.deepEqual(range,[3,3],'Cursorposition übernommen');
+ const src=read('scripts/sheets/dsa5-helpers-character-sheet.js');assert(src.indexOf('this._applyCurrentTab();',src.indexOf('async _onRender'))<src.indexOf('this._restoreFocus(this._pendingFocus)'),'erst Reiter sichtbar machen, dann fokussieren');
+ global.document=prevDoc;
 });

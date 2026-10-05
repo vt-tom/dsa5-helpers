@@ -32,6 +32,7 @@ wählen.
 - Zehn Reiter: Titelblatt, Eigenschaften, Talente, Kampf (Körper, Kampftechniken), Magie, Religion,
   Ausrüstung, Status, Notizen, Gefährten.
 - Würfelstatistik (von der Spielleitung einschaltbar, jeder Spieler stimmt selbst zu).
+- Hausregelbuch: optionale Hausregeln, als Liste oder Buch zu lesen, von der Spielleitung je Welt einschaltbar. Regeln: Wundeinschätzung (Idee: Knigge), Helfen.
 - Spiel- und Bearbeiten-Modus, Favoriten (Stern) auf dem Titelblatt.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.

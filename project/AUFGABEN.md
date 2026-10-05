@@ -9,61 +9,62 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Version 0.4.0 — veröffentlicht 2026-10-02
 
-Zuerst als Beta (Pre-release, Beta-Kanal), am selben Tag zum normalen Release erklärt (Nutzer-Entscheidung) und `release/0.4.0` nach `main` gemergt. Enthalten: #28 Würfelstatistik, #29 Kampf › Körper (ersetzt die Übersicht), #32 Sprungmarken in allen Reitern, Beta-Kanal. Live-Prüfung steht noch aus (siehe unten).
+Zuerst als Beta (Pre-release, Beta-Kanal), am selben Tag zum normalen Release erklärt (Nutzer-Entscheidung) und `release/0.4.0` nach `main` gemergt. Enthalten: #28 Würfelstatistik, #29 Kampf › Körper (ersetzt die Übersicht), #32 Sprungmarken in allen Reitern, Beta-Kanal. Live-Prüfung am 2026-10-05 abgeschlossen (bis auf „Weitere Waffen“, in 0.5.0 nachgebessert).
 
 ## Nächste Version (0.5.0)
 
-Noch kein Branch. Für neue Arbeit `release/0.5.0` von `main` anlegen.
+Branch `release/0.5.0` (angelegt 2026-10-05). Reihenfolge (Nutzer, 2026-10-05): erst #7, danach die übrigen Issues für 0.5.0 auswählen.
 
-**#7 CSS aufräumen** auf 0.5.0 verschoben (Nutzer-Entscheidung 2026-10-02, Meilenstein gesetzt) — vorher mit `feature/mobile` abstimmen, dort wird dieselbe CSS-Datei stark umgebaut.
+**#7 CSS aufräumen** erledigt und live bestätigt (2026-10-05, Issue geschlossen; Konventionen in PROJEKTDOKU.md „CSS-Gliederung“).
 
-Kandidaten, noch ohne Meilenstein:
-- **#1 Animation zwischen Titelblatt und den anderen Seiten** (von @Lyynix, ohne Beschreibung) — klären, was gemeint ist.
-- **#27 Persönliche Daten auf dem Titelblatt** — nur, wenn bis dahin eine passende Lösung gefunden ist.
-- **HUD des Moduls** (siehe Backlog) — würde zum Einstieg der Würfelstatistik passen, ist aber eigenständig zu planen.
+Für 0.5.0 ausgewählt (Nutzer, 2026-10-05; Meilenstein 0.5.0, Bearbeiter vt-tom): #30, #31, #1, #27. Reihenfolge: #30 → #1 → #31 + #27 zusammen (beide betreffen „Persönliche Daten“).
 
-## Live in Foundry prüfen (0.4.0, veröffentlicht)
+- **#30** und **#1** umgesetzt und live bestätigt (2026-10-05). Issues erst schließen, wenn der Nutzer den Release freigibt (Nutzer 2026-10-05).
+- **Hausregelbuch** (Nutzerwunsch 2026-10-05, kein Issue): in Modul und Click-Dummy umgesetzt, nach Rückmeldung überarbeitet (Buch mit Inhaltsverzeichnis, Blätterpfeile neben der Seite, Pfeiltasten, Umblätter-Animation, Aktiv/Nicht aktiv oben rechts im Seitenkopf; Wundeinschätzung über den Hinweis am Talent Heilkunde Wunden und das Herz bei den Favoriten — live bestätigt 2026-10-05). Buch-Überarbeitung live zu prüfen (siehe unten).
+- **Hausregel „Helfen“** (Nutzerwunsch 2026-10-05): umgesetzt in Modul und Click-Dummy (Knopf in Kampf › Schnellaktionen, Talentwahl, Probe, QS-Hinweis im Chat). Ohne Urheberangabe im Buch — falls jemand genannt werden soll, `credit` in `HOUSE_RULES` setzen. Live zu prüfen (siehe unten).
+- **#31 + #27** umgesetzt als Variante G „Leiste mit Reitern“ (Nutzer-Entscheidung 2026-10-05) in Modul und Click-Dummy, live zu prüfen (siehe unten). Notizen-Reiter bleibt unverändert (fünf Unterreiter, dort werden die Daten bearbeitet). Issues erst bei Release-Freigabe schließen.
 
-- **#28 Würfelstatistik** (mindestens zwei Benutzer, Spieler + SL): Zustimmungsdialog beim Verbinden und beim Einschalten durch die SL; Zustimmung ja/nein/zurückgezogen (Daten ausgeblendet, bei erneuter Zustimmung wieder da und weitergezählt); gezählt werden Proben, Schaden, Schips-Neuwurf, Initiative, `/roll`, blinde/SL-Würfe; echte Würfel (Würfeleinstellung „manuell“) getrennt; Neuladen kurz nach einem Wurf (wird noch gespeichert?); Fenster aktualisiert sich live; Zurücksetzen durch die SL (einzeln/alle); Spieler sehen keinen Zurücksetzen-Knopf; Hell/Dunkel.
-- **#28 Würfelstatistik, Nachtrag:** Spieler sehen nur die eigene Karte (kein Löschen, keine Liste ohne Zustimmung), ohne Zustimmung Hinweis statt Karte; Zeitraum-Auswahl (Spielabende, eigener Zeitraum mit Datumsfeldern); Würfe nach Mitternacht landen beim Vorabend; bestehende Statistik aus dem ersten Format bleibt erhalten.
-- **#28 Würfelstatistik, 12 Monate:** Auswahl „Zeitraum“ listet Tage (Datum, nicht „Spielabend“); Würfe außerhalb der Runde landen beim jeweiligen Tag.
-- **#32 Sprungmarken:** in Kampf, Magie, Religion, Notizen: Klick auf Unterreiter scrollt weich zum Abschnitt; beim Scrollen wandert die Markierung mit, ganz unten der letzte Abschnitt; Reiterwechsel beginnt oben mit dem ersten Abschnitt; Kampftechniken-Suche klebt nur im eigenen Abschnitt; Sprung aus der Waffe zur Kampftechnik; Notiz-Editoren (Bearbeiten-Modus) untereinander; Private/SL-Notizen nur für Berechtigte.
-- **#29 Kampf › Körper:** Haupthand links, Nebenhand rechts; beidhändige Waffe per „⇄“ verschieben (nur Bearbeiten-Modus, bleibt nach Neuladen auf der Seite); freie Nebenhand rechts; Fernkampfhand rechts (Nachladen/Zielen rechtsbündig); Schnellaktionen und Initiative ganz oben, Rüstungsschild rechts in der Rüstungszeile (Tooltip: alle Teile, Zauber-/Liturgie-Schutz, Belastung); viele Rüstungsteile (Umbruch); schmale Fensterbreite; Hell/Dunkel. Ohne Übersicht: Kampf-Reiter öffnet mit „Körper“; Munitionswahl in der Fernkampfhand; Kurzübersicht „Weitere Waffen“ (würfeln, TP, Stern, Rechtsklick-Kontextmenü, Angriffe aus Eigenschaften wie Biss); nicht getragene Waffen über die Hand-Auswahl ausrüsten.
+**Release 0.5.0 als Beta veröffentlicht (2026-10-05):** Tag `v0.5.0`, Pre-release „v0.5.0 (Beta)“, Action grün, Beta-Manifest zeigt 0.5.0, stabiler Kanal weiter 0.4.0. Live-Prüfung durch den Nutzer abgeschlossen (Titelblatt-Leiste G, Hausregelbuch, Helfen; Fokus-Fix nur im Code geprüft). Offen nach Freigabe: zum normalen Release erklären (`gh release edit v0.5.0 --prerelease=false --latest --title "v0.5.0"`), `release/0.5.0` nach `main` mergen und pushen, Issues #1, #27, #30, #31 schließen.
+
+## Live in Foundry prüfen (0.5.0, release/0.5.0)
+
+- **Fokus nach Eingaben:** In Notizen › Persönliche Daten (und anderen Feldern, z. B. LeP im Kopf, Geld) einen Wert ändern und mit Tab weiter — der Fokus muss im nächsten Feld landen, nicht auf der Reiterleiste.
+- **#7 Touch:** erst mit dem Mobil-UI (`feature/mobile`).
 
 ## Offene Entscheidungen
 
-- **#27 Persönliche Daten auf dem Titelblatt:** wieder ausgebaut (2026-10-01), erst klären, ob und wie es aufs Titelblatt passt. Bisherige Versuche siehe PROJEKTDOKU.md (Design-Entscheidungen, „Titelblatt, persönliche Daten“).
+- Derzeit keine.
 
 ## Features / Backlog
 
 Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3.0 erledigt) – siehe unten. Neue Feature-Ideen dort anlegen oder hier kurz notieren.
 
-- **Eigenes HUD des Moduls** (Idee 2026-10-01): ein Einstieg für mehrere Modulfunktionen, z. B. die Würfelstatistik (#28, vorerst nur über die Moduleinstellungen). Noch kein Issue.
+- **Eigenes HUD des Moduls** (Idee 2026-10-01): ein Einstieg für mehrere Modulfunktionen. Nicht in 0.5.0 (Nutzer 2026-10-05: erst, wenn es mehr Funktionen dafür gibt). Fest eingeplant: Würfelstatistik öffnen (#28), nur wenn sie aktiviert ist. Noch kein Issue.
 
 ---
 
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-02 14:55 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-05 08:22 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (5)**
+**Offen (4)**
 
 - **[#1](https://github.com/vt-tom/dsa5-helpers/issues/1) feat: Animation zwischen Titelblatt und den anderen seiten**
-  - offen · Bearbeiter: niemand · von @Lyynix · 0 Kommentare · zuletzt geändert 2026-09-17
-- **[#7](https://github.com/vt-tom/dsa5-helpers/issues/7) chore: CSS-Datei aufräumen**
-  - offen · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 0 Kommentare · zuletzt geändert 2026-10-02
+  - offen · Bearbeiter: @vt-tom · von @Lyynix · Meilenstein: 0.5.0 · 0 Kommentare · zuletzt geändert 2026-10-05
 - **[#27](https://github.com/vt-tom/dsa5-helpers/issues/27) feat: Persönliche Daten auf dem Titelblatt anzeigen**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-01
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 0 Kommentare · zuletzt geändert 2026-10-05
 - **[#30](https://github.com/vt-tom/dsa5-helpers/issues/30) feat: Ausrüstung und Sonderfertigkeiten als Favoriten markieren**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-02
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 0 Kommentare · zuletzt geändert 2026-10-05
 - **[#31](https://github.com/vt-tom/dsa5-helpers/issues/31) feat: Konzept für die Aufteilung des Reiters Notizen**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-02
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 0 Kommentare · zuletzt geändert 2026-10-05
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 
+- **[#7](https://github.com/vt-tom/dsa5-helpers/issues/7) chore: CSS-Datei aufräumen**
+  - erledigt · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 1 Kommentar · geschlossen 2026-10-05
 - **[#28](https://github.com/vt-tom/dsa5-helpers/issues/28) feat: Würfelstatistik – Ergebnisse je Spieler und Würfeltyp auswerten**
   - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 1 Kommentar · geschlossen 2026-10-02
 - **[#29](https://github.com/vt-tom/dsa5-helpers/issues/29) feat: Kampf › Körper – Hände links/rechts der Figur, RS/BE-Badge entfernen, Rüstung neu platzieren**
@@ -116,6 +117,4 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-02 14:55 UTC) — ni
   - erledigt · Bearbeiter: niemand · von @vt-tom · 1 Kommentar · geschlossen 2026-09-30
 - **[#6](https://github.com/vt-tom/dsa5-helpers/issues/6) Kampf Tab: Alternatives Layout**
   - erledigt · Bearbeiter: niemand · von @vt-tom · 1 Kommentar · geschlossen 2026-09-30
-- **[#2](https://github.com/vt-tom/dsa5-helpers/issues/2) bug: Größenveränderung bei Hover führt zu Neuanordnung der Elemente**
-  - erledigt · Bearbeiter: niemand · von @Lyynix · 1 Kommentar · geschlossen 2026-09-19
 <!-- GITHUB-ISSUES:END -->

@@ -241,6 +241,19 @@ function favStar(item) {
   return btn;
 }
 
+// Stern für Sonderfertigkeiten (Issue #30): die Demo-SF sind Namen statt Objekte, daher über FAV_SPECIALS (data.js).
+function specFavStar(name) {
+  const on = FAV_SPECIALS.has(name);
+  const label = on ? `${name}: Favorit entfernen` : `${name} als Favorit markieren`;
+  const btn = el("button", { type: "button", class: "fav-star chip-fav" + (on ? " active" : ""), title: label, "aria-label": label, "aria-pressed": String(on), "data-fkey": `fav:${name}` }, on ? "★" : "☆");
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (on) FAV_SPECIALS.delete(name); else FAV_SPECIALS.add(name);
+    renderContent();
+  });
+  return btn;
+}
+
 // Generischer Inline-Editor (Text oder Zahl): macht `container` per Klick/Enter bearbeitbar, ersetzt seinen
 // Inhalt durch ein <input>. Enter/Blur übernimmt den Wert über onCommit(neuerWert) — der Aufrufer ist für das
 // Neu-Rendern zuständig (üblicherweise per renderHeader()/renderContent(), analog zu favStar()). Escape bricht
@@ -317,6 +330,9 @@ function renderRail() {
 }
 
 function setTab(id) {
+  const prev = currentTab;
+  // Issue #1: Lage der gemeinsamen Kopfteile VOR dem Wechsel merken („Gleiten“).
+  const flipFirst = prev !== id ? flipMeasure() : null;
   currentTab = id;
   const tab = TABS.find((t) => t.id === id);
   document.getElementById("tabTitle").textContent = tab.title;
@@ -333,6 +349,55 @@ function setTab(id) {
   renderAttrOverlay();
   fitName();
   document.getElementById("content").scrollTop = 0;
+  if (prev !== id) animateTabChange(flipFirst);
+}
+
+// Issue #1 „Animation zwischen Titelblatt und den anderen Seiten“, Variante „Gleiten“ (Nutzer-Entscheidung
+// 2026-10-05; verworfen: Blättern, Überblenden): Porträt, Name, Schips, LeP/AsP/KaP und Eigenschaftswürfel wandern bei jedem
+// Reiterwechsel von ihrem alten an den neuen Platz (Titelblatt ↔ Kopfzeile, FLIP-Technik), der übrige Inhalt blendet
+// ein. Im Modul genauso mit der Web Animations API (_animateTabChange); bei „reduzierter Bewegung“ aus.
+function flipTargets() {
+  const map = new Map();
+  const add = (key, node) => {
+    if (!node) return;
+    const r = node.getBoundingClientRect();
+    if (r.width && r.height) map.set(key, { node, r });
+  };
+  add("portrait", document.getElementById("portrait"));
+  add("name", document.querySelector("#headName h1"));
+  add("fate", document.getElementById("fatePoints"));
+  add("attr", document.getElementById("attrOverlay"));
+  document.querySelectorAll(".bar").forEach((bar) => add(bar.querySelector("[data-fkey^='res:']")?.dataset.fkey || "", bar));
+  return map;
+}
+
+function flipMeasure() {
+  return new Map([...flipTargets()].map(([k, v]) => [k, v.r]));
+}
+
+function animateTabChange(flipFirst) {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // Die Seitenleiste scrollt senkrecht; ohne overflow-x:hidden blitzt während des Gleitens ein waagerechter Rollbalken auf.
+  const moved = new Set();
+  const sidebar = document.getElementById("coverSidebar");
+  sidebar.style.overflowX = "hidden";
+  setTimeout(() => sidebar.style.removeProperty("overflow-x"), 450);
+  flipTargets().forEach(({ node, r }, key) => {
+    const old = flipFirst?.get(key);
+    if (!old) return;
+    const dx = old.left - r.left;
+    const dy = old.top - r.top;
+    const sx = old.width / r.width;
+    const sy = old.height / r.height;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) return;
+    moved.add(node);
+    node.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: "0 0" },
+      { transform: "none", transformOrigin: "0 0" },
+    ], { duration: 380, easing: "cubic-bezier(.2,.75,.25,1)" });
+  });
+  ["content", "coverSidebar"].map((x) => document.getElementById(x)).filter(Boolean).forEach((p) =>
+    p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, easing: "ease-out", delay: moved.size ? 60 : 0, fill: "backwards" }));
 }
 
 // Heldenname einpassen (Issue #25, wie _fitName() im Modul): Schrift ab der CSS-Höchstgröße (39px, Titelblatt 44px)
@@ -566,7 +631,7 @@ function buildSimpleRow(d) {
 // Nachteile, Sonderfertigkeiten, Sprachen/Schriften, …), die laut BEARBEITEN.md löschbar sein sollen. `list` ist
 // die Original-Array-Referenz aus data.js, `item` der zu löschende Eintrag (Mutation direkt auf den Daten,
 // analog zu favStar()).
-function deletableChip(iconSrc, label, list, item) {
+function deletableChip(iconSrc, label, list, item, extra = null) {
   const delLabel = `${typeof label === "string" ? label : "Eintrag"} löschen`;
   const delBtn = el("button", { type: "button", class: "chip-delete edit-only", title: delLabel, "aria-label": delLabel }, "×");
   delBtn.addEventListener("click", (e) => {
@@ -575,7 +640,7 @@ function deletableChip(iconSrc, label, list, item) {
     if (idx !== -1) list.splice(idx, 1);
     renderContent();
   });
-  return el("span", { class: "chip" }, [el("img", { src: iconSrc, alt: "" }), label, typeof label === "string" ? onUseBtn(label) : null, delBtn]);
+  return el("span", { class: "chip" }, [el("img", { src: iconSrc, alt: "" }), label, typeof label === "string" ? onUseBtn(label) : null, extra, delBtn]);
 }
 
 // Info-Tooltip-Knopf (specblock.hbs:7, specialabilities.hbs:4,18,55: "data-tooltip-html={{specCategoryHelp cat}}")
@@ -614,7 +679,7 @@ function specialsBlock(title, groups, fill = false) {
         : el("div", { class: "panel-title flex" }, [el("span", {}, title), specHelpBtn()]),
       ...active.flatMap((g) => [
         showSubheads ? subheadWithHelp(g.label) : null,
-        el("div", { class: fill ? "chips chips-fill" : "chips" }, g.items.map((s) => deletableChip(A.abilityGeneral, s, g.items, s))),
+        el("div", { class: fill ? "chips chips-fill" : "chips" }, g.items.map((s) => deletableChip(A.abilityGeneral, s, g.items, s, specFavStar(s)))),
       ]),
     ]
   );
@@ -789,6 +854,28 @@ function belastungCell(s) {
 // Talentwert (FW) ist direkt editierbar (Freitext-Korrektur ohne AP-Abzug) UND per +/- Stepper mit echten
 // AP-Kosten steigerbar (advanceStepper(), Steigerungsfaktor aus s.stf — 1:1 aus dem Talent-Kompendium, siehe
 // SKILL_GROUPS-Kommentar in data.js), analog zum Eigenschaften-Tab.
+// Hausregel Wundeinschätzung (Hausregelbuch, house-rules.js): Hinweis am Talent Heilkunde Wunden, nur bei aktiver
+// Regel. Ohne markiertes Ziel ein Tooltip mit der Aufforderung (im Modul game.tooltip), sonst der Probendialog des
+// Systems und das Ergebnis im Chat. Der Click-Dummy hat keine Tokens, daher „Ziel markieren (Demo)“ im Tooltip.
+let WOUND_DEMO_TARGET = false;
+function woundCheckHint(s, iconOnly = false) {
+  if (s.name !== "Heilkunde Wunden" || !window.dsa5hHouseRules?.state.active.woundCheck) return null;
+  const btn = el("button", { type: "button", class: "house-hint" + (iconOnly ? " house-hint-icon" : ""), title: "Hausregel Wundeinschätzung: Ziel markieren, dann klicken – schätzt per Probe auf Heilkunde Wunden ein, wie schwer das Ziel verletzt ist.", "aria-label": "Wundeinschätzung" }, iconOnly ? "♥" : "♥ Wundeinschätzung");
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    document.querySelector(".house-hint-tip")?.remove();
+    if (WOUND_DEMO_TARGET) { flashNotice("🎲 Probendialog Heilkunde Wunden (Ork) → Ergebnis als Flüsternachricht im Chat"); return; }
+    const mark = el("button", { type: "button" }, "Ziel markieren (Demo)");
+    const tip = el("div", { class: "house-hint-tip", role: "tooltip" }, ["Bitte zuerst ein Ziel markieren (Token anklicken und T drücken), dann erneut klicken.", mark]);
+    mark.addEventListener("click", () => { WOUND_DEMO_TARGET = true; tip.remove(); });
+    const r = btn.getBoundingClientRect();
+    Object.assign(tip.style, { left: `${r.left + scrollX}px`, top: `${r.bottom + scrollY + 6}px` });
+    document.body.append(tip);
+    setTimeout(() => document.addEventListener("click", function off(ev) { if (!tip.contains(ev.target)) { tip.remove(); document.removeEventListener("click", off); } }), 0);
+  });
+  return btn;
+}
+
 function skillRow(s) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
   const [minus, plus] = advanceStepper(() => s.fw, (v) => { s.fw = v; }, s.stf, 0, () => { renderContent(); renderHeader(); }, s.name);
@@ -796,7 +883,7 @@ function skillRow(s) {
   if (mode === "edit") makeEditable(fwSpan, s.fw, (v) => { s.fw = v; renderContent(); renderHeader(); }, { type: "number", min: 0, max: 99 });
   return el("div", { class: "row skill-row" }, [
     el("img", { src: s.img, alt: "" }),
-    el("span", { class: "left" }, s.name),
+    el("span", { class: "left" }, [s.name, woundCheckHint(s)]),
     probeDice(s.probe, s.name),
     belastungCell(s),
     el("span", { class: "skill-fw" }, [minus, fwSpan, plus]),
@@ -1218,12 +1305,54 @@ function jumpToCombatSkill(name) {
 
 // Vier Schnellwurf-Buttons (Ausweichen/Waffenloser Angriff/Waffenlose Verteidigung/Sturzschaden), siehe COMBAT_ACTIONS.
 function renderCombatActions() {
-  return el("div", { class: "actions-row" }, COMBAT_ACTIONS.map((a) =>
+  return el("div", { class: "actions-row" }, [...COMBAT_ACTIONS.map((a) =>
     el("button", { type: "button" }, [
       a.img ? el("img", { src: a.img, alt: "" }) : el("span", { class: "glyph" }, a.glyph),
       el("span", {}, a.value !== undefined ? `${a.label} (${a.value})` : a.label),
     ])
-  ));
+  ), helpActionButton()]);
+}
+
+// Hausregel Helfen (Hausregelbuch, house-rules.js): Knopf in den Schnellaktionen, nur bei aktiver Regel. Wählt ein
+// Talent (im Modul DialogV2 mit <select> nach Talentgruppen), würfelt über den Probendialog des Systems und nennt die
+// übrig behaltenen QS als Erleichterung im Chat — anrechnen muss der Unterstützte sie selbst (scripts/house-rules/help-action.js).
+let HELP_LAST_SKILL = "";
+function helpActionButton() {
+  if (!window.dsa5hHouseRules?.state.active.helpAction) return null;
+  const btn = el("button", { type: "button", class: "house-quick", title: "Hausregel Helfen: Talent wählen und würfeln – die übrig behaltenen QS erleichtern die nächste Probe eines Mitstreiters." }, [el("span", { class: "glyph" }, "🤝"), el("span", {}, "Helfen")]);
+  btn.addEventListener("click", () => {
+    const select = el("select", { name: "skill", size: "10" }, SKILL_GROUPS.map((g) => el("optgroup", { label: g.name }, g.items.map((sk) =>
+      el("option", { value: sk.name }, `${sk.name} (${sk.fw})`)))));
+    select.value = HELP_LAST_SKILL || select.options[0].value;
+    // Suche wie attachSkillSearch() im Modul: filtert Talente und leere Gruppen, wählt den ersten Treffer.
+    const search = el("input", { type: "search", placeholder: "Talent suchen …", autocomplete: "off" });
+    search.addEventListener("input", () => {
+      const q = search.value.trim().toLowerCase();
+      [...select.options].forEach((o) => { o.hidden = !!q && !o.textContent.toLowerCase().includes(q); });
+      select.querySelectorAll("optgroup").forEach((g) => { g.hidden = ![...g.children].some((o) => !o.hidden); });
+      if (!select.selectedOptions.length || select.selectedOptions[0].hidden) select.value = [...select.options].find((o) => !o.hidden)?.value ?? "";
+    });
+    search.addEventListener("keydown", (e) => { if (e.key === "Enter") roll.click(); });
+    select.addEventListener("dblclick", () => roll.click());
+    const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
+    closeBtn.addEventListener("click", closeModal);
+    const roll = el("button", { type: "button", class: "reload-btn" }, "🎲 Probe würfeln");
+    roll.addEventListener("click", () => {
+      HELP_LAST_SKILL = select.value;
+      closeModal();
+      flashNotice(`🎲 Probendialog ${select.value} (Helfen) → Chat: „Layariel hilft mit ${select.value}: Die nächste Probe von Gerion ist um 2 erleichtert.“`);
+    });
+    openModal(el("div", { class: "panel fav-rule-modal help-action-modal" }, [
+      el("div", { class: "panel-title flex" }, [el("span", {}, "Helfen"), closeBtn]),
+      el("p", { class: "fav-rule-text" }, "Mit welchem Talent hilfst du? Die Probe kostet deine Aktion."),
+      el("label", { class: "help-action-field" }, [el("span", {}, "Suche"), search]),
+      el("label", { class: "help-action-field" }, [el("span", {}, "Talent"), select]),
+      el("p", { class: "fav-rule-text muted" }, "Unterstützt: Gerion (markiertes Ziel, Demo)"),
+      el("div", { class: "fav-rule-actions" }, [roll]),
+    ]), { label: "Helfen" });
+    search.focus();
+  });
+  return btn;
 }
 
 // Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich, siehe Git-Historie
@@ -1343,11 +1472,23 @@ function handSlot(hand) {
     swap = el("button", { type: "button", class: "hand-swap-btn", title: `Waffe nach ${target} verschieben`, "aria-label": `Beidhändige Waffe nach ${target} verschieben` }, [el("span", { "aria-hidden": "true" }, "⇄"), ` nach ${target}`]);
     swap.addEventListener("click", () => { TWO_HANDED_SIDE = TWO_HANDED_SIDE === "left" ? "right" : "left"; renderContent(); });
   }
+  // Griffwechsel ein-/beidhändig (Rückmeldung 2026-10-05), in beiden Modi; nur Nahkampf, nicht Dolche/Fechtwaffen
+  // (wie das System). Beidhändig belegt die Haupthand und macht die Nebenhand frei. Modul: dsa5hSwapGrip in body-hand.hbs.
+  let grip = null;
+  if (w && MELEE.includes(w) && !["Dolche", "Fechtwaffen"].includes(w.group)) {
+    const toTwo = !w.worn.requiresBothHands;
+    grip = el("button", { type: "button", class: "hand-swap-btn" }, toTwo ? "Beidhändig führen" : "Einhändig führen");
+    grip.addEventListener("click", () => {
+      w.worn.requiresBothHands = toTwo;
+      if (toTwo) { HANDS.main = w; HANDS.off = null; }
+      renderContent();
+    });
+  }
   return el("div", { class: "hand-slot" }, [
     el("small", { class: "figure-col-title" }, isMain ? (w && w.worn.requiresBothHands ? "Beide Hände" : "Haupthand") : "Nebenhand"),
     el("span", { class: "body-item-name" }, w ? w.name : "—"),
     w ? combatSkillLink(w.group) : null,
-    el("div", { class: "hand-slot-body" }, [tile, el("div", { class: "hand-slot-side" }, [tp, select, swap])]),
+    el("div", { class: "hand-slot-body" }, [tile, el("div", { class: "hand-slot-side" }, [tp, select, grip, swap])]),
   ]);
 }
 
@@ -1481,21 +1622,37 @@ function renderBody() {
   ]);
 
   // Kurzübersicht der übrigen Waffen statt der früheren Waffentabellen (Rückmeldung 2026-10-02: die Hände wählen die
-  // Waffe, darunter reicht ein Überblick). Würfel bleiben, damit auch Angriffe aus Eigenschaften (Biss …) würfelbar sind.
+  // Waffe, darunter reicht ein Überblick); alle Waffen außerhalb der Hände, nicht nur getragene (2026-10-05). Würfel
+  // bleiben, damit auch Angriffe aus Eigenschaften (Biss …) würfelbar sind.
   const shortRow = (w, kind) => {
     const ranged = kind === "ranged";
     const trait = !!w.trait;
     const stats = trait ? { at: w.at, pa: w.pa } : ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
     return el("div", { class: "row short-weapon-row" }, [
       trait ? el("img", { src: w.img || A.combatSkill, alt: "" }) : itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
-      el("span", { class: "left weapon-name" }, [el("span", {}, w.name), el("small", { class: "weapon-sub" }, trait ? "Angeboren" : w.group)]),
+      el("span", { class: "left weapon-name" }, [el("span", { title: w.name }, w.name), el("small", { class: "weapon-sub" }, trait ? "Angeboren" : w.group)]),
       el("span", { class: "short-weapon-dice" }, [
         combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
         !ranged && stats.pa !== undefined ? combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`) : null,
       ]),
       damageBtn(w.tp, w.name),
+      trait ? el("span", {}) : handEquipBtn(w),
       trait ? el("span", {}) : favStar(w),
     ]);
+  };
+  // Ausrüsten-Schild wie in Foundry (Rückmeldung 2026-10-05): Klick nimmt die Waffe in die Hand wie das System mit
+  // hand "auto" (beidhändig → Haupthand, sonst freie Hand, sonst Haupthand). Klon von equipToggle() ohne dessen Listener.
+  const handEquipBtn = (w) => {
+    const btn = equipToggle({ eq: false }).cloneNode(true);
+    btn.title = "In die Hand nehmen";
+    btn.addEventListener("click", () => {
+      const twoHand = !!w.worn.requiresBothHands;
+      const hand = twoHand || !HANDS.main || (HANDS.main.worn.requiresBothHands) || HANDS.off ? "main" : "off";
+      HANDS[hand] = w;
+      if (hand === "main" && twoHand) HANDS.off = null;
+      renderContent();
+    });
+    return btn;
   };
   const shortList = [
     ...handWeapons().filter((w) => !inHands.includes(w)).map((w) => shortRow(w, RANGED.includes(w) ? "ranged" : "melee")),
@@ -1923,6 +2080,7 @@ function inventoryRow(i, list) {
     el("span", { class: "muted center" }, i.weight),
     el("span", { class: "center" }, i.price),
     list ? rowActionsCell(list, i, onUseBtn(i.name)) : el("span", {}, [onUseBtn(i.name)]),
+    favStar(i),
   ]);
 }
 
@@ -1951,7 +2109,7 @@ function openBagModal(bag) {
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, bag.name), closeBtn]),
       el("div", { class: "armor-sum-line" }, `Leergewicht ${bag.weight} Stein · Inhalt ${bagContentWeight(bag)} Stein`),
-      el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "")),
+      el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "", "")),
       ...rows,
       el("div", { class: "drop-zone" }, "Gegenstände hierher ziehen, um sie einzupacken"),
     ]),
@@ -2069,7 +2227,7 @@ function renderInventory() {
     .map((cat) =>
       el("div", { class: "panel" }, [
         el("div", { class: "panel-title" }, cat.label),
-        el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "")),
+        el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "", "")),
         ...cat.items.map((it) => inventoryRow(it, INVENTORY_CATEGORIES.find((c) => c.label === cat.label).items)),
       ])
     );
@@ -2119,12 +2277,9 @@ function increaseStep(getValue, setValue, max, onChange, label = "Wert") {
   return btn;
 }
 
-// Zustände- und Aktive-Effekte-Panel als eigene Funktionen (statt Inline in renderStatus), damit das Titelblatt
-// (renderCover) dieselben Panels für seinen kompakten Status-Überblick wiederverwenden kann. Wert (gefüllte
-// Pips) in BEIDEN Modi reduzierbar, ganze Zeile nur im Bearbeiten-Modus löschbar. `limit` (nur von
-// renderCoverSidebar() übergeben, Status-Tab bleibt unlimitiert) deckelt die Liste auf dem Titelblatt — bei mehr
-// Zuständen als `limit` erscheint statt weiterer Zeilen ein Sprung-Button zum Status-Tab (Nutzer-Feedback
-// 2026-09-14, analog zu buildActiveEffectsSummary()), damit die linke Leiste nie scrollen muss.
+// Zustände-Panel als eigene Funktion (statt inline in renderStatus), damit die Titelblatt-Leiste dieselben Zeilen im
+// Reiter „Statuseffekte“ wiederverwenden kann (coverSideTabs()). Wert (gefüllte Pips) in BEIDEN Modi reduzierbar,
+// ganze Zeile nur im Bearbeiten-Modus löschbar. `limit` deckelt die Liste optional mit einem Sprung-Button zum Status-Tab.
 function buildConditionsPanel(limit) {
   const capped = limit && CONDITIONS.length > limit;
   const shown = capped ? CONDITIONS.slice(0, limit) : CONDITIONS;
@@ -2158,23 +2313,6 @@ function buildActiveEffectsPanel() {
     el("div", { class: "panel-title" }, "Aktive Effekte"),
     ...EFFECTS.map((e) => el("div", { class: "list-row" }, [el("span", { class: "name" }, e.name), el("span", { class: "cost" }, e.dur), rowDeleteBtn(EFFECTS, e)])),
   ]);
-}
-
-// Nutzer-Feedback 2026-09-14: auf dem Titelblatt sollen Aktive Effekte gar nicht mehr einzeln aufgelistet werden
-// (auch die vorherige "erste 4 + Alle anzeigen"-Begrenzung machte die linke Leiste noch scrollbar) — nur noch ein
-// knapper Hinweis, ob überhaupt welche aktiv sind, mit direktem Sprung zum Status-Tab (die volle Liste bleibt dort
-// über buildActiveEffectsPanel() unverändert). Damit bleibt die Höhe der Leiste unabhängig von der Effekt-Anzahl
-// konstant, siehe #coverSidebar-Kommentar in style.css.
-function buildActiveEffectsSummary() {
-  const count = EFFECTS.length;
-  const btn = el(
-    "button",
-    { type: "button", class: "show-all-btn" },
-    count ? `${count} aktive${count === 1 ? "r" : ""} Effekt${count === 1 ? "" : "e"} → Status` : "Keine aktiven Effekte"
-  );
-  if (count) btn.addEventListener("click", () => setTab("status"));
-  else btn.disabled = true;
-  return el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Aktive Effekte"), btn]);
 }
 
 function renderStatus() {
@@ -2363,6 +2501,51 @@ function renderDiseasePanel() {
 // separater Spielmodus-Punkt dazu, also wie überall sonst nur dort).
 function renderNotes() {
   return el("div", {}, NOTES_SECTIONS.map((n) => section(n.id, renderNotesSection(n))));
+}
+
+// --- Titelblatt-Leiste, Variante G (Issues #27/#31, Nutzer-Entscheidung 2026-10-05) ---
+// LeP/AsP/KaP als flache Leisten, Schips + Regeneration in einer Zeile, darunter ein Kasten mit zwei Reitern
+// „Statuseffekte | Persönliche Daten“, der den Rest der Leiste füllt (nur der Inhalt scrollt). Die Daten werden
+// weiter unter Notizen bearbeitet. Verworfen: A Steckbrief-Kasten über den Favoriten (zu viel Platz),
+// B Porträt-Rückseite, C Datenzeile im Kopf, D Titelblatt-Unterreiter, E Hover-Karte am Porträt, F eigener Reiter „Held“.
+// Modul: parts/cover-sidebar.hbs, _coverSideTab/_applyCurrentTab, dsa5h.personalDetails.
+const filledAppearance = () => APPEARANCE.filter((a) => String(a.v ?? "").trim());
+let COVER_SIDE_TAB = "conditions";
+
+function coverResourcesCompact() {
+  const group = resourceGroup(true);
+  const regen = group.querySelector(".regen-btn");
+  regen.remove();
+  return el("div", { class: "cover-resources compact" }, [group, el("div", { class: "cover-res-row" }, [fatePointsRow(), regen])]);
+}
+
+function coverSideTabs() {
+  const tabs = [["conditions", "Statuseffekte"], ["details", "Persönliche Daten"]];
+  const bar = el("div", { class: "side-tabs", role: "tablist", "aria-label": "Titelblatt" }, tabs.map(([id, label]) => {
+    const on = COVER_SIDE_TAB === id;
+    const b = el("button", { type: "button", role: "tab", class: "side-tab" + (on ? " active" : ""), "aria-selected": String(on) }, label);
+    b.addEventListener("click", () => { COVER_SIDE_TAB = id; renderContent(); });
+    return b;
+  }));
+  let body;
+  if (COVER_SIDE_TAB === "conditions") {
+    const list = buildConditionsPanel();
+    list.querySelector(".panel-title").remove();
+    const more = el("button", { type: "button", class: "show-all-btn" }, "Alle Zustände und Effekte → Status");
+    more.addEventListener("click", () => setTab("status"));
+    body = [...list.childNodes, more];
+  } else {
+    const fields = filledAppearance();
+    const edit = el("button", { type: "button", class: "show-all-btn" }, "Bearbeiten → Notizen");
+    edit.addEventListener("click", () => { setTab("notes"); jumpToSection("notes", "details"); });
+    body = [
+      fields.length
+        ? el("dl", { class: "side-details" }, fields.map((a) => el("div", { title: `${a.k}: ${a.v}` }, [el("dt", {}, a.k), el("dd", {}, a.v)])))
+        : el("p", { class: "muted side-empty" }, "Noch keine persönlichen Daten eingetragen."),
+      edit,
+    ];
+  }
+  return el("div", { class: "panel side-tabs-panel" }, [bar, el("div", { class: "side-tabs-body", role: "tabpanel" }, body)]);
 }
 
 function renderNotesSection(section) {
@@ -2766,6 +2949,11 @@ function collectFavorites() {
     weapons: [...MELEE, ...RANGED].filter((w) => w.fav),
     spells: [...SPELLS, ...RITUALS].filter((s) => s.fav),
     liturgies: [...LITURGIES, ...CEREMONIES].filter((l) => l.fav),
+    // Issue #30: Ausrüstung (auch in Behältnissen) und Sonderfertigkeiten aller Reiter.
+    equipment: INVENTORY_CATEGORIES.flatMap((c) => c.items.flatMap((i) => [i, ...(i.children || [])])).filter((i) => i.fav),
+    specials: [...SPECIALS, ...COMBAT_SPECIALS, ...MAGIC_SPECIALS, ...RELIGION_SPECIALS]
+      .flatMap((g) => g.items).filter((n) => FAV_SPECIALS.has(n))
+      .map((n) => ({ name: n, img: A.abilityGeneral, rule: SPEC_RULES[n] || "Kein Regeltext hinterlegt." })),
   };
 }
 
@@ -2776,7 +2964,11 @@ function collectFavorites() {
 // echten Modul lösen die Würfel echte Proben/Angriffe aus (skillSelect/chRollCombat, favorite-values.hbs).
 function favCard(item, kind) {
   const icon = el("img", { class: "fav-card-icon", src: item.img, alt: "" });
-  const name = el("span", { class: "fav-card-name" }, item.name);
+  // Klick auf den Namen öffnet das Foundry-Fenster des Eintrags (Item-Sheet, Systemaktion itemEdit) — für alle
+  // Favoriten gleich (Nutzer-Entscheidung 2026-10-05, Issue #30; statt Tooltip/Aufklappen/eigenem Fenster für den
+  // SF-Regeltext). Der Click-Dummy zeigt stellvertretend eine Vorschau (openItemWindow()).
+  const name = el("button", { type: "button", class: "fav-card-name", title: `${item.name} öffnen` }, item.name);
+  name.addEventListener("click", () => openItemWindow(item));
   let value;
   let roll;
   if (kind === "weapon") {
@@ -2790,6 +2982,20 @@ function favCard(item, kind) {
     const dmg = el("button", { type: "button", class: "damage-roll", title: dmgLabel, "aria-label": dmgLabel }, [el("small", {}, "TP"), item.tp]);
     dmg.addEventListener("click", () => flashNotice(`🎲 ${dmgLabel}`));
     value = el("span", { class: "fav-card-value" }, [dmg]);
+  } else if (kind === "equipment") {
+    // Benutzen (Issue #30, Nutzerwahl 2026-10-05): Verbrauchsgegenstand → „Verbrauchen“ wie im System-Kontextmenü
+    // (sheet.consumeItem), sonst der OnUse-Würfel, falls vorhanden. Als Wert die Anzahl.
+    let use = onUseBtn(item.name);
+    if (item.consumable) {
+      const label = `${item.name} verbrauchen`;
+      use = el("button", { type: "button", class: "fav-use-btn", title: label, "aria-label": label }, "Verbrauchen");
+      use.addEventListener("click", () => { if (item.qty > 0) item.qty -= 1; flashNotice(`🧪 ${label}`); renderContent(); });
+    }
+    roll = el("span", { class: "fav-card-roll" }, [use]);
+    value = el("span", { class: "fav-card-value", title: "Anzahl" }, `×${item.qty}`);
+  } else if (kind === "special") {
+    roll = el("span", { class: "fav-card-roll" }, [onUseBtn(item.name)]);
+    value = el("span", { class: "fav-card-value" });
   } else {
     value = el("span", { class: "fav-card-value", title: "Fertigkeitswert" }, String(item.fw));
     const dice = probeDice(item.probe, item.name);
@@ -2797,7 +3003,27 @@ function favCard(item, kind) {
     roll = el("span", { class: "fav-card-roll" }, [dice]);
   }
   // Reihenfolge Name | Probe | Wert | Stern (Nutzer-Feedback 2026-09-28); Waffen: AT/FK-Würfel als Probe, TP als Wert.
-  return el("div", { class: "fav-card" }, [icon, name, roll, value, favStar(item)]);
+  const star = kind === "special" ? specFavStar(item.name) : favStar(item);
+  // Hausregel Wundeinschätzung: Herz neben Heilkunde Wunden auch hier (Rückmeldung 2026-10-05).
+  const nameCell = el("span", { class: "fav-card-name-cell" }, [name, kind === "talent" ? woundCheckHint(item, true) : null]);
+  return el("div", { class: "fav-card" }, [icon, nameCell, roll, value, star]);
+}
+
+// Stellvertreter für das DSA5-Item-Sheet, das im Modul ein Klick auf den Favoriten-Namen öffnet (itemEdit). Bei
+// Sonderfertigkeiten steht dort der Regeltext (system.rule.value), „Im Chat posten“ entspricht postItem.
+function openItemWindow(item) {
+  const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
+  closeBtn.addEventListener("click", closeModal);
+  const post = el("button", { type: "button", class: "reload-btn" }, "Im Chat posten");
+  post.addEventListener("click", () => { flashNotice(`💬 ${item.name} im Chat gepostet`); closeModal(); });
+  openModal(el("div", { class: "panel fav-rule-modal" }, [
+    el("div", { class: "panel-title flex" }, [el("span", {}, item.name), closeBtn]),
+    el("div", { class: "identity-modal-body" }, [
+      el("img", { src: item.img, alt: "" }),
+      el("p", { class: "fav-rule-text" }, item.rule || "Hier öffnet sich in Foundry das Item-Fenster des Systems (Beschreibung, Werte, Effekte)."),
+    ]),
+    el("div", { class: "fav-rule-actions" }, [post]),
+  ]), { label: item.name });
 }
 
 // Ein Panel "Favoriten" mit einer Unterüberschrift je Kategorie (Talente/Waffen/Zauber/Liturgien), analog zu
@@ -2810,13 +3036,15 @@ function favoritesPanel() {
     { label: "Waffen", items: fav.weapons, kind: "weapon" },
     { label: "Zauber", items: fav.spells, kind: "spell" },
     { label: "Liturgien", items: fav.liturgies, kind: "liturgy" },
+    { label: "Ausrüstung", items: fav.equipment, kind: "equipment" },
+    { label: "Sonderfertigkeiten", items: fav.specials, kind: "special" },
   ];
   const active = groups.filter((g) => g.items.length);
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Favoriten"),
     ...(active.length
       ? active.flatMap((g) => [el("div", { class: "subhead" }, g.label), el("div", { class: "fav-grid" }, g.items.map((it) => favCard(it, g.kind)))])
-      : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern oder Liturgien anklicken")]),
+      : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern, Liturgien, Ausrüstung oder Sonderfertigkeiten anklicken")]),
   ]);
 }
 
@@ -2825,7 +3053,7 @@ function resourceByLabel(label) {
 }
 
 // Eine LeP/AsP/KaP-Ressourcenleiste (Füllstand + "Aktuell / Max"-Zahl) — von renderHeader() (Kopfzeile) UND
-// coverResourcesBlock() (Titelblatt-Leiste) genutzt, da beide dieselben RESOURCES-Werte zeigen (siehe Kommentar
+// coverResourcesCompact() (Titelblatt-Leiste) genutzt, da beide dieselben RESOURCES-Werte zeigen (siehe Kommentar
 // über #coverSidebar in index.html). Der aktuelle Wert ist laut BEARBEITEN.md in BEIDEN Modi editierbar (anders
 // als z.B. die Mod/Zukauf-Felder auf dem Eigenschaften-Tab, die nur im Bearbeiten-Modus editierbar wirken) —
 // daher hier fest verdrahtet statt über die dortigen editMod-Flags gesteuert.
@@ -2889,17 +3117,6 @@ function fatePointsRow() {
   return wrap;
 }
 
-// LeP/AsP/KaP/Schips auf der dunklen Titelblatt-Leiste (#coverSidebar) — dieselben Bausteine wie die Kopfzeile
-// (resourceGroup()/fatePointsRow()), direkt auf dem dunklen Grund (kein eigenes .panel nötig, .bar/.bar-fill/
-// .bar-label/.resource-frame/.res-card/.regen-btn sind ohnehin schon für diesen Untergrund gestaltet, siehe .head
-// weiter oben in style.css).
-function coverResourcesBlock() {
-  return el("div", { class: "cover-resources" }, [
-    resourceGroup(true),
-    fatePointsRow(),
-  ]);
-}
-
 // Kopfzeile (Charaktername + LeP/AsP/KaP-Leisten + Schicksalspunkte): einzige Stelle, die #headName/#bars/
 // #fatePoints (index.html) befüllt — anders als der übrige Bogeninhalt liegt die Kopfzeile außerhalb von
 // #content und wird daher nicht von renderContent() mit erneuert, sondern separat bei jeder Änderung aufgerufen
@@ -2942,9 +3159,8 @@ function renderCoverSidebar() {
   const portrait = document.getElementById("portrait");
   sidebar.innerHTML = "";
   sidebar.appendChild(portrait);
-  sidebar.appendChild(coverResourcesBlock());
-  sidebar.appendChild(buildConditionsPanel(4));
-  sidebar.appendChild(buildActiveEffectsSummary());
+  // Variante G (Issues #27/#31): kompakte Ressourcen + Reiterkasten „Statuseffekte | Persönliche Daten“.
+  sidebar.append(coverResourcesCompact(), coverSideTabs());
 }
 
 // Gegenstück zu renderCoverSidebar(): Porträt zurück an seinen Stammplatz in der Kopfzeile, bevor die (dann

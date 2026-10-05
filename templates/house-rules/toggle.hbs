@@ -1,0 +1,3 @@
+{{! Schalter einer Hausregel: für die SL ein Umschalter (role=switch), für Spieler nur der Stand. }}
+{{#if isGM}}<button type="button" class="dsa5h-hr-switch" role="switch" data-action="toggleRule" data-rule-id="{{rule.id}}" aria-checked="{{#if rule.active}}true{{else}}false{{/if}}" aria-label="{{localize (concat rule.key '.Title')}}"><span class="dsa5h-hr-switch-track" aria-hidden="true"></span><span>{{#if rule.active}}{{localize 'DSA5HELPERS.HouseRules.Active'}}{{else}}{{localize 'DSA5HELPERS.HouseRules.Inactive'}}{{/if}}</span></button>
+{{else}}<span class="dsa5h-hr-state{{#if rule.active}} active{{/if}}">{{#if rule.active}}{{localize 'DSA5HELPERS.HouseRules.Active'}}{{else}}{{localize 'DSA5HELPERS.HouseRules.Inactive'}}{{/if}}</span>{{/if}}
