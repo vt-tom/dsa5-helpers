@@ -640,6 +640,17 @@ test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel
  actor.setupSkill=async(s,o)=>{setup={s,o};return {testData:{},cardOptions:{}};};actor.basicTest=async()=>({result:{successLevel:1,qualityStep:3}});actor.name='Alrik';
  await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hHelpAction.call(sheet,{},{});
  assert(dialog.content.includes('<optgroup')&&dialog.content.includes('Gerion'),'Talentauswahl nach Gruppen, markiertes Ziel genannt');
+ assert(dialog.content.includes('name="search"')&&typeof dialog.render==='function','Suchfeld im Dialog');
+ // Suche ohne DOM: kleine Attrappe mit <option>/<optgroup>-Verhalten.
+ const opt=(v,t)=>({value:v,textContent:t,hidden:false,scrollIntoView(){},get selected(){return sel.value===v;}});
+ const g1={children:[opt('a','Klettern (6)'),opt('b','Kraftakt (2)')],hidden:false},g2={children:[opt('c','Einschüchtern (8)')],hidden:false};
+ const listeners={},inputL={};const input={value:'',addEventListener:(t,f)=>{inputL[t]=f;}};
+ const sel={value:'',options:[...g1.children,...g2.children],querySelectorAll:()=>[g1,g2],get selectedOptions(){return this.options.filter(o=>o.value===this.value);},addEventListener:(t,f)=>{listeners[t]=f;}};
+ let ok=0;help.attachSkillSearch({querySelector:q=>q.includes('search')?input:q.includes('select')?sel:{click(){ok++;}}});
+ assert.equal(sel.value,'a','ohne Auswahl der erste Eintrag');
+ input.value='einsch';inputL.input();assert.equal(sel.value,'c');assert(g1.hidden&&!g2.hidden,'leere Gruppe ausgeblendet');
+ input.value='kr';inputL.input();assert.equal(sel.value,'b');inputL.keydown({key:'ArrowUp',preventDefault(){}});assert.equal(sel.value,'b','nur sichtbare Treffer');
+ listeners.dblclick();assert.equal(ok,1,'Doppelklick würfelt');
  assert.equal(setup.s,skill,'Probe über den Probendialog des Systems');assert(chat.content.includes('3')&&chat.content.includes('Gerion'),'QS und Ziel im Chat');
  assert(!chat.whisper,'öffentlich, damit der Unterstützte es sieht');
 });

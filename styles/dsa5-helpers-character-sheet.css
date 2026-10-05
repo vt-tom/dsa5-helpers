@@ -1851,20 +1851,32 @@
   border-bottom: 1px solid rgba(224, 192, 128, .3);
 }
 
+/* Einzeilig (Rückmeldung 2026-10-05: „Persönliche Daten“ brach in Foundry um); Breite nach Inhalt, Foundrys
+   Fokus-/Aktiv-Rahmen der Buttons (orange) abgeschaltet — Markierung nur über die Unterlinie. */
 .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tab {
-  flex: 1;
+  flex: 1 1 auto;
   width: auto;
+  min-width: 0;
   min-height: 0;
   margin: 0;
-  padding: 6px 4px 5px;
+  padding: 6px 6px 5px;
   border: 0;
   border-bottom: 2px solid transparent;
   border-radius: 0;
+  outline: none;
   background: transparent;
+  box-shadow: none;
   color: var(--headmuted);
   font-family: 'Andalus', serif;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tab:focus,
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tab:active {
+  outline: none;
+  box-shadow: none;
 }
 
 .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tab[aria-selected="true"] {
@@ -1908,12 +1920,16 @@
 
 .dsa5-helpers-sheet .dsa5h-side-details dt {
   flex: none;
+  margin: 0;
   color: var(--headmuted);
+  font-weight: normal;
 }
 
+/* Farbe ausdrücklich: Foundry färbt dd sonst dunkel — auf der dunklen Leiste unlesbar (Rückmeldung 2026-10-05). */
 .dsa5-helpers-sheet .dsa5h-side-details dd {
   min-width: 0;
   margin: 0;
+  color: var(--headink);
   overflow: hidden;
   font-weight: bold;
   white-space: nowrap;

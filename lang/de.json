@@ -308,7 +308,9 @@
           "Skill": "Talent",
           "Target": "Unterstützt: {name}",
           "NoTarget": "Kein Ziel markiert – markiere den Mitstreiter, dem du hilfst, damit er im Chat genannt wird (optional).",
-          "Roll": "Probe würfeln"
+          "Roll": "Probe würfeln",
+          "Search": "Suche",
+          "SearchPlaceholder": "Talent suchen …"
         },
         "Chat": {
           "Target": "von {name}",
