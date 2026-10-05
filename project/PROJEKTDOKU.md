@@ -10,7 +10,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 
 - Echtes Modul läuft: alle 10 Reiter (Titelblatt, Eigenschaften, Talente, Kampf, Magie, Religion, Ausrüstung, Status, Notizen, Gefährten) mit echten Systemdaten.
 - Favoriten (Stern), Spiel-/Bearbeiten-Modus, Magie/Religion nur bei passender Fähigkeit sichtbar.
-- 54 Tests grün (`node tests/sheet.test.cjs`).
+- 55 Tests grün (`node tests/sheet.test.cjs`).
 - UI/UX-Review vom 2026-09-25 ([Feedback](UI-UX-FEEDBACK-2026-09-25.md)): Pakete A–D (Trefferflächen/Tastatur, Lesbarkeit, Waffentabellen, Orientierung/Rückmeldung) in Clickdummy **und** Foundry umgesetzt und live bestätigt. Pakete E (Favoritenraster) und G (Detailpunkte je Reiter) sowie die Munitionszeile abgenommen und in Foundry übertragen (live zu prüfen). Aus Paket F sind Porträtformat und schwebende Titelleiste in Foundry; Geld-Panel „Zeile“ seit 2026-09-30 auch in Foundry; Kampf-Unterreiter „Körper“ seit 2026-09-30 in Foundry (live zu prüfen, vorerst neben der Übersicht) — siehe AUFGABEN.md.
 - Hier gibt es kein laufendes Foundry. Alles ist nur im Code geprüft – bestätigt wird erst live beim Nutzer.
 
@@ -18,6 +18,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 
 - **Erben statt neu bauen:** Die Sheet-Klasse erbt von `globalThis.dsa5.sheets.ActorSheetdsa5Character`. Aktionen, Berechnungen und Datenzugriffe kommen aus dem System. Eigene Methoden nur nach Absprache.
 - **Technik:** Handlebars + Vanilla JS, kein React, kein Build-Schritt (direkte ES-Module).
+- **CSS-Gliederung (Issue #7, 2026-10-05):** `styles/dsa5-helpers-character-sheet.css` und `clickdummy/style.css` haben dieselben 21 nummerierten Abschnitte (Inhaltsverzeichnis im Dateikopf; Click-Dummy zusätzlich 22 „Nur Click-Dummy“). Neue Regeln in den passenden Abschnitt, nie ans Dateiende; gemeinsame Bausteine (6) stehen vor den Reitern. Eine Deklaration pro Zeile. `:hover` nur in `@media (hover: hover)` (Block am Ende des Unterabschnitts; prüft ein Test), `:focus-visible` außerhalb. Bedienelemente und feste Schriftgrößen über Tokens (`--hit-sm/md/lg` = 24/26/28 px, `--fs-base`, `--fs-panel-title`, `--fs-tab-title`, `--fs-*`), damit das geplante Mobil-CSS nur Tokens umstellt. Breitenabhängige Regeln in Abschnitt 18.
 - **Mindestversion:** DSA5 8.1.5 / Foundry ≥ 14.364.
 - **Keine eigenen Bilder:** nur vorhandene Assets aus `systems/dsa5/icons/...`. Einzige Ausnahme (Nutzerwunsch, Issue #22): der Fensterrahmen `styles/dsa5-helpers-frame.svg` — Nachbau des System-Rahmens `actor.webp`, erzeugt von `tools/gen-frame.cjs` (nicht von Hand bearbeiten; Modul und Click-Dummy nutzen dieselbe Datei).
 - **System-Sprachdateien nicht ändern:** eigene Texte unter `DSA5HELPERS.*` in `lang/de.json`/`en.json`.
