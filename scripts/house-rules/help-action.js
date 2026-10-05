@@ -32,6 +32,36 @@ export function helpMessage({ helper, skill, target, qs }, t = loc) {
 
 let lastSkill = null;
 
+/**
+ * Suche im Talent-Dialog (Rückmeldung 2026-10-05): blendet nicht passende Talente und leere Gruppen aus und wählt den
+ * ersten Treffer; ↑/↓ im Suchfeld wechseln den Treffer, Enter (Formular-Absenden) oder Doppelklick würfelt.
+ */
+export function attachSkillSearch(root) {
+  const input = root?.querySelector('input[name="search"]');
+  const select = root?.querySelector('select[name="skill"]');
+  if (!input || !select) return;
+  const visible = () => [...select.options].filter(option => !option.hidden);
+  const filter = () => {
+    const query = input.value.trim().toLowerCase();
+    for (const option of select.options) option.hidden = !!query && !option.textContent.toLowerCase().includes(query);
+    for (const group of select.querySelectorAll('optgroup')) group.hidden = ![...group.children].some(option => !option.hidden);
+    if (select.selectedOptions[0]?.hidden || !select.selectedOptions.length) select.value = visible()[0]?.value ?? '';
+  };
+  input.addEventListener('input', filter);
+  input.addEventListener('keydown', event => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    event.preventDefault();
+    const list = visible();
+    const index = list.findIndex(option => option.selected);
+    const next = list[Math.min(list.length - 1, Math.max(0, index + (event.key === 'ArrowDown' ? 1 : -1)))];
+    if (next) { select.value = next.value; next.scrollIntoView({ block: 'nearest' }); }
+  });
+  // Doppelklick auf ein Talent würfelt direkt (wie „Probe würfeln“).
+  select.addEventListener('dblclick', () => root.querySelector('[data-action="ok"]')?.click());
+  filter();
+  select.selectedOptions[0]?.scrollIntoView({ block: 'nearest' });
+}
+
 /** Talent wählen (Dialog), Probe über den Probendialog des Systems, danach Hinweis im Chat. */
 export async function helpAction(actor, tokenId) {
   const groups = skillOptions(actor);
@@ -41,13 +71,15 @@ export async function helpAction(actor, tokenId) {
   const options = groups.map(({ group, items }) => `<optgroup label="${esc(game.i18n.localize('SKILL.' + group))}">${items
     .map(item => `<option value="${item.id}"${item.id === lastSkill ? ' selected' : ''}>${esc(item.name)} (${item.system.talentValue?.value ?? 0})</option>`).join('')}</optgroup>`).join('');
   const content = `<p>${loc('Dialog.Intro')}</p>
-    <div class="form-group"><label>${loc('Dialog.Skill')}</label><select name="skill" autofocus>${options}</select></div>
+    <div class="form-group"><label>${loc('Dialog.Search')}</label><input type="search" name="search" placeholder="${loc('Dialog.SearchPlaceholder')}" autocomplete="off" autofocus></div>
+    <div class="form-group"><label>${loc('Dialog.Skill')}</label><select name="skill" size="10" class="dsa5h-help-skills">${options}</select></div>
     <p class="hint">${target ? loc('Dialog.Target', { name: esc(target.name) }) : loc('Dialog.NoTarget')}</p>`;
   const skillId = await foundry.applications.api.DialogV2.prompt({
     window: { title: loc('Title'), icon: 'fas fa-handshake-angle' },
     content,
     ok: { label: loc('Dialog.Roll'), icon: 'fas fa-dice-d20', callback: (_event, button) => button.form.elements.skill.value },
     rejectClose: false,
+    render: (_event, dialog) => attachSkillSearch(dialog.element),
   });
   const skill = skillId && actor.items.get(skillId);
   if (!skill) return;

@@ -308,7 +308,9 @@
           "Skill": "Skill",
           "Target": "Helping: {name}",
           "NoTarget": "No target – target the ally you help so they are named in the chat (optional).",
-          "Roll": "Roll check"
+          "Roll": "Roll check",
+          "Search": "Search",
+          "SearchPlaceholder": "Search skill …"
         },
         "Chat": {
           "Target": "of {name}",

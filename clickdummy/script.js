@@ -1321,9 +1321,19 @@ function helpActionButton() {
   if (!window.dsa5hHouseRules?.state.active.helpAction) return null;
   const btn = el("button", { type: "button", class: "house-quick", title: "Hausregel Helfen: Talent wählen und würfeln – die übrig behaltenen QS erleichtern die nächste Probe eines Mitstreiters." }, [el("span", { class: "glyph" }, "🤝"), el("span", {}, "Helfen")]);
   btn.addEventListener("click", () => {
-    const select = el("select", { name: "skill" }, SKILL_GROUPS.map((g) => el("optgroup", { label: g.name }, g.items.map((sk) =>
+    const select = el("select", { name: "skill", size: "10" }, SKILL_GROUPS.map((g) => el("optgroup", { label: g.name }, g.items.map((sk) =>
       el("option", { value: sk.name }, `${sk.name} (${sk.fw})`)))));
-    if (HELP_LAST_SKILL) select.value = HELP_LAST_SKILL;
+    select.value = HELP_LAST_SKILL || select.options[0].value;
+    // Suche wie attachSkillSearch() im Modul: filtert Talente und leere Gruppen, wählt den ersten Treffer.
+    const search = el("input", { type: "search", placeholder: "Talent suchen …", autocomplete: "off" });
+    search.addEventListener("input", () => {
+      const q = search.value.trim().toLowerCase();
+      [...select.options].forEach((o) => { o.hidden = !!q && !o.textContent.toLowerCase().includes(q); });
+      select.querySelectorAll("optgroup").forEach((g) => { g.hidden = ![...g.children].some((o) => !o.hidden); });
+      if (!select.selectedOptions.length || select.selectedOptions[0].hidden) select.value = [...select.options].find((o) => !o.hidden)?.value ?? "";
+    });
+    search.addEventListener("keydown", (e) => { if (e.key === "Enter") roll.click(); });
+    select.addEventListener("dblclick", () => roll.click());
     const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
     closeBtn.addEventListener("click", closeModal);
     const roll = el("button", { type: "button", class: "reload-btn" }, "🎲 Probe würfeln");
@@ -1335,11 +1345,12 @@ function helpActionButton() {
     openModal(el("div", { class: "panel fav-rule-modal help-action-modal" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, "Helfen"), closeBtn]),
       el("p", { class: "fav-rule-text" }, "Mit welchem Talent hilfst du? Die Probe kostet deine Aktion."),
+      el("label", { class: "help-action-field" }, [el("span", {}, "Suche"), search]),
       el("label", { class: "help-action-field" }, [el("span", {}, "Talent"), select]),
       el("p", { class: "fav-rule-text muted" }, "Unterstützt: Gerion (markiertes Ziel, Demo)"),
       el("div", { class: "fav-rule-actions" }, [roll]),
     ]), { label: "Helfen" });
-    select.focus();
+    search.focus();
   });
   return btn;
 }
