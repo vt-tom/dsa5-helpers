@@ -1,7 +1,9 @@
 // Hausregelbuch (2026-10-05): optionale Hausregeln, die die SL für die ganze Welt einschaltet. Jede Regel hat einen
 // Eintrag hier (Symbol, Urheber, Seite im Buch) und Texte unter DSA5HELPERS.HouseRules.<id>.* in lang/*.json.
 // Fenster: scripts/apps/house-rules.js (Ansichten Liste und Buch).
-import { initWoundCheck } from './wound-check.js';
+import { initWoundCheck, woundCheck, findTreatWounds } from './wound-check.js';
+
+export { woundCheck, findTreatWounds };
 
 const MODULE_ID = 'dsa5-helpers';
 export const SETTING = 'houseRules';
@@ -29,7 +31,12 @@ export async function setRuleActive(id, active) {
 export function registerHouseRules() {
   game.settings.register(MODULE_ID, SETTING, {
     scope: 'world', config: false, type: Object, default: {},
-    onChange: () => foundry.applications.instances.get('dsa5-helpers-house-rules')?.render(),
+    // Buch neu zeichnen und offene Heldenbögen auch, damit z. B. der Hinweis an Heilkunde Wunden sofort erscheint.
+    onChange: () => {
+      for (const app of foundry.applications.instances.values()) {
+        if (app.id === 'dsa5-helpers-house-rules' || (app.rendered && app.options?.classes?.includes('dsa5-helpers-sheet'))) app.render();
+      }
+    },
   });
   initWoundCheck(() => isRuleActive('woundCheck'));
 }

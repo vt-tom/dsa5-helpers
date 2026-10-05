@@ -12,7 +12,7 @@
             {{#each group.items as |item|}}
             <div class="row dsa5h-skill-row item" data-item-id="{{item._id}}" data-fw="{{item.system.talentValue.value}}">
               <img src="{{item.img}}" alt="" />
-              <span class="withContext"><a class="talentName" data-action="itemEdit">{{item.name}}</a></span>
+              <span class="withContext"><a class="talentName" data-action="itemEdit">{{item.name}}</a>{{#if (eq item._id @root.dsa5h.woundCheckSkill)}}<button type="button" class="dsa5h-house-hint" data-action="dsa5hWoundCheck" data-tooltip="DSA5HELPERS.HouseRules.woundCheck.HintTooltip"><i class="fas fa-heart-pulse" inert></i> {{localize "DSA5HELPERS.HouseRules.woundCheck.Title"}}</button>{{/if}}</span>
               {{> "modules/dsa5-helpers/templates/actors/parts/probe.hbs" item=item}}
               <span class="center">{{localize item.system.burden.value}}</span>
               {{> "modules/dsa5-helpers/templates/actors/parts/skill-value.hbs" item=item}}

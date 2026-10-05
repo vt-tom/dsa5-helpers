@@ -2566,178 +2566,58 @@ button.fav-chip-roll {
   }
 }
 
-/* --- Persönliche Daten: Vergleich Konzepte A/B/C (Issues #27/#31, nach Entscheidung aufräumen) --- */
+/* --- Persönliche Daten: Vergleich Konzepte D/E/F (Issues #27/#31, nach Entscheidung aufräumen) --- */
 
-/* A „Steckbrief“: kompaktes Raster über den Favoriten, Titel ist der Sprung zu Notizen › Persönliche Daten. */
-.cover-profile-title {
-  display: flex;
-  align-items: baseline;
-  width: 100%;
-  border: 0;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
+/* E „Hover-Karte“: Karte rechts neben dem Porträt (syncPortraitCard()/showPortraitCard() in script.js). */
+.portrait.has-card {
+  cursor: help;
 }
 
-.cover-profile-title span:first-child {
-  flex: 1;
-}
-
-.cover-profile-go {
-  color: var(--muted);
-  font-size: var(--fs-small);
-}
-
-.cover-profile-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill,minmax(130px,1fr));
-  gap: 6px 14px;
-  margin: 0;
-  padding: 8px 11px 10px;
-}
-
-.cover-profile-field {
-  min-width: 0;
-}
-
-.cover-profile-field dt {
-  color: var(--muted);
-  font-size: var(--fs-meta);
-}
-
-.cover-profile-field dd {
-  margin: 0;
-  overflow: hidden;
-  font-size: var(--fs-small);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-/* B „Porträt-Rückseite“: Knopf oben rechts dreht das Porträt, die Rückseite liegt als Papierfläche darüber. */
-.portrait-flip {
+.portrait-card {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--hit-md);
-  height: var(--hit-md);
-  padding: 0;
-  border: 1px solid rgba(224,192,128,.6);
-  border-radius: 50%;
-  background: rgba(43,39,33,.75);
-  color: #ecd8b1;
-  font-family: 'GentiumBasic',Georgia,serif;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.portrait-back {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 10px 14px 8px;
+  z-index: 40;
+  width: 250px;
+  padding: 8px 12px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
   background: var(--paper);
   color: var(--ink);
-  opacity: 0;
-  transform: perspective(600px) rotateY(90deg);
-  transition: transform .25s ease, opacity .25s ease;
-  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  font-size: var(--fs-small);
 }
 
-.portrait.flipped .portrait-back {
-  opacity: 1;
-  transform: none;
-  pointer-events: auto;
+.portrait-card strong {
+  display: block;
+  margin-bottom: 4px;
+  font-family: 'Andalus',serif;
+  font-size: 16px;
+  font-weight: normal;
 }
 
-/* Oben Platz für den Umdreh-Knopf. */
-.portrait-back dl {
-  flex: 1;
-  margin: 22px 0 0;
-  overflow: hidden;
+.portrait-card dl {
+  margin: 0;
 }
 
-.portrait-back dl div {
+.portrait-card dl div {
   display: flex;
-  gap: 6px;
-  font-size: 12px;
-  line-height: 1.3;
+  justify-content: space-between;
+  gap: 10px;
+  line-height: 1.4;
 }
 
-.portrait-back dt {
-  flex: 0 0 auto;
+.portrait-card dt {
   color: var(--muted);
 }
 
-.portrait-back dd {
-  flex: 1;
-  min-width: 0;
+.portrait-card dd {
   margin: 0;
-  overflow: hidden;
   font-weight: bold;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   text-align: right;
 }
 
-.portrait-back-more {
-  align-self: flex-end;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--accent);
-  font: inherit;
-  font-size: var(--fs-meta);
-  cursor: pointer;
-}
-
-/* C „Kopfzeile“: eine Zeile mit den wichtigsten Daten unter den Badges, nur auf dem Titelblatt. */
-.head-facts {
-  display: none;
-  align-self: flex-start;
-  max-width: 100%;
-  margin-top: 4px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: rgba(236,216,177,.85);
-  font: inherit;
-  font-size: var(--fs-small);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: left;
-  cursor: pointer;
-}
-
-.sheet[data-tab="cover"] .head-facts {
-  display: block;
-}
-
-.head-facts span + span::before {
-  content: " · ";
-  color: rgba(224,192,128,.6);
-}
-
-@media (hover: hover) {
-  .cover-profile-title:hover .cover-profile-go,
-  .portrait-back-more:hover {
-    color: var(--accent);
-    text-decoration: underline;
-  }
-
-  .portrait-flip:hover {
-    border-color: #ecd8b1;
-  }
-
-  .head-facts:hover {
-    color: #fff;
-  }
+.portrait.has-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ==========================================================================
@@ -2994,6 +2874,52 @@ button.fav-chip-roll {
   height: 26px;
   border: 1px solid var(--line);
   object-fit: cover;
+}
+
+/* Hinweis auf die Hausregel Wundeinschätzung am Talent Heilkunde Wunden (house-rules.js, nur bei aktiver Regel). */
+.house-hint {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.house-hint-tip {
+  position: absolute;
+  z-index: 30;
+  max-width: 260px;
+  padding: 6px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  font-size: var(--fs-small);
+}
+
+.house-hint-tip button {
+  display: block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  border: 1px dashed var(--line);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .house-hint:hover {
+    background: var(--accent);
+    color: var(--paper);
+  }
 }
 
 /* --- Suche & „Nur gesteigerte“ --- */
@@ -4997,23 +4923,6 @@ button.fav-chip-roll {
   font-size: var(--fs-small);
 }
 
-/* Vergleich Konzepte B/C (Issues #27/#31): B Notizen + Private Notizen nebeneinander, C drei Notizfelder in einem
-   Panel untereinander. */
-.notes-pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items: start;
-}
-
-.notes-pair > .panel + .panel {
-  margin-top: 0;
-}
-
-.notes-block + .notes-block {
-  border-top: 1px solid var(--line);
-}
-
 .notes-text-wrap {
   position: relative;
 }
@@ -6131,10 +6040,37 @@ button.fav-chip-roll {
 
 /* --- Buch --- */
 
+/* Seite mit Blätter-Pfeilen links und rechts; die Pfeile bleiben beim Scrollen langer Seiten mittig sichtbar. */
+.dsa5-helpers-house-rules .dsa5h-hr-spread {
+  display: grid;
+  grid-template-columns: 36px minmax(0,560px) 36px;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-turn {
+  position: sticky;
+  top: 45%;
+  align-self: start;
+  width: 36px;
+  height: 36px;
+  margin-top: 120px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-turn:disabled {
+  opacity: .3;
+  cursor: default;
+}
+
 /* Eine Seite: helleres Blatt mit doppelter Randlinie wie eine Buchseite, Kopf mittig. */
 .dsa5-helpers-house-rules .dsa5h-hr-page {
-  max-width: 560px;
-  margin: 0 auto;
+  min-width: 0;
   padding: 18px 26px 14px;
   border: 1px solid var(--line);
   outline: 1px solid var(--line);
@@ -6150,6 +6086,15 @@ button.fav-chip-roll {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--line);
   text-align: center;
+}
+
+/* Kopfzeile der Seite: Nummer links, Aktiv/Nicht aktiv oben rechts (Rückmeldung 2026-10-05). */
+.dsa5-helpers-house-rules .dsa5h-hr-page-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 24px;
 }
 
 .dsa5-helpers-house-rules .dsa5h-hr-page-head small {
@@ -6175,6 +6120,48 @@ button.fav-chip-roll {
 
 .dsa5-helpers-house-rules .dsa5h-hr-credit {
   margin: 0;
+}
+
+/* Inhaltsverzeichnis (erste Seite). */
+.dsa5-helpers-house-rules .dsa5h-hr-toc-title {
+  margin: 6px 0;
+  border: 0;
+  color: var(--accent);
+  font-family: 'Andalus', serif;
+  font-size: 18px;
+  font-weight: normal;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-toc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-toc-list button {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--fs-data);
+  text-align: left;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-toc-list small {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  font-style: italic;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-toc-dots {
+  flex: 1;
+  border-bottom: 1px dotted var(--line);
 }
 
 .dsa5-helpers-house-rules .dsa5h-hr-section h3 {
@@ -6234,14 +6221,6 @@ button.fav-chip-roll {
   font-size: var(--fs-small);
 }
 
-.dsa5-helpers-house-rules .dsa5h-hr-page-foot {
-  display: flex;
-  justify-content: center;
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
-}
-
 .dsa5-helpers-house-rules .dsa5h-hr-pager {
   display: flex;
   align-items: center;
@@ -6253,25 +6232,15 @@ button.fav-chip-roll {
   font-size: var(--fs-small);
 }
 
-.dsa5-helpers-house-rules .dsa5h-hr-pager button {
-  width: var(--hit-lg, 28px);
-  height: var(--hit-lg, 28px);
-  padding: 0;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--field);
-  color: var(--ink);
-}
-
-.dsa5-helpers-house-rules .dsa5h-hr-pager button:disabled {
-  opacity: .35;
-  cursor: default;
+.dsa5-helpers-house-rules .dsa5h-hr-pager small {
+  font-size: var(--fs-meta);
 }
 
 @media (hover: hover) {
   .dsa5-helpers-house-rules .dsa5h-hr-views button:not(.active):hover,
   .dsa5-helpers-house-rules .dsa5h-hr-read:hover,
-  .dsa5-helpers-house-rules .dsa5h-hr-pager button:not(:disabled):hover {
+  .dsa5-helpers-house-rules .dsa5h-hr-turn:not(:disabled):hover,
+  .dsa5-helpers-house-rules .dsa5h-hr-toc-list button:hover span:first-child {
     border-color: var(--accent);
     color: var(--accent);
   }

@@ -56,7 +56,9 @@ function fixture() {
 let Sheet;
 // data:-URLs, weil die Modul-.js hier sonst als CommonJS gälten; der eine relative Import wird mit ersetzt.
 const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))))));return Sheet;}
+// Hausregeln: rules.js importiert wound-check.js relativ — beides als data:-URL.
+function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))));}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
@@ -574,13 +576,32 @@ test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, 
  assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,1);
  assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,1);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true});assert(rules.isRuleActive('woundCheck'));
- App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{index:'0'}});html=tpl(await sheet._prepareContext({}));
+ App.DEFAULT_OPTIONS.actions.setView.call(sheet,{},{dataset:{view:'book'}});html=tpl(await sheet._prepareContext({}));
+ assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-toc')).length,1,'Buch beginnt mit dem Inhaltsverzeichnis');
+ const tocLink=elements(html,el=>el.attribs?.['data-action']==='turnPage'&&el.attribs['data-page']==='1');assert(tocLink.length>=2,'Inhalt und Pfeil führen zu Seite 1');
+ App.DEFAULT_OPTIONS.actions.turnPage.call(sheet,{},{dataset:{page:'1'}});assert.equal(sheet.state.turn,1,'Vorwärtsblättern merkt die Richtung für die Animation');
+ App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'1'}});html=tpl(await sheet._prepareContext({}));
+ const top=elements(html,el=>el.attribs?.class==='dsa5h-hr-page-top')[0];assert(top&&dom.findAll(el=>el.attribs?.role==='switch',top.children).length===1,'Schalter oben rechts im Seitenkopf');
  assert(html.includes('Knigge'),'Urheber auf der Buchseite');assert.equal(elements(html,el=>el.name==='tr').length,7,'Kopf + 6 QS-Zeilen');
- assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');
+ assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 2'));
  isGM=false;html=tpl(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.role==='switch').length,0);assert.equal(elements(html,el=>el.attribs?.class==='dsa5h-hr-state active').length,1);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true},'Spieler schalten nichts um');
  assert.deepEqual([...missing].filter(k=>k.startsWith('DSA5HELPERS')),[]);
  const entry=read('scripts/dsa5-helpers.js');for(const p of ['templates/house-rules.hbs','templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs'])assert(entry.includes('modules/dsa5-helpers/'+p),p+' wird geladen');
  assert(/registerMenu\('dsa5-helpers', 'houseRules'.*restricted: false/.test(entry),'Menü für alle lesbar');
  const en=JSON.parse(read('lang/en.json'));const keys=o=>Object.entries(o).flatMap(([k,v])=>typeof v==='object'?keys(v).map(x=>k+'.'+x):[k]);assert.deepEqual(keys(en.DSA5HELPERS.HouseRules).sort(),keys(own.DSA5HELPERS.HouseRules).sort());
+});
+test('Wundeinschätzung im Bogen: Hinweis am Talent Heilkunde Wunden nur bei aktiver Regel, ohne Ziel ein Tooltip, sonst der Probendialog',async()=>{
+ const {sheet,actor}=await prepare();const skill=actor.items.get('skill');skill.name='Heilkunde Wunden';
+ let active=false,tip=null,targets=[],setup=null;
+ global.game={i18n:{localize},settings:{get:(_m,k)=>k==='houseRules'?{woundCheck:active}:'light'},tooltip:{activate:(el,o)=>{tip=o.text;},deactivate(){}},user:{targets:{first:()=>targets[0]}}};
+ const hint=html=>elements(html,el=>el.attribs?.['data-action']==='dsa5hWoundCheck');
+ assert.equal(hint(render(await sheet._prepareContext({}))).length,0,'Regel aus: kein Hinweis');
+ active=true;const html=render(await sheet._prepareContext({}));const btn=hint(html);assert.equal(btn.length,1);
+ let row=btn[0];while(row&&row.attribs?.['data-item-id']!=='skill')row=row.parent;assert(row,'Hinweis steht in der Zeile von Heilkunde Wunden');
+ const handler=Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hWoundCheck;const target={addEventListener(){}};
+ await handler.call(sheet,{},target);assert.equal(tip,localize('DSA5HELPERS.HouseRules.woundCheck.PickTarget'));
+ targets=[{name:'Ork',actor:{id:'ork',system:{status:{wounds:{value:20,max:30}}}}}];skill.clone=()=>skill;actor.setupSkill=async(s,o)=>{setup={s,o};return null;};
+ await handler.call(sheet,{},target);assert.equal(setup?.s,skill,'normaler Probendialog des Systems');assert.equal(setup.o.messageMode,'self');
+ assert(!read('scripts/house-rules/wound-check.js').includes('renderTokenHUD'),'kein Knopf mehr im Token-HUD');
 });

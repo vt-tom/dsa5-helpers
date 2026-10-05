@@ -2,6 +2,7 @@
 const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
+import { isRuleActive, woundCheck, findTreatWounds } from '../house-rules/rules.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -44,6 +45,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       chRollCombat: this._chRollCombat,
       rollAggregatedProbe: { handler: this._handleAggregatedProbe, buttons: [0, 2] },
       rollDisease: this._rollDisease,
+      dsa5hWoundCheck: this._woundCheck,
     },
     ownerActions: {
       schipUpdate: this._schipUdate,
@@ -301,6 +303,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       coverConditions: (context.conditions ?? []).slice(0, 4),
       coverConditionsMore: Math.max(0, (context.conditions ?? []).length - 4),
       happyTalentsExpanded: this._happyTalentsExpanded,
+      // Hausregel Wundeinschätzung: Hinweis am Talent Heilkunde Wunden, nur wenn die SL die Regel eingeschaltet hat.
+      woundCheckSkill: !limited && isRuleActive('woundCheck') ? findTreatWounds(this.actor)?.id ?? null : null,
       body,
       happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
@@ -1010,6 +1014,17 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static async _consume(_event, target) {
     const item = this.actor.items.get(this._getItemId(target));
     if (item) await this.consumeItem(item);
+  }
+
+  // Hausregel Wundeinschätzung (Knigge): ohne markiertes Ziel nur ein Hinweis direkt am Knopf, sonst der normale
+  // Probendialog des Systems und danach der Ablauf aus scripts/house-rules/wound-check.js.
+  static async _woundCheck(_event, target) {
+    if (!game.user.targets.first()?.actor) {
+      game.tooltip.activate(target, { text: game.i18n.localize('DSA5HELPERS.HouseRules.woundCheck.PickTarget'), direction: 'UP' });
+      target.addEventListener('pointerleave', () => game.tooltip.deactivate(), { once: true });
+      return;
+    }
+    await woundCheck(this.actor);
   }
 
   static async _toggleFavorite(_event, target) {
