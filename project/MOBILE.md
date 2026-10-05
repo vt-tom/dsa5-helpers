@@ -259,7 +259,7 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 
 ## 10. Vorgehen in Phasen (Vorschlag)
 
-0. **Entscheidungen** E1–E19 klären. Community-Module recherchieren. Issue #7 (CSS) erledigen.
+0. **Entscheidungen** E1–E19 klären. Community-Module recherchieren. Issue #7 (CSS) ist umgesetzt (2026-10-05, `release/0.5.0`): Hover steckt bereits in `@media (hover: hover)`, das Mobil-CSS stellt die Tokens `--hit-sm/md/lg` (24/26/28 px, Ziel ≥ 44 px), `--fs-data`, `--fs-base`, `--fs-panel-title`, `--fs-tab-title` um und folgt der Abschnittsgliederung (PROJEKTDOKU „CSS-Gliederung“).
 1. **Machbarkeit (Spike, Foundry live):** Einstellung „Hybrides Spiel“ + Auswahl-Overlay vor `setupGame` + `noCanvas` + Body-Klasse + Auflösungs-Warnung weg. Ein Smartphone verbindet sich, wählt „Smartphone“, sieht Chat und kann würfeln. Ergebnis: Liste der Stolpersteine (iOS-Tastatur, Tooltips, ContextMenu, Systemdialoge).
 2. **Click-Dummy mobil:** App-Shell + Bogen-Layout Smartphone hoch, 2–3 Varianten für Navigation/Kopf (E8), Entscheidung, Umschalter löschen.
 3. **Shell in Foundry:** Kopf, untere Navigation, Chat/Kampf-Bereiche, Fenster als Vollbild-Blätter, Menü (Held wechseln, Desktop, Abmelden).
