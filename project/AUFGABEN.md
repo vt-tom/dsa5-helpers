@@ -20,18 +20,29 @@ Branch `release/0.5.0` (angelegt 2026-10-05). Reihenfolge (Nutzer, 2026-10-05): 
 Für 0.5.0 ausgewählt (Nutzer, 2026-10-05; Meilenstein 0.5.0, Bearbeiter vt-tom): #30, #31, #1, #27. Reihenfolge: #30 → #1 → #31 + #27 zusammen (beide betreffen „Persönliche Daten“).
 
 - **#30** und **#1** in Click-Dummy und Modul umgesetzt (2026-10-05), live zu prüfen (siehe unten).
+- **Hausregelbuch** (Nutzerwunsch 2026-10-05, kein Issue): umgesetzt in Modul und Click-Dummy (Knopf „Hausregelbuch“, `?houserules`), erste Regel „Wundeinschätzung“ nach Knigges World Script + Makro. Live zu prüfen (siehe unten).
 - **#31 Konzept Aufteilung Notizen** + **#27 Persönliche Daten auf dem Titelblatt** — drei Konzepte im Click-Dummy (2026-10-05), **Entscheidung offen**. Umschalter „Notizen: A Steckbrief | B Porträt-Rückseite | C Kopfzeile“ (betrifft Titelblatt **und** Reiter Notizen). Keines nimmt der Seitenleiste Höhe weg (daran scheiterten die früheren Versuche).
   - **A Steckbrief:** Titelblatt rechts über den Favoriten ein kompakter Kasten „Persönliche Daten“ (nur ausgefüllte Felder, Raster, lange Werte mit „…“ + Tooltip; Klick auf den Titel springt zu Notizen › Persönliche Daten). Notizen unverändert (5 Unterreiter).
   - **B Porträt-Rückseite:** Knopf „i“ am Porträt dreht es um, auf der Rückseite stehen alle Daten als Liste, darunter „Notizen →“. Notizen: Hintergrundgeschichte | Persönliche Daten | Notizen (Notizen + Private Notizen nebeneinander) | GM-Notizen.
   - **C Kopfzeile:** auf dem Titelblatt eine Zeile unter Spezies/Kultur/Profession (Alter · Größe · Gewicht · Heimat · Haar · Augen, alle Felder im Tooltip, Klick → Notizen). Notizen: nur „Held“ (Daten + Hintergrund in einem Panel) | „Notizen“ (Notizen, Private, GM untereinander mit Sichtbarkeitshinweis).
   - Kombinationen möglich (z. B. Titelblatt aus A, Notizen aus C). Sichtbarkeit von Private/GM-Notizen bleibt in allen Konzepten wie bisher.
+  - A nimmt mir zu viel Platz weg.
+  - B finde ich nicht gut
+  - C finde ich auch nicht gut.
+  - Hast du noch weitere Ideen?
 
 ## Live in Foundry prüfen (0.5.0, release/0.5.0)
 
 - **Kampf › Körper, „Weitere Waffen“** (Rückmeldung 2026-10-05: fehlte in Foundry, weil das System nur Waffen in den Händen als getragen führt): listet jetzt alle Waffen außerhalb der Hände plus Angriffe aus Eigenschaften. Prüfen: nicht ausgerüstete Nah-/Fernkampfwaffen erscheinen mit plausiblen AT/PA/FK- und TP-Werten (wie im Probendialog), Würfeln funktioniert, Schild-Klick nimmt die Waffe in die Hand (verschwindet dann aus der Liste, die bisherige Waffe der Hand erscheint), Rechtsklick aufs Schild öffnet die Handwahl, lange Namen und Kampftechniken werden mit „…“ gekürzt (Tooltip), Technik + KTW in einer Zeile, einspaltig bei normaler Breite und zweispaltig erst ab ca. 1000 px (Formatierung nach Rückmeldung 2026-10-05 korrigiert), Hell/Dunkel, schmales Fenster.
+  - erledigt
 - **Kampf › Körper, Griffwechsel** (Rückmeldung 2026-10-05: von der Haupthand ließ sich nicht auf beidhändig wechseln): Knopf „Beidhändig führen“ / „Einhändig führen“ unter der Hand-Auswahl (Spiel- und Bearbeiten-Modus). Prüfen: Wechsel auf beidhändig mit und ohne Waffe in der Nebenhand (Nebenwaffe wird abgelegt, erscheint unter „Weitere Waffen“), zurück auf einhändig (Nebenhand frei), Waffe in der Nebenhand auf beidhändig (wandert in die Haupthand), AT/PA/TP passen sich an, kein Knopf bei Dolchen/Fechtwaffen und Fernkampfwaffen, Bastardschwert o. ä. mit „(2H“ im Namen.
+  - erledigt
 - **#30 Favoriten Ausrüstung/Sonderfertigkeiten:** Stern an jeder Inventarzeile (letzte Spalte) und an allen SF-Chips (Eigenschaften, Kampf › Körper, Magie, Religion; vorn in den Chip-Aktionen). Titelblatt-Gruppen „Ausrüstung“ (Anzahl ×n; „Verbrauchen“ bei Typ consumable/plant mit Rückfrage des Systems, sonst OnUse-Würfel) und „Sonderfertigkeiten“ (OnUse-Würfel). Klick auf jeden Favoriten-Namen öffnet das Item-Fenster. Waffen-Favoriten jetzt auch für nicht getragene Waffen (AT/TP wie unter „Weitere Waffen“). Einschränkung: Gegenstände **in Behältnissen** zeigt unser Bogen nicht als Zeile (Behältnis öffnet das System-Item-Sheet) — dort also kein Stern; prüfen, ob das reicht. Hell/Dunkel, Spaltenbreiten der Inventartabelle.
+  - erledigt
 - **#1 Gleiten beim Reiterwechsel:** Porträt, Name, Schips, LeP/AsP/KaP, Eigenschaftswürfel gleiten zwischen Titelblatt-Seitenleiste und Kopf, Inhalt blendet ein. Prüfen: flüssig, kein Ruckeln/Springen (v. a. Name nach `_fitName`), kein waagerechter Rollbalken, mit „Bewegung reduzieren“ (Betriebssystem) aus.
+ - erledigt
+- **Hausregelbuch:** Moduleinstellungen → „Hausregelbuch öffnen“ (auch als Spieler). Liste ↔ Buch, „Im Buch lesen“, Blättern; Schalter nur als SL (Liste und Buchseite), Spieler sehen „Aktiv/Nicht aktiv“, offenes Fenster bei Spielern aktualisiert sich beim Umschalten. Hell/Dunkel, Font-Awesome-Symbole.
+- **Wundeinschätzung** (Regel aktiv): Als Spieler Ziel markieren, Rechtsklick aufs eigene Token → Herz-Knopf links (nur bei Helden mit Heilkunde Wunden). Probe verdeckt (nur Würfelnder), Ergebnis-Flüstern beim Spieler ohne „An: …“, SL bekommt nur den Hinweis (bei Spielern unsichtbar). Zweiter Versuch ohne LeP-Änderung → Meldung mit bisheriger Einschätzung; nach ≥ ¼ max LeP Änderung wieder möglich. Regel aus → kein Knopf. Ohne markiertes Ziel → Warnung. Optional mit „Token Note Hover“ die Hover-Anzeige. Hinweis: Wer Knigges World Script + Makro nutzt, sollte es abschalten (Flags liegen jetzt unter `dsa5-helpers`, alte Einschätzungen aus `world` werden nicht übernommen).
 - **#7 Touch:** Antippen auf einem Touch-Gerät lässt keinen Hover-Zoom stehen — derzeit kein Gerät zum Testen (passt zu `feature/mobile`).
 
 ## Offene Entscheidungen

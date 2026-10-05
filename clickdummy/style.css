@@ -1,4 +1,4 @@
-/* DSA5 Helpers — Click-Dummy (Design-Referenz), Stile für index.html/script.js/dice-stats.js.
+/* DSA5 Helpers — Click-Dummy (Design-Referenz), Stile für index.html/script.js/dice-stats.js/house-rules.js.
 
    Gleiche Gliederung wie styles/dsa5-helpers-character-sheet.css (Issue #7, 2026-10-05), damit sich Regeln leicht
    gegenüberstellen lassen; Abschnitte ohne Gegenstück im Click-Dummy bleiben als Überschrift stehen:
@@ -9,7 +9,8 @@
      5. Reiter-Titel & Unterreiter    12. Ausrüstung         19. Reduzierte Bewegung
      6. Gemeinsame Bausteine          13. Status             20. Changelog-Fenster (–)
      7. Titelblatt                    14. Notizen            21. Würfelstatistik-Fenster
-                                                            22. Nur Click-Dummy (Werkzeugleiste, simulierte Dialoge)
+                                                            22. Hausregelbuch-Fenster
+                                                            23. Nur Click-Dummy (Werkzeugleiste, simulierte Dialoge)
 
    Regeln für neue Stile wie im Modul: passender Abschnitt statt Dateiende, Hover-Effekte nur in
    "@media (hover: hover)" (Block am Ende des Unterabschnitts), breitenabhängige Regeln in Abschnitt 18. */
@@ -5893,9 +5894,426 @@ button.fav-chip-roll {
 }
 
 /* ==========================================================================
-   22. Nur Click-Dummy
+   22. Hausregelbuch-Fenster (2026-10-05)
+   scripts/apps/house-rules.js, templates/house-rules*.hbs. Ansichten Liste und Buch; Farben wie die Würfelstatistik,
+   Hell/Dunkel folgt der Modul-Einstellung „theme“ (data-theme). Nur der Inhalt scrollt.
+   ========================================================================== */
+
+.dsa5-helpers-house-rules {
+  --paper: #ece2d2;
+  --page: #f6efe2;
+  --ink: #2b2721;
+  --muted: rgba(43,39,33,.72);
+  --line: rgba(43,39,33,.2);
+  --field: rgba(255,255,255,.55);
+  --accent: #8b6f3f;
+  --on: #3f7a2e;
+  --fs-data: 15px;
+  --fs-small: 14px;
+  --fs-meta: 12px;
+}
+
+.dsa5-helpers-house-rules[data-theme="dark"] {
+  --paper: #272320;
+  --page: #2f2a26;
+  --ink: #e9dfcd;
+  --muted: #b9ad9b;
+  --line: #ffffff2e;
+  --field: #ffffff0d;
+  --accent: #d0b276;
+  --on: #8fc27a;
+  color-scheme: dark;
+}
+
+.dsa5-helpers-house-rules .window-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-views {
+  display: flex;
+  gap: 0;
+  align-self: flex-start;
+  margin: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr button {
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  font-family: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-views button {
+  padding: 4px 14px;
+  border: 0;
+  border-radius: 0;
+  background: var(--field);
+  color: var(--ink);
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-views button.active {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 12px 12px;
+}
+
+/* --- Liste --- */
+
+.dsa5-helpers-house-rules .dsa5h-hr-intro {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-entry {
+  display: grid;
+  grid-template-columns: 34px minmax(0,1fr) auto;
+  grid-template-areas: "icon text switch" "icon text read";
+  align-items: center;
+  gap: 4px 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--line);
+  border-radius: 3px;
+  background: var(--field);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-entry.active {
+  border-left-color: var(--on);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-icon {
+  grid-area: icon;
+  color: var(--accent);
+  font-size: 24px;
+  text-align: center;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-entry-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  grid-area: text;
+  min-width: 0;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-entry-text strong {
+  font-family: 'Andalus', serif;
+  font-size: 18px;
+  font-weight: normal;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-entry-text span {
+  font-size: var(--fs-small);
+  line-height: 1.35;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-entry-text small,
+.dsa5-helpers-house-rules .dsa5h-hr-credit {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  font-style: italic;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-entry .dsa5h-hr-switch,
+.dsa5-helpers-house-rules .dsa5h-hr-entry .dsa5h-hr-state {
+  grid-area: switch;
+  justify-self: end;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-read {
+  grid-area: read;
+  justify-self: end;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--accent);
+  font-size: var(--fs-small);
+}
+
+/* --- Schalter (SL) und Stand (Spieler) --- */
+
+.dsa5-helpers-house-rules .dsa5h-hr-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-switch-track {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  transition: background-color .15s ease;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-switch-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform .15s ease;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-switch[aria-checked="true"] .dsa5h-hr-switch-track {
+  border-color: var(--on);
+  background: var(--on);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-switch[aria-checked="true"] .dsa5h-hr-switch-track::after {
+  background: #fff;
+  transform: translateX(16px);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-state {
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-state.active {
+  border-color: var(--on);
+  color: var(--on);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- Buch --- */
+
+/* Eine Seite: helleres Blatt mit doppelter Randlinie wie eine Buchseite, Kopf mittig. */
+.dsa5-helpers-house-rules .dsa5h-hr-page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 18px 26px 14px;
+  border: 1px solid var(--line);
+  outline: 1px solid var(--line);
+  outline-offset: -6px;
+  background: var(--page);
+  box-shadow: 0 2px 10px rgba(0,0,0,.15);
+  font-size: var(--fs-data);
+  line-height: 1.45;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-page-head {
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-page-head small {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-page-head h2 {
+  margin: 2px 0 4px;
+  border: 0;
+  color: var(--ink);
+  font-family: 'Andalus', serif;
+  font-size: 26px;
+  font-weight: normal;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-page-head h2 i {
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-credit {
+  margin: 0;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-section h3 {
+  margin: 12px 0 4px;
+  border: 0;
+  color: var(--accent);
+  font-family: 'Andalus', serif;
+  font-size: 18px;
+  font-weight: normal;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-section p,
+.dsa5-helpers-house-rules .dsa5h-hr-section ol,
+.dsa5-helpers-house-rules .dsa5h-hr-section ul {
+  margin: 4px 0;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-section li + li {
+  margin-top: 3px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table {
+  width: 100%;
+  margin: 4px 0;
+  border: 0;
+  border-collapse: collapse;
+  background: transparent;
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table th,
+.dsa5-helpers-house-rules .dsa5h-hr-table td {
+  padding: 3px 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  text-align: left;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table thead {
+  background: transparent;
+  text-shadow: none;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table th {
+  color: var(--muted);
+  font-weight: normal;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table td:first-child {
+  width: 44px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-note {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-page-foot {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-pager button {
+  width: var(--hit-lg, 28px);
+  height: var(--hit-lg, 28px);
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--ink);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-pager button:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-house-rules .dsa5h-hr-views button:not(.active):hover,
+  .dsa5-helpers-house-rules .dsa5h-hr-read:hover,
+  .dsa5-helpers-house-rules .dsa5h-hr-pager button:not(:disabled):hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .dsa5-helpers-house-rules .dsa5h-hr-switch:hover .dsa5h-hr-switch-track {
+    border-color: var(--accent);
+  }
+}
+
+/* ==========================================================================
+   23. Nur Click-Dummy
    Werkzeugleiste, simulierte Foundry-Dialoge und -Meldungen, Größe ziehen.
    ========================================================================== */
+
+/* Hausregelbuch als nachgebautes Foundry-Fenster (house-rules.js): feste Höhe wie im Modul, Schalter SL/Spieler. */
+.ds-window.dsa5-helpers-house-rules {
+  width: min(640px,calc(100vw - 32px));
+  height: min(640px,calc(100vh - 90px));
+}
+
+.ds-window.dsa5-helpers-house-rules .window-content {
+  flex: 1;
+  min-height: 0;
+}
+
+.hr-demo-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 12px;
+}
+
+.hr-demo-role {
+  padding: 2px 10px;
+  border: 1px dashed var(--line);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--muted);
+  font-family: ui-monospace,Menlo,monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
 
 /* --- Werkzeugleiste & Umschalter --- */
 

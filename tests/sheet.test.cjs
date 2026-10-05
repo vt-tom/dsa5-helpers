@@ -550,3 +550,37 @@ test('Würfelstatistik (#28): Tage älter als 12 Monate werden zusammengefasst, 
  assert.deepEqual(Object.keys(st.days).sort(),['2026-10-01','2026-10-20']);assert.deepEqual(st.older.d[6],[2,3,4,0,0,0]);assert.equal(st.olderUntil,'2025-10-10');
  assert.deepEqual(s.sumCounts(st).d[6],[2,3,4,5,0,1]);
 });
+// Hausregelbuch (2026-10-05): relative Importe werden wie bei loadSheet() durch data:-URLs ersetzt.
+const houseRuleModules=async()=>{const wound=dataUrl(read('scripts/house-rules/wound-check.js'));const rules=dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(wound)));const app=dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(rules)));return {wound:await import(wound),rules:await import(rules),app:await import(app)};};
+for(const p of ['templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs'])H.registerPartial('modules/dsa5-helpers/'+p,read(p));
+test('Hausregel Wundeinschätzung: QS-Staffel und Veralten wie in Knigges World Script',async()=>{
+ const {wound}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;const w=(qs,cur,max=40)=>wound.woundText(qs,cur,max,t);
+ assert.equal(w(0,10),'Text.none');assert.equal(w(1,40),'Text.unhurt');assert.equal(w(1,39),'Text.hurt');
+ assert.deepEqual([0,10,20,30,39,40].map(c=>w(2,c)),['Text.incapacitated','Text.critical','Text.severe','Text.marked','Text.light','Text.unhurt']);
+ assert.equal(w(3,27),'Text.marked<br><small>Text.range:20–30</small>');assert.equal(w(4,27),'Text.marked<br><small>Text.range:25–30</small>');
+ assert.equal(w(3,35),'Text.light<br><small>Text.range:30–40</small>');assert.equal(w(4,38,38),'Text.unhurt<br><small>Text.range:35–38</small>');
+ assert.equal(w(6,10),'Text.critical<br><small>Text.about:10</small>');
+ assert(wound.isFresh({lep:20},29,40),'Änderung unter einem Viertel bleibt gültig');assert(!wound.isFresh({lep:20},30,40),'ab einem Viertel veraltet');assert(!wound.isFresh(undefined,20,40));
+ for(const key of ['none','unhurt','hurt','incapacitated','critical','severe','marked','light','range','about'])assert(lookup(own,'DSA5HELPERS.HouseRules.woundCheck.Text.'+key),key);
+});
+test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, Einstellung je Welt',async()=>{
+ const settings={houseRules:{},theme:'light'};let isGM=true;
+ global.game={i18n:{localize},settings:{get:(_m,k)=>settings[k],async set(_m,k,v){settings[k]=v;}},get user(){return {isGM};}};
+ global.foundry={applications:{api:{ApplicationV2:class{async _prepareContext(){return {};}_onRender(){}render(){this.rendered=(this.rendered??0)+1;}},HandlebarsApplicationMixin:B=>B},instances:new Map()}};
+ const {rules,app}=await houseRuleModules();const App=app.getHouseRulesApp();const tpl=H.compile(read('templates/house-rules.hbs'));
+ assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge']]);
+ const sheet=new App();missing.clear();let html=tpl(await sheet._prepareContext({}));
+ assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,1);
+ assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,1);
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,1);
+ await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true});assert(rules.isRuleActive('woundCheck'));
+ App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{index:'0'}});html=tpl(await sheet._prepareContext({}));
+ assert(html.includes('Knigge'),'Urheber auf der Buchseite');assert.equal(elements(html,el=>el.name==='tr').length,7,'Kopf + 6 QS-Zeilen');
+ assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');
+ isGM=false;html=tpl(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.role==='switch').length,0);assert.equal(elements(html,el=>el.attribs?.class==='dsa5h-hr-state active').length,1);
+ await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true},'Spieler schalten nichts um');
+ assert.deepEqual([...missing].filter(k=>k.startsWith('DSA5HELPERS')),[]);
+ const entry=read('scripts/dsa5-helpers.js');for(const p of ['templates/house-rules.hbs','templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs'])assert(entry.includes('modules/dsa5-helpers/'+p),p+' wird geladen');
+ assert(/registerMenu\('dsa5-helpers', 'houseRules'.*restricted: false/.test(entry),'Menü für alle lesbar');
+ const en=JSON.parse(read('lang/en.json'));const keys=o=>Object.entries(o).flatMap(([k,v])=>typeof v==='object'?keys(v).map(x=>k+'.'+x):[k]);assert.deepEqual(keys(en.DSA5HELPERS.HouseRules).sort(),keys(own.DSA5HELPERS.HouseRules).sort());
+});
