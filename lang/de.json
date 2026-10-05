@@ -32,6 +32,10 @@
     "GripMain": "H",
     "GripOff": "N",
     "GripBoth": "B",
+    "SheetSwitcher": {
+      "Label": "Bogen wechseln",
+      "SystemSheet": "Systemstandard"
+    },
     "CompanionTab": {
       "Show": "Reiter Gefährten einblenden",
       "Hide": "Reiter Gefährten ausblenden"
