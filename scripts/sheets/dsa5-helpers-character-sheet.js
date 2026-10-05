@@ -316,6 +316,10 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // System gesucht (item-dsa5.js rollAggregatedProbe: Name + Typ skill); gewürfelt wird weiter über rollAggregatedProbe.
       aggregated: (prepare.aggregatedtests ?? []).map(item => ({
         item,
+        // DSA5 8.1.9: Ziel-QS je Sammelprobe einstellbar (targetQs, Anzeige qsProgressLabel) und 0 erlaubte Proben =
+        // unbegrenzt („∞“, Helfer infiniteIfZero). Die vorbereitete Kopie verliert Getter, daher vom echten Item lesen;
+        // ältere Systeme (ab 8.1.5) ohne diese Felder zeigen weiter „x / 10“ bzw. die Zahl.
+        ...this._aggregatedProgress(item),
         talents: ['', '2', '3'].map(which => ({ which, name: item.system?.talent?.['value' + which] })).filter(t => t.name)
           .map(t => ({ ...t, skill: this.actor.items.find(entry => entry.type === 'skill' && entry.name === t.name) })),
       })),
@@ -796,6 +800,17 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static _setCoverSideTab(_event, target) {
     this._coverSideTab = target.dataset.sideTab === 'details' ? 'details' : 'conditions';
     this._applyCurrentTab();
+  }
+
+  _aggregatedProgress(item) {
+    const system = this.actor.items?.get?.(item._id)?.system ?? item.system ?? {};
+    const target = Number(system.targetQs?.value) || 10;
+    const allowed = system.allowedTestCount?.value ?? item.system?.allowedTestCount?.value;
+    const unlimited = system.targetQs !== undefined && Number(allowed) === 0;
+    return {
+      progress: system.qsProgressLabel ?? `${system.cummulatedQS?.value ?? 0} / ${target}`,
+      allowed: unlimited ? game.i18n.localize('GROUPCHECK.unlimited') : allowed,
+    };
   }
 
   // „Bearbeiten → Notizen“ im Reiter Persönliche Daten der Titelblatt-Leiste: zum Abschnitt Persönliche Daten springen.

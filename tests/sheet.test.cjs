@@ -666,3 +666,11 @@ test('Fokus in Eingabefeldern bleibt nach dem Neuzeichnen erhalten (Tab durch No
  const src=read('scripts/sheets/dsa5-helpers-character-sheet.js');assert(src.indexOf('this._applyCurrentTab();',src.indexOf('async _onRender'))<src.indexOf('this._restoreFocus(this._pendingFocus)'),'erst Reiter sichtbar machen, dann fokussieren');
  global.document=prevDoc;
 });
+test('Sammelproben (DSA5 8.1.9): Ziel-QS aus dem Item, 0 erlaubte Proben = unbegrenzt; ältere Systeme weiter „x / 10“',async()=>{
+ const {sheet,actor,context}=await prepare();
+ assert.deepEqual(context.dsa5h.aggregated.map(a=>[a.progress,a.allowed]),[['3 / 10',7]],'ohne neue Felder wie bisher');
+ const doc={system:{targetQs:{value:5},cummulatedQS:{value:3},allowedTestCount:{value:0},get qsProgressLabel(){return `${this.cummulatedQS.value} / ${this.targetQs.value}`;}}};
+ actor.items.set('aggregate',doc);const p=sheet._aggregatedProgress({_id:'aggregate',system:{allowedTestCount:{value:0}}});
+ assert.equal(p.progress,'3 / 5');assert.equal(p.allowed,localize('GROUPCHECK.unlimited'));
+ const html=render(await sheet._prepareContext({}));assert(html.includes('3 / 5'),'Anzeige im Talente-Reiter');
+});
