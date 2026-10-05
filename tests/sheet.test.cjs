@@ -654,3 +654,15 @@ test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel
  assert.equal(setup.s,skill,'Probe über den Probendialog des Systems');assert(chat.content.includes('3')&&chat.content.includes('Gerion'),'QS und Ziel im Chat');
  assert(!chat.whisper,'öffentlich, damit der Unterstützte es sieht');
 });
+test('Fokus in Eingabefeldern bleibt nach dem Neuzeichnen erhalten (Tab durch Notizen › Persönliche Daten)',async()=>{
+ const {sheet}=await prepare();global.CSS??={escape:x=>String(x)};
+ const field={dataset:{},id:'',name:'system.details.age.value',tagName:'INPUT',selectionStart:3,selectionEnd:3,closest(){return this;}};
+ const prevDoc=global.document;global.document={...prevDoc,activeElement:field};
+ sheet.element={contains:()=>true};const key=sheet._focusKey();
+ assert.deepEqual(key,{selector:'INPUT[name="system.details.age.value"]',start:3,end:3},'auch Felder ohne data-action werden gemerkt');
+ let focused=null,range=null;const fresh={focus(o){focused=o;},setSelectionRange(a,b){range=[a,b];}};
+ global.document={...prevDoc,activeElement:null};sheet.element={querySelector:sel=>sel===key.selector?fresh:null};
+ sheet._restoreFocus(key);assert(focused,'neues Feld fokussiert');assert.deepEqual(range,[3,3],'Cursorposition übernommen');
+ const src=read('scripts/sheets/dsa5-helpers-character-sheet.js');assert(src.indexOf('this._applyCurrentTab();',src.indexOf('async _onRender'))<src.indexOf('this._restoreFocus(this._pendingFocus)'),'erst Reiter sichtbar machen, dann fokussieren');
+ global.document=prevDoc;
+});

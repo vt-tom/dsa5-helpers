@@ -158,9 +158,23 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static DRAG_EXCLUDE = 'button, a, input:not([disabled]), select, textarea, label, details, [data-action], [contenteditable], [draggable="true"]';
   static FOCUS_KEYS = ['action', 'val', 'char', 'mode', 'hand', 'fct', 'attr', 'tab', 'subtab', 'parentTab', 'which'];
 
+  // Eingabefelder (Rückmeldung 2026-10-05: nach einer Änderung in Notizen › Persönliche Daten sprang Tab auf die
+  // Reiterleiste): Foundry stellt den Fokus selbst über id/name wieder her, aber noch bevor _applyCurrentTab() den Reiter
+  // sichtbar macht — alle Reiter stecken in einem Part und kommen „hidden“ an, ein verstecktes Feld lässt sich nicht
+  // fokussieren. Verschobene Kopfteile (Titelblatt) verlieren den Fokus beim Umhängen ebenfalls. Deshalb merken wir uns
+  // auch Felder (wie Foundry über id bzw. name, dazu die Cursorposition) und fokussieren sie nach _applyCurrentTab() neu.
   _focusKey() {
     const active = document.activeElement;
-    if (!active?.dataset?.action || !this.element?.contains(active)) return null;
+    if (!active || !this.element?.contains(active)) return null;
+    if (!active.dataset?.action) {
+      const named = active.id ? null : active.closest?.('[name]');
+      const selector = active.id ? `#${CSS.escape(active.id)}` : named?.name ? `${named.tagName}[name="${CSS.escape(named.name)}"]` : null;
+      if (!selector) return null;
+      let start = null;
+      let end = null;
+      try { start = active.selectionStart ?? null; end = active.selectionEnd ?? null; } catch { /* Feldtyp ohne Auswahl */ }
+      return { selector, start, end };
+    }
     const data = Object.fromEntries(this.constructor.FOCUS_KEYS.map(key => [key, active.dataset[key]]));
     data.itemId = active.closest('[data-item-id]')?.dataset.itemId;
     data.descriptor = active.closest('[data-descriptor]')?.dataset.descriptor;
@@ -170,6 +184,15 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
 
   _restoreFocus(key) {
     if (!key) return;
+    if (key.selector) {
+      const field = this.element.querySelector(key.selector);
+      if (!field || field === document.activeElement) return;
+      field.focus({ preventScroll: true });
+      if (key.start !== null) {
+        try { field.setSelectionRange(key.start, key.end); } catch { /* z. B. type=number */ }
+      }
+      return;
+    }
     const match = [...this.element.querySelectorAll(`[data-action="${CSS.escape(key.action)}"]`)].find(el =>
       this.constructor.FOCUS_KEYS.every(k => el.dataset[k] === key[k])
       && el.closest('[data-item-id]')?.dataset.itemId === key.itemId

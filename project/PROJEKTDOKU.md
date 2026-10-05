@@ -10,7 +10,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 
 - Echtes Modul läuft: alle 10 Reiter (Titelblatt, Eigenschaften, Talente, Kampf, Magie, Religion, Ausrüstung, Status, Notizen, Gefährten) mit echten Systemdaten.
 - Favoriten (Stern), Spiel-/Bearbeiten-Modus, Magie/Religion nur bei passender Fähigkeit sichtbar.
-- 61 Tests grün (`node tests/sheet.test.cjs`).
+- 62 Tests grün (`node tests/sheet.test.cjs`).
 - UI/UX-Review vom 2026-09-25 ([Feedback](UI-UX-FEEDBACK-2026-09-25.md)): Pakete A–D (Trefferflächen/Tastatur, Lesbarkeit, Waffentabellen, Orientierung/Rückmeldung) in Clickdummy **und** Foundry umgesetzt und live bestätigt. Pakete E (Favoritenraster) und G (Detailpunkte je Reiter) sowie die Munitionszeile abgenommen und in Foundry übertragen (live zu prüfen). Aus Paket F sind Porträtformat und schwebende Titelleiste in Foundry; Geld-Panel „Zeile“ seit 2026-09-30 auch in Foundry; Kampf-Unterreiter „Körper“ seit 2026-09-30 in Foundry (live zu prüfen, vorerst neben der Übersicht) — siehe AUFGABEN.md.
 - Hier gibt es kein laufendes Foundry. Alles ist nur im Code geprüft – bestätigt wird erst live beim Nutzer.
 
@@ -103,7 +103,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - **Zustand senken:** das System senkt nur per Rechtsklick auf `conditionValue`. Unser `dsa5hConditionDown` ruft denselben Handler mit `{ button: 2 }` auf — keine eigene Regellogik. Beide Knöpfe brauchen ein `[data-descriptor]`-Elternelement.
 - **Rechtsklick-Aktionen vs. Kontextmenü:** Foundrys `ContextMenu` lauscht am selben Element (`this.element`, Bubble-Phase) — ein Rechtsklick auf z. B. `loadWeapon` öffnete zusätzlich das Waffen-Kontextmenü. Abhilfe: `contextmenu`-Listener in der **Capture-Phase**, der für `RIGHT_CLICK_ACTIONS` `preventDefault()` + `stopPropagation()` ruft; die Aktion selbst läuft über `auxclick` weiter.
 - **Improvisierte Waffen:** Kompendium-Items wie „Armbrust (2H, i)“ sind echte Nahkampfwaffen (Typ `meleeweapon`) und stehen deshalb korrekt in der Nahkampftabelle.
-- **Fokus nach Re-Render:** jede Actor-Änderung rendert den ganzen Bogen neu; `render()` merkt sich Aktion + Daten des fokussierten Knopfs, `_onRender()` fokussiert das neue Gegenstück.
+- **Fokus nach Re-Render:** jede Actor-Änderung rendert den ganzen Bogen neu; `render()` merkt sich Aktion + Daten des fokussierten Knopfs bzw. bei Eingabefeldern id/name + Cursorposition, `_onRender()` fokussiert das neue Gegenstück **nach** `_applyCurrentTab()`. Foundrys eigene Fokus-Wiederherstellung (`_syncPartState`) greift bei uns ins Leere: alle Reiter kommen `hidden` an, und umgehängte Kopfteile verlieren den Fokus (Fehler 2026-10-05: Tab sprang nach einer Eingabe auf die Reiterleiste).
 - **Handlebars-Helfer:** Foundry v14 hat `eq/ne/lt/lte/gt/gte/and/or/not`; `localize` nimmt Platzhalter als Hash (`{{localize 'KEY' name=…}}`). Im Test-Harness fehlende Helfer selbst registrieren.
 - **Fenster ziehen außerhalb der Titelleiste:** ApplicationV2 hängt Ziehen privat an `pointerdown` der `.window-header` und verfolgt `pointermove` danach am ganzen Fenster — ein nachgebautes `PointerEvent('pointerdown')` mit denselben Koordinaten/`pointerId` an `this.window.header` genügt.
 - **Bilder nie per `url()` in einer CSS-Variable aus dem Template:** Chrome löst die relative URL gegen das Stylesheet auf, in dem `var()` steht (`modules/dsa5-helpers/styles/…`), nicht gegen die Seite — im Click-Dummy fällt das nicht auf. Stattdessen echtes `<img>`.
