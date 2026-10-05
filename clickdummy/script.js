@@ -1481,21 +1481,37 @@ function renderBody() {
   ]);
 
   // Kurzübersicht der übrigen Waffen statt der früheren Waffentabellen (Rückmeldung 2026-10-02: die Hände wählen die
-  // Waffe, darunter reicht ein Überblick). Würfel bleiben, damit auch Angriffe aus Eigenschaften (Biss …) würfelbar sind.
+  // Waffe, darunter reicht ein Überblick); alle Waffen außerhalb der Hände, nicht nur getragene (2026-10-05). Würfel
+  // bleiben, damit auch Angriffe aus Eigenschaften (Biss …) würfelbar sind.
   const shortRow = (w, kind) => {
     const ranged = kind === "ranged";
     const trait = !!w.trait;
     const stats = trait ? { at: w.at, pa: w.pa } : ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
     return el("div", { class: "row short-weapon-row" }, [
       trait ? el("img", { src: w.img || A.combatSkill, alt: "" }) : itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
-      el("span", { class: "left weapon-name" }, [el("span", {}, w.name), el("small", { class: "weapon-sub" }, trait ? "Angeboren" : w.group)]),
+      el("span", { class: "left weapon-name" }, [el("span", { title: w.name }, w.name), el("small", { class: "weapon-sub" }, trait ? "Angeboren" : w.group)]),
       el("span", { class: "short-weapon-dice" }, [
         combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
         !ranged && stats.pa !== undefined ? combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`) : null,
       ]),
       damageBtn(w.tp, w.name),
+      trait ? el("span", {}) : handEquipBtn(w),
       trait ? el("span", {}) : favStar(w),
     ]);
+  };
+  // Ausrüsten-Schild wie in Foundry (Rückmeldung 2026-10-05): Klick nimmt die Waffe in die Hand wie das System mit
+  // hand "auto" (beidhändig → Haupthand, sonst freie Hand, sonst Haupthand). Klon von equipToggle() ohne dessen Listener.
+  const handEquipBtn = (w) => {
+    const btn = equipToggle({ eq: false }).cloneNode(true);
+    btn.title = "In die Hand nehmen";
+    btn.addEventListener("click", () => {
+      const twoHand = !!w.worn.requiresBothHands;
+      const hand = twoHand || !HANDS.main || (HANDS.main.worn.requiresBothHands) || HANDS.off ? "main" : "off";
+      HANDS[hand] = w;
+      if (hand === "main" && twoHand) HANDS.off = null;
+      renderContent();
+    });
+    return btn;
   };
   const shortList = [
     ...handWeapons().filter((w) => !inHands.includes(w)).map((w) => shortRow(w, RANGED.includes(w) ? "ranged" : "melee")),

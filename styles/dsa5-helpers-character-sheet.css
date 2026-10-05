@@ -3324,7 +3324,7 @@
 
 /* --- Weitere Waffen --- */
 
-/* Kurzübersicht „Weitere Waffen“: Bild | Name + Technik | Würfel | TP | Stern, zweispaltig. */
+/* Kurzübersicht „Weitere Waffen“: Bild | Name + Technik | Würfel | TP | Ausrüsten | Stern, zweispaltig. */
 .dsa5-helpers-sheet .dsa5h-short-weapons {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -3333,7 +3333,7 @@
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-short-weapon {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) auto auto 28px;
+  grid-template-columns: 32px minmax(0, 1fr) auto auto 28px 28px;
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
@@ -3362,6 +3362,14 @@
   bottom: 0;
   width: 30px;
   height: 3px;
+}
+
+/* Lange Namen gekürzt statt mitten im Wort umgebrochen (seit der Ausrüsten-Spalte, 2026-10-05), voller Name im Tooltip. */
+.dsa5-helpers-sheet .dsa5h-short-weapon .withContext > a {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dsa5-helpers-sheet .dsa5h-short-weapon .withContext small {
@@ -4003,7 +4011,8 @@
   cursor: pointer;
 }
 
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row button.dsa5h-equip-toggle {
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row button.dsa5h-equip-toggle,
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-short-weapon button.dsa5h-equip-toggle {
   border: 0;
   background: none;
 }

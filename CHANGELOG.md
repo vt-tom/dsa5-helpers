@@ -7,6 +7,7 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 ### Geändert
 
 - Auf Touch-Geräten (Tablet, Touch-Laptop im Tabletmodus) bleiben Hover-Effekte wie der Würfel-Zoom nach dem Antippen nicht mehr hängen. Am Desktop sieht der Bogen unverändert aus; die Stildatei wurde dafür neu gegliedert ([#7](https://github.com/vt-tom/dsa5-helpers/issues/7)).
+- Kampf › Körper: „Weitere Waffen“ zeigt jetzt alle Waffen des Helden, die gerade nicht in einer Hand sind – bisher fehlten dort die nicht ausgerüsteten, sodass die Liste meist leer blieb. Jede Waffe ist würfelbar und lässt sich über das Schild in die Hand nehmen (Rechtsklick: Hand wählen), wie im Reiter Ausrüstung.
 
 ## [0.4.0] — 2026-10-02
 

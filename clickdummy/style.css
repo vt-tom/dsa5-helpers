@@ -3930,7 +3930,7 @@ button.fav-chip-roll {
 
 .row.short-weapon-row {
   display: grid;
-  grid-template-columns: 32px minmax(0,1fr) auto auto 28px;
+  grid-template-columns: 32px minmax(0,1fr) auto auto 28px 28px;
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
@@ -3940,6 +3940,14 @@ button.fav-chip-roll {
 .short-weapon-row > .item-icon {
   width: 30px;
   height: 30px;
+}
+
+/* Lange Namen gekürzt statt mitten im Wort umgebrochen (seit der Ausrüsten-Spalte, 2026-10-05), voller Name im Tooltip. */
+.short-weapon-row .weapon-name > span:first-child {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .short-weapon-dice {

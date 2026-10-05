@@ -485,9 +485,26 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       ...(prepare.liturgyArmor ? [`${esc(game.i18n.localize('liturgyArmor'))}: +${prepare.liturgyArmor}`] : []),
       `<strong>${esc(game.i18n.localize('encumbrance'))} ${encumbrance}</strong>`,
     ].join('<br>');
-    // Kurzübersicht „Weitere Waffen“: getragene Waffen, die nicht in einer Hand sind, und Angriffe aus Eigenschaften.
+    // Kurzübersicht „Weitere Waffen“: alle Waffen außerhalb der Hände und Angriffe aus Eigenschaften. Das System führt
+    // nur Waffen in den Händen als getragen (equipWeaponToHand legt die bisherige ab), nicht getragene Waffen bereitet
+    // es nicht vor — ihre Werte daher wie im Probendialog über Actordsa5._prepareMeleeWeapon/_prepareRangeWeapon
+    // (ohne Nebenhand-Modifikator), auf einer frischen Kopie, damit die Inventardaten unberührt bleiben (Rückmeldung 2026-10-05).
+    const ActorClass = this.actor.constructor;
+    const ammo = [...(this.actor.items?.values?.() ?? [])].filter(item => item.type === 'ammunition').map(item => item.system.prepareEmbeddedItemSheet());
+    const unworn = weapons.filter(item => !item.system?.worn?.value).flatMap(item => {
+      try {
+        const data = item.system.prepareEmbeddedItemSheet();
+        return [item.type === 'meleeweapon'
+          ? ActorClass._prepareMeleeWeapon(data, prepare.combatskills ?? [], this.actor, [], false)
+          : ActorClass._prepareRangeWeapon(data, ammo, prepare.combatskills ?? [], this.actor, false)];
+      } catch (error) {
+        console.warn(`${MODULE_ID} | Waffe ${item.name} konnte nicht vorbereitet werden`, error);
+        return [];
+      }
+    });
     const others = [
-      ...worn.filter(w => w !== main && w !== off).map(item => ({ item, ranged: item.type === 'rangeweapon' })),
+      ...worn.filter(w => w !== main && w !== off).map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true })),
+      ...unworn.map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true })),
       ...(prepare.traits?.meleeAttack ?? []).map(item => ({ item, ranged: false })),
       ...(prepare.traits?.rangeAttack ?? []).map(item => ({ item, ranged: true })),
     ];
