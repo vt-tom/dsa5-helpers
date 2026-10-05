@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
-## [0.5.0] — unveröffentlicht
+## [0.5.0] — 2026-10-05
 
 ### Neu
 
@@ -17,7 +17,6 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 - Titelblatt: Die Leiste links ist neu aufgeteilt. LeP, AsP und KaP sind flacher, Schicksalspunkte und Regeneration stehen in einer Zeile. Darunter liegt ein Kasten mit zwei Reitern: „Statuseffekte“ zeigt jetzt alle Zustände (statt höchstens vier), „Persönliche Daten“ die ausgefüllten Angaben aus den Notizen, mit einem Sprung zum Bearbeiten ([#27](https://github.com/vt-tom/dsa5-helpers/issues/27), [#31](https://github.com/vt-tom/dsa5-helpers/issues/31)).
 - Waffen-Favoriten erscheinen auf dem Titelblatt jetzt auch, wenn die Waffe gerade nicht in der Hand ist.
-
 - Auf Touch-Geräten (Tablet, Touch-Laptop im Tabletmodus) bleiben Hover-Effekte wie der Würfel-Zoom nach dem Antippen nicht mehr hängen. Am Desktop sieht der Bogen unverändert aus; die Stildatei wurde dafür neu gegliedert ([#7](https://github.com/vt-tom/dsa5-helpers/issues/7)).
 - Kampf › Körper: „Weitere Waffen“ zeigt jetzt alle Waffen des Helden, die gerade nicht in einer Hand sind – bisher fehlten dort die nicht ausgerüsteten, sodass die Liste meist leer blieb. Jede Waffe ist würfelbar und lässt sich über das Schild in die Hand nehmen (Rechtsklick: Hand wählen), wie im Reiter Ausrüstung.
 - Kampf › Körper: Eine Nahkampfwaffe in der Hand lässt sich jetzt direkt dort zwischen einhändiger und beidhändiger Führung umschalten („Beidhändig führen“ / „Einhändig führen“). Bei beidhändiger Führung wird die Waffe der Nebenhand abgelegt. Dolche und Fechtwaffen lassen sich wie im System nicht umschalten.
@@ -127,6 +126,7 @@ Erste Version, installierbar über die Manifest-URL.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
 
+[0.5.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.1...v0.3.2
