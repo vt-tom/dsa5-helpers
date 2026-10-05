@@ -3324,10 +3324,11 @@
 
 /* --- Weitere Waffen --- */
 
-/* Kurzübersicht „Weitere Waffen“: Bild | Name + Technik | Würfel | TP | Ausrüsten | Stern, zweispaltig. */
+/* Kurzübersicht „Weitere Waffen“: Bild | Name + Technik | Würfel | TP | Ausrüsten | Stern; zweispaltig erst ab
+   genug Breite, sonst blieb für Name und Technik kaum Platz (Rückmeldung 2026-10-05). */
 .dsa5-helpers-sheet .dsa5h-short-weapons {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   column-gap: 14px;
 }
 
@@ -3378,8 +3379,18 @@
   font-size: var(--fs-meta);
 }
 
-.dsa5-helpers-sheet .dsa5h-short-weapon .dsa5h-ct-link {
-  display: flex;
+/* Technik + KTW in einer Zeile, bei Platzmangel mit „…“ gekürzt statt unter die Würfel zu laufen. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-short-weapon .dsa5h-ct-link {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.dsa5-helpers-sheet .dsa5h-short-weapon .dsa5h-ct-link-ktw {
+  margin-left: 6px;
 }
 
 /* --- Zauber-/Liturgieliste (Dialog) --- */
