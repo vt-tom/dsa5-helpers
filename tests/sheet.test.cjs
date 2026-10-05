@@ -570,10 +570,10 @@ test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, 
  global.game={i18n:{localize},settings:{get:(_m,k)=>settings[k],async set(_m,k,v){settings[k]=v;}},get user(){return {isGM};}};
  global.foundry={applications:{api:{ApplicationV2:class{async _prepareContext(){return {};}_onRender(){}render(){this.rendered=(this.rendered??0)+1;}},HandlebarsApplicationMixin:B=>B},instances:new Map()}};
  const {rules,app}=await houseRuleModules();const App=app.getHouseRulesApp();const tpl=H.compile(read('templates/house-rules.hbs'));
- assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','']]);
+ assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','VTTom']]);
  const sheet=new App();missing.clear();let html=tpl(await sheet._prepareContext({}));
  assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,2);
- assert.equal((html.match(/Idee: Knigge/g)??[]).length,1,'Urheber nur, wo einer angegeben ist');
+ assert(html.includes('Idee: Knigge')&&html.includes('Idee: VTTom'),'Urheber je Regel');
  assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,2);
  assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,2);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true});assert(rules.isRuleActive('woundCheck'));
