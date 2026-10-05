@@ -9,13 +9,13 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Version 0.4.0 — veröffentlicht 2026-10-02
 
-Zuerst als Beta (Pre-release, Beta-Kanal), am selben Tag zum normalen Release erklärt (Nutzer-Entscheidung) und `release/0.4.0` nach `main` gemergt. Enthalten: #28 Würfelstatistik, #29 Kampf › Körper (ersetzt die Übersicht), #32 Sprungmarken in allen Reitern, Beta-Kanal. Live-Prüfung steht noch aus (siehe unten).
+Zuerst als Beta (Pre-release, Beta-Kanal), am selben Tag zum normalen Release erklärt (Nutzer-Entscheidung) und `release/0.4.0` nach `main` gemergt. Enthalten: #28 Würfelstatistik, #29 Kampf › Körper (ersetzt die Übersicht), #32 Sprungmarken in allen Reitern, Beta-Kanal. Live-Prüfung am 2026-10-05 abgeschlossen (bis auf „Weitere Waffen“, in 0.5.0 nachgebessert).
 
 ## Nächste Version (0.5.0)
 
 Branch `release/0.5.0` (angelegt 2026-10-05). Reihenfolge (Nutzer, 2026-10-05): erst #7, danach die übrigen Issues für 0.5.0 auswählen.
 
-**#7 CSS aufräumen** umgesetzt (2026-10-05, Konventionen in PROJEKTDOKU.md „CSS-Gliederung“). Statisch und per Stilvergleich in Chrome geprüft (alle Reiter, Hell/Dunkel, Spiel/Bearbeiten, schmale Fenster, Hover/Fokus, reduzierte Bewegung: berechnete Stile identisch) — live noch zu prüfen, siehe unten. Issue erst nach der Live-Prüfung schließen.
+**#7 CSS aufräumen** erledigt und live bestätigt (2026-10-05, Issue geschlossen; Konventionen in PROJEKTDOKU.md „CSS-Gliederung“).
 
 Kandidaten, noch ohne Meilenstein (jetzt auswählen):
 - **#1 Animation zwischen Titelblatt und den anderen Seiten** (von @Lyynix, ohne Beschreibung) — klären, was gemeint ist.
@@ -25,15 +25,8 @@ Kandidaten, noch ohne Meilenstein (jetzt auswählen):
 
 ## Live in Foundry prüfen (0.5.0, release/0.5.0)
 
-- **#7 CSS neu gegliedert:** Optik darf sich nirgends geändert haben. Alle 10 Reiter in Hell/Dunkel und Spiel/Bearbeiten durchklicken, schmales Fenster (Container-Queries), minimiertes Fenster, Titelleisten-Plakette, Hover-Effekte (Würfel-Zoom, Rail-Namen, Stepper, Schadensknopf, OnUse in Rüstungskacheln), Zauber-/Liturgie-Dialog im Körper-Reiter, Steigerungsplaner-Reiter, Changelog- und Würfelstatistik-Fenster. Mit Touch-Gerät (falls zur Hand): Antippen lässt keinen Hover-Zoom stehen.
-
-## Live in Foundry prüfen (0.4.0, veröffentlicht)
-
-- **#28 Würfelstatistik** (mindestens zwei Benutzer, Spieler + SL): Zustimmungsdialog beim Verbinden und beim Einschalten durch die SL; Zustimmung ja/nein/zurückgezogen (Daten ausgeblendet, bei erneuter Zustimmung wieder da und weitergezählt); gezählt werden Proben, Schaden, Schips-Neuwurf, Initiative, `/roll`, blinde/SL-Würfe; echte Würfel (Würfeleinstellung „manuell“) getrennt; Neuladen kurz nach einem Wurf (wird noch gespeichert?); Fenster aktualisiert sich live; Zurücksetzen durch die SL (einzeln/alle); Spieler sehen keinen Zurücksetzen-Knopf; Hell/Dunkel.
-- **#28 Würfelstatistik, Nachtrag:** Spieler sehen nur die eigene Karte (kein Löschen, keine Liste ohne Zustimmung), ohne Zustimmung Hinweis statt Karte; Zeitraum-Auswahl (Spielabende, eigener Zeitraum mit Datumsfeldern); Würfe nach Mitternacht landen beim Vorabend; bestehende Statistik aus dem ersten Format bleibt erhalten.
-- **#28 Würfelstatistik, 12 Monate:** Auswahl „Zeitraum“ listet Tage (Datum, nicht „Spielabend“); Würfe außerhalb der Runde landen beim jeweiligen Tag.
-- **#32 Sprungmarken:** in Kampf, Magie, Religion, Notizen: Klick auf Unterreiter scrollt weich zum Abschnitt; beim Scrollen wandert die Markierung mit, ganz unten der letzte Abschnitt; Reiterwechsel beginnt oben mit dem ersten Abschnitt; Kampftechniken-Suche klebt nur im eigenen Abschnitt; Sprung aus der Waffe zur Kampftechnik; Notiz-Editoren (Bearbeiten-Modus) untereinander; Private/SL-Notizen nur für Berechtigte.
-- **#29 Kampf › Körper:** Haupthand links, Nebenhand rechts; beidhändige Waffe per „⇄“ verschieben (nur Bearbeiten-Modus, bleibt nach Neuladen auf der Seite); freie Nebenhand rechts; Fernkampfhand rechts (Nachladen/Zielen rechtsbündig); Schnellaktionen und Initiative ganz oben, Rüstungsschild rechts in der Rüstungszeile (Tooltip: alle Teile, Zauber-/Liturgie-Schutz, Belastung); viele Rüstungsteile (Umbruch); schmale Fensterbreite; Hell/Dunkel. Ohne Übersicht: Kampf-Reiter öffnet mit „Körper“; Munitionswahl in der Fernkampfhand; Kurzübersicht „Weitere Waffen“ (würfeln, TP, Stern, Rechtsklick-Kontextmenü, Angriffe aus Eigenschaften wie Biss); nicht getragene Waffen über die Hand-Auswahl ausrüsten.
+- **Kampf › Körper, „Weitere Waffen“** (Rückmeldung 2026-10-05: fehlte in Foundry, weil das System nur Waffen in den Händen als getragen führt): listet jetzt alle Waffen außerhalb der Hände plus Angriffe aus Eigenschaften. Prüfen: nicht ausgerüstete Nah-/Fernkampfwaffen erscheinen mit plausiblen AT/PA/FK- und TP-Werten (wie im Probendialog), Würfeln funktioniert, Schild-Klick nimmt die Waffe in die Hand (verschwindet dann aus der Liste, die bisherige Waffe der Hand erscheint), Rechtsklick aufs Schild öffnet die Handwahl, lange Namen werden mit „…“ gekürzt (Tooltip), Hell/Dunkel, schmales Fenster.
+- **#7 Touch:** Antippen auf einem Touch-Gerät lässt keinen Hover-Zoom stehen — derzeit kein Gerät zum Testen (passt zu `feature/mobile`).
 
 ## Offene Entscheidungen
 
@@ -50,7 +43,7 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-05 04:56 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-05 07:18 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
