@@ -241,6 +241,19 @@ function favStar(item) {
   return btn;
 }
 
+// Stern für Sonderfertigkeiten (Issue #30): die Demo-SF sind Namen statt Objekte, daher über FAV_SPECIALS (data.js).
+function specFavStar(name) {
+  const on = FAV_SPECIALS.has(name);
+  const label = on ? `${name}: Favorit entfernen` : `${name} als Favorit markieren`;
+  const btn = el("button", { type: "button", class: "fav-star chip-fav" + (on ? " active" : ""), title: label, "aria-label": label, "aria-pressed": String(on), "data-fkey": `fav:${name}` }, on ? "★" : "☆");
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (on) FAV_SPECIALS.delete(name); else FAV_SPECIALS.add(name);
+    renderContent();
+  });
+  return btn;
+}
+
 // Generischer Inline-Editor (Text oder Zahl): macht `container` per Klick/Enter bearbeitbar, ersetzt seinen
 // Inhalt durch ein <input>. Enter/Blur übernimmt den Wert über onCommit(neuerWert) — der Aufrufer ist für das
 // Neu-Rendern zuständig (üblicherweise per renderHeader()/renderContent(), analog zu favStar()). Escape bricht
@@ -317,6 +330,9 @@ function renderRail() {
 }
 
 function setTab(id) {
+  const prev = currentTab;
+  // Issue #1: Lage der gemeinsamen Kopfteile VOR dem Wechsel merken (nur Variante „Gleiten“).
+  const flipFirst = TAB_ANIM === "flip" && prev !== id ? flipMeasure() : null;
   currentTab = id;
   const tab = TABS.find((t) => t.id === id);
   document.getElementById("tabTitle").textContent = tab.title;
@@ -333,6 +349,83 @@ function setTab(id) {
   renderAttrOverlay();
   fitName();
   document.getElementById("content").scrollTop = 0;
+  if (prev !== id) animateTabChange(prev, id, flipFirst);
+}
+
+// Issue #1 „Animation zwischen Titelblatt und den anderen Seiten“ (ohne Beschreibung, Nutzer: drei Vorschläge im
+// Click-Dummy, 2026-10-05). Umschalter in der Werkzeugleiste (initTabAnimToggle(), nach der Entscheidung entfernen):
+// - "page"  Blättern: die neue Seite schwingt wie ein Buchblatt um die linke Kante herein (zurück: um die rechte).
+// - "fade"  Überblenden: kurzes Ein-/Ausblenden mit leichtem Gleiten, nur der Inhalt.
+// - "flip"  Gleiten: Porträt, Name, LeP/AsP/KaP und Eigenschaftswürfel wandern von ihrem alten an den neuen Platz
+//           (Titelblatt ↔ Kopfzeile, FLIP-Technik), der übrige Inhalt blendet ein.
+// Im Modul ginge das mit der Web Animations API genauso (kein CSS-Umbau nötig); bei „reduzierter Bewegung“ aus.
+let TAB_ANIM = "page";
+
+function flipTargets() {
+  const map = new Map();
+  const add = (key, node) => {
+    if (!node) return;
+    const r = node.getBoundingClientRect();
+    if (r.width && r.height) map.set(key, { node, r });
+  };
+  add("portrait", document.getElementById("portrait"));
+  add("name", document.querySelector("#headName h1"));
+  add("attr", document.getElementById("attrOverlay"));
+  document.querySelectorAll(".bar").forEach((bar) => add(bar.querySelector("[data-fkey^='res:']")?.dataset.fkey || "", bar));
+  return map;
+}
+
+function flipMeasure() {
+  return new Map([...flipTargets()].map(([k, v]) => [k, v.r]));
+}
+
+function animateTabChange(prev, id, flipFirst) {
+  if (TAB_ANIM === "none" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const sheet = document.querySelector(".sheet");
+  const parts = [...sheet.children].filter((c) => !c.classList.contains("fake-window-chrome") && !c.classList.contains("sheet-resize") && c.getBoundingClientRect().height);
+  const order = (t) => TABS.findIndex((x) => x.id === t);
+  if (TAB_ANIM === "page") {
+    // Alle Teile drehen um dieselbe Achse (linke bzw. rechte Kante des Bogens), damit es wie EIN Blatt wirkt.
+    const forward = order(id) > order(prev);
+    const sr = sheet.getBoundingClientRect();
+    parts.forEach((p) => {
+      const r = p.getBoundingClientRect();
+      const ox = (forward ? sr.left : sr.right) - r.left;
+      const oy = sr.top + sr.height / 2 - r.top;
+      p.animate([
+        { transform: `perspective(1800px) rotateY(${forward ? 70 : -70}deg)`, transformOrigin: `${ox}px ${oy}px`, opacity: 0.25, filter: "brightness(.8)" },
+        { transform: "perspective(1800px) rotateY(0deg)", transformOrigin: `${ox}px ${oy}px`, opacity: 1, filter: "brightness(1)" },
+      ], { duration: 420, easing: "cubic-bezier(.25,.8,.3,1)" });
+    });
+    return;
+  }
+  if (TAB_ANIM === "fade") {
+    ["content", "coverSidebar"].map((x) => document.getElementById(x)).concat([document.querySelector(".tab-title")]).filter(Boolean).forEach((p) =>
+      p.animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: 220, easing: "ease-out" }));
+    return;
+  }
+  // "flip": gemeinsame Teile gleiten von der alten an die neue Stelle, Rest blendet ein. Die Seitenleiste scrollt
+  // senkrecht; ohne overflow-x:hidden blitzt während des Gleitens ein waagerechter Rollbalken auf.
+  const moved = new Set();
+  const sidebar = document.getElementById("coverSidebar");
+  sidebar.style.overflowX = "hidden";
+  setTimeout(() => sidebar.style.removeProperty("overflow-x"), 450);
+  flipTargets().forEach(({ node, r }, key) => {
+    const old = flipFirst?.get(key);
+    if (!old) return;
+    const dx = old.left - r.left;
+    const dy = old.top - r.top;
+    const sx = old.width / r.width;
+    const sy = old.height / r.height;
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1 && Math.abs(sx - 1) < 0.01 && Math.abs(sy - 1) < 0.01) return;
+    moved.add(node);
+    node.animate([
+      { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, transformOrigin: "0 0" },
+      { transform: "none", transformOrigin: "0 0" },
+    ], { duration: 380, easing: "cubic-bezier(.2,.75,.25,1)" });
+  });
+  ["content", "coverSidebar"].map((x) => document.getElementById(x)).filter(Boolean).forEach((p) =>
+    p.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 260, easing: "ease-out", delay: moved.size ? 60 : 0, fill: "backwards" }));
 }
 
 // Heldenname einpassen (Issue #25, wie _fitName() im Modul): Schrift ab der CSS-Höchstgröße (39px, Titelblatt 44px)
@@ -566,7 +659,7 @@ function buildSimpleRow(d) {
 // Nachteile, Sonderfertigkeiten, Sprachen/Schriften, …), die laut BEARBEITEN.md löschbar sein sollen. `list` ist
 // die Original-Array-Referenz aus data.js, `item` der zu löschende Eintrag (Mutation direkt auf den Daten,
 // analog zu favStar()).
-function deletableChip(iconSrc, label, list, item) {
+function deletableChip(iconSrc, label, list, item, extra = null) {
   const delLabel = `${typeof label === "string" ? label : "Eintrag"} löschen`;
   const delBtn = el("button", { type: "button", class: "chip-delete edit-only", title: delLabel, "aria-label": delLabel }, "×");
   delBtn.addEventListener("click", (e) => {
@@ -575,7 +668,7 @@ function deletableChip(iconSrc, label, list, item) {
     if (idx !== -1) list.splice(idx, 1);
     renderContent();
   });
-  return el("span", { class: "chip" }, [el("img", { src: iconSrc, alt: "" }), label, typeof label === "string" ? onUseBtn(label) : null, delBtn]);
+  return el("span", { class: "chip" }, [el("img", { src: iconSrc, alt: "" }), label, typeof label === "string" ? onUseBtn(label) : null, extra, delBtn]);
 }
 
 // Info-Tooltip-Knopf (specblock.hbs:7, specialabilities.hbs:4,18,55: "data-tooltip-html={{specCategoryHelp cat}}")
@@ -614,7 +707,7 @@ function specialsBlock(title, groups, fill = false) {
         : el("div", { class: "panel-title flex" }, [el("span", {}, title), specHelpBtn()]),
       ...active.flatMap((g) => [
         showSubheads ? subheadWithHelp(g.label) : null,
-        el("div", { class: fill ? "chips chips-fill" : "chips" }, g.items.map((s) => deletableChip(A.abilityGeneral, s, g.items, s))),
+        el("div", { class: fill ? "chips chips-fill" : "chips" }, g.items.map((s) => deletableChip(A.abilityGeneral, s, g.items, s, specFavStar(s)))),
       ]),
     ]
   );
@@ -1951,6 +2044,7 @@ function inventoryRow(i, list) {
     el("span", { class: "muted center" }, i.weight),
     el("span", { class: "center" }, i.price),
     list ? rowActionsCell(list, i, onUseBtn(i.name)) : el("span", {}, [onUseBtn(i.name)]),
+    favStar(i),
   ]);
 }
 
@@ -1979,7 +2073,7 @@ function openBagModal(bag) {
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, bag.name), closeBtn]),
       el("div", { class: "armor-sum-line" }, `Leergewicht ${bag.weight} Stein · Inhalt ${bagContentWeight(bag)} Stein`),
-      el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "")),
+      el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "", "")),
       ...rows,
       el("div", { class: "drop-zone" }, "Gegenstände hierher ziehen, um sie einzupacken"),
     ]),
@@ -2097,7 +2191,7 @@ function renderInventory() {
     .map((cat) =>
       el("div", { class: "panel" }, [
         el("div", { class: "panel-title" }, cat.label),
-        el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "")),
+        el("div", { class: "row-head inv-row" }, head("", "Gegenstand", "Angelegt", "Anzahl", "Gewicht", "Wert", "", "")),
         ...cat.items.map((it) => inventoryRow(it, INVENTORY_CATEGORIES.find((c) => c.label === cat.label).items)),
       ])
     );
@@ -2794,6 +2888,11 @@ function collectFavorites() {
     weapons: [...MELEE, ...RANGED].filter((w) => w.fav),
     spells: [...SPELLS, ...RITUALS].filter((s) => s.fav),
     liturgies: [...LITURGIES, ...CEREMONIES].filter((l) => l.fav),
+    // Issue #30: Ausrüstung (auch in Behältnissen) und Sonderfertigkeiten aller Reiter.
+    equipment: INVENTORY_CATEGORIES.flatMap((c) => c.items.flatMap((i) => [i, ...(i.children || [])])).filter((i) => i.fav),
+    specials: [...SPECIALS, ...COMBAT_SPECIALS, ...MAGIC_SPECIALS, ...RELIGION_SPECIALS]
+      .flatMap((g) => g.items).filter((n) => FAV_SPECIALS.has(n))
+      .map((n) => ({ name: n, img: A.abilityGeneral, rule: SPEC_RULES[n] || "Kein Regeltext hinterlegt." })),
   };
 }
 
@@ -2818,6 +2917,20 @@ function favCard(item, kind) {
     const dmg = el("button", { type: "button", class: "damage-roll", title: dmgLabel, "aria-label": dmgLabel }, [el("small", {}, "TP"), item.tp]);
     dmg.addEventListener("click", () => flashNotice(`🎲 ${dmgLabel}`));
     value = el("span", { class: "fav-card-value" }, [dmg]);
+  } else if (kind === "equipment") {
+    // Benutzen (Issue #30, Nutzerwahl 2026-10-05): Verbrauchsgegenstand → „Verbrauchen“ wie im System-Kontextmenü
+    // (sheet.consumeItem), sonst der OnUse-Würfel, falls vorhanden. Als Wert die Anzahl.
+    let use = onUseBtn(item.name);
+    if (item.consumable) {
+      const label = `${item.name} verbrauchen`;
+      use = el("button", { type: "button", class: "fav-use-btn", title: label, "aria-label": label }, "Verbrauchen");
+      use.addEventListener("click", () => { if (item.qty > 0) item.qty -= 1; flashNotice(`🧪 ${label}`); renderContent(); });
+    }
+    roll = el("span", { class: "fav-card-roll" }, [use]);
+    value = el("span", { class: "fav-card-value", title: "Anzahl" }, `×${item.qty}`);
+  } else if (kind === "special") {
+    roll = el("span", { class: "fav-card-roll" }, [onUseBtn(item.name)]);
+    value = el("span", { class: "fav-card-value" }, [specInfo(item)]);
   } else {
     value = el("span", { class: "fav-card-value", title: "Fertigkeitswert" }, String(item.fw));
     const dice = probeDice(item.probe, item.name);
@@ -2825,7 +2938,41 @@ function favCard(item, kind) {
     roll = el("span", { class: "fav-card-roll" }, [dice]);
   }
   // Reihenfolge Name | Probe | Wert | Stern (Nutzer-Feedback 2026-09-28); Waffen: AT/FK-Würfel als Probe, TP als Wert.
-  return el("div", { class: "fav-card" }, [icon, name, roll, value, favStar(item)]);
+  const star = kind === "special" ? specFavStar(item.name) : favStar(item);
+  return el("div", { class: "fav-card" }, [icon, name, roll, value, star]);
+}
+
+// Beschreibung einer Sonderfertigkeit auf dem Titelblatt (Issue #30, Nutzerwahl „Beschreibung zeigen“) — drei
+// Varianten zum Vergleich (FAV_DESC, Umschalter in der Werkzeugleiste): Tooltip beim Darüberfahren/Fokus,
+// Aufklappen unter der Karte, eigenes Fenster mit „Im Chat posten“. Im Modul Regeltext = system.rule.value.
+let FAV_DESC = "tooltip";
+const FAV_EXPANDED = new Set();
+function specInfo(item) {
+  const label = `Regel: ${item.name}`;
+  const btn = el("button", { type: "button", class: "fav-info-btn", "aria-label": label }, "ⓘ");
+  if (FAV_DESC === "tooltip") {
+    return el("span", { class: "fav-info" }, [btn, el("span", { class: "fav-info-tip", role: "tooltip" }, [el("strong", {}, item.name), el("span", {}, item.rule)])]);
+  }
+  if (FAV_DESC === "expand") {
+    const open = FAV_EXPANDED.has(item.name);
+    btn.setAttribute("aria-expanded", String(open));
+    btn.classList.toggle("active", open);
+    btn.addEventListener("click", () => { if (open) FAV_EXPANDED.delete(item.name); else FAV_EXPANDED.add(item.name); renderContent(); });
+    return btn;
+  }
+  btn.setAttribute("aria-haspopup", "dialog");
+  btn.addEventListener("click", () => {
+    const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
+    closeBtn.addEventListener("click", closeModal);
+    const post = el("button", { type: "button", class: "reload-btn" }, "Im Chat posten");
+    post.addEventListener("click", () => { flashNotice(`💬 ${item.name} im Chat gepostet`); closeModal(); });
+    openModal(el("div", { class: "panel fav-rule-modal" }, [
+      el("div", { class: "panel-title flex" }, [el("span", {}, item.name), closeBtn]),
+      el("p", { class: "fav-rule-text" }, item.rule),
+      el("div", { class: "fav-rule-actions" }, [post]),
+    ]), { label: item.name });
+  });
+  return btn;
 }
 
 // Ein Panel "Favoriten" mit einer Unterüberschrift je Kategorie (Talente/Waffen/Zauber/Liturgien), analog zu
@@ -2838,13 +2985,20 @@ function favoritesPanel() {
     { label: "Waffen", items: fav.weapons, kind: "weapon" },
     { label: "Zauber", items: fav.spells, kind: "spell" },
     { label: "Liturgien", items: fav.liturgies, kind: "liturgy" },
+    { label: "Ausrüstung", items: fav.equipment, kind: "equipment" },
+    { label: "Sonderfertigkeiten", items: fav.specials, kind: "special" },
   ];
   const active = groups.filter((g) => g.items.length);
+  // Variante „Aufklappen“: Regeltext als eigene Zeile über die ganze Rasterbreite direkt unter der Karte.
+  const cards = (g) => g.items.flatMap((it) => [
+    favCard(it, g.kind),
+    g.kind === "special" && FAV_DESC === "expand" && FAV_EXPANDED.has(it.name) ? el("div", { class: "fav-rule-expand" }, it.rule) : null,
+  ]).filter(Boolean);
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Favoriten"),
     ...(active.length
-      ? active.flatMap((g) => [el("div", { class: "subhead" }, g.label), el("div", { class: "fav-grid" }, g.items.map((it) => favCard(it, g.kind)))])
-      : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern oder Liturgien anklicken")]),
+      ? active.flatMap((g) => [el("div", { class: "subhead" }, g.label), el("div", { class: "fav-grid" }, cards(g))])
+      : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern, Liturgien, Ausrüstung oder Sonderfertigkeiten anklicken")]),
   ]);
 }
 
@@ -3192,6 +3346,25 @@ function initWindowMenu() {
 }
 
 // Testschalter "Nur LeP" (#onlyLepToggle in index.html) — siehe ONLY_LEP/resourceGroup()-Kommentar.
+// Vergleichsschalter Issue #1 (wird nach der Entscheidung wieder entfernt): Animation beim Reiterwechsel.
+function initTabAnimToggle() {
+  const wrap = document.getElementById("tabAnimSwitch");
+  wrap.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
+    TAB_ANIM = b.dataset.variant;
+    wrap.querySelectorAll("button").forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", String(x === b)); });
+  }));
+}
+
+// Vergleichsschalter Issue #30 (wird nach der Entscheidung wieder entfernt): Darstellung der SF-Beschreibung.
+function initFavDescToggle() {
+  const wrap = document.getElementById("favDescSwitch");
+  wrap.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
+    FAV_DESC = b.dataset.variant;
+    wrap.querySelectorAll("button").forEach((x) => { x.classList.toggle("active", x === b); x.setAttribute("aria-pressed", String(x === b)); });
+    renderContent();
+  }));
+}
+
 function initOnlyLepToggle() {
   const btn = document.getElementById("onlyLepToggle");
   btn.addEventListener("click", () => {
@@ -3254,6 +3427,8 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
+initFavDescToggle();
+initTabAnimToggle();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
 document.fonts.ready.then(fitName);
 initWindowMenu();

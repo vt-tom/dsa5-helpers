@@ -2407,6 +2407,120 @@ button.probe-die:focus-visible,
   font-weight: normal;
 }
 
+/* --- Favoriten: Ausrüstung und Sonderfertigkeiten (Issue #30) --- */
+
+/* Stern in SF-Chips: kleiner als in Zeilen, am rechten Rand vor dem × des Bearbeiten-Modus. */
+.chip .fav-star.chip-fav {
+  width: 22px;
+  height: 22px;
+  margin: -2px -4px -2px auto;
+  font-size: 15px;
+}
+
+.fav-use-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+
+.fav-info {
+  position: relative;
+  display: inline-flex;
+}
+
+.fav-info-btn {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.fav-info-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Variante „Tooltip“: erscheint bei Maus-Hover und Tastaturfokus über dem Knopf. */
+.fav-info-tip {
+  position: absolute;
+  right: -8px;
+  bottom: calc(100% + 8px);
+  z-index: 20;
+  display: none;
+  width: 260px;
+  padding: 8px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  font-size: var(--fs-small);
+  font-weight: normal;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.fav-info-tip strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.fav-info:focus-within .fav-info-tip {
+  display: block;
+}
+
+@media (hover: hover) {
+  .fav-info:hover .fav-info-tip {
+    display: block;
+  }
+
+  .fav-use-btn:hover,
+  .fav-info-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* Variante „Aufklappen“: Regeltext über die ganze Rasterbreite unter der Karte. */
+.fav-rule-expand {
+  grid-column: 1 / -1;
+  margin-top: -4px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 3px 3px;
+  background: var(--paper);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+}
+
+/* Variante „Fenster“. */
+.fav-rule-modal {
+  width: min(420px, 90vw);
+}
+
+.fav-rule-text {
+  margin: 10px 12px;
+  line-height: 1.45;
+}
+
+.fav-rule-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 12px 12px;
+}
+
 .fav-card-roll {
   display: flex;
   justify-content: center;
@@ -4667,9 +4781,10 @@ button.fav-chip-roll {
   height: 28px;
 }
 
-/* Spalte "Angelegt" (vorher nur ✓ als Kopf, 34px) braucht Platz für die Beschriftung. */
+/* Spalte "Angelegt" (vorher nur ✓ als Kopf, 34px) braucht Platz für die Beschriftung; hinten der Favoritenstern
+   (Issue #30). */
 .inv-row {
-  grid-template-columns: 30px 1fr 64px 52px 58px 74px 42px;
+  grid-template-columns: 30px 1fr 64px 52px 58px 74px 42px 28px;
 }
 
 @media (hover: hover) {

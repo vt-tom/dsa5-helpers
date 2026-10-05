@@ -17,11 +17,12 @@ Branch `release/0.5.0` (angelegt 2026-10-05). Reihenfolge (Nutzer, 2026-10-05): 
 
 **#7 CSS aufräumen** erledigt und live bestätigt (2026-10-05, Issue geschlossen; Konventionen in PROJEKTDOKU.md „CSS-Gliederung“).
 
-Kandidaten, noch ohne Meilenstein (jetzt auswählen):
-- **#1 Animation zwischen Titelblatt und den anderen Seiten** (von @Lyynix, ohne Beschreibung) — klären, was gemeint ist.
-- **#27 Persönliche Daten auf dem Titelblatt** — nur, wenn bis dahin eine passende Lösung gefunden ist.
-- **HUD des Moduls** (siehe Backlog) — würde zum Einstieg der Würfelstatistik passen, ist aber eigenständig zu planen.
-- **#30 Favoriten für Ausrüstung und Sonderfertigkeiten**, **#31 Konzept Aufteilung Notizen** (beide offen, ohne Meilenstein).
+Für 0.5.0 ausgewählt (Nutzer, 2026-10-05; Meilenstein 0.5.0, Bearbeiter vt-tom): #30, #31, #1, #27. Reihenfolge: #30 → #1 → #31 + #27 zusammen (beide betreffen „Persönliche Daten“).
+
+- **#30 Favoriten für Ausrüstung und Sonderfertigkeiten** — im Click-Dummy umgesetzt (2026-10-05), **Entscheidung offen**: Stern an Inventarzeilen (auch in Behältnissen) und an allen SF-Chips (Eigenschaften, Kampf, Magie, Religion); Titelblatt-Gruppen „Ausrüstung“ (Benutzen: „Verbrauchen“ bei Verbrauchsgegenständen wie im System-Kontextmenü `consumeItem`, sonst OnUse-Würfel; Anzahl als Wert) und „Sonderfertigkeiten“ (OnUse-Würfel + ⓘ für den Regeltext `system.rule.value`). Nutzerwahl: Benutzen-Knopf + Beschreibung zeigen. Für die Beschreibung drei Varianten im Dummy (Umschalter „SF: Tooltip | Aufklappen | Fenster“) — auswählen, dann Umschalter entfernen und ins Modul übertragen. Im Modul mitdenken: Waffen-Favoriten auf dem Titelblatt zeigen bisher nur getragene Waffen, seit „Weitere Waffen“ alle Waffen zeigt, sollten auch nicht getragene Waffen-Favoriten erscheinen.
+- **#1 Animation zwischen Titelblatt und den anderen Seiten** — Issue ohne Beschreibung, Nutzer wollte drei Vorschläge im Click-Dummy (2026-10-05), **Entscheidung offen**: Umschalter „Anim: aus | Blättern | Überblenden | Gleiten“. Blättern = neue Seite schwingt wie ein Buchblatt herein (vorwärts um die linke, rückwärts um die rechte Kante); Überblenden = kurzes Einblenden des Inhalts; Gleiten = Porträt, Name, LeP/AsP/KaP und Eigenschaftswürfel wandern zwischen Titelblatt-Seitenleiste und Kopfzeile (FLIP), Rest blendet ein. Alle Varianten bei jedem Reiterwechsel, bei „reduzierter Bewegung“ aus. Ggf. mit @Lyynix abstimmen.
+- **#31 Konzept Aufteilung Notizen** + **#27 Persönliche Daten auf dem Titelblatt** — als Nächstes: Varianten im Click-Dummy.
+- Weiterer Kandidat ohne Issue: **HUD des Moduls** (siehe Backlog).
 
 ## Live in Foundry prüfen (0.5.0, release/0.5.0)
 
