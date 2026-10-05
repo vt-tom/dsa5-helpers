@@ -1647,6 +1647,16 @@
   color: var(--muted);
 }
 
+/* Hausregel Helfen: Knopf in Akzentfarbe, damit er als Zusatz der Hausregel erkennbar ist. */
+.dsa5-helpers-sheet .dsa5h-quick-actions .dsa5h-house-quick {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-quick-actions .dsa5h-house-quick .dsa5h-quick-glyph {
+  color: var(--accent);
+}
+
 /* --- Suchleiste (Talente, Kampftechniken) --- */
 
 /* Talentsuche + "Nur gesteigerte"-Schalter + Hinweis bei gruppenübergreifender Suche. */

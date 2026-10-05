@@ -2,7 +2,7 @@
 const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
-import { isRuleActive, woundCheck, findTreatWounds } from '../house-rules/rules.js';
+import { isRuleActive, woundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -48,6 +48,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       rollAggregatedProbe: { handler: this._handleAggregatedProbe, buttons: [0, 2] },
       rollDisease: this._rollDisease,
       dsa5hWoundCheck: this._woundCheck,
+      dsa5hHelpAction: this._helpAction,
     },
     ownerActions: {
       schipUpdate: this._schipUdate,
@@ -310,6 +311,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       happyTalentsExpanded: this._happyTalentsExpanded,
       // Hausregel Wundeinschätzung: Hinweis am Talent Heilkunde Wunden, nur wenn die SL die Regel eingeschaltet hat.
       woundCheckSkill: !limited && isRuleActive('woundCheck') ? findTreatWounds(this.actor)?.id ?? null : null,
+      // Hausregel Helfen: Knopf in den Schnellaktionen des Kampf-Reiters (quick-actions.hbs).
+      helpAction: !limited && isRuleActive('helpAction'),
       body,
       happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
@@ -1045,6 +1048,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       return;
     }
     await woundCheck(this.actor);
+  }
+
+  // Hausregel Helfen: Talent wählen, Probe über den Probendialog des Systems, Hinweis im Chat (help-action.js).
+  static async _helpAction() {
+    await helpAction(this.actor, this.getTokenId?.());
   }
 
   static async _toggleFavorite(_event, target) {

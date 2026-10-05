@@ -2,7 +2,8 @@
 // CSS-Klassen wie templates/house-rules*.hbs (Abschnitt 22 in style.css). Texte kommen aus der echten lang/de.json,
 // Regelliste aus scripts/house-rules/rules.js — so bleiben Click-Dummy und Modul gleich. Umschalten wie die SL;
 // „Spieler-Sicht“ zeigt nur den Stand. Bei aktiver Wundeinschätzung zeigt der Talente-Reiter
-// den Hinweis an Heilkunde Wunden (woundCheckHint() in script.js); Probe und Chat gibt es nur in Foundry.
+// den Hinweis an Heilkunde Wunden (woundCheckHint() in script.js), aktives Helfen den Knopf in Kampf › Körper
+// (helpActionButton()); Proben und Chat gibt es nur in Foundry.
 import { HOUSE_RULES } from "../scripts/house-rules/rules.js";
 
 const lang = await fetch("../lang/de.json").then((r) => r.json());
@@ -23,7 +24,7 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 // Font Awesome gibt es nur in Foundry — hier dieselben Klassen mit einem Zeichen als Ersatz.
-const FA = { "fa-heart-pulse": "♥", "fa-book": "📖", "fa-book-open": "📖", "fa-list": "☰", "fa-chevron-left": "‹", "fa-chevron-right": "›" };
+const FA = { "fa-heart-pulse": "♥", "fa-handshake-angle": "🤝", "fa-book": "📖", "fa-book-open": "📖", "fa-list": "☰", "fa-chevron-left": "‹", "fa-chevron-right": "›" };
 const icon = (cls) => el("i", { class: cls, inert: "" }, FA[cls.split(" ").find((c) => FA[c])] ?? "");
 
 // page: 0 = Inhaltsverzeichnis, 1… = Regeln (wie im Modul); turn = Blätterrichtung für die Animation.
@@ -48,7 +49,7 @@ function listView() {
       el("div", { class: "dsa5h-hr-entry-text" }, [
         el("strong", {}, t(H + rule.id + ".Title")),
         el("span", {}, t(H + rule.id + ".Summary")),
-        el("small", {}, t(H + "Credit", { name: rule.credit })),
+        rule.credit ? el("small", {}, t(H + "Credit", { name: rule.credit })) : null,
       ]),
       toggle(rule),
       el("button", { type: "button", class: "dsa5h-hr-read", onclick: () => { state.view = "book"; state.page = index + 1; render(); } }, [icon("fas fa-book-open"), " " + t(H + "Read")]),
@@ -58,6 +59,14 @@ function listView() {
 
 // Seiteninhalt je Regel — Gegenstück zu templates/house-rules/<regel>.hbs.
 const PAGES = {
+  helpAction: () => {
+    const P = H + "helpAction.Page.";
+    return [
+      el("section", { class: "dsa5h-hr-section" }, [el("p", {}, t(P + "Intro")), el("p", { class: "dsa5h-hr-note" }, t(P + "Example"))]),
+      el("section", { class: "dsa5h-hr-section" }, [el("h3", {}, t(H + "HowTo")), el("ol", {}, [1, 2, 3, 4].map((n) => el("li", {}, t(P + "Step" + n))))]),
+      el("section", { class: "dsa5h-hr-section" }, [el("h3", {}, t(H + "Notes")), el("ul", {}, [1, 2, 3].map((n) => el("li", {}, t(P + "Note" + n))))]),
+    ];
+  },
   woundCheck: () => {
     const P = H + "woundCheck.Page.";
     return [
@@ -89,7 +98,7 @@ function tocPage() {
     el("h3", { class: "dsa5h-hr-toc-title" }, t(H + "Contents")),
     el("ol", { class: "dsa5h-hr-toc-list" }, HOUSE_RULES.map((rule, index) => el("li", {}, el("button", { type: "button", onclick: () => goTo(index + 1) }, [
       el("span", {}, `${index + 1}. ${t(H + rule.id + ".Title")}`),
-      el("small", {}, t(H + "Credit", { name: rule.credit })),
+      rule.credit ? el("small", {}, t(H + "Credit", { name: rule.credit })) : null,
       el("span", { class: "dsa5h-hr-toc-dots", "aria-hidden": "true" }),
       el("span", { class: "dsa5h-hr-state" + (state.active[rule.id] ? " active" : "") }, t(H + (state.active[rule.id] ? "Active" : "Inactive"))),
     ])))),
@@ -102,7 +111,7 @@ function rulePage(index) {
     el("header", { class: "dsa5h-hr-page-head" }, [
       el("div", { class: "dsa5h-hr-page-top" }, [el("small", {}, t(H + "Number", { number: index + 1 })), toggle(rule)]),
       el("h2", {}, [icon(rule.icon), " " + t(H + rule.id + ".Title")]),
-      el("p", { class: "dsa5h-hr-credit" }, t(H + "CreditLong", { name: rule.credit })),
+      rule.credit ? el("p", { class: "dsa5h-hr-credit" }, t(H + "CreditLong", { name: rule.credit })) : null,
     ]),
     ...PAGES[rule.id](),
   ]);

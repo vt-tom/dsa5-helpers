@@ -296,7 +296,39 @@
         "HintTooltip": "House rule Wound Assessment: target a token, then click – a Treat Wounds check estimates how badly the target is hurt."
       },
       "Contents": "Contents",
-      "KeysHint": "Turn pages with ← → too"
+      "KeysHint": "Turn pages with ← → too",
+      "helpAction": {
+        "Title": "Help",
+        "Summary": "A hero uses their action in combat for a fitting skill check; the remaining QL ease an ally's next check.",
+        "Button": "Help",
+        "HintTooltip": "House rule Help: choose a skill and roll – the remaining QL ease an ally's next check (target the ally to name them in the chat).",
+        "NoSkills": "This hero has no skills.",
+        "Dialog": {
+          "Intro": "Which skill do you use to help? The check costs your action.",
+          "Skill": "Skill",
+          "Target": "Helping: {name}",
+          "NoTarget": "No target – target the ally you help so they are named in the chat (optional).",
+          "Roll": "Roll check"
+        },
+        "Chat": {
+          "Target": "of {name}",
+          "NoTarget": "of the supported ally",
+          "Success": "{helper} helps with {skill}: the next check {who} is eased by {qs}.",
+          "Manual": "Please enter the bonus as a modifier on the next check yourself.",
+          "Failure": "{helper} tries to help with {skill}, but fails – no bonus."
+        },
+        "Page": {
+          "Intro": "In combat, not everyone has to strike themselves. A hero can use their action to help an ally with a skill check that fits the situation. The remaining quality levels ease the ally's next check.",
+          "Example": "Example: with Intimidation, a hero draws an enemy's attention away from a fighter – the fighter's attack against that enemy is then eased.",
+          "Step1": "Optionally target the ally you help (click the token and press T) – they will then be named in the chat.",
+          "Step2": "In the hero sheet (DSA5 Helpers), click “Help” among the quick actions on the Combat tab.",
+          "Step3": "Choose the fitting skill, pick modifiers in the usual check dialog and roll. The GM decides whether the skill fits the situation.",
+          "Step4": "If the check succeeds, a chat message names the bonus equal to the QL.",
+          "Note1": "The bonus is not applied automatically: the supported ally enters it as a modifier on their next check.",
+          "Note2": "Helping costs the helper's action for this combat round.",
+          "Note3": "If the check fails, there is no bonus."
+        }
+      }
     },
     "NoConditions": "No conditions.",
     "ConditionsToStatus": "All conditions and effects → Status",

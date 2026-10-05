@@ -1305,12 +1305,43 @@ function jumpToCombatSkill(name) {
 
 // Vier Schnellwurf-Buttons (Ausweichen/Waffenloser Angriff/Waffenlose Verteidigung/Sturzschaden), siehe COMBAT_ACTIONS.
 function renderCombatActions() {
-  return el("div", { class: "actions-row" }, COMBAT_ACTIONS.map((a) =>
+  return el("div", { class: "actions-row" }, [...COMBAT_ACTIONS.map((a) =>
     el("button", { type: "button" }, [
       a.img ? el("img", { src: a.img, alt: "" }) : el("span", { class: "glyph" }, a.glyph),
       el("span", {}, a.value !== undefined ? `${a.label} (${a.value})` : a.label),
     ])
-  ));
+  ), helpActionButton()]);
+}
+
+// Hausregel Helfen (Hausregelbuch, house-rules.js): Knopf in den Schnellaktionen, nur bei aktiver Regel. Wählt ein
+// Talent (im Modul DialogV2 mit <select> nach Talentgruppen), würfelt über den Probendialog des Systems und nennt die
+// übrig behaltenen QS als Erleichterung im Chat — anrechnen muss der Unterstützte sie selbst (scripts/house-rules/help-action.js).
+let HELP_LAST_SKILL = "";
+function helpActionButton() {
+  if (!window.dsa5hHouseRules?.state.active.helpAction) return null;
+  const btn = el("button", { type: "button", class: "house-quick", title: "Hausregel Helfen: Talent wählen und würfeln – die übrig behaltenen QS erleichtern die nächste Probe eines Mitstreiters." }, [el("span", { class: "glyph" }, "🤝"), el("span", {}, "Helfen")]);
+  btn.addEventListener("click", () => {
+    const select = el("select", { name: "skill" }, SKILL_GROUPS.map((g) => el("optgroup", { label: g.name }, g.items.map((sk) =>
+      el("option", { value: sk.name }, `${sk.name} (${sk.fw})`)))));
+    if (HELP_LAST_SKILL) select.value = HELP_LAST_SKILL;
+    const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
+    closeBtn.addEventListener("click", closeModal);
+    const roll = el("button", { type: "button", class: "reload-btn" }, "🎲 Probe würfeln");
+    roll.addEventListener("click", () => {
+      HELP_LAST_SKILL = select.value;
+      closeModal();
+      flashNotice(`🎲 Probendialog ${select.value} (Helfen) → Chat: „Layariel hilft mit ${select.value}: Die nächste Probe von Gerion ist um 2 erleichtert.“`);
+    });
+    openModal(el("div", { class: "panel fav-rule-modal help-action-modal" }, [
+      el("div", { class: "panel-title flex" }, [el("span", {}, "Helfen"), closeBtn]),
+      el("p", { class: "fav-rule-text" }, "Mit welchem Talent hilfst du? Die Probe kostet deine Aktion."),
+      el("label", { class: "help-action-field" }, [el("span", {}, "Talent"), select]),
+      el("p", { class: "fav-rule-text muted" }, "Unterstützt: Gerion (markiertes Ziel, Demo)"),
+      el("div", { class: "fav-rule-actions" }, [roll]),
+    ]), { label: "Helfen" });
+    select.focus();
+  });
+  return btn;
 }
 
 // Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich, siehe Git-Historie

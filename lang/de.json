@@ -296,7 +296,39 @@
         "HintTooltip": "Hausregel Wundeinschätzung: Ziel markieren, dann klicken – schätzt per Probe auf Heilkunde Wunden ein, wie schwer das Ziel verletzt ist."
       },
       "Contents": "Inhalt",
-      "KeysHint": "Blättern auch mit ← →"
+      "KeysHint": "Blättern auch mit ← →",
+      "helpAction": {
+        "Title": "Helfen",
+        "Summary": "Ein Held nutzt seine Aktion im Kampf für eine passende Talentprobe; die übrig behaltenen QS erleichtern die nächste Probe eines Mitstreiters.",
+        "Button": "Helfen",
+        "HintTooltip": "Hausregel Helfen: Talent wählen und würfeln – die übrig behaltenen QS erleichtern die nächste Probe eines Mitstreiters (Ziel markieren, um ihn im Chat zu nennen).",
+        "NoSkills": "Dieser Held hat keine Talente.",
+        "Dialog": {
+          "Intro": "Mit welchem Talent hilfst du? Die Probe kostet deine Aktion.",
+          "Skill": "Talent",
+          "Target": "Unterstützt: {name}",
+          "NoTarget": "Kein Ziel markiert – markiere den Mitstreiter, dem du hilfst, damit er im Chat genannt wird (optional).",
+          "Roll": "Probe würfeln"
+        },
+        "Chat": {
+          "Target": "von {name}",
+          "NoTarget": "des Unterstützten",
+          "Success": "{helper} hilft mit {skill}: Die nächste Probe {who} ist um {qs} erleichtert.",
+          "Manual": "Die Erleichterung bitte bei der nächsten Probe selbst als Modifikator eintragen.",
+          "Failure": "{helper} versucht mit {skill} zu helfen, doch es gelingt nicht – keine Erleichterung."
+        },
+        "Page": {
+          "Intro": "Im Kampf muss nicht jeder selbst zuschlagen. Ein Held kann seine Aktion nutzen, um einem Mitstreiter mit einer Talentprobe zu helfen, die zur Situation passt. Die übrig behaltenen Qualitätsstufen erleichtern dessen nächste Probe.",
+          "Example": "Beispiel: Mit Einschüchtern lenkt ein Held den Gegner eines Kämpfenden auf sich – dessen Angriff gegen den Gegner ist dann erleichtert.",
+          "Step1": "Optional den Mitstreiter markieren, dem geholfen wird (Token anklicken und T drücken) – er wird dann im Chat genannt.",
+          "Step2": "Im Heldenbogen (DSA5 Helpers) im Reiter Kampf bei den Schnellaktionen auf „Helfen“ klicken.",
+          "Step3": "Das passende Talent wählen und im gewohnten Probendialog Modifikatoren wählen und würfeln. Die Spielleitung entscheidet, ob das Talent zur Situation passt.",
+          "Step4": "Gelingt die Probe, nennt eine Chatnachricht die Erleichterung in Höhe der QS.",
+          "Note1": "Die Erleichterung wird nicht automatisch angerechnet: Der Unterstützte trägt sie bei seiner nächsten Probe selbst als Modifikator ein.",
+          "Note2": "Helfen kostet die Aktion des Helfenden in dieser Kampfrunde.",
+          "Note3": "Misslingt die Probe, gibt es keine Erleichterung."
+        }
+      }
     },
     "NoConditions": "Keine Zustände.",
     "ConditionsToStatus": "Alle Zustände und Effekte → Status",
