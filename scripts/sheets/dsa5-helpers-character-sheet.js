@@ -74,6 +74,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       selectTraditionItem: this._selectTraditionItem,
       dsa5hBodyFigure: this._setBodyFigure,
       dsa5hTwoHandedSide: this._setTwoHandedSide,
+      dsa5hSwapGrip: this._swapGrip,
     },
     // Foundry concatenates majorButtons across the inheritance chain (ApplicationV2#_initializeApplicationOptions),
     // so this adds a third header-control icon next to DSA5's own eye/lock buttons instead of replacing them.
@@ -459,10 +460,18 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const off = mainTwoHanded ? null : worn.find(w => w !== main && w.system?.worn?.offHand) ?? null;
     const weapons = [...(this.actor.items?.values?.() ?? [])].filter(item => ['meleeweapon', 'rangeweapon'].includes(item.type))
       .sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang));
+    // Griffwechsel ein-/beidhändig an der Hand (Rückmeldung 2026-10-05): nur Nahkampfwaffen, die das System umschalten
+    // lässt (meleeweapon.js swapNumberWeaponHands: nicht Dolche/Fechtwaffen); 'two' = auf beidhändig wechseln.
+    const gripSwitch = data => {
+      const item = data && this.actor.items.get(data._id);
+      if (item?.type !== 'meleeweapon' || item.system.constructor.NOT_TWO_HANDED_WEAPON_TYPES?.has(game.i18n.localize('LocalizedCTs.' + item.system.combatskill.value))) return null;
+      return twoHanded(item) ? 'one' : 'two';
+    };
     const slot = (hand, item) => ({
       hand,
       label: hand === 'main' ? 'mainHand' : 'offHand',
       item,
+      gripSwitch: gripSwitch(item),
       ranged: item?.type === 'rangeweapon',
       options: weapons.filter(w => hand === 'main' || !twoHanded(w)).map(w => ({ id: w.id, name: w.name, twoHanded: twoHanded(w), selected: w.id === item?._id })),
     });
@@ -567,6 +576,16 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static async _setTwoHandedSide(_event, target) {
     if (!this.isEditable) return;
     await this.actor.setFlag(MODULE_ID, 'twoHandedSide', target.dataset.side === 'right' ? 'right' : 'left');
+  }
+
+  // Griffwechsel an der Hand im Reiter „Körper“ (Rückmeldung 2026-10-05: dort fehlte der Wechsel auf beidhändig).
+  // Nur System-Logik: swapNumberWeaponHands schaltet wrongGrip um; wird die Waffe dadurch beidhändig, legt
+  // equipWeaponToHand (Zweig „twohanded“) die übrigen Waffen ab und setzt sie in die Haupthand.
+  static async _swapGrip(_event, target) {
+    const item = this.actor.items.get(this._getItemId(target));
+    if (!this.actor.isOwner || item?.type !== 'meleeweapon') return;
+    await item.system.swapNumberWeaponHands();
+    if (item.system.worn.value && globalThis.dsa5.apps.RuleChaos.isWieldedTwohanded(item)) await this.actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
   }
 
   // Charakterbauer (#10): wie im System, merkt sich aber die bisherige Bogenwahl ('' = Standard), die der

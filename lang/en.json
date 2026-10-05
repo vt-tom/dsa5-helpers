@@ -67,6 +67,8 @@
     "GMNotes": "GM notes",
     "OpenTradition": "Open tradition",
     "GripTwoHanded": "Two-handed",
+    "GripSwitchToTwo": "Wield two-handed",
+    "GripSwitchToOne": "Wield one-handed",
     "EquipGripHint": "Equip · right-click: main hand / off hand / two-handed",
     "Magazine": "Magazine",
     "ColCurrent": "Current",
