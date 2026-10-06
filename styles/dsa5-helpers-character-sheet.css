@@ -2195,7 +2195,7 @@
 /* --- Vorschläge --- */
 
 /* Talent-Vorschläge über den Favoriten (parts/suggestions.hbs, Nutzerwunsch 2026-10-06): genau zwei Spalten, Karten
-   zweizeilig: Name | FW, darunter Grund | Probe — ohne Bild und Stern, sonst bliebe dem Namen bei zwei Spalten kaum
+   zweizeilig: Name | FW, darunter Grund | Probe, rechts der Favoritenstern über beide Zeilen — ohne Bild, sonst bliebe dem Namen bei zwei Spalten kaum
    Platz. Angefragte Proben mit Akzentkante. */
 .dsa5-helpers-sheet .dsa5h-suggest-grid {
   display: grid;
@@ -2206,8 +2206,8 @@
 
 .dsa5-helpers-sheet .dsa5h-fav-card.dsa5h-suggest-card {
   /* Name reicht über die Würfelspalte bis zum FW; nur der Grund teilt sich die Zeile mit den Würfeln. */
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  grid-template-areas: "name name value" "reason roll roll";
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-areas: "name name value star" "reason roll roll star";
   gap: 2px 6px;
   padding: 4px 6px 4px 8px;
 }
@@ -2223,6 +2223,11 @@
 
 .dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-suggest-reason {
   grid-area: reason;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-favorite {
+  grid-area: star;
+  align-self: center;
 }
 
 .dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-fav-card-roll {

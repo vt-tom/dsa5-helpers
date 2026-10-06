@@ -2354,7 +2354,7 @@ button.probe-die:focus-visible,
 /* --- Vorschläge --- */
 
 /* Talent-Vorschläge über den Favoriten (suggestionsPanel() in script.js, Nutzerwunsch 2026-10-06): genau zwei Spalten,
-   zweizeilig: Name | FW, darunter Grund | Probe — ohne Bild und Stern. Anfragen mit Akzentkante. */
+   zweizeilig: Name | FW, darunter Grund | Probe, rechts der Favoritenstern über beide Zeilen — ohne Bild. Anfragen mit Akzentkante. */
 .suggest-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2364,8 +2364,8 @@ button.probe-die:focus-visible,
 
 .fav-card.suggest-card {
   /* Name reicht über die Würfelspalte bis zum FW; nur der Grund teilt sich die Zeile mit den Würfeln. */
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  grid-template-areas: "name name value" "reason roll roll";
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-areas: "name name value star" "reason roll roll star";
   gap: 2px 6px;
   padding: 4px 6px 4px 8px;
 }
@@ -2381,6 +2381,11 @@ button.probe-die:focus-visible,
 
 .suggest-card .suggest-reason {
   grid-area: reason;
+}
+
+.suggest-card .fav-star {
+  grid-area: star;
+  align-self: center;
 }
 
 .suggest-card .fav-card-roll {

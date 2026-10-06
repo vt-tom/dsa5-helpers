@@ -710,6 +710,7 @@ test('Vorschläge: sechs Karten im Titelblatt, würfelbar wie Favoriten, offene 
  const html=render(context);const cover=elements(html,el=>el.attribs?.['data-tab-panel']==='cover')[0];
  const cards=dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-suggest-card'),cover.children);assert.equal(cards.length,list.length);
  assert(dom.findAll(el=>el.attribs?.['data-action']==='skillSelect',cards).length===list.length);
+ const stars=dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',cards);assert.equal(stars.length,list.length,'Favoritenstern je Vorschlag');for(const st of stars)assert.equal(st.attribs['aria-pressed'],'false');
  const calls=[];global.game.dsa5={queries:{RollRequestService:{triggerRollFromCard:(m,a)=>calls.push([m,a])}}};sheet.actor.isOwner=true;
  await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hAnswerRequest.call(sheet,{}, {dataset:{which:'msg1'}});assert.deepEqual(calls,[['msg1',sheet.actor.id]]);
 });

@@ -3189,6 +3189,7 @@ function suggestionsPanel() {
       el("span", { class: "fav-card-value", title: "Fertigkeitswert" }, String(item.fw)),
       el("small", { class: "suggest-reason" }, SUGGESTION_REASONS[i]),
       el("span", { class: "fav-card-roll" }, [dice]),
+      favStar(item),
     ]);
   });
   return el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Vorschläge"), el("div", { class: "suggest-grid" }, cards)]);
