@@ -696,10 +696,10 @@ test('Vorschläge: Anfragen vorn, Favoriten raus, Nutzung/Spezialist/Kampf/Steig
 });
 test('Vorschläge: offene Anfragen und @Rq-Links aus dem Chat',async()=>{
  const {context}=await suggestionModules();const now=Date.now();
- assert.deepEqual(context.parseRequestLink('Klettern -1'),{name:'Klettern',modifier:-1});assert.deepEqual(context.parseRequestLink('Bekehren & Überzeugen'),{name:'Bekehren & Überzeugen',modifier:0});
+ assert.deepEqual(context.parseRequestLink('Klettern -1'),{name:'Klettern',modifier:-1});assert.deepEqual(context.parseRequestLink('Bekehren & Überzeugen'),{name:'Bekehren & Überzeugen',modifier:0});assert.deepEqual(context.parseRequestLink('Fliegen 2'),{name:'Fliegen',modifier:2});assert.deepEqual(context.parseRequestLink('Klettern -1 options={"attrs":"MU,GE,KK"}'),{name:'Klettern',modifier:-1});
  const req=(id,status,extra={})=>({id,timestamp:now,flags:{dsa5:{rollRequest:{category:'skill',name:'Klettern',modifier:1,finalized:false,recipients:[{actorId:'a1',status}],...extra}}}});
- const {requests,mentions}=context.chatRequests({id:'a1'},[req('m1','pending'),req('m2','success',{name:'Reiten'}),req('m3','pending',{name:'Zechen',finalized:true}),{id:'m4',timestamp:now,content:'Bitte @Rq[Schwimmen +2] würfeln'},{id:'m5',timestamp:now-20*60000,content:'@Rq[Tanzen]'}],now);
- assert.deepEqual(requests,{Klettern:{messageId:'m1',modifier:1}});assert.deepEqual(mentions,{Schwimmen:{modifier:2}});
+ const {requests,mentions}=context.chatRequests({id:'a1'},[req('m0','unowned',{name:'Fliegen'}),req('m1','pending'),{id:'m6',timestamp:now,content:'<p>@RQ[Bekehren &amp; Überzeugen&nbsp;-1]</p>'},{id:'m7',timestamp:now,content:'<p><a class="roll-button request-roll" data-type="skill" data-modifier="2" data-name="Fliegen">Fliegen +2</a></p>'},req('m2','success',{name:'Reiten'}),req('m3','pending',{name:'Zechen',finalized:true}),{id:'m4',timestamp:now,content:'Bitte @Rq[Schwimmen +2] würfeln'},{id:'m5',timestamp:now-20*60000,content:'@Rq[Tanzen]'}],now);
+ assert.deepEqual(requests,{Fliegen:{messageId:'m0',modifier:1},Klettern:{messageId:'m1',modifier:1}},'auch ohne Spieler online (unowned)');assert.deepEqual(mentions,{'Bekehren & Überzeugen':{modifier:-1},Fliegen:{modifier:2},Schwimmen:{modifier:2}});
 });
 test('Vorschläge: sechs Karten im Titelblatt, würfelbar wie Favoriten, offene Anfrage über den RollRequestService',async()=>{
  await loadSheet();global.game={i18n:{localize},settings:{get:()=> 'light'},user:{targets:{first:()=>undefined}}};

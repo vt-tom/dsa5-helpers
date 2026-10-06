@@ -25,7 +25,7 @@ const flush = foundry.utils.debounce(() => {
 function onRequestMessage(message) {
   const state = message.flags?.dsa5?.rollRequest;
   if (state?.category === 'skill') (state.recipients ?? []).forEach(r => pending.add(r.actorId));
-  else if (/@Rq\[/.test(message.content ?? '')) pending.add('*');
+  else if (/@Rq\[|request-roll/i.test(message.content ?? '')) pending.add('*');
   else return;
   flush();
 }

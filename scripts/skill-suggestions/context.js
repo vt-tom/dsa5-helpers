@@ -6,17 +6,33 @@ import { rankSuggestions } from './score.js';
 const MODULE_ID = 'dsa5-helpers';
 export const MENTION_WINDOW_MS = 10 * 60 * 1000;
 const RECENT_MESSAGES = 50;
-const RQ_PATTERN = /@Rq\[([^\]]+)\]/g;
+// Groß-/Kleinschreibung egal: „@RQ[…]“ macht das System zwar nicht zum Knopf, gemeint ist trotzdem eine Anfrage.
+const RQ_PATTERN = /@Rq\[([^\]]+)\]/gi;
+const ENRICHED_PATTERN = /<a\b[^>]*class="[^"]*roll-button[^"]*request-roll[^"]*"[^>]*>/gi;
+// Offene Anfragen: alles außer den Endzuständen des Systems (QueryOrchestrator.TERMINAL_STATES). Ist kein Spieler des
+// Helden online, steht der Eintrag auf 'unowned' statt 'pending' — würfeln lässt er sich trotzdem.
+const TERMINAL_STATES = new Set(['accepted', 'rejected', 'failed', 'skipped', 'success', 'critical', 'failure', 'botch', 'cancelled', 'error']);
 
 // Talente über die sprachunabhängigen LocalizedIDs des Systems (wie actor-dsa5.js / trap_state.js).
 const COMBAT_IDS = ['bodyControl', 'selfControl', 'featOfStrength', 'perception', 'intimidation'];
 const CLASSIC_IDS = ['perception', 'empathy', 'selfControl', 'stealth', 'willpower'];
 const localizedNames = ids => new Set(ids.map(id => game.i18n.localize('LocalizedIDs.' + id)));
 
-/** `Klettern -1` → { name: 'Klettern', modifier: -1 } (Inhalt eines @Rq-Links, Erleichterung/Erschwernis am Ende). */
+/** Chat-Inhalt als Text: der Editor speichert HTML (Tags, &amp; in „Bekehren & Überzeugen“, &nbsp;). */
+export function plainText(html) {
+  return String(html ?? '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;| /g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&amp;/g, '&');
+}
+
+/**
+ * Inhalt eines @Rq-Links wie das System zerlegen (texteditor.js parseEnricherInner/parseSkillModSegment): Optionen
+ * `options={…}` weg, die erste Zahl — mit oder ohne Vorzeichen — ist der Modifikator, der Rest der Talentname.
+ * `Klettern -1` → { name: 'Klettern', modifier: -1 }, `Fliegen 2` → +2.
+ */
 export function parseRequestLink(inner) {
-  const match = String(inner).trim().match(/^(.*?)(?:\s+([+-]\d+))?$/);
-  return { name: match[1].trim(), modifier: Number(match[2] ?? 0) };
+  const text = String(inner).replace(/options=\{[^}]*\}/, '').trim();
+  const mod = text.match(/[-+]?\d+/);
+  return { name: text.replace(/[-+]?\d+/, '').replace(/\s+/g, ' ').trim(), modifier: mod ? Number(mod[0]) : 0 };
 }
 
 /** Offene Probenanfragen der SL an diesen Helden (Chatkarten des RollRequestService) und @Rq-Links im Chat. */
@@ -27,15 +43,20 @@ export function chatRequests(actor, messages, now = Date.now()) {
     const state = message.flags?.dsa5?.rollRequest;
     if (state) {
       const recipient = state.recipients?.find(r => r.actorId === actor.id);
-      if (state.category === 'skill' && !state.finalized && recipient?.status === 'pending') {
+      if (state.category === 'skill' && !state.finalized && recipient && !TERMINAL_STATES.has(recipient.status)) {
         requests[state.name] = { messageId: message.id, modifier: Number(state.modifier) || 0 };
       }
       continue;
     }
     if (now - (message.timestamp ?? 0) > MENTION_WINDOW_MS) continue;
-    for (const [, inner] of String(message.content ?? '').matchAll(RQ_PATTERN)) {
+    for (const [, inner] of plainText(message.content).matchAll(RQ_PATTERN)) {
       const { name, modifier } = parseRequestLink(inner);
       mentions[name] = { modifier };
+    }
+    // Schon angereicherter Link (wie ihn texteditor.js aus @Rq baut), falls die Nachricht so gespeichert wurde.
+    for (const [tag] of String(message.content ?? '').matchAll(ENRICHED_PATTERN)) {
+      const name = tag.match(/data-name="([^"]*)"/)?.[1];
+      if (name) mentions[plainText(name).trim()] = { modifier: Number(tag.match(/data-modifier="([^"]*)"/)?.[1]) || 0 };
     }
   }
   return { requests, mentions };
