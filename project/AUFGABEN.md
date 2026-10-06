@@ -13,7 +13,7 @@ Erst als Beta (Pre-release), nach Live-Prüfung am selben Tag zum normalen Relea
 
 ## Nächste Version: 0.5.1 (Branch `release/0.5.1`)
 
-Angelegt 2026-10-05 (Wunsch VTTom). Enthalten bisher: Bogen-Umschalter mit Vorschau. `module.json` steht noch auf 0.5.0, hochgezählt wird beim Release (RELEASE.md).
+Angelegt 2026-10-05 (Wunsch VTTom). Enthalten bisher: Bogen-Umschalter mit Vorschau (Vorschau live bestätigt 2026-10-06), Sozialstatus als Name statt Zahl (Titelblatt › Persönliche Daten, live zu prüfen). `module.json` steht noch auf 0.5.0, hochgezählt wird beim Release (RELEASE.md).
 
 ## Live in Foundry prüfen
 
@@ -35,13 +35,14 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-05 18:36 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-06 07:50 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (0)**
+**Offen (1)**
 
-_Keine offenen Issues._
+- **[#33](https://github.com/vt-tom/dsa5-helpers/issues/33) Switch für das schnelle Umschalten zwischen den Bögen**
+  - offen · Bearbeiter: @Lyynix · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-05
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 
