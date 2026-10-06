@@ -3183,13 +3183,11 @@ function suggestionsPanel() {
     name.addEventListener("click", () => openItemWindow(item));
     const dice = probeDice(item.probe, item.name);
     dice.classList.add("fav-chip-roll");
-    name.classList.add("suggest-name");
     return el("div", { class: "fav-card suggest-card" + (i === 0 ? " suggest-requested" : "") }, [
-      name,
+      el("span", { class: "suggest-name" }, [name, favStar(item)]),
       el("span", { class: "fav-card-value", title: "Fertigkeitswert" }, String(item.fw)),
       el("small", { class: "suggest-reason" }, SUGGESTION_REASONS[i]),
       el("span", { class: "fav-card-roll" }, [dice]),
-      favStar(item),
     ]);
   });
   return el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Vorschläge"), el("div", { class: "suggest-grid" }, cards)]);

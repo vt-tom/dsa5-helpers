@@ -201,7 +201,7 @@ test('favorites for equipment and special abilities (#30): stars on inventory ro
  for(const row of rows)assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',row.children).length,1);
  assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-chip-fav')).length,2);
  const consume=elements(html,el=>el.attribs?.['data-action']==='dsa5hConsume');assert.equal(consume.length,1);
- const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name')&&!String(el.parent?.attribs?.class??'').includes('dsa5h-suggest-card'));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
+ const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name')&&!(function inSuggest(n){return !!n&&(String(n.attribs?.class??'').includes('dsa5h-suggest-card')||inSuggest(n.parent));})(el));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
  let consumed;sheet.consumeItem=async i=>{consumed=i;};sheet._getItemId=()=>'potion';await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hConsume.call(sheet,{},{});assert.equal(consumed,potion);
 });
 test('aggregated tests can be added in play mode',async()=>{
