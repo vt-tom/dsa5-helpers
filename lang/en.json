@@ -145,6 +145,13 @@
         "Name": "Skill suggestions on the cover page",
         "Hint": "How many skills the character sheet suggests above the favorites (requested checks, frequently rolled skills, good odds, etc.). \"Off\" hides the suggestions. Applies to you only.",
         "Off": "Off"
+      },
+      "DiceHover": {
+        "Name": "Dice hover effect",
+        "Hint": "How much skill and attribute dice on the character sheet grow when you hover over them. Applies to you only.",
+        "subtle": "Subtle",
+        "strong": "Pronounced",
+        "off": "Off"
       }
     },
     "Changelog": {

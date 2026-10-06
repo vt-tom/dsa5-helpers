@@ -24,6 +24,14 @@ function findTraditionIcon(text, names, folder) {
 }
 
 Hooks.once('init', async () => {
+  // Hover-Effekt der Würfel (Nutzerwunsch 2026-10-06): Stärke des Zooms je Benutzer, wirkt über
+  // body[data-dsa5h-dice-hover] auf die CSS-Variablen --zoom-* (sofort, ohne Neuzeichnen).
+  game.settings.register('dsa5-helpers', 'diceHover', {
+    name: 'DSA5HELPERS.Settings.DiceHover.Name', hint: 'DSA5HELPERS.Settings.DiceHover.Hint', scope: 'client', config: true, type: String, default: 'subtle',
+    choices: { subtle: 'DSA5HELPERS.Settings.DiceHover.subtle', strong: 'DSA5HELPERS.Settings.DiceHover.strong', off: 'DSA5HELPERS.Settings.DiceHover.off' },
+    onChange: value => { document.body.dataset.dsa5hDiceHover = value; },
+  });
+  document.body.dataset.dsa5hDiceHover = game.settings.get('dsa5-helpers', 'diceHover');
   game.settings.register('dsa5-helpers', 'theme', { scope: 'client', config: false, type: String, default: 'light', choices: { light: 'Light', dark: 'Dark' } });
   // Standard-Bogen für Helden (Issue #13): nur der Foundry-Weg über makeDefault — eine ausdrückliche Wahl am Akteur
   // oder unter „Standard-Bögen konfigurieren“ hat weiter Vorrang (Nutzerentscheidung 2026-09-30).

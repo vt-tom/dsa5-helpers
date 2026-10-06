@@ -3328,6 +3328,18 @@ function renderAttrOverlay() {
   });
 }
 
+// Hover-Effekt der Würfel (Benutzer-Einstellung diceHover im Modul): setzt body[data-dsa5h-dice-hover] wie dort.
+function initDiceHoverToggle() {
+  const btn = document.getElementById("diceHoverToggle");
+  const steps = [["subtle", "Dezent"], ["strong", "Deutlich"], ["off", "Aus"]];
+  let i = 0;
+  btn.addEventListener("click", () => {
+    i = (i + 1) % steps.length;
+    document.body.dataset.dsa5hDiceHover = steps[i][0];
+    btn.textContent = `Würfel-Hover: ${steps[i][1]}`;
+  });
+}
+
 function initThemeToggle() {
   const sheet = document.querySelector(".sheet");
   const btn = document.getElementById("themeToggle");
@@ -3466,6 +3478,7 @@ setTab(currentTab);
 initHeadBadges();
 renderHeader();
 initThemeToggle();
+initDiceHoverToggle();
 initModeSwitch();
 initOnlyLepToggle();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));

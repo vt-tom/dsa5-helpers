@@ -145,6 +145,13 @@
         "Name": "Talent-Vorschläge auf dem Titelblatt",
         "Hint": "Wie viele Talente der Heldenbogen über den Favoriten vorschlägt (angefragte Proben, oft gewürfelte Talente, gute Erfolgschance usw.). „Aus“ blendet die Vorschläge aus. Gilt nur für dich.",
         "Off": "Aus"
+      },
+      "DiceHover": {
+        "Name": "Hover-Effekt der Würfel",
+        "Hint": "Wie stark Proben- und Eigenschaftswürfel im Heldenbogen beim Darüberfahren vergrößert werden. Gilt nur für dich.",
+        "subtle": "Dezent",
+        "strong": "Deutlich",
+        "off": "Aus"
       }
     },
     "Changelog": {
