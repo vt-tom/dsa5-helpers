@@ -834,7 +834,7 @@
 }
 
 .dsa5-helpers-sheet .dsa5h-attr-die-mini:focus-visible {
-  transform: scale(1.6);
+  transform: scale(1.2);
   z-index: 6;
 }
 
@@ -876,7 +876,7 @@
 
 @media (hover: hover) {
   .dsa5-helpers-sheet .dsa5h-attr-die-mini:hover {
-    transform: scale(1.6);
+    transform: scale(1.2);
     z-index: 6;
   }
 }
@@ -1421,8 +1421,8 @@
 }
 
 /* Einheitlicher Würfel-Zoom wie bei den kleinen Eigenschaftswürfeln (transform → keine Nachbarn verschoben,
-   GitHub-Issue #2); eine 3W20-Probe zoomt als ganze Gruppe. 1,2× statt 1,6× (Rückmeldung 2026-10-06: zu stark, von
-   zwei Gestaltern bestätigt). */
+   GitHub-Issue #2); eine 3W20-Probe zoomt als ganze Gruppe. 1,1× statt 1,6×, Eigenschaftswürfel 1,2× (Rückmeldung
+   2026-10-06: zu stark, von zwei Gestaltern bestätigt). */
 .dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-skill-probe, .dsa5h-combat-die, .dsa5h-fav-card .dsa5h-die-attack) {
   position: relative;
   transition: transform .15s ease;
@@ -1430,7 +1430,7 @@
 }
 
 .dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-skill-probe, .dsa5h-combat-die, .dsa5h-fav-card .dsa5h-die-attack):focus-visible {
-  transform: scale(1.2);
+  transform: scale(1.1);
   z-index: 6;
 }
 
@@ -1517,7 +1517,7 @@
 
 @media (hover: hover) {
   .dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-skill-probe, .dsa5h-combat-die, .dsa5h-fav-card .dsa5h-die-attack):hover {
-    transform: scale(1.2);
+    transform: scale(1.1);
     z-index: 6;
   }
 
@@ -2318,7 +2318,7 @@
 }
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-attr-roll:focus-visible .dsa5h-attr-die {
-  transform: scale(1.3);
+  transform: scale(1.2);
 }
 
 .dsa5-helpers-sheet .dsa5h-attribute-edit {
@@ -2349,7 +2349,7 @@
   }
 
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-attr-roll:hover .dsa5h-attr-die {
-    transform: scale(1.3);
+    transform: scale(1.2);
   }
 }
 

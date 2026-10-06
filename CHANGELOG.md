@@ -11,7 +11,7 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 ### Geändert
 
-- Probenwürfel (Talente, Zauber, Liturgien, Kampftechniken, Waffen-Favoriten) zoomen beim Darüberfahren deutlich weniger stark (1,2× statt 1,6×).
+- Würfel zoomen beim Darüberfahren deutlich weniger stark: Probenwürfel (Talente, Zauber, Liturgien, Kampftechniken, Waffen-Favoriten) 1,1× statt 1,6×, Eigenschaftswürfel im Kopf und im Reiter Eigenschaften 1,2×.
 
 ### Behoben
 
