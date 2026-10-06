@@ -6,6 +6,7 @@ import { getDiceStatsApp, openDiceStats, initDiceStatsLiveUpdate } from './apps/
 import { registerHouseRules } from './house-rules/rules.js';
 import { getHouseRulesApp, openHouseRules } from './apps/house-rules.js';
 import { initSheetSwitcher } from './sheet-switcher.js';
+import { initSkillSuggestions } from './skill-suggestions/tracking.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -40,6 +41,8 @@ Hooks.once('init', async () => {
   game.modules.get('dsa5-helpers').api = { ...(game.modules.get('dsa5-helpers').api ?? {}), openDiceStats, openHouseRules };
   // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
   initSheetSwitcher();
+  // Talent-Vorschläge auf dem Titelblatt: Nutzung/Steigerungen je Held zählen, bei Probenanfragen neu zeichnen.
+  initSkillSuggestions();
   game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
@@ -87,6 +90,7 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/specs.hbs",
   "modules/dsa5-helpers/templates/actors/parts/spell-list.hbs",
   "modules/dsa5-helpers/templates/actors/parts/status.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/suggestions.hbs",
   "modules/dsa5-helpers/templates/actors/parts/tradition-items.hbs",
   "modules/dsa5-helpers/templates/actors/parts/weapon-short.hbs",
   "systems/dsa5/templates/actors/companions/actor-companion.hbs",

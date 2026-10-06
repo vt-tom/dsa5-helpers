@@ -57,8 +57,9 @@ let Sheet;
 // data:-URLs, weil die Modul-.js hier sonst als CommonJS gälten; der eine relative Import wird mit ersetzt.
 const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
 // Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
+function suggestionsUrl(){return dataUrl(read('scripts/skill-suggestions/context.js').replace("'./score.js'",JSON.stringify(dataUrl(read('scripts/skill-suggestions/score.js')))));}
 function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))));}
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())))));return Sheet;}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../skill-suggestions/context.js'",JSON.stringify(suggestionsUrl())).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
@@ -200,7 +201,7 @@ test('favorites for equipment and special abilities (#30): stars on inventory ro
  for(const row of rows)assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',row.children).length,1);
  assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-chip-fav')).length,2);
  const consume=elements(html,el=>el.attribs?.['data-action']==='dsa5hConsume');assert.equal(consume.length,1);
- const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name'));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
+ const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name')&&!String(el.parent?.attribs?.class??'').includes('dsa5h-suggest-card'));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
  let consumed;sheet.consumeItem=async i=>{consumed=i;};sheet._getItemId=()=>'potion';await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hConsume.call(sheet,{},{});assert.equal(consumed,potion);
 });
 test('aggregated tests can be added in play mode',async()=>{
@@ -670,4 +671,45 @@ test('Fokus in Eingabefeldern bleibt nach dem Neuzeichnen erhalten (Tab durch No
  sheet._restoreFocus(key);assert(focused,'neues Feld fokussiert');assert.deepEqual(range,[3,3],'Cursorposition übernommen');
  const src=read('scripts/sheets/dsa5-helpers-character-sheet.js');assert(src.indexOf('this._applyCurrentTab();',src.indexOf('async _onRender'))<src.indexOf('this._restoreFocus(this._pendingFocus)'),'erst Reiter sichtbar machen, dann fokussieren');
  global.document=prevDoc;
+});
+
+// Talent-Vorschläge (2026-10-06): Bewertung ohne Foundry, Anfragen aus dem Chat, Karten auf dem Titelblatt.
+const suggestionModules=async()=>{const score=await import(dataUrl(read('scripts/skill-suggestions/score.js')));const context=await import(suggestionsUrl());return {score,context};};
+test('Vorschläge: Erfolgschance der 3W20-Probe exakt, inkl. Doppel-1 und Doppel-20',async()=>{
+ const {score}=await suggestionModules();
+ assert.equal(score.successChance([20,20,20],0),1-(1+3*19)/8000,'nur zwei/drei Zwanzigen misslingen');
+ const low=score.successChance([1,1,1],0);assert.equal(low,(1+3*19)/8000,'nur zwei/drei Einsen gelingen');
+ assert(score.successChance([14,14,14],10)>score.successChance([11,11,11],10));
+ assert(score.successChance([12,12,12],5,2)>score.successChance([12,12,12],5),'Erleichterung hebt die Chance');
+ const now=Date.now(),day=86400000;assert.equal(score.decay(4,now-14*day,now,14),2);
+ const bumped=score.bumpUsage({s:2,t:now-14*day},now);assert.equal(bumped.s,2);assert.equal(bumped.t,now);
+});
+test('Vorschläge: Anfragen vorn, Favoriten raus, Nutzung/Spezialist/Kampf/Steigerung zählen, FW 0 nur bei Bedarf',async()=>{
+ const {score}=await suggestionModules();const now=Date.now();
+ const sk=(id,fw,a=12)=>({id,name:id,fw,attributes:[a,a,a]});
+ const skills=[sk('Klettern',6),sk('Sinnesschärfe',8),sk('Zechen',3),sk('Reiten',4),sk('Tanzen',0,16),sk('Schwimmen',2),sk('Kraftakt',5),sk('Fliegen',0),sk('Lesen',10),sk('Malen',1)];
+ const ranked=score.rankSuggestions({skills,now,requests:{Fliegen:{messageId:'m1',modifier:-2}},usage:{Zechen:{s:6,t:now}},advanced:{Malen:now},othersBest:{Reiten:2},inCombat:true,combatSkills:new Set(['Kraftakt']),classicSkills:new Set(['Sinnesschärfe']),favorites:new Set(['Lesen'])});
+ assert.equal(ranked[0].id,'Fliegen');assert.equal(ranked[0].reason,'requested');assert.equal(ranked[0].messageId,'m1');assert.equal(ranked[0].modifier,-2);
+ assert.equal(ranked.length,6);assert(!ranked.some(r=>r.id==='Lesen'),'Favoriten fallen heraus');assert(!ranked.some(r=>r.id==='Tanzen'),'FW 0 ohne Nutzung fällt heraus');
+ const reason=id=>ranked.find(r=>r.id===id)?.reason;
+ assert.equal(reason('Zechen'),'usage');assert.equal(reason('Reiten'),'specialist');assert.equal(reason('Kraftakt'),'combat');assert.equal(reason('Malen'),'advanced');
+});
+test('Vorschläge: offene Anfragen und @Rq-Links aus dem Chat',async()=>{
+ const {context}=await suggestionModules();const now=Date.now();
+ assert.deepEqual(context.parseRequestLink('Klettern -1'),{name:'Klettern',modifier:-1});assert.deepEqual(context.parseRequestLink('Bekehren & Überzeugen'),{name:'Bekehren & Überzeugen',modifier:0});
+ const req=(id,status,extra={})=>({id,timestamp:now,flags:{dsa5:{rollRequest:{category:'skill',name:'Klettern',modifier:1,finalized:false,recipients:[{actorId:'a1',status}],...extra}}}});
+ const {requests,mentions}=context.chatRequests({id:'a1'},[req('m1','pending'),req('m2','success',{name:'Reiten'}),req('m3','pending',{name:'Zechen',finalized:true}),{id:'m4',timestamp:now,content:'Bitte @Rq[Schwimmen +2] würfeln'},{id:'m5',timestamp:now-20*60000,content:'@Rq[Tanzen]'}],now);
+ assert.deepEqual(requests,{Klettern:{messageId:'m1',modifier:1}});assert.deepEqual(mentions,{Schwimmen:{modifier:2}});
+});
+test('Vorschläge: sechs Karten im Titelblatt, würfelbar wie Favoriten, offene Anfrage über den RollRequestService',async()=>{
+ await loadSheet();global.game={i18n:{localize},settings:{get:()=> 'light'},user:{targets:{first:()=>undefined}}};
+ const {sheet,actor}=await prepare();
+ assert.equal((await sheet._prepareContext({})).dsa5h.suggestions.length,0,'einziges Talent ist Favorit');
+ actor.flags.favorites=['weapon'];const context=await sheet._prepareContext({});const list=context.dsa5h.suggestions;assert(context.owner);
+ assert(list.length>0&&list.length<=6);for(const e of list)assert(e.reasonLabel&&!e.reasonLabel.startsWith('DSA5HELPERS'),e.reasonLabel);
+ const html=render(context);const cover=elements(html,el=>el.attribs?.['data-tab-panel']==='cover')[0];
+ const cards=dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-suggest-card'),cover.children);assert.equal(cards.length,list.length);
+ assert(dom.findAll(el=>el.attribs?.['data-action']==='skillSelect',cards).length===list.length);
+ const calls=[];global.game.dsa5={queries:{RollRequestService:{triggerRollFromCard:(m,a)=>calls.push([m,a])}}};sheet.actor.isOwner=true;
+ await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hAnswerRequest.call(sheet,{}, {dataset:{which:'msg1'}});assert.deepEqual(calls,[['msg1',sheet.actor.id]]);
 });

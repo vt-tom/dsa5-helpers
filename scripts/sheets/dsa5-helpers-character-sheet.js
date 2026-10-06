@@ -3,6 +3,7 @@ const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { isRuleActive, woundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
+import { buildSuggestions } from '../skill-suggestions/context.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -49,6 +50,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       rollDisease: this._rollDisease,
       dsa5hWoundCheck: this._woundCheck,
       dsa5hHelpAction: this._helpAction,
+      dsa5hAnswerRequest: this._answerRequest,
     },
     ownerActions: {
       schipUpdate: this._schipUdate,
@@ -272,6 +274,14 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { label: 'DSA5HELPERS.Tabs.inventory', equipment: true, items: equipment },
       { label: 'DSA5HELPERS.SpecialAbilities', special: true, items: Object.values(specs).flatMap(groups => groups.flatMap(group => group.items)) },
     ].map(group => ({ ...group, items: unique(group.items.filter(item => favorites[item._id])) })).filter(group => group.items.length);
+    // Talent-Vorschläge (Titelblatt, parts/suggestions.hbs): nur für Owner, die letzte Liste wirkt als leichter Bonus,
+    // damit Karten nicht bei jedem Neuzeichnen springen.
+    const suggestions = !limited && context.owner ? buildSuggestions(this.actor, skillGroups.flatMap(group => group.items), favorites, this._suggestionIds) : [];
+    this._suggestionIds = suggestions.filter(entry => !entry.messageId).map(entry => entry.id);
+    for (const entry of suggestions) {
+      const modifier = entry.modifier ? ` · ${entry.modifier > 0 ? '+' : '−'}${Math.abs(entry.modifier)}` : '';
+      entry.reasonLabel = localize('DSA5HELPERS.Suggestions.Reason.' + entry.reason) + modifier;
+    }
     // Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen als Unter-Tabs statt vier gestapelter Volltext-Panels
     // (Nutzer-Feedback 2026-09-19) — Sichtbarkeit der letzten beiden Reiter folgt denselben Bedingungen wie bisher
     // die Panels selbst ({{#if owner}}/{{#if isGM}} in notes.hbs).
@@ -295,7 +305,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     ];
     const status = this.actor.system.status;
     context.dsa5h = {
-      limited, tabs, subnav, skillGroups, favorites, favoriteGroups, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
+      limited, tabs, subnav, skillGroups, favorites, favoriteGroups, suggestions, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
       currentTab: this._currentTab,
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
       editMode: this.isEditable && !prepare.sheetLocked,
@@ -1072,6 +1082,15 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
 
   // Hausregel Wundeinschätzung (Knigge): ohne markiertes Ziel nur ein Hinweis direkt am Knopf, sonst der normale
   // Probendialog des Systems und danach der Ablauf aus scripts/house-rules/wound-check.js.
+  // Talent-Vorschlag „Angefragt“: würfelt über den RollRequestService des Systems wie der Knopf auf der Chatkarte,
+  // damit die SL das Ergebnis in ihrer Anfrage sieht (data-which = ID der Chatnachricht).
+  static async _answerRequest(_event, target) {
+    if (!this.actor.isOwner) return;
+    const service = game.dsa5?.queries?.RollRequestService;
+    if (!service || !target.dataset.which) return;
+    await service.triggerRollFromCard(target.dataset.which, this.actor.id);
+  }
+
   static async _woundCheck(_event, target) {
     if (!game.user.targets.first()?.actor) {
       game.tooltip.activate(target, { text: game.i18n.localize('DSA5HELPERS.HouseRules.woundCheck.PickTarget'), direction: 'UP' });

@@ -18,6 +18,7 @@ Angelegt 2026-10-05 (Wunsch VTTom). Enthalten bisher: Bogen-Umschalter mit Vorsc
 ## Live in Foundry prüfen
 
 - **Bogen-Umschalter** (0.5.1): Knopf ⇄ in der Titelleiste von Helfer- und Systembogen, Menü-Einträge (Systemstandard, Helfer-Heldenbogen, ggf. weitere), Wechsel als Spieler, neuer Bogen an derselben Stelle, Menü-Position an der Plakette. Vorschau beim Darüberfahren: Wartezeit beim Aufbau, kein Aufblitzen beim Wechsel, keine liegengebliebenen unsichtbaren Fenster (z. B. `foundry.applications.instances` nach dem Schließen des Menüs), keine ungewollten Akteur-Updates durch die Vorschau-Instanzen.
+- **Talent-Vorschläge** (Branch `feature/skill-suggestions`): Anfrage der SL erscheint sofort oben und verschwindet nach dem Würfeln, Würfeln aus dem Vorschlag landet in der SL-Karte; Zählen nach Proben (kein Doppelzählen bei Schips), Steigerung, `@Rq`-Link im Chat; Gewichte (`WEIGHTS` in `score.js`) nach den ersten Spielabenden nachschärfen; Breite der Karten bei schmalem Fenster.
 - **#7 Touch:** erst mit dem Mobil-UI (`feature/mobile`).
 
 ## Offene Entscheidungen

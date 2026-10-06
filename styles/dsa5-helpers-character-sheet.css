@@ -2192,6 +2192,60 @@
   }
 }
 
+/* --- Vorschläge --- */
+
+/* Talent-Vorschläge über den Favoriten (parts/suggestions.hbs, Nutzerwunsch 2026-10-06): genau zwei Spalten, Karten
+   zweizeilig: Name | FW, darunter Grund | Probe — ohne Bild und Stern, sonst bliebe dem Namen bei zwei Spalten kaum
+   Platz. Angefragte Proben mit Akzentkante. */
+.dsa5-helpers-sheet .dsa5h-suggest-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  padding: 10px 11px;
+}
+
+.dsa5-helpers-sheet .dsa5h-fav-card.dsa5h-suggest-card {
+  /* Name reicht über die Würfelspalte bis zum FW; nur der Grund teilt sich die Zeile mit den Würfeln. */
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "name name value" "reason roll roll";
+  gap: 2px 6px;
+  padding: 4px 6px 4px 8px;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-suggest-name {
+  grid-area: name;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-fav-card-value {
+  grid-area: value;
+  justify-self: end;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-suggest-reason {
+  grid-area: reason;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-fav-card-roll {
+  grid-area: roll;
+  justify-content: end;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card.dsa5h-suggest-requested {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-reason {
+  font-size: var(--fs-meta);
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-requested .dsa5h-suggest-reason {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 /* ==========================================================================
    8. Eigenschaften
    ========================================================================== */

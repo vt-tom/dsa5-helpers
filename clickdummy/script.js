@@ -3171,8 +3171,35 @@ function leaveCoverSidebar() {
   if (portrait.parentElement !== headInner) headInner.prepend(portrait);
 }
 
+// Talent-Vorschläge (Nutzerwunsch 2026-10-06): im Modul berechnet scripts/skill-suggestions/ die Auswahl (offene
+// Probenanfragen der SL, Nutzung, Erfolgschance, Spezialist, Kampf, Steigerung, Klassiker). Der Click-Dummy zeigt nur
+// die Darstellung: sechs Nicht-Favoriten mit dem höchsten FW und je einem Beispiel-Grund, die erste als Anfrage.
+const SUGGESTION_REASONS = ["Angefragt · −1", "Oft gewürfelt", "Bester der Gruppe", "Kürzlich gesteigert", "Gute Erfolgschance", "Häufige Probe"];
+function suggestionsPanel() {
+  const picks = SKILL_GROUPS.flatMap((g) => g.items).filter((s) => !s.fav && s.fw > 0).sort((a, b) => b.fw - a.fw).slice(0, 6);
+  if (!picks.length) return null;
+  const cards = picks.map((item, i) => {
+    const name = el("button", { type: "button", class: "fav-card-name", title: `${item.name} öffnen` }, item.name);
+    name.addEventListener("click", () => openItemWindow(item));
+    const dice = probeDice(item.probe, item.name);
+    dice.classList.add("fav-chip-roll");
+    name.classList.add("suggest-name");
+    return el("div", { class: "fav-card suggest-card" + (i === 0 ? " suggest-requested" : "") }, [
+      name,
+      el("span", { class: "fav-card-value", title: "Fertigkeitswert" }, String(item.fw)),
+      el("small", { class: "suggest-reason" }, SUGGESTION_REASONS[i]),
+      el("span", { class: "fav-card-roll" }, [dice]),
+    ]);
+  });
+  return el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Vorschläge"), el("div", { class: "suggest-grid" }, cards)]);
+}
+
 function renderCover() {
-  return favoritesPanel();
+  const frag = document.createDocumentFragment();
+  const suggestions = suggestionsPanel();
+  if (suggestions) frag.appendChild(suggestions);
+  frag.appendChild(favoritesPanel());
+  return frag;
 }
 
 // Steigerungsplaner (GitHub-Issue #17): im Modul ein eigener Reiter, wenn „Lyynix: DSA5 - Steigerungsplaner“ aktiv

@@ -339,6 +339,19 @@
     "NoConditions": "No conditions.",
     "ConditionsToStatus": "All conditions and effects → Status",
     "NoPersonalDetails": "No personal details yet.",
-    "EditInNotes": "Edit → Notes"
+    "EditInNotes": "Edit → Notes",
+    "Suggestions": {
+      "Title": "Suggestions",
+      "Reason": {
+        "requested": "Requested",
+        "mention": "Mentioned in chat",
+        "usage": "Rolled often",
+        "specialist": "Best in the group",
+        "combat": "Useful in combat",
+        "advanced": "Recently improved",
+        "chance": "Good odds",
+        "classic": "Common check"
+      }
+    }
   }
 }
