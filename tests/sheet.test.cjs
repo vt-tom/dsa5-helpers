@@ -714,3 +714,13 @@ test('Vorschläge: sechs Karten im Titelblatt, würfelbar wie Favoriten, offene 
  const calls=[];global.game.dsa5={queries:{RollRequestService:{triggerRollFromCard:(m,a)=>calls.push([m,a])}}};sheet.actor.isOwner=true;
  await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hAnswerRequest.call(sheet,{}, {dataset:{which:'msg1'}});assert.deepEqual(calls,[['msg1',sheet.actor.id]]);
 });
+test('Vorschläge: Anzahl aus der Benutzer-Einstellung (0 = aus, 2–12), Anfragen bleiben bei kleiner Anzahl vorn',async()=>{
+ const {score}=await suggestionModules();const skills=['A','B','C','D','E'].map(n=>({id:n,name:n,fw:8,attributes:[12,12,12]}));
+ assert.equal(score.rankSuggestions({skills,count:2}).length,2);
+ const r=score.rankSuggestions({skills,count:2,requests:{E:{messageId:'m',modifier:0}}});assert.equal(r[0].id,'E');assert.equal(r.length,2);
+ await loadSheet();const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+ const withSetting=async value=>{global.game={i18n:{localize},settings:{get:(_m,key)=>key==='skillSuggestions'?value:'light'},user:{targets:{first:()=>undefined}}};return (await sheet._prepareContext({})).dsa5h.suggestions;};
+ assert.equal((await withSetting(0)).length,0,'aus');
+ const ctx=await sheet._prepareContext({});assert(!render(ctx).includes('dsa5h-suggest-grid'));
+ assert((await withSetting(2)).length<=2);assert((await withSetting(12)).length>=1);
+});

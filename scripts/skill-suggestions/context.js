@@ -6,6 +6,16 @@ import { rankSuggestions } from './score.js';
 const MODULE_ID = 'dsa5-helpers';
 export const MENTION_WINDOW_MS = 10 * 60 * 1000;
 const RECENT_MESSAGES = 50;
+
+// Anzahl der Vorschläge je Benutzer (Nutzerwunsch 2026-10-06): 0 = aus, sonst 2–12 in Zweierschritten, Standard 6.
+export const COUNT_SETTING = 'skillSuggestions';
+export const COUNT_CHOICES = [0, 2, 4, 6, 8, 10, 12];
+
+/** Anzahl laut Einstellung; ohne gültigen Wert (z. B. im Test-Harness) der Standard 6. */
+export function suggestionCount() {
+  const value = Number(game.settings.get(MODULE_ID, COUNT_SETTING));
+  return COUNT_CHOICES.includes(value) ? value : 6;
+}
 // Groß-/Kleinschreibung egal: „@RQ[…]“ macht das System zwar nicht zum Knopf, gemeint ist trotzdem eine Anfrage.
 const RQ_PATTERN = /@Rq\[([^\]]+)\]/gi;
 const ENRICHED_PATTERN = /<a\b[^>]*class="[^"]*roll-button[^"]*request-roll[^"]*"[^>]*>/gi;
@@ -85,8 +95,9 @@ function inCombat(actor) {
  * @param {object[]} skills   Talent-Items, wie der Bogen sie anzeigt (prepare.allSkillsLeft/Right)
  * @param {Object<string,boolean>} favorites  Item-IDs der Favoriten
  * @param {string[]} previous  Item-IDs der letzten Liste
+ * @param {number} count       Anzahl laut Benutzer-Einstellung skillSuggestions
  */
-export function buildSuggestions(actor, skills, favorites, previous) {
+export function buildSuggestions(actor, skills, favorites, previous, count) {
   const characteristics = actor.system.characteristics ?? {};
   const messages = (game.messages?.contents ?? []).slice(-RECENT_MESSAGES);
   const { requests, mentions } = chatRequests(actor, messages);
@@ -107,6 +118,7 @@ export function buildSuggestions(actor, skills, favorites, previous) {
     classicSkills: localizedNames(CLASSIC_IDS),
     favorites: new Set(Object.keys(favorites ?? {})),
     previous,
+    count,
   });
   const byId = new Map(skills.map(item => [item._id ?? item.id, item]));
   return ranked.map(entry => ({ ...entry, item: byId.get(entry.id) })).filter(entry => entry.item);

@@ -140,6 +140,11 @@
       "DefaultSheet": {
         "Name": "Default sheet for heroes",
         "Hint": "Makes the DSA5 Helpers sheet the default for all heroes. Heroes with an explicitly chosen sheet keep it. Foundry reloads after changing this."
+      },
+      "SkillSuggestions": {
+        "Name": "Skill suggestions on the cover page",
+        "Hint": "How many skills the character sheet suggests above the favorites (requested checks, frequently rolled skills, good odds, etc.). \"Off\" hides the suggestions. Applies to you only.",
+        "Off": "Off"
       }
     },
     "Changelog": {

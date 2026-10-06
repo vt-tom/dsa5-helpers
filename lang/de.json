@@ -140,6 +140,11 @@
       "DefaultSheet": {
         "Name": "Standard-Bogen für Helden",
         "Hint": "Macht den DSA5-Helpers-Bogen zum Standard für alle Helden. Helden, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Nach dem Ändern wird Foundry neu geladen."
+      },
+      "SkillSuggestions": {
+        "Name": "Talent-Vorschläge auf dem Titelblatt",
+        "Hint": "Wie viele Talente der Heldenbogen über den Favoriten vorschlägt (angefragte Proben, oft gewürfelte Talente, gute Erfolgschance usw.). „Aus“ blendet die Vorschläge aus. Gilt nur für dich.",
+        "Off": "Aus"
       }
     },
     "Changelog": {

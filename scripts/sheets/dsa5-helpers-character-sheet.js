@@ -3,7 +3,7 @@ const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { isRuleActive, woundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
-import { buildSuggestions } from '../skill-suggestions/context.js';
+import { buildSuggestions, suggestionCount } from '../skill-suggestions/context.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -276,7 +276,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     ].map(group => ({ ...group, items: unique(group.items.filter(item => favorites[item._id])) })).filter(group => group.items.length);
     // Talent-Vorschläge (Titelblatt, parts/suggestions.hbs): nur für Owner, die letzte Liste wirkt als leichter Bonus,
     // damit Karten nicht bei jedem Neuzeichnen springen.
-    const suggestions = !limited && context.owner ? buildSuggestions(this.actor, skillGroups.flatMap(group => group.items), favorites, this._suggestionIds) : [];
+    // Anzahl je Benutzer in den Moduleinstellungen, 0 = Panel aus (dann wird auch nichts berechnet).
+    const count = !limited && context.owner ? suggestionCount() : 0;
+    const suggestions = count ? buildSuggestions(this.actor, skillGroups.flatMap(group => group.items), favorites, this._suggestionIds, count) : [];
     this._suggestionIds = suggestions.filter(entry => !entry.messageId).map(entry => entry.id);
     for (const entry of suggestions) {
       const modifier = entry.modifier ? ` · ${entry.modifier > 0 ? '+' : '−'}${Math.abs(entry.modifier)}` : '';
