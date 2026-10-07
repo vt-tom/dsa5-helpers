@@ -333,7 +333,15 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Reiter „Persönliche Daten“ in der Titelblatt-Leiste (Variante G, Issues #27/#31): nur ausgefüllte Felder,
       // dieselben Felder und Beschriftungen wie unter Notizen › Persönliche Daten (notes.hbs).
       personalDetails: [['Gender', 'gender'], ['Family', 'family'], ['Age', 'age'], ['Height', 'height'], ['Weight', 'weight'], ['Home', 'Home'], ['Socialstate', 'socialstate'], ['Hair_color', 'haircolor'], ['Eye_color', 'eyecolor'], ['Distinguishing_mark', 'distinguishingmark']]
-        .map(([label, key]) => ({ label: localize(label), value: String(this.actor.system.details?.[key]?.value ?? '').trim() }))
+        // Auswahlfelder wie der Sozialstatus speichert das System als Zahl (0 = „-“, 1–5 = Unfrei … Hochadel) —
+        // angezeigt wird wie im Systembogen der Name aus den Choices des Schemas; 0 gilt als nicht ausgefüllt.
+        .map(([label, key]) => {
+          const raw = this.actor.system.details?.[key]?.value;
+          let choices = this.actor.system.schema?.getField?.(`details.${key}.value`)?.choices;
+          if (typeof choices === 'function') choices = choices();
+          const value = choices ? (raw ? choices[raw] ?? '' : '') : String(raw ?? '').trim();
+          return { label: localize(label), value };
+        })
         .filter(field => field.value).map(field => ({ ...field, value: localize(field.value) })),
       happyTalentsExpanded: this._happyTalentsExpanded,
       // Hausregel Wundeinschätzung: Hinweis am Talent Heilkunde Wunden, nur wenn die SL die Regel eingeschaltet hat.

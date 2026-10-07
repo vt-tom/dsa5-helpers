@@ -612,6 +612,11 @@ test('Titelblatt-Leiste Variante G (#27/#31): Reiter Zustände | Persönliche Da
  const {sheet,actor}=await prepare();actor.system.details.gender={value:'Weiblich'};actor.system.details.Home={value:'  '};actor.system.details.haircolor={value:'Silberblond'};
  sheet.context.conditions=Array.from({length:6},(_,i)=>({_id:'c'+i,name:'CONDITION.inpain',value:1,img:'x.svg',editable:4,manual:1}));
  const context=await sheet._prepareContext({});assert.deepEqual(context.dsa5h.personalDetails.map(f=>f.value),['Weiblich','Silberblond']);
+ // Sozialstatus: Zahl aus den Choices des Schemas übersetzt (wie im Systembogen), 0 = „-“ = nicht ausgefüllt.
+ const social=field=>{actor.system.details.socialstate={value:field};actor.system.schema={getField:path=>path==='details.socialstate.value'?{choices:{0:'-',1:'SOCIAL_CLASS.slave',2:'SOCIAL_CLASS.freeman'}}:undefined};};
+ social(2);assert.deepEqual((await sheet._prepareContext({})).dsa5h.personalDetails.map(f=>f.value),['Weiblich','Frei','Silberblond']);
+ social(0);assert.deepEqual((await sheet._prepareContext({})).dsa5h.personalDetails.map(f=>f.value),['Weiblich','Silberblond']);
+ delete actor.system.schema;delete actor.system.details.socialstate;
  const html=render(context);const aside=elements(html,el=>el.name==='aside')[0];
  assert.deepEqual(dom.findAll(el=>el.attribs?.role==='tab',aside.children).map(t=>t.attribs['data-side-tab']),['conditions','details']);
  assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-cover-condition'),aside.children).length,6,'alle Zustände, der Inhalt scrollt');

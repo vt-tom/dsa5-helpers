@@ -32,6 +32,10 @@
     "GripMain": "M",
     "GripOff": "O",
     "GripBoth": "B",
+    "SheetSwitcher": {
+      "Label": "Switch sheet",
+      "SystemSheet": "System default"
+    },
     "CompanionTab": {
       "Show": "Show Companions tab",
       "Hide": "Hide Companions tab"
