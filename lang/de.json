@@ -143,7 +143,7 @@
       },
       "SkillSuggestions": {
         "Name": "Talent-Vorschläge auf dem Titelblatt",
-        "Hint": "Wie viele Talente der Heldenbogen über den Favoriten vorschlägt (angefragte Proben, oft gewürfelte Talente, gute Erfolgschance usw.). „Aus“ blendet die Vorschläge aus. Gilt nur für dich.",
+        "Hint": "Wie viele Talente der Heldenbogen über den Favoriten vorschlägt (angefragte Proben, oft gewürfelte Talente, gute Erfolgschance usw.). Gilt für Helden, bei denen du die Anzahl nicht im Bogen (− / + im Titel „Vorschläge“) geändert hast. „Aus“ blendet die Vorschläge überall aus. Gilt nur für dich.",
         "Off": "Aus"
       },
       "DiceHover": {
@@ -364,7 +364,10 @@
         "chance": "Gute Erfolgschance",
         "classic": "Häufige Probe"
       },
-      "RequestedCount": "{count} angefragt"
+      "RequestedCount": "{count} angefragt",
+      "Count": "Anzahl der Vorschläge",
+      "Fewer": "Weniger Vorschläge",
+      "More": "Mehr Vorschläge"
     }
   }
 }

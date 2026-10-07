@@ -2385,15 +2385,71 @@ button.probe-die:focus-visible,
 }
 
 /* Titel als Klappknopf (Rückmeldung 2026-10-07), eingeklappt mit Hinweis auf offene Anfragen. */
-.suggest-toggle {
+.suggest-head {
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.suggest-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
   gap: 8px;
-  width: 100%;
+  min-width: 0;
+  padding: 0;
   border: 0;
+  background: none;
   color: inherit;
-  text-align: left;
+  font: inherit;
   cursor: pointer;
+}
+
+/* Pfeil links, nur der Titel mittig (Rückmeldung 2026-10-07). */
+.suggest-title {
+  flex: 1;
+  text-align: center;
+}
+
+/* Anzahl − n + rechts im Titel, eingeklappt ausgeblendet. */
+.suggest-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'GentiumBasic',Georgia,serif;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.suggest-count[hidden] {
+  display: none;
+}
+
+.suggest-count > span {
+  min-width: 1.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.suggest-count button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1;
+}
+
+.suggest-count button:disabled {
+  opacity: .35;
+  cursor: default;
 }
 
 .suggest-caret {

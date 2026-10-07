@@ -3,7 +3,7 @@ const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { isRuleActive, woundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
-import { buildSuggestions, suggestionCount, suggestionsCollapsed, COLLAPSED_SETTING } from '../skill-suggestions/context.js';
+import { buildSuggestions, suggestionCount, suggestionsCollapsed, COLLAPSED_SETTING, COUNT_FLAG, COUNT_MIN, COUNT_MAX } from '../skill-suggestions/context.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -25,6 +25,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hFavorite: this._toggleFavorite,
       dsa5hToggleHappyTalents: this._toggleHappyTalents,
       dsa5hToggleSuggestions: this._toggleSuggestions,
+      dsa5hSuggestionCount: this._changeSuggestionCount,
       dsa5hOnlyLearned: this._toggleOnlyLearned,
       dsa5hClearTalentSearch: this._clearTalentSearch,
       postItem: this._postItem,
@@ -278,7 +279,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // Talent-Vorschläge (Titelblatt, parts/suggestions.hbs): nur für Owner, die letzte Liste wirkt als leichter Bonus,
     // damit Karten nicht bei jedem Neuzeichnen springen.
     // Anzahl je Benutzer in den Moduleinstellungen, 0 = Panel aus (dann wird auch nichts berechnet).
-    const count = !limited && context.owner ? suggestionCount() : 0;
+    const count = !limited && context.owner ? suggestionCount(this.actor) : 0;
     const suggestions = count ? buildSuggestions(this.actor, skillGroups.flatMap(group => group.items), favorites, this._suggestionIds, count) : [];
     this._suggestionIds = suggestions.filter(entry => !entry.messageId).map(entry => entry.id);
     for (const entry of suggestions) {
@@ -310,6 +311,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     context.dsa5h = {
       limited, tabs, subnav, skillGroups, favorites, favoriteGroups, suggestions,
       suggestionsCollapsed: count ? suggestionsCollapsed() : false,
+      suggestionsCount: count,
+      suggestionsFewer: count > COUNT_MIN,
+      suggestionsMore: count < COUNT_MAX,
       suggestionsRequested: suggestions.filter(entry => entry.messageId).length, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
       currentTab: this._currentTab,
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
@@ -934,6 +938,14 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const caret = target.querySelector('.dsa5h-suggest-caret');
     if (caret) caret.textContent = collapsed ? '▸' : '▾';
     await game.settings.set(MODULE_ID, COLLAPSED_SETTING, collapsed);
+  }
+
+  // Anzahl der Vorschläge im Bogen ändern (− / +, Zweierschritte 2–12): je Benutzer und Held als User-Flag, danach
+  // neu zeichnen — ein User-Flag zeichnet den Bogen nicht von selbst neu.
+  static async _changeSuggestionCount(_event, target) {
+    const next = Math.min(COUNT_MAX, Math.max(COUNT_MIN, suggestionCount(this.actor) + Number(target.dataset.step || 0)));
+    await game.user.setFlag(MODULE_ID, COUNT_FLAG, { [this.actor.id]: next });
+    this.render();
   }
 
   static _toggleHappyTalents() {

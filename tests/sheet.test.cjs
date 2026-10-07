@@ -735,3 +735,17 @@ test('Vorschläge: Titel klappt ein/aus, Zustand aus der Benutzer-Einstellung, e
  assert('hidden' in elements(html2,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-grid'))[0].attribs);
  assert(elements(html2,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-badge')).length===1);
 });
+test('Vorschläge: Anzahl im Bogen per − / + je Benutzer und Held (User-Flag), Einstellung als Standard, „Aus“ schlägt alles',async()=>{
+ await loadSheet();const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+ const user={flags:{},targets:{first:()=>undefined},getFlag(_m,k){return this.flags[k];},async setFlag(_m,k,v){this.flags[k]={...(this.flags[k]??{}),...v};}};
+ let setting=6;global.game={i18n:{localize},settings:{get:(_m,key)=>key==='skillSuggestions'?setting:'light'},user};
+ let ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestionsCount,6);
+ const html=render(ctx);const steps=elements(html,el=>el.attribs?.['data-action']==='dsa5hSuggestionCount');assert.deepEqual(steps.map(b=>b.attribs['data-step']),['-2','2']);
+ let rendered=0;sheet.render=()=>{rendered++;};
+ const handler=Sheet.DEFAULT_OPTIONS.actions.dsa5hSuggestionCount;
+ await handler.call(sheet,{},{dataset:{step:'2'}});assert.deepEqual(user.flags.suggestionCounts,{[actor.id]:8});assert.equal(rendered,1);
+ for(let i=0;i<5;i++)await handler.call(sheet,{},{dataset:{step:'2'}});assert.equal(user.flags.suggestionCounts[actor.id],12,'höchstens 12');
+ ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestionsCount,12);assert.equal(ctx.dsa5h.suggestionsMore,false);
+ for(let i=0;i<8;i++)await handler.call(sheet,{},{dataset:{step:'-2'}});assert.equal(user.flags.suggestionCounts[actor.id],2,'mindestens 2');
+ setting=0;ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestions.length,0,'Aus in der Einstellung schlägt die Wahl im Bogen');
+});

@@ -2225,23 +2225,86 @@ body[data-dsa5h-dice-hover="off"] .dsa5-helpers-sheet {
 
 /* Titel als Klappknopf (Rückmeldung 2026-10-07): sieht aus wie jeder Panel-Titel, ▾/▸ davor, eingeklappt mit Hinweis auf
    offene Anfragen. */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-toggle {
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-head {
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
   gap: 8px;
-  width: 100%;
+  min-width: 0;
   min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
   border-radius: 0;
+  background: none;
   box-shadow: none;
+  color: inherit;
+  font: inherit;
   line-height: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+/* Anzahl − n + rechts im Titel (Rückmeldung 2026-10-07), eingeklappt ausgeblendet. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest.is-collapsed .dsa5h-suggest-count {
+  display: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count > span {
+  min-width: 1.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--hit-sm);
+  height: var(--hit-sm);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count button:disabled {
+  opacity: .35;
+  cursor: default;
 }
 
 .dsa5-helpers-sheet .dsa5h-suggest-caret {
   display: inline-block;
   width: 1em;
   font-size: var(--fs-small);
+}
+
+/* Pfeil bleibt am linken Rand, nur der Titel steht mittig (Rückmeldung 2026-10-07; Foundry zentriert sonst den ganzen
+   Knopfinhalt). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-title {
+  flex: 1;
+  text-align: center;
 }
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-badge {

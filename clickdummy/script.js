@@ -3175,10 +3175,12 @@ function leaveCoverSidebar() {
 // Probenanfragen der SL, Nutzung, Erfolgschance, Spezialist, Kampf, Steigerung, Klassiker). Der Click-Dummy zeigt nur
 // die Darstellung: sechs Nicht-Favoriten mit dem höchsten FW und je einem Beispiel-Grund, die erste als Anfrage.
 // Ein-/ausgeklappt (Rückmeldung 2026-10-07): im Modul je Benutzer als Client-Setting gemerkt, hier in localStorage.
+// Anzahl im Bogen (− / +, 2–12; im Modul je Benutzer und Held als User-Flag, Rückmeldung 2026-10-07).
+let suggestionCountDemo = 6;
 let suggestionsCollapsed = (() => { try { return localStorage.getItem("dsa5h-suggestions-collapsed") === "1"; } catch { return false; } })();
 const SUGGESTION_REASONS = ["Angefragt · −1", "Oft gewürfelt", "Bester der Gruppe", "Kürzlich gesteigert", "Gute Erfolgschance", "Häufige Probe"];
 function suggestionsPanel() {
-  const picks = SKILL_GROUPS.flatMap((g) => g.items).filter((s) => !s.fav && s.fw > 0).sort((a, b) => b.fw - a.fw).slice(0, 6);
+  const picks = SKILL_GROUPS.flatMap((g) => g.items).filter((s) => !s.fav && s.fw > 0).sort((a, b) => b.fw - a.fw).slice(0, suggestionCountDemo);
   if (!picks.length) return null;
   const cards = picks.map((item, i) => {
     const name = el("button", { type: "button", class: "fav-card-name", title: `${item.name} öffnen` }, item.name);
@@ -3188,7 +3190,7 @@ function suggestionsPanel() {
     return el("div", { class: "fav-card suggest-card" + (i === 0 ? " suggest-requested" : "") }, [
       el("span", { class: "suggest-name" }, [name, favStar(item)]),
       el("span", { class: "fav-card-value", title: "Fertigkeitswert" }, String(item.fw)),
-      el("small", { class: "suggest-reason" }, SUGGESTION_REASONS[i]),
+      el("small", { class: "suggest-reason" }, SUGGESTION_REASONS[i] ?? "Gute Erfolgschance"),
       el("span", { class: "fav-card-roll" }, [dice]),
     ]);
   });
@@ -3198,7 +3200,16 @@ function suggestionsPanel() {
   // Eingeklappt: Hinweis auf offene Anfragen (Beispiel: die erste Karte ist angefragt).
   const badge = el("span", { class: "suggest-badge" }, "1 angefragt");
   badge.hidden = !suggestionsCollapsed;
-  const toggle = el("button", { type: "button", class: "panel-title suggest-toggle", "aria-expanded": String(!suggestionsCollapsed) }, [caret, el("span", {}, "Vorschläge"), badge]);
+  const toggle = el("button", { type: "button", class: "suggest-toggle", "aria-expanded": String(!suggestionsCollapsed) }, [caret, el("span", { class: "suggest-title" }, "Vorschläge"), badge]);
+  const stepBtn = (step, label) => {
+    const next = suggestionCountDemo + step;
+    const b = el("button", { type: "button", title: label, "aria-label": label }, step < 0 ? "−" : "+");
+    b.disabled = next < 2 || next > 12;
+    b.addEventListener("click", () => { suggestionCountDemo = next; renderContent(); });
+    return b;
+  };
+  const counter = el("span", { class: "suggest-count", role: "group", "aria-label": "Anzahl der Vorschläge" }, [stepBtn(-2, "Weniger Vorschläge"), el("span", {}, String(suggestionCountDemo)), stepBtn(2, "Mehr Vorschläge")]);
+  counter.hidden = suggestionsCollapsed;
   toggle.addEventListener("click", () => {
     suggestionsCollapsed = !suggestionsCollapsed;
     try { localStorage.setItem("dsa5h-suggestions-collapsed", suggestionsCollapsed ? "1" : "0"); } catch {}
@@ -3206,8 +3217,9 @@ function suggestionsPanel() {
     badge.hidden = !suggestionsCollapsed;
     caret.textContent = suggestionsCollapsed ? "▸" : "▾";
     toggle.setAttribute("aria-expanded", String(!suggestionsCollapsed));
+    counter.hidden = suggestionsCollapsed;
   });
-  return el("div", { class: "panel" }, [toggle, grid]);
+  return el("div", { class: "panel" }, [el("div", { class: "panel-title suggest-head" }, [toggle, counter]), grid]);
 }
 
 function renderCover() {

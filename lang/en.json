@@ -143,7 +143,7 @@
       },
       "SkillSuggestions": {
         "Name": "Skill suggestions on the cover page",
-        "Hint": "How many skills the character sheet suggests above the favorites (requested checks, frequently rolled skills, good odds, etc.). \"Off\" hides the suggestions. Applies to you only.",
+        "Hint": "How many skills the character sheet suggests above the favorites (requested checks, frequently rolled skills, good odds, etc.). Applies to characters where you have not changed the number on the sheet (− / + in the \"Suggestions\" title). \"Off\" hides the suggestions everywhere. Applies to you only.",
         "Off": "Off"
       },
       "DiceHover": {
@@ -364,7 +364,10 @@
         "chance": "Good odds",
         "classic": "Common check"
       },
-      "RequestedCount": "{count} requested"
+      "RequestedCount": "{count} requested",
+      "Count": "Number of suggestions",
+      "Fewer": "Fewer suggestions",
+      "More": "More suggestions"
     }
   }
 }

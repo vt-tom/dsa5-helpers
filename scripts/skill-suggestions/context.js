@@ -19,9 +19,19 @@ export function suggestionsCollapsed() {
   return game.settings.get(MODULE_ID, COLLAPSED_SETTING) === true;
 }
 
-export function suggestionCount() {
-  const value = Number(game.settings.get(MODULE_ID, COUNT_SETTING));
-  return COUNT_CHOICES.includes(value) ? value : 6;
+// Anzahl je Benutzer und Held, im Bogen über − / + (Rückmeldung 2026-10-07): wie viel Platz bleibt, hängt von den
+// Favoriten des Helden ab. Als User-Flag {heldId: anzahl}, damit die SL beim Hineinschauen nichts beim Spieler
+// verstellt. Die Einstellung bleibt Standard für Helden ohne eigene Wahl; „Aus“ dort schaltet alles ab.
+export const COUNT_FLAG = 'suggestionCounts';
+export const COUNT_MIN = 2;
+export const COUNT_MAX = 12;
+
+export function suggestionCount(actor) {
+  const setting = Number(game.settings.get(MODULE_ID, COUNT_SETTING));
+  const fallback = COUNT_CHOICES.includes(setting) ? setting : 6;
+  if (fallback === 0) return 0;
+  const own = Number(game.user?.getFlag?.(MODULE_ID, COUNT_FLAG)?.[actor?.id]);
+  return own >= COUNT_MIN && own <= COUNT_MAX ? own : fallback;
 }
 // Groß-/Kleinschreibung egal: „@RQ[…]“ macht das System zwar nicht zum Knopf, gemeint ist trotzdem eine Anfrage.
 const RQ_PATTERN = /@Rq\[([^\]]+)\]/gi;
