@@ -363,7 +363,8 @@
         "advanced": "Recently improved",
         "chance": "Good odds",
         "classic": "Common check"
-      }
+      },
+      "RequestedCount": "{count} requested"
     }
   }
 }

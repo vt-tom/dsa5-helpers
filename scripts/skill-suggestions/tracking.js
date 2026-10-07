@@ -4,7 +4,7 @@
 //   skillAdvanced {Talentname: Zeitpunkt der letzten Steigerung}
 // Schreibt nur der Client, der gewürfelt bzw. gesteigert hat, und nur mit Besitzrecht am Helden.
 import { bumpUsage } from './score.js';
-import { COUNT_SETTING, COUNT_CHOICES } from './context.js';
+import { COUNT_SETTING, COUNT_CHOICES, COLLAPSED_SETTING } from './context.js';
 
 const MODULE_ID = 'dsa5-helpers';
 
@@ -63,6 +63,7 @@ export function initSkillSuggestions() {
     choices: Object.fromEntries(COUNT_CHOICES.map(n => [n, n ? String(n) : 'DSA5HELPERS.Settings.SkillSuggestions.Off'])),
     onChange: () => { pending.add('*'); flush(); },
   });
+  game.settings.register(MODULE_ID, COLLAPSED_SETTING, { scope: 'client', config: false, type: Boolean, default: false });
   Hooks.on('createChatMessage', message => {
     onRequestMessage(message);
     onRollMessage(message);

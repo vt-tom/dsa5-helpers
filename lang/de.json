@@ -363,7 +363,8 @@
         "advanced": "Kürzlich gesteigert",
         "chance": "Gute Erfolgschance",
         "classic": "Häufige Probe"
-      }
+      },
+      "RequestedCount": "{count} angefragt"
     }
   }
 }

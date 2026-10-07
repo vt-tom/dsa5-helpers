@@ -3174,6 +3174,8 @@ function leaveCoverSidebar() {
 // Talent-Vorschläge (Nutzerwunsch 2026-10-06): im Modul berechnet scripts/skill-suggestions/ die Auswahl (offene
 // Probenanfragen der SL, Nutzung, Erfolgschance, Spezialist, Kampf, Steigerung, Klassiker). Der Click-Dummy zeigt nur
 // die Darstellung: sechs Nicht-Favoriten mit dem höchsten FW und je einem Beispiel-Grund, die erste als Anfrage.
+// Ein-/ausgeklappt (Rückmeldung 2026-10-07): im Modul je Benutzer als Client-Setting gemerkt, hier in localStorage.
+let suggestionsCollapsed = (() => { try { return localStorage.getItem("dsa5h-suggestions-collapsed") === "1"; } catch { return false; } })();
 const SUGGESTION_REASONS = ["Angefragt · −1", "Oft gewürfelt", "Bester der Gruppe", "Kürzlich gesteigert", "Gute Erfolgschance", "Häufige Probe"];
 function suggestionsPanel() {
   const picks = SKILL_GROUPS.flatMap((g) => g.items).filter((s) => !s.fav && s.fw > 0).sort((a, b) => b.fw - a.fw).slice(0, 6);
@@ -3190,7 +3192,22 @@ function suggestionsPanel() {
       el("span", { class: "fav-card-roll" }, [dice]),
     ]);
   });
-  return el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Vorschläge"), el("div", { class: "suggest-grid" }, cards)]);
+  const grid = el("div", { class: "suggest-grid" }, cards);
+  grid.hidden = suggestionsCollapsed;
+  const caret = el("span", { class: "suggest-caret", "aria-hidden": "true" }, suggestionsCollapsed ? "▸" : "▾");
+  // Eingeklappt: Hinweis auf offene Anfragen (Beispiel: die erste Karte ist angefragt).
+  const badge = el("span", { class: "suggest-badge" }, "1 angefragt");
+  badge.hidden = !suggestionsCollapsed;
+  const toggle = el("button", { type: "button", class: "panel-title suggest-toggle", "aria-expanded": String(!suggestionsCollapsed) }, [caret, el("span", {}, "Vorschläge"), badge]);
+  toggle.addEventListener("click", () => {
+    suggestionsCollapsed = !suggestionsCollapsed;
+    try { localStorage.setItem("dsa5h-suggestions-collapsed", suggestionsCollapsed ? "1" : "0"); } catch {}
+    grid.hidden = suggestionsCollapsed;
+    badge.hidden = !suggestionsCollapsed;
+    caret.textContent = suggestionsCollapsed ? "▸" : "▾";
+    toggle.setAttribute("aria-expanded", String(!suggestionsCollapsed));
+  });
+  return el("div", { class: "panel" }, [toggle, grid]);
 }
 
 function renderCover() {

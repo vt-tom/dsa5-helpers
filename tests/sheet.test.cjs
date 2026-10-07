@@ -724,3 +724,14 @@ test('Vorschläge: Anzahl aus der Benutzer-Einstellung (0 = aus, 2–12), Anfrag
  const ctx=await sheet._prepareContext({});assert(!render(ctx).includes('dsa5h-suggest-grid'));
  assert((await withSetting(2)).length<=2);assert((await withSetting(12)).length>=1);
 });
+test('Vorschläge: Titel klappt ein/aus, Zustand aus der Benutzer-Einstellung, eingeklappt mit Hinweis auf offene Anfragen',async()=>{
+ await loadSheet();const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+ const ctxWith=async collapsed=>{global.game={i18n:{localize:(k,d)=>k==='DSA5HELPERS.Suggestions.RequestedCount'?`${d?.count} angefragt`:localize(k,d)},settings:{get:(_m,key)=>key==='skillSuggestionsCollapsed'?collapsed:'light'},user:{targets:{first:()=>undefined}}};return sheet._prepareContext({});};
+ const open=await ctxWith(false);const html=render(open);
+ const toggle=elements(html,el=>el.attribs?.['data-action']==='dsa5hToggleSuggestions')[0];assert(toggle,'Klappknopf');assert.equal(toggle.attribs['aria-expanded'],'true');
+ const grid=elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-grid'))[0];assert(!('hidden' in grid.attribs));
+ const closed=await ctxWith(true);closed.dsa5h.suggestionsRequested=1;const html2=render(closed);
+ assert.equal(elements(html2,el=>el.attribs?.['data-action']==='dsa5hToggleSuggestions')[0].attribs['aria-expanded'],'false');
+ assert('hidden' in elements(html2,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-grid'))[0].attribs);
+ assert(elements(html2,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-badge')).length===1);
+});

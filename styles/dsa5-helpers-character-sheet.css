@@ -2223,6 +2223,38 @@ body[data-dsa5h-dice-hover="off"] .dsa5-helpers-sheet {
   padding: 10px 11px;
 }
 
+/* Titel als Klappknopf (Rückmeldung 2026-10-07): sieht aus wie jeder Panel-Titel, ▾/▸ davor, eingeklappt mit Hinweis auf
+   offene Anfragen. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 0;
+  border-radius: 0;
+  box-shadow: none;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-caret {
+  display: inline-block;
+  width: 1em;
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-badge {
+  margin-left: auto;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--accent);
+}
+
 .dsa5-helpers-sheet .dsa5h-fav-card.dsa5h-suggest-card {
   /* Name reicht über die Würfelspalte bis zum FW; nur der Grund teilt sich die Zeile mit den Würfeln. */
   grid-template-columns: minmax(0, 1fr) auto auto;

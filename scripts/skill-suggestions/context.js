@@ -12,6 +12,13 @@ export const COUNT_SETTING = 'skillSuggestions';
 export const COUNT_CHOICES = [0, 2, 4, 6, 8, 10, 12];
 
 /** Anzahl laut Einstellung; ohne gültigen Wert (z. B. im Test-Harness) der Standard 6. */
+// Eingeklappt ja/nein je Benutzer (Rückmeldung VTTom/Lyynix 2026-10-07): gilt für alle Helden, bleibt über Neuladen.
+export const COLLAPSED_SETTING = 'skillSuggestionsCollapsed';
+
+export function suggestionsCollapsed() {
+  return game.settings.get(MODULE_ID, COLLAPSED_SETTING) === true;
+}
+
 export function suggestionCount() {
   const value = Number(game.settings.get(MODULE_ID, COUNT_SETTING));
   return COUNT_CHOICES.includes(value) ? value : 6;

@@ -3,7 +3,7 @@ const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { isRuleActive, woundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
-import { buildSuggestions, suggestionCount } from '../skill-suggestions/context.js';
+import { buildSuggestions, suggestionCount, suggestionsCollapsed, COLLAPSED_SETTING } from '../skill-suggestions/context.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -24,6 +24,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hToggleCompanionTab: this._toggleCompanionTab,
       dsa5hFavorite: this._toggleFavorite,
       dsa5hToggleHappyTalents: this._toggleHappyTalents,
+      dsa5hToggleSuggestions: this._toggleSuggestions,
       dsa5hOnlyLearned: this._toggleOnlyLearned,
       dsa5hClearTalentSearch: this._clearTalentSearch,
       postItem: this._postItem,
@@ -307,7 +308,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     ];
     const status = this.actor.system.status;
     context.dsa5h = {
-      limited, tabs, subnav, skillGroups, favorites, favoriteGroups, suggestions, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
+      limited, tabs, subnav, skillGroups, favorites, favoriteGroups, suggestions,
+      suggestionsCollapsed: count ? suggestionsCollapsed() : false,
+      suggestionsRequested: suggestions.filter(entry => entry.messageId).length, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
       currentTab: this._currentTab,
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
       editMode: this.isEditable && !prepare.sheetLocked,
@@ -917,6 +920,20 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     this._search.talent = '';
     const input = this.element?.querySelector('.talentSearch');
     if (input) input.value = '';
+  }
+
+  // Vorschläge ein-/ausklappen (Rückmeldung 2026-10-07): Zustand je Benutzer als Client-Setting, Umschalten direkt im DOM
+  // ohne Neuzeichnen — die übrigen offenen Bögen übernehmen ihn beim nächsten Neuzeichnen.
+  static async _toggleSuggestions(_event, target) {
+    const panel = target.closest('.dsa5h-suggest');
+    const collapsed = target.getAttribute('aria-expanded') === 'true';
+    target.setAttribute('aria-expanded', String(!collapsed));
+    panel?.classList.toggle('is-collapsed', collapsed);
+    const grid = panel?.querySelector('.dsa5h-suggest-grid');
+    if (grid) grid.hidden = collapsed;
+    const caret = target.querySelector('.dsa5h-suggest-caret');
+    if (caret) caret.textContent = collapsed ? '▸' : '▾';
+    await game.settings.set(MODULE_ID, COLLAPSED_SETTING, collapsed);
   }
 
   static _toggleHappyTalents() {
