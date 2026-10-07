@@ -612,6 +612,11 @@ test('Titelblatt-Leiste Variante G (#27/#31): Reiter Zustände | Persönliche Da
  const {sheet,actor}=await prepare();actor.system.details.gender={value:'Weiblich'};actor.system.details.Home={value:'  '};actor.system.details.haircolor={value:'Silberblond'};
  sheet.context.conditions=Array.from({length:6},(_,i)=>({_id:'c'+i,name:'CONDITION.inpain',value:1,img:'x.svg',editable:4,manual:1}));
  const context=await sheet._prepareContext({});assert.deepEqual(context.dsa5h.personalDetails.map(f=>f.value),['Weiblich','Silberblond']);
+ // Sozialstatus: Zahl aus den Choices des Schemas übersetzt (wie im Systembogen), 0 = „-“ = nicht ausgefüllt.
+ const social=field=>{actor.system.details.socialstate={value:field};actor.system.schema={getField:path=>path==='details.socialstate.value'?{choices:{0:'-',1:'SOCIAL_CLASS.slave',2:'SOCIAL_CLASS.freeman'}}:undefined};};
+ social(2);assert.deepEqual((await sheet._prepareContext({})).dsa5h.personalDetails.map(f=>f.value),['Weiblich','Frei','Silberblond']);
+ social(0);assert.deepEqual((await sheet._prepareContext({})).dsa5h.personalDetails.map(f=>f.value),['Weiblich','Silberblond']);
+ delete actor.system.schema;delete actor.system.details.socialstate;
  const html=render(context);const aside=elements(html,el=>el.name==='aside')[0];
  assert.deepEqual(dom.findAll(el=>el.attribs?.role==='tab',aside.children).map(t=>t.attribs['data-side-tab']),['conditions','details']);
  assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-cover-condition'),aside.children).length,6,'alle Zustände, der Inhalt scrollt');
@@ -665,4 +670,12 @@ test('Fokus in Eingabefeldern bleibt nach dem Neuzeichnen erhalten (Tab durch No
  sheet._restoreFocus(key);assert(focused,'neues Feld fokussiert');assert.deepEqual(range,[3,3],'Cursorposition übernommen');
  const src=read('scripts/sheets/dsa5-helpers-character-sheet.js');assert(src.indexOf('this._applyCurrentTab();',src.indexOf('async _onRender'))<src.indexOf('this._restoreFocus(this._pendingFocus)'),'erst Reiter sichtbar machen, dann fokussieren');
  global.document=prevDoc;
+});
+test('Sammelproben (DSA5 8.1.9): Ziel-QS aus dem Item, 0 erlaubte Proben = unbegrenzt; ältere Systeme weiter „x / 10“',async()=>{
+ const {sheet,actor,context}=await prepare();
+ assert.deepEqual(context.dsa5h.aggregated.map(a=>[a.progress,a.allowed]),[['3 / 10',7]],'ohne neue Felder wie bisher');
+ const doc={system:{targetQs:{value:5},cummulatedQS:{value:3},allowedTestCount:{value:0},get qsProgressLabel(){return `${this.cummulatedQS.value} / ${this.targetQs.value}`;}}};
+ actor.items.set('aggregate',doc);const p=sheet._aggregatedProgress({_id:'aggregate',system:{allowedTestCount:{value:0}}});
+ assert.equal(p.progress,'3 / 5');assert.equal(p.allowed,localize('GROUPCHECK.unlimited'));
+ const html=render(await sheet._prepareContext({}));assert(html.includes('3 / 5'),'Anzeige im Talente-Reiter');
 });

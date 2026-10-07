@@ -2,6 +2,20 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.5.1] — 2026-10-07
+
+### Neu
+
+- Bogen wechseln mit einem Klick: In der Titelleiste jedes Heldenbogens (auch des Systembogens) sitzt ein Knopf ⇄. Er zeigt die verfügbaren Heldenbögen – den Systembogen als „Systemstandard“ –, ein Klick wechselt sofort, der neue Bogen öffnet sich an derselben Stelle. Fährt man mit der Maus über einen Eintrag, erscheint der Held an derselben Stelle schon im anderen Bogen (nur als Vorschau, nicht bedienbar); verlässt man das Menü, ist wieder der bisherige Bogen zu sehen. Bisher ging das nur über ⋮ → „Bogen konfigurieren“. Den Knopf sehen alle, denen der Held gehört; die Wahl gilt wie dort für alle Nutzer dieses Helden.
+
+### Geändert
+
+- Kompatibel mit DSA5 8.1.9: Sammelproben zeigen die im System einstellbare Ziel-QS (statt fest „/ 10“) und „unbegrenzt“, wenn keine Höchstzahl an Proben gesetzt ist – wie im Systembogen.
+
+### Behoben
+
+- Titelblatt › Persönliche Daten: Der Sozialstatus erscheint wieder als Unfrei, Frei, Niederadel, Adel oder Hochadel statt als Zahl; ist keiner gewählt, fehlt die Zeile.
+
 ## [0.5.0] — 2026-10-05
 
 ### Neu
@@ -130,6 +144,7 @@ Erste Version, installierbar über die Manifest-URL.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
 
+[0.5.1]: https://github.com/vt-tom/dsa5-helpers/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.3...v0.4.0
 [0.3.3]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.2...v0.3.3

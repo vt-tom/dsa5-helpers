@@ -316,6 +316,10 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // System gesucht (item-dsa5.js rollAggregatedProbe: Name + Typ skill); gewürfelt wird weiter über rollAggregatedProbe.
       aggregated: (prepare.aggregatedtests ?? []).map(item => ({
         item,
+        // DSA5 8.1.9: Ziel-QS je Sammelprobe einstellbar (targetQs, Anzeige qsProgressLabel) und 0 erlaubte Proben =
+        // unbegrenzt („∞“, Helfer infiniteIfZero). Die vorbereitete Kopie verliert Getter, daher vom echten Item lesen;
+        // ältere Systeme (ab 8.1.5) ohne diese Felder zeigen weiter „x / 10“ bzw. die Zahl.
+        ...this._aggregatedProgress(item),
         talents: ['', '2', '3'].map(which => ({ which, name: item.system?.talent?.['value' + which] })).filter(t => t.name)
           .map(t => ({ ...t, skill: this.actor.items.find(entry => entry.type === 'skill' && entry.name === t.name) })),
       })),
@@ -329,7 +333,15 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Reiter „Persönliche Daten“ in der Titelblatt-Leiste (Variante G, Issues #27/#31): nur ausgefüllte Felder,
       // dieselben Felder und Beschriftungen wie unter Notizen › Persönliche Daten (notes.hbs).
       personalDetails: [['Gender', 'gender'], ['Family', 'family'], ['Age', 'age'], ['Height', 'height'], ['Weight', 'weight'], ['Home', 'Home'], ['Socialstate', 'socialstate'], ['Hair_color', 'haircolor'], ['Eye_color', 'eyecolor'], ['Distinguishing_mark', 'distinguishingmark']]
-        .map(([label, key]) => ({ label: localize(label), value: String(this.actor.system.details?.[key]?.value ?? '').trim() }))
+        // Auswahlfelder wie der Sozialstatus speichert das System als Zahl (0 = „-“, 1–5 = Unfrei … Hochadel) —
+        // angezeigt wird wie im Systembogen der Name aus den Choices des Schemas; 0 gilt als nicht ausgefüllt.
+        .map(([label, key]) => {
+          const raw = this.actor.system.details?.[key]?.value;
+          let choices = this.actor.system.schema?.getField?.(`details.${key}.value`)?.choices;
+          if (typeof choices === 'function') choices = choices();
+          const value = choices ? (raw ? choices[raw] ?? '' : '') : String(raw ?? '').trim();
+          return { label: localize(label), value };
+        })
         .filter(field => field.value).map(field => ({ ...field, value: localize(field.value) })),
       happyTalentsExpanded: this._happyTalentsExpanded,
       // Hausregel Wundeinschätzung: Hinweis am Talent Heilkunde Wunden, nur wenn die SL die Regel eingeschaltet hat.
@@ -796,6 +808,17 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static _setCoverSideTab(_event, target) {
     this._coverSideTab = target.dataset.sideTab === 'details' ? 'details' : 'conditions';
     this._applyCurrentTab();
+  }
+
+  _aggregatedProgress(item) {
+    const system = this.actor.items?.get?.(item._id)?.system ?? item.system ?? {};
+    const target = Number(system.targetQs?.value) || 10;
+    const allowed = system.allowedTestCount?.value ?? item.system?.allowedTestCount?.value;
+    const unlimited = system.targetQs !== undefined && Number(allowed) === 0;
+    return {
+      progress: system.qsProgressLabel ?? `${system.cummulatedQS?.value ?? 0} / ${target}`,
+      allowed: unlimited ? game.i18n.localize('GROUPCHECK.unlimited') : allowed,
+    };
   }
 
   // „Bearbeiten → Notizen“ im Reiter Persönliche Daten der Titelblatt-Leiste: zum Abschnitt Persönliche Daten springen.
