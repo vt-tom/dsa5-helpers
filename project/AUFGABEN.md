@@ -7,18 +7,15 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-## Version 0.5.0 — veröffentlicht 2026-10-05
+## Version 0.5.1 — veröffentlicht 2026-10-07
 
-Erst als Beta (Pre-release), nach Live-Prüfung am selben Tag zum normalen Release erklärt, `release/0.5.0` nach `main` gemergt, Issues #1, #27, #30, #31 geschlossen. Enthalten: #7 CSS aufräumen, #30 Favoriten Ausrüstung/SF, #1 Gleiten beim Reiterwechsel, #27/#31 Titelblatt-Leiste mit Reitern, Hausregelbuch mit Wundeinschätzung (Knigge) und Helfen, Fokus-Fix bei Eingaben. Release v0.5.0 am selben Tag auf Nutzerwunsch ersetzt (Tag neu gesetzt), um den Urheber „VTTom“ bei „Helfen“ aufzunehmen — wer die erste Fassung schon installiert hatte, bekommt kein Update angeboten.
-
-## Nächste Version: 0.5.1 (Branch `release/0.5.1`)
-
-Angelegt 2026-10-05 (Wunsch VTTom). Enthalten bisher: Bogen-Umschalter mit Vorschau (Vorschau live bestätigt 2026-10-06), Sozialstatus als Name statt Zahl (Titelblatt › Persönliche Daten, live zu prüfen), Anpassung an DSA5 8.1.9 (Sammelproben: Ziel-QS und „unbegrenzt“), `verified` 8.1.9. `module.json` steht noch auf 0.5.0, hochgezählt wird beim Release (RELEASE.md).
+Direkt als normales Release (ohne Beta, Wunsch des Nutzers), `release/0.5.1` nach `main` gemergt, Issue #33 geschlossen. Enthalten: Bogen-Umschalter mit Vorschau (#33), Sozialstatus als Name statt Zahl, Anpassung an DSA5 8.1.9 (Sammelproben), `verified` 8.1.9. Für die nächste Version gibt es noch keinen Branch.
 
 ## Live in Foundry prüfen
 
-- **Bogen-Umschalter** (0.5.1): Knopf ⇄ in der Titelleiste von Helfer- und Systembogen, Menü-Einträge (Systemstandard, Helfer-Heldenbogen, ggf. weitere), Wechsel als Spieler, neuer Bogen an derselben Stelle, Menü-Position an der Plakette. Vorschau beim Darüberfahren: Wartezeit beim Aufbau, kein Aufblitzen beim Wechsel, keine liegengebliebenen unsichtbaren Fenster (z. B. `foundry.applications.instances` nach dem Schließen des Menüs), keine ungewollten Akteur-Updates durch die Vorschau-Instanzen.
-- **DSA5 8.1.9, Sammelproben:** Talente › Sammelproben — eine Sammelprobe mit geänderter Ziel-QS (z. B. 5) zeigt „x / 5“, eine mit 0 erlaubten Proben „unbegrenzt“; normale Sammelproben weiter „x / 10“ und „x / 7“. Sonst einmal quer durch den Bogen (Gefährten-Reiter mit der neuen Loyalität je Besitzer, Zustände jetzt alphabetisch).
+- **Bogen-Umschalter** (in 0.5.1 veröffentlicht): Knopf ⇄ in der Titelleiste von Helfer- und Systembogen, Menü-Einträge (Systemstandard, Helfer-Heldenbogen, ggf. weitere), Wechsel als Spieler, neuer Bogen an derselben Stelle, Menü-Position an der Plakette. Vorschau beim Darüberfahren: Wartezeit beim Aufbau, kein Aufblitzen beim Wechsel, keine liegengebliebenen unsichtbaren Fenster (z. B. `foundry.applications.instances` nach dem Schließen des Menüs), keine ungewollten Akteur-Updates durch die Vorschau-Instanzen.
+- **DSA5 8.1.9, Sammelproben** (in 0.5.1 veröffentlicht): Talente › Sammelproben — eine Sammelprobe mit geänderter Ziel-QS (z. B. 5) zeigt „x / 5“, eine mit 0 erlaubten Proben „unbegrenzt“; normale Sammelproben weiter „x / 10“ und „x / 7“. Sonst einmal quer durch den Bogen (Gefährten-Reiter mit der neuen Loyalität je Besitzer, Zustände jetzt alphabetisch).
+- **Sozialstatus** (in 0.5.1 veröffentlicht): Titelblatt › Persönliche Daten zeigt Unfrei/Frei/Niederadel/Adel/Hochadel statt Zahl; ohne gewählten Status fehlt die Zeile.
 - **#7 Touch:** erst mit dem Mobil-UI (`feature/mobile`).
 
 ## Offene Entscheidungen
