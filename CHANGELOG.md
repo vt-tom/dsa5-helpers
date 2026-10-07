@@ -2,16 +2,21 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
-## [0.5.1] — unveröffentlicht
+## [0.5.2] — unveröffentlicht
 
 ### Neu
 
-- Bogen wechseln mit einem Klick: In der Titelleiste jedes Heldenbogens (auch des Systembogens) sitzt ein Knopf ⇄. Er zeigt die verfügbaren Heldenbögen – den Systembogen als „Systemstandard“ –, ein Klick wechselt sofort, der neue Bogen öffnet sich an derselben Stelle. Fährt man mit der Maus über einen Eintrag, erscheint der Held an derselben Stelle schon im anderen Bogen (nur als Vorschau, nicht bedienbar); verlässt man das Menü, ist wieder der bisherige Bogen zu sehen. Bisher ging das nur über ⋮ → „Bogen konfigurieren“. Den Knopf sehen alle, denen der Held gehört; die Wahl gilt wie dort für alle Nutzer dieses Helden.
 - Titelblatt: Über den Favoriten stehen jetzt sechs Talent-Vorschläge – Talente, die der Held gerade gut gebrauchen könnte, mit Würfel und FW wie bei den Favoriten. Fragt die Spielleitung eine Probe an, steht sie ganz vorn („Angefragt“, mit Erleichterung oder Erschwernis), und ein Klick auf die Würfel beantwortet die Anfrage direkt. Ansonsten zählen: wie oft der Held das Talent zuletzt gewürfelt hat, die Erfolgschance, ob er darin der Beste der Gruppe ist, ob es gerade im Kampf nützt, ob es kürzlich gesteigert wurde, ob es im Chat genannt wurde und wie häufig die Probe allgemein vorkommt. Unter jedem Vorschlag steht der Grund. Über den Stern lässt sich ein Vorschlag direkt zum Favoriten machen; Favoriten erscheinen nicht unter den Vorschlägen. Wie viele Vorschläge erscheinen (aus, 2 bis 12, anfangs 6), stellt jeder in den Moduleinstellungen unter „Talent-Vorschläge auf dem Titelblatt“ selbst ein. Ein Klick auf den Titel „Vorschläge“ klappt sie ein und aus; der Bogen merkt sich das. Mit − / + rechts im Titel ändert man die Anzahl direkt im Bogen, für jeden Helden getrennt. Eingeklappt zeigt der Titel, wenn eine Probe angefragt ist.
 
 ### Geändert
 
 - Würfel zoomen beim Darüberfahren standardmäßig nur noch dezent (Probenwürfel für Talente, Zauber, Liturgien, Kampftechniken und Waffen-Favoriten sowie die Eigenschaftswürfel). Wer den bisherigen, deutlichen Zoom lieber mag oder gar keinen möchte, stellt das in den Moduleinstellungen unter „Hover-Effekt der Würfel“ für sich ein.
+
+## [0.5.1] — unveröffentlicht
+
+### Neu
+
+- Bogen wechseln mit einem Klick: In der Titelleiste jedes Heldenbogens (auch des Systembogens) sitzt ein Knopf ⇄. Er zeigt die verfügbaren Heldenbögen – den Systembogen als „Systemstandard“ –, ein Klick wechselt sofort, der neue Bogen öffnet sich an derselben Stelle. Fährt man mit der Maus über einen Eintrag, erscheint der Held an derselben Stelle schon im anderen Bogen (nur als Vorschau, nicht bedienbar); verlässt man das Menü, ist wieder der bisherige Bogen zu sehen. Bisher ging das nur über ⋮ → „Bogen konfigurieren“. Den Knopf sehen alle, denen der Held gehört; die Wahl gilt wie dort für alle Nutzer dieses Helden.
 
 ### Behoben
 
