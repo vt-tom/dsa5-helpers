@@ -749,3 +749,11 @@ test('Vorschläge: Anzahl im Bogen per − / + je Benutzer und Held (User-Flag),
  for(let i=0;i<8;i++)await handler.call(sheet,{},{dataset:{step:'-2'}});assert.equal(user.flags.suggestionCounts[actor.id],2,'mindestens 2');
  setting=0;ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestions.length,0,'Aus in der Einstellung schlägt die Wahl im Bogen');
 });
+test('Sammelproben (DSA5 8.1.9): Ziel-QS aus dem Item, 0 erlaubte Proben = unbegrenzt; ältere Systeme weiter „x / 10“',async()=>{
+ const {sheet,actor,context}=await prepare();
+ assert.deepEqual(context.dsa5h.aggregated.map(a=>[a.progress,a.allowed]),[['3 / 10',7]],'ohne neue Felder wie bisher');
+ const doc={system:{targetQs:{value:5},cummulatedQS:{value:3},allowedTestCount:{value:0},get qsProgressLabel(){return `${this.cummulatedQS.value} / ${this.targetQs.value}`;}}};
+ actor.items.set('aggregate',doc);const p=sheet._aggregatedProgress({_id:'aggregate',system:{allowedTestCount:{value:0}}});
+ assert.equal(p.progress,'3 / 5');assert.equal(p.allowed,localize('GROUPCHECK.unlimited'));
+ const html=render(await sheet._prepareContext({}));assert(html.includes('3 / 5'),'Anzeige im Talente-Reiter');
+});
