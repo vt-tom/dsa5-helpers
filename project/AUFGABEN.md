@@ -7,6 +7,8 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
+- **Rückmeldung Lyynix zum Mobil-Click-Dummy** (2026-10-14): [MOBILE-FEEDBACK-2026-10-14.md](MOBILE-FEEDBACK-2026-10-14.md) — Szene mindestens am Tablet (Pingen, Token ziehen), Chat/Journal als schwebende Knöpfe, Schips im Chat, Journal-Ordner, SL-Probenanfragen, Oberfläche automatisch nach Breite. Berührt E18, E16, E2 in MOBILE.md.
+
 ## Version 0.5.1 — veröffentlicht 2026-10-07
 
 Direkt als normales Release (ohne Beta, Wunsch des Nutzers), `release/0.5.1` nach `main` gemergt, Issue #33 geschlossen. Enthalten: Bogen-Umschalter mit Vorschau (#33), Sozialstatus als Name statt Zahl, Anpassung an DSA5 8.1.9 (Sammelproben), `verified` 8.1.9. Für die nächste Version gibt es noch keinen Branch.
