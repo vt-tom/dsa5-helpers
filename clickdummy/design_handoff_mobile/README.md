@@ -18,9 +18,8 @@ Fidelity: **High-Fidelity** für Layout, Abstände, Farben, Schrift und Bedienun
 | `dsa5-helpers-mobile.tokens.css` | Design-Tokens der Mobilansicht, auf die Token-Namen der Desktop-CSS abgebildet. Startpunkt für `styles/dsa5-helpers-mobile.css`. |
 | `screenshots/smartphone/` | 25 Ansichten, 390 × 844 px. |
 | `screenshots/tablet/` | 5 Ansichten, 1180 × 820 px (Querformat). |
-| `assets/dsa5/` | Kopien von Schriften und Icons aus `systems/dsa5`, damit die HTML-Dateien ohne Server funktionieren. **Vor dem Commit entscheiden:** mit einchecken oder per `.gitignore` ausschließen (AGENTS.md: keine eigenen Bilder, nur Systemgrafiken). Ohne den Ordner fehlen in den HTML-Dateien die Talent-, Würfel- und Zaubersymbole. |
 
-Öffnen: `index.html` bzw. `app.html` direkt im Browser (Doppelklick genügt, kein `start-server.bat` nötig).
+Öffnen: `index.html` läuft per Doppelklick (alles eingebettet). `app.html` lädt die Talent-, Würfel- und Zaubersymbole direkt aus `systems/dsa5/icons/` (keine Kopien im Repo) und muss deshalb wie der übrige Click-Dummy über `clickdummy/start-server.bat` geöffnet werden: <http://localhost:8877/modules/dsa5-helpers/clickdummy/design_handoff_mobile/app.html>.
 
 ## Ablage im Repo
 
