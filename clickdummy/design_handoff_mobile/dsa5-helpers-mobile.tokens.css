@@ -1,0 +1,147 @@
+/* DSA5 Helpers — Design-Tokens der Mobilansicht (Smartphone & Tablet)
+   Herkunft: Clickdummy clickdummy/mobile/ (index.html, app.html). Design-Referenz, noch nicht vom Modul geladen.
+
+   Gedacht als Startpunkt für styles/dsa5-helpers-mobile.css (MOBILE.md Abschnitt 8):
+   - Abschnitt A stellt NUR bestehende Tokens des Bogens um (--hit-*, --fs-*), wie in der Desktop-CSS vorgesehen.
+   - Abschnitt B ergänzt Tokens, die es am Desktop nicht gibt (Shell, Chat, Blätter von unten).
+   - Farben nutzen die vorhandenen Namen aus styles/dsa5-helpers-character-sheet.css (--paper, --ink, --muted, …).
+     Abweichungen des Clickdummys stehen als Kommentar daneben – bei der Umsetzung entscheiden, ob übernehmen.
+   Body-Klassen laut MOBILE.md 4.2: dsa5h-ui-phone / dsa5h-ui-tablet. */
+
+/* ==========================================================================
+   A. Bogen: Trefferflächen und Schriftstufen mobil
+   ========================================================================== */
+
+body.dsa5h-ui-phone .dsa5-helpers-sheet,
+body.dsa5h-ui-tablet .dsa5-helpers-sheet {
+  /* Trefferflächen: Clickdummy nutzt 40px für Stepper/Chips in dichten Zeilen, sonst 44px (MOBILE.md 3.2 Kriterium 2). */
+  --hit-sm: 40px;   /* Desktop 24px */
+  --hit-md: 44px;   /* Desktop 26px */
+  --hit-lg: 44px;   /* Desktop 28px */
+
+  /* Schriftstufen: Fließtext/Namen 16px, Eingaben immer ≥ 16px (iOS-Zoom, Kriterium 4). Nie unter 12px. */
+  --fs-data: 16px;          /* Desktop 15px */
+  --fs-small: 14px;
+  --fs-meta: 12px;
+  --fs-big: 19px;
+  --fs-base: 15px;          /* Desktop 14px */
+  --fs-panel-title: 19px;   /* Desktop 18px */
+  --fs-tab-title: 24px;     /* Desktop 22px */
+}
+
+/* Einstellung „Schrift: Groß“ (Konto-Menü bzw. linke Spalte am Tablet). Clickdummy skaliert den Inhalt um 115 %. */
+body.dsa5h-ui-phone .dsa5-helpers-sheet[data-font-size="large"],
+body.dsa5h-ui-tablet .dsa5-helpers-sheet[data-font-size="large"] {
+  --fs-data: 18px;
+  --fs-small: 16px;
+  --fs-meta: 14px;
+  --fs-big: 22px;
+  --fs-base: 17px;
+  --fs-panel-title: 22px;
+  --fs-tab-title: 28px;
+}
+
+/* ==========================================================================
+   B. Zusätzliche Tokens (Shell, Chat, Blätter) — helles Thema
+   ========================================================================== */
+
+body.dsa5h-ui-phone,
+body.dsa5h-ui-tablet {
+  /* Flächen */
+  --m-paper: #ece2d2;                         /* = --paper */
+  --m-ink: #2b2721;                           /* = --ink */
+  --m-muted: rgba(43, 39, 33, .76);           /* Bogen: --muted .72 – mobil etwas kräftiger für Kontrast ≥ 4.5:1 */
+  --m-faint: rgba(43, 39, 33, .45);           /* Platzhalter, inaktive Sterne */
+  --m-line: rgba(43, 39, 33, .13);            /* Trennlinien zwischen Zeilen (Bogen: --line .2) */
+  --m-line-strong: rgba(43, 39, 33, .26);     /* Rahmen von Karten, Feldern, Knöpfen */
+  --m-panel: rgba(255, 255, 255, .42);        /* ≈ --panel */
+  --m-field: rgba(255, 255, 255, .64);        /* ≈ --field, mobil heller für Touch-Felder */
+  --m-sub: rgba(0, 0, 0, .045);               /* Zwischenüberschriften in Panels (≈ --odd) */
+  --m-zebra: rgba(0, 0, 0, .025);
+  --m-title: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));  /* = --title */
+  --m-head: linear-gradient(180deg, #3a322b, #272320);                                 /* = --head */
+  --m-head-ink: #f4e8d6;                      /* = --headink */
+  --m-head-muted: rgba(244, 232, 214, .8);    /* ≈ --headmuted */
+  --m-chrome: #272320;                        /* untere Navigationsleiste */
+  --m-rail: #3a3531;                          /* Reiter-Rail rechts (Tablet) */
+  --m-sheet: #ece2d2;                         /* Blätter von unten (Probe, Mehr, Geld, Gefährte, Konto) */
+  --m-scrim: rgba(0, 0, 0, .5);               /* Abdunklung hinter Blättern */
+
+  /* Akzent & Auswahl */
+  --m-accent: #8b6f3f;                        /* = --accent (Knopf-Hintergrund) */
+  --m-on-accent: #fff8ec;
+  --m-accent-text: #6d5326;                   /* Akzent als Schriftfarbe auf Papier (Kontrast) */
+  --m-gold: #b99a5c;                          /* Akzent im dunklen Kopf (aktiver Modus, Avatar) */
+  --m-select: #2b2721;                        /* gewählte Chips/Segmente */
+  --m-on-select: #f4e8d6;
+
+  /* Status */
+  --m-danger: #b3241a;                        /* = --dmg */
+  --m-danger-text: #8e1d15;
+  --m-danger-bg: rgba(179, 36, 26, .08);      /* = --dmg-bg */
+  --m-ok: #2f6b2a;                            /* = --use */
+  --m-ok-text: #24561f;
+  --m-ok-bg: rgba(47, 107, 42, .12);
+
+  /* Chat: Flüstern */
+  --m-whisper-bg: rgba(110, 70, 140, .1);
+  --m-whisper-line: #7a4f96;
+  --m-whisper-text: #5c3a73;
+
+  /* Ressourcen-Balken (wie Desktop-Kopf) */
+  --m-lep: linear-gradient(90deg, #841a16, #c42c24);
+  --m-asp: linear-gradient(90deg, #1c6f9e, #3558c4);
+  --m-kap: linear-gradient(90deg, #5d8f24, #2a7a3a);
+
+  /* Maße */
+  --m-radius: 4px;            /* Karten, Felder, Knöpfe */
+  --m-radius-pill: 999px;     /* Chips, Filter, Ziel-Auswahl im Chat */
+  --m-radius-sheet: 14px;     /* obere Ecken der Blätter */
+  --m-gap: 14px;              /* Abstand zwischen Panels, Seitenrand */
+  --m-row: 52px;              /* Mindesthöhe einer Listenzeile */
+  --m-bar-top: 60px;          /* Kopfleiste der Shell */
+  --m-bar-bottom: 56px;       /* untere Navigation, zzgl. env(safe-area-inset-bottom) */
+  --m-tablet-side: 292px;     /* linke Kopfspalte des Bogens am Tablet */
+  --m-tablet-chat: 400px;     /* Chat-Spalte der Shell am Tablet */
+  --m-shadow-bar: 0 2px 10px rgba(0, 0, 0, .35);
+  --m-shadow-sheet: 0 -8px 30px rgba(0, 0, 0, .45);
+}
+
+/* ==========================================================================
+   B. Zusätzliche Tokens — dunkles Thema
+   ========================================================================== */
+
+body.dsa5h-ui-phone.theme-dark,
+body.dsa5h-ui-tablet.theme-dark {
+  --m-paper: #1d1a17;                         /* Bogen dunkel: --paper #272320 – mobil dunkler, Kopf hebt sich ab */
+  --m-ink: #ede3d1;
+  --m-muted: rgba(237, 227, 209, .76);
+  --m-faint: rgba(237, 227, 209, .42);
+  --m-line: rgba(237, 227, 209, .09);
+  --m-line-strong: rgba(237, 227, 209, .2);
+  --m-panel: rgba(255, 255, 255, .035);
+  --m-field: rgba(255, 255, 255, .07);
+  --m-sub: rgba(255, 255, 255, .035);
+  --m-zebra: rgba(255, 255, 255, .018);
+  --m-title: linear-gradient(90deg, rgba(147, 123, 72, .5), rgba(147, 123, 72, .03));
+  --m-head: linear-gradient(180deg, #2a2420, #161311);
+  --m-chrome: #141210;
+  --m-rail: #1a1715;
+  --m-sheet: #29241f;
+  --m-accent: #b99a5c;
+  --m-on-accent: #1c1917;
+  --m-accent-text: #d6ba80;
+  --m-select: #ede3d1;
+  --m-on-select: #1d1a17;
+  --m-danger: #cf4a3e;
+  --m-danger-text: #f19a90;
+  --m-danger-bg: rgba(207, 74, 62, .14);
+  --m-ok: #4c9a42;
+  --m-ok-text: #93d48a;
+  --m-ok-bg: rgba(76, 154, 66, .16);
+  --m-whisper-bg: rgba(160, 120, 200, .12);
+  --m-whisper-line: #a985c4;
+  --m-whisper-text: #d2b8e6;
+}
+
+/* Schriften: wie Desktop – Überschriften Andalus, Text GentiumBasic (aus systems/dsa5/fonts). */
