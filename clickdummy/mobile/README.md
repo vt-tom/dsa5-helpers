@@ -37,6 +37,8 @@ Fidelity: **High-Fidelity** für Layout, Abstände, Farben, Schrift und Bedienun
 | Proben anfordern (SL) | Knopf in der Heldenkarte und Chip über der Chat-Eingabe → Blatt mit Talent-/Eigenschafts-Chips (Suche), Modifikator, „Ergebnis sehen: Alle/Nur SL“, Heldenauswahl. Anfrage-Karte im Chat mit Status je Held, „Für Spieler würfeln“ (offline), überspringen, abschließen. Andere Spieler antworten simuliert nach wenigen Sekunden. |
 | Proben anfordern (Spieler) | Nach ca. 16 s fordert die SL „Sinnesschärfe −1“ an → Blatt „Die Spielleitung verlangt eine Probe“ mit Würfeln/Später; Ergebnis landet in der Karte. |
 | Oberfläche | Konto-Menü: Automatisch/Smartphone/Tablet mit Hinweis, was erkannt wurde; „Spielfeld An/Aus“. Keine Abfrage beim Start. |
+| Kampf (nachgezogen aus Foundry, E23) | Konto-Menü „Kampf (Demo): Läuft“ → Leiste unter dem Kopf mit Reihenfolge und INI, „Initiative würfeln“ (Spieler), „Nächster“ (SL), „Du bist dran!“. |
+| Ziel (E22) | Fremden Token kurz antippen → Name + „Ziel“, markierter Token rot umrandet. |
 
 Bei der Umsetzung wird davon nichts übernommen; wie es in Foundry gebaut wird (Canvas, Kontextmenü des Systems, `RollRequestService`, Journal-Verzeichnis), steht in MOBILE.md Abschnitt 13.
 

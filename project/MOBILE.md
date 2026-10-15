@@ -1,6 +1,6 @@
 # MOBILE.md — Planung „Mobile Support“ (Tablet & Smartphone)
 
-Stand: 2026-10-15 · Status: **Stufe 1 gebaut, nicht live getestet** (`scripts/mobile/`, `styles/dsa5-helpers-mobile.css`: Automatik, Shell mit Szene/Heldenkarte/schwebenden Knöpfen, Touch-Gesten, Kontextmenü per Langdruck, Fenster bildschirmfüllend). Click-Dummy Runde 4 (Rückmeldung Lyynix vom 14.10.) liegt in `clickdummy/mobile/`. Das **Umsetzungskonzept für Foundry steht in Abschnitt 13** und ersetzt, wo es abweicht, die älteren Abschnitte 4 und 6. Eigene Planungsdatei, weil das Feature groß ist und viele Entscheidungen braucht. Offene Punkte werden in Abschnitt 9 entschieden. Danach kommen die gültigen Ergebnisse kurz in [PROJEKTDOKU.md](PROJEKTDOKU.md), die Arbeitspakete in [AUFGABEN.md](AUFGABEN.md) bzw. als GitHub-Issues. Ist alles umgesetzt, wandert diese Datei nach `archive/`.
+Stand: 2026-10-15 · Status: **Stufe 1 + 2 gebaut, in einer Testinstanz live geprüft** (Foundry 14.369, DSA5 8.1.10, headless Chrome mit Touch-Emulation; Smartphone 390×844, Tablet 820×1180, Desktop unverändert). Code: `scripts/mobile/`, `styles/dsa5-helpers-mobile.css`. Noch offen: Test auf echten Geräten (iOS Safari, Android Chrome) und die Punkte in 13.10.
 
 ---
 
@@ -262,8 +262,8 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 | **E19** | Darf die SL „Hybrides Spiel“ pro Spieler steuern (z. B. Oberfläche vorgeben)? | v1 nein, jeder wählt selbst |
 | **E20** | Schips im Chat: eigener Dialog oder das Kontextmenü des Systems? | Kontextmenü des Systems per Langdruck oder Aktionen-Knopf an der Karte als Blatt von unten öffnen. Es enthält „Schip verwenden“ (`UnifiedFateDSA5`), „Schaden anwenden“ usw. Der Schip-Dialog des Systems erscheint dann bildschirmfüllend (Abschnitt 13.4). Kein eigener Nachbau |
 | **E21** | Szene auf dem Smartphone standardmäßig an? | Ja (wie im Click-Dummy), mit Foundrys Leistungsmodus „niedrig“ als Vorgabe. Nach dem Spike mit echten Geräten neu bewerten |
-| **E22** | Fremden Token antippen: nur Namen zeigen oder auch „als Ziel markieren“ (für Angriffe)? | Click-Dummy zeigt nur den Namen. Ziel markieren hilft im Kampf, war aber nicht Teil der Rückmeldung → nach dem Spike entscheiden |
-| **E23** | Wohin kommt die Kampfreihenfolge (5.1), wenn es keine untere Navigation mehr gibt? | Vorschlag: Leiste über der Szene, nur während eines Kampfes sichtbar, „Du bist dran“ hervorgehoben. Im Click-Dummy noch nicht gebaut |
+| **E22** | Fremden Token antippen: nur Namen zeigen oder auch „als Ziel markieren“ (für Angriffe)? | **Umgesetzt (Vorschlag):** Antippen eines fremden Tokens zeigt Namen + Knopf „Ziel“ (`Token#setTarget`, ersetzt Taste T). Die SL kann jeden Token markieren |
+| **E23** | Wohin kommt die Kampfreihenfolge (5.1), wenn es keine untere Navigation mehr gibt? | **Umgesetzt (Vorschlag):** Leiste unter dem Kopf, nur solange ein Kampf Teilnehmer hat: Reihenfolge mit INI, „Du bist dran!“, „Initiative würfeln“; Antippen öffnet Foundrys Kampf-Tracker als Panel. Der DSA5-Initiativ-Tracker und das Kalender-Widget sind mobil ausgeblendet |
 
 ## 10. Vorgehen in Phasen (Vorschlag)
 
@@ -432,4 +432,17 @@ Der Branch hat noch keine Version (AGENTS.md, Punkt 7). Sobald der Nutzer sie fe
 - Darunter die eigenen Helden mit LeP/AsP/KaP (Spielleitung: alle Helden der Gruppe mit Spielern und Online-Punkt); Antippen öffnet den Bogen bildschirmfüllend. Unten links Journal, unten rechts Chat mit Zähler für ungelesene Nachrichten; neue Nachrichten erscheinen kurz als Sprechblase darüber.
 - Chat-Nachrichten: lange drücken oder ⋮ öffnet das Kontextmenü des Systems als Blatt von unten, z. B. „Schip verwenden“ oder „Schaden anwenden“. Fenster und Dialoge erscheinen bildschirmfüllend.
 - Spielleitung: „Probe anfordern“ an der Heldenkarte öffnet die Probenanfrage des Systems.
+- Kampf: Unter der Kopfleiste stehen die Kampfreihenfolge, „Du bist dran!“ und „Initiative würfeln“; Antippen öffnet den Kampf-Tracker. Fremde Token antippen zeigt den Namen und „Ziel“ zum Markieren.
+- Heldenbogen auf dem Smartphone: Reiterleiste unten (vier Reiter und „Mehr“), der Kopf klappt beim Scrollen zusammen, das Titelblatt ist einspaltig. Auf dem Tablet steht die Reiterleiste rechts im Fenster.
+- Konto-Menü zusätzlich: Hell/Dunkel.
 - Konto-Menü: Oberfläche wählen, Spielfeld auf diesem Gerät an/aus (spart Akku), Foundry-Einstellungen, zur vollständigen Foundry-Oberfläche, Abmelden.
+
+### 13.10 Stand der Umsetzung und Rest
+
+Umgesetzt und live geprüft: 13.2 (Automatik), 13.3 (Gesten, Ping, Token ziehen über `TokenDocument#move`, Ziel), 13.4 (Sprechblase = Foundrys Chat-Benachrichtigung, Zähler, ⋮/Langdruck → System-Kontextmenü → „Schip verwenden“ → Systemdialog), 13.5 (Journal-Verzeichnis, Journal-Blatt auf dem Smartphone mit Seitenliste oben), 13.6 („Probe anfordern“ → Dialog des Systems), E22, E23, Bogen auf dem Smartphone (7.1, vereinfacht).
+
+Bewusst noch nicht:
+- „Neu“-Markierung im Journal (Click-Dummy) — optional, braucht eigene Merkliste.
+- Tablet-Bogen mit fester linker Kopfspalte (Click-Dummy Runde 3): Der Desktop-Aufbau passt auf 820 px bereits; nur die Rail sitzt jetzt im Fenster.
+- Bogen-Feinschliff auf dem Smartphone: breite Tabellen (Zauber, Talente) scrollen waagerecht statt als Zeilenkarten; Tooltips (Formeln) nur über Langdruck/Foundry.
+- Foundry-Thema: DSA5 unterstützt das dunkle Foundry-Thema mit „Immersive“ nicht vollständig (helle Schrift auf Pergament) — betrifft auch den Desktop; im Konto-Menü auf „Hell“ stellen.

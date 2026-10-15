@@ -49,6 +49,17 @@ input::placeholder{color:var(--ink3)}
       </button>
     </header>
 
+    <sc-if value="{{ inCombat }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ combatTap }}" style="flex:none;height:56px;display:flex;align-items:center;gap:8px;padding:0 8px;background:#2f2924;color:#f4e8d6;border-bottom:1px solid rgba(224,192,128,.4);position:relative;z-index:2;cursor:pointer">
+        <span style="flex:none;max-width:30%;padding:{{ cbtPad }};border-radius:12px;background:{{ cbtBg }};color:{{ cbtColor }};font-size:13px;font-weight:700;line-height:1.2">{{ cbtLabel }}</span>
+        <div style="flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:4px 2px">
+          <sc-for list="{{ cbt }}" as="c"><span style="flex:none;position:relative;width:40px;height:40px;border-radius:50%;background:{{ c.bg }};border:2px solid {{ c.ring }};box-shadow:{{ c.glow }};display:grid;place-items:center;font-family:Andalus,serif;font-size:17px;color:#f4e8d6;box-sizing:border-box">{{ c.ini }}<b style="position:absolute;right:-4px;bottom:-4px;min-width:18px;padding:0 3px;border-radius:9px;background:#1c1917;font:700 11px/16px GentiumBasic,serif;text-align:center">{{ c.val }}</b></span></sc-for>
+        </div>
+        <sc-if value="{{ cbtCanRoll }}" hint-placeholder-val="{{ false }}"><button onClick="{{ cbtRoll }}" style="flex:none;height:40px;padding:0 10px;border:0;border-radius:6px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:13px;font-weight:700;cursor:pointer">Initiative würfeln</button></sc-if>
+        <sc-if value="{{ cbtCanNext }}" hint-placeholder-val="{{ false }}"><button onClick="{{ cbtNext }}" style="flex:none;height:40px;padding:0 10px;border:0;border-radius:6px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:13px;font-weight:700;cursor:pointer">Nächster</button></sc-if>
+      </div>
+    </sc-if>
+
     <div style="flex:1;min-height:0;display:flex;position:relative">
 
       <sc-if value="{{ showLeft }}" hint-placeholder-val="{{ true }}">
@@ -68,7 +79,7 @@ input::placeholder{color:var(--ink3)}
                     <sc-for list="{{ tokens }}" as="t">
                       <div style="position:absolute;left:{{ t.x }}px;top:{{ t.y }}px;width:56px;height:56px;transition:{{ t.trans }};z-index:{{ t.z }}">
                         <div style="width:100%;height:100%;border-radius:50%;box-sizing:border-box;border:4px solid {{ t.ring }};background:{{ t.bg }};display:grid;place-items:center;color:#f4e8d6;font-family:Andalus,serif;font-size:22px;line-height:1;box-shadow:{{ t.shadow }};transform:scale({{ t.scale }});transition:transform .15s,box-shadow .15s">{{ t.ini }}</div>
-                        <sc-if value="{{ t.showName }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:3px;padding:1px 6px;border-radius:8px;background:rgba(20,18,16,.78);color:#f4e8d6;font-size:11px;line-height:1.4;white-space:nowrap">{{ t.name }}</div></sc-if>
+                        <sc-if value="{{ t.showName }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:3px;padding:1px 6px;border-radius:12px;background:rgba(20,18,16,.85);color:#f4e8d6;font-size:11px;line-height:1.4;white-space:nowrap;display:flex;align-items:center;gap:6px">{{ t.name }}<sc-if value="{{ t.canTarget }}" hint-placeholder-val="{{ false }}"><button onPointerDown="{{ stop }}" onClick="{{ t.toggleTarget }}" style="height:26px;padding:0 9px;border-radius:13px;border:1px solid #b3241a;background:{{ t.tBg }};color:{{ t.tColor }};font:inherit;font-size:12px;font-weight:700;cursor:pointer">◎ {{ t.targetLabel }}</button></sc-if></div></sc-if>
                       </div>
                     </sc-for>
                     <sc-for list="{{ pings }}" as="p">
@@ -459,7 +470,7 @@ class Component extends DCLogic {
     draft: '', target: 'all', diceOpen: false, seen: 0, shared: {}, newIds: { 1: true, 7: true },
     ui: 'auto', scene: true, sceneFull: false, hint: true, chatOpen: false,
     cam: null, toks: {}, drag: null, hold: null, pings: [], bubble: null, openF: {},
-    fate: null, req: null, inc: null, schips: { own: 2, group: 3 },
+    fate: null, req: null, inc: null, schips: { own: 2, group: 3 }, targets: {}, combat: false, turn: 0, layIni: null,
     msgs: []
   };
 
@@ -680,7 +691,7 @@ class Component extends DCLogic {
     }
     if (this.ptrs.size === 1 && g && g.mode === 'pinch') { const p = [...this.ptrs.values()][0]; this.g = { mode: 'pan', last: p, start: p }; }
     else if (this.ptrs.size === 0) this.g = null;
-    if (g && g.mode === 'pending' && g.tok) { clearTimeout(this._nt); this.setState({ named: g.tok.id }); this._nt = setTimeout(() => this.setState({ named: null }), 2000); }
+    if (g && g.mode === 'pending' && g.tok) { clearTimeout(this._nt); this.setState({ named: g.tok.id }); this._nt = setTimeout(() => this.setState({ named: null }), 3500); }
     if (this.state.hold) this.setState({ hold: null });
   };
   scWheel = e => {
@@ -787,8 +798,10 @@ class Component extends DCLogic {
       const mine = t.mine && !isGM;
       return { name: t.short, ini: t.ini, x: dragging ? drag.x + 4 : p[0] * C + 4, y: dragging ? drag.y + 4 : p[1] * C + 4,
         bg: t.hero ? t.bg : 'radial-gradient(circle at 40% 35%,#5a4e44,#2a231d)', ring: t.hero ? (mine ? '#e0c48c' : '#b99a5c') : '#b3241a',
-        shadow: dragging ? '0 12px 24px rgba(0,0,0,.6)' : mine ? '0 0 0 3px rgba(224,196,140,.45),0 3px 8px rgba(0,0,0,.5)' : '0 3px 8px rgba(0,0,0,.5)',
-        scale: dragging ? 1.15 : 1, showName: mine || dragging || s.named === t.id, trans: dragging ? 'none' : 'left .25s ease,top .25s ease', z: dragging ? 3 : mine ? 2 : 1 };
+        shadow: dragging ? '0 12px 24px rgba(0,0,0,.6)' : s.targets[t.id] ? '0 0 0 4px rgba(207,74,62,.95),0 3px 8px rgba(0,0,0,.5)' : mine ? '0 0 0 3px rgba(224,196,140,.45),0 3px 8px rgba(0,0,0,.5)' : '0 3px 8px rgba(0,0,0,.5)',
+        scale: dragging ? 1.15 : 1, showName: mine || dragging || s.named === t.id,
+        canTarget: s.named === t.id && !mine, targetLabel: s.targets[t.id] ? 'Ziel aufheben' : 'Ziel', tBg: s.targets[t.id] ? '#b3241a' : 'transparent', tColor: s.targets[t.id] ? '#fff' : '#f19a90',
+        toggleTarget: () => { set(st => ({ targets: st.targets[t.id] ? {} : { [t.id]: true } })); clearTimeout(this._nt); this._nt = setTimeout(() => this.setState({ named: null }), 1500); }, trans: dragging ? 'none' : 'left .25s ease,top .25s ease', z: dragging || s.named === t.id ? 4 : mine ? 2 : 1 };
     });
     const dropCell = drag ? [Math.round(drag.x / C), Math.round(drag.y / C)] : null;
     const dropOk = dropCell && this.walkable(dropCell[0], dropCell[1]);
@@ -928,11 +941,20 @@ class Component extends DCLogic {
     const titles = { home: ['Die Rabenschatten', 'Sitzung 14 · 3 von 4 Spielern verbunden'], chat: ['Chat', 'Die Rabenschatten'], journal: ['Journal', 'Die Rabenschatten'], entry: [ej ? ej.title : '', ej ? ej.kind : ''] };
     const opt = (label, on, onClick) => ({ label, onClick, bg: on ? 'var(--accent)' : 'transparent', color: on ? 'var(--onaccent)' : 'var(--ink)' });
     const devName = d => d === 'tablet' ? 'Tablet' : 'Smartphone';
+    // ----- Kampfreihenfolge (E23, wie scripts/mobile/shell.js renderCombat)
+    const INI = { k2: 14, ber: 13, lay: s.layIni, ron: 11, k1: 9, sal: 8 };
+    const all = [...this.HEROES.map(h => ({ ...h, hero: true })), ...this.FOES];
+    const order = all.map(t => ({ t, v: INI[t.id] })).sort((a, b) => (b.v ?? -1) - (a.v ?? -1));
+    const cur = order[s.turn % order.length];
+    const myTurn = !isGM && cur && cur.t.id === 'lay';
+    const cbt = order.map((o, i) => ({ ini: (o.t.short || o.t.name)[0], val: o.v ?? '–', bg: o.t.hero ? o.t.bg : 'radial-gradient(circle at 40% 35%,#5a4e44,#2a231d)',
+      ring: i === s.turn % order.length ? '#e0c48c' : o.t.hero ? (o.t.mine && !isGM ? '#b99a5c' : 'rgba(244,232,214,.35)') : '#b3241a', glow: i === s.turn % order.length ? '0 0 0 3px rgba(224,196,140,.5)' : 'none' }));
     const settings = [
       { label: 'Darstellung', opts: [opt('Hell', theme === 'light', () => set({ theme: 'light' })), opt('Dunkel', theme === 'dark', () => set({ theme: 'dark' }))] },
       { label: 'Oberfläche', opts: [opt('Automatisch', s.ui === 'auto', () => set({ ui: 'auto', cam: null })), opt('Smartphone', s.ui === 'phone', () => set({ ui: 'phone', cam: null })), opt('Tablet', s.ui === 'tablet', () => set({ ui: 'tablet', cam: null }))],
         hasNote: true, note: 'Automatisch erkannt: ' + devName(autoDev) + ' (' + Math.round(rw) + ' px breit). Ab 1200 px mit Maus startet die normale Foundry-Oberfläche.' },
       { label: 'Spielfeld', opts: [opt('An', s.scene, () => set({ scene: true, cam: null })), opt('Aus', !s.scene, () => set({ scene: false, sceneFull: false }))], hasNote: true, note: 'Aus: wie bisher ohne Szene, spart Akku und Datenvolumen.' },
+      { label: 'Kampf (Demo)', opts: [opt('Aus', !s.combat, () => set({ combat: false })), opt('Läuft', s.combat, () => set({ combat: true, turn: 0, layIni: null }))] },
       { label: 'Rolle (Demo)', opts: [opt('Spieler', !isGM, () => set({ role: 'player', target: 'all', view: 'home', cam: null })), opt('Spielleitung', isGM, () => set({ role: 'gm', target: 'all', view: 'home', cam: null }))] }
     ];
     const chatShown = isTablet ? s.chatOpen : v === 'chat';
@@ -959,6 +981,12 @@ class Component extends DCLogic {
       chatFlex: isTablet ? 'none' : '1', chatW: isTablet ? '400px' : 'auto', chatBorder: isTablet ? '1px solid var(--line2)' : '0',
       vHome: v === 'home', vList: v === 'journal' || v === 'entry', vJournal: v === 'journal', vEntry: v === 'entry' && !!ej,
 
+      inCombat: s.combat, cbt, cbtLabel: myTurn ? 'Du bist dran!' : 'Runde ' + (1 + Math.floor(s.turn / order.length)),
+      cbtBg: myTurn ? '#e0c48c' : 'transparent', cbtColor: myTurn ? '#1c1917' : '#f4e8d6', cbtPad: myTurn ? '4px 8px' : '0',
+      cbtCanRoll: !isGM && s.layIni == null, cbtCanNext: isGM,
+      cbtRoll: e => { e.stopPropagation(); const x = this.d20(), v = 13 + Math.ceil(x / 4); set({ layIni: v }); this.push({ type: 'roll', who: 'Layariel Wipfelglanz', owner: 'Anna', title: 'Initiative', sub: 'INI-Basis 13 + 1W6', dice: [Math.ceil(x / 4)], headline: 'Initiative ' + v, ok: null }); },
+      cbtNext: e => { e.stopPropagation(); set({ turn: s.turn + 1 }); },
+      combatTap: () => this.flash('Öffnet Foundrys Kampf-Tracker als Panel'),
       showScene, showSceneOff: !s.scene && v === 'home', sceneName: 'Die alte Mühle · Keller',
       mapW: 18 * C, mapH: 13 * C, camT: 'translate(' + cam.x + 'px,' + cam.y + 'px) scale(' + cam.s + ')',
       walls: this.ROOMS.map(([x, y, w, h]) => ({ x: x * C - 7, y: y * C - 7, w: w * C + 14, h: h * C + 14 })),

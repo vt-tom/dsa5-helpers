@@ -12,7 +12,8 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - Favoriten (Stern), Spiel-/Bearbeiten-Modus, Magie/Religion nur bei passender Fähigkeit sichtbar.
 - 62 Tests grün (`node tests/sheet.test.cjs`).
 - UI/UX-Review vom 2026-09-25 ([Feedback](UI-UX-FEEDBACK-2026-09-25.md)): Pakete A–D (Trefferflächen/Tastatur, Lesbarkeit, Waffentabellen, Orientierung/Rückmeldung) in Clickdummy **und** Foundry umgesetzt und live bestätigt. Pakete E (Favoritenraster) und G (Detailpunkte je Reiter) sowie die Munitionszeile abgenommen und in Foundry übertragen (live zu prüfen). Aus Paket F sind Porträtformat und schwebende Titelleiste in Foundry; Geld-Panel „Zeile“ seit 2026-09-30 auch in Foundry; Kampf-Unterreiter „Körper“ seit 2026-09-30 in Foundry (live zu prüfen, vorerst neben der Übersicht) — siehe AUFGABEN.md.
-- Hier gibt es kein laufendes Foundry. Alles ist nur im Code geprüft – bestätigt wird erst live beim Nutzer.
+- Hier gibt es kein laufendes Foundry. Alles ist nur im Code geprüft – bestätigt wird erst live beim Nutzer. Ausnahme (seit 2026-10-15): Für Mobil-Tests kann ein Agent eine eigene, temporäre Foundry-Instanz starten (eigener Datenordner im Scratchpad, Kopie der Welt „DSA5“, `systems/dsa5` und `modules` per Verzeichnis-Verknüpfung, Port 30077, `node foundry-nodejs-v14/main.js --dataPath=… --port=30077`). Die pm2-Instanzen des Nutzers (30000/30001) und ihre Welten nie anfassen.
+- Mobile Support (`feature/mobile`): Stufe 1 + 2 gebaut und in der Testinstanz geprüft, Stand in [MOBILE.md](MOBILE.md) 13.10.
 
 ## Grundsätze
 
