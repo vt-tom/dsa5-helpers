@@ -94,7 +94,9 @@ function createPreviews(app, sheets) {
   };
 }
 
-function openMenu(app, button) {
+// Exportiert für das „Mehr“-Blatt auf dem Smartphone (feature/mobile): dort ist der Knopf in der Fensterleiste
+// ausgeblendet, und Foundrys ContextMenu öffnet nicht an unsichtbaren Ankern — dann dient „Mehr“ als Anker.
+export function openMenu(app, button) {
   const current = app.constructor;
   const sheets = switchableSheets(app.document);
   const others = sheets.filter(sheet => sheet.cls !== current);

@@ -570,9 +570,10 @@ Jeder Schritt: Testinstanz, Mess-Skript, Screenshots. Den Click-Dummy nur dort n
 - **Zeile antippen würfelt** (wie vorgeschlagen): gilt für Zeilen mit genau einer Probe (Talente, Zauber, Liturgien, Sammelproben), nur im Spielmodus. Das Gegenstandsblatt öffnet der Langdruck über das Kontextmenü des Systems („Bearbeiten“). Umgesetzt in `setupPhoneSheet()`.
 - **Körper-Silhouette** fällt auf dem Smartphone weg (Teil des Kampf-Umbaus, P2).
 - **Nur der Spielmodus** wird fürs Handy optimiert. Der Nutzer plant drei Modi (Spielen, Steigern, Bearbeiten) für Desktop, Tablet und Smartphone: [Issue #34](https://github.com/vt-tom/dsa5-helpers/issues/34). Ü7 ruht bis dahin.
-- **Fensterknöpfe (Ü3):** Rückfrage des Nutzers, welche gemeint sind – offen.
+- **Fensterknöpfe (Ü3)** wie vorgeschlagen: Plakette auf dem Handy ausgeblendet, „‹“ links im Kopf schließt, alles andere im „Mehr“-Blatt (ohne Sperre, siehe #34).
 
 ### 14.6 Stand
 
 - **P1 umgesetzt (2026-10-15):** Ü1 Probendialog als Blatt von unten (Felder über die volle Breite, „Würfeln“ unten fest), Ü2 Kopf (~200 px statt 260–650 px, Porträt/Ressourcen/Schips bleiben auf dem Titelblatt im Kopf), Ü4 „Mehr“-Blatt mit Kacheln + Bogen-Thema + Bogen wechseln, Ü5 Unterreiter (Segment bis 3, wischbare Chips ab 4), Ü6 größere Trefferflächen, doppelter Spaltenkopf bei den Modifikatoren, Zeile antippen würfelt. Gemessen: 5 Helden, alle Reiter/Unterreiter bei 360 px im Spielmodus ohne waagerechten Überlauf (außer Steigerungsplaner).
-- **Offen:** Ü3 (Antwort des Nutzers), P2, P3.
+- **Ü3 umgesetzt (2026-10-15):** Fensterleiste und Zierrahmen auf dem Handy ausgeblendet, „‹“ im Kopf, im „Mehr“-Blatt zusätzlich Spieleransicht und alle Einträge des Menüs „⋮“ (ohne „Fenster ablösen“). Bogen wechseln öffnet das Menü mit „Mehr“ als Anker (Foundrys ContextMenu öffnet nicht an unsichtbaren Knöpfen).
+- **Offen:** P2, P3.

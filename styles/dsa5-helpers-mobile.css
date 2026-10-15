@@ -355,6 +355,7 @@ body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label {
    Identitäts-Chips in einer Zeile; darunter LeP/AsP/KaP in einer Zeile über die volle Breite, dann die Würfel.
    .dsa5h-head-main löst sich auf (display: contents), damit die Ressourcen unter das Porträt reichen. */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head {
+  position: relative; padding-left: 40px !important;
   display: grid !important; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 4px 10px;
   padding: 10px 12px 8px; cursor: default;
 }
@@ -380,6 +381,11 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-bar-label-value { displa
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-bar-label-value input { width: 2.1em; font-size: 15px; padding: 1px 0; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-regen-btn { flex: none; width: 34px; height: 34px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content { padding: 0 10px 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-back {
+  position: absolute; left: 0; top: 0; width: 40px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0;
+  background: none; box-shadow: none; color: #f4e8d6; font-size: 20px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-m-back { height: 52px; }
 /* Beim Scrollen eingeklappt: kleines Porträt, Name, Ressourcen */
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { grid-template-columns: 34px minmax(0, 1fr); padding: 6px 10px; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait { grid-row: 1; width: 34px; height: 40px; }
@@ -433,7 +439,7 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-dup { display: none; }
 /* „Mehr“-Blatt (Ü4): die übrigen Reiter als Kacheln von unten, darunter Bogen-Thema und Bogen wechseln */
 .dsa5h-m-more-backdrop { position: fixed; inset: 0; z-index: 210; display: flex; align-items: flex-end; background: rgba(0, 0, 0, .5); }
 .dsa5h-m-more-sheet {
-  width: 100%; box-sizing: border-box; padding: 8px 14px calc(18px + var(--dsa5h-m-safe-b)); display: flex; flex-direction: column; gap: 12px;
+  width: 100%; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; padding: 8px 14px calc(18px + var(--dsa5h-m-safe-b)); display: flex; flex-direction: column; gap: 12px;
   background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, .45);
   font-family: 'GentiumBasic', Georgia, serif;
 }
@@ -447,6 +453,8 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-dup { display: none; }
 .dsa5h-m-more-tiles img { width: 40px; height: 40px; border: 0; padding: 6px; border-radius: 8px; background: rgba(147, 123, 72, .15); }
 .dsa5h-m-more-tiles span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dsa5h-m-more-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dsa5h-m-more-list { display: flex; flex-direction: column; border-top: 1px solid var(--dsa5h-m-line); }
+.dsa5h-m-more-sheet .dsa5h-m-more-list button { height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 6px; border: 0; border-bottom: 1px solid var(--dsa5h-m-line); border-radius: 0; background: none; text-align: left; justify-content: flex-start; font-weight: normal; }
 .dsa5h-m-more-actions button { height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; }
 
 /* Favoriten: feste Wertespalten schmaler, damit der Name Platz hat */
@@ -456,7 +464,10 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fav-card { grid-template-columns: 24
 /* Nur senkrecht scrollen (Rückmeldung 2026-10-15): Zierrahmen nur oben (Plakette), keine Mindestbreite für
    Tabellenzeilen (Desktop-Regel für schmale Fenster in Abschnitt 18 der Bogen-CSS), Spalten je Zeilentyp schmaler.
    Nebenspalten entfallen; sie stehen im Gegenstandsblatt (Antippen des Namens). */
-body.dsa5h-phone .dsa5-helpers-sheet { border-width: 24px 0 0 !important; border-image-width: 24px 0 0 0 !important; }
+/* Fensterleiste (Plakette) auf dem Smartphone ausgeblendet (Ü3): Schließen über „‹“ im Kopf, der Rest im „Mehr“-Blatt.
+   Damit entfällt auch der Zierrahmen (oben trug er die Plakette). */
+body.dsa5h-phone .dsa5-helpers-sheet { border-width: 0 !important; border-image: none !important; }
+body.dsa5h-phone .dsa5-helpers-sheet > .window-header { display: none !important; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .panel { overflow-x: visible; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content :is(.row, .row-head) { min-width: 0; column-gap: 6px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .row > .withContext { min-width: 0; overflow-wrap: anywhere; }

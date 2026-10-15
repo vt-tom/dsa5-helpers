@@ -7,6 +7,7 @@
 import { initShell } from './shell.js';
 import { initCanvasTouch } from './canvas-touch.js';
 import { initTouchContext } from './touch-context.js';
+import { openMenu as openSheetSwitcher } from '../sheet-switcher.js';
 
 export const MODULE_ID = 'dsa5-helpers';
 const MODES = ['auto', 'phone', 'tablet', 'foundry'];
@@ -31,8 +32,13 @@ function chosenMode() {
   return game.settings.get(MODULE_ID, 'uiMode');
 }
 
-/** „Mehr“-Blatt (MOBILE.md 14, Ü4): die Reiter ab dem fünften als Kacheln, dazu Bogen-Thema und Bogen wechseln. */
-function openMoreSheet(el) {
+/**
+ * „Mehr“-Blatt (MOBILE.md 14, Ü3/Ü4): die Reiter ab dem fünften als Kacheln, dazu die Knöpfe der Fensterleiste, die auf
+ * dem Smartphone ausgeblendet ist: Bogen-Thema, Bogen wechseln, Spieleransicht und die Einträge des Menüs „⋮“
+ * (Bogen konfigurieren, Token, Gefährten-Reiter …). Die Sperre fehlt bewusst, mobil gibt es nur den Spielmodus (#34).
+ * Menü-Einträge sind Knöpfe mit data-action im Bogen-Element, Foundry führt sie wie in der Fensterleiste aus.
+ */
+function openMoreSheet(el, app) {
   const rail = el.querySelector('nav.dsa5h-rail');
   const tabs = [...rail.querySelectorAll('.dsa5h-rail-btn')].slice(4);
   const wrap = document.createElement('div');
@@ -41,20 +47,29 @@ function openMoreSheet(el) {
     <img src="${b.querySelector('img')?.getAttribute('src') ?? ''}" alt=""><span>${foundry.utils.escapeHTML(b.querySelector('.dsa5h-rail-label')?.textContent ?? '')}</span></button>`;
   const theme = el.querySelector('.header-control[data-action="dsa5hTheme"]');
   const switcher = el.querySelector('.dsa5h-sheet-switcher');
+  const playerView = el.querySelector('.header-control[data-action="playerview"]');
+  const visible = c => (typeof c.visible === 'function' ? c.visible.call(app) : c.visible ?? true);
+  const controls = (app?._getHeaderControls?.() ?? []).filter(c => c.action !== 'detach' && visible(c));
+  const esc = foundry.utils.escapeHTML;
   wrap.innerHTML = `<div class="dsa5h-m-more-sheet" role="dialog" aria-label="${game.i18n.localize('DSA5HELPERS.Mobile.More')}">
     <div class="dsa5h-m-grip"></div>
     <div class="dsa5h-m-more-tiles">${tabs.map(tile).join('')}</div>
     <div class="dsa5h-m-more-actions">
       ${theme ? `<button type="button" data-do="theme"><i class="${theme.querySelector('i')?.className ?? theme.className.replace(/header-control|icon/g, '')}" inert></i> ${game.i18n.localize('DSA5HELPERS.Theme')}</button>` : ''}
       ${switcher ? `<button type="button" data-do="switch"><i class="fa-solid fa-arrow-right-arrow-left" inert></i> ${game.i18n.localize('DSA5HELPERS.Mobile.SwitchSheet')}</button>` : ''}
-    </div></div>`;
+      ${playerView ? `<button type="button" data-do="playerview"><i class="${playerView.className.match(/fa-toggle-\w+/) ? `fas ${playerView.className.match(/fa-toggle-\w+/)[0]}` : 'fas fa-toggle-off'}" inert></i> ${game.i18n.localize('SHEET.switchLimited')}</button>` : ''}
+    </div>
+    ${controls.length ? `<div class="dsa5h-m-more-list">${controls.map(c => `<button type="button" data-action="${esc(c.action)}"><i class="${esc(c.icon ?? '')} fa-fw" inert></i> ${esc(game.i18n.localize(c.label))}</button>`).join('')}</div>` : ''}
+    </div>`;
   wrap.addEventListener('click', ev => {
     const b = ev.target.closest('button');
-    if (ev.target === wrap || b) wrap.remove();
+    // Erst nach Foundrys Klick-Verarbeitung entfernen (data-action-Einträge laufen über den Bogen-Handler).
+    if (ev.target === wrap || b) setTimeout(() => wrap.remove(), 0);
     if (!b) return;
     if (b.dataset.tab) rail.querySelector(`.dsa5h-rail-btn[data-tab="${b.dataset.tab}"]`)?.click();
     else if (b.dataset.do === 'theme') theme?.click();
-    else if (b.dataset.do === 'switch') switcher?.click();
+    else if (b.dataset.do === 'switch') openSheetSwitcher(app, rail.querySelector('.dsa5h-m-more') ?? rail);
+    else if (b.dataset.do === 'playerview') playerView?.click();
   });
   el.append(wrap);
 }
@@ -65,7 +80,19 @@ function openMoreSheet(el) {
  * beim Scrollen zusammen, Antippen einer Probenzeile würfelt. Läuft nach jedem Rendern, die Reiter selbst bleiben die
  * Knöpfe des Bogens (data-action dsa5hSetTab).
  */
-function setupPhoneSheet(el) {
+function setupPhoneSheet(el, app) {
+  // Zurück-Pfeil links im Kopf (Ü3): ersetzt das × der ausgeblendeten Fensterleiste. Der Kopf wird bei jedem Rendern
+  // neu gebaut, deshalb hier jedes Mal prüfen.
+  const head = el.querySelector('.dsa5h-head');
+  if (head && !head.querySelector('.dsa5h-m-back')) {
+    const back = document.createElement('button');
+    back.type = 'button';
+    back.className = 'dsa5h-m-back';
+    back.setAttribute('aria-label', game.i18n.localize('DSA5HELPERS.Mobile.Close'));
+    back.innerHTML = '<i class="fa-solid fa-chevron-left" inert></i>';
+    back.addEventListener('click', () => app?.close());
+    head.prepend(back);
+  }
   const rail = el.querySelector('nav.dsa5h-rail');
   if (rail && !rail.querySelector('.dsa5h-m-more')) {
     const more = document.createElement('button');
@@ -82,7 +109,7 @@ function setupPhoneSheet(el) {
       more.querySelector('.dsa5h-rail-label').textContent = extra ? extra.querySelector('.dsa5h-rail-label')?.textContent : game.i18n.localize('DSA5HELPERS.Mobile.More');
       more.hidden = tabs.length <= 5 && !extra;
     };
-    more.addEventListener('click', () => openMoreSheet(el));
+    more.addEventListener('click', () => openMoreSheet(el, app));
     rail.addEventListener('click', ev => { if (ev.target.closest('.dsa5h-rail-btn')) setTimeout(sync, 0); });
     sync();
   }
@@ -158,7 +185,7 @@ export function initMobile() {
     const el = element instanceof HTMLElement ? element : element?.[0];
     if (!el || !(el.classList.contains('window-app') || app.hasFrame)) return;
     el.classList.add('dsa5h-m-window');
-    if (mode === 'phone' && el.classList.contains('dsa5-helpers-sheet')) setupPhoneSheet(el);
+    if (mode === 'phone' && el.classList.contains('dsa5-helpers-sheet')) setupPhoneSheet(el, app);
   };
   Hooks.on('renderApplicationV2', markWindow);
   Hooks.on('renderApplication', markWindow);
