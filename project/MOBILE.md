@@ -478,3 +478,96 @@ Bewusst noch nicht:
 - Tablet-Bogen mit fester linker Kopfspalte (Click-Dummy Runde 3): Der Desktop-Aufbau passt auf 820 px bereits; nur die Rail sitzt jetzt im Fenster.
 - Bogen-Feinschliff auf dem Smartphone: Tooltips (Formeln) nur über Langdruck/Foundry. (Waagerechtes Scrollen ist seit 2026-10-15 behoben: Tabellenzeilen ohne Mindestbreite, Nebenspalten ausgeblendet, FW-Steigern im Bearbeitungsmodus unter der Probe, Zierrahmen nur oben.)
 - Foundry-Thema: DSA5 unterstützt das dunkle Foundry-Thema mit „Immersive“ nicht vollständig (helle Schrift auf Pergament) — betrifft auch den Desktop; im Konto-Menü auf „Hell“ stellen.
+
+## 14. Feinschliff Heldenbogen Smartphone (Bestandsaufnahme 2026-10-15)
+
+Auftrag des Nutzers nach dem ersten Gerätetest: alles ausarbeiten, was den Bogen auf dem Smartphone gut bedienbar macht. Seiten dürfen dafür komplett umgebaut werden. Grundlage: Screenshots des echten Bogens in der Testinstanz (390 × 844, Held „Testitest“ mit Magie und Religion, „Wulfgrimm“ mit Gefährte, Spiel- und Bearbeitungsmodus) im Vergleich zu den Click-Dummy-Ansichten `clickdummy/mobile/screenshots/smartphone/07–20`.
+
+### 14.1 Grundsätze für den Umbau
+
+- **Ein Bogen** (E10): gleiche Templates, gleiche Aktionen und Systemmethoden. Smartphone-Layout über `body.dsa5h-phone` in `styles/dsa5-helpers-mobile.css`. Wo CSS nicht reicht, kleine Zusatz-Elemente in den Templates, die am Desktop ausgeblendet sind (z. B. eine Unterzeile), oder Umbauten in `setupPhoneSheet()` (`scripts/mobile/mobile.js`).
+- **Vorbild Click-Dummy**, aber echte Daten und Systemlogik. Zeigt der Dummy etwas, das es im Modul nicht gibt (z. B. „Vorschläge“ statt Favoriten), bleibt die Funktion des Moduls.
+- **Bedienung:** Tippziele mindestens 44 px, Schrift mindestens 14 px, Eingabefelder 16 px (sonst zoomt iOS), kein Hover, keine Funktion nur per Tooltip oder Ziehen.
+- **Nur senkrecht scrollen** (seit 2026-10-15 umgesetzt): nach jedem Umbau mit dem Mess-Skript prüfen (alle Reiter und Unterreiter, 360 und 390 px, Spiel- und Bearbeitungsmodus).
+
+### 14.2 Übergreifend (alle Reiter)
+
+| # | Befund | Vorschlag | Aufwand |
+|---|---|---|---|
+| Ü1 | **Probendialog des Systems** (Talent, Zauber, Waffe) ist auf dem Handy kaum bedienbar: Eingaben zusammengequetscht, Knöpfe klein, viel Leerraum darunter. Er ist der wichtigste Ablauf am Tisch. | Dialog als Blatt von unten (wie Dummy `08-bogen-probe`): Titel und Probe/FW oben, Erschwernis als großer −/+-Regler, Schwierigkeit und Sicht über die volle Breite, „Würfeln“ als breiter Hauptknopf unten, Routineprobe/Vergleich/SL-Entscheid darunter. Nur CSS auf die Dialogklassen des Systems. Gilt auch für Angriff/Parade, Zauber, Liturgie. | M |
+| Ü2 | **Kopf** braucht ~260 px (Titelblatt sogar ~650 px, weil Porträt und Ressourcen in der Seitenleiste noch einmal kommen). LeP/AsP/KaP brechen um („28 / ↵ 28“), Schicksalspunkte stehen in einer eigenen Zeile, der Name zentriert über die ganze Breite. | Kopf wie im Dummy: Porträt 64 px links, rechts Name (2 Zeilen), Identitäts-Chips in einer Zeile (abgeschnitten), „AP · frei“. Darunter LeP/AsP/KaP als drei flache Balken „LeP 28/28“ in einer Zeile, Schips als kleine Punkte neben dem Namen, Eigenschaftswürfel 8 nebeneinander. Auf dem Titelblatt Porträt und Ressourcen aus der Seitenleiste ausblenden (stehen schon im Kopf). Einklappen beim Scrollen (gibt es schon) auf eine 54-px-Zeile mit Mini-Balken. Auf „Eigenschaften“ ohne Würfelzeile. | M |
+| Ü3 | **Fensterknöpfe** in der Plakette (Sperre, Thema, Bogen wechseln, ⋮, ×) sind 16 px groß und kaum zu treffen. | „‹“ zum Schließen links im Kopf, rechts der Schalter „Spiel / Bearb.“ (= Sperre). Thema, Bogen wechseln und ⋮ ins „Mehr“-Blatt (Ü4). Plakette auf dem Handy ausblenden. | M |
+| Ü4 | **„Mehr“** klappt die Reiterleiste auf drei Zeilen auf und deckt den Inhalt ab; Beschriftungen sind abgeschnitten („Characterist…“, „Advancement…“). | „Mehr“ öffnet ein Blatt von unten (Dummy `12`): Kacheln für die übrigen Reiter (inkl. Steigerungsplaner), darunter Spiel/Bearbeiten, Hell/Dunkel, Bogen wechseln, weitere Fensteraktionen. Untere Leiste mit kurzen Mobil-Beschriftungen in `lang/*.json` (z. B. „Werte“ statt „Eigenschaften“). | M |
+| Ü5 | **Unterreiter** stehen als umbrechende Textlinks (Talente und Notizen je zwei Zeilen). | Bis 3 Einträge als Segment-Schalter über die volle Breite (Kampf, Magie, Religion, mit Anzahl wie im Dummy), mehr als 3 als waagerecht wischbare Chips-Zeile (Talente, Notizen). Die Chips-Zeile ist die einzige erlaubte waagerechte Bewegung. | S |
+| Ü6 | **Tippziele in Zeilen**: Stern, ⋮, Augen- und Schild-Knöpfe 24–28 px; Würfel in Talentzeilen 25 px. | Trefferfläche je Knopf 44 px (Padding statt größerem Symbol), Zeilenhöhe mindestens 52 px. Die Würfel bleiben klein, aber der ganze Würfelblock ist ein Ziel. | S |
+| Ü7 | **Bearbeitungsmodus**: Eigenschaften-Kacheln mit „Startwert“/„Steigerung“-Feldern sind 240 px hoch, viele kleine −/+-Knöpfe. | Im Bearbeitungsmodus auf dem Handy Listenzeilen: Eigenschaft · Wert · −/+ (44 px), Start- und Steigerungswert eingeklappt. Gleiches Muster für Talente (schon umgesetzt: FW-Regler unter der Probe) und Kampftechniken. | M |
+| Ü8 | Leere Abschnitte und Desktop-Hinweise („Keine Einträge“, „per Drag & Drop hinzufügen“) kosten Platz; Ziehen gibt es auf dem Handy nicht. | Auf dem Handy leere Abschnitte im Spielmodus ausblenden, Drag-&-Drop-Hinweise ausblenden. Im Bearbeitungsmodus bleiben sie (zum Hinzufügen). | S |
+| Ü9 | Gegenstandsblätter des Systems (Antippen eines Namens) sind nicht geprüft. | Prüfen; bei Bedarf wie Ü1 per CSS (volle Breite, Reiter oben, größere Felder). | S–M |
+| Ü10 | Dunkles Thema auf dem Handy nicht geprüft. | Nach dem Umbau alle Reiter einmal dunkel prüfen. | S |
+
+### 14.3 Je Reiter
+
+**Titelblatt**
+- Kopf und Seitenleiste doppeln sich (Ü2). Auf dem Handy: Kopf oben, dann der Kasten „Statuseffekte / Persönliche Daten“ zugeklappt als eine Zeile mit Zähler („2 Zustände“), aufklappbar.
+- Favoriten als Karten wie im Dummy (Name groß, Unterzeile z. B. „Talent · MU/GE/KO“, Wert rechts, Würfel darunter); die ganze Karte würfelt. Leerzustand kurz halten.
+
+**Eigenschaften**
+- 8 Kacheln (2 × 4) passen; im Spielmodus etwas flacher.
+- Grundwerte: LeP, AsP, KaP und Schicksalspunkte im Spielmodus mit großen −/+-Reglern (Dummy `09`); die Tabelle „Aktuell/Mod./Steig./Max“ nur im Bearbeitungsmodus.
+- Vor-/Nachteile und Sonderfertigkeiten einspaltig (heute teils zweispaltig mit abgeschnittenen Namen), Sprechblase und Stern 44 px.
+
+**Talente**
+- Gruppen-Chips waagerecht wischbar (Ü5); Suche und „Nur gesteigerte“ in einer Zeile (passt schon).
+- Spaltenkopf „Probe FW“ ausblenden (selbsterklärend), Gruppenkopf beim Scrollen oben kleben lassen.
+- FW fett und rechtsbündig; Behinderung als kleines Zeichen hinter dem Namen statt als eigene Spalte (heute ausgeblendet).
+
+**Kampf** (größter Umbau)
+- Unterreiter wie im Dummy: **Waffen · Rüstung · Kampftechniken** statt „Körper / Kampftechniken“.
+- „Waffen“: oben 2 × 2 Schnellaktionen (Initiative, Ausweichen, waffenloser Angriff und Verteidigung, dazu Fallschaden und Helfen). Danach je Waffe in der Hand eine Karte: Name, Technik · Hand, Knöpfe AT/PA bzw. FK mit Würfel, TP und RW rechts, Munition als Chips, Nachladen. Zuletzt „Weitere Waffen“ als Liste.
+- Die **Körper-Silhouette** mit Hand-Feldern (~500 px) entfällt auf dem Handy; die Hand wird über das Schild-Menü an der Waffe gewählt (gibt es schon).
+- „Rüstung“: drei Kacheln RS / BE / Wundschwelle, darunter die Rüstungen als Liste mit RS/BE und „Angelegt“.
+- „Kampftechniken“: Liste wie heute (passt), Suche oben.
+
+**Magie / Religion**
+- Traditionskarte wie Dummy `13`: Symbol, Name, Leiteigenschaft · Merkmal in einer Zeile, darunter AsP/KaP-Balken mit −/+ (ersetzt die drei Spalten „Leiteigenschaft / Merkmal / Faktor“).
+- Unterreiter als Segment mit Anzahl (Zauber 6 · Rituale 1 · Tricks 1 …).
+- **Unterzeile je Zauber/Liturgie: „4 AsP · 1 Aktion · 8 Schritt“** (Template: zusätzliches, am Desktop verstecktes Element). Damit kommen Kosten, Dauer und Reichweite zurück, die heute auf dem Handy fehlen.
+- Leere Abschnitte (Traditionsartefakt, Zeichen …) im Spielmodus ausblenden (Ü8).
+
+**Ausrüstung**
+- Kategorie-Chips „Alle · Waffen · Rüstung · Verbrauch · Sonstiges“ statt vieler Abschnitte untereinander (Dummy `15`).
+- Zeile: Name, Unterzeile „1,8 Stein · 180 D“, rechts „Angelegt“ als klarer Knopf statt Schild-Symbol. Anzahl als −/+ nur im Bearbeitungsmodus, sonst „×3“ hinter dem Namen.
+- Geldbeutel und Traglast passen; Taschen als Liste statt als Kacheln.
+
+**Status**
+- Oben drei Kacheln **Schmerz · Belastung · Wunden** (Dummy `17`).
+- Zustände mit großen Stufen-Feldern (44 px) statt kleiner −/+. „Zustand hinzufügen“ als Knopf, der ein Blatt mit der Zustandsliste öffnet.
+- Übertragene Effekte zweizeilig (Name, darunter Quelle) statt Name und Quelle nebeneinander.
+- **Fehler:** „Modifikatoren“ zeigt den Spaltenkopf doppelt (`.dsa5h-head-dup` bleibt sichtbar).
+
+**Notizen**
+- Persönliche Daten als einspaltige Liste „Bezeichnung über Wert“ (heute zweispaltig, Werte versetzt eingerückt).
+- Leere Editoren (Biografie, Notizen …) nehmen je ~200 px ein: im Spielmodus zugeklappt mit „Tippen zum Schreiben“; die Editor-Werkzeugleiste fürs Handy prüfen.
+- Unterreiter als Chips (Ü5).
+
+**Gefährten**
+- Passt seit der Korrektur in die Breite. Der Name ist sehr groß und abgeschnitten („Esel mit Zü…“): kleinere Schrift, 2 Zeilen. Knöpfe Fertigkeiten/Leiste/Trick auf 44 px.
+- Dummy `19/20` (Liste, Antippen öffnet einen Mini-Bogen als Blatt) nur, wenn die Karte nach dem Feinschliff noch zu voll ist.
+
+**Steigerungsplaner** (Modul von Lyynix)
+- Die Kacheln laufen rechts heraus. Mit Lyynix klären; bis dahin per CSS umbrechen.
+
+### 14.4 Vorschlag Reihenfolge
+
+1. **P1 Bedienbarkeit am Tisch:** Ü1 Probendialog, Ü2 Kopf, Ü3 Fensterknöpfe, Ü4 „Mehr“-Blatt, Ü5 Unterreiter, Ü6 Tippziele, Status-Fehler (doppelter Spaltenkopf).
+2. **P2 Seiten umbauen:** Kampf, Magie/Religion (inkl. Unterzeile), Status, Eigenschaften-Grundwerte.
+3. **P3 Rest:** Titelblatt-Karten, Ausrüstung mit Chips, Notizen, Bearbeitungsmodus (Ü7), leere Abschnitte (Ü8), Gegenstandsblätter (Ü9), dunkles Thema (Ü10), danach Tablet.
+
+Jeder Schritt: Testinstanz, Mess-Skript, Screenshots. Den Click-Dummy nur dort nachziehen, wo das Ergebnis vom Dummy abweicht.
+
+### 14.5 Offene Fragen an den Nutzer
+
+- **Zeile antippen:** Würfelt ein Tipp auf die ganze Zeile (wie im Dummy) oder bleibt es wie am Desktop (Name öffnet das Gegenstandsblatt, Würfel würfeln)? Vorschlag: Die ganze Zeile würfelt, das Gegenstandsblatt öffnet sich per Langdruck oder ⋮.
+- **Körper-Silhouette** im Kampf auf dem Handy weglassen (Vorschlag) oder verkleinert behalten?
+- **Fensterknöpfe** wie in Ü3 ins „Mehr“-Blatt verschieben?
+- **Bearbeitungsmodus auf dem Handy:** voll unterstützen (Ü7) oder nur das Nötigste (Werte steigern, Ressourcen) und alles andere am PC?

@@ -13,6 +13,7 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
   - **Steigerungsplaner-Reiter** (Modul von Lyynix) läuft auf dem Handy rechts heraus (`ol.planner-steps`, Kacheln nebeneinander). Fremdes Modul: an Lyynix melden oder bei uns per CSS umbrechen.
   - **Nebenspalten** auf dem Handy ausgeblendet (Behinderung bei Talenten; Kosten, Zauberdauer, Reichweite bei Zaubern/Liturgien; Gewicht in der Ausrüstung). Sie stehen im Gegenstandsblatt. Prüfen, ob etwas davon am Tisch fehlt.
   - **Tablet** noch nicht getestet.
+  - **Feinschliff Bogen auf dem Smartphone:** Bestandsaufnahme und Plan je Reiter in [MOBILE.md](MOBILE.md) Abschnitt 14 (Reihenfolge P1–P3, 4 offene Fragen in 14.5). Wichtigster Fund: Der Probendialog des Systems ist auf dem Handy kaum bedienbar.
   - Neue Testversion im Mobil-Kanal (z. B. `mobile-v0.6.1`), sobald der Nutzer sie freigibt.
 
 - **Fehler (gefunden 2026-10-15, betrifft auch den Desktop):** In `styles/dsa5-helpers-character-sheet.css` Abschnitt 18 zielen zwei Container-Regeln auf `.dsa5h-main` selbst (Titelblatt-Raster bei < 700 px und < 520 px). `.dsa5h-main` ist aber der Container — ein Element kann sich nicht selbst abfragen, die Regeln greifen nie. Schmale Bogenfenster behalten deshalb das zweispaltige Titelblatt. Mobil ist das über `styles/dsa5-helpers-mobile.css` gelöst; für den Desktop die Regeln auf ein Kind-Element bzw. eine Media-Query umstellen.
