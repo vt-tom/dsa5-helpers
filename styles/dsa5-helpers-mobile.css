@@ -343,8 +343,50 @@ body.dsa5h-phone .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar .dsa
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fav-grid { grid-template-columns: minmax(0, 1fr); padding: 8px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fav-card { grid-template-columns: 24px minmax(0, 1fr) auto auto 24px; gap: 6px; }
 
-/* Breite Tabellen waagerecht scrollbar statt abgeschnitten */
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .panel { overflow-x: auto; }
+/* Nur senkrecht scrollen (Rückmeldung 2026-10-15): Zierrahmen nur oben (Plakette), keine Mindestbreite für
+   Tabellenzeilen (Desktop-Regel für schmale Fenster in Abschnitt 18 der Bogen-CSS), Spalten je Zeilentyp schmaler.
+   Nebenspalten entfallen; sie stehen im Gegenstandsblatt (Antippen des Namens). */
+body.dsa5h-phone .dsa5-helpers-sheet { border-width: 24px 0 0 !important; border-image-width: 24px 0 0 0 !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .panel { overflow-x: visible; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content :is(.row, .row-head) { min-width: 0; column-gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .row > .withContext { min-width: 0; overflow-wrap: anywhere; }
+/* Talente: Bild | Name | Probe | FW | Stern (ohne Behinderung) */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns: 24px minmax(0, 1fr) auto auto 28px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row > :nth-child(4) { display: none; }
+/* Bearbeiten: Steigern-Knöpfe unter die Probe, sonst bleibt für den Namen kaum Platz */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-skill-row.item { grid-template-columns: 24px minmax(0, 1fr) auto 28px; row-gap: 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-skill-row.item > :is(:first-child, .withContext, .dsa5h-favorite) { grid-row: span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-skill-row.item > .dsa5h-skill-value { grid-column: 3; grid-row: 2; justify-content: flex-end; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-skill-row.row-head > :nth-child(5) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-talent { grid-template-columns: 24px minmax(0, 1fr) auto 32px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-head { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 2px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-head > :first-child { grid-column: 1 / -1; }
+/* Zauber/Liturgien: Bild | Name | Probe | FW | Stern (ohne Kosten, Dauer, Reichweite) */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns: 34px minmax(0, 1fr) auto auto 28px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row > :is(:nth-child(5), :nth-child(6), :nth-child(7)) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-row { grid-template-columns: 26px minmax(0, 1fr) auto 32px 40px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-tradition-row { grid-template-columns: 34px minmax(0, 1fr) auto auto; }
+/* Kampf */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-short-weapons { grid-template-columns: minmax(0, 1fr); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-short-weapon { grid-template-columns: 30px minmax(0, 1fr) auto auto auto 28px; gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-combatskill-row { grid-template-columns: minmax(0, 1fr) auto 42px 42px; }
+/* Ausrüstung: Bild | Name | Getragen | Anzahl | ⋮ | Stern (ohne Gewicht) */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row { grid-template-columns: 36px minmax(0, 1fr) auto 36px auto 28px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row > :nth-child(5) { display: none; }
+/* Status */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row { grid-template-columns: 28px minmax(0, 1fr) auto auto 24px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-modifier-row { grid-template-columns: minmax(0, 1fr) 44px minmax(0, 2fr); }
+/* FW-Feld im Bearbeiten-Modus: feste Breite (sonst drückt es den Namen auf null), Knöpfe fingergerecht */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-value input { flex: none; width: 36px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-skill-value button { flex-basis: 28px; width: 28px; height: 32px; }
+/* Magie/Religion: Leitwert usw. unter der Traditions-Pille statt daneben */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta { flex-basis: 100%; min-width: 0; gap: 8px; border-left: 0; padding-left: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta label { min-width: 0; overflow-wrap: anywhere; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta label > span { white-space: normal; }
+/* Gefährten (System-Template): Loyalität über der Schnellleiste statt daneben */
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] .companion-loyalty-row { flex-wrap: wrap; justify-content: center; gap: 8px; }
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] .companion-hotbar { flex: 1 1 100%; min-width: 0; max-width: 100%; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-disease-row { grid-template-columns: minmax(0, 2fr) 36px minmax(0, 1fr) minmax(0, 1fr) auto 28px; }
 
 /* Tablet: Reiterleiste rechts im Fenster */
 body.dsa5h-tablet .dsa5-helpers-sheet .window-content { padding-right: 84px !important; }

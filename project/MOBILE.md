@@ -476,5 +476,5 @@ Umgesetzt und live geprüft: 13.2 (Automatik), 13.3 (Gesten, Ping, Token ziehen 
 Bewusst noch nicht:
 - „Neu“-Markierung im Journal (Click-Dummy) — optional, braucht eigene Merkliste.
 - Tablet-Bogen mit fester linker Kopfspalte (Click-Dummy Runde 3): Der Desktop-Aufbau passt auf 820 px bereits; nur die Rail sitzt jetzt im Fenster.
-- Bogen-Feinschliff auf dem Smartphone: breite Tabellen (Zauber, Talente) scrollen waagerecht statt als Zeilenkarten; Tooltips (Formeln) nur über Langdruck/Foundry.
+- Bogen-Feinschliff auf dem Smartphone: Tooltips (Formeln) nur über Langdruck/Foundry. (Waagerechtes Scrollen ist seit 2026-10-15 behoben: Tabellenzeilen ohne Mindestbreite, Nebenspalten ausgeblendet, FW-Steigern im Bearbeitungsmodus unter der Probe, Zierrahmen nur oben.)
 - Foundry-Thema: DSA5 unterstützt das dunkle Foundry-Thema mit „Immersive“ nicht vollständig (helle Schrift auf Pergament) — betrifft auch den Desktop; im Konto-Menü auf „Hell“ stellen.

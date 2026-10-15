@@ -114,7 +114,12 @@ export function initMobile() {
 
   initCanvasTouch();
   initTouchContext();
-  Hooks.once('ready', () => initShell(mode, { chosen, detected: detectMode() }));
+  Hooks.once('ready', () => {
+    initShell(mode, { chosen, detected: detectMode() });
+    // „Desktop-Website“ (Chrome/Android u. a.): Der Browser ignoriert die Viewport-Angabe und baut die Seite ~980 px
+    // breit auf, alles wird winzig. Abschalten kann das nur der Nutzer (Rückmeldung 2026-10-15).
+    if (innerWidth > screen.width * 1.3) ui.notifications.warn('DSA5HELPERS.Mobile.DesktopSite', { localize: true, permanent: true });
+  });
 
   // Fenster (Bögen, Probendialoge, Journal …) bildschirmfüllend; die Kennzeichnung übernimmt das CSS.
   const markWindow = (app, element) => {

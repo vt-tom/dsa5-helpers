@@ -7,6 +7,14 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
+- **Mobil: erster Gerätetest Smartphone (Nutzer, 2026-10-15, Android/Chrome, Testversion 0.6.0).** Erledigt auf `feature/mobile`: Bogen scrollt auf allen Reitern nur noch senkrecht (bei 360 und 390 px gemessen, Spiel- und Bearbeitungsmodus, 5 Helden); bei aktiver „Desktop-Website“ erscheint ein Hinweis (die Automatik selbst hat funktioniert, nur die Seite war 980 px breit). Noch offen:
+  - **Journal mobil:** eigenes Journal-Blatt für das Handy oder Foundrys Blatt weiter per CSS anpassen? Vorschlag: Foundrys Blatt behalten (Seitenlinks, Bilder, Module wie Monk's Enhanced Journal funktionieren weiter) und gezielt umbauen. Dafür braucht es konkrete Stellen vom Nutzer (Screenshots).
+  - **Chat mobil:** Vorschlag wie beim Journal: kein eigener Chat (die Karten von System und Modulen, Dice So Nice, Schips und das Kontextmenü hängen am Foundry-Chat), sondern Foundrys Chat-Log fürs Handy umbauen (Eingabe unten fest, größere Knöpfe, Karten auf volle Breite). Konkrete Stellen vom Nutzer sammeln.
+  - **Steigerungsplaner-Reiter** (Modul von Lyynix) läuft auf dem Handy rechts heraus (`ol.planner-steps`, Kacheln nebeneinander). Fremdes Modul: an Lyynix melden oder bei uns per CSS umbrechen.
+  - **Nebenspalten** auf dem Handy ausgeblendet (Behinderung bei Talenten; Kosten, Zauberdauer, Reichweite bei Zaubern/Liturgien; Gewicht in der Ausrüstung). Sie stehen im Gegenstandsblatt. Prüfen, ob etwas davon am Tisch fehlt.
+  - **Tablet** noch nicht getestet.
+  - Neue Testversion im Mobil-Kanal (z. B. `mobile-v0.6.1`), sobald der Nutzer sie freigibt.
+
 - **Fehler (gefunden 2026-10-15, betrifft auch den Desktop):** In `styles/dsa5-helpers-character-sheet.css` Abschnitt 18 zielen zwei Container-Regeln auf `.dsa5h-main` selbst (Titelblatt-Raster bei < 700 px und < 520 px). `.dsa5h-main` ist aber der Container — ein Element kann sich nicht selbst abfragen, die Regeln greifen nie. Schmale Bogenfenster behalten deshalb das zweispaltige Titelblatt. Mobil ist das über `styles/dsa5-helpers-mobile.css` gelöst; für den Desktop die Regeln auf ein Kind-Element bzw. eine Media-Query umstellen.
 
 - **Mobil-Click-Dummy Runde 4 ansehen** (2026-10-15): Die Rückmeldung von Lyynix ([MOBILE-FEEDBACK-2026-10-14.md](MOBILE-FEEDBACK-2026-10-14.md)) ist in `clickdummy/mobile/` eingebaut (Szene mit Gesten, schwebende Knöpfe mit Sprechblase, Schips im Chat, Journal-Ordner, „Probe anfordern“, automatische Oberfläche). Das Umsetzungskonzept steht in [MOBILE.md](MOBILE.md) Abschnitt 13. Öffnen über `clickdummy/start-server.bat`, dann `…/clickdummy/mobile/index.html` (Übersicht) bzw. `app.html` (echtes Gerät). Rückmeldung an Lyynix?
