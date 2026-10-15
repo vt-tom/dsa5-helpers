@@ -79,6 +79,33 @@ git checkout main && git merge --no-ff release/0.4.0 && git push origin main
 
 ---
 
+## Mobil-Kanal (Testversionen von `feature/mobile`, seit 2026-10-15)
+
+Eigene Manifest-URL, nur für Tester von Mobile Support:
+
+```text
+https://github.com/vt-tom/dsa5-helpers/releases/download/mobile/module.json
+```
+
+- Tag `mobile-v<Version>` (z. B. `mobile-v0.6.0`) auf einem Commit von `feature/mobile`, Release **immer als
+  Pre-release** (sonst bricht der Job ab). Die Action (Job `mobile`) baut nur `module.zip` mit dem Mobil-Manifest
+  und ersetzt das `module.json` des festen Pre-release `mobile`. Stabil- und Beta-Kanal bleiben unberührt.
+- Weitere Testversion: neue, höhere Nummer (gleiche Regeln wie oben, keine Suffixe).
+- Wer über diese URL installiert, bleibt im Mobil-Kanal, bis er das Modul mit einer anderen Manifest-URL neu
+  installiert.
+
+```sh
+git checkout feature/mobile && git status && node tests/sheet.test.cjs
+git push origin feature/mobile
+git tag -a mobile-v0.6.0 -m "mobile-v0.6.0" && git push origin mobile-v0.6.0
+gh release create mobile-v0.6.0 --verify-tag --prerelease --title "v0.6.0 (Mobil-Test)" --notes-file notes.md
+gh run list --workflow release.yml --limit 1
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/mobile/module.json   # neue Version, download → mobile-v…/module.zip
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json     # unverändert
+```
+
+---
+
 ## Ablauf Schritt für Schritt
 
 Alle Befehle im Modulordner (`D:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers`), funktionieren in
