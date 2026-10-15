@@ -62,6 +62,17 @@ async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{o
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
+test('mobile: CSS loaded and scoped, all texts localized',()=>{
+ assert(JSON.parse(read('module.json')).styles.includes('styles/dsa5-helpers-mobile.css'));
+ const loose=[];postcss.parse(read('styles/dsa5-helpers-mobile.css')).walkRules(r=>{if(r.parent.type==='atrule'&&r.parent.name==='keyframes')return;for(const s of r.selectors)if(!/body\.dsa5h-|^#dsa5h-m-shell|^\.dsa5h-m-/.test(s.trim()))loose.push(s);});
+ assert.deepEqual(loose,[],'mobile selectors must stay behind body.dsa5h-mobile / own classes');
+ const en=JSON.parse(read('lang/en.json'));const get=(o,k)=>k.split('.').reduce((a,x)=>a?.[x],o);
+ const src=['mobile','shell','canvas-touch','touch-context'].map(f=>read(`scripts/mobile/${f}.js`)).join('\n');
+ const used=new Set([...src.matchAll(/DSA5HELPERS\.Mobile\.([A-Za-z.]*[A-Za-z])/g)].map(m=>m[1]));for(const m of src.matchAll(/L\('([A-Za-z.]+)'\)/g))used.add(m[1]);
+ for(const k of ['auto','phone','tablet','foundry'])used.add(`Mode.${k}`);for(const k of ['chat','journal','settings'])used.add(`Panel.${k}`);
+ used.delete('Mode');used.delete('Panel'); // nur als Präfix `…Mode.${m}`, Einzelwerte oben ergänzt
+ for(const k of used){assert.equal(typeof get(own.DSA5HELPERS.Mobile,k),'string','de: Mobile.'+k);assert.equal(typeof get(en.DSA5HELPERS.Mobile,k),'string','en: Mobile.'+k);}
+});
 // Issue #7: Hover-Effekte nur in @media (hover: hover), damit sie auf Touch-Geräten nicht hängen bleiben (Modul und Click-Dummy).
 test('every :hover rule sits inside @media (hover: hover)',()=>{for(const file of ['styles/dsa5-helpers-character-sheet.css','clickdummy/style.css']){const bad=[];postcss.parse(read(file)).walkRules(rule=>{if(!/:hover\b/.test(rule.selector))return;let ok=false;for(let p=rule.parent;p&&p.type==='atrule';p=p.parent)if(p.name==='media'&&/\(\s*hover\s*:\s*hover\s*\)/.test(p.params))ok=true;if(!ok)bad.push(rule.selector.replace(/\s+/g,' '));});assert.deepEqual(bad,[],file+': :hover outside @media (hover: hover)');}});
 test('full hero renders all ten tabs, real item bindings and no duplicate form names',async()=>{const {context}=await prepare();const html=render(context);const panels=elements(html,el=>el.attribs?.['data-tab-panel']);assert.equal(panels.length,10);assert(html.includes('data-action="rollAggregatedProbe"'));assert(html.includes('data-which="3"'));assert(!html.includes('data-item-id="bag-child"'),'bag contents belong to the DSA5 item sheet, not a sheet-side dialog');assert(html.includes('OWNER_SECRET'));assert(html.includes('GM_SECRET'));const names=elements(html,el=>el.attribs?.name).map(el=>el.attribs.name);assert.equal(names.length,new Set(names).size,'duplicate form field names');assert(!html.includes('TabInProgress'));});

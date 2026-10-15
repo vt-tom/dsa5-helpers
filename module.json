@@ -16,7 +16,8 @@
     "scripts/dsa5-helpers.js"
   ],
   "styles": [
-    "styles/dsa5-helpers-character-sheet.css"
+    "styles/dsa5-helpers-character-sheet.css",
+    "styles/dsa5-helpers-mobile.css"
   ],
   "relationships": {
     "systems": [

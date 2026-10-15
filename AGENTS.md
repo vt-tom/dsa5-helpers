@@ -31,7 +31,8 @@ d:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers\
   - `scripts/dsa5-helpers.js` — init-Hook, Sheet-Registrierung, Partial-Preload, eigene Handlebars-Helfer.
   - `scripts/sheets/dsa5-helpers-character-sheet.js` — Sheet-Klasse, erbt von `globalThis.dsa5.sheets.ActorSheetdsa5Character`.
   - `templates/actors/` — Handlebars-Templates (`dsa5-helpers-character-sheet.hbs` + `parts/*.hbs` je Tab/Baustein).
-  - `styles/dsa5-helpers-character-sheet.css` — sämtliches Styling.
+  - `styles/dsa5-helpers-character-sheet.css` — sämtliches Styling des Bogens.
+  - `scripts/mobile/` + `styles/dsa5-helpers-mobile.css` — Mobile Support (nur Branch `feature/mobile`): `mobile.js` (Einstellungen, Oberfläche wählen, Body-Klasse `dsa5h-mobile`), `shell.js` (Kopf, Heldenkarte, schwebende Knöpfe, Panels), `canvas-touch.js` (Gesten auf der Szene), `touch-context.js` (Langdruck → Kontextmenü). Alles greift nur bei aktivem „Hybrides Spiel“ auf Touch-Geräten.
   - `styles/dsa5-helpers-frame.svg` — Fensterrahmen, **generiert** von `tools/gen-frame.cjs` (nach Änderungen am Skript `node tools/gen-frame.cjs`).
   - `lang/de.json`, `lang/en.json` — Lokalisierung.
   - `tests/sheet.test.cjs` — Node-Test-Harness (`node tests/sheet.test.cjs`): kompiliert die echten Templates gegen ein installiertes `foundry-nodejs-v14` + die echten `systems/dsa5`-Dateien, prüft Struktur/Aktionen/Datenpfade/Lokalisierung statisch (kein jsdom, keine Interaktions-Simulation — echte Klicks/Eingaben nur live in Foundry prüfbar).

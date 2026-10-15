@@ -1,0 +1,245 @@
+/* ==========================================================================
+   DSA5 Helpers — Tablet-/Smartphone-Oberfläche („Hybrides Spiel“)
+   Alles hängt an body.dsa5h-mobile (gesetzt in scripts/mobile/mobile.js), am Desktop greift nichts davon.
+   Vorbild: clickdummy/mobile (Runde 4), Konzept: project/MOBILE.md Abschnitt 13.
+
+   1. Variablen
+   2. Foundry-Oberfläche ausblenden / umordnen
+   3. Kopfleiste
+   4. Szenen-Knöpfe
+   5. Heldenkarte
+   6. Schwebende Knöpfe + Sprechblase (Foundrys Chat-Benachrichtigung)
+   7. Panels (Chat, Journal, Einstellungen = Foundrys Seitenleiste)
+   8. Fenster bildschirmfüllend, Kontextmenü als Blatt
+   9. Konto-Menü
+  10. Szene: Token ziehen, Namen
+   ========================================================================== */
+
+/* 1. Variablen ------------------------------------------------------------ */
+body.dsa5h-mobile {
+  --dsa5h-m-head: 52px;
+  --dsa5h-m-bar: 44px;
+  --dsa5h-m-safe-b: env(safe-area-inset-bottom, 0px);
+  --dsa5h-m-paper: #ece2d2;
+  --dsa5h-m-ink: #2b2721;
+  --dsa5h-m-ink2: rgba(43, 39, 33, .72);
+  --dsa5h-m-line: rgba(43, 39, 33, .14);
+  --dsa5h-m-line2: rgba(43, 39, 33, .28);
+  --dsa5h-m-field: rgba(255, 255, 255, .64);
+  --dsa5h-m-accent: #8b6f3f;
+  --dsa5h-m-onaccent: #fff8ec;
+  --dsa5h-m-gold: #b99a5c;
+  --dsa5h-m-danger: #b3241a;
+  --dsa5h-m-ok: #2f6b2a;
+  --dsa5h-m-hdr: linear-gradient(180deg, #3a322b, #272320);
+  --dsa5h-m-phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+  --dsa5h-m-panel-w: 100vw;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+body.dsa5h-tablet { --dsa5h-m-panel-w: 400px; }
+body.dsa5h-mobile input, body.dsa5h-mobile textarea, body.dsa5h-mobile [contenteditable], body.dsa5h-mobile prose-mirror { user-select: text; }
+body.dsa5h-mobile #board { touch-action: none; }
+
+/* 2. Foundry-Oberfläche ausblenden / umordnen ------------------------------- */
+body.dsa5h-mobile #ui-left,
+body.dsa5h-mobile #ui-bottom,
+body.dsa5h-mobile #sidebar-tabs { display: none; }
+body.dsa5h-mobile #ui-right {
+  position: fixed;
+  inset: auto 0 0 0;
+  height: 0;
+  transform: none;
+  z-index: 45;
+  pointer-events: none;
+}
+
+/* 3. Kopfleiste ------------------------------------------------------------ */
+#dsa5h-m-shell { position: fixed; inset: 0; z-index: 40; pointer-events: none; font-family: 'GentiumBasic', Georgia, serif; color: var(--dsa5h-m-ink); }
+#dsa5h-m-shell button { font-family: inherit; }
+#dsa5h-m-shell > * { pointer-events: auto; }
+.dsa5h-m-head {
+  position: absolute; inset: 0 0 auto 0; height: var(--dsa5h-m-head);
+  padding: env(safe-area-inset-top, 0px) 8px 0 10px; box-sizing: content-box;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--dsa5h-m-hdr); color: #f4e8d6; box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+.dsa5h-m-head > img { flex: none; width: 32px; height: 32px; border: 0; }
+.dsa5h-m-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dsa5h-m-titles strong { font-family: 'Andalus', serif; font-weight: normal; font-size: 19px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsa5h-m-titles small { font-size: 12px; color: rgba(244, 232, 214, .75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#dsa5h-m-shell .dsa5h-m-account {
+  flex: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 22px;
+  background: radial-gradient(circle, var(--dsa5h-m-gold) 0 18px, transparent 18.5px); color: #272320;
+  font-size: 14px; font-weight: 700; line-height: 44px;
+}
+
+/* 4. Szenen-Knöpfe --------------------------------------------------------- */
+.dsa5h-m-scenebtns { position: absolute; right: 10px; top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 10px); display: flex; flex-direction: column; gap: 8px; }
+#dsa5h-m-shell .dsa5h-m-scenebtns button {
+  width: 44px; height: 44px; padding: 0; border: 0; border-radius: 6px;
+  background: rgba(20, 18, 16, .78); color: #f4e8d6; font-size: 18px; line-height: 44px;
+}
+#dsa5h-m-shell .dsa5h-m-scenebtns button[aria-pressed="true"] { background: var(--dsa5h-m-gold); color: #1c1917; }
+
+/* 5. Heldenkarte ----------------------------------------------------------- */
+.dsa5h-m-heroes {
+  position: absolute; left: 12px; right: 12px; bottom: calc(84px + var(--dsa5h-m-safe-b));
+  max-height: 38vh; max-width: 760px; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--dsa5h-m-paper); border: 1px solid var(--dsa5h-m-line2); border-radius: 4px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .35);
+}
+body.dsa5h-m-full .dsa5h-m-heroes { display: none; }
+.dsa5h-m-heroes-head {
+  position: sticky; top: 0; z-index: 1; min-height: 44px; padding: 4px 8px 4px 12px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--dsa5h-m-phead), var(--dsa5h-m-paper); font-family: 'Andalus', serif; font-size: 18px;
+}
+#dsa5h-m-shell .dsa5h-m-heroes-head button {
+  flex: none; width: auto; height: 36px; padding: 0 12px; border: 0; border-radius: 18px;
+  background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); font-size: 14px; font-weight: 700; line-height: 36px;
+}
+#dsa5h-m-shell .dsa5h-m-hero {
+  width: 100%; min-height: 68px; height: auto; margin: 0; padding: 8px 12px; border: 0; border-top: 1px solid var(--dsa5h-m-line); border-radius: 0;
+  display: flex; align-items: center; gap: 12px; background: none; color: inherit; text-align: left; line-height: 1.2;
+}
+.dsa5h-m-hero > img { flex: none; width: 44px; height: 52px; object-fit: cover; border: 1.5px solid var(--dsa5h-m-gold); border-radius: 3px; background: #d9cbb4; }
+.dsa5h-m-hero > i { flex: none; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-hero-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.dsa5h-m-hero-name { font-family: 'Andalus', serif; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsa5h-m-hero-sub { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--dsa5h-m-ink2); white-space: nowrap; overflow: hidden; }
+.dsa5h-m-dot { flex: none; width: 8px; height: 8px; border-radius: 4px; background: rgba(43, 39, 33, .35); }
+.dsa5h-m-dot.online { background: var(--dsa5h-m-ok); }
+.dsa5h-m-bars { display: flex; gap: 6px; }
+.dsa5h-m-bar { flex: 1; max-width: 110px; display: flex; flex-direction: column; gap: 2px; }
+.dsa5h-m-bar-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; line-height: 1; }
+.dsa5h-m-bar-label > span:first-child { color: var(--dsa5h-m-ink2); }
+.dsa5h-m-bar-track { height: 5px; border-radius: 3px; background: var(--dsa5h-m-line); overflow: hidden; }
+.dsa5h-m-bar-track > span { display: block; height: 100%; }
+.dsa5h-m-bar.lep .dsa5h-m-bar-track > span { background: linear-gradient(90deg, #841a16, #c42c24); }
+.dsa5h-m-bar.asp .dsa5h-m-bar-track > span { background: linear-gradient(90deg, #1c6f9e, #3558c4); }
+.dsa5h-m-bar.kap .dsa5h-m-bar-track > span { background: linear-gradient(90deg, #5d8f24, #2a7a3a); }
+.dsa5h-m-empty { margin: 0; padding: 14px 12px; font-size: 14px; color: var(--dsa5h-m-ink2); }
+
+/* 6. Schwebende Knöpfe + Sprechblase ---------------------------------------- */
+#dsa5h-m-shell .dsa5h-m-fab {
+  position: absolute; bottom: calc(16px + var(--dsa5h-m-safe-b)); width: 56px; height: 56px; padding: 0;
+  border: 2px solid rgba(39, 35, 32, .25); border-radius: 28px;
+  background: radial-gradient(circle at 35% 30%, #dcc189, #a3824a); color: #272320;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35); font-size: 24px; line-height: 52px;
+}
+#dsa5h-m-shell .dsa5h-m-fab.journal { left: 16px; }
+#dsa5h-m-shell .dsa5h-m-fab.chat { right: 16px; }
+.dsa5h-m-badge {
+  position: absolute; top: -4px; right: -4px; min-width: 24px; height: 24px; padding: 0 6px; box-sizing: border-box;
+  border: 2px solid var(--dsa5h-m-paper); border-radius: 12px; background: var(--dsa5h-m-danger);
+  color: #fff; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center;
+}
+.dsa5h-m-badge[hidden] { display: none; }
+body.dsa5h-phone.dsa5h-m-panel-open .dsa5h-m-fab,
+body.dsa5h-tablet[data-dsa5h-panel] .dsa5h-m-fab.chat { display: none; }
+
+/* Foundrys Chat-Benachrichtigungen (sichtbar, solange die Seitenleiste eingeklappt ist) als Sprechblase */
+body.dsa5h-mobile #ui-right-column-1 { position: static; }
+body.dsa5h-mobile #chat-notifications {
+  position: fixed; right: 12px; bottom: calc(84px + var(--dsa5h-m-safe-b)); z-index: 46;
+  width: min(320px, calc(100vw - 96px)); height: auto; display: block; pointer-events: auto;
+}
+body.dsa5h-mobile #chat-notifications > #chat-message,
+body.dsa5h-mobile #chat-notifications > #chat-controls { display: none; }
+body.dsa5h-mobile #chat-notifications .overflow { max-height: 34vh; }
+body.dsa5h-mobile #chat-notifications .chat-log > li:not(:last-child) { display: none; }
+body.dsa5h-mobile #chat-notifications .chat-log > li { border-radius: 12px 12px 4px 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
+body.dsa5h-mobile.dsa5h-m-panel-open #chat-notifications { display: none; }
+
+/* 7. Panels (Foundrys Seitenleiste) ----------------------------------------- */
+body.dsa5h-mobile:not(.dsa5h-m-panel-open) #sidebar { display: none; }
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar {
+  position: fixed; z-index: 44; right: 0; bottom: 0; width: var(--dsa5h-m-panel-w); height: auto;
+  top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + var(--dsa5h-m-bar));
+  pointer-events: auto; background: var(--color-cool-5, #1a1a1d);
+  padding-bottom: var(--dsa5h-m-safe-b); box-sizing: border-box;
+}
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar-content { width: 100%; margin: 0; transition: none; }
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar-content .tab { width: 100%; }
+.dsa5h-m-panelbar {
+  position: absolute; right: 0; top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px)); width: var(--dsa5h-m-panel-w); height: var(--dsa5h-m-bar);
+  display: none; align-items: center; justify-content: space-between; padding: 0 4px 0 14px; box-sizing: border-box;
+  background: var(--dsa5h-m-phead), var(--dsa5h-m-paper); font-family: 'Andalus', serif; font-size: 19px;
+}
+body.dsa5h-m-panel-open .dsa5h-m-panelbar { display: flex; }
+#dsa5h-m-shell .dsa5h-m-panelbar button { width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--dsa5h-m-ink); font-size: 20px; line-height: 44px; }
+body.dsa5h-tablet.dsa5h-m-panel-open .dsa5h-m-scenebtns { right: calc(var(--dsa5h-m-panel-w) + 10px); }
+/* Touch: größere Zeilen und Eingaben (iOS zoomt bei Schrift < 16 px in Eingabefelder) */
+body.dsa5h-mobile #sidebar .directory-item { min-height: 44px; }
+body.dsa5h-mobile #sidebar .folder > .folder-header { min-height: 44px; align-items: center; }
+body.dsa5h-mobile #sidebar input, body.dsa5h-mobile #chat-message { font-size: 16px; }
+.dsa5h-m-msgmenu { display: none; }
+body.dsa5h-mobile .chat-message .message-header .dsa5h-m-msgmenu {
+  display: grid; place-items: center; flex: none; width: 36px; height: 36px; margin: -6px -6px -6px 2px; padding: 0;
+  border: 0; background: none; color: inherit; font-size: 16px; order: 99;
+}
+
+/* 8. Fenster bildschirmfüllend, Kontextmenü als Blatt ------------------------- */
+body.dsa5h-mobile .dsa5h-m-window {
+  position: fixed !important;
+  inset: calc(env(safe-area-inset-top, 0px) + 6px) 0 0 0 !important;
+  width: auto !important; height: auto !important; max-width: none !important; max-height: none !important;
+  transform: none !important; border-radius: 10px 10px 0 0;
+}
+body.dsa5h-tablet .dsa5h-m-window.dialog,
+body.dsa5h-tablet .dsa5h-m-window.dialog-dsa5 { inset: auto 0 0 0 !important; max-height: 90vh !important; margin: 0 auto; width: min(640px, 100vw) !important; }
+body.dsa5h-mobile .dsa5h-m-window .window-header { min-height: 44px; }
+body.dsa5h-mobile .dsa5h-m-window .window-header button.header-control { width: 40px; height: 40px; font-size: 18px; }
+body.dsa5h-mobile .dsa5h-m-window .window-content { overflow: auto; }
+body.dsa5h-mobile .dsa5h-m-window .window-resize-handle,
+body.dsa5h-mobile .dsa5h-m-window .window-resizable-handle { display: none; }
+body.dsa5h-mobile #context-menu {
+  position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important;
+  width: auto !important; max-width: 520px; max-height: 70vh; margin: 0 auto; overflow-y: auto;
+  border-radius: 14px 14px 0 0; padding: 8px 0 calc(8px + var(--dsa5h-m-safe-b)); box-shadow: 0 -8px 30px rgba(0, 0, 0, .5);
+}
+body.dsa5h-mobile #context-menu .context-item { min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 18px; font-size: 16px; }
+
+/* 9. Konto-Menü ------------------------------------------------------------ */
+.dsa5h-m-sheet-backdrop {
+  position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0, 0, 0, .5); font-family: 'GentiumBasic', Georgia, serif;
+}
+.dsa5h-m-sheet {
+  width: 100%; max-width: 460px; box-sizing: border-box; padding: 8px 16px calc(24px + var(--dsa5h-m-safe-b));
+  display: flex; flex-direction: column; gap: 14px;
+  background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, .45);
+}
+.dsa5h-m-grip { width: 40px; height: 4px; border-radius: 2px; background: var(--dsa5h-m-line2); align-self: center; }
+.dsa5h-m-me { display: flex; align-items: center; gap: 12px; }
+.dsa5h-m-me > span:last-child { display: flex; flex-direction: column; }
+.dsa5h-m-me strong { font-family: 'Andalus', serif; font-weight: normal; font-size: 22px; }
+.dsa5h-m-me small { font-size: 13px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-avatar { flex: none; width: 48px; height: 48px; border-radius: 24px; display: grid; place-items: center; background: var(--dsa5h-m-gold); color: #272320; font-weight: 700; font-size: 18px; }
+.dsa5h-m-setting { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 4px 10px; font-size: 14px; }
+.dsa5h-m-setting > span { color: var(--dsa5h-m-ink2); }
+.dsa5h-m-setting > small { grid-column: 2; font-size: 12px; line-height: 1.35; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-seg { display: flex; border: 1px solid var(--dsa5h-m-line2); border-radius: 4px; overflow: hidden; }
+.dsa5h-m-sheet .dsa5h-m-seg button {
+  flex: 1; height: 42px; margin: 0; padding: 0 4px; border: 0; border-radius: 0; background: transparent;
+  color: var(--dsa5h-m-ink); font: inherit; font-size: 14px; font-weight: 700;
+}
+.dsa5h-m-sheet .dsa5h-m-seg button[aria-pressed="true"] { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
+.dsa5h-m-sheet .dsa5h-m-wide {
+  height: 48px; margin: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 4px; background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink); font: inherit; font-size: 15px; font-weight: 700;
+}
+.dsa5h-m-sheet .dsa5h-m-wide.danger { border-color: var(--dsa5h-m-danger); background: rgba(179, 36, 26, .08); color: #8e1d15; }
+
+/* 10. Szene: Token ziehen, Namen ------------------------------------------- */
+.dsa5h-m-drag { position: fixed; inset: 0; z-index: 35; pointer-events: none; }
+.dsa5h-m-drop { position: absolute; background: rgba(185, 154, 92, .35); outline: 2px solid #e0c48c; outline-offset: -2px; }
+.dsa5h-m-drop.blocked { background: rgba(179, 36, 26, .35); outline-color: #cf4a3e; }
+.dsa5h-m-ghost { position: absolute; border: 0; border-radius: 50%; opacity: .9; transform: scale(1.12); filter: drop-shadow(0 12px 16px rgba(0, 0, 0, .6)); }
+.dsa5h-m-token-label {
+  position: fixed; z-index: 35; transform: translate(-50%, -120%); padding: 2px 8px; border-radius: 10px;
+  background: rgba(20, 18, 16, .85); color: #f4e8d6; font-size: 13px; white-space: nowrap; pointer-events: none;
+  animation: dsa5h-m-fade 1.6s ease-out forwards;
+}
+@keyframes dsa5h-m-fade { 0% { opacity: 0; } 12% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }

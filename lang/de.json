@@ -339,6 +339,55 @@
     "NoConditions": "Keine Zustände.",
     "ConditionsToStatus": "Alle Zustände und Effekte → Status",
     "NoPersonalDetails": "Noch keine persönlichen Daten eingetragen.",
-    "EditInNotes": "Bearbeiten → Notizen"
+    "EditInNotes": "Bearbeiten → Notizen",
+    "Mobile": {
+      "Settings": {
+        "Hybrid": {
+          "Name": "Hybrides Spiel (Tablet/Smartphone)",
+          "Hint": "Spieler und Spielleitung können mit Tablet oder Smartphone teilnehmen: Szene mit Touch-Gesten, Helden, Chat und Journal in einer eigenen Oberfläche. Die Oberfläche wird je Gerät automatisch gewählt. Experimentell."
+        },
+        "Mode": {
+          "Name": "Oberfläche auf diesem Gerät",
+          "Hint": "Automatisch: Smartphone unter 600 px kurzer Bildschirmseite, Tablet bei größeren Touch-Geräten, sonst die normale Foundry-Oberfläche. Notausgang: ?dsa5h-ui=foundry an die Adresse hängen."
+        }
+      },
+      "Mode": {
+        "auto": "Automatisch",
+        "phone": "Smartphone",
+        "tablet": "Tablet",
+        "foundry": "Foundry"
+      },
+      "Panel": {
+        "chat": "Chat",
+        "journal": "Journal",
+        "settings": "Einstellungen"
+      },
+      "Connected": "{n} von {total} Spielern verbunden",
+      "ChatUnread": "Chat, {n} ungelesen",
+      "Account": "Konto und Einstellungen",
+      "RoleGM": "Spielleitung",
+      "RolePlayer": "Spieler",
+      "Detected": "Automatisch erkannt: {mode} ({w} × {h} px).",
+      "Scene": "Spielfeld",
+      "On": "An",
+      "Off": "Aus",
+      "SceneHint": "Aus: ohne Szene, spart Akku und Datenvolumen. Gilt nur für dieses Gerät.",
+      "FoundrySettings": "Foundry-Einstellungen",
+      "ToDesktop": "Zur vollständigen Foundry-Oberfläche",
+      "Logout": "Abmelden",
+      "Close": "Schließen",
+      "Center": "Auf meinen Helden zentrieren",
+      "CenterGM": "Auf den eigenen Token zentrieren",
+      "Enlarge": "Spielfeld vergrößern",
+      "Heroes": "Meine Helden",
+      "HeroesGM": "Helden der Gruppe",
+      "NoHeroes": "Kein Held zugewiesen.",
+      "RequestRoll": "Probe anfordern",
+      "NoRequest": "Probenanfragen sind in dieser DSA5-Version nicht verfügbar.",
+      "NoToken": "Dein Held hat keinen Token in dieser Szene.",
+      "Paused": "Das Spiel ist pausiert.",
+      "Blocked": "Dort kommt der Token nicht hin (Wand).",
+      "MessageActions": "Aktionen zur Nachricht"
+    }
   }
 }

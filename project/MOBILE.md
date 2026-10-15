@@ -1,6 +1,6 @@
 # MOBILE.md — Planung „Mobile Support“ (Tablet & Smartphone)
 
-Stand: 2026-10-15 · Status: **Planung, nichts umgesetzt.** Click-Dummy Runde 4 (Rückmeldung Lyynix vom 14.10.) liegt in `clickdummy/mobile/`. Das **Umsetzungskonzept für Foundry steht in Abschnitt 13** und ersetzt, wo es abweicht, die älteren Abschnitte 4 und 6. Eigene Planungsdatei, weil das Feature groß ist und viele Entscheidungen braucht. Offene Punkte werden in Abschnitt 9 entschieden. Danach kommen die gültigen Ergebnisse kurz in [PROJEKTDOKU.md](PROJEKTDOKU.md), die Arbeitspakete in [AUFGABEN.md](AUFGABEN.md) bzw. als GitHub-Issues. Ist alles umgesetzt, wandert diese Datei nach `archive/`.
+Stand: 2026-10-15 · Status: **Stufe 1 gebaut, nicht live getestet** (`scripts/mobile/`, `styles/dsa5-helpers-mobile.css`: Automatik, Shell mit Szene/Heldenkarte/schwebenden Knöpfen, Touch-Gesten, Kontextmenü per Langdruck, Fenster bildschirmfüllend). Click-Dummy Runde 4 (Rückmeldung Lyynix vom 14.10.) liegt in `clickdummy/mobile/`. Das **Umsetzungskonzept für Foundry steht in Abschnitt 13** und ersetzt, wo es abweicht, die älteren Abschnitte 4 und 6. Eigene Planungsdatei, weil das Feature groß ist und viele Entscheidungen braucht. Offene Punkte werden in Abschnitt 9 entschieden. Danach kommen die gültigen Ergebnisse kurz in [PROJEKTDOKU.md](PROJEKTDOKU.md), die Arbeitspakete in [AUFGABEN.md](AUFGABEN.md) bzw. als GitHub-Issues. Ist alles umgesetzt, wandert diese Datei nach `archive/`.
 
 ---
 
@@ -422,3 +422,14 @@ Phasen (je Phase ein GitHub-Issue, sobald freigegeben):
 5. **SL-Ansicht:** Probe anfordern, Journal freigeben/zeigen, alle Token ziehen.
 6. **Kampf:** Kampfreihenfolge (E23), Ziel markieren (E22).
 7. **Test in einer echten Runde**, danach Release.
+
+### 13.9 CHANGELOG-Entwurf
+
+Der Branch hat noch keine Version (AGENTS.md, Punkt 7). Sobald der Nutzer sie festlegt, kommt dieser Text unter „Neu“ in CHANGELOG.md:
+
+- Hybrides Spiel (experimentell): Mit der Welt-Einstellung „Hybrides Spiel (Tablet/Smartphone)“ (nur Spielleitung, Standard aus) bekommen Tablets und Smartphones eine eigene Oberfläche. Welche, wählt jedes Gerät automatisch: Smartphone, Tablet oder – an Rechnern mit Maus – die normale Foundry-Oberfläche. Ändern lässt sich das im Konto-Menü (Kreis oben rechts) oder in den Moduleinstellungen; hilft gar nichts mehr, `?dsa5h-ui=foundry` an die Adresse hängen.
+- In dieser Oberfläche ist oben die Szene: mit einem Finger verschieben, mit zwei Fingern zoomen, lange drücken pingt, den eigenen Token lange drücken und dann ziehen bewegt ihn (rastet ein, Wände gelten). Kurz antippen wählt wie ein Mausklick (Token, Türen) und zeigt den Namen. Knöpfe: auf den eigenen Helden zentrieren, Spielfeld vergrößern.
+- Darunter die eigenen Helden mit LeP/AsP/KaP (Spielleitung: alle Helden der Gruppe mit Spielern und Online-Punkt); Antippen öffnet den Bogen bildschirmfüllend. Unten links Journal, unten rechts Chat mit Zähler für ungelesene Nachrichten; neue Nachrichten erscheinen kurz als Sprechblase darüber.
+- Chat-Nachrichten: lange drücken oder ⋮ öffnet das Kontextmenü des Systems als Blatt von unten, z. B. „Schip verwenden“ oder „Schaden anwenden“. Fenster und Dialoge erscheinen bildschirmfüllend.
+- Spielleitung: „Probe anfordern“ an der Heldenkarte öffnet die Probenanfrage des Systems.
+- Konto-Menü: Oberfläche wählen, Spielfeld auf diesem Gerät an/aus (spart Akku), Foundry-Einstellungen, zur vollständigen Foundry-Oberfläche, Abmelden.

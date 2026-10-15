@@ -339,6 +339,55 @@
     "NoConditions": "No conditions.",
     "ConditionsToStatus": "All conditions and effects → Status",
     "NoPersonalDetails": "No personal details yet.",
-    "EditInNotes": "Edit → Notes"
+    "EditInNotes": "Edit → Notes",
+    "Mobile": {
+      "Settings": {
+        "Hybrid": {
+          "Name": "Hybrid play (tablet/smartphone)",
+          "Hint": "Players and GM can join on a tablet or smartphone: scene with touch gestures, heroes, chat and journal in a dedicated interface. The interface is chosen automatically per device. Experimental."
+        },
+        "Mode": {
+          "Name": "Interface on this device",
+          "Hint": "Automatic: smartphone below 600 px short screen side, tablet on larger touch devices, otherwise the regular Foundry interface. Escape hatch: append ?dsa5h-ui=foundry to the address."
+        }
+      },
+      "Mode": {
+        "auto": "Automatic",
+        "phone": "Smartphone",
+        "tablet": "Tablet",
+        "foundry": "Foundry"
+      },
+      "Panel": {
+        "chat": "Chat",
+        "journal": "Journal",
+        "settings": "Settings"
+      },
+      "Connected": "{n} of {total} players connected",
+      "ChatUnread": "Chat, {n} unread",
+      "Account": "Account and settings",
+      "RoleGM": "Gamemaster",
+      "RolePlayer": "Player",
+      "Detected": "Detected automatically: {mode} ({w} × {h} px).",
+      "Scene": "Scene",
+      "On": "On",
+      "Off": "Off",
+      "SceneHint": "Off: no scene, saves battery and data. Applies to this device only.",
+      "FoundrySettings": "Foundry settings",
+      "ToDesktop": "Switch to the full Foundry interface",
+      "Logout": "Log out",
+      "Close": "Close",
+      "Center": "Center on my hero",
+      "CenterGM": "Center on own token",
+      "Enlarge": "Enlarge scene",
+      "Heroes": "My heroes",
+      "HeroesGM": "Party heroes",
+      "NoHeroes": "No hero assigned.",
+      "RequestRoll": "Request roll",
+      "NoRequest": "Roll requests are not available in this DSA5 version.",
+      "NoToken": "Your hero has no token in this scene.",
+      "Paused": "The game is paused.",
+      "Blocked": "The token cannot move there (wall).",
+      "MessageActions": "Message actions"
+    }
   }
 }
