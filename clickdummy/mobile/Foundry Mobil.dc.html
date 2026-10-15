@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:'Andalus';src:url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2');font-display:swap}
+@font-face{font-family:'GentiumBasic';src:url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'GentiumBasic';src:url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{--paper:#ece2d2;--ink:#2b2721;--ink2:rgba(43,39,33,.76);--ink3:rgba(43,39,33,.45);--line:rgba(43,39,33,.13);--line2:rgba(43,39,33,.26);--card:rgba(255,255,255,.42);--field:rgba(255,255,255,.64);--phead:linear-gradient(90deg,rgba(147,123,72,.9),rgba(147,123,72,.06));--sub:rgba(0,0,0,.045);--accent:#8b6f3f;--onaccent:#fff8ec;--accenttext:#6d5326;--sel:#2b2721;--onsel:#f4e8d6;--danger:#b3241a;--dangertext:#8e1d15;--dangerbg:rgba(179,36,26,.08);--ok:#2f6b2a;--oktext:#24561f;--okbg:rgba(47,107,42,.12);--whisper:rgba(110,70,140,.1);--whisperline:#7a4f96;--whispertext:#5c3a73;--sheet:#ece2d2;--hdr:linear-gradient(180deg,#3a322b,#272320)}
+[data-theme="dark"]{--paper:#1d1a17;--ink:#ede3d1;--ink2:rgba(237,227,209,.76);--ink3:rgba(237,227,209,.42);--line:rgba(237,227,209,.09);--line2:rgba(237,227,209,.2);--card:rgba(255,255,255,.035);--field:rgba(255,255,255,.07);--phead:linear-gradient(90deg,rgba(147,123,72,.5),rgba(147,123,72,.03));--sub:rgba(255,255,255,.035);--accent:#b99a5c;--onaccent:#1c1917;--accenttext:#d6ba80;--sel:#ede3d1;--onsel:#1d1a17;--danger:#cf4a3e;--dangertext:#f19a90;--dangerbg:rgba(207,74,62,.14);--ok:#4c9a42;--oktext:#93d48a;--okbg:rgba(76,154,66,.16);--whisper:rgba(160,120,200,.12);--whisperline:#a985c4;--whispertext:#d2b8e6;--sheet:#29241f;--hdr:linear-gradient(180deg,#2a2420,#161311)}
+body{margin:0}
+main,aside,nav,[data-scroll]{scrollbar-width:none}main::-webkit-scrollbar,aside::-webkit-scrollbar,nav::-webkit-scrollbar{display:none}
+a{color:#8b6f3f}a:hover{color:#5e4a29}
+input::placeholder{color:var(--ink3)}
+@keyframes dsaPing{0%{transform:translate(-50%,-50%) scale(.12);opacity:1}75%{opacity:.85}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
+@keyframes dsaFade{0%{opacity:0}15%{opacity:1}80%{opacity:1}100%{opacity:0}}
+@keyframes dsaHold{from{transform:translate(-50%,-50%) scale(.25);opacity:.15}to{transform:translate(-50%,-50%) scale(1);opacity:.95}}
+@keyframes dsaPop{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div ref="{{ rootRef }}" data-theme="{{ theme }}" style="position:{{ rootPos }};inset:0;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--paper);color:var(--ink);font-family:GentiumBasic,Georgia,serif;-webkit-font-smoothing:antialiased">
+
+  <sc-if value="{{ inSheet }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;min-height:0;overflow:hidden">
+      <dc-import name="Heldenbogen Mobil" device="{{ device }}" theme="{{ sheetTheme }}" on-back="{{ goHome }}" on-chat="{{ onSheetRoll }}" hint-size="100%,100%" style="width:100%;height:100%"></dc-import>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ notSheet }}" hint-placeholder-val="{{ true }}">
+    <header style="flex:none;height:60px;display:flex;align-items:center;gap:8px;padding:0 10px 0 6px;background:var(--hdr);color:#f4e8d6;box-shadow:0 2px 10px rgba(0,0,0,.35);position:relative;z-index:2">
+      <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ onBackBtn }}" aria-label="Zurück" style="flex:none;width:44px;height:44px;border:0;background:none;color:#f4e8d6;font-size:34px;line-height:1;cursor:pointer;padding:0">‹</button>
+      </sc-if>
+      <sc-if value="{{ showLogo }}" hint-placeholder-val="{{ true }}">
+        <img src="../../../../systems/dsa5/icons/categories/DSA-Auge.webp" alt="" style="flex:none;width:34px;height:34px;margin:0 4px 0 6px">
+      </sc-if>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+        <span style="font-family:Andalus,serif;font-size:20px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ barTitle }}</span>
+        <span style="font-size:12px;color:rgba(244,232,214,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ barSub }}</span>
+      </div>
+      <button onClick="{{ openProfile }}" aria-label="Konto und Einstellungen" style="flex:none;width:44px;height:44px;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:center">
+        <span style="width:36px;height:36px;border-radius:18px;display:grid;place-items:center;background:#b99a5c;color:#272320;font-weight:700;font-size:14px">{{ meInitial }}</span>
+      </button>
+    </header>
+
+    <div style="flex:1;min-height:0;display:flex;position:relative">
+
+      <sc-if value="{{ showLeft }}" hint-placeholder-val="{{ true }}">
+        <main style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
+
+          <sc-if value="{{ vHome }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;min-height:0;display:flex;flex-direction:column">
+
+              <sc-if value="{{ showScene }}" hint-placeholder-val="{{ true }}">
+                <div ref="{{ sceneRef }}" onPointerDown="{{ scDown }}" onPointerMove="{{ scMove }}" onPointerUp="{{ scUp }}" onPointerCancel="{{ scUp }}" onWheel="{{ scWheel }}" onContextMenu="{{ prevent }}" style="position:relative;flex:1 1 0;min-height:200px;overflow:hidden;background:#141210;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:{{ sceneCursor }}">
+                  <div style="position:absolute;left:0;top:0;width:{{ mapW }}px;height:{{ mapH }}px;transform-origin:0 0;transform:{{ camT }}">
+                    <sc-for list="{{ walls }}" as="r"><div style="position:absolute;left:{{ r.x }}px;top:{{ r.y }}px;width:{{ r.w }}px;height:{{ r.h }}px;background:#2b2621;border-radius:3px;box-shadow:0 0 0 2px #1d1916"></div></sc-for>
+                    <sc-for list="{{ floors }}" as="r"><div style="position:absolute;left:{{ r.x }}px;top:{{ r.y }}px;width:{{ r.w }}px;height:{{ r.h }}px;background-color:{{ r.c }};background-image:linear-gradient(rgba(0,0,0,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.2) 1px,transparent 1px);background-size:64px 64px;box-shadow:inset 0 0 36px rgba(0,0,0,.45)"></div></sc-for>
+                    <sc-for list="{{ decor }}" as="d"><div style="position:absolute;left:{{ d.x }}px;top:{{ d.y }}px;width:{{ d.w }}px;height:{{ d.h }}px;{{ d.css }}"></div></sc-for>
+                    <sc-if value="{{ hasDrop }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:{{ drop.x }}px;top:{{ drop.y }}px;width:64px;height:64px;background:{{ drop.bg }};outline:2px solid {{ drop.line }};outline-offset:-2px"></div></sc-if>
+                    <sc-if value="{{ hasGhost }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:{{ ghost.x }}px;top:{{ ghost.y }}px;width:56px;height:56px;border:2px dashed rgba(244,232,214,.7);border-radius:50%;box-sizing:border-box"></div></sc-if>
+                    <sc-for list="{{ tokens }}" as="t">
+                      <div style="position:absolute;left:{{ t.x }}px;top:{{ t.y }}px;width:56px;height:56px;transition:{{ t.trans }};z-index:{{ t.z }}">
+                        <div style="width:100%;height:100%;border-radius:50%;box-sizing:border-box;border:4px solid {{ t.ring }};background:{{ t.bg }};display:grid;place-items:center;color:#f4e8d6;font-family:Andalus,serif;font-size:22px;line-height:1;box-shadow:{{ t.shadow }};transform:scale({{ t.scale }});transition:transform .15s,box-shadow .15s">{{ t.ini }}</div>
+                        <sc-if value="{{ t.showName }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:3px;padding:1px 6px;border-radius:8px;background:rgba(20,18,16,.78);color:#f4e8d6;font-size:11px;line-height:1.4;white-space:nowrap">{{ t.name }}</div></sc-if>
+                      </div>
+                    </sc-for>
+                    <sc-for list="{{ pings }}" as="p">
+                      <div style="position:absolute;left:{{ p.x }}px;top:{{ p.y }}px;width:160px;height:160px;border-radius:50%;border:5px solid {{ p.color }};box-shadow:0 0 22px {{ p.color }},inset 0 0 22px {{ p.color }};animation:dsaPing 1.7s ease-out forwards;pointer-events:none"></div>
+                      <div style="position:absolute;left:{{ p.x }}px;top:{{ p.y }}px;transform:translate(-50%,-150%);padding:2px 8px;border-radius:10px;background:{{ p.color }};color:#1c1917;font-size:13px;font-weight:700;white-space:nowrap;animation:dsaFade 1.9s ease-out forwards;pointer-events:none">{{ p.who }}</div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ hasHold }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:{{ hold.x }}px;top:{{ hold.y }}px;width:64px;height:64px;border-radius:50%;border:3px solid #f4e8d6;animation:dsaHold .5s linear forwards;pointer-events:none"></div></sc-if>
+
+                  <div style="position:absolute;left:10px;top:10px;right:64px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;pointer-events:none">
+                    <span style="padding:4px 10px;border-radius:12px;background:rgba(20,18,16,.78);color:#f4e8d6;font-size:13px">{{ sceneName }}</span>
+                    <sc-if value="{{ showHint }}" hint-placeholder-val="{{ true }}">
+                      <div onPointerDown="{{ stop }}" style="pointer-events:auto;max-width:300px;padding:8px 10px 8px 12px;border-radius:6px;background:rgba(20,18,16,.86);color:#f4e8d6;font-size:13px;line-height:1.45;display:flex;gap:8px;align-items:flex-start">
+                        <span style="flex:1">Wischen: verschieben · zwei Finger: zoomen<br>Lange drücken: pingen<br>Eigenen Token lange drücken und ziehen</span>
+                        <button onClick="{{ hideHint }}" aria-label="Hinweis schließen" style="flex:none;width:32px;height:32px;margin:-4px -4px 0 0;border:0;background:none;color:#f4e8d6;font-size:18px;cursor:pointer">✕</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <div onPointerDown="{{ stop }}" style="position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:8px">
+                    <button onClick="{{ centerMe }}" aria-label="{{ centerLabel }}" style="width:44px;height:44px;border:0;border-radius:6px;background:rgba(20,18,16,.78);color:#f4e8d6;cursor:pointer;display:grid;place-items:center;padding:0">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="6"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path></svg>
+                    </button>
+                    <button onClick="{{ toggleFull }}" aria-label="{{ fullLabel }}" aria-pressed="{{ fullStr }}" style="width:44px;height:44px;border:0;border-radius:6px;background:{{ fullBg }};color:{{ fullColor }};cursor:pointer;display:grid;place-items:center;padding:0">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="{{ fullPath }}"></path></svg>
+                    </button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ showSceneOff }}" hint-placeholder-val="{{ false }}">
+                <div style="flex:none;margin:14px 14px 0;padding:12px 14px;border:1px dashed var(--line2);border-radius:4px;font-size:14px;line-height:1.4;color:var(--ink2)">Spielfeld auf diesem Gerät ausgeschaltet (spart Akku und Datenvolumen). Einschalten im Konto-Menü.</div>
+              </sc-if>
+
+              <sc-if value="{{ showHeroes }}" hint-placeholder-val="{{ true }}">
+                <div data-scroll="1" style="flex:{{ heroFlex }};max-height:{{ heroMax }};min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px 14px 84px">
+                  <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden;max-width:1000px">
+                    <div style="padding:6px 8px 6px 12px;min-height:44px;box-sizing:border-box;background:var(--phead);font-family:Andalus,serif;font-size:19px;display:flex;justify-content:space-between;align-items:center;gap:8px">
+                      <span>{{ heroTitle }}</span>
+                      <sc-if value="{{ isGM }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ openReq }}" style="flex:none;height:36px;padding:0 12px;border:0;border-radius:18px;background:var(--accent);color:var(--onaccent);font-family:GentiumBasic,serif;font-size:14px;font-weight:700;cursor:pointer">Probe anfordern</button>
+                      </sc-if>
+                    </div>
+                    <sc-for list="{{ heroes }}" as="h" hint-placeholder-count="1">
+                      <button onClick="{{ h.onOpen }}" style="width:100%;border:0;border-top:1px solid var(--line);background:none;font:inherit;color:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;padding:10px 12px;min-height:72px">
+                        <span style="flex:none;position:relative;width:46px;height:56px;background:#d9cbb4;border:1.5px solid #b99a5c;clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)"></span>
+                        <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                          <span style="display:flex;flex-direction:column">
+                            <span style="font-family:Andalus,serif;font-size:18px;line-height:1.1">{{ h.name }}</span>
+                            <span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2)"><span>{{ h.sub }}</span><sc-if value="{{ h.showOwner }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:4px">· <span style="width:8px;height:8px;border-radius:4px;background:{{ h.dot }}"></span>{{ h.owner }}</span></sc-if></span>
+                          </span>
+                          <span style="display:flex;gap:6px">
+                            <sc-for list="{{ h.bars }}" as="b">
+                              <span style="flex:1;max-width:110px;display:flex;flex-direction:column;gap:2px">
+                                <span style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;line-height:1"><span style="color:var(--ink2)">{{ b.key }}</span><span>{{ b.cur }}/{{ b.max }}</span></span>
+                                <span style="height:5px;border-radius:3px;background:var(--line);overflow:hidden"><span style="display:block;height:100%;width:{{ b.pct }};background:{{ b.grad }}"></span></span>
+                              </span>
+                            </sc-for>
+                          </span>
+                        </span>
+                        <span style="flex:none;font-size:22px;color:var(--ink2)">›</span>
+                      </button>
+                    </sc-for>
+                  </section>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ vList }}" hint-placeholder-val="{{ false }}">
+            <div data-scroll="1" style="flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain">
+              <div style="padding:14px 14px 90px;display:flex;flex-direction:column;gap:14px;max-width:1000px">
+
+                <sc-if value="{{ vJournal }}" hint-placeholder-val="{{ false }}">
+                  <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+                    <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px;display:flex;justify-content:space-between;align-items:baseline"><span>{{ jTitle }}</span><span style="font-family:GentiumBasic,serif;font-size:13px;color:var(--ink2)">{{ jCount }}</span></div>
+                    <sc-for list="{{ tree }}" as="r" hint-placeholder-count="4">
+                      <sc-if value="{{ r.isFolder }}" hint-placeholder-val="{{ true }}">
+                        <button onClick="{{ r.toggle }}" aria-expanded="{{ r.openStr }}" style="width:100%;border:0;border-top:1px solid var(--line);background:var(--sub);font:inherit;color:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;padding:0 12px 0 {{ r.pad }};min-height:48px;box-shadow:inset 4px 0 0 {{ r.color }}">
+                          <span style="flex:none;width:16px;font-size:13px;color:var(--ink2);transform:rotate({{ r.rot }});transition:transform .15s">▶</span>
+                          <svg width="22" height="22" viewBox="0 0 24 24" style="flex:none"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.7v9.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z" fill="{{ r.color }}"></path></svg>
+                          <span style="flex:1;min-width:0;font-size:16px;font-weight:700">{{ r.name }}</span>
+                          <sc-if value="{{ r.hasNew }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:10px;height:10px;border-radius:5px;background:var(--accent)"></span></sc-if>
+                          <span style="flex:none;font-size:13px;color:var(--ink2)">{{ r.count }}</span>
+                        </button>
+                      </sc-if>
+                      <sc-if value="{{ r.isEntry }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ r.onOpen }}" style="width:100%;border:0;border-top:1px solid var(--line);background:none;font:inherit;color:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;padding:0 12px 0 {{ r.pad }};min-height:56px">
+                          <img src="{{ r.icon }}" alt="" style="flex:none;width:28px;height:28px">
+                          <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:16px">{{ r.title }}</span><span style="font-size:13px;color:var(--ink2)">{{ r.meta }}</span></span>
+                          <sc-if value="{{ r.isNew }}" hint-placeholder-val="{{ false }}"><span style="flex:none;padding:2px 8px;border-radius:10px;background:var(--accent);color:var(--onaccent);font-size:12px;font-weight:700">Neu</span></sc-if>
+                          <span style="flex:none;font-size:20px;color:var(--ink2)">›</span>
+                        </button>
+                      </sc-if>
+                    </sc-for>
+                    <sc-if value="{{ treeEmpty }}" hint-placeholder-val="{{ false }}">
+                      <div style="padding:16px 12px;border-top:1px solid var(--line);font-size:14px;color:var(--ink2);text-align:center">Noch nichts geteilt. Handouts der Spielleitung erscheinen hier.</div>
+                    </sc-if>
+                  </section>
+                </sc-if>
+
+                <sc-if value="{{ vEntry }}" hint-placeholder-val="{{ false }}">
+                  <article style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden;display:flex;flex-direction:column">
+                    <div style="padding:12px 14px 4px;display:flex;flex-direction:column;gap:4px">
+                      <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)">{{ entry.path }}</span>
+                      <h2 style="margin:0;font-family:Andalus,serif;font-weight:normal;font-size:26px;line-height:1.1">{{ entry.title }}</h2>
+                    </div>
+                    <sc-if value="{{ entry.img }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin:10px 14px 0;aspect-ratio:4/3;background:var(--sub);border:1px solid var(--line2);border-radius:3px;display:grid;place-items:center;font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.1em;color:var(--ink2)">HANDOUT-BILD · TIPPEN ZUM VERGRÖSSERN</div>
+                    </sc-if>
+                    <div style="padding:12px 14px 16px;font-size:17px;line-height:1.5;white-space:pre-wrap;text-wrap:pretty">{{ entry.text }}</div>
+                  </article>
+                  <sc-if value="{{ isGM }}" hint-placeholder-val="{{ false }}">
+                    <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+                      <div style="padding:6px 12px;background:var(--sub);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)">Spielleitung</div>
+                      <div style="display:flex;align-items:center;gap:10px;padding:0 12px;min-height:56px;border-top:1px solid var(--line)">
+                        <span style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px">Für Spieler sichtbar</span><span style="font-size:13px;color:var(--ink2)">{{ entry.visLine }}</span></span>
+                        <button onClick="{{ entry.toggleShare }}" role="switch" aria-checked="{{ entry.sharedStr }}" aria-label="Für Spieler sichtbar" style="flex:none;width:56px;height:44px;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:center">
+                          <span style="width:52px;height:30px;border-radius:15px;background:{{ entry.swBg }};display:flex;align-items:center;justify-content:{{ entry.swJust }};padding:3px;box-sizing:border-box"><span style="width:24px;height:24px;border-radius:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3)"></span></span>
+                        </button>
+                      </div>
+                      <div style="padding:10px 12px 12px;border-top:1px solid var(--line)">
+                        <button onClick="{{ entry.showAll }}" style="width:100%;height:48px;border:0;border-radius:4px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:16px;font-weight:700;cursor:pointer">Allen Spielern zeigen</button>
+                      </div>
+                    </section>
+                  </sc-if>
+                </sc-if>
+
+              </div>
+            </div>
+          </sc-if>
+        </main>
+      </sc-if>
+
+      <sc-if value="{{ showChat }}" hint-placeholder-val="{{ false }}">
+        <aside style="flex:{{ chatFlex }};width:{{ chatW }};min-width:0;display:flex;flex-direction:column;background:var(--paper);border-left:{{ chatBorder }}">
+          <sc-if value="{{ isTablet }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:none;padding:0 4px 0 12px;height:44px;background:var(--phead);font-family:Andalus,serif;font-size:19px;display:flex;align-items:center;justify-content:space-between"><span>Chat</span><button onClick="{{ closeChat }}" aria-label="Chat schließen" style="width:44px;height:44px;border:0;background:none;color:var(--ink);font-size:20px;cursor:pointer">✕</button></div>
+          </sc-if>
+          <div ref="{{ chatRef }}" data-scroll="1" style="flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px;display:flex;flex-direction:column;gap:8px">
+            <sc-for list="{{ messages }}" as="m" hint-placeholder-count="5">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <sc-if value="{{ m.isSystem }}" hint-placeholder-val="{{ false }}">
+                  <div style="align-self:center;max-width:90%;padding:4px 12px;border-radius:12px;background:var(--sub);font-size:13px;color:var(--ink2);text-align:center">{{ m.text }}</div>
+                </sc-if>
+                <sc-if value="{{ m.isCard }}" hint-placeholder-val="{{ true }}">
+                  <div onClick="{{ m.onTap }}" style="background:{{ m.bg }};border:1px solid {{ m.border }};border-left:3px solid {{ m.edge }};border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:6px;cursor:{{ m.cursor }}">
+                    <div style="display:flex;align-items:baseline;gap:8px">
+                      <span style="flex:1;min-width:0;font-size:13px;font-weight:700;color:{{ m.whoColor }}">{{ m.who }}</span>
+                      <span style="flex:none;font-size:12px;color:var(--ink2)">{{ m.time }}</span>
+                    </div>
+                    <sc-if value="{{ m.isWhisper }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--whispertext)">{{ m.whisperLabel }}</span></sc-if>
+                    <sc-if value="{{ m.isText }}" hint-placeholder-val="{{ true }}"><div style="font-size:16px;line-height:1.4;text-wrap:pretty">{{ m.text }}</div></sc-if>
+                    <sc-if value="{{ m.isRoll }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:6px">
+                        <div style="display:flex;flex-direction:column"><span style="font-family:Andalus,serif;font-size:18px;line-height:1.1">{{ m.title }}</span><sc-if value="{{ m.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:var(--ink2)">{{ m.sub }}</span></sc-if></div>
+                        <sc-if value="{{ m.hasDice }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex;gap:6px"><sc-for list="{{ m.dice }}" as="d"><button onClick="{{ d.onTap }}" tabindex="{{ d.tab }}" aria-label="{{ d.label }}" style="min-width:40px;height:36px;padding:0 6px;border-radius:4px;display:grid;place-items:center;background:var(--field);border:1px solid {{ d.border }};color:var(--ink);font:inherit;font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;cursor:{{ m.cursor }}">{{ d.v }}</button></sc-for></div>
+                        </sc-if>
+                        <div style="padding:6px 10px;border-radius:3px;background:{{ m.boxBg }};color:{{ m.boxColor }};display:flex;flex-direction:column"><span style="font-weight:700;font-size:15px">{{ m.headline }}</span><sc-if value="{{ m.hasDetail }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px">{{ m.detail }}</span></sc-if></div>
+                        <sc-if value="{{ m.hasNote }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink2)"><img src="{{ m.schipImg }}" alt="" style="width:18px;height:18px">{{ m.note }}</span></sc-if>
+                        <sc-if value="{{ m.canFate }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;justify-content:flex-end;gap:6px;font-size:13px;font-weight:700;color:var(--accenttext)"><img src="{{ m.schipImg }}" alt="" style="width:20px;height:20px">Antippen: Schip verwenden</span></sc-if>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ m.isRequest }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:6px">
+                        <div style="display:flex;align-items:center;gap:10px">
+                          <img src="{{ m.icon }}" alt="" style="flex:none;width:38px;height:38px;border-radius:4px">
+                          <div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)">{{ m.reqLabel }}</span><span style="font-family:Andalus,serif;font-size:19px;line-height:1.1">{{ m.title }}</span></div>
+                        </div>
+                        <sc-for list="{{ m.rows }}" as="r">
+                          <div style="display:flex;align-items:center;gap:8px;min-height:46px;border-top:1px solid var(--line);padding-top:4px">
+                            <span style="flex:none;width:32px;height:32px;border-radius:16px;background:{{ r.tokBg }};border:2px solid {{ r.ring }};display:grid;place-items:center;font-family:Andalus,serif;font-size:15px;color:#f4e8d6">{{ r.ini }}</span>
+                            <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:15px;line-height:1.2">{{ r.name }}</span><sc-if value="{{ r.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:var(--ink2)">{{ r.sub }}</span></sc-if></span>
+                            <sc-if value="{{ r.hasStatus }}" hint-placeholder-val="{{ true }}"><span style="flex:none;padding:3px 9px;border-radius:12px;background:{{ r.bg }};color:{{ r.color }};font-size:13px;font-weight:700;white-space:nowrap">{{ r.status }}</span></sc-if>
+                            <sc-if value="{{ r.canRoll }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.roll }}" style="flex:none;height:40px;padding:0 12px;border:0;border-radius:4px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:14px;font-weight:700;cursor:pointer">{{ r.rollLabel }}</button></sc-if>
+                            <sc-if value="{{ r.canSkip }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.skip }}" aria-label="Überspringen" style="flex:none;width:40px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);color:var(--ink2);font-size:16px;cursor:pointer">✕</button></sc-if>
+                          </div>
+                        </sc-for>
+                        <sc-if value="{{ m.canFinalize }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.finalize }}" style="height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer">Anfrage abschließen</button></sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="flex:none;border-top:1px solid var(--line2);background:var(--sheet);padding:8px 10px 10px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none">
+              <sc-if value="{{ isGM }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openReq }}" style="flex:none;white-space:nowrap;height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--accent);background:var(--field);color:var(--accenttext);font:inherit;font-size:14px;font-weight:700;cursor:pointer">+ Probe anfordern</button></sc-if>
+              <sc-for list="{{ targets }}" as="t" hint-placeholder-count="2">
+                <button onClick="{{ t.onClick }}" aria-pressed="{{ t.on }}" style="flex:none;white-space:nowrap;height:36px;padding:0 12px;border-radius:18px;border:1px solid {{ t.border }};background:{{ t.bg }};color:{{ t.color }};font:inherit;font-size:14px;cursor:pointer">{{ t.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:6px">
+              <input value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" placeholder="{{ draftPh }}" aria-label="Nachricht" style="flex:1;min-width:0;height:44px;padding:0 12px;border:1px solid var(--line2);border-radius:22px;background:var(--field);font:inherit;font-size:16px;color:var(--ink)">
+              <button onClick="{{ toggleDice }}" aria-label="Würfel" aria-expanded="{{ diceOpenStr }}" style="flex:none;width:44px;height:44px;border:1px solid var(--line2);border-radius:22px;background:{{ diceBtnBg }};cursor:pointer;padding:0;display:grid;place-items:center"><img src="../../../../systems/dsa5/icons/d20.svg" alt="" style="width:28px;height:28px"></button>
+              <button onClick="{{ send }}" style="flex:none;height:44px;padding:0 16px;border:0;border-radius:22px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:15px;font-weight:700;cursor:pointer">Senden</button>
+            </div>
+            <sc-if value="{{ diceOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+                <sc-for list="{{ quickDice }}" as="q"><button onClick="{{ q.onClick }}" style="height:44px;border:1px solid var(--accent);border-radius:4px;background:var(--field);color:var(--accenttext);font:inherit;font-size:15px;font-weight:700;cursor:pointer">{{ q.label }}</button></sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </aside>
+      </sc-if>
+
+      <sc-if value="{{ showFabs }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ showJournalFab }}" hint-placeholder-val="{{ true }}"><button onClick="{{ goJournal }}" aria-label="Journal" style="position:absolute;left:16px;bottom:16px;z-index:5;width:56px;height:56px;border-radius:28px;border:2px solid rgba(39,35,32,.25);background:radial-gradient(circle at 35% 30%,#dcc189,#a3824a);box-shadow:0 4px 14px rgba(0,0,0,.35);display:grid;place-items:center;cursor:pointer;padding:0">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#272320" stroke-width="2" stroke-linejoin="round"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"></path><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"></path><path d="M9 7h6"></path></svg>
+          <sc-if value="{{ journalNew }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:0;right:0;width:16px;height:16px;border-radius:8px;background:var(--accent);border:2px solid var(--paper);box-sizing:border-box"></span></sc-if>
+        </button></sc-if>
+        <sc-if value="{{ showChatFab }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ bubbleOn }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ openChat }}" style="position:absolute;right:16px;bottom:84px;z-index:5;max-width:min(300px,78%);text-align:left;padding:8px 12px;border:1px solid var(--line2);border-radius:12px 12px 4px 12px;background:var(--sheet);color:var(--ink);box-shadow:0 6px 18px rgba(0,0,0,.3);font:inherit;animation:dsaPop .2s ease-out;cursor:pointer;display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:12px;font-weight:700;color:var(--accenttext)">{{ bubble.who }}</span>
+              <span style="font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">{{ bubble.text }}</span>
+            </button>
+          </sc-if>
+          <button onClick="{{ openChat }}" aria-label="{{ chatFabLabel }}" style="position:absolute;right:16px;bottom:16px;z-index:5;width:56px;height:56px;border-radius:28px;border:2px solid rgba(39,35,32,.25);background:radial-gradient(circle at 35% 30%,#dcc189,#a3824a);box-shadow:0 4px 14px rgba(0,0,0,.35);display:grid;place-items:center;cursor:pointer;padding:0">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="#272320"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"></path></svg>
+            <sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-4px;right:-4px;min-width:24px;height:24px;padding:0 6px;box-sizing:border-box;border-radius:12px;background:var(--danger);border:2px solid var(--paper);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center">{{ unread }}</span></sc-if>
+          </button>
+        </sc-if>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ fateOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeFate }}" style="position:absolute;inset:0;z-index:9;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center">
+      <div onClick="{{ stop }}" style="width:100%;max-width:460px;background:var(--sheet);color:var(--ink);border-radius:14px 14px 0 0;padding:8px 16px 26px;display:flex;flex-direction:column;gap:14px;box-shadow:0 -8px 30px rgba(0,0,0,.45);box-sizing:border-box">
+        <div style="width:40px;height:4px;border-radius:2px;background:var(--line2);align-self:center"></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <img src="{{ fate.schipImg }}" alt="" style="flex:none;width:34px;height:34px">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-family:Andalus,serif;font-size:22px;line-height:1.1">Schip verwenden</span><span style="font-size:13px;color:var(--ink2)">{{ fate.what }}</span></div>
+          <button onClick="{{ closeFate }}" aria-label="Schließen" style="flex:none;width:44px;height:44px;border:0;background:none;color:var(--ink);font-size:20px;cursor:pointer">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)">Schicksalspunkte</span>
+          <div style="display:flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+            <sc-for list="{{ fate.srcs }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:44px;font-size:14px;font-weight:700;background:{{ o.bg }};color:{{ o.color }}">{{ o.label }}</button></sc-for>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <sc-for list="{{ fate.tabs }}" as="o"><button onClick="{{ o.onClick }}" aria-pressed="{{ o.on }}" style="flex:1 1 auto;min-height:40px;padding:0 12px;border-radius:20px;border:1px solid {{ o.border }};font:inherit;cursor:pointer;font-size:14px;font-weight:700;background:{{ o.bg }};color:{{ o.color }}">{{ o.label }}</button></sc-for>
+        </div>
+        <sc-if value="{{ fate.isReroll }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:15px;line-height:1.4">Würfel antippen, die neu gewürfelt werden:</span>
+            <div style="display:flex;gap:8px">
+              <sc-for list="{{ fate.dice }}" as="d">
+                <button onClick="{{ d.onClick }}" aria-pressed="{{ d.on }}" style="flex:1;max-width:96px;height:64px;border-radius:6px;border:2px solid {{ d.border }};background:{{ d.bg }};color:{{ d.color }};font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+                  <span style="font-size:22px;font-weight:700;line-height:1">{{ d.v }}</span><span style="font-size:12px">{{ d.label }}</span>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ fate.isQS }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:15px;line-height:1.4">Die Qualitätsstufe steigt um 1: <b>{{ fate.qsLine }}</b>.</div>
+        </sc-if>
+        <button onClick="{{ fate.apply }}" style="height:50px;border:0;border-radius:4px;background:{{ fate.ctaBg }};color:{{ fate.ctaColor }};font:inherit;font-size:16px;font-weight:700;cursor:pointer">{{ fate.cta }}</button>
+        <span style="font-size:12px;line-height:1.4;color:var(--ink2)">Am Desktop dasselbe über Rechtsklick auf die Nachricht › „Schip verwenden“.</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ reqOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeReq }}" style="position:absolute;inset:0;z-index:9;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center">
+      <div onClick="{{ stop }}" style="width:100%;max-width:520px;max-height:92%;background:var(--sheet);color:var(--ink);border-radius:14px 14px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 30px rgba(0,0,0,.45)">
+        <div style="flex:none;padding:8px 16px 0;display:flex;flex-direction:column;gap:10px">
+          <div style="width:40px;height:4px;border-radius:2px;background:var(--line2);align-self:center"></div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="flex:1;font-family:Andalus,serif;font-size:22px">Probe anfordern</span>
+            <button onClick="{{ closeReq }}" aria-label="Schließen" style="flex:none;width:44px;height:44px;border:0;background:none;color:var(--ink);font-size:20px;cursor:pointer">✕</button>
+          </div>
+        </div>
+        <div data-scroll="1" style="flex:1;min-height:0;overflow-y:auto;padding:4px 16px 12px;display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)">Talent oder Eigenschaft</span>
+            <input value="{{ req.q }}" onChange="{{ req.onQ }}" placeholder="Suchen …" aria-label="Talent suchen" style="height:44px;padding:0 12px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font:inherit;font-size:16px;color:var(--ink)">
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <sc-for list="{{ req.skills }}" as="k"><button onClick="{{ k.onClick }}" aria-pressed="{{ k.on }}" style="height:40px;padding:0 10px 0 6px;border-radius:20px;border:1px solid {{ k.border }};background:{{ k.bg }};color:{{ k.color }};font:inherit;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px"><img src="{{ k.icon }}" alt="" style="width:26px;height:26px;border-radius:13px">{{ k.name }}</button></sc-for>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="flex:1;font-size:16px">Modifikator</span>
+            <button onClick="{{ req.dec }}" aria-label="Modifikator senken" style="width:44px;height:44px;border:1px solid var(--line2);border-radius:4px;background:var(--field);color:var(--ink);font-size:20px;cursor:pointer">−</button>
+            <span style="min-width:44px;text-align:center;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums">{{ req.modStr }}</span>
+            <button onClick="{{ req.inc }}" aria-label="Modifikator erhöhen" style="width:44px;height:44px;border:1px solid var(--line2);border-radius:4px;background:var(--field);color:var(--ink);font-size:20px;cursor:pointer">+</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="flex:none;width:110px;font-size:14px;color:var(--ink2)">Ergebnis sehen</span>
+            <div style="flex:1;display:flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <sc-for list="{{ req.modes }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:42px;font-size:14px;font-weight:700;background:{{ o.bg }};color:{{ o.color }}">{{ o.label }}</button></sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+            <span style="padding:6px 12px;background:var(--sub);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)">Helden</span>
+            <sc-for list="{{ req.heroes }}" as="h">
+              <button onClick="{{ h.onClick }}" role="checkbox" aria-checked="{{ h.on }}" style="display:flex;align-items:center;gap:10px;min-height:52px;padding:0 12px;border:0;border-top:1px solid var(--line);background:none;font:inherit;color:inherit;text-align:left;cursor:pointer">
+                <span style="flex:none;width:24px;height:24px;border-radius:4px;border:2px solid {{ h.boxLine }};background:{{ h.boxBg }};color:var(--onaccent);display:grid;place-items:center;font-size:15px;font-weight:700;box-sizing:border-box">{{ h.check }}</span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:16px">{{ h.name }}</span><span style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--ink2)"><span style="width:8px;height:8px;border-radius:4px;background:{{ h.dot }}"></span>{{ h.owner }}</span></span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="flex:none;padding:10px 16px 24px;border-top:1px solid var(--line2)">
+          <button onClick="{{ req.send }}" style="width:100%;height:50px;border:0;border-radius:4px;background:{{ req.ctaBg }};color:{{ req.ctaColor }};font:inherit;font-size:16px;font-weight:700;cursor:pointer">{{ req.cta }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ incOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:9;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center">
+      <div style="width:100%;max-width:460px;background:var(--sheet);color:var(--ink);border-radius:14px 14px 0 0;padding:8px 16px 26px;display:flex;flex-direction:column;gap:14px;box-shadow:0 -8px 30px rgba(0,0,0,.45);box-sizing:border-box;animation:dsaPop .2s ease-out">
+        <div style="width:40px;height:4px;border-radius:2px;background:var(--line2);align-self:center"></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <img src="{{ inc.icon }}" alt="" style="flex:none;width:48px;height:48px;border-radius:6px">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)">Die Spielleitung verlangt eine Probe</span><span style="font-family:Andalus,serif;font-size:24px;line-height:1.1">{{ inc.title }}</span><span style="font-size:13px;color:var(--ink2)">{{ inc.sub }}</span></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <sc-for list="{{ inc.dice }}" as="d">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border:1px solid var(--line2);border-radius:6px;background:var(--field)">
+              <span style="font-size:12px;font-weight:700;color:var(--ink2)">{{ d.k }} {{ d.t }}</span>
+              <span style="min-width:40px;height:32px;padding:0 6px;border-radius:16px;display:grid;place-items:center;background:{{ d.bg }};color:{{ d.color }};font-size:17px;font-weight:700">{{ d.res }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ inc.done }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:8px 12px;border-radius:4px;background:{{ inc.boxBg }};color:{{ inc.boxColor }};display:flex;flex-direction:column"><span style="font-weight:700;font-size:17px">{{ inc.headline }}</span><span style="font-size:14px">{{ inc.detail }}</span></div>
+        </sc-if>
+        <div style="display:flex;gap:8px">
+          <sc-if value="{{ inc.open }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ inc.later }}" style="flex:1;height:50px;border:1px solid var(--line2);border-radius:4px;background:var(--field);color:var(--ink);font:inherit;font-size:15px;font-weight:700;cursor:pointer">Später</button>
+            <button onClick="{{ inc.roll }}" style="flex:2;height:50px;border:0;border-radius:4px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:16px;font-weight:700;cursor:pointer">Würfeln</button>
+          </sc-if>
+          <sc-if value="{{ inc.done }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ inc.close }}" style="flex:1;height:50px;border:0;border-radius:4px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:16px;font-weight:700;cursor:pointer">Fertig</button>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ profileOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeProfile }}" style="position:absolute;inset:0;z-index:9;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center">
+      <div onClick="{{ stop }}" style="width:100%;max-width:460px;background:var(--sheet);color:var(--ink);border-radius:14px 14px 0 0;padding:8px 16px 28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 -8px 30px rgba(0,0,0,.45);box-sizing:border-box">
+        <div style="width:40px;height:4px;border-radius:2px;background:var(--line2);align-self:center"></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="flex:none;width:48px;height:48px;border-radius:24px;display:grid;place-items:center;background:#b99a5c;color:#272320;font-weight:700;font-size:18px">{{ meInitial }}</span>
+          <div style="flex:1;min-width:0"><div style="font-family:Andalus,serif;font-size:22px">{{ meName }}</div><div style="font-size:13px;color:var(--ink2)">{{ meRole }} · Die Rabenschatten</div></div>
+        </div>
+        <sc-for list="{{ settings }}" as="g" hint-placeholder-count="2">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="flex:none;width:100px;font-size:14px;color:var(--ink2)">{{ g.label }}</span>
+              <div style="flex:1;display:flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+                <sc-for list="{{ g.opts }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:42px;padding:0 4px;font-size:14px;font-weight:700;background:{{ o.bg }};color:{{ o.color }}">{{ o.label }}</button></sc-for>
+              </div>
+            </div>
+            <sc-if value="{{ g.hasNote }}" hint-placeholder-val="{{ false }}"><span style="padding-left:110px;font-size:12px;line-height:1.35;color:var(--ink2)">{{ g.note }}</span></sc-if>
+          </div>
+        </sc-for>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button onClick="{{ toDesktop }}" style="height:48px;border:1px solid var(--line2);border-radius:4px;background:var(--field);color:var(--ink);font:inherit;font-size:15px;font-weight:700;cursor:pointer">Zur vollständigen Foundry-Oberfläche</button>
+          <button onClick="{{ logout }}" style="height:48px;border:1px solid var(--danger);border-radius:4px;background:var(--dangerbg);color:var(--dangertext);font:inherit;font-size:15px;font-weight:700;cursor:pointer">Abmelden</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:11;padding:8px 14px;border-radius:18px;background:rgba(39,35,32,.94);color:#f4e8d6;font-size:14px;white-space:nowrap">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:800},&quot;rolle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Spieler&quot;,&quot;SL&quot;],&quot;default&quot;:&quot;Spieler&quot;,&quot;tsType&quot;:&quot;'Spieler'|'SL'&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;hell&quot;,&quot;dunkel&quot;],&quot;default&quot;:&quot;hell&quot;,&quot;tsType&quot;:&quot;'hell'|'dunkel'&quot;},&quot;leer&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;device&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'phone'|'tablet'&quot;},&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  I = '../../../../systems/dsa5/icons/';
+  CELL = 64;
+  chatRef = React.createRef();
+  sceneRef = React.createRef();
+  rootRef = React.createRef();
+  state = {
+    view: 'home', entry: null, role: null, theme: null, profile: false, toast: '',
+    draft: '', target: 'all', diceOpen: false, seen: 0, shared: {}, newIds: { 1: true, 7: true },
+    ui: 'auto', scene: true, sceneFull: false, hint: true, chatOpen: false,
+    cam: null, toks: {}, drag: null, hold: null, pings: [], bubble: null, openF: {},
+    fate: null, req: null, inc: null, schips: { own: 2, group: 3 },
+    msgs: []
+  };
+
+  constructor(p) {
+    super(p);
+    const r = (k, cur, max) => ({ key: k, cur, max });
+    // Layariels Werte wie im Heldenbogen (Heldenbogen Mobil.dc.html, ATTRS/Talente)
+    this.ATTRS = { MU: 13, KL: 12, IN: 14, CH: 13, FF: 15, GE: 14, KO: 12, KK: 11 };
+    this.HEROES = [
+      { id: 'lay', name: 'Layariel Wipfelglanz', short: 'Layariel', sub: 'Elf · Waldläuferin', owner: 'Anna', online: true, mine: true, bars: [r('LeP', 28, 32), r('AsP', 24, 34), r('KaP', 12, 18)], tok: [8, 4], bg: 'radial-gradient(circle at 40% 35%,#6f8f3a,#33461a)' },
+      { id: 'ber', name: 'Bertholdt Ingerimmsohn', short: 'Bertholdt', sub: 'Zwerg · Söldner', owner: 'Jonas', online: true, bars: [r('LeP', 35, 41)], tok: [7, 5], bg: 'radial-gradient(circle at 40% 35%,#8a6a45,#4a3520)' },
+      { id: 'ron', name: 'Rondriane von Wehrheim', short: 'Rondriane', sub: 'Mensch · Rondrageweihte', owner: 'Mia', online: true, bars: [r('LeP', 30, 36), r('KaP', 20, 24)], tok: [8, 5], bg: 'radial-gradient(circle at 40% 35%,#9a3b33,#521c17)' },
+      { id: 'sal', name: 'Salpikon Savertin', short: 'Salpikon', sub: 'Mensch · Gildenmagier', owner: 'Tom', online: false, bars: [r('LeP', 22, 27), r('AsP', 30, 42)], tok: [7, 6], bg: 'radial-gradient(circle at 40% 35%,#3e5d8f,#1d2f4d)' }
+    ];
+    this.FOES = [
+      { id: 'k1', name: 'Rodungsknecht', ini: 'R', tok: [4, 6] },
+      { id: 'k2', name: 'Vorarbeiter', ini: 'V', tok: [15, 3] }
+    ];
+    // Spielfeld in Feldern (64 px): Räume = begehbare Flächen
+    this.ROOMS = [[2, 1, 9, 7, '#6f665b'], [11, 3, 3, 2, '#665d52'], [14, 1, 3, 7, '#6b6257'], [6, 8, 2, 1, '#665d52'], [3, 9, 6, 3, '#71675b'], [13, 8, 4, 4, '#675e53']];
+    const C = this.CELL;
+    this.DECOR = [
+      ...[[3, 2], [9, 2], [3, 6], [9, 6]].map(([x, y]) => ({ x: x * C + 12, y: y * C + 12, w: 40, h: 40, css: 'border-radius:50%;background:radial-gradient(circle at 38% 32%,#9b938a,#4d4741);box-shadow:0 4px 8px rgba(0,0,0,.5)' })),
+      { x: 4 * C + 6, y: 2 * C + 70, w: 2 * C - 12, h: 3 * C - 80, css: 'border-radius:4px;background:radial-gradient(ellipse at center,#050403,#221d19 80%);box-shadow:inset 0 0 18px #000' },
+      { x: 15 * C + 8, y: 1 * C + 8, w: 48, h: 48, css: 'background:repeating-linear-gradient(90deg,#7a5a35 0 10px,#5e4427 10px 12px);border:2px solid #3b2a17' },
+      { x: 16 * C + 8, y: 6 * C + 8, w: 48, h: 48, css: 'background:repeating-linear-gradient(90deg,#7a5a35 0 10px,#5e4427 10px 12px);border:2px solid #3b2a17' },
+      { x: 14 * C, y: 9 * C, w: 2 * C, h: 2 * C, css: 'background:repeating-linear-gradient(180deg,#8a8178 0 14px,#4a443e 14px 16px);opacity:.85' },
+      { x: 11 * C - 4, y: 3 * C + 6, w: 8, h: 2 * C - 12, css: 'background:#5e4427;border:1px solid #2b1e10' }
+    ];
+    this.FOLDERS = [
+      { id: 'h', name: 'Handouts', color: '#9a7a3e' },
+      { id: 'o', name: 'Orte', color: '#4f6d65' },
+      { id: 'ok', name: 'Kupferschmiede', parent: 'o', color: '#4f6d65' },
+      { id: 'p', name: 'Personen', color: '#85302e' },
+      { id: 's', name: 'Spielleitung', color: '#4b6585' }
+    ];
+    this.JOURNAL = [
+      { id: 1, f: 'h', title: 'Brief des Raben', kind: 'Handout', img: true, shared: true, date: '15. Rondra', text: 'Wer die Rodung am Großen Fluss bezahlt hat, steht nicht in den Büchern der Flussgilde. Komm zur dritten Stunde nach Mitternacht an den alten Mühlstein. Allein.\n\n– R.' },
+      { id: 2, f: 'h', title: 'Karte der Mühlenauen', kind: 'Handout', img: true, shared: true, date: '14. Rondra', text: 'Skizze von Bertholdt, nach Angaben des Fährmanns.' },
+      { id: 6, f: 'o', title: 'Die Furt', kind: 'Ort', img: false, shared: true, date: '14. Rondra', text: 'Flache Stelle im Großen Fluss, eine Meile unterhalb der Mühle. Bei Niedrigwasser mit Ochsenkarren befahrbar.' },
+      { id: 3, f: 'ok', title: 'Gerüchte in Kupferschmiede', kind: 'Notiz', img: false, shared: true, date: '12. Rondra', text: '• Der Müller Alrik ist seit dem Praiosmond verschwunden.\n• Nachts fahren Ochsenkarren ohne Laternen über die Furt.\n• Die Flussgilde hat einen neuen Schatzmeister.' },
+      { id: 7, f: 'p', title: 'Alrik, der Müller', kind: 'Person', img: true, shared: true, date: '15. Rondra', text: 'Mittelgroß, mehlbestäubter Bart, spricht mit leichtem Weidener Akzent. Seit dem Praiosmond verschwunden.' },
+      { id: 8, f: 'p', title: 'Odilbert, der Fährmann', kind: 'Person', img: false, shared: false, date: '', text: 'Wortkarg, kennt jede Untiefe. Ist der Rabe.' },
+      { id: 4, f: 's', title: 'Der Rabe – Hintergrund', kind: 'SL-Notiz', img: false, shared: false, date: '', text: 'Hinter dem Raben steckt der Fährmann Odilbert. Er war selbst an der Rodung beteiligt und will sich mit dem Verrat an seinen Auftraggebern freikaufen.' },
+      { id: 5, f: 's', title: 'Szene 3: Die Mühle', kind: 'SL-Notiz', img: false, shared: false, date: '', text: 'Vier Rodungsknechte, ein Vorarbeiter (Söldner, AT 12, PA 7, LeP 30).\nSind die Helden laut, flieht der Vorarbeiter über die Furt.' }
+    ];
+    // Auswahl für „Probe anfordern“: Talente (Probe, Layariels FW, Symbol) + Eigenschaften
+    const T = (name, probe, fw, icon) => ({ name, probe, fw, icon: this.I + 'talents/' + icon + '.webp' });
+    this.SKILLS = [
+      T('Sinnesschärfe', 'KL/IN/IN', 9, 'Sinnesschaerfe'), T('Verbergen', 'MU/IN/GE', 7, 'Verbergen'), T('Selbstbeherrschung', 'MU/MU/KO', 0, 'Selbstbeherrschung'),
+      T('Körperbeherrschung', 'GE/GE/KO', 8, 'Koerperbeherrschung'), T('Klettern', 'MU/GE/KK', 6, 'Klettern'), T('Kraftakt', 'KO/KK/KK', 0, 'Kraftakt'),
+      T('Schwimmen', 'GE/KO/KK', 3, 'Schwimmen'), T('Menschenkenntnis', 'KL/IN/CH', 8, 'Menschenkenntins'), T('Willenskraft', 'MU/IN/CH', 5, 'Willenskraft'),
+      T('Überreden', 'MU/IN/CH', 6, 'Ueberreden'), T('Einschüchtern', 'MU/IN/CH', 0, 'Einschuechtern'), T('Etikette', 'KL/IN/CH', 2, 'Etikette'),
+      T('Orientierung', 'KL/IN/IN', 9, 'Orientierung'), T('Fährtensuchen', 'MU/IN/GE', 10, 'Faehrtensuchen'), T('Wildnisleben', 'MU/GE/KO', 11, 'Wildnisleben'), T('Zechen', 'KL/KO/KK', 0, 'Zechen'),
+      ...[['Mut', 'MU'], ['Klugheit', 'KL'], ['Intuition', 'IN'], ['Charisma', 'CH'], ['Fingerfertigkeit', 'FF'], ['Gewandtheit', 'GE'], ['Konstitution', 'KO'], ['Körperkraft', 'KK']]
+        .map(([name, k]) => ({ name, attr: k, icon: this.I + 'dice/d20' + k.toLowerCase() + '.svg' }))
+    ];
+    const lay = { who: 'Layariel Wipfelglanz', owner: 'Anna' };
+    this.state.msgs = [
+      { id: 1, type: 'system', text: 'Sitzung 14 · „Die alte Mühle“ hat begonnen', time: '19:32' },
+      { id: 2, type: 'text', who: 'Bertholdt Ingerimmsohn', owner: 'Jonas', text: 'Ich stemme mich gegen die Tür, Layariel soll hinten herum.', time: '19:41' },
+      { id: 3, type: 'roll', who: 'Bertholdt Ingerimmsohn', owner: 'Jonas', title: 'Kraftakt', sub: 'Probe KO/KK/KK · FW 9', dice: [7, 12, 9], headline: 'Gelungen · QS 2', detail: '6 FP übrig', ok: true, time: '19:42' },
+      { id: 4, type: 'text', who: 'Spielleitung', gm: true, to: 'Layariel', text: 'Hinter der Mühle hörst du Ochsen schnauben. Jemand flucht leise auf Garethi.', time: '19:43' },
+      { id: 5, type: 'text', who: 'Spielleitung', gm: true, to: 'Bertholdt', text: 'Die Tür gibt nach – aber nur eine Handbreit. Dahinter steht etwas Schweres.', time: '19:43' },
+      this.skillMsg({ id: 6, ...lay, title: 'Verbergen', probe: 'MU/IN/GE', fw: 7, mod: 0, dice: [4, 11, 16], time: '19:44' }),
+      this.skillMsg({ id: 7, ...lay, title: 'Klettern', probe: 'MU/GE/KK', fw: 6, mod: 0, dice: [15, 19, 13], time: '19:46' })
+    ];
+    this.state.seen = this.state.msgs.length;
+  }
+
+  // ---------- DSA5-Probe (wie evalRoll im Heldenbogen) ----------
+  evalSkill(probe, fw, mod, dice) {
+    const ks = probe.split('/');
+    let over = 0;
+    ks.forEach((k, i) => { const t = this.ATTRS[k] + mod; if (dice[i] > t) over += dice[i] - t; });
+    const ones = dice.filter(x => x === 1).length, tw = dice.filter(x => x === 20).length;
+    const fp = fw - over, ok = fp >= 0, qs = ok ? Math.min(6, Math.max(1, Math.ceil(fp / 3))) : 0;
+    if (tw >= 2) return { headline: 'Patzer', detail: 'Zwei Zwanziger', ok: false, qs: 0, botch: true };
+    if (ones >= 2) return { headline: 'Kritischer Erfolg', detail: 'QS ' + Math.max(qs, 1) + ' · doppelt', ok: true, qs: Math.max(qs, 1), crit: true };
+    return { headline: ok ? 'Gelungen · QS ' + qs : 'Misslungen', detail: ok ? fp + ' FP übrig' : 'Es fehlen ' + (-fp) + ' FP', ok, qs };
+  }
+  evalAttr(k, mod, x) { const t = this.ATTRS[k] + mod, ok = x <= t && x !== 20; return { headline: x === 1 ? 'Möglicher kritischer Erfolg' : x === 20 ? 'Möglicher Patzer' : ok ? 'Gelungen' : 'Misslungen', detail: 'Wurf ' + x + ' gegen ' + t, ok, qs: ok ? 1 : 0 }; }
+  skillMsg(m) {
+    const ms = m.mod ? ' · Mod ' + (m.mod > 0 ? '+' : '−') + Math.abs(m.mod) : '';
+    return { type: 'roll', kind: 'skill', sub: 'Probe ' + m.probe + ' · FW ' + m.fw + ms, ...m, ...this.evalSkill(m.probe, m.fw, m.mod, m.dice) };
+  }
+  d20() { return 1 + Math.floor(Math.random() * 20); }
+
+  componentDidMount() {
+    this._timers = [
+      setTimeout(() => this.push({ type: 'text', who: 'Rondriane von Wehrheim', owner: 'Mia', text: 'Ich gehe mit Bertholdt rein. Rondra mit uns!' }), 7000),
+      setTimeout(() => this.addPing(5 * this.CELL, 6 * this.CELL + 32, 'Spielleitung', '#e0c48c'), 11000),
+      setTimeout(() => { if (this.role() === 'player' && !this.state.msgs.some(m => m.type === 'request')) this.createRequest({ skill: this.SKILLS[0], mod: -1, blind: false, ids: this.HEROES.map(h => h.id) }); }, 16000)
+    ];
+    this.scrollChat();
+    this.initCam();
+  }
+  componentWillUnmount() { (this._timers || []).forEach(clearTimeout); clearTimeout(this._tt); clearTimeout(this._bt); clearTimeout(this._lp); }
+  componentDidUpdate() {
+    // Die DC-Laufzeit reicht keinen prevState durch, daher selbst vergleichen
+    const key = this.state.msgs.length + '|' + this.state.view + '|' + this.state.chatOpen;
+    if (key !== this._scrollKey) { this._scrollKey = key; this.scrollChat(); }
+    if (this.chatVisible() && this.state.seen !== this.state.msgs.length) this.setState({ seen: this.state.msgs.length, bubble: null });
+    this.initCam();
+  }
+  scrollChat() { const go = () => { const c = this.chatRef.current; if (c) c.scrollTop = c.scrollHeight; }; go(); setTimeout(go, 60); setTimeout(go, 250); }
+  chatVisible() { return this._dev === 'tablet' ? this.state.chatOpen && this.state.view !== 'sheet' : this.state.view === 'chat'; }
+  now() { this._t0 = this._t0 || Date.now(); const m = 47 + Math.floor((Date.now() - this._t0) / 60000); return (19 + Math.floor(m / 60)) + ':' + String(m % 60).padStart(2, '0'); }
+  nextId() { this._id = Math.max(this._id || 0, ...this.state.msgs.map(m => m.id)) + 1; return this._id; }
+  push(m) {
+    const id = this.nextId();
+    this.setState(st => ({ msgs: [...st.msgs, { id, time: this.now(), ...m }] }));
+    const me = this.role() === 'gm';
+    const mine = me ? !!m.gm : m.owner === 'Anna';
+    const visible = me || !m.to || m.to === 'Layariel';
+    if (!mine && visible && m.type !== 'system' && !this.chatVisible()) {
+      clearTimeout(this._bt);
+      this.setState({ bubble: { who: m.who.split(' ')[0] + (m.to ? ' · flüstert' : ''), text: m.type === 'request' ? 'Probe angefordert: ' + this.reqTitle(m) : m.type === 'roll' ? m.title + ': ' + m.headline : m.text } });
+      this._bt = setTimeout(() => this.setState({ bubble: null }), 5000);
+    }
+    return id;
+  }
+  patch(id, fn) { this.setState(st => ({ msgs: st.msgs.map(m => m.id === id ? { ...m, ...fn(m) } : m) })); }
+  flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 1800); }
+  role() { return this.state.role ?? (this.props.rolle === 'SL' ? 'gm' : 'player'); }
+
+  // ---------- Szene: Kamera, Gesten, Ping, Token ziehen ----------
+  tokPos(id) { const t = this.state.toks[id] || [...this.HEROES, ...this.FOES].find(x => x.id === id).tok; return t; }
+  initCam() {
+    const el = this.sceneRef.current;
+    if (!el || this.state.cam) return;
+    const w = el.clientWidth, h = el.clientHeight;
+    if (!w || !h) return;
+    this.setState({ cam: this.camOn(this.role() === 'gm' ? [7, 5] : this.tokPos('lay'), w, h, 0.9) });
+  }
+  camOn([cx, cy], w, h, s) { const C = this.CELL; return { x: w / 2 - (cx * C + C / 2) * s, y: h / 2 - (cy * C + C / 2) * s, s }; }
+  local(e) { const r = this.sceneRef.current.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+  world(p) { const c = this.state.cam; return { x: (p.x - c.x) / c.s, y: (p.y - c.y) / c.s }; }
+  tokenAt(w) {
+    const C = this.CELL;
+    return [...this.HEROES, ...this.FOES].map(t => ({ t, p: this.tokPos(t.id) })).reverse()
+      .find(({ p }) => Math.hypot(w.x - (p[0] * C + C / 2), w.y - (p[1] * C + C / 2)) < 30)?.t || null;
+  }
+  walkable(cx, cy) { return this.ROOMS.some(([x, y, w, h]) => cx >= x && cx < x + w && cy >= y && cy < y + h); }
+  addPing(x, y, who, color) {
+    const id = Math.random();
+    this.setState(st => ({ pings: [...st.pings, { id, x, y, who, color }] }));
+    setTimeout(() => this.setState(st => ({ pings: st.pings.filter(p => p.id !== id) })), 1900);
+  }
+  scDown = e => {
+    if (!this.state.cam) return;
+    this.ptrs = this.ptrs || new Map();
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+    const p = this.local(e);
+    this.ptrs.set(e.pointerId, p);
+    clearTimeout(this._lp);
+    if (this.ptrs.size === 1) {
+      const tok = this.tokenAt(this.world(p));
+      this.g = { mode: 'pending', start: p, last: p, tok };
+      this.setState({ hold: p });
+      this._lp = setTimeout(() => this.longPress(), 500);
+    } else if (this.ptrs.size === 2) {
+      if (this.state.drag) this.setState({ drag: null });
+      const [a, b] = [...this.ptrs.values()];
+      this.g = { mode: 'pinch', d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, cam0: this.state.cam, mid0: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } };
+      this.setState({ hold: null });
+    }
+  };
+  longPress() {
+    const g = this.g;
+    if (!g || g.mode !== 'pending') return;
+    this.setState({ hold: null });
+    const w = this.world(g.start), C = this.CELL;
+    const isGM = this.role() === 'gm';
+    if (g.tok && (isGM || g.tok.mine)) {
+      const p = this.tokPos(g.tok.id);
+      g.mode = 'drag';
+      g.off = { x: w.x - p[0] * C, y: w.y - p[1] * C };
+      try { navigator.vibrate && navigator.vibrate(15); } catch (_) {}
+      this.setState({ drag: { id: g.tok.id, x: p[0] * C, y: p[1] * C, from: p } });
+    } else {
+      g.mode = 'done';
+      try { navigator.vibrate && navigator.vibrate(10); } catch (_) {}
+      this.addPing(w.x, w.y, isGM ? 'Spielleitung' : 'Anna', isGM ? '#e0c48c' : '#8fd16a');
+    }
+  }
+  scMove = e => {
+    if (!this.g || !this.ptrs || !this.ptrs.has(e.pointerId)) return;
+    const p = this.local(e);
+    this.ptrs.set(e.pointerId, p);
+    const g = this.g;
+    if (g.mode === 'pending' && Math.hypot(p.x - g.start.x, p.y - g.start.y) > 8) { clearTimeout(this._lp); g.mode = 'pan'; this.setState({ hold: null }); }
+    if (g.mode === 'pan') {
+      const c = this.state.cam;
+      this.setState({ cam: { ...c, x: c.x + p.x - g.last.x, y: c.y + p.y - g.last.y } });
+      g.last = p;
+    } else if (g.mode === 'drag') {
+      const w = this.world(p);
+      this.setState(st => ({ drag: { ...st.drag, x: w.x - g.off.x, y: w.y - g.off.y } }));
+    } else if (g.mode === 'pinch' && this.ptrs.size >= 2) {
+      const [a, b] = [...this.ptrs.values()];
+      const d = Math.hypot(a.x - b.x, a.y - b.y), mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      const c0 = g.cam0, s = Math.min(2.5, Math.max(0.35, c0.s * d / g.d0));
+      const wx = (g.mid0.x - c0.x) / c0.s, wy = (g.mid0.y - c0.y) / c0.s;
+      this.setState({ cam: { x: mid.x - wx * s, y: mid.y - wy * s, s } });
+    }
+  };
+  scUp = e => {
+    if (!this.ptrs) return;
+    this.ptrs.delete(e.pointerId);
+    clearTimeout(this._lp);
+    const g = this.g;
+    if (g && g.mode === 'drag') {
+      const d = this.state.drag, C = this.CELL;
+      const cx = Math.round(d.x / C), cy = Math.round(d.y / C);
+      if (this.walkable(cx, cy)) this.setState(st => ({ drag: null, toks: { ...st.toks, [d.id]: [cx, cy] } }));
+      else { this.setState({ drag: null }); this.flash('Dort ist eine Wand'); }
+    }
+    if (this.ptrs.size === 1 && g && g.mode === 'pinch') { const p = [...this.ptrs.values()][0]; this.g = { mode: 'pan', last: p, start: p }; }
+    else if (this.ptrs.size === 0) this.g = null;
+    if (g && g.mode === 'pending' && g.tok) { clearTimeout(this._nt); this.setState({ named: g.tok.id }); this._nt = setTimeout(() => this.setState({ named: null }), 2000); }
+    if (this.state.hold) this.setState({ hold: null });
+  };
+  scWheel = e => {
+    const c = this.state.cam;
+    if (!c) return;
+    const p = this.local(e), s = Math.min(2.5, Math.max(0.35, c.s * (e.deltaY < 0 ? 1.12 : 1 / 1.12)));
+    const wx = (p.x - c.x) / c.s, wy = (p.y - c.y) / c.s;
+    this.setState({ cam: { x: p.x - wx * s, y: p.y - wy * s, s } });
+  };
+
+  // ---------- Probe anfordern (RollRequestService) ----------
+  reqTitle(m) { return m.skill.name + (m.mod ? ' ' + (m.mod > 0 ? '+' : '−') + Math.abs(m.mod) : ''); }
+  createRequest({ skill, mod, blind, ids }) {
+    const id = this.push({ type: 'request', who: 'Spielleitung', gm: true, skill, mod, blind, done: false, rows: ids.map(hid => ({ hid, st: 'pending' })) });
+    ids.forEach(hid => {
+      const h = this.HEROES.find(x => x.id === hid);
+      if (!h.online) return;
+      if (h.mine && this.role() === 'player') return;
+      this._timers.push(setTimeout(() => this.resolveRow(id, hid, false), 2500 + Math.random() * 5000));
+    });
+    if (ids.includes('lay') && this.role() === 'player') this.setState({ inc: { id, res: null } });
+    return id;
+  }
+  rollFor(hid, m) {
+    if (hid === 'lay') {
+      if (m.skill.attr) { const x = this.d20(); return { dice: [x], ...this.evalAttr(m.skill.attr, m.mod, x) }; }
+      const dice = [this.d20(), this.d20(), this.d20()];
+      return { dice, ...this.evalSkill(m.skill.probe, m.skill.fw, m.mod, dice) };
+    }
+    const ok = Math.random() < 0.7, qs = 1 + Math.floor(Math.random() * 3);
+    return { ok, qs: ok ? qs : 0 };
+  }
+  resolveRow(id, hid, byGM) {
+    const m = this.state.msgs.find(x => x.id === id);
+    if (!m || m.done) return null;
+    const row = m.rows.find(r => r.hid === hid);
+    if (!row || row.st !== 'pending') return null;
+    const res = this.rollFor(hid, m);
+    const st = res.botch ? 'botch' : res.crit ? 'crit' : res.ok ? 'ok' : 'fail';
+    this.patch(id, x => ({ rows: x.rows.map(r => r.hid === hid ? { ...r, st, qs: res.qs, byGM } : r) }));
+    return res;
+  }
+  skipRow(id, hid) { this.patch(id, x => ({ rows: x.rows.map(r => r.hid === hid && r.st === 'pending' ? { ...r, st: 'skipped' } : r) })); }
+
+  // ---------- Schips im Chat (UnifiedFateDSA5) ----------
+  fateTabs(m) {
+    const t = [];
+    if (!m.rerollUsed) t.push(['reroll', 'Wurf wiederholen']);
+    if (m.kind === 'skill' && m.ok && !m.qsUsed && !m.crit) t.push(['qs', 'Qualitätsstufe erhöhen']);
+    return t;
+  }
+  canFate(m, isGM) { return !isGM && m.type === 'roll' && m.owner === 'Anna' && m.kind === 'skill' && this.fateTabs(m).length > 0; }
+  applyFate() {
+    const f = this.state.fate, m = this.state.msgs.find(x => x.id === f.id);
+    if (!m) return;
+    const left = this.state.schips[f.src];
+    if (left < 1) return this.flash(f.src === 'own' ? 'Keine persönlichen Schicksalspunkte übrig!' : 'Keine Gruppenschips übrig!');
+    let upd, line;
+    if (f.tab === 'reroll') {
+      if (!f.sel.some(Boolean)) return this.flash('Keinen Würfel gewählt');
+      const before = m.dice.join(' · ');
+      const dice = m.dice.map((d, i) => f.sel[i] ? this.d20() : d);
+      upd = { dice, ...this.evalSkill(m.probe, m.fw, m.mod, dice), rerollUsed: true, note: 'Schip: Wurf wiederholt (vorher ' + before + ')' };
+      line = 'Wurf wiederholt';
+    } else {
+      const qs = Math.min(6, m.qs + 1);
+      upd = { qs, headline: 'Gelungen · QS ' + qs, qsUsed: true, note: 'Schip: QS um 1 erhöht' };
+      line = 'QS erhöht';
+    }
+    this.patch(m.id, () => upd);
+    this.setState(st => ({ fate: null, schips: { ...st.schips, [f.src]: st.schips[f.src] - 1 } }));
+    this.push({ type: 'system', text: 'Das Schicksal ändert sich · Layariel setzt ' + (f.src === 'own' ? 'einen Schip' : 'einen Gruppenschip') + ' ein (' + m.title + ': ' + line + ')' });
+  }
+
+  renderVals() {
+    const s = this.state, P = this.props, I = this.I, C = this.CELL;
+    const standalone = !P.embedded;
+    const qd = new URLSearchParams(location.search).get('device');
+    const rw = this.rootRef.current ? this.rootRef.current.clientWidth : (standalone ? innerWidth : 390);
+    // Automatische Wahl nach Breite (MOBILE-FEEDBACK Punkt 5): < 600 px Smartphone, sonst Tablet
+    const autoDev = (qd === 'tablet' || qd === 'phone') ? qd : !standalone ? (P.device ?? 'phone') : (Math.min(innerWidth, innerHeight) >= 600 ? 'tablet' : 'phone');
+    const device = s.ui === 'auto' ? autoDev : s.ui;
+    const isTablet = device === 'tablet', isPhone = !isTablet;
+    this._dev = device;
+    const isGM = this.role() === 'gm';
+    const theme = s.theme ?? (P.theme === 'dunkel' ? 'dark' : 'light');
+    const set = o => this.setState(o);
+    const GR = { LeP: 'linear-gradient(90deg,#841a16,#c42c24)', AsP: 'linear-gradient(90deg,#1c6f9e,#3558c4)', KaP: 'linear-gradient(90deg,#5d8f24,#2a7a3a)' };
+    const isShared = j => s.shared[j.id] ?? j.shared;
+    const schipImg = I + 'schip.webp';
+    const stop = e => e.stopPropagation();
+
+    const heroes = this.HEROES.filter(h => isGM || h.mine).map(h => ({
+      name: h.name, sub: h.sub, owner: h.owner, showOwner: isGM, dot: h.online ? 'var(--ok)' : 'var(--ink3)',
+      bars: h.bars.map(b => ({ ...b, pct: (b.cur / b.max * 100) + '%', grad: GR[b.key] })),
+      onOpen: () => { set({ view: 'sheet' }); if (isGM && !h.mine) this.flash('Demo: zeigt Layariels Bogen'); }
+    }));
+
+    // ----- Szene -----
+    const cam = s.cam || { x: 0, y: 0, s: 1 };
+    const drag = s.drag;
+    const tokens = [...this.HEROES.map(h => ({ ...h, ini: h.short[0], hero: true })), ...this.FOES.map(f => ({ ...f, short: f.name }))].map(t => {
+      const p = this.tokPos(t.id), dragging = drag && drag.id === t.id;
+      const mine = t.mine && !isGM;
+      return { name: t.short, ini: t.ini, x: dragging ? drag.x + 4 : p[0] * C + 4, y: dragging ? drag.y + 4 : p[1] * C + 4,
+        bg: t.hero ? t.bg : 'radial-gradient(circle at 40% 35%,#5a4e44,#2a231d)', ring: t.hero ? (mine ? '#e0c48c' : '#b99a5c') : '#b3241a',
+        shadow: dragging ? '0 12px 24px rgba(0,0,0,.6)' : mine ? '0 0 0 3px rgba(224,196,140,.45),0 3px 8px rgba(0,0,0,.5)' : '0 3px 8px rgba(0,0,0,.5)',
+        scale: dragging ? 1.15 : 1, showName: mine || dragging || s.named === t.id, trans: dragging ? 'none' : 'left .25s ease,top .25s ease', z: dragging ? 3 : mine ? 2 : 1 };
+    });
+    const dropCell = drag ? [Math.round(drag.x / C), Math.round(drag.y / C)] : null;
+    const dropOk = dropCell && this.walkable(dropCell[0], dropCell[1]);
+
+    // ----- Chat -----
+    const me = isGM ? { name: 'Tobias', role: 'Spielleitung', initial: 'SL', short: null } : { name: 'Anna', role: 'Spielerin', initial: 'A', short: 'Layariel' };
+    const visible = s.msgs.filter(m => isGM || !m.to || m.to === me.short || m.owner === me.name);
+    const isMine = m => isGM ? !!m.gm : m.owner === 'Anna';
+    const openFate = (m, die) => set({ fate: { id: m.id, tab: this.fateTabs(m)[0][0], sel: m.dice.map((_, i) => die == null ? (!m.ok && m.dice[i] > this.ATTRS[m.probe.split('/')[i]] + m.mod) : i === die), src: 'own' } });
+    const ST = { ok: ['QS ', 'var(--okbg)', 'var(--oktext)'], crit: ['Kritisch · QS ', 'var(--okbg)', 'var(--oktext)'], fail: ['Misslungen', 'var(--dangerbg)', 'var(--dangertext)'], botch: ['Patzer', 'var(--dangerbg)', 'var(--dangertext)'], skipped: ['übersprungen', 'var(--sub)', 'var(--ink2)'] };
+    const messages = visible.map(m => {
+      const whisper = !!m.to, mine = isMine(m), fateOk = this.canFate(m, isGM);
+      const okBox = m.ok === true ? ['var(--okbg)', 'var(--oktext)'] : m.ok === false ? ['var(--dangerbg)', 'var(--dangertext)'] : ['var(--sub)', 'var(--ink)'];
+      const base = { isSystem: m.type === 'system', isCard: m.type !== 'system', isText: m.type === 'text', isRoll: m.type === 'roll', isRequest: m.type === 'request',
+        who: m.who + (m.owner && isGM ? ' (' + m.owner + ')' : ''), time: m.time, text: m.text,
+        isWhisper: whisper, whisperLabel: whisper ? (m.gm ? (isGM ? 'Geflüstert an ' + m.to : 'Flüstern der Spielleitung') : 'Geflüstert an die Spielleitung') : '',
+        bg: whisper ? 'var(--whisper)' : 'var(--card)', border: whisper ? 'var(--whisperline)' : 'var(--line2)', edge: whisper ? 'var(--whisperline)' : m.type === 'request' ? 'var(--accent)' : mine ? 'var(--accent)' : m.gm ? 'var(--sel)' : 'var(--line2)',
+        whoColor: m.gm ? 'var(--accenttext)' : 'var(--ink)', cursor: fateOk ? 'pointer' : 'default', canFate: fateOk, schipImg,
+        onTap: fateOk ? () => openFate(m) : undefined, hasNote: !!m.note, note: m.note };
+      if (m.type === 'roll') Object.assign(base, { title: m.title, sub: m.sub, hasSub: !!m.sub, hasDice: !!(m.dice && m.dice.length), headline: m.headline, detail: m.detail, hasDetail: !!m.detail, boxBg: okBox[0], boxColor: okBox[1],
+        dice: (m.dice || []).map((v, i) => ({ v, tab: fateOk ? '0' : '-1', border: fateOk ? 'var(--accent)' : 'var(--line2)', label: 'Würfel ' + (i + 1) + ': ' + v + (fateOk ? ', Schip verwenden' : ''), onTap: fateOk ? e => { e.stopPropagation(); openFate(m, i); } : undefined })) });
+      if (m.type === 'request') {
+        const myRow = r => !isGM && r.hid === 'lay';
+        Object.assign(base, { title: this.reqTitle(m), icon: m.skill.icon, reqLabel: 'Probe angefordert' + (m.blind ? ' · Ergebnis nur für SL' : '') + (m.done ? ' · abgeschlossen' : ''),
+          canFinalize: isGM && !m.done, finalize: () => { this.patch(m.id, x => ({ done: true, rows: x.rows.map(r => r.st === 'pending' ? { ...r, st: 'skipped' } : r) })); this.flash('Anfrage abgeschlossen'); },
+          rows: m.rows.map(r => {
+            const h = this.HEROES.find(x => x.id === r.hid), pend = r.st === 'pending' && !m.done;
+            const hidden = m.blind && !isGM && r.st !== 'pending' && r.st !== 'skipped';
+            const sd = ST[r.st];
+            const status = r.st === 'pending' ? (h.online ? 'wartet' : 'offline') : hidden ? 'gewürfelt' : (sd[0] + (r.st === 'ok' || r.st === 'crit' ? r.qs : ''));
+            return { name: h.name, ini: h.short[0], tokBg: h.bg, ring: h.mine && !isGM ? '#e0c48c' : '#b99a5c', hasSub: isGM || !!r.byGM, sub: (isGM ? h.owner + (h.online ? '' : ' · offline') : '') + (r.byGM ? (isGM ? ' · ' : '') + 'von der SL gewürfelt' : ''),
+              hasStatus: !(pend && (myRow(r) || (isGM && !h.online))), status, bg: r.st === 'pending' || hidden ? 'var(--sub)' : sd[1], color: r.st === 'pending' || hidden ? 'var(--ink2)' : sd[2],
+              canRoll: pend && (myRow(r) || (isGM && !h.online)), rollLabel: isGM ? 'Für Spieler würfeln' : 'Würfeln',
+              roll: () => { if (isGM) { const res = this.resolveRow(m.id, r.hid, true); if (res) this.flash(h.short + ': ' + (res.ok ? 'QS ' + res.qs : 'misslungen')); } else set({ inc: { id: m.id, res: null } }); },
+              canSkip: pend && (isGM || myRow(r)), skip: () => this.skipRow(m.id, r.hid) };
+          }) });
+      }
+      return base;
+    });
+    const unread = s.msgs.slice(s.seen).filter(m => visible.includes(m) && !isMine(m) && m.type !== 'system').length;
+
+    const tgts = isGM ? [['all', 'An alle'], ...this.HEROES.map(h => [h.short, 'Flüstern: ' + h.short])] : [['all', 'An alle'], ['gm', 'Flüstern: SL']];
+    const targets = tgts.map(([id, label]) => { const on = s.target === id; return { label, on: on ? 'true' : 'false', onClick: () => set({ target: id }), bg: on ? (id === 'all' ? 'var(--sel)' : 'var(--whisperline)') : 'var(--field)', color: on ? (id === 'all' ? 'var(--onsel)' : '#fff') : 'var(--ink)', border: on ? 'transparent' : 'var(--line2)' }; });
+    const author = isGM ? { who: 'Spielleitung', gm: true } : { who: 'Layariel Wipfelglanz', owner: 'Anna' };
+    const toField = s.target === 'all' ? {} : { to: isGM ? s.target : 'SL' };
+    const send = () => { const t = s.draft.trim(); if (!t) return; this.push({ type: 'text', ...author, ...toField, text: t }); set({ draft: '' }); };
+    const quickDice = [['1W20', 1, 20], ['3W20', 3, 20], ['1W6', 1, 6], ['2W6', 2, 6]].map(([label, n, d]) => ({ label, onClick: () => {
+      const dice = Array.from({ length: n }, () => 1 + Math.floor(Math.random() * d));
+      this.push({ type: 'roll', kind: 'free', ...author, ...toField, title: 'Freier Wurf ' + label, sub: '', dice, headline: n > 1 && d === 6 ? 'Summe ' + dice.reduce((a, b) => a + b, 0) : 'Wurf ' + dice.join(' · '), ok: null });
+      set({ diceOpen: false });
+    } }));
+
+    // ----- Journal als Ordnerbaum -----
+    const jIcon = j => I + 'categories/' + ({ Handout: 'Equipment', Notiz: 'Ability_Language', Ort: 'Ability_Language', Person: 'ability_general' }[j.kind] || 'Spellextension') + '.webp';
+    const visJ = (P.leer ? [] : this.JOURNAL).filter(j => isGM || isShared(j));
+    const isNew = j => !isGM && !!s.newIds[j.id] && isShared(j);
+    const sub = fid => [fid, ...this.FOLDERS.filter(f => f.parent === fid).flatMap(f => sub(f.id))];
+    const tree = [];
+    const walk = (parent, depth) => {
+      this.FOLDERS.filter(f => (f.parent || null) === parent).forEach(f => {
+        const ids = sub(f.id), list = visJ.filter(j => ids.includes(j.f));
+        if (!list.length && !isGM) return;
+        const open = s.openF[f.id] ?? true;
+        tree.push({ isFolder: true, isEntry: false, name: f.name, color: f.color, count: list.length, hasNew: !open && list.some(isNew), pad: (12 + depth * 18) + 'px', rot: open ? '90deg' : '0deg', openStr: open ? 'true' : 'false',
+          toggle: () => set(st => ({ openF: { ...st.openF, [f.id]: !open } })) });
+        if (!open) return;
+        walk(f.id, depth + 1);
+        visJ.filter(j => j.f === f.id).forEach(j => tree.push({ isFolder: false, isEntry: true, title: j.title, icon: jIcon(j), isNew: isNew(j), pad: (30 + depth * 18) + 'px',
+          meta: j.kind + (j.date ? ' · ' + j.date : '') + (isGM ? (isShared(j) ? ' · sichtbar' : ' · verborgen') : ''),
+          onOpen: () => set(st => ({ view: 'entry', entry: j.id, newIds: isGM ? st.newIds : { ...st.newIds, [j.id]: false } })) }));
+      });
+    };
+    walk(null, 0);
+    const ej = this.JOURNAL.find(j => j.id === s.entry);
+    let entry = {};
+    if (ej) {
+      const sh = isShared(ej);
+      const path = []; let f = this.FOLDERS.find(x => x.id === ej.f); while (f) { path.unshift(f.name); f = this.FOLDERS.find(x => x.id === f.parent); }
+      entry = { ...ej, path: ej.kind + ' · ' + path.join(' › '), sharedStr: sh ? 'true' : 'false', swBg: sh ? 'var(--ok)' : 'var(--line2)', swJust: sh ? 'flex-end' : 'flex-start',
+        visLine: sh ? 'Erscheint im Journal aller Spieler' : 'Nur du siehst diesen Eintrag',
+        toggleShare: () => { set(st => ({ shared: { ...st.shared, [ej.id]: !sh }, newIds: { ...st.newIds, [ej.id]: !sh } })); this.flash(sh ? 'Verborgen' : 'Für Spieler freigegeben'); },
+        showAll: () => { set(st => ({ shared: { ...st.shared, [ej.id]: true }, newIds: { ...st.newIds, [ej.id]: true } })); this.push({ type: 'system', text: 'Die Spielleitung zeigt: ' + ej.title }); this.flash('Wird allen Spielern angezeigt'); } };
+    }
+
+    // ----- Schip-Blatt -----
+    const fm = s.fate && s.msgs.find(m => m.id === s.fate.id);
+    let fate = {};
+    if (fm) {
+      const f = s.fate, ks = fm.probe.split('/');
+      const opt = (label, on, onClick) => ({ label, onClick, on: on ? 'true' : 'false', bg: on ? 'var(--accent)' : 'transparent', color: on ? 'var(--onaccent)' : 'var(--ink)', border: on ? 'var(--accent)' : 'var(--line2)' });
+      const can = s.schips[f.src] > 0 && (f.tab !== 'reroll' || f.sel.some(Boolean));
+      fate = { schipImg, what: fm.title + ' · ' + fm.headline,
+        srcs: [opt('Eigene · ' + s.schips.own + '/3', f.src === 'own', () => set({ fate: { ...f, src: 'own' } })), opt('Gruppe · ' + s.schips.group + '/4', f.src === 'group', () => set({ fate: { ...f, src: 'group' } }))],
+        tabs: this.fateTabs(fm).map(([id, label]) => opt(label, f.tab === id, () => set({ fate: { ...f, tab: id } }))),
+        isReroll: f.tab === 'reroll', isQS: f.tab === 'qs', qsLine: 'QS ' + fm.qs + ' → QS ' + Math.min(6, fm.qs + 1),
+        dice: fm.dice.map((v, i) => { const on = f.sel[i], t = this.ATTRS[ks[i]] + fm.mod; return { v, label: ks[i] + ' ' + t, on: on ? 'true' : 'false', bg: on ? 'var(--accent)' : 'var(--field)', color: on ? 'var(--onaccent)' : 'var(--ink)', border: on ? 'var(--accent)' : v > t ? 'var(--danger)' : 'var(--line2)',
+          onClick: () => set({ fate: { ...f, sel: f.sel.map((x, j) => j === i ? !x : x) } }) }; }),
+        cta: f.tab === 'reroll' ? (f.sel.filter(Boolean).length || 'Keine') + ' Würfel neu würfeln · 1 Schip' : 'QS erhöhen · 1 Schip',
+        ctaBg: can ? 'var(--accent)' : 'var(--line2)', ctaColor: can ? 'var(--onaccent)' : 'var(--ink2)', apply: () => this.applyFate() };
+    }
+
+    // ----- Probe anfordern (SL) -----
+    let req = {};
+    if (s.req) {
+      const q = s.req.q.trim().toLowerCase();
+      const n = Object.values(s.req.who).filter(Boolean).length;
+      const sk = this.SKILLS.find(k => k.name === s.req.skill);
+      const opt = (label, on, onClick) => ({ label, onClick, bg: on ? 'var(--accent)' : 'transparent', color: on ? 'var(--onaccent)' : 'var(--ink)' });
+      req = { q: s.req.q, onQ: e => set({ req: { ...s.req, q: e.target.value } }),
+        skills: this.SKILLS.filter(k => !q || k.name.toLowerCase().includes(q)).map(k => { const on = k.name === s.req.skill; return { name: k.name, icon: k.icon, on: on ? 'true' : 'false', bg: on ? 'var(--sel)' : 'var(--field)', color: on ? 'var(--onsel)' : 'var(--ink)', border: on ? 'transparent' : 'var(--line2)', onClick: () => set({ req: { ...s.req, skill: k.name } }) }; }),
+        modStr: (s.req.mod > 0 ? '+' : s.req.mod < 0 ? '−' : '±') + Math.abs(s.req.mod),
+        dec: () => set({ req: { ...s.req, mod: Math.max(-10, s.req.mod - 1) } }), inc: () => set({ req: { ...s.req, mod: Math.min(10, s.req.mod + 1) } }),
+        modes: [opt('Alle', !s.req.blind, () => set({ req: { ...s.req, blind: false } })), opt('Nur SL', s.req.blind, () => set({ req: { ...s.req, blind: true } }))],
+        heroes: this.HEROES.map(h => { const on = !!s.req.who[h.id]; return { name: h.name, owner: h.owner + (h.online ? ' · verbunden' : ' · offline'), dot: h.online ? 'var(--ok)' : 'var(--ink3)', on: on ? 'true' : 'false', check: on ? '✓' : '', boxBg: on ? 'var(--accent)' : 'transparent', boxLine: on ? 'var(--accent)' : 'var(--line2)', onClick: () => set({ req: { ...s.req, who: { ...s.req.who, [h.id]: !on } } }) }; }),
+        cta: sk && n ? sk.name + ' anfordern · ' + n + (n === 1 ? ' Held' : ' Helden') : (sk ? 'Helden wählen' : 'Talent wählen'),
+        ctaBg: sk && n ? 'var(--accent)' : 'var(--line2)', ctaColor: sk && n ? 'var(--onaccent)' : 'var(--ink2)',
+        send: () => { if (!sk || !n) return; this.createRequest({ skill: sk, mod: s.req.mod, blind: s.req.blind, ids: this.HEROES.filter(h => s.req.who[h.id]).map(h => h.id) }); set({ req: null }); this.flash('Probe angefordert'); } };
+    }
+
+    // ----- Eingehende Anfrage (Spieler) -----
+    const im = s.inc && s.msgs.find(m => m.id === s.inc.id);
+    let inc = {};
+    if (im) {
+      const res = s.inc.res, k = im.skill;
+      const ks = k.attr ? [k.attr] : k.probe.split('/');
+      inc = { icon: k.icon, title: this.reqTitle(im), sub: k.attr ? 'Eigenschaftsprobe' : 'Probe ' + k.probe + ' · FW ' + k.fw + (im.blind ? ' · Ergebnis sieht nur die SL' : ''),
+        dice: ks.map((a, i) => { const t = this.ATTRS[a] + im.mod, x = res ? res.dice[i] : null; return { k: a, t, res: x == null ? '–' : x, bg: x == null ? 'var(--line)' : x <= t ? 'var(--ok)' : 'var(--danger)', color: x == null ? 'var(--ink2)' : '#fff' }; }),
+        open: !res, done: !!res, headline: res ? (im.blind ? 'Gewürfelt' : res.headline) : '', detail: res ? (im.blind ? 'Das Ergebnis sieht nur die Spielleitung.' : res.detail) : '',
+        boxBg: !res || im.blind ? 'var(--sub)' : res.ok ? 'var(--okbg)' : 'var(--dangerbg)', boxColor: !res || im.blind ? 'var(--ink)' : res.ok ? 'var(--oktext)' : 'var(--dangertext)',
+        later: () => { set({ inc: null }); this.flash('Später: Würfeln-Knopf in der Chat-Karte'); },
+        roll: () => { const r = this.resolveRow(im.id, 'lay', false); if (r) set({ inc: { ...s.inc, res: r } }); else set({ inc: null }); },
+        close: () => set({ inc: null }) };
+    }
+
+    const v = s.view;
+    const showScene = s.scene && v === 'home';
+    const titles = { home: ['Die Rabenschatten', 'Sitzung 14 · 3 von 4 Spielern verbunden'], chat: ['Chat', 'Die Rabenschatten'], journal: ['Journal', 'Die Rabenschatten'], entry: [ej ? ej.title : '', ej ? ej.kind : ''] };
+    const opt = (label, on, onClick) => ({ label, onClick, bg: on ? 'var(--accent)' : 'transparent', color: on ? 'var(--onaccent)' : 'var(--ink)' });
+    const devName = d => d === 'tablet' ? 'Tablet' : 'Smartphone';
+    const settings = [
+      { label: 'Darstellung', opts: [opt('Hell', theme === 'light', () => set({ theme: 'light' })), opt('Dunkel', theme === 'dark', () => set({ theme: 'dark' }))] },
+      { label: 'Oberfläche', opts: [opt('Automatisch', s.ui === 'auto', () => set({ ui: 'auto', cam: null })), opt('Smartphone', s.ui === 'phone', () => set({ ui: 'phone', cam: null })), opt('Tablet', s.ui === 'tablet', () => set({ ui: 'tablet', cam: null }))],
+        hasNote: true, note: 'Automatisch erkannt: ' + devName(autoDev) + ' (' + Math.round(rw) + ' px breit). Ab 1200 px mit Maus startet die normale Foundry-Oberfläche.' },
+      { label: 'Spielfeld', opts: [opt('An', s.scene, () => set({ scene: true, cam: null })), opt('Aus', !s.scene, () => set({ scene: false, sceneFull: false }))], hasNote: true, note: 'Aus: wie bisher ohne Szene, spart Akku und Datenvolumen.' },
+      { label: 'Rolle (Demo)', opts: [opt('Spieler', !isGM, () => set({ role: 'player', target: 'all', view: 'home', cam: null })), opt('Spielleitung', isGM, () => set({ role: 'gm', target: 'all', view: 'home', cam: null }))] }
+    ];
+    const chatShown = isTablet ? s.chatOpen : v === 'chat';
+    const journalNew = !isGM && visJ.some(isNew);
+
+    return {
+      rootRef: this.rootRef, sceneRef: this.sceneRef,
+      rootPos: standalone ? 'fixed' : 'relative',
+      theme, sheetTheme: theme === 'dark' ? 'dunkel' : 'hell', device, isTablet, isGM, stop, prevent: e => e.preventDefault(),
+      inSheet: v === 'sheet', notSheet: v !== 'sheet',
+      goHome: () => set({ view: 'home', cam: null }), goJournal: () => set({ view: 'journal' }),
+      openChat: () => set(isTablet ? { chatOpen: true, bubble: null } : { view: 'chat', bubble: null }), closeChat: () => set({ chatOpen: false }),
+      onSheetRoll: r => {
+        const m = (r.sub || '').match(/Probe (\w\w\/\w\w\/\w\w) · FW (\d+)(?: · Mod ([+−])(\d+))?/);
+        if (m && r.dice && r.dice.length === 3) this.push(this.skillMsg({ who: 'Layariel Wipfelglanz', owner: 'Anna', title: r.title, probe: m[1], fw: +m[2], mod: m[3] ? (m[3] === '+' ? 1 : -1) * m[4] : 0, dice: r.dice }));
+        else this.push({ type: 'roll', who: 'Layariel Wipfelglanz', owner: 'Anna', ...r });
+      },
+      showBack: v !== 'home', showLogo: v === 'home', onBackBtn: () => set({ view: v === 'entry' ? 'journal' : 'home', cam: null }),
+      barTitle: (titles[v] || titles.home)[0], barSub: (titles[v] || titles.home)[1],
+      meInitial: me.initial, meName: me.name, meRole: me.role,
+      openProfile: () => set({ profile: true }), closeProfile: () => set({ profile: false }), profileOpen: s.profile, settings,
+      toDesktop: () => { set({ profile: false }); this.flash('Wechselt zur Desktop-Oberfläche'); }, logout: () => { set({ profile: false }); this.flash('Abgemeldet (Demo)'); },
+      showLeft: isTablet || v !== 'chat', showChat: chatShown,
+      chatFlex: isTablet ? 'none' : '1', chatW: isTablet ? '400px' : 'auto', chatBorder: isTablet ? '1px solid var(--line2)' : '0',
+      vHome: v === 'home', vList: v === 'journal' || v === 'entry', vJournal: v === 'journal', vEntry: v === 'entry' && !!ej,
+
+      showScene, showSceneOff: !s.scene && v === 'home', sceneName: 'Die alte Mühle · Keller',
+      mapW: 18 * C, mapH: 13 * C, camT: 'translate(' + cam.x + 'px,' + cam.y + 'px) scale(' + cam.s + ')',
+      walls: this.ROOMS.map(([x, y, w, h]) => ({ x: x * C - 7, y: y * C - 7, w: w * C + 14, h: h * C + 14 })),
+      floors: this.ROOMS.map(([x, y, w, h, c]) => ({ x: x * C, y: y * C, w: w * C, h: h * C, c })),
+      decor: this.DECOR, tokens, pings: s.pings.map(p => ({ ...p })),
+      hasDrop: !!drag, drop: dropCell ? { x: dropCell[0] * C, y: dropCell[1] * C, bg: dropOk ? 'rgba(185,154,92,.35)' : 'rgba(179,36,26,.35)', line: dropOk ? '#e0c48c' : '#cf4a3e' } : {},
+      hasGhost: !!drag, ghost: drag ? { x: drag.from[0] * C + 4, y: drag.from[1] * C + 4 } : {},
+      hasHold: !!s.hold, hold: s.hold || {}, sceneCursor: drag ? 'grabbing' : 'grab',
+      showHint: s.hint, hideHint: () => set({ hint: false }),
+      centerLabel: isGM ? 'Auf die Gruppe zentrieren' : 'Auf meinen Helden zentrieren',
+      centerMe: () => { const el = this.sceneRef.current; if (el) set({ cam: this.camOn(isGM ? [7, 5] : this.tokPos('lay'), el.clientWidth, el.clientHeight, cam.s) }); },
+      toggleFull: () => set({ sceneFull: !s.sceneFull }), fullStr: s.sceneFull ? 'true' : 'false', fullLabel: s.sceneFull ? 'Helden wieder einblenden' : 'Spielfeld vergrößern',
+      fullBg: s.sceneFull ? '#b99a5c' : 'rgba(20,18,16,.78)', fullColor: s.sceneFull ? '#1c1917' : '#f4e8d6',
+      fullPath: s.sceneFull ? 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5' : 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
+      showHeroes: !(showScene && s.sceneFull), heroFlex: showScene ? 'none' : '1', heroMax: showScene ? (isPhone ? '42%' : '36%') : 'none',
+      heroTitle: isGM ? 'Helden der Gruppe' : 'Meine Helden', heroes,
+
+      showFabs: v === 'home' || v === 'journal' || v === 'entry', showJournalFab: v === 'home',
+      showChatFab: !chatShown, chatFabLabel: unread ? 'Chat, ' + unread + ' ungelesen' : 'Chat', bubbleOn: !!s.bubble && !chatShown, bubble: s.bubble || {},
+      unread, hasUnread: unread > 0, journalNew,
+      jTitle: isGM ? 'Journal (alle Ordner)' : 'Journal', jCount: visJ.length + ' Einträge', tree, treeEmpty: tree.length === 0, entry,
+      chatRef: this.chatRef, messages, targets, draft: s.draft, draftPh: s.target === 'all' ? 'Nachricht an alle …' : 'Flüstern …',
+      onDraft: e => set({ draft: e.target.value }), onDraftKey: e => { if (e.key === 'Enter') send(); }, send,
+      toggleDice: () => set({ diceOpen: !s.diceOpen }), diceOpen: s.diceOpen, diceOpenStr: s.diceOpen ? 'true' : 'false', diceBtnBg: s.diceOpen ? 'var(--accent)' : 'var(--field)', quickDice,
+      scDown: this.scDown, scMove: this.scMove, scUp: this.scUp, scWheel: this.scWheel,
+      fateOpen: !!fm, fate, closeFate: () => set({ fate: null }),
+      reqOpen: !!s.req, req, openReq: () => set({ req: { q: '', skill: 'Sinnesschärfe', mod: 0, blind: false, who: Object.fromEntries(this.HEROES.map(h => [h.id, true])) } }), closeReq: () => set({ req: null }),
+      incOpen: !!im, inc,
+      toastOn: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -23,6 +23,7 @@ d:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers\
   - `data.js` — Statische Demo-/Platzhalterdaten (ein Beispielheld) für alle Reiter; keine echten Actor-Daten.
   - `script.js` — Reine Darstellungslogik: baut DOM-Elemente aus `data.js` für die 8 Reiter (main/skills/combat/magic/religion/inventory/status/notes), Tab-Umschaltung, Theme-Toggle.
   - `assets-map.js` — Zentrale Pfad-Zuordnung `A.*` zu bestehenden Assets in `systems/dsa5/icons/...`; bewusst **keine eigenen/neuen Bilder**, sondern Referenzen auf vorhandene Systemgrafiken.
+  - `mobile/` — Click-Dummy der Mobilansicht (Foundry-Oberfläche + Heldenbogen für Smartphone/Tablet, Branch `feature/mobile`). Komponenten `Foundry Mobil.dc.html` und `Heldenbogen Mobil.dc.html` laufen über die mitgelieferte Mini-Laufzeit `support.js` (+ React in `vendor/`, keine Build-Schritte). Einstieg `index.html` (Übersicht in Geräterahmen) bzw. `app.html` (Vollbild für echte Geräte). Details: `mobile/README.md`.
   - `start-server.bat` — Startet `python -m http.server 8877` auf Data-Root-Ebene und öffnet den Bogen im Browser. **Wichtig:** Click-Dummy nicht per Doppelklick/`file://` öffnen — dann lösen die relativen Pfade zu `systems/dsa5` (Fonts, Icons, Rahmenbild) nicht auf. Immer über dieses Skript bzw. einen Server auf Data-Root-Ebene aufrufen.
 - `project/` — Sämtliche Planungs-, Entscheidungs- und Rückmeldungs-Dokumente (kein Code). Siehe nächster Abschnitt.
 - Echter Foundry-Modulcode (Stand 2026-09-15, `clickdummy/` bleibt daneben die Design-Referenz):

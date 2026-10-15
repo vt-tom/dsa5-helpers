@@ -7,7 +7,7 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-- **Rückmeldung Lyynix zum Mobil-Click-Dummy** (2026-10-14): [MOBILE-FEEDBACK-2026-10-14.md](MOBILE-FEEDBACK-2026-10-14.md) — Szene mindestens am Tablet (Pingen, Token ziehen), Chat/Journal als schwebende Knöpfe, Schips im Chat, Journal-Ordner, SL-Probenanfragen, Oberfläche automatisch nach Breite. Berührt E18, E16, E2 in MOBILE.md.
+- **Mobil-Click-Dummy Runde 4 ansehen** (2026-10-15): Die Rückmeldung von Lyynix ([MOBILE-FEEDBACK-2026-10-14.md](MOBILE-FEEDBACK-2026-10-14.md)) ist in `clickdummy/mobile/` eingebaut (Szene mit Gesten, schwebende Knöpfe mit Sprechblase, Schips im Chat, Journal-Ordner, „Probe anfordern“, automatische Oberfläche). Das Umsetzungskonzept steht in [MOBILE.md](MOBILE.md) Abschnitt 13. Öffnen über `clickdummy/start-server.bat`, dann `…/clickdummy/mobile/index.html` (Übersicht) bzw. `app.html` (echtes Gerät). Rückmeldung an Lyynix?
 
 ## Version 0.5.1 — veröffentlicht 2026-10-07
 
@@ -22,7 +22,7 @@ Direkt als normales Release (ohne Beta, Wunsch des Nutzers), `release/0.5.1` nac
 
 ## Offene Entscheidungen
 
-- **Mobile Support (Tablet/Smartphone, „Hybrides Spiel“):** Planung in [MOBILE.md](MOBILE.md). Zuerst die Entscheidungen E1–E19 dort klären, erst dann umsetzen.
+- **Mobile Support (Tablet/Smartphone, „Hybrides Spiel“):** Planung in [MOBILE.md](MOBILE.md), Umsetzungskonzept in Abschnitt 13. Bestätigen: geänderte E2 (SL-Ansicht), E16 (automatische Oberfläche), E17 (voraussichtlich hinfällig), E18 (Szene an). Neu zu entscheiden: E20 (Schips über das Kontextmenü des Systems), E21 (Szene auf dem Smartphone standardmäßig an), E22 (Ziel markieren), E23 (Kampfreihenfolge). Danach Phase 1 (Spike mit echten Geräten).
 
 ## Features / Backlog
 
@@ -35,7 +35,7 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-14 11:51 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-15 06:17 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
@@ -91,12 +91,4 @@ _Keine offenen Issues._
   - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: bug · Meilenstein: 0.3.2 · 1 Kommentar · geschlossen 2026-10-01
 - **[#14](https://github.com/vt-tom/dsa5-helpers/issues/14) fix: Langer Professionsname läuft aus dem Bogen raus**
   - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: bug · Meilenstein: 0.3.2 · 0 Kommentare · geschlossen 2026-10-01
-- **[#13](https://github.com/vt-tom/dsa5-helpers/issues/13) feat: Einstellung – Bogen als Standard für alle Helden (nur SL)**
-  - erledigt · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.0 · 2 Kommentare · geschlossen 2026-09-30
-- **[#12](https://github.com/vt-tom/dsa5-helpers/issues/12) feat: Changelog in den Moduleinstellungen aufrufbar**
-  - erledigt · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.0 · 2 Kommentare · geschlossen 2026-09-30
-- **[#11](https://github.com/vt-tom/dsa5-helpers/issues/11) feat: Changelog nach einem Update in Foundry anzeigen**
-  - erledigt · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.0 · 2 Kommentare · geschlossen 2026-09-30
-- **[#10](https://github.com/vt-tom/dsa5-helpers/issues/10) feat: Heldenerschaffung (Chargen-Wizard) aus der Kopfzeile starten**
-  - erledigt · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.0 · 3 Kommentare · geschlossen 2026-09-30
 <!-- GITHUB-ISSUES:END -->

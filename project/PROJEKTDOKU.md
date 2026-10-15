@@ -34,6 +34,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - Bogen fest 770×740 px wie das Standard-Foundry-Fenster (an die Fensterhöhe angepasster Bogen ausprobiert und verworfen, 2026-09-25).
 - Nach CSS/JS-Änderungen die Cache-Version in `index.html` hochzählen (der Server schickt keine Cache-Header).
 - Design-Varianten: 2–3 Varianten per Umschalter im Click-Dummy zeigen, nach der Entscheidung Umschalter und Verlierer löschen.
+- Mobil (`feature/mobile`): `clickdummy/mobile/` ist eine eigene Design-Referenz aus einem Design-Tool (Komponenten `*.dc.html` + Mini-Laufzeit `support.js` mit lokalem React). Das ist nur der Dummy; das Modul selbst bleibt bei Handlebars/Vanilla JS. Stand: Runde 4 mit der Rückmeldung von Lyynix (2026-10-15), Konzept in [MOBILE.md](MOBILE.md) Abschnitt 13.
 
 ## Design-Entscheidungen
 

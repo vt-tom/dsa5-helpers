@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:'Andalus';src:url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2');font-display:swap}
+@font-face{font-family:'GentiumBasic';src:url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'GentiumBasic';src:url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'GentiumBasic';src:url('../../../../systems/dsa5/fonts/GenBasBI.woff2') format('woff2');font-weight:700;font-style:italic;font-display:swap}
+:root{--paper:#ece2d2;--ink:#2b2721;--ink2:rgba(43,39,33,.76);--ink3:rgba(43,39,33,.45);--line:rgba(43,39,33,.13);--line2:rgba(43,39,33,.26);--card:rgba(255,255,255,.42);--field:rgba(255,255,255,.64);--phead:linear-gradient(90deg,rgba(147,123,72,.9),rgba(147,123,72,.06));--sub:rgba(0,0,0,.045);--zebra:rgba(0,0,0,.025);--accent:#8b6f3f;--onaccent:#fff8ec;--accenttext:#6d5326;--sel:#2b2721;--onsel:#f4e8d6;--danger:#b3241a;--dangertext:#8e1d15;--dangerbg:rgba(179,36,26,.08);--ok:#2f6b2a;--oktext:#24561f;--okbg:rgba(47,107,42,.12);--sheet:#ece2d2;--hdr:linear-gradient(180deg,#3a322b,#272320);--chrome:#272320;--rail:#3a3531}
+[data-theme="dark"]{--paper:#1d1a17;--ink:#ede3d1;--ink2:rgba(237,227,209,.76);--ink3:rgba(237,227,209,.42);--line:rgba(237,227,209,.09);--line2:rgba(237,227,209,.2);--card:rgba(255,255,255,.035);--field:rgba(255,255,255,.07);--phead:linear-gradient(90deg,rgba(147,123,72,.5),rgba(147,123,72,.03));--sub:rgba(255,255,255,.035);--zebra:rgba(255,255,255,.018);--accent:#b99a5c;--onaccent:#1c1917;--accenttext:#d6ba80;--sel:#ede3d1;--onsel:#1d1a17;--danger:#cf4a3e;--dangertext:#f19a90;--dangerbg:rgba(207,74,62,.14);--ok:#4c9a42;--oktext:#93d48a;--okbg:rgba(76,154,66,.16);--sheet:#29241f;--hdr:linear-gradient(180deg,#2a2420,#161311);--chrome:#141210;--rail:#1a1715}
+[data-ts="l"] [data-zoom]{zoom:1.15}
+body{margin:0}
+main,aside,nav,[data-scroll]{scrollbar-width:none}main::-webkit-scrollbar,aside::-webkit-scrollbar,nav::-webkit-scrollbar{display:none}
+a{color:#8b6f3f}a:hover{color:#5e4a29}
+input::placeholder,textarea::placeholder{color:var(--ink3)}
+</style>
+</helmet>
+<div data-theme="{{ theme }}" data-ts="{{ ts }}" style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--paper);color:var(--ink);font-family:GentiumBasic,Georgia,serif;-webkit-font-smoothing:antialiased;user-select:none">
+
+  <sc-if value="{{ isPhone }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:none;position:relative;z-index:2;background:var(--hdr);color:#f4e8d6;box-shadow:0 2px 10px rgba(0,0,0,.35)">
+      <sc-if value="{{ headerExpanded }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <sc-if value="{{ hasBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ onBack }}" aria-label="Zurück zur Übersicht" style="flex:none;width:30px;height:44px;margin:0 -6px 0 -8px;padding:0;border:0;background:none;color:#f4e8d6;font-size:34px;line-height:1;cursor:pointer">‹</button></sc-if><div style="flex:none;width:68px;height:84px;background:#ece2d2;border:2px solid #b99a5c;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);display:grid;place-items:end center;padding-bottom:6px;font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:.1em;color:rgba(43,39,33,.5)">PORTRÄT</div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <div style="flex:1;min-width:0;font-family:Andalus,serif;font-size:25px;line-height:1.05;text-wrap:pretty">{{ name }}</div>
+                <div style="flex:none;display:flex;border:1px solid rgba(244,232,214,.3);border-radius:4px;overflow:hidden">
+                  <sc-for list="{{ modeButtons }}" as="m" hint-placeholder-count="2">
+                    <button onClick="{{ m.onClick }}" style="border:0;font:inherit;cursor:pointer;padding:0 10px;height:32px;font-size:13px;font-weight:700;background:{{ m.bg }};color:{{ m.color }}">{{ m.short }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px">
+                <sc-for list="{{ identity }}" as="b" hint-placeholder-count="3">
+                  <span style="padding:2px 8px;border:1px solid rgba(244,232,214,.35);border-radius:3px;font-size:13px;color:#f4e8d6">{{ b }}</span>
+                </sc-for>
+              </div>
+              <div style="font-size:12px;color:rgba(244,232,214,.8)">{{ apLine }}</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
+            <sc-for list="{{ bars }}" as="b" hint-placeholder-count="3">
+              <div style="position:relative;height:28px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.1)">
+                <div style="position:absolute;inset:0 auto 0 0;width:{{ b.pct }};background:{{ b.grad }}"></div>
+                <div style="position:relative;height:100%;display:flex;align-items:center;justify-content:center;gap:5px;font-weight:700;font-size:13px;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap"><span>{{ b.key }}</span><span>{{ b.cur }} / {{ b.max }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ showHeaderDice }}" hint-placeholder-val="{{ true }}"><div style="display:flex;justify-content:space-between;align-items:center;gap:4px;margin-top:2px">
+            <sc-for list="{{ dice8 }}" as="d" hint-placeholder-count="8">
+              <button onClick="{{ d.onClick }}" aria-label="{{ d.aria }}" style="border:0;padding:0;cursor:pointer;background:none;display:flex;flex-direction:column;align-items:center;gap:1px;color:#f4e8d6;min-width:40px">
+                <span style="width:36px;height:36px;display:grid;place-items:center;background:url({{ d.img }}) center/contain no-repeat;font-weight:700;font-size:13px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7)">{{ d.v }}</span>
+                <span style="font-size:11px;letter-spacing:.06em;color:rgba(244,232,214,.8)">{{ d.k }}</span>
+              </button>
+            </sc-for>
+          </div></sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ collapsed }}" hint-placeholder-val="{{ false }}">
+        <div style="height:54px;padding:0 12px;display:flex;align-items:center;gap:10px">
+          <sc-if value="{{ hasBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ onBack }}" aria-label="Zurück zur Übersicht" style="flex:none;width:30px;height:44px;margin:0 -6px 0 -6px;padding:0;border:0;background:none;color:#f4e8d6;font-size:30px;line-height:1;cursor:pointer">‹</button></sc-if><div style="flex:none;width:30px;height:36px;background:#ece2d2;border:1.5px solid #b99a5c;clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px)"></div>
+          <div style="flex:1;min-width:0;font-family:Andalus,serif;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ name }}</div>
+          <div style="flex:none;display:flex;gap:6px">
+            <sc-for list="{{ bars }}" as="b" hint-placeholder-count="3">
+              <div style="width:46px;display:flex;flex-direction:column;gap:3px;align-items:stretch">
+                <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;line-height:1"><span style="color:rgba(244,232,214,.8)">{{ b.key }}</span><span>{{ b.cur }}</span></div>
+                <div style="height:5px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden"><div style="height:100%;width:{{ b.pct }};background:{{ b.grad }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="flex:none;display:flex;gap:2px">
+            <sc-for list="{{ schips }}" as="c" hint-placeholder-count="3">
+              <img src="{{ c.img }}" alt="" style="width:16px;height:16px"></img>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <div style="flex:1;min-height:0;display:flex">
+
+    <sc-if value="{{ isTablet }}" hint-placeholder-val="{{ false }}">
+      <aside style="flex:none;width:292px;display:flex;flex-direction:column;gap:12px;padding:16px 14px;background:var(--hdr);color:#f4e8d6;overflow-y:auto">
+        <sc-if value="{{ hasBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ onBack }}" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 12px 0 6px;margin:-4px 0 0 -4px;align-self:flex-start;border:1px solid rgba(244,232,214,.3);border-radius:22px;background:rgba(255,255,255,.06);color:#f4e8d6;font:inherit;font-size:14px;font-weight:700;cursor:pointer"><span style="font-size:24px;line-height:1">‹</span>Übersicht</button></sc-if><div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="flex:none;width:96px;height:118px;background:#ece2d2;border:2px solid #b99a5c;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px);display:grid;place-items:end center;padding-bottom:8px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.1em;color:rgba(43,39,33,.5)">PORTRÄT</div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+            <div style="font-family:Andalus,serif;font-size:26px;line-height:1.05">{{ name }}</div>
+            <div style="font-size:12px;color:rgba(244,232,214,.8)">{{ apLine }}</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">
+          <sc-for list="{{ identity }}" as="b" hint-placeholder-count="3">
+            <span style="padding:3px 9px;border:1px solid rgba(244,232,214,.35);border-radius:3px;font-size:14px">{{ b }}</span>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <sc-for list="{{ bars }}" as="b" hint-placeholder-count="3">
+            <div style="display:flex;gap:6px;align-items:center">
+              <button onClick="{{ b.dec }}" aria-label="{{ b.key }} verringern" style="flex:none;width:36px;height:40px;border:1px solid rgba(244,232,214,.3);border-radius:4px;background:rgba(255,255,255,.06);color:#f4e8d6;font-size:18px;cursor:pointer">−</button>
+              <div style="flex:1;position:relative;height:40px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.1)">
+                <div style="position:absolute;inset:0 auto 0 0;width:{{ b.pct }};background:{{ b.grad }}"></div>
+                <div style="position:relative;height:100%;display:flex;align-items:center;justify-content:center;gap:7px;font-weight:700;font-size:15px;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap"><span>{{ b.key }}</span><span>{{ b.cur }} / {{ b.max }}</span></div>
+              </div>
+              <button onClick="{{ b.inc }}" aria-label="{{ b.key }} erhöhen" style="flex:none;width:36px;height:40px;border:1px solid rgba(244,232,214,.3);border-radius:4px;background:rgba(255,255,255,.06);color:#f4e8d6;font-size:18px;cursor:pointer">+</button>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:13px;color:rgba(244,232,214,.8)">Schicksalspunkte</span>
+          <div style="display:flex;gap:4px">
+            <sc-for list="{{ schips }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.onClick }}" aria-label="Schicksalspunkt" style="border:0;background:none;padding:4px;cursor:pointer;width:40px;height:40px"><img src="{{ c.img }}" alt="" style="width:32px;height:32px"></img></button>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ showHeaderDice }}" hint-placeholder-val="{{ true }}"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px 0;border-top:1px solid rgba(244,232,214,.15);border-bottom:1px solid rgba(244,232,214,.15)">
+          <sc-for list="{{ dice8 }}" as="d" hint-placeholder-count="8">
+            <button onClick="{{ d.onClick }}" aria-label="{{ d.aria }}" style="border:0;padding:4px 0;cursor:pointer;background:none;display:flex;flex-direction:column;align-items:center;gap:2px;color:#f4e8d6">
+              <span style="width:44px;height:44px;display:grid;place-items:center;background:url({{ d.img }}) center/contain no-repeat;font-weight:700;font-size:15px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7)">{{ d.v }}</span>
+              <span style="font-size:12px;letter-spacing:.06em;color:rgba(244,232,214,.8)">{{ d.k }}</span>
+            </button>
+          </sc-for>
+        </div></sc-if>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ settings }}" as="g" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="flex:none;width:86px;font-size:13px;color:rgba(244,232,214,.8)">{{ g.label }}</span>
+              <div style="flex:1;display:flex;border:1px solid rgba(244,232,214,.3);border-radius:4px;overflow:hidden">
+                <sc-for list="{{ g.opts }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:36px;font-size:13px;font-weight:700;background:{{ o.bgD }};color:{{ o.colorD }}">{{ o.label }}</button></sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <div style="display:flex;border:1px solid rgba(244,232,214,.3);border-radius:4px;overflow:hidden">
+            <sc-for list="{{ modeButtons }}" as="m" hint-placeholder-count="2">
+              <button onClick="{{ m.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:44px;font-size:14px;font-weight:700;letter-spacing:.04em;background:{{ m.bg }};color:{{ m.color }}">{{ m.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </aside>
+    </sc-if>
+
+    <main ref="{{ contentRef }}" onScroll="{{ onScroll }}" style="flex:1;min-width:0;overflow-y:auto;overscroll-behavior:contain">
+      <div data-zoom="1" style="padding:14px 14px 28px;display:flex;flex-direction:column;gap:14px;max-width:1000px">
+
+        <div style="display:flex;align-items:center;gap:12px">
+          <h2 style="margin:0;font-family:Andalus,serif;font-weight:normal;font-size:24px">{{ tabTitle }}</h2>
+          <div style="flex:1;height:1px;background:var(--line2)"></div>
+          <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
+            <span style="padding:4px 10px;border-radius:12px;background:var(--accent);color:var(--onaccent);font-size:12px;font-weight:700;letter-spacing:.04em">Bearbeiten · {{ apFree }} AP frei</span>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ tCover }}" hint-placeholder-val="{{ true }}">
+          <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+            <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">Vorschläge</div>
+            <div style="padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">
+              <sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="6">
+                <button onClick="{{ s.onRoll }}" style="text-align:left;font:inherit;color:inherit;cursor:pointer;padding:9px 11px;min-height:64px;background:var(--field);border:1px solid var(--line2);border-left:3px solid {{ s.edge }};border-radius:3px;display:flex;flex-direction:column;gap:5px">
+                  <span style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:17px">{{ s.name }}</span><span style="font-weight:700;font-size:17px">{{ s.fw }}</span></span>
+                  <span style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                    <span style="font-size:13px;color:{{ s.noteColor }};font-weight:{{ s.noteWeight }}">{{ s.note }}</span>
+                    <span style="display:flex;gap:3px"><sc-for list="{{ s.dice }}" as="d"><span style="width:24px;height:24px;display:grid;place-items:center;background:url({{ d.img }}) center/contain no-repeat;color:#fff;font-size:9px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.6)">{{ d.k }}</span></sc-for></span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </section>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
+            <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">Favoriten</div>
+              <sc-for list="{{ favorites }}" as="f" hint-placeholder-count="5">
+                <button onClick="{{ f.onRoll }}" style="width:100%;border:0;border-top:1px solid var(--line);background:none;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;padding:0 12px;min-height:52px;text-align:left">
+                  <img src="{{ f.img }}" alt="" style="width:30px;height:30px;border-radius:3px;flex:none"></img>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:16px">{{ f.name }}</span><span style="font-size:13px;color:var(--ink2)">{{ f.meta }}</span></span>
+                  <span style="flex:none;width:32px;height:32px;display:grid;place-items:center;background:url({{ f.dieImg }}) center/contain no-repeat;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.6)">{{ f.val }}</span>
+                </button>
+              </sc-for>
+            </section>
+            <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <button onClick="{{ goStatus }}" style="width:100%;border:0;font:inherit;color:inherit;cursor:pointer;text-align:left;padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px;display:flex;justify-content:space-between;align-items:center"><span>Aktive Zustände</span><span style="font-family:GentiumBasic,serif;font-size:13px;color:var(--ink2)">Status ›</span></button>
+              <sc-if value="{{ hasActive }}" hint-placeholder-val="{{ true }}">
+                <div style="padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px">
+                  <sc-for list="{{ activeConditions }}" as="c" hint-placeholder-count="2">
+                    <span style="padding:6px 10px;border-radius:3px;background:var(--dangerbg);border:1px solid var(--danger);color:var(--dangertext);font-weight:700;font-size:14px">{{ c }}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noActive }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:14px 12px 4px;font-size:15px;color:var(--ink2)">Keine Zustände aktiv.</div>
+              </sc-if>
+              <div style="padding:4px 12px 12px;font-size:13px;color:var(--ink2)">{{ effectsLine }}</div>
+            </section>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tMain }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+            <sc-for list="{{ attrTiles }}" as="a" hint-placeholder-count="8">
+              <div style="background:var(--field);border:1px solid var(--line2);border-radius:4px;padding:8px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:3px">
+                <button onClick="{{ a.onRoll }}" aria-label="{{ a.aria }}" style="border:0;background:none;padding:0;cursor:pointer;width:46px;height:46px;display:grid;place-items:center;background:url({{ a.img }}) center/contain no-repeat;font:inherit;font-weight:700;font-size:16px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7)">{{ a.v }}</button>
+                <span style="font-size:12px;letter-spacing:.08em;color:var(--ink2)">{{ a.k }}</span>
+                <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:4px"><button onClick="{{ a.dec }}" aria-label="{{ a.k }} senken" style="width:36px;height:36px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:16px;cursor:pointer;color:var(--ink)">−</button><button onClick="{{ a.inc }}" aria-label="{{ a.k }} steigern" style="width:36px;height:36px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:16px;cursor:pointer;color:var(--ink)">+</button></div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;align-items:start">
+            <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">Grundwerte</div>
+              <sc-for list="{{ resourceRows }}" as="r" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:8px;padding:0 12px;min-height:54px;border-top:1px solid var(--line)">
+                  <span style="flex:1;font-size:16px">{{ r.label }}</span>
+                  <button onClick="{{ r.dec }}" aria-label="{{ r.label }} verringern" style="width:40px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">−</button>
+                  <span style="width:64px;text-align:center;font-weight:700;font-size:16px;font-variant-numeric:tabular-nums">{{ r.cur }} / {{ r.max }}</span>
+                  <button onClick="{{ r.inc }}" aria-label="{{ r.label }} erhöhen" style="width:40px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">+</button>
+                </div>
+              </sc-for>
+              <div style="padding:6px 12px;background:var(--sub);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);border-top:1px solid var(--line)">Resistenzen &amp; Grundwerte</div>
+              <sc-for list="{{ basics }}" as="r" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;padding:0 12px;min-height:44px;border-top:1px solid var(--line)"><span style="flex:1;font-size:15px">{{ r.label }}</span><span style="font-weight:700;font-size:16px">{{ r.v }}</span></div>
+              </sc-for>
+            </section>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ chipPanels }}" as="p" hint-placeholder-count="3">
+                <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+                  <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">{{ p.title }}</div>
+                  <sc-for list="{{ p.groups }}" as="g">
+                    <div style="padding:8px 12px 10px;border-top:1px solid var(--line)">
+                      <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px">{{ g.label }}</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:6px">
+                        <sc-for list="{{ g.items }}" as="it"><span style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--field);border:1px solid var(--line2);border-radius:3px;font-size:14px"><img src="{{ g.icon }}" alt="" style="width:18px;height:18px"></img>{{ it }}</span></sc-for>
+                      </div>
+                    </div>
+                  </sc-for>
+                </section>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tSkills }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px">
+            <sc-for list="{{ skillGroupChips }}" as="c" hint-placeholder-count="6">
+              <button onClick="{{ c.onClick }}" style="flex:none;font:inherit;cursor:pointer;height:40px;padding:0 14px;border-radius:20px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};font-family:Andalus,serif;font-size:16px">{{ c.label }}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ showSkillList }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:8px;align-items:center">
+              <input value="{{ q }}" onChange="{{ onQ }}" placeholder="Talent suchen …" aria-label="Talent suchen" style="flex:1;min-width:0;height:44px;padding:0 12px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font:inherit;font-size:16px;color:var(--ink)"></input>
+              <button onClick="{{ toggleOnlyAdv }}" style="flex:none;height:44px;padding:0 12px;border-radius:22px;border:1px solid var(--line2);background:{{ onlyAdvBg }};color:{{ onlyAdvColor }};font:inherit;font-size:14px;cursor:pointer">Nur gesteigerte</button>
+            </div>
+            <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <div style="padding:8px 12px;background:{{ groupGrad }};color:#fff8ec;font-family:Andalus,serif;font-size:19px">{{ groupName }}</div>
+              <sc-for list="{{ skillRows }}" as="s" hint-placeholder-count="10">
+                <div style="display:flex;align-items:center;gap:10px;padding:0 6px 0 12px;min-height:52px;border-top:1px solid var(--line);background:{{ s.zebra }}">
+                  <button onClick="{{ s.onRoll }}" style="flex:1;min-width:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 0;text-align:left">
+                    <img src="{{ s.img }}" alt="" style="flex:none;width:30px;height:30px;border-radius:3px"></img>
+                    <span style="flex:1;min-width:0;font-size:16px;line-height:1.15">{{ s.name }}</span>
+                    <sc-if value="{{ s.showDice }}" hint-placeholder-val="{{ true }}">
+                      <span style="flex:none;display:flex;gap:2px"><sc-for list="{{ s.dice }}" as="d"><span style="width:25px;height:25px;display:grid;place-items:center;background:url({{ d.img }}) center/contain no-repeat;color:#fff;font-size:9px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.6)">{{ d.k }}</span></sc-for></span>
+                      <span style="flex:none;width:26px;text-align:right;font-weight:700;font-size:17px;color:{{ s.fwColor }}">{{ s.fw }}</span>
+                    </sc-if>
+                    <sc-if value="{{ s.showStf }}" hint-placeholder-val="{{ false }}">
+                      <span style="flex:none;font-size:13px;color:var(--ink2)">StF {{ s.stf }}</span>
+                    </sc-if>
+                  </button>
+                  <sc-if value="{{ s.showStar }}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{ s.toggleFav }}" aria-label="Favorit" style="flex:none;width:44px;height:44px;border:0;background:none;cursor:pointer;font-size:19px;color:{{ s.starColor }}">{{ s.star }}</button>
+                  </sc-if>
+                  <sc-if value="{{ s.showStf }}" hint-placeholder-val="{{ false }}">
+                    <div style="flex:none;display:flex;align-items:center;gap:4px">
+                      <button onClick="{{ s.dec }}" aria-label="senken" style="width:40px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">−</button>
+                      <span style="width:26px;text-align:center;font-weight:700;font-size:17px">{{ s.fw }}</span>
+                      <button onClick="{{ s.inc }}" aria-label="steigern" style="width:40px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">+</button>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <sc-if value="{{ noSkills }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;border-top:1px solid var(--line)">
+                  <div style="font-family:Andalus,serif;font-size:18px">Kein Talent gefunden</div>
+                  <div style="font-size:14px;color:var(--ink2)">Suche oder Filter passen auf kein Talent dieser Gruppe.</div>
+                  <button onClick="{{ resetSkillFilter }}" style="height:40px;padding:0 16px;border-radius:20px;border:1px solid var(--accent);background:none;color:var(--accenttext);font:inherit;font-size:14px;font-weight:700;cursor:pointer">Filter zurücksetzen</button>
+                </div>
+              </sc-if>
+            </section>
+          </sc-if>
+          <sc-if value="{{ showAggregated }}" hint-placeholder-val="{{ false }}">
+            <sc-for list="{{ aggregated }}" as="g" hint-placeholder-count="2">
+              <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+                <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px;display:flex;justify-content:space-between"><span>{{ g.name }}</span><span style="font-family:GentiumBasic,serif;font-size:13px;color:var(--ink2);align-self:center">{{ g.interval }}</span></div>
+                <div style="padding:10px 12px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;justify-content:space-between;font-size:14px"><span>Qualitätsstufen {{ g.qs }} / 10</span><span>Versuche {{ g.used }} / {{ g.allowed }}</span></div>
+                  <div style="height:8px;border-radius:4px;background:var(--line);overflow:hidden"><div style="height:100%;width:{{ g.pct }};background:var(--accent)"></div></div>
+                </div>
+                <sc-for list="{{ g.talents }}" as="t">
+                  <button onClick="{{ t.onRoll }}" style="width:100%;border:0;border-top:1px solid var(--line);background:none;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;padding:0 12px;min-height:52px;text-align:left">
+                    <span style="flex:1;font-size:16px">{{ t.name }}</span>
+                    <span style="display:flex;gap:2px"><sc-for list="{{ t.dice }}" as="d"><span style="width:25px;height:25px;display:grid;place-items:center;background:url({{ d.img }}) center/contain no-repeat;color:#fff;font-size:9px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.6)">{{ d.k }}</span></sc-for></span>
+                    <span style="width:26px;text-align:right;font-weight:700;font-size:17px">{{ t.fw }}</span>
+                  </button>
+                </sc-for>
+              </section>
+            </sc-for>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ tCombat }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+            <sc-for list="{{ combatSubs }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:44px;font-family:Andalus,serif;font-size:16px;background:{{ c.bg }};color:{{ c.color }}">{{ c.label }}</button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ cWeapons }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px">
+              <sc-for list="{{ combatActions }}" as="a" hint-placeholder-count="4">
+                <button onClick="{{ a.onRoll }}" style="font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 10px;min-height:50px;background:var(--field);border:1px solid var(--line2);border-radius:3px;text-align:left">
+                  <img src="{{ a.img }}" alt="" style="width:24px;height:24px;flex:none"></img>
+                  <span style="flex:1;font-size:14px;line-height:1.15">{{ a.label }}</span>
+                  <span style="font-weight:700;font-size:17px">{{ a.v }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px">
+              <sc-for list="{{ weapons }}" as="w" hint-placeholder-count="4">
+                <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <img src="{{ w.img }}" alt="" style="width:32px;height:32px;flex:none"></img>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-family:Andalus,serif;font-size:19px;line-height:1.1">{{ w.name }}</span><span style="font-size:13px;color:var(--ink2)">{{ w.meta }}</span></div>
+                    <sc-if value="{{ w.isFav }}" hint-placeholder-val="{{ false }}"><span style="color:var(--accent);font-size:18px">★</span></sc-if>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:stretch">
+                    <sc-for list="{{ w.rolls }}" as="r">
+                      <button onClick="{{ r.onRoll }}" style="flex:none;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;padding:4px 10px 4px 6px;min-height:46px;border:1px solid var(--accent);border-radius:4px;background:var(--field)">
+                        <span style="width:34px;height:34px;display:grid;place-items:center;background:url(../../../../systems/dsa5/icons/dice/d20mu.svg) center/contain no-repeat;color:#fff;font-weight:700;font-size:14px;text-shadow:0 1px 2px rgba(0,0,0,.6)">{{ r.v }}</span>
+                        <span style="font-size:13px;font-weight:700;letter-spacing:.06em">{{ r.label }}</span>
+                      </button>
+                    </sc-for>
+                    <div style="flex:1;display:flex;justify-content:flex-end;gap:14px;align-items:center">
+                      <sc-for list="{{ w.stats }}" as="st"><div style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-size:11px;letter-spacing:.1em;color:var(--ink2)">{{ st.k }}</span><span style="font-weight:700;font-size:15px">{{ st.v }}</span></div></sc-for>
+                    </div>
+                  </div>
+                  <sc-if value="{{ w.hasAmmo }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                      <sc-for list="{{ w.ammo }}" as="am"><button onClick="{{ am.onClick }}" style="white-space:nowrap;font:inherit;cursor:pointer;height:40px;padding:0 12px;border-radius:20px;border:1px solid {{ am.border }};background:{{ am.bg }};color:var(--ink);font-size:14px">{{ am.label }}</button></sc-for>
+                      <sc-if value="{{ w.hasReload }}" hint-placeholder-val="{{ false }}"><button onClick="{{ w.onReload }}" style="white-space:nowrap;font:inherit;cursor:pointer;height:40px;padding:0 12px;border-radius:20px;border:1px solid var(--accent);background:{{ w.reloadBg }};color:{{ w.reloadColor }};font-size:14px;font-weight:700">{{ w.reloadLabel }}</button></sc-if>
+                    </div>
+                  </sc-if>
+                </section>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ cArmor }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+              <sc-for list="{{ armorTotals }}" as="t" hint-placeholder-count="3"><div style="background:var(--field);border:1px solid var(--line2);border-radius:4px;padding:10px;text-align:center"><div style="font-size:12px;letter-spacing:.1em;color:var(--ink2)">{{ t.k }}</div><div style="font-family:Andalus,serif;font-size:28px">{{ t.v }}</div></div></sc-for>
+            </div>
+            <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">Rüstung</div>
+              <sc-for list="{{ armor }}" as="a" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:10px;padding:0 12px;min-height:52px;border-top:1px solid var(--line)"><img src="../../../../systems/dsa5/icons/categories/Armor.webp" alt="" style="width:28px;height:28px"></img><span style="flex:1;font-size:16px">{{ a.name }}</span><span style="font-size:14px">RS <b>{{ a.rs }}</b></span><span style="font-size:14px;width:44px;text-align:right">BE <b>{{ a.be }}</b></span></div>
+              </sc-for>
+            </section>
+          </sc-if>
+          <sc-if value="{{ cSkills }}" hint-placeholder-val="{{ false }}">
+            <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <div style="display:grid;grid-template-columns:1fr 54px 40px 40px 40px;gap:4px;padding:6px 12px;background:var(--sub);font-size:12px;letter-spacing:.1em;color:var(--ink2)"><span>KAMPFTECHNIK</span><span>LE</span><span style="text-align:center">FW</span><span style="text-align:center">AT</span><span style="text-align:center">PA</span></div>
+              <sc-for list="{{ combatSkills }}" as="c" hint-placeholder-count="10">
+                <div style="display:grid;grid-template-columns:1fr 54px 40px 40px 40px;gap:4px;align-items:center;padding:0 12px;min-height:44px;border-top:1px solid var(--line);color:{{ c.color }}"><span style="font-size:15px">{{ c.name }}</span><span style="font-size:13px">{{ c.guide }}</span><span style="text-align:center;font-weight:700">{{ c.fw }}</span><span style="text-align:center">{{ c.at }}</span><span style="text-align:center">{{ c.pa }}</span></div>
+              </sc-for>
+            </section>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ tMagic }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;padding:12px;background:var(--hdr);color:#f4e8d6;border-radius:4px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <img src="{{ tradition.icon }}" alt="" style="width:44px;height:44px;flex:none"></img>
+              <div style="flex:1;min-width:0"><div style="font-family:Andalus,serif;font-size:20px;color:#fff8ec">{{ tradition.name }}</div><div style="font-size:13px;color:rgba(244,232,214,.8)">{{ tradition.meta }}</div></div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button onClick="{{ magicBar.dec }}" aria-label="{{ magicBar.key }} verringern" style="flex:none;width:44px;height:40px;border:1px solid rgba(244,232,214,.3);border-radius:4px;background:rgba(255,255,255,.06);color:#f4e8d6;font-size:18px;cursor:pointer">−</button>
+              <div style="flex:1;position:relative;height:40px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.1)">
+                <div style="position:absolute;inset:0 auto 0 0;width:{{ magicBar.pct }};background:{{ magicBar.grad }}"></div>
+                <div style="position:relative;height:100%;display:flex;align-items:center;justify-content:center;gap:7px;font-weight:700;font-size:15px;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap"><span>{{ magicBar.key }}</span><span>{{ magicBar.cur }} / {{ magicBar.max }}</span></div>
+              </div>
+              <button onClick="{{ magicBar.inc }}" aria-label="{{ magicBar.key }} erhöhen" style="flex:none;width:44px;height:40px;border:1px solid rgba(244,232,214,.3);border-radius:4px;background:rgba(255,255,255,.06);color:#f4e8d6;font-size:18px;cursor:pointer">+</button>
+            </div>
+          </div>
+          <div style="display:flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+            <sc-for list="{{ magicSubs }}" as="c" hint-placeholder-count="3">
+              <button onClick="{{ c.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;font-family:Andalus,serif;font-size:16px;background:{{ c.bg }};color:{{ c.color }}">{{ c.label }}<span style="font-family:GentiumBasic,serif;font-size:12px;opacity:.8">{{ c.count }}</span></button>
+            </sc-for>
+          </div>
+          <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+            <sc-for list="{{ spellRows }}" as="s" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:8px;padding:0 6px 0 12px;min-height:60px;border-top:1px solid var(--line);background:{{ s.zebra }}">
+                <button onClick="{{ s.onRoll }}" style="flex:1;min-width:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 0;text-align:left">
+                  <img src="{{ s.img }}" alt="" style="width:34px;height:34px;border-radius:3px;flex:none"></img>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:16px;line-height:1.15">{{ s.name }}</span><span style="font-size:13px;color:var(--ink2)">{{ s.meta }}</span></span>
+                  <sc-if value="{{ s.showDice }}" hint-placeholder-val="{{ true }}">
+                    <span style="flex:none;display:flex;gap:2px"><sc-for list="{{ s.dice }}" as="d"><span style="width:25px;height:25px;display:grid;place-items:center;background:url({{ d.img }}) center/contain no-repeat;color:#fff;font-size:9px;font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,.6)">{{ d.k }}</span></sc-for></span>
+                    <span style="flex:none;width:24px;text-align:right;font-weight:700;font-size:17px">{{ s.fw }}</span>
+                  </sc-if>
+                  <sc-if value="{{ s.isSmall }}" hint-placeholder-val="{{ false }}">
+                    <span style="flex:none;height:36px;padding:0 14px;display:grid;place-items:center;border-radius:18px;border:1px solid var(--accent);color:var(--accenttext);font-size:14px;font-weight:700">{{ s.verb }}</span>
+                  </sc-if>
+                </button>
+                <sc-if value="{{ s.showStep }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:none;display:flex;align-items:center;gap:4px">
+                    <button onClick="{{ s.dec }}" aria-label="senken" style="width:40px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">−</button>
+                    <span style="width:26px;text-align:center;font-weight:700;font-size:17px">{{ s.fw }}</span>
+                    <button onClick="{{ s.inc }}" aria-label="steigern" style="width:40px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">+</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </section>
+          <div style="font-size:13px;color:var(--ink2);text-wrap:pretty">{{ magicHint }}</div>
+        </sc-if>
+
+        <sc-if value="{{ tInventory }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px">
+            <button onClick="{{ openMoney }}" style="font:inherit;color:inherit;cursor:pointer;text-align:left;padding:10px 12px;background:var(--card);border:1px solid var(--line2);border-radius:4px;display:flex;flex-direction:column;gap:8px">
+              <span style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:Andalus,serif;font-size:19px">Geldbeutel</span><span style="font-size:13px;color:var(--ink2)">≙ {{ moneyTotal }} · Tippen zum Rechnen</span></span>
+              <span style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+                <sc-for list="{{ wallet }}" as="c" hint-placeholder-count="4">
+                  <span style="display:flex;align-items:center;gap:6px"><img src="{{ c.img }}" alt="" style="width:26px;height:26px"></img><span style="display:flex;flex-direction:column;line-height:1.05"><span style="font-family:Andalus,serif;font-size:20px">{{ c.v }}</span><span style="font-size:12px;color:var(--ink2)">{{ c.short }}</span></span></span>
+                </sc-for>
+              </span>
+            </button>
+            <div style="padding:10px 12px;background:var(--card);border:1px solid var(--line2);border-radius:4px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:Andalus,serif;font-size:19px">Traglast</span><span style="font-size:14px;font-weight:700;color:{{ loadColor }}">{{ loadLabel }}</span></div>
+              <div style="height:10px;border-radius:5px;background:var(--line);overflow:hidden"><div style="height:100%;width:{{ loadPct }};background:{{ loadBar }}"></div></div>
+              <div style="font-size:13px;color:var(--ink2)">{{ loadLine }}</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <input value="{{ invQ }}" onChange="{{ onInvQ }}" placeholder="Gegenstand suchen …" aria-label="Gegenstand suchen" style="height:44px;padding:0 12px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font:inherit;font-size:16px;color:var(--ink)"></input>
+            <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px">
+              <sc-for list="{{ invCats }}" as="c" hint-placeholder-count="5">
+                <button onClick="{{ c.onClick }}" style="flex:none;font:inherit;cursor:pointer;height:40px;padding:0 14px;border-radius:20px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};font-size:15px">{{ c.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;align-items:start">
+            <sc-for list="{{ containers }}" as="cat" hint-placeholder-count="3">
+              <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+                <button onClick="{{ cat.toggle }}" aria-expanded="{{ cat.open }}" style="width:100%;border:0;font:inherit;color:inherit;cursor:pointer;text-align:left;min-height:44px;padding:6px 12px;background:var(--phead);display:flex;align-items:center;gap:8px">
+                  <span style="width:16px;font-size:14px">{{ cat.chevron }}</span>
+                  <span style="flex:1;font-family:Andalus,serif;font-size:19px">{{ cat.label }}</span>
+                  <span style="font-size:13px;color:var(--ink2)">{{ cat.weight }}</span>
+                </button>
+                <sc-for list="{{ cat.rows }}" as="it">
+                  <div style="display:flex;align-items:center;gap:10px;padding:0 6px 0 12px;min-height:54px;border-top:1px solid var(--line)">
+                    <img src="{{ it.img }}" alt="" style="width:28px;height:28px;flex:none"></img>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:16px">{{ it.name }}</span><span style="font-size:13px;color:var(--ink2)">{{ it.meta }}</span></span>
+                    <sc-if value="{{ it.canEquip }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ it.toggle }}" aria-pressed="{{ it.eq }}" style="flex:none;height:40px;padding:0 12px;border-radius:20px;border:1px solid var(--accent);background:{{ it.eqBg }};color:{{ it.eqColor }};font:inherit;font-size:13px;font-weight:700;cursor:pointer">{{ it.eqLabel }}</button>
+                    </sc-if>
+                    <sc-if value="{{ it.canUse }}" hint-placeholder-val="{{ false }}">
+                      <button onClick="{{ it.use }}" style="flex:none;height:40px;padding:0 12px;border-radius:20px;border:1px solid var(--ok);background:var(--okbg);color:var(--oktext);font:inherit;font-size:13px;font-weight:700;cursor:pointer">Verbrauchen</button>
+                    </sc-if>
+                    <sc-if value="{{ it.showQty }}" hint-placeholder-val="{{ false }}">
+                      <div style="flex:none;display:flex;align-items:center;gap:4px">
+                        <button onClick="{{ it.dec }}" aria-label="Anzahl verringern" style="width:40px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">−</button>
+                        <span style="width:28px;text-align:center;font-weight:700;font-size:16px">{{ it.qty }}</span>
+                        <button onClick="{{ it.inc }}" aria-label="Anzahl erhöhen" style="width:40px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">+</button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ cat.isEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:16px 12px;border-top:1px solid var(--line);font-size:14px;color:var(--ink2);text-align:center">Leer. Gegenstände fügst du in Foundry per Ziehen hinzu.</div>
+                </sc-if>
+              </section>
+            </sc-for>
+          </div>
+          <sc-if value="{{ invNoResults }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:26px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;background:var(--card);border:1px dashed var(--line2);border-radius:4px">
+              <div style="font-family:Andalus,serif;font-size:18px">Nichts gefunden</div>
+              <div style="font-size:14px;color:var(--ink2)">Kein Gegenstand passt zu Suche und Filter.</div>
+              <button onClick="{{ resetInv }}" style="height:40px;padding:0 16px;border-radius:20px;border:1px solid var(--accent);background:none;color:var(--accenttext);font:inherit;font-size:14px;font-weight:700;cursor:pointer">Filter zurücksetzen</button>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ tStatus }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">
+            <sc-for list="{{ statusTiles }}" as="t" hint-placeholder-count="3">
+              <div style="background:var(--field);border:1px solid {{ t.border }};border-radius:4px;padding:8px 6px;text-align:center;display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:12px;letter-spacing:.08em;color:var(--ink2)">{{ t.k }}</span>
+                <span style="font-family:Andalus,serif;font-size:24px;line-height:1.1;color:{{ t.color }}">{{ t.v }}</span>
+                <span style="font-size:12px;color:var(--ink2)">{{ t.note }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;align-items:start">
+            <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">Zustände</div>
+              <sc-for list="{{ conditions }}" as="c" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:2px;padding:0 4px 0 12px;min-height:54px;border-top:1px solid var(--line)">
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:16px">{{ c.name }}</span><sc-if value="{{ c.hasNote }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:var(--ink2)">{{ c.note }}</span></sc-if></span>
+                  <sc-for list="{{ c.pips }}" as="p"><button onClick="{{ p.onClick }}" aria-label="{{ p.aria }}" style="width:44px;height:44px;border:0;background:none;padding:9px;cursor:pointer"><span style="display:block;width:26px;height:26px;border-radius:3px;border:1.5px solid var(--ink3);background:{{ p.bg }}"></span></button></sc-for>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;min-height:54px;border-top:1px solid var(--line)">
+                <span style="flex:1;font-size:16px">Blutung</span>
+                <button onClick="{{ bleedDec }}" aria-label="Blutung verringern" style="width:44px;height:44px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">−</button>
+                <span style="width:28px;text-align:center;font-weight:700;font-size:17px">{{ bleed }}</span>
+                <button onClick="{{ bleedInc }}" aria-label="Blutung erhöhen" style="width:44px;height:44px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">+</button>
+              </div>
+              <div style="padding:6px 12px;background:var(--sub);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);border-top:1px solid var(--line)">Status</div>
+              <div style="padding:10px 12px;display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--line)">
+                <sc-for list="{{ statusChips }}" as="c" hint-placeholder-count="6">
+                  <button onClick="{{ c.onClick }}" aria-pressed="{{ c.on }}" style="font:inherit;cursor:pointer;height:40px;padding:0 14px;border-radius:20px;border:1px solid {{ c.border }};background:{{ c.bg }};color:{{ c.color }};font-size:14px;font-weight:{{ c.weight }}">{{ c.label }}</button>
+                </sc-for>
+              </div>
+            </section>
+            <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px;display:flex;justify-content:space-between;align-items:baseline"><span>Trefferzonen</span><span style="font-family:GentiumBasic,serif;font-size:13px;color:var(--ink2)">RS · Wunden</span></div>
+              <sc-for list="{{ zones }}" as="z" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:2px;padding:0 4px 0 12px;min-height:52px;border-top:1px solid var(--line)">
+                  <span style="flex:1;font-size:16px">{{ z.name }}</span>
+                  <span style="width:52px;font-size:14px;color:var(--ink2)">RS <b style="color:var(--ink)">{{ z.rs }}</b></span>
+                  <sc-for list="{{ z.pips }}" as="p"><button onClick="{{ p.onClick }}" aria-label="{{ p.aria }}" style="width:44px;height:44px;border:0;background:none;padding:10px;cursor:pointer"><span style="display:block;width:24px;height:24px;border-radius:12px;border:1.5px solid var(--ink3);background:{{ p.bg }}"></span></button></sc-for>
+                </div>
+              </sc-for>
+              <div style="padding:8px 12px 10px;border-top:1px solid var(--line);font-size:13px;color:var(--ink2)">{{ zoneLine }}</div>
+            </section>
+            <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">Aktive Effekte</div>
+              <sc-for list="{{ effects }}" as="e" hint-placeholder-count="5">
+                <div style="display:flex;align-items:center;gap:10px;padding:4px 4px 4px 12px;min-height:52px;border-top:1px solid var(--line)"><span style="flex:1;font-size:15px;line-height:1.2">{{ e.name }}</span><span style="font-size:13px;color:var(--ink2)">{{ e.dur }}</span><button onClick="{{ e.remove }}" aria-label="Effekt entfernen" style="flex:none;width:44px;height:44px;border:0;background:none;cursor:pointer;color:var(--ink2);font-size:16px">✕</button></div>
+              </sc-for>
+              <sc-if value="{{ noEffects }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:18px 12px;border-top:1px solid var(--line);font-size:14px;color:var(--ink2);text-align:center">Keine Effekte aktiv. Zauber, Tränke und Segen erscheinen hier mit ihrer Restdauer.</div>
+              </sc-if>
+              <div style="padding:6px 12px;background:var(--sub);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);border-top:1px solid var(--line)">Modifikatoren</div>
+              <sc-for list="{{ modifiers }}" as="m" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;min-height:46px;border-top:1px solid var(--line)"><span style="flex:1;font-size:15px">{{ m.target }}</span><span style="font-weight:700">{{ m.value }}</span><span style="font-size:13px;color:var(--ink2)">{{ m.source }}</span></div>
+              </sc-for>
+            </section>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ tNotes }}" hint-placeholder-val="{{ false }}">
+          <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+            <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">Abenteuertagebuch</div>
+            <div style="padding:10px 12px;display:flex;gap:8px;border-top:1px solid var(--line)">
+              <input value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" placeholder="Was ist passiert?" aria-label="Neuer Tagebucheintrag" style="flex:1;min-width:0;height:44px;padding:0 12px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font:inherit;font-size:16px;color:var(--ink)"></input>
+              <button onClick="{{ addEntry }}" style="flex:none;height:44px;padding:0 14px;border:0;border-radius:4px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:15px;font-weight:700;cursor:pointer">Eintragen</button>
+            </div>
+            <sc-for list="{{ journal }}" as="j" hint-placeholder-count="2">
+              <div style="padding:10px 12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:3px">
+                <span style="font-size:12px;letter-spacing:.06em;color:var(--accenttext);font-weight:700">{{ j.d }}</span>
+                <span style="font-size:16px;line-height:1.4;text-wrap:pretty">{{ j.t }}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noJournal }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:18px 12px;border-top:1px solid var(--line);font-size:14px;color:var(--ink2);text-align:center">Noch keine Einträge. Halte fest, was am Spieltisch passiert – Hinweise, Namen, Schulden.</div>
+            </sc-if>
+          </section>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;align-items:start">
+            <sc-for list="{{ noteFields }}" as="n" hint-placeholder-count="2">
+              <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+                <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">{{ n.title }}</div>
+                <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
+                  <textarea value="{{ n.text }}" onChange="{{ n.onChange }}" placeholder="{{ n.placeholder }}" aria-label="{{ n.title }}" style="display:block;width:100%;box-sizing:border-box;min-height:160px;padding:10px 12px;border:0;border-top:1px solid var(--line);background:var(--field);font:inherit;font-size:16px;line-height:1.45;color:var(--ink);resize:vertical"></textarea>
+                </sc-if>
+                <sc-if value="{{ n.showText }}" hint-placeholder-val="{{ true }}">
+                  <div style="padding:10px 12px;font-size:16px;line-height:1.45;white-space:pre-wrap;text-wrap:pretty">{{ n.text }}</div>
+                </sc-if>
+                <sc-if value="{{ n.showEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:16px 12px;font-size:14px;color:var(--ink2);text-align:center">{{ n.empty }}</div>
+                </sc-if>
+              </section>
+            </sc-for>
+          </div>
+          <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+            <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">Persönliche Daten</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));border-top:1px solid var(--line)">
+              <sc-for list="{{ appearance }}" as="a" hint-placeholder-count="10">
+                <div style="padding:8px 12px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:12px;letter-spacing:.08em;color:var(--ink2)">{{ a.k }}</span>
+                  <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}"><input value="{{ a.v }}" onChange="{{ a.onChange }}" aria-label="{{ a.k }}" style="height:36px;padding:0 8px;border:1px solid var(--line2);border-radius:3px;background:var(--field);font:inherit;font-size:16px;color:var(--ink);min-width:0"></input></sc-if>
+                  <sc-if value="{{ isPlay }}" hint-placeholder-val="{{ true }}"><span style="font-family:Andalus,serif;font-size:17px">{{ a.v }}</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ tCompanions }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;align-items:start">
+            <sc-for list="{{ compList }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.onOpen }}" style="font:inherit;color:inherit;cursor:pointer;text-align:left;padding:10px 12px;background:var(--card);border:1px solid var(--line2);border-radius:4px;display:flex;align-items:center;gap:12px">
+                <span style="flex:none;width:52px;height:52px;border-radius:4px;background:#3a322b;display:grid;place-items:center"><img src="{{ c.icon }}" alt="" style="width:38px;height:38px;filter:{{ c.filter }}"></img></span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+                  <span style="display:flex;flex-direction:column"><span style="font-family:Andalus,serif;font-size:19px;line-height:1.1">{{ c.name }}</span><span style="font-size:13px;color:var(--ink2)">{{ c.type }}</span></span>
+                  <span style="position:relative;height:18px;border-radius:3px;overflow:hidden;background:var(--line)"><span style="position:absolute;inset:0 auto 0 0;width:{{ c.pct }};background:linear-gradient(90deg,#841a16,#c42c24)"></span><span style="position:relative;display:flex;height:100%;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.5);white-space:nowrap"><span>LeP {{ c.lep }} / {{ c.lepMax }}</span></span></span>
+                </span>
+                <span style="flex:none;display:flex;flex-direction:column;align-items:flex-end"><span style="font-size:11px;letter-spacing:.1em;color:var(--ink2)">{{ c.k }}</span><span style="font-weight:700;font-size:17px">{{ c.v }}</span><span style="font-size:18px;color:var(--ink2)">›</span></span>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ noComps }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:30px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;background:var(--card);border:1px dashed var(--line2);border-radius:4px">
+              <img src="../../../../systems/dsa5/icons/categories/ability_animal.webp" alt="" style="width:44px;height:44px;opacity:.7"></img>
+              <div style="font-family:Andalus,serif;font-size:19px">Keine Gefährten</div>
+              <div style="font-size:14px;color:var(--ink2);max-width:300px;text-wrap:pretty">Reittiere, Vertraute und gebundene Geister fügst du in Foundry hinzu, indem du ihren Bogen auf diesen Reiter ziehst.</div>
+            </div>
+          </sc-if>
+        </sc-if>
+
+      </div>
+    </main>
+
+    <sc-if value="{{ showRail }}" hint-placeholder-val="{{ false }}">
+      <nav style="flex:none;width:84px;background:var(--rail);display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0;overflow-y:auto">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="10">
+          <button onClick="{{ t.onClick }}" aria-label="{{ t.label }}" aria-current="{{ t.current }}" style="border:0;background:none;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px 0;width:76px;color:{{ t.railText }}">
+            <span style="width:48px;height:48px;border-radius:4px;display:grid;place-items:center;background:{{ t.railBg }};box-shadow:{{ t.railShadow }}"><img src="{{ t.icon }}" alt="" style="width:30px;height:30px"></img></span>
+            <span style="font-size:12px;line-height:1.1">{{ t.label }}</span>
+          </button>
+        </sc-for>
+      </nav>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ showBottomBar }}" hint-placeholder-val="{{ true }}">
+    <nav style="flex:none;display:grid;grid-template-columns:repeat(5,1fr);background:var(--chrome);padding:6px 4px 22px;box-shadow:0 -2px 10px rgba(0,0,0,.3);position:relative;z-index:3">
+      <sc-for list="{{ bottomTabs }}" as="t" hint-placeholder-count="5">
+        <button onClick="{{ t.onClick }}" aria-label="{{ t.label }}" style="border:0;background:none;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0;min-height:56px;color:{{ t.color }}">
+          <span style="width:44px;height:36px;border-radius:4px;display:grid;place-items:center;background:{{ t.bg }}">
+            <sc-if value="{{ t.hasIcon }}" hint-placeholder-val="{{ true }}"><img src="{{ t.icon }}" alt="" style="width:26px;height:26px"></img></sc-if>
+            <sc-if value="{{ t.isMore }}" hint-placeholder-val="{{ false }}"><span style="font-size:22px;line-height:1;letter-spacing:1px;color:#ece2d2">•••</span></sc-if>
+          </span>
+          <span style="font-size:12px;line-height:1">{{ t.label }}</span>
+        </button>
+      </sc-for>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{ moreOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMore }}" style="position:absolute;inset:0;z-index:9;background:rgba(0,0,0,.5);display:flex;align-items:flex-end">
+      <div onClick="{{ stop }}" data-zoom="1" style="width:100%;background:var(--sheet);color:var(--ink);border-radius:14px 14px 0 0;padding:8px 14px 30px;display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 30px rgba(0,0,0,.4)">
+        <div style="width:40px;height:4px;border-radius:2px;background:var(--line2);align-self:center"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <sc-for list="{{ moreTabs }}" as="t" hint-placeholder-count="6">
+            <button onClick="{{ t.onClick }}" style="font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 4px;border-radius:6px;border:1px solid {{ t.border }};background:{{ t.bg }}">
+              <span style="width:44px;height:44px;border-radius:4px;display:grid;place-items:center;background:#ece2d2"><img src="{{ t.icon }}" alt="" style="width:32px;height:32px"></img></span>
+              <span style="font-family:Andalus,serif;font-size:16px">{{ t.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="display:flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+          <sc-for list="{{ modeButtonsLight }}" as="m" hint-placeholder-count="2">
+            <button onClick="{{ m.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:44px;font-size:15px;font-weight:700;background:{{ m.bg }};color:{{ m.color }}">{{ m.label }}</button>
+          </sc-for>
+        </div>
+        <sc-for list="{{ settings }}" as="g" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="flex:none;width:96px;font-size:14px;color:var(--ink2)">{{ g.label }}</span>
+            <div style="flex:1;display:flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+              <sc-for list="{{ g.opts }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:40px;font-size:14px;font-weight:700;background:{{ o.bg }};color:{{ o.color }}">{{ o.label }}</button></sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ compOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeComp }}" style="position:absolute;inset:0;z-index:9;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center">
+      <div onClick="{{ stop }}" style="width:100%;max-width:560px;max-height:90%;overflow-y:auto;overflow-x:hidden;background:var(--sheet);color:var(--ink);border-radius:14px 14px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.45)">
+        <div data-zoom="1" style="padding:8px 16px 28px;display:flex;flex-direction:column;gap:14px">
+          <div style="width:40px;height:4px;border-radius:2px;background:var(--line2);align-self:center"></div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="flex:none;width:56px;height:56px;border-radius:4px;background:#3a322b;display:grid;place-items:center"><img src="{{ comp.icon }}" alt="" style="width:40px;height:40px;filter:{{ comp.filter }}"></img></span>
+            <div style="flex:1;min-width:0"><div style="font-family:Andalus,serif;font-size:25px;line-height:1.1">{{ comp.name }}</div><div style="font-size:13px;color:var(--ink2)">{{ comp.type }}</div></div>
+            <button onClick="{{ closeComp }}" aria-label="Schließen" style="flex:none;width:44px;height:44px;border:1px solid var(--line2);border-radius:22px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">✕</button>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button onClick="{{ comp.lepDec }}" aria-label="LeP verringern" style="flex:none;width:44px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">−</button>
+            <div style="flex:1;position:relative;height:40px;border-radius:4px;overflow:hidden;background:var(--line)">
+              <div style="position:absolute;inset:0 auto 0 0;width:{{ comp.pct }};background:linear-gradient(90deg,#841a16,#c42c24)"></div>
+              <div style="position:relative;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.5);white-space:nowrap"><span>LeP {{ comp.lep }} / {{ comp.lepMax }}</span></div>
+            </div>
+            <button onClick="{{ comp.lepInc }}" aria-label="LeP erhöhen" style="flex:none;width:44px;height:40px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">+</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+            <sc-for list="{{ comp.stats }}" as="t"><div style="background:var(--field);border:1px solid var(--line2);border-radius:4px;padding:6px;text-align:center"><div style="font-size:11px;letter-spacing:.1em;color:var(--ink2)">{{ t.k }}</div><div style="font-weight:700;font-size:17px">{{ t.v }}</div></div></sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:2px">
+            <sc-for list="{{ comp.attrs }}" as="d">
+              <button onClick="{{ d.onClick }}" aria-label="{{ d.aria }}" style="border:0;padding:0;cursor:pointer;background:none;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--ink);min-width:40px">
+                <span style="width:38px;height:38px;display:grid;place-items:center;background:url({{ d.img }}) center/contain no-repeat;font-weight:700;font-size:14px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7)">{{ d.v }}</span>
+                <span style="font-size:11px;letter-spacing:.06em;color:var(--ink2)">{{ d.k }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+            <div style="padding:6px 12px;background:var(--sub);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)">Angriffe &amp; Proben</div>
+            <sc-for list="{{ comp.actions }}" as="a">
+              <button onClick="{{ a.onRoll }}" style="width:100%;border:0;border-top:1px solid var(--line);background:none;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:10px;padding:0 12px;min-height:52px;text-align:left">
+                <span style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px">{{ a.name }}</span><span style="font-size:13px;color:var(--ink2)">{{ a.meta }}</span></span>
+                <span style="width:34px;height:34px;display:grid;place-items:center;background:url({{ a.die }}) center/contain no-repeat;color:#fff;font-weight:700;font-size:14px;text-shadow:0 1px 2px rgba(0,0,0,.6)">{{ a.v }}</span>
+              </button>
+            </sc-for>
+          </section>
+          <sc-if value="{{ comp.isHorse }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)">Gangart</span>
+              <div style="display:flex;border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+                <sc-for list="{{ horseSpeeds }}" as="h"><button onClick="{{ h.onClick }}" style="flex:1;border:0;font:inherit;cursor:pointer;height:44px;font-size:14px;background:{{ h.bg }};color:{{ h.color }}">{{ h.label }}</button></sc-for>
+              </div>
+              <span style="font-size:13px;color:var(--ink2)">{{ horseLine }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ comp.isSpirit }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);border:1px solid var(--line2);border-radius:4px">
+              <span style="flex:1;display:flex;flex-direction:column"><span style="font-size:16px">Dienste</span><span style="font-size:13px;color:var(--ink2)">{{ comp.services }} von {{ comp.servicesMax }} verbleibend</span></span>
+              <button onClick="{{ comp.useService }}" style="height:44px;padding:0 14px;border:0;border-radius:4px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:15px;font-weight:700;cursor:pointer">Dienst einfordern</button>
+            </div>
+          </sc-if>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ comp.abilities }}" as="it"><span style="padding:6px 10px;background:var(--field);border:1px solid var(--line2);border-radius:3px;font-size:14px">{{ it }}</span></sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ moneyOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMoney }}" style="position:absolute;inset:0;z-index:9;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center">
+      <div onClick="{{ stop }}" data-zoom="1" style="width:100%;max-width:460px;background:var(--sheet);color:var(--ink);border-radius:14px 14px 0 0;padding:8px 16px 28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 -8px 30px rgba(0,0,0,.45)">
+        <div style="width:40px;height:4px;border-radius:2px;background:var(--line2);align-self:center"></div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="flex:1"><div style="font-family:Andalus,serif;font-size:25px">Geld-Rechner</div><div style="font-size:13px;color:var(--ink2)">Bestand ≙ {{ moneyTotal }} · 1 D = 10 S = 100 H = 1000 K</div></div>
+          <button onClick="{{ closeMoney }}" aria-label="Schließen" style="flex:none;width:44px;height:44px;border:1px solid var(--line2);border-radius:22px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px">
+          <sc-for list="{{ coinButtons }}" as="c" hint-placeholder-count="4">
+            <button onClick="{{ c.onClick }}" aria-pressed="{{ c.on }}" style="font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:4px;border:1.5px solid {{ c.border }};background:{{ c.bg }}">
+              <img src="{{ c.img }}" alt="" style="width:28px;height:28px"></img>
+              <span style="font-family:Andalus,serif;font-size:20px;line-height:1">{{ c.v }}</span>
+              <span style="font-size:12px;color:var(--ink2)">{{ c.k }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;padding:8px;background:var(--card);border:1px solid var(--line2);border-radius:4px">
+          <sc-for list="{{ amtMinus }}" as="b"><button onClick="{{ b.onClick }}" style="width:48px;height:44px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font:inherit;font-size:15px;font-weight:700;cursor:pointer;color:var(--ink)">{{ b.label }}</button></sc-for>
+          <span style="flex:1;text-align:center;font-family:Andalus,serif;font-size:26px">{{ amtLabel }}</span>
+          <sc-for list="{{ amtPlus }}" as="b"><button onClick="{{ b.onClick }}" style="width:48px;height:44px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font:inherit;font-size:15px;font-weight:700;cursor:pointer;color:var(--ink)">{{ b.label }}</button></sc-for>
+        </div>
+        <div style="font-size:13px;color:var(--ink2);text-align:center">{{ amtHint }}</div>
+        <div style="display:flex;gap:8px">
+          <button onClick="{{ moneySpend }}" style="flex:1;height:52px;border:1px solid var(--danger);border-radius:4px;background:var(--dangerbg);color:var(--dangertext);font:inherit;font-size:16px;font-weight:700;cursor:pointer">Bezahlen</button>
+          <button onClick="{{ moneyGain }}" style="flex:1;height:52px;border:0;border-radius:4px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:16px;font-weight:700;cursor:pointer">Erhalten</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ rollOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeRoll }}" style="position:absolute;inset:0;z-index:10;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center">
+      <div onClick="{{ stop }}" data-zoom="1" style="width:100%;max-width:460px;background:var(--sheet);color:var(--ink);border-radius:14px 14px 0 0;padding:8px 16px 28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 -8px 30px rgba(0,0,0,.45)">
+        <div style="width:40px;height:4px;border-radius:2px;background:var(--line2);align-self:center"></div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="flex:1;min-width:0"><div style="font-family:Andalus,serif;font-size:25px;line-height:1.1">{{ roll.title }}</div><div style="font-size:13px;color:var(--ink2);margin-top:3px">{{ roll.sub }}</div></div>
+          <button onClick="{{ closeRoll }}" aria-label="Schließen" style="flex:none;width:44px;height:44px;border:1px solid var(--line2);border-radius:22px;background:var(--field);font-size:18px;cursor:pointer;color:var(--ink)">✕</button>
+        </div>
+        <sc-if value="{{ roll.hasInfo }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden">
+            <sc-for list="{{ roll.info }}" as="i"><div style="background:var(--sheet);padding:6px 10px"><div style="font-size:11px;letter-spacing:.08em;color:var(--ink2)">{{ i.k }}</div><div style="font-size:15px">{{ i.v }}</div></div></sc-for>
+          </div>
+        </sc-if>
+        <div style="display:flex;justify-content:center;gap:18px;padding:6px 0">
+          <sc-for list="{{ roll.dice }}" as="d" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+              <span style="width:58px;height:58px;display:grid;place-items:center;background:url({{ d.img }}) center/contain no-repeat;color:#fff;font-weight:700;font-size:19px;text-shadow:0 1px 2px rgba(0,0,0,.7)">{{ d.target }}</span>
+              <span style="font-size:12px;letter-spacing:.08em;color:var(--ink2)">{{ d.k }}</span>
+              <span style="min-width:44px;height:30px;padding:0 6px;border-radius:15px;display:grid;place-items:center;font-weight:700;font-size:16px;background:{{ d.resBg }};color:{{ d.resColor }}">{{ d.res }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--card);border:1px solid var(--line2);border-radius:4px">
+          <span style="flex:1;font-size:15px">Modifikator</span>
+          <button onClick="{{ modDec }}" aria-label="Modifikator senken" style="width:44px;height:44px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:20px;cursor:pointer;color:var(--ink)">−</button>
+          <span style="width:44px;text-align:center;font-weight:700;font-size:18px">{{ roll.modLabel }}</span>
+          <button onClick="{{ modInc }}" aria-label="Modifikator erhöhen" style="width:44px;height:44px;border:1px solid var(--line2);border-radius:4px;background:var(--field);font-size:20px;cursor:pointer;color:var(--ink)">+</button>
+        </div>
+        <sc-if value="{{ roll.hasResult }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:12px;border-radius:4px;text-align:center;background:{{ roll.boxBg }};color:{{ roll.boxColor }}">
+            <div style="font-family:Andalus,serif;font-size:24px">{{ roll.headline }}</div>
+            <div style="font-size:14px;margin-top:2px">{{ roll.detail }}</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ roll.canPay }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ payCost }}" style="height:48px;border:1px solid var(--accent);border-radius:4px;background:var(--field);font:inherit;font-size:16px;font-weight:700;color:var(--accenttext);cursor:pointer">{{ roll.payLabel }}</button>
+        </sc-if>
+        <div style="display:flex;gap:8px">
+          <sc-if value="{{ roll.canSchip }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ useSchip }}" style="flex:none;display:flex;align-items:center;gap:6px;height:52px;padding:0 14px;border:1px solid var(--accent);border-radius:4px;background:var(--field);font:inherit;font-size:15px;font-weight:700;color:var(--accenttext);cursor:pointer"><img src="../../../../systems/dsa5/icons/schip.webp" alt="" style="width:22px;height:22px"></img>Neu würfeln</button>
+          </sc-if>
+          <sc-if value="{{ roll.canDamage }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ rollDamage }}" style="flex:none;height:52px;padding:0 14px;border:1px solid var(--danger);border-radius:4px;background:var(--dangerbg);font:inherit;font-size:15px;font-weight:700;color:var(--dangertext);cursor:pointer">{{ roll.damageLabel }}</button>
+          </sc-if>
+          <button onClick="{{ doRoll }}" style="flex:1;height:52px;border:0;border-radius:4px;background:var(--accent);color:var(--onaccent);font:inherit;font-size:17px;font-weight:700;letter-spacing:.03em;cursor:pointer">{{ roll.cta }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:11;padding:8px 14px;border-radius:18px;background:rgba(39,35,32,.94);color:#f4e8d6;font-size:14px;white-space:nowrap">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:800},&quot;device&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;phone&quot;,&quot;tablet&quot;],&quot;default&quot;:&quot;phone&quot;,&quot;tsType&quot;:&quot;'phone'|'tablet'&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;hell&quot;,&quot;dunkel&quot;],&quot;default&quot;:&quot;hell&quot;,&quot;tsType&quot;:&quot;'hell'|'dunkel'&quot;},&quot;schrift&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;normal&quot;,&quot;groß&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;'normal'|'groß'&quot;},&quot;leer&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  I = '../../../../systems/dsa5/icons/';
+  state = {
+    tab: 'cover', mode: 'play', collapsed: false, more: false, roll: null,
+    group: 0, q: '', onlyAdv: false, combatSub: 'weapons', magSub: 0, relSub: 0,
+    res: { LeP: 28, AsP: 24, KaP: 12 }, schipsUsed: 1,
+    fwAdj: {}, attrAdj: {}, favs: {}, apSpent: 0,
+    cond: { Schmerz: 0, 'Betäubung': 0, Furcht: 1, Paralyse: 0, Verwirrung: 0, Berauscht: 0 }, bleed: 2,
+    stat: { Liegend: false, Fixiert: false, Eingeengt: false, Blind: false, Taub: false, 'Überrascht': false, Bewusstlos: false },
+    wounds: { Kopf: 0, Torso: 1, 'Linker Arm': 0, 'Rechter Arm': 0, 'Linkes Bein': 1, 'Rechtes Bein': 0 },
+    removedFx: {}, invQ: '', invCat: 'all', contOpen: {},
+    money: { D: 12, S: 8, H: 4, K: 6 }, msheet: null,
+    comp: null, compLep: {}, services: 2, horse: 'Trab',
+    ammoSel: 0, reload: 1, notes: null, app: {}, journalAdded: [], draft: '',
+    theme: null, ts: null, toast: ''
+  };
+  contentRef = React.createRef();
+
+  constructor(p) {
+    super(p);
+    const I = this.I;
+    this.TABS = [
+      ['cover', 'Titelblatt', 'Spellextension'], ['main', 'Eigenschaften', 'DSA-Auge'], ['skills', 'Talente', 'Skill'],
+      ['combat', 'Kampf', 'ability_combat'], ['magic', 'Magie', 'Spell'], ['religion', 'Religion', 'Liturgy'],
+      ['inventory', 'Ausrüstung', 'Equipment'], ['status', 'Status', 'ability_ceremonial'], ['notes', 'Notizen', 'Ability_Language'],
+      ['companions', 'Gefährten', 'ability_animal']
+    ].map(([id, label, ic]) => ({ id, label, icon: I + 'categories/' + ic + '.webp' }));
+    this.ATTRS = [['MU', 13], ['KL', 12], ['IN', 14], ['CH', 13], ['FF', 15], ['GE', 14], ['KO', 12], ['KK', 11]];
+    const G = (name, grad, s) => ({ name, grad, items: s.split(';').map(r => { const [n, ic, pr, fw, stf, fav] = r.split('|'); return { name: n, icon: ic, probe: pr, fw: +fw, stf, fav: fav === '1' }; }) });
+    this.GROUPS = [
+      G('Körpertalente', 'linear-gradient(90deg,#4f6d65,rgba(79,109,101,.15))', 'Fliegen|Fliegen|MU/IN/GE|0|B;Gaukeleien|Gaukeleien|MU/CH/FF|0|A;Klettern|Klettern|MU/GE/KK|6|B;Körperbeherrschung|Koerperbeherrschung|GE/GE/KO|8|D|1;Kraftakt|Kraftakt|KO/KK/KK|0|B|1;Reiten|Reiten|CH/GE/KK|0|B;Schwimmen|Schwimmen|GE/KO/KK|3|B;Selbstbeherrschung|Selbstbeherrschung|MU/MU/KO|0|D|1;Singen|Singen|KL/CH/KO|0|A;Sinnesschärfe|Sinnesschaerfe|KL/IN/IN|9|D|1;Tanzen|Tanzen|KL/CH/GE|0|A;Taschendiebstahl|Taschendiebstahl|MU/FF/GE|0|B;Verbergen|Verbergen|MU/IN/GE|7|C;Zechen|Zechen|KL/KO/KK|0|A'),
+      G('Gesellschaftstalente', 'linear-gradient(90deg,#85302e,rgba(133,48,46,.15))', 'Bekehren & Überzeugen|BekehrenundUeberzeugen|MU/KL/CH|0|B;Betören|Betoeren|MU/CH/CH|4|B;Einschüchtern|Einschuechtern|MU/IN/CH|0|B;Etikette|Etikette|KL/IN/CH|2|B;Gassenwissen|Gassenwissen|KL/IN/CH|0|C;Menschenkenntnis|Menschenkenntins|KL/IN/CH|8|C;Überreden|Ueberreden|MU/IN/CH|6|C;Verkleiden|Verkleiden|IN/CH/GE|0|B;Willenskraft|Willenskraft|MU/IN/CH|5|D|1'),
+      G('Naturtalente', 'linear-gradient(90deg,#535829,rgba(83,88,41,.15))', 'Fährtensuchen|Faehrtensuchen|MU/IN/GE|10|C|1;Fesseln|Fesseln|KL/FF/KK|0|A;Fischen & Angeln|FischenAngeln|FF/GE/KO|0|A;Orientierung|Orientierung|KL/IN/IN|9|B;Pflanzenkunde|Pflanzenkunde|KL/FF/KO|7|C;Tierkunde|Tierkunde|MU/MU/CH|6|C;Wildnisleben|Wildnisleben|MU/GE/KO|11|C'),
+      G('Wissenstalente', 'linear-gradient(90deg,#4b6585,rgba(75,101,133,.15))', 'Brett- & Glücksspiel|BrettGluecksspiel|KL/KL/IN|0|A;Geographie|Geographie|KL/KL/IN|4|B;Geschichtswissen|Geschichtswissen|KL/KL/IN|0|B;Götter & Kulte|GoetterKulte|KL/KL/IN|6|B;Kriegskunst|Kriegskunst|MU/KL/IN|0|B;Magiekunde|Magiekunde|KL/KL/IN|5|C;Mechanik|Mechanik|KL/KL/FF|0|B;Rechnen|Rechnen|KL/KL/IN|0|A;Rechtskunde|Rechtskunde|KL/KL/IN|0|A;Sagen & Legenden|SagenLegenden|KL/KL/IN|3|B;Sphärenkunde|Sphaerenkunde|KL/KL/IN|0|B;Sternkunde|Sternenkunde|KL/KL/IN|2|A'),
+      G('Handwerkstalente', 'linear-gradient(90deg,#a9803f,rgba(205,162,94,.15))', 'Alchimie|Alchimie|MU/KL/FF|3|C;Boote & Schiffe|BootSchifffe|FF/GE/KK|0|B;Fahrzeuge|Fahrzeuge|CH/FF/KO|0|A;Handel|Handel|KL/IN/CH|0|B;Heilkunde Gift|HeilkundeGift|MU/KL/IN|0|B;Heilkunde Krankheiten|HeilkundeKrankheiten|MU/IN/KO|0|B;Heilkunde Seele|HeilkundeSeele|IN/CH/KO|0|B;Heilkunde Wunden|HeilkundeWunden|KL/FF/FF|6|D|1;Holzbearbeitung|Holzbearbeitung|FF/GE/KK|5|B;Lebensmittelbearbeitung|Lebensmittelbearbeitung|IN/FF/FF|0|A;Lederbearbeitung|Lederbearbeitung|FF/GE/KO|4|B;Malen & Zeichnen|MalenundZeichnen|IN/FF/FF|2|A;Metallbearbeitung|Metallbearbeitung|FF/KO/KK|0|C;Musizieren|Musizieren|CH/FF/KO|0|A;Schlösserknacken|Schloesserknacken|IN/FF/FF|1|C;Steinbearbeitung|Steinbearbeitung|FF/FF/KK|0|A;Stoffbearbeitung|Stoffbearbeitung|KL/FF/FF|0|A')
+    ];
+    this.ALL = {}; this.GROUPS.forEach(g => g.items.forEach(s => { s.img = I + 'talents/' + s.icon + '.webp'; this.ALL[s.name] = s; }));
+    this.COMBAT_SKILLS = 'Armbrüste|FF|6|6|—;Blasrohre|FF|6|6|—;Bögen|FF|14|14|—;Diskusse|FF|6|6|—;Dolche|GE|11|11|5;Fächer|GE|6|6|6;Fechtwaffen|GE|6|6|6;Feuerspeien|FF|6|6|—;Hiebwaffen|KK|6|6|6;Kettenwaffen|KK|6|6|6;Lanzen|KK|6|6|6;Peitschen|FF|6|6|6;Raufen|GE/KK|8|8|6;Schilde|KK|6|6|6;Schleudern|FF|6|6|—;Schwerter|GE/KK|12|12|6;Spießwaffen|KK|6|6|6;Stangenwaffen|GE/KK|6|6|6;Wurfwaffen|FF|6|6|—;Zweihandhiebwaffen|KK|6|6|6;Zweihandschwerter|KK|6|6|6'.split(';').map(r => { const [name, guide, fw, at, pa] = r.split('|'); return { name, guide, fw, at, pa }; });
+    const sp = (n, f, pr, fw, cost, dauer, reach, wirk, stf, kind) => ({ name: n, img: f.includes('/') ? I + f : I + 'spellicons/' + kind + '/' + f + '.webp', probe: pr, fw, cost, dauer, reach, wirk, stf });
+    this.SPELLS = [sp('Balsam Salabunde', 'balsam-salabunde', 'KL/IN/KO', 8, 8, '1 Aktion', 'Berührung', 'sofort', 'B', 'spells'), sp('Flim Flam', 'flim-flam', 'KL/CH/FF', 6, 4, '1 Aktion', '32 Schritt', 'aufrechterhaltend', 'A', 'spells'), sp('Blitz dich find', 'blitz-dich-find', 'KL/FF/KO', 5, 8, '1 Aktion', '8 Schritt', 'QS × 3 KR', 'B', 'spells'), sp('Axxeleratus', 'axxeleratus', 'MU/KL/FF', 4, 8, '1 Aktion', 'Berührung', 'QS × 3 KR', 'B', 'spells'), sp('Duplicatus', 'duplicatus', 'KL/CH/FF', 6, 8, '3 Aktionen', 'Selbst', 'QS × 3 KR', 'C', 'spells')];
+    this.RITUALS = [sp('Odem Arcanum', 'categories/ritual.webp', 'KL/IN/CH', 5, 6, '5 Min.', '8 Schritt', 'sofort', 'A'), sp('Analys Arkanstruktur', 'categories/ritual.webp', 'KL/KL/IN', 4, 4, '30 Min.', 'Berührung', 'sofort', 'B')];
+    this.TRICKS = ['Punktlicht', 'Kleiner Lärm', 'Flimmerschein', 'Handwärme'].map(n => ({ name: n, img: I + 'categories/Spelltrick.webp' }));
+    this.LITURGIES = [sp('Heilsegen', 'heilsegen', 'MU/KL/IN', 8, 4, '1 Aktion', 'Berührung', 'sofort', 'B', 'liturgies'), sp('Bann der Furcht', 'bann-der-furcht', 'MU/CH/CH', 4, 6, '1 Aktion', '16 Schritt', '1 Stunde', 'B', 'liturgies')];
+    this.CEREMONIES = [sp('Krankheitsbann', 'krankheitsbann', 'KL/IN/CH', 6, 8, '30 Min.', 'Berührung', 'sofort', 'B', 'liturgies'), sp('Pflanzenwuchs', 'pflanzenwuchs', 'KL/IN/KO', 5, 12, '2 Std.', '8 Schritt', '1 Monat', 'C', 'liturgies')];
+    this.BLESSINGS = ['Segenswort', 'Peraines Auge', 'Kräuterweihe', 'Erntesegen'].map(n => ({ name: n, img: I + 'categories/Blessing.webp' }));
+    this.EFFECTS = [['seg', 'Segen der Peraine (+1 auf Heilkunde)', '8 h'], ['nacht', 'Verbesserte Nachtsicht', '1 h'], ['neid', 'Zauber des Neides (−2 auf Überreden)', '3 SR'], ['salbe', 'Salbe der Schnellen Heilung', '4 h'], ['geist', 'Schutzgeist (Astralschutz +2)', '12 h']];
+    const C = I + 'categories/';
+    const it = (id, name, cat, cont, qty, w, price, eq, img) => ({ id, name, cat, cont, qty, w, price, eq, img: C + img + '.webp' });
+    this.state.items = [
+      it(1, 'Elfischer Säbel', 'weapon', 'body', 1, 1.8, '180 D', true, 'Meleeweapon'),
+      it(2, 'Elfenbogen', 'weapon', 'body', 1, 1.2, '220 D', true, 'Rangeweapon'),
+      it(3, 'Waldläuferkluft', 'armor', 'body', 1, 4, '', true, 'Armor'),
+      it(4, 'Lederkappe', 'armor', 'body', 1, 0.5, '15 S', true, 'Armor'),
+      it(5, 'Jagdpfeile', 'ammo', 'body', 14, 0.05, '', null, 'Rangeweapon'),
+      it(6, 'Brandpfeile', 'ammo', 'body', 4, 0.05, '', null, 'Rangeweapon'),
+      it(7, 'Waldläuferdolch', 'weapon', 'belt', 1, 0.5, '30 S', false, 'Meleeweapon'),
+      it(8, 'Heiltrank', 'consumable', 'belt', 2, 0.2, '15 S', null, 'Equipment'),
+      it(9, 'Zunderbüchse', 'misc', 'belt', 1, 0.1, '', null, 'Equipment'),
+      it(10, 'Lederhandschuhe', 'armor', 'backpack', 1, 0.3, '', false, 'Armor'),
+      it(11, 'Reiseproviant', 'consumable', 'backpack', 4, 0.5, '', null, 'Equipment'),
+      it(12, 'Wasserschlauch', 'misc', 'backpack', 1, 1, '', null, 'Equipment'),
+      it(13, 'Seil, 10 Schritt', 'misc', 'backpack', 1, 1.5, '', null, 'Equipment'),
+      it(14, 'Wolldecke', 'misc', 'horse', 1, 2, '', null, 'Equipment'),
+      it(15, 'Hafersack', 'consumable', 'horse', 3, 1, '', null, 'Equipment')
+    ];
+    const A = (s) => s.split(' ').map(x => [x.slice(0, 2), +x.slice(2)]);
+    this.COMPS = [
+      { id: 'horse', name: 'Windschatten', type: 'Reittier · Warmblut', icon: I + 'thirdparty/horse-head.svg', invert: true, lep: 26, lepMax: 30, attrs: A('MU12 KL6 IN13 CH9 FF4 GE12 KO15 KK17'), stats: [['INI', 9], ['GS', 12], ['AW', 6], ['RS', 1]], attacks: [['Tritt', 12, '1W6+4'], ['Biss', 10, '1W6+1']], abilities: ['Reittier', 'Trittsicher', 'Ausdauernd'], loyalty: 12, lprobe: 'MU/IN/KO' },
+      { id: 'fox', name: 'Fuchsschwanz', type: 'Vertrauter · Fuchs', icon: C + 'ability_animal.webp', lep: 8, lepMax: 10, attrs: A('MU11 KL12 IN15 CH12 FF10 GE15 KO10 KK6'), stats: [['INI', 13], ['GS', 10], ['AW', 8], ['RS', 0]], attacks: [['Biss', 9, '1W3']], abilities: ['Vertrautentrick: Verstecken', 'Sinnesschärfe +2', 'Astralsinn'], loyalty: 11, lprobe: 'MU/IN/CH' },
+      { id: 'dog', name: 'Grimbart', type: 'Jagdhund', icon: C + 'ability_animal.webp', lep: 18, lepMax: 20, attrs: A('MU14 KL8 IN13 CH9 FF6 GE13 KO14 KK11'), stats: [['INI', 12], ['GS', 12], ['AW', 7], ['RS', 1]], attacks: [['Biss', 12, '1W6+2']], abilities: ['Fährtenhund', 'Abgerichtet: Fass!', 'Abgerichtet: Bleib'], loyalty: 9, lprobe: 'MU/KO/KK' },
+      { id: 'spirit', name: 'Erdling', type: 'Gebundener Elementargeist (Humus)', icon: C + 'Spell.webp', lep: 24, lepMax: 30, attrs: A('MU14 KL10 IN12 CH10 FF10 GE10 KO18 KK18'), stats: [['INI', 10], ['GS', 6], ['AW', 5], ['RS', 4]], attacks: [['Hieb', 11, '2W6']], abilities: ['Immun gegen profane Waffen', 'Pflanzenwuchs', 'Durch Erde gleiten'], spirit: true }
+    ];
+  }
+
+  componentDidUpdate(pp, ps) {
+
+    if (ps.tab !== this.state.tab) { const c = this.contentRef.current; if (c) c.scrollTop = 0; }
+  }
+  componentWillUnmount() { clearTimeout(this._tt); }
+  postRoll(r, dmgOnly) {
+    const post = this.props.onChat;
+    if (!post || !r) return;
+    if (dmgOnly) return post({ title: r.title + ' · Schaden', sub: '', dice: [], headline: 'TP ' + r.dmg, ok: null });
+    const ms = r.mod ? ' · Mod ' + (r.mod > 0 ? '+' : '−') + Math.abs(r.mod) : '';
+    if (r.kind === 'ini') return post({ title: 'Initiative', sub: r.sub + ms, dice: r.rolls, headline: 'Initiative ' + (13 + r.mod + r.rolls[0]), ok: null });
+    const e = this.evalRoll(r);
+    post({ title: r.title, sub: r.sub + ms, dice: r.rolls, headline: e.headline, detail: e.detail, ok: e.ok });
+  }
+
+  flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 1800); }
+  go(tab) { this.setState({ tab, more: false, collapsed: false }); }
+  attr(k) { const a = this.ATTRS.find(x => x[0] === k); return a[1] + (this.state.attrAdj[k] || 0); }
+  dice(probe) { return probe.split('/').map(k => ({ k, v: this.attr(k), img: this.I + 'dice/d20' + k.toLowerCase() + '.svg' })); }
+  fw(s) { return s.fw + (this.state.fwAdj[s.name] || 0); }
+  isFav(s) { return this.state.favs[s.name] ?? s.fav; }
+  tp(str) { const m = str.match(/(\d+)W(\d+)([+-]\d+)?/); return m ? [+m[1], m[3] ? +m[3] : 0, +m[2]] : [1, 0, 6]; }
+
+  rollSkill(name, probe, fw, extra) { this.setState({ roll: { title: name, kind: 'skill', probe, fw, sub: 'Probe ' + probe + ' · FW ' + fw, mod: 0, rolls: null, ...extra } }); }
+  rollSingle(title, sub, target, die, extra) { this.setState({ roll: { title, kind: 'single', target, die: die || 'mu', sub, mod: 0, rolls: null, ...extra } }); }
+
+  evalRoll(r) {
+    const out = { dice: [], hasResult: !!r.rolls };
+    const mod = r.mod;
+    const pill = (x, ok) => ({ res: x == null ? '–' : x, resBg: x == null ? 'var(--line)' : ok ? 'var(--ok)' : 'var(--danger)', resColor: x == null ? 'var(--ink2)' : '#fff' });
+    if (r.kind === 'skill') {
+      const ds = r.attrs ? r.probe.split('/').map(k => ({ k, v: r.attrs[k], img: this.I + 'dice/d20' + k.toLowerCase() + '.svg' })) : this.dice(r.probe);
+      let over = 0;
+      ds.forEach((d, i) => {
+        const t = d.v + mod, x = r.rolls ? r.rolls[i] : null;
+        if (x != null && x > t) over += x - t;
+        out.dice.push({ k: d.k, img: d.img, target: t, ...pill(x, x != null && x <= t) });
+      });
+      if (r.rolls) {
+        const ones = r.rolls.filter(x => x === 1).length, tw = r.rolls.filter(x => x === 20).length;
+        const fp = r.fw - over, ok = fp >= 0;
+        const qs = ok ? Math.min(6, Math.max(1, Math.ceil(fp / 3))) : 0;
+        if (tw >= 2) Object.assign(out, { headline: 'Patzer', detail: 'Zwei Zwanziger', ok: false });
+        else if (ones >= 2) Object.assign(out, { headline: 'Kritischer Erfolg', detail: 'QS ' + Math.max(qs, 1) + ' · doppelt', ok: true });
+        else Object.assign(out, { headline: ok ? 'Gelungen · QS ' + qs : 'Misslungen', detail: ok ? fp + ' FP übrig' : 'Es fehlen ' + (-fp) + ' FP', ok });
+      }
+    } else {
+      const t = r.target + mod, x = r.rolls ? r.rolls[0] : null, ok = x != null && x <= t && x !== 20;
+      out.dice.push({ k: r.dieLabel || 'Wert', img: this.I + 'dice/d20' + r.die + '.svg', target: t, ...pill(x, ok) });
+      if (r.rolls) Object.assign(out, { headline: x === 1 ? 'Möglicher kritischer Erfolg' : x === 20 ? 'Möglicher Patzer' : ok ? 'Gelungen' : 'Misslungen', detail: 'Wurf ' + x + ' gegen ' + t + (r.dmg != null ? ' · TP ' + r.dmg : ''), ok });
+    }
+    out.boxBg = out.ok ? 'var(--okbg)' : 'var(--dangerbg)';
+    out.boxColor = out.ok ? 'var(--oktext)' : 'var(--dangertext)';
+    return out;
+  }
+
+  renderVals() {
+    const s = this.state, P = this.props, I = this.I;
+    const device = P.device ?? 'phone';
+    const isPhone = device === 'phone', isTablet = !isPhone;
+    const leer = !!P.leer;
+    const isEdit = s.mode === 'edit';
+    const set = (o) => this.setState(o);
+    const tabIdx = this.TABS.findIndex(t => t.id === s.tab);
+    const theme = s.theme ?? (P.theme === 'dunkel' ? 'dark' : 'light');
+    const ts = s.ts ?? (P.schrift === 'groß' ? 'l' : 'n');
+    const fmt = (n, d = 1) => n.toFixed(d).replace('.', ',');
+    const selChip = (on) => ({ bg: on ? 'var(--sel)' : 'var(--field)', color: on ? 'var(--onsel)' : 'var(--ink)', border: on ? 'var(--sel)' : 'var(--line2)' });
+
+    const tabs = this.TABS.map(t => {
+      const on = t.id === s.tab;
+      return { ...t, current: on ? 'page' : 'false', onClick: () => this.go(t.id),
+        railBg: on ? '#ece2d2' : 'rgba(236,226,210,.6)', railText: on ? '#f4e8d6' : 'rgba(244,232,214,.72)', railShadow: on ? '0 0 0 2px #b99a5c' : 'none' };
+    });
+    const primary = ['cover', 'main', 'skills', 'combat'];
+    const overflowTab = !primary.includes(s.tab) ? tabs[tabIdx] : null;
+    const bottomTabs = primary.map(id => { const t = tabs.find(x => x.id === id), on = id === s.tab; return { ...t, hasIcon: true, isMore: false, bg: on ? '#ece2d2' : 'rgba(236,226,210,.16)', color: on ? '#f4e8d6' : 'rgba(244,232,214,.72)' }; });
+    bottomTabs.push(overflowTab
+      ? { label: overflowTab.label, icon: overflowTab.icon, hasIcon: true, isMore: false, bg: '#ece2d2', color: '#f4e8d6', onClick: () => set({ more: true }) }
+      : { label: 'Mehr', hasIcon: false, isMore: true, bg: s.more ? 'rgba(236,226,210,.3)' : 'rgba(236,226,210,.16)', color: 'rgba(244,232,214,.72)', onClick: () => set({ more: true }) });
+    const moreTabs = tabs.filter(t => !primary.includes(t.id)).map(t => ({ ...t, bg: t.id === s.tab ? 'var(--field)' : 'var(--card)', border: t.id === s.tab ? 'var(--accent)' : 'var(--line2)' }));
+
+    const mk = (label, short, m, light) => ({ label, short, onClick: () => set({ mode: m }), bg: s.mode === m ? (light ? 'var(--accent)' : '#b99a5c') : 'transparent', color: s.mode === m ? (light ? 'var(--onaccent)' : '#272320') : (light ? 'var(--ink)' : 'rgba(244,232,214,.85)') });
+    const modeButtons = [mk('Spielmodus', 'Spiel', 'play'), mk('Bearbeiten', 'Bearb.', 'edit')];
+    const modeButtonsLight = [mk('Spielmodus', 'Spiel', 'play', 1), mk('Bearbeiten', 'Bearb.', 'edit', 1)];
+    const opt = (label, on, onClick) => ({ label, onClick, bg: on ? 'var(--accent)' : 'transparent', color: on ? 'var(--onaccent)' : 'var(--ink)', bgD: on ? '#b99a5c' : 'transparent', colorD: on ? '#272320' : 'rgba(244,232,214,.85)' });
+    const settings = [
+      { label: 'Darstellung', opts: [opt('Hell', theme === 'light', () => set({ theme: 'light' })), opt('Dunkel', theme === 'dark', () => set({ theme: 'dark' }))] },
+      { label: 'Schrift', opts: [opt('Normal', ts === 'n', () => set({ ts: 'n' })), opt('Groß', ts === 'l', () => set({ ts: 'l' }))] }
+    ];
+
+    const MAX = { LeP: 32, AsP: 34, KaP: 18 };
+    const GR = { LeP: 'linear-gradient(90deg,#841a16,#c42c24)', AsP: 'linear-gradient(90deg,#1c6f9e,#3558c4)', KaP: 'linear-gradient(90deg,#5d8f24,#2a7a3a)' };
+    const adj = (k, d) => set(st => ({ res: { ...st.res, [k]: Math.max(0, Math.min(MAX[k], st.res[k] + d)) } }));
+    const bars = ['LeP', 'AsP', 'KaP'].map(k => ({ key: k, cur: s.res[k], max: MAX[k], pct: (s.res[k] / MAX[k] * 100) + '%', grad: GR[k], dec: () => adj(k, -1), inc: () => adj(k, 1) }));
+    const schips = [0, 1, 2].map(i => ({ img: I + (i < 3 - s.schipsUsed ? 'schip.webp' : 'gray_schip.webp'), onClick: () => set({ schipsUsed: i < 3 - s.schipsUsed ? s.schipsUsed + 1 : s.schipsUsed - 1 }) }));
+
+    const NAMES = { MU: 'Mut', KL: 'Klugheit', IN: 'Intuition', CH: 'Charisma', FF: 'Fingerfertigkeit', GE: 'Gewandtheit', KO: 'Konstitution', KK: 'Körperkraft' };
+    const dice8 = this.ATTRS.map(([k]) => ({ k, v: this.attr(k), img: I + 'dice/d20' + k.toLowerCase() + '.svg', aria: 'Probe auf ' + NAMES[k], onClick: () => this.rollSingle(NAMES[k], 'Eigenschaftsprobe', this.attr(k), k.toLowerCase(), { dieLabel: k }) }));
+    const attrTiles = dice8.map(d => ({ ...d, onRoll: d.onClick,
+      inc: () => set(st => ({ attrAdj: { ...st.attrAdj, [d.k]: (st.attrAdj[d.k] || 0) + 1 }, apSpent: st.apSpent + 15 })),
+      dec: () => set(st => ({ attrAdj: { ...st.attrAdj, [d.k]: (st.attrAdj[d.k] || 0) - 1 }, apSpent: st.apSpent - 15 })) }));
+
+    const apFree = 205 - s.apSpent;
+    const sk = (n) => this.ALL[n];
+    const skRoll = (n) => { const t = sk(n); return () => this.rollSkill(t.name, t.probe, this.fw(t)); };
+    const STF = { A: 1, B: 2, C: 3, D: 4 };
+    const fwStep = (name, stf, fw) => ({
+      inc: () => set(st => ({ fwAdj: { ...st.fwAdj, [name]: (st.fwAdj[name] || 0) + 1 }, apSpent: st.apSpent + STF[stf] })),
+      dec: () => fw > 0 && set(st => ({ fwAdj: { ...st.fwAdj, [name]: (st.fwAdj[name] || 0) - 1 }, apSpent: st.apSpent - STF[stf] })) });
+
+    const SUG = [['Wildnisleben', 'Angefragt · −1', 1], ['Orientierung', 'Oft gewürfelt'], ['Menschenkenntnis', 'Bester der Gruppe'], ['Verbergen', 'Kürzlich gesteigert'], ['Pflanzenkunde', 'Gute Erfolgschance'], ['Klettern', 'Häufige Probe']];
+    const suggestions = SUG.map(([n, note, hot]) => ({ name: n, fw: this.fw(sk(n)), note, dice: this.dice(sk(n).probe), edge: hot ? 'var(--accent)' : 'var(--line2)', noteColor: hot ? 'var(--accenttext)' : 'var(--ink2)', noteWeight: hot ? 700 : 400, onRoll: skRoll(n) }));
+
+    const favSkills = Object.values(this.ALL).filter(t => this.isFav(t)).slice(0, 4);
+    const favorites = [
+      { name: 'Elfischer Säbel', meta: 'Attacke · TP 1W6+3', img: I + 'categories/Meleeweapon.webp', dieImg: I + 'dice/d20mu.svg', val: 12, onRoll: () => this.rollSingle('Elfischer Säbel', 'Attacke · TP 1W6+3', 12, 'mu', { dieLabel: 'AT', tp: [1, 3, 6] }) },
+      { name: 'Elfenbogen', meta: 'Fernkampf · TP 1W6+4', img: I + 'categories/Rangeweapon.webp', dieImg: I + 'dice/d20mu.svg', val: 14, onRoll: () => this.rollSingle('Elfenbogen', 'Fernkampf · TP 1W6+4', 14, 'mu', { dieLabel: 'FK', tp: [1, 4, 6] }) },
+      ...favSkills.map(t => ({ name: t.name, meta: 'Talent · ' + t.probe, img: t.img, dieImg: I + 'dice/d20' + t.probe.split('/')[0].toLowerCase() + '.svg', val: this.fw(t), onRoll: skRoll(t.name) }))
+    ];
+
+    const grp = this.GROUPS[Math.min(s.group, 4)];
+    const q = s.q.trim().toLowerCase();
+    const skillRows = grp.items.filter(t => (!q || t.name.toLowerCase().includes(q)) && (!s.onlyAdv || this.fw(t) > 0)).map((t, i) => {
+      const fav = this.isFav(t), fw = this.fw(t);
+      return { name: t.name, img: t.img, dice: this.dice(t.probe), fw, stf: t.stf, fwColor: fw > 0 ? 'var(--ink)' : 'var(--ink3)', zebra: i % 2 ? 'var(--zebra)' : 'transparent',
+        showDice: !isEdit, showStar: !isEdit, showStf: isEdit, star: fav ? '★' : '☆', starColor: fav ? 'var(--accent)' : 'var(--ink3)',
+        onRoll: () => this.rollSkill(t.name, t.probe, fw),
+        toggleFav: () => set(st => ({ favs: { ...st.favs, [t.name]: !fav } })), ...fwStep(t.name, t.stf, fw) };
+    });
+    const chipL = ['Körper', 'Gesellschaft', 'Natur', 'Wissen', 'Handwerk', 'Sammelproben'];
+    const skillGroupChips = chipL.map((label, i) => ({ label, onClick: () => set({ group: i }), ...selChip(s.group === i) }));
+    const aggregated = [
+      { name: 'Überlebenskunst (Reise)', interval: 'über 3 Proben', qs: 6, used: 2, allowed: 3, talents: ['Wildnisleben', 'Orientierung'] },
+      { name: 'Spurenlese (Verfolgung)', interval: 'über 2 Proben', qs: 3, used: 1, allowed: 2, talents: ['Fährtensuchen'] }
+    ].map(g => ({ ...g, pct: g.qs * 10 + '%', talents: g.talents.map(n => ({ name: n, dice: this.dice(sk(n).probe), fw: this.fw(sk(n)), onRoll: skRoll(n) })) }));
+
+    const subs = [['weapons', 'Waffen'], ['armor', 'Rüstung'], ['skills', 'Kampftalente']];
+    const segBtn = (on) => ({ bg: on ? 'var(--sel)' : 'var(--field)', color: on ? 'var(--onsel)' : 'var(--ink)' });
+    const combatSubs = subs.map(([id, label]) => ({ label, onClick: () => set({ combatSub: id }), ...segBtn(s.combatSub === id) }));
+    const combatActions = [
+      { label: 'Initiative', v: 13, img: I + 'categories/Combat_Skill.webp', onRoll: () => this.setState({ roll: { title: 'Initiative', kind: 'ini', sub: 'INI 13 + 1W6', mod: 0, rolls: null } }) },
+      { label: 'Ausweichen', v: 7, img: I + 'categories/Dodge.webp', onRoll: () => this.rollSingle('Ausweichen', 'Verteidigung', 7, 'ge', { dieLabel: 'AW' }) },
+      { label: 'Waffenloser Angriff', v: 8, img: I + 'categories/attack_weaponless.webp', onRoll: () => this.rollSingle('Waffenloser Angriff', 'Raufen · TP 1W6−1', 8, 'mu', { dieLabel: 'AT', tp: [1, -1, 6] }) },
+      { label: 'Waffenlose Verteidigung', v: 6, img: I + 'categories/Armor.webp', onRoll: () => this.rollSingle('Waffenlose Verteidigung', 'Raufen', 6, 'ge', { dieLabel: 'PA' }) }
+    ];
+    const W = (name, meta, img, at, pa, tp, rw, extra) => {
+      const rolls = [{ label: pa == null ? 'FK' : 'AT', v: at, onRoll: () => this.rollSingle(name, (pa == null ? 'Fernkampf' : 'Attacke') + ' · TP ' + tp, at, 'mu', { dieLabel: pa == null ? 'FK' : 'AT', tp: this.tp(tp) }) }];
+      if (pa != null) rolls.push({ label: 'PA', v: pa, onRoll: () => this.rollSingle(name, 'Parade', pa, 'ge', { dieLabel: 'PA' }) });
+      return { name, meta, img, rolls, stats: [{ k: 'TP', v: tp }, { k: 'RW', v: rw }], isFav: false, hasAmmo: false, hasReload: false, ...extra };
+    };
+    const ammoItems = s.items.filter(i => i.cat === 'ammo');
+    const weapons = [
+      W('Elfischer Säbel', 'Schwerter · Haupthand', I + 'categories/Meleeweapon.webp', 12, 6, '1W6+3', 'mittel', { isFav: true }),
+      W('Elfenbogen', 'Bögen · zweihändig', I + 'categories/Rangeweapon.webp', 14, null, '1W6+4', '10/50/80', { isFav: true, hasAmmo: true,
+        ammo: ammoItems.map((a, i) => ({ label: a.name + ' · ' + a.qty, onClick: () => set({ ammoSel: i }), bg: s.ammoSel === i ? 'var(--field)' : 'transparent', border: s.ammoSel === i ? 'var(--accent)' : 'var(--line2)' })) }),
+      W('Armbrust', 'Armbrüste · LZ 3', I + 'categories/Rangeweapon.webp', 6, null, '1W6+3', '10/50/80', { hasAmmo: true, hasReload: true,
+        ammo: [{ label: 'Bolzen · 10', onClick: () => { }, bg: 'var(--field)', border: 'var(--accent)' }],
+        reloadLabel: s.reload >= 3 ? 'Geladen' : 'Nachladen ' + s.reload + ' / 3', reloadBg: s.reload >= 3 ? 'var(--accent)' : 'transparent', reloadColor: s.reload >= 3 ? 'var(--onaccent)' : 'var(--accenttext)',
+        onReload: () => set({ reload: s.reload >= 3 ? 0 : s.reload + 1 }) }),
+      W('Waldläuferdolch', 'Dolche · Nebenhand', I + 'categories/Meleeweapon.webp', 11, 5, '1W6+1', 'kurz'),
+    ];
+    const armor = s.items.filter(i => i.cat === 'armor' && i.eq).map(i => ({ name: i.name, rs: { 'Waldläuferkluft': 2, 'Lederkappe': 1, 'Lederhandschuhe': 0 }[i.name], be: 0 }));
+    const rsTotal = armor.reduce((a, x) => a + x.rs, 0);
+    const armorTotals = [{ k: 'RS', v: rsTotal }, { k: 'MAGISCH', v: '+1' }, { k: 'BE', v: 0 }];
+    const combatSkills = this.COMBAT_SKILLS.map(c => ({ ...c, color: +c.fw > 6 ? 'var(--ink)' : 'var(--ink2)' }));
+
+    // Magie & Religion
+    const isRel = s.tab === 'religion';
+    const resK = isRel ? 'KaP' : 'AsP';
+    const lists = isRel ? [['Liturgien', this.LITURGIES], ['Zeremonien', this.CEREMONIES], ['Segnungen', this.BLESSINGS]] : [['Zauber', this.SPELLS], ['Rituale', this.RITUALS], ['Tricks', this.TRICKS]];
+    const msub = isRel ? s.relSub : s.magSub;
+    const magicSubs = lists.map(([label, arr], i) => ({ label, count: arr.length, onClick: () => set(isRel ? { relSub: i } : { magSub: i }), ...segBtn(msub === i) }));
+    const curArr = lists[msub][1];
+    const spellRows = curArr.map((x, i) => {
+      const zebra = i % 2 ? 'var(--zebra)' : 'transparent';
+      if (msub === 2) return { name: x.name, img: x.img, zebra, meta: '1 ' + resK + ' · gelingt automatisch', isSmall: true, verb: isRel ? 'Spenden' : 'Wirken', showDice: false, showStep: false,
+        onRoll: () => { if (s.res[resK] < 1) return this.flash('Nicht genug ' + resK); adj(resK, -1); this.flash(x.name + ' · −1 ' + resK); } };
+      const fw = this.fw(x);
+      return { name: x.name, img: x.img, zebra, fw, dice: this.dice(x.probe), meta: x.cost + ' ' + resK + ' · ' + x.dauer + ' · ' + x.reach, isSmall: false, showDice: !isEdit, showStep: isEdit, ...fwStep(x.name, x.stf, fw),
+        onRoll: () => this.rollSkill(x.name, x.probe, fw, { info: [{ k: 'KOSTEN', v: x.cost + ' ' + resK }, { k: isRel ? 'LITURGIEDAUER' : 'ZAUBERDAUER', v: x.dauer }, { k: 'REICHWEITE', v: x.reach }, { k: 'WIRKUNGSDAUER', v: x.wirk }], cost: { n: x.cost, res: resK } }) };
+    });
+    const tradition = isRel
+      ? { icon: I + 'months/Peraine.webp', name: 'Kirche der Peraine', meta: 'Leiteigenschaft CH · Aspekte Heilung, Landwirtschaft' }
+      : { icon: I + 'traditionen/elfen.webp', name: 'Elfen', meta: 'Leiteigenschaft IN · Merkmale Elementar, Hellsicht' };
+    const magicBar = bars.find(b => b.key === resK);
+    const magicHint = msub === 2 ? (isRel ? 'Segnungen kosten 1 KaP und gelingen ohne Probe.' : 'Zaubertricks kosten 1 AsP und gelingen ohne Probe.') : isEdit ? 'Steigern kostet AP nach Steigerungsfaktor.' : 'Tippen öffnet die Probe. Nach dem Wurf werden die Kosten mit einem Tipp abgezogen – bei Misslingen die Hälfte.';
+
+    // Ausrüstung
+    const items = leer ? s.items.filter(i => i.cont === 'body') : s.items;
+    const catOf = i => (i.cat === 'consumable' || i.cat === 'ammo') ? 'use' : i.cat;
+    const iq = s.invQ.trim().toLowerCase();
+    const filtering = !!iq || s.invCat !== 'all';
+    const match = i => (s.invCat === 'all' || catOf(i) === s.invCat) && (!iq || i.name.toLowerCase().includes(iq));
+    const updItem = (id, f) => set(st => ({ items: st.items.map(x => x.id === id ? f(x) : x).filter(x => x.qty > 0) }));
+    const rowFn = i => ({ name: i.name, img: i.img, qty: i.qty, eq: !!i.eq,
+      meta: (i.qty > 1 ? i.qty + ' × · ' : '') + fmt(i.qty * i.w) + ' Stein' + (i.price ? ' · ' + i.price : ''),
+      canEquip: !isEdit && i.eq != null, eqLabel: i.eq ? 'Angelegt' : 'Anlegen', eqBg: i.eq ? 'var(--accent)' : 'transparent', eqColor: i.eq ? 'var(--onaccent)' : 'var(--accenttext)',
+      canUse: !isEdit && i.cat === 'consumable', showQty: isEdit,
+      toggle: () => { updItem(i.id, x => ({ ...x, eq: !x.eq })); this.flash(i.name + (i.eq ? ' abgelegt' : ' angelegt')); },
+      use: () => { updItem(i.id, x => ({ ...x, qty: x.qty - 1 })); this.flash(i.name + ' verbraucht' + (i.qty - 1 > 0 ? ' · noch ' + (i.qty - 1) : '')); },
+      inc: () => updItem(i.id, x => ({ ...x, qty: x.qty + 1 })), dec: () => updItem(i.id, x => ({ ...x, qty: x.qty - 1 })) });
+    const CONTS = [['body', 'Am Körper'], ['belt', 'Gürteltasche'], ['backpack', 'Rucksack'], ['horse', 'Satteltaschen · Windschatten']];
+    const containers = CONTS.map(([id, label]) => {
+      const all = items.filter(i => i.cont === id), list = all.filter(match), w = all.reduce((a, i) => a + i.qty * i.w, 0);
+      const open = filtering ? true : (s.contOpen[id] ?? true);
+      return { label, open, chevron: open ? '▾' : '▸', weight: fmt(w) + ' Stein' + (id === 'horse' ? ' · zählt nicht' : ''), hide: filtering && list.length === 0,
+        isEmpty: open && all.length === 0, rows: open ? list.map(rowFn) : [], toggle: () => set(st => ({ contOpen: { ...st.contOpen, [id]: !open } })) };
+    }).filter(c => !c.hide);
+    const carried = items.filter(i => i.cont !== 'horse').reduce((a, i) => a + i.qty * i.w, 0);
+    const tk = this.attr('KK') * 2, over = Math.max(0, carried - tk), belastung = over > 0 ? Math.min(4, Math.ceil(over / 4)) : 0;
+    const invCats = [['all', 'Alle'], ['weapon', 'Waffen'], ['armor', 'Rüstung'], ['use', 'Verbrauch'], ['misc', 'Sonstiges']].map(([id, label]) => ({ label, onClick: () => set({ invCat: id }), ...selChip(s.invCat === id) }));
+
+    const COINS = [['D', 'Dukaten', 1000], ['S', 'Silbertaler', 100], ['H', 'Heller', 10], ['K', 'Kreuzer', 1]];
+    const m = s.money, totalK = COINS.reduce((a, [c, , v]) => a + m[c] * v, 0);
+    const moneyTotal = fmt(totalK / 100, 2) + ' S';
+    const wallet = COINS.map(([c, k]) => ({ k, short: k, v: m[c], img: I + 'money-' + c + '.webp' }));
+    const ms = s.msheet || { amt: 1, coin: 'S' };
+    const coinVal = COINS.find(c => c[0] === ms.coin)[2];
+    const coinButtons = COINS.map(([c, k]) => ({ k, v: m[c], img: I + 'money-' + c + '.webp', on: ms.coin === c, border: ms.coin === c ? 'var(--accent)' : 'var(--line2)', bg: ms.coin === c ? 'var(--field)' : 'var(--card)', onClick: () => set({ msheet: { ...ms, coin: c } }) }));
+    const stepAmt = d => () => set({ msheet: { ...ms, amt: Math.max(1, ms.amt + d) } });
+    const redistribute = k => { const o = {}; let r = k; COINS.forEach(([c, , v]) => { o[c] = Math.floor(r / v); r -= o[c] * v; }); return o; };
+    const cost = ms.amt * coinVal;
+
+    // Status
+    const L = s.res.LeP, ML = MAX.LeP;
+    const painLep = L <= 5 ? 4 : L <= ML / 4 ? 3 : L <= ML / 2 ? 2 : L <= ML * 3 / 4 ? 1 : 0;
+    const lvl = n => n === 'Schmerz' ? Math.min(4, painLep + s.cond.Schmerz) : s.cond[n];
+    const ROM = ['', 'I', 'II', 'III', 'IV'];
+    const conditions = Object.keys(s.cond).map(n => {
+      const total = lvl(n), auto = n === 'Schmerz' ? painLep : 0;
+      return { name: n, hasNote: auto > 0, note: 'Stufe ' + ROM[auto] + ' durch LeP-Verlust',
+        pips: [1, 2, 3, 4].map(i => ({ aria: n + ' Stufe ' + i, bg: i <= auto ? 'repeating-linear-gradient(45deg,var(--danger) 0 4px,var(--dangerbg) 4px 8px)' : i <= total ? 'var(--danger)' : 'var(--field)',
+          onClick: () => set(st => { const tgt = total === i ? i - 1 : i; return { cond: { ...st.cond, [n]: Math.max(0, tgt - auto) } }; }) })) };
+    });
+    conditions.push({ name: 'Belastung', hasNote: true, note: 'aus Traglast · ' + fmt(carried) + ' / ' + tk + ' Stein', pips: [1, 2, 3, 4].map(i => ({ aria: 'Belastung Stufe ' + i, bg: i <= belastung ? 'repeating-linear-gradient(45deg,var(--danger) 0 4px,var(--dangerbg) 4px 8px)' : 'var(--field)', onClick: () => this.flash('Belastung ergibt sich aus der Traglast') })) });
+    const statusChips = Object.keys(s.stat).map(k => { const on = s.stat[k]; return { label: k, on: on ? 'true' : 'false', bg: on ? 'var(--dangerbg)' : 'var(--field)', border: on ? 'var(--danger)' : 'var(--line2)', color: on ? 'var(--dangertext)' : 'var(--ink)', weight: on ? 700 : 400, onClick: () => set(st => ({ stat: { ...st.stat, [k]: !on } })) }; });
+    const ZRS = { Kopf: 1, Torso: 2, 'Linker Arm': 2, 'Rechter Arm': 2, 'Linkes Bein': 2, 'Rechtes Bein': 2 };
+    const zones = Object.keys(s.wounds).map(z => ({ name: z, rs: ZRS[z], pips: [1, 2, 3].map(i => ({ aria: z + ' Wunde ' + i, bg: i <= s.wounds[z] ? 'var(--danger)' : 'var(--field)', onClick: () => set(st => ({ wounds: { ...st.wounds, [z]: st.wounds[z] === i ? i - 1 : i } })) })) }));
+    const woundTotal = Object.values(s.wounds).reduce((a, b) => a + b, 0);
+    const effects = (leer ? [] : this.EFFECTS).filter(e => !s.removedFx[e[0]]).map(([id, name, dur]) => ({ name, dur, remove: () => { set(st => ({ removedFx: { ...st.removedFx, [id]: true } })); this.flash('Effekt entfernt'); } }));
+    const modifiers = leer ? [] : [{ target: 'Attacke', value: '+1', source: 'Segen der Peraine' }, { target: 'Fernkampf-Sicht', value: '−2', source: 'Dämmerung' }];
+    const totalPain = lvl('Schmerz');
+    const activeConditions = [
+      ...Object.keys(s.cond).filter(n => lvl(n) > 0).map(n => n + ' ' + ROM[lvl(n)]),
+      ...(belastung ? ['Belastung ' + ROM[belastung]] : []), ...(s.bleed > 0 ? ['Blutung ×' + s.bleed] : []),
+      ...Object.keys(s.stat).filter(k => s.stat[k])
+    ];
+    const statusTiles = [
+      { k: 'SCHMERZ', v: totalPain ? ROM[totalPain] : '—', note: totalPain ? '−' + totalPain + ' auf Proben' : 'keine', color: totalPain ? 'var(--dangertext)' : 'var(--ink)', border: totalPain ? 'var(--danger)' : 'var(--line2)' },
+      { k: 'BELASTUNG', v: belastung ? ROM[belastung] : '—', note: fmt(carried) + ' / ' + tk + ' Stein', color: belastung ? 'var(--dangertext)' : 'var(--ink)', border: belastung ? 'var(--danger)' : 'var(--line2)' },
+      { k: 'WUNDEN', v: woundTotal || '—', note: 'Wundschwelle 6', color: woundTotal ? 'var(--dangertext)' : 'var(--ink)', border: woundTotal ? 'var(--danger)' : 'var(--line2)' }
+    ];
+
+    // Notizen
+    const notes = s.notes || (leer ? { bio: '', notes: '' } : {
+      bio: 'Layariel verließ ihren Bund am Großen Fluss, nachdem eine Handelsflotte den heiligen Hain oberhalb der Stromschnellen gerodet hatte. Sie sucht die Verantwortlichen — bislang ohne Erfolg.\n\nTrägt ein Amulett aus Silberbirke bei sich, Geschenk der Baumhirtin Alvaeriel. Meidet Städte, betritt Tempel nur, wenn Peraine dort geehrt wird.',
+      notes: 'Sucht in Kupferschmiede Kontakt zu einem Hehler namens "Rabe" — Hinweis von Alvaeriel.\n\nSchulden bei der Reisegruppe: 12 Dukaten an Bertholdt für die Fährüberfahrt.'
+    });
+    const noteFields = [['bio', 'Biografie', 'Noch keine Biografie. Im Bearbeiten-Modus kannst du sie ergänzen.'], ['notes', 'Notizen', 'Keine Notizen.']].map(([k, title, empty]) => ({ title, empty, placeholder: title + ' …', text: notes[k], showText: !isEdit && !!notes[k], showEmpty: !isEdit && !notes[k], onChange: e => set({ notes: { ...notes, [k]: e.target.value } }) }));
+    const APP = [['Geschlecht', 'Weiblich'], ['Familie', 'Clan Wipfelglanz'], ['Alter', '94 Jahre'], ['Größe', '182 cm'], ['Gewicht', '58 kg'], ['Heimat', 'Auelfen-Bund am Großen Fluss'], ['Sozialer Stand', 'Freie'], ['Haarfarbe', 'Silberblond'], ['Augenfarbe', 'Waldgrün'], ['Auffälligkeiten', 'Amulett aus Silberbirke']];
+    const appearance = APP.map(([k, v]) => ({ k, v: s.app[k] ?? v, onChange: e => set({ app: { ...s.app, [k]: e.target.value } }) }));
+    const JBASE = leer ? [] : [{ d: '14. Rondra 1047 BF', t: 'Fährte der Rodungstrupps bis zur alten Mühle verfolgt. Spuren von mindestens sechs Männern mit Ochsenkarren.' }, { d: '12. Rondra 1047 BF', t: 'Bertholdt hat die Fährüberfahrt bezahlt – 12 Dukaten Schulden.' }];
+    const journal = [...s.journalAdded, ...JBASE];
+    const addEntry = () => { const t = s.draft.trim(); if (!t) return; set({ journalAdded: [{ d: 'Heute · 15. Rondra 1047 BF', t }, ...s.journalAdded], draft: '' }); this.flash('Eintrag gespeichert'); };
+
+    // Gefährten
+    const comps = leer ? [] : this.COMPS;
+    const lepOf = c => s.compLep[c.id] ?? c.lep;
+    const compList = comps.map(c => ({ name: c.name, type: c.type, icon: c.icon, filter: c.invert ? 'invert(.9)' : 'none', lep: lepOf(c), lepMax: c.lepMax, pct: (lepOf(c) / c.lepMax * 100) + '%',
+      k: c.spirit ? 'DIENSTE' : 'LOYALITÄT', v: c.spirit ? s.services + ' / 6' : c.loyalty, onOpen: () => set({ comp: c.id }) }));
+    const cc = comps.find(c => c.id === s.comp);
+    let comp = {};
+    if (cc) {
+      const lep = lepOf(cc), ca = Object.fromEntries(cc.attrs);
+      const setLep = d => set(st => ({ compLep: { ...st.compLep, [cc.id]: Math.max(0, Math.min(cc.lepMax, (st.compLep[cc.id] ?? cc.lep) + d)) } }));
+      const actions = cc.attacks.map(([n, at, tpS]) => ({ name: n, meta: 'Attacke · TP ' + tpS, v: at, die: I + 'dice/d20mu.svg', onRoll: () => this.rollSingle(cc.name + ' · ' + n, 'Attacke · TP ' + tpS, at, 'mu', { dieLabel: 'AT', tp: this.tp(tpS) }) }));
+      const aw = cc.stats.find(x => x[0] === 'AW')[1];
+      actions.push({ name: 'Ausweichen', meta: 'Verteidigung', v: aw, die: I + 'dice/d20ge.svg', onRoll: () => this.rollSingle(cc.name + ' · Ausweichen', 'Verteidigung', aw, 'ge', { dieLabel: 'AW' }) });
+      if (cc.loyalty) actions.push({ name: 'Loyalität', meta: 'Probe ' + cc.lprobe, v: cc.loyalty, die: I + 'dice/d20' + cc.lprobe.split('/')[0].toLowerCase() + '.svg', onRoll: () => this.rollSkill(cc.name + ' · Loyalität', cc.lprobe, cc.loyalty, { attrs: ca }) });
+      comp = { name: cc.name, type: cc.type, icon: cc.icon, filter: cc.invert ? 'invert(.9)' : 'none', lep, lepMax: cc.lepMax, pct: (lep / cc.lepMax * 100) + '%', lepDec: () => setLep(-1), lepInc: () => setLep(1),
+        stats: cc.stats.map(([k, v]) => ({ k, v })), abilities: cc.abilities, actions, isHorse: cc.id === 'horse', isSpirit: !!cc.spirit, services: s.services, servicesMax: 6,
+        useService: () => { if (s.services < 1) return this.flash('Keine Dienste mehr'); set({ services: s.services - 1 }); this.flash('Dienst eingefordert'); },
+        attrs: cc.attrs.map(([k, v]) => ({ k, v, img: I + 'dice/d20' + k.toLowerCase() + '.svg', aria: cc.name + ': Probe auf ' + NAMES[k], onClick: () => this.rollSingle(cc.name + ' · ' + NAMES[k], 'Eigenschaftsprobe', v, k.toLowerCase(), { dieLabel: k }) })) };
+    }
+    const GS = { Stehend: 0, Schritt: 4, Trab: 8, Galopp: 12 };
+    const horseSpeeds = Object.keys(GS).map(label => ({ label, onClick: () => set({ horse: label }), ...segBtn(s.horse === label) }));
+
+    const chipPanels = [
+      { title: 'Vor- & Nachteile', groups: [{ label: 'Vorteile', icon: I + 'categories/Vorteil.webp', items: ['Altersresistenz', 'Dunkelsicht I', 'Gutaussehend I', 'Nichtschläfer', 'Wohlklang', 'Zauberer', 'Zweistimmiger Gesang'] }, { label: 'Nachteile', icon: I + 'categories/Nachteil.webp', items: ['Pech I', 'Persönlichkeitsschwäche (Arroganz)', 'Persönlichkeitsschwäche (Weltfremd)', 'Sensibler Geruchssinn', 'Unfähig (Zechen)'] }] },
+      { title: 'Sonderfertigkeiten', groups: [{ label: 'Allgemein', icon: I + 'categories/ability_general.webp', items: ['Abrichter', 'Fertigkeitsspezialisierung (Fährtensuchen)', 'Ortskenntnis (Heimatdorf)'] }, { label: 'Schicksalspunkte', icon: I + 'categories/ability_general.webp', items: ['Schicksalskind'] }] },
+      { title: 'Sprachen & Schriften', groups: [{ label: 'Sprachen', icon: I + 'categories/Ability_Language.webp', items: ['Garethi II', 'Isdira III'] }, { label: 'Schriften', icon: I + 'categories/Ability_Language.webp', items: ['Isdira- und Asdharia-Zeichen'] }] }
+    ];
+
+    // Probe
+    const modLabel = r => (r.mod > 0 ? '+' : r.mod < 0 ? '−' : '±') + Math.abs(r.mod);
+    let rollV = null;
+    if (s.roll) {
+      const r = s.roll;
+      if (r.kind === 'ini') {
+        const tot = r.rolls ? 13 + r.mod + r.rolls[0] : null;
+        rollV = { title: r.title, sub: r.sub, modLabel: modLabel(r), dice: [{ k: 'INI', img: I + 'dice/d20ge.svg', target: 13 + r.mod, res: r.rolls ? 'W6 ' + r.rolls[0] : '–', resBg: r.rolls ? 'var(--sel)' : 'var(--line)', resColor: r.rolls ? 'var(--onsel)' : 'var(--ink2)' }],
+          hasResult: !!r.rolls, headline: 'Initiative ' + tot, detail: 'Wird an den Kampftracker übergeben', boxBg: 'var(--field)', boxColor: 'var(--accenttext)', cta: r.rolls ? 'Erneut würfeln' : 'Würfeln', canSchip: false, canDamage: false, canPay: false, hasInfo: false };
+      } else {
+        const e = this.evalRoll(r);
+        const payN = r.cost ? (e.ok ? r.cost.n : Math.ceil(r.cost.n / 2)) : 0;
+        rollV = { ...e, title: r.title, sub: r.sub, modLabel: modLabel(r), cta: r.rolls ? 'Erneut würfeln' : 'Würfeln', hasInfo: !!r.info, info: r.info || [],
+          canPay: !!r.rolls && !!r.cost, payLabel: r.cost ? payN + ' ' + r.cost.res + ' abziehen' + (e.ok ? '' : ' (halbe Kosten)') : '', payN,
+          canSchip: !!r.rolls && !e.ok && s.schipsUsed < 3, canDamage: !!r.rolls && e.ok && !!r.tp && r.dmg == null,
+          damageLabel: r.tp ? 'TP ' + r.tp[0] + 'W' + r.tp[2] + (r.tp[1] ? (r.tp[1] > 0 ? '+' : '−') + Math.abs(r.tp[1]) : '') : '' };
+      }
+    }
+    const rollDice = (r) => r.kind === 'skill' ? [0, 0, 0].map(() => 1 + Math.floor(Math.random() * 20)) : r.kind === 'ini' ? [1 + Math.floor(Math.random() * 6)] : [1 + Math.floor(Math.random() * 20)];
+
+    return {
+      theme, ts, settings, hasBack: !!P.onBack, onBack: () => P.onBack && P.onBack(),
+      isPhone, isTablet, isEdit, isPlay: !isEdit,
+      name: 'Layariel Wipfelglanz',
+      identity: ['Elf', 'Auelfen', 'Waldläuferin'], apLine: 'Erfahren · AP 1 320 · ' + apFree + ' frei', apFree,
+      headerExpanded: isPhone && !s.collapsed, showHeaderDice: s.tab !== 'main', collapsed: isPhone && s.collapsed,
+      bars, schips, dice8, modeButtons, modeButtonsLight,
+      showRail: isTablet, showBottomBar: isPhone,
+      tabs, bottomTabs, moreTabs, moreOpen: s.more, closeMore: () => set({ more: false }), stop: e => e.stopPropagation(),
+      contentRef: this.contentRef,
+      onScroll: e => { if (!isPhone) return; const y = e.currentTarget.scrollTop; if (!s.collapsed && y > 90) set({ collapsed: true }); else if (s.collapsed && y < 4) set({ collapsed: false }); },
+      tabTitle: this.TABS[tabIdx].label,
+      tCover: s.tab === 'cover', tMain: s.tab === 'main', tSkills: s.tab === 'skills', tCombat: s.tab === 'combat', tMagic: s.tab === 'magic' || isRel,
+      tInventory: s.tab === 'inventory', tStatus: s.tab === 'status', tNotes: s.tab === 'notes', tCompanions: s.tab === 'companions',
+      suggestions, favorites, activeConditions, hasActive: activeConditions.length > 0, noActive: activeConditions.length === 0, goStatus: () => this.go('status'),
+      effectsLine: effects.length + ' aktive Effekte · ' + modifiers.length + ' Modifikatoren',
+      attrTiles, resourceRows: [...bars.map(b => ({ label: { LeP: 'Lebenskraft', AsP: 'Astralenergie', KaP: 'Karmaenergie' }[b.key], cur: b.cur, max: b.max, dec: b.dec, inc: b.inc })),
+        { label: 'Schicksalspunkte', cur: 3 - s.schipsUsed, max: 3, dec: () => set({ schipsUsed: Math.min(3, s.schipsUsed + 1) }), inc: () => set({ schipsUsed: Math.max(0, s.schipsUsed - 1) }) }],
+      basics: [['Seelenkraft', 6], ['Zähigkeit', 6], ['Wundschwelle', 6], ['Geschwindigkeit', 8], ['Ausweichen', 7], ['Initiative', '13 + 1W6']].map(([label, v]) => ({ label, v })),
+      chipPanels,
+      skillGroupChips, showSkillList: s.group < 5, showAggregated: s.group === 5, aggregated, q: s.q, onQ: e => set({ q: e.target.value }),
+      toggleOnlyAdv: () => set({ onlyAdv: !s.onlyAdv }), onlyAdvBg: s.onlyAdv ? 'var(--sel)' : 'var(--field)', onlyAdvColor: s.onlyAdv ? 'var(--onsel)' : 'var(--ink)',
+      groupName: grp.name, groupGrad: grp.grad, skillRows, noSkills: skillRows.length === 0, resetSkillFilter: () => set({ q: '', onlyAdv: false }),
+      combatSubs, cWeapons: s.combatSub === 'weapons', cArmor: s.combatSub === 'armor', cSkills: s.combatSub === 'skills', combatActions, weapons, armor, armorTotals, combatSkills,
+      tradition, magicBar, magicSubs, spellRows, magicHint,
+      wallet, moneyTotal, openMoney: () => set({ msheet: { amt: 1, coin: 'S' } }), moneyOpen: !!s.msheet, closeMoney: () => set({ msheet: null }), coinButtons,
+      amtMinus: [{ label: '−10', onClick: stepAmt(-10) }, { label: '−1', onClick: stepAmt(-1) }], amtPlus: [{ label: '+1', onClick: stepAmt(1) }, { label: '+10', onClick: stepAmt(10) }],
+      amtLabel: ms.amt + ' ' + ms.coin, amtHint: 'Beim Bezahlen wird automatisch gewechselt. Danach: ' + (totalK >= cost ? fmt((totalK - cost) / 100, 2) + ' S' : 'nicht genug Geld'),
+      moneySpend: () => { if (totalK < cost) return this.flash('Nicht genug Geld'); set({ money: redistribute(totalK - cost), msheet: null }); this.flash(ms.amt + ' ' + ms.coin + ' bezahlt'); },
+      moneyGain: () => { set({ money: { ...m, [ms.coin]: m[ms.coin] + ms.amt }, msheet: null }); this.flash(ms.amt + ' ' + ms.coin + ' erhalten'); },
+      loadLabel: belastung ? 'Belastung ' + ROM[belastung] : 'Unbelastet', loadColor: belastung ? 'var(--dangertext)' : 'var(--oktext)',
+      loadPct: Math.min(100, carried / tk * 100) + '%', loadBar: belastung ? 'var(--danger)' : 'var(--accent)',
+      loadLine: fmt(carried) + ' von ' + tk + ' Stein getragen (KK × 2) · Satteltaschen zählen nicht',
+      invQ: s.invQ, onInvQ: e => set({ invQ: e.target.value }), invCats, containers, invNoResults: filtering && containers.length === 0, resetInv: () => set({ invQ: '', invCat: 'all' }),
+      statusTiles, conditions, statusChips, zones, zoneLine: woundTotal + ' Wunden · RS aus angelegter Rüstung', bleed: s.bleed,
+      bleedInc: () => set({ bleed: s.bleed + 1 }), bleedDec: () => set({ bleed: Math.max(0, s.bleed - 1) }), effects, noEffects: effects.length === 0, modifiers,
+      appearance, noteFields, journal, noJournal: journal.length === 0, draft: s.draft, onDraft: e => set({ draft: e.target.value }), onDraftKey: e => { if (e.key === 'Enter') addEntry(); }, addEntry,
+      compList, noComps: compList.length === 0, compOpen: !!cc, comp, closeComp: () => set({ comp: null }), horseSpeeds, horseLine: 'GS ' + GS[s.horse] + ' in dieser Gangart · Ausdauer sinkt im Galopp',
+      rollOpen: !!s.roll, roll: rollV || {}, closeRoll: () => set({ roll: null }),
+      payCost: () => { const r = s.roll; adj(r.cost.res, -rollV.payN); set({ roll: null }); this.flash(r.title + ' · −' + rollV.payN + ' ' + r.cost.res); },
+      modInc: () => set(st => ({ roll: { ...st.roll, mod: st.roll.mod + 1, rolls: null, dmg: null } })),
+      modDec: () => set(st => ({ roll: { ...st.roll, mod: st.roll.mod - 1, rolls: null, dmg: null } })),
+      doRoll: () => { const r = { ...s.roll, rolls: rollDice(s.roll), dmg: null }; set({ roll: r }); this.postRoll(r); },
+      useSchip: () => { const r = { ...s.roll, rolls: rollDice(s.roll) }; set({ schipsUsed: s.schipsUsed + 1, roll: r }); this.postRoll(r); },
+      rollDamage: () => { const [n, b, sd] = s.roll.tp; let t = b; for (let i = 0; i < n; i++) t += 1 + Math.floor(Math.random() * sd); const r = { ...s.roll, dmg: Math.max(0, t) }; set({ roll: r }); this.postRoll(r, true); },
+      toastOn: !!s.toast, toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

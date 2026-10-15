@@ -1,19 +1,19 @@
 # MOBILE.md — Planung „Mobile Support“ (Tablet & Smartphone)
 
-Stand: 2026-10-01 · Status: **Planung, nichts umgesetzt.** Eigene Planungsdatei, weil das Feature groß ist und viele Entscheidungen braucht. Offene Punkte werden in Abschnitt 9 entschieden. Danach kommen die gültigen Ergebnisse kurz in [PROJEKTDOKU.md](PROJEKTDOKU.md), die Arbeitspakete in [AUFGABEN.md](AUFGABEN.md) bzw. als GitHub-Issues. Ist alles umgesetzt, wandert diese Datei nach `archive/`.
+Stand: 2026-10-15 · Status: **Planung, nichts umgesetzt.** Click-Dummy Runde 4 (Rückmeldung Lyynix vom 14.10.) liegt in `clickdummy/mobile/`. Das **Umsetzungskonzept für Foundry steht in Abschnitt 13** und ersetzt, wo es abweicht, die älteren Abschnitte 4 und 6. Eigene Planungsdatei, weil das Feature groß ist und viele Entscheidungen braucht. Offene Punkte werden in Abschnitt 9 entschieden. Danach kommen die gültigen Ergebnisse kurz in [PROJEKTDOKU.md](PROJEKTDOKU.md), die Arbeitspakete in [AUFGABEN.md](AUFGABEN.md) bzw. als GitHub-Issues. Ist alles umgesetzt, wandert diese Datei nach `archive/`.
 
 ---
 
 ## 1. Ziel
 
-Spieler können mit Tablet oder Smartphone an einer Foundry-Runde teilnehmen, **ohne Spielfeld (Canvas)**. Statt der Desktop-Oberfläche sehen sie eine auf Touch und kleine Bildschirme zugeschnittene Ansicht. Im Mittelpunkt stehen der eigene Held (unser Bogen), Proben, der Chat und die Initiative.
+Spieler können mit Tablet oder Smartphone an einer Foundry-Runde teilnehmen, **mit Szene** (verschieben, zoomen, pingen, eigenen Token ziehen; pro Gerät abschaltbar, seit der Rückmeldung von Lyynix vom 2026-10-14, siehe Abschnitt 13). Statt der Desktop-Oberfläche sehen sie eine auf Touch und kleine Bildschirme zugeschnittene Ansicht. Im Mittelpunkt stehen der eigene Held (unser Bogen), Proben, der Chat und die Initiative.
 
 **Typische Nutzung, für die wir bauen:** Die Gruppe sitzt am Tisch (oder ist im Call), die SL hat Foundry am Laptop/Beamer, die Spieler haben ihr Gerät in der Hand und würfeln, schauen in ihren Bogen und verfolgen den Chat.
 
 **Ausdrücklich kein Ziel (Vorschlag, siehe E1/E2):**
-- SL-Bedienung auf dem Handy (Szenen, Token, Kampf steuern, Kompendien pflegen).
-- Spielfeld/Karte, Token bewegen, Messen, Schablonen, Licht/Sicht.
-- Volle Gleichwertigkeit mit dem Desktop. Mobil ist eine schlanke **Spieler-Ansicht**.
+- Volle SL-Bedienung auf dem Handy (Szenen wechseln, Kampf steuern, Kompendien pflegen). Eine schlanke SL-Ansicht gibt es (Helden, Journal freigeben, Proben anfordern, Token ziehen), siehe E2.
+- Spielfeld-Werkzeuge: Messen, Schablonen, Licht/Sicht, Wände, Zeichnungen.
+- Volle Gleichwertigkeit mit dem Desktop. Mobil ist eine schlanke Ansicht für den Spieltisch.
 
 ## 2. Ausgangslage (technische Fakten, Foundry v14 / DSA5 8.1.x)
 
@@ -105,6 +105,8 @@ Die Erkennung bestimmt nur die **Vorauswahl** in der Abfrage nach dem Login (4.1
 
 ## 4. Aktivierung: „Hybrides Spiel“ + Auswahl nach dem Login (Idee des Nutzers, 2026-10-01)
 
+> **Überholt durch die Rückmeldung von Lyynix (2026-10-14):** Es gibt keine Kachel-Abfrage mehr. Die Oberfläche wird automatisch nach Bildschirmbreite gewählt und lässt sich im Konto-Menü überschreiben. Neuer Ablauf: Abschnitt 13.2. Die Recherche in 4.2 bleibt gültig.
+
 ### 4.1 Ablauf
 
 1. **Welt-Einstellung** in den DSA5-Helpers-Einstellungen: **„Hybrides Spiel“ ja/nein** (`dsa5-helpers.hybridPlay`, `scope: world`, nur SL, Standard **nein**). Bei „nein“ ändert sich nichts, Foundry startet wie bisher. Kein Code der Mobilansicht läuft.
@@ -166,6 +168,8 @@ Die Erkennung bestimmt nur die **Vorauswahl** in der Abfrage nach dem Login (4.1
 - SL-Werkzeuge (siehe E2).
 
 ## 6. Foundry-Oberfläche mobil (Vorschlag „App-Shell“, siehe E8)
+
+> **Überholt:** Die Startseite ist jetzt „Szene oben, Held darunter, Journal und Chat als schwebende Knöpfe“ (Rückmeldung Lyynix, Click-Dummy Runde 4). Neuer Aufbau: Abschnitt 13.1 und 13.3.
 
 **Prinzip:** Foundrys DOM bleibt erhalten, wir ordnen es nur um. Body-Klasse `dsa5h-mobile` + eigene Stylesheet-Datei, wenig JS. Keine Parallel-Oberfläche, die Foundry-Updates nachbauen müsste.
 
@@ -238,7 +242,7 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 | Nr. | Frage | Vorschlag |
 |---|---|---|
 | **E1** | Wer ist Zielgruppe mobil? | Nur Spieler |
-| **E2** | SL auf Mobilgerät? | Keine SL-Mobilansicht. SL bekommt Hinweis + Desktop-Oberfläche |
+| **E2** | SL auf Mobilgerät? | **Geändert (Rückmeldung Lyynix, im Click-Dummy umgesetzt):** schlanke SL-Ansicht mit Helden der Gruppe, Journal freigeben/zeigen, Token ziehen und **„Probe anfordern“** über den `RollRequestService` des Systems. Szenen wechseln, Kampf steuern usw. bleiben am Desktop |
 | **E3** | Smartphone, Tablet oder beides — und was zuerst? | Smartphone hoch zuerst (schwierigster Fall), Tablet profitiert mit. Tablet-Zweispalter in Phase 3 |
 | **E4** | Welche Browser offiziell? | Safari iOS/iPadOS + Chrome Android, je aktuelle + vorige Hauptversion |
 | **E5** | Aktivierung | **Entschieden (Nutzer, 2026-10-01):** Welt-Einstellung „Hybrides Spiel“ + Auswahl Foundry/Tablet/Smartphone nach dem Login (Abschnitt 4). Offen nur noch Details: Standard der Einstellung (Vorschlag „nein“), Vorauswahl per Erkennung (Vorschlag ja) |
@@ -252,12 +256,18 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 | **E13** | Teil von `dsa5-helpers` oder eigenes Modul (z. B. `dsa5-mobile`)? | Teil von dsa5-helpers (braucht ohnehin unseren Bogen). Shell-Code aber in `scripts/mobile/` getrennt halten, damit eine spätere Auslagerung möglich bleibt |
 | **E14** | Click-Dummy mobil? | Ja: Click-Dummy um eine Mobil-Ansicht erweitern (Shell + Bogen, Gerätegrößen per Umschalter), Design dort iterieren wie bisher |
 | **E15** | Versionsplanung | Eigener Meilenstein `0.5.0` (o. ä.) mit Issues je Phase |
-| **E16** | Auswahl jedes Mal oder gemerkt? | Gemerkt pro Gerät, wenn „Auf diesem Gerät merken“ angehakt ist (Standard an). Sonst bei jedem Start fragen. Ändern über Menü/Einstellungen, Notausgang per URL |
-| **E17** | `setupGame` selbst umhüllen oder über libWrapper (dann Pflicht-Abhängigkeit bei „Hybrides Spiel“)? | Selbst, an der Instanz, mit Prüfung, ob die Methode noch existiert (sonst Warnung + normale Foundry-Oberfläche). libWrapper nicht zur Pflicht machen |
-| **E18** | Soll die Tablet-Oberfläche das Spielfeld optional behalten dürfen (große Tablets, Karte anschauen)? | v1 nein (wie vom Nutzer vorgegeben: Canvas aus). Später evtl. „Tablet mit Karte (nur ansehen)“ |
+| **E16** | Auswahl jedes Mal oder gemerkt? | **Geändert (Rückmeldung Lyynix):** keine Abfrage. Automatisch nach Bildschirmbreite und Zeigegerät, im Konto-Menü überschreibbar (Automatisch/Smartphone/Tablet/Foundry), gemerkt pro Gerät. Notausgang per URL bleibt (Abschnitt 13.2) |
+| **E17** | `setupGame` selbst umhüllen oder über libWrapper (dann Pflicht-Abhängigkeit bei „Hybrides Spiel“)? | **Voraussichtlich hinfällig:** Ohne Abfrage fällt die Entscheidung sofort im `init`-Hook. `core.noCanvas` wird nur noch bei „Spielfeld aus“ gebraucht und lässt sich im `setup`-Hook setzen, der vor `initializeCanvas` läuft. Im Spike prüfen, sonst gilt der Vorschlag wie bisher |
+| **E18** | Soll die Tablet-Oberfläche das Spielfeld optional behalten dürfen (große Tablets, Karte anschauen)? | **Geändert (Rückmeldung Lyynix):** Szene an, auf Tablet **und** Smartphone (im Click-Dummy beides). Bedienung: wischen, zwei Finger zoomen, lange drücken pingt, eigenen Token lange drücken und ziehen. Pro Gerät abschaltbar („Spielfeld aus“ = `core.noCanvas`). Standard auf dem Smartphone: E21 |
 | **E19** | Darf die SL „Hybrides Spiel“ pro Spieler steuern (z. B. Oberfläche vorgeben)? | v1 nein, jeder wählt selbst |
+| **E20** | Schips im Chat: eigener Dialog oder das Kontextmenü des Systems? | Kontextmenü des Systems per Langdruck oder Aktionen-Knopf an der Karte als Blatt von unten öffnen. Es enthält „Schip verwenden“ (`UnifiedFateDSA5`), „Schaden anwenden“ usw. Der Schip-Dialog des Systems erscheint dann bildschirmfüllend (Abschnitt 13.4). Kein eigener Nachbau |
+| **E21** | Szene auf dem Smartphone standardmäßig an? | Ja (wie im Click-Dummy), mit Foundrys Leistungsmodus „niedrig“ als Vorgabe. Nach dem Spike mit echten Geräten neu bewerten |
+| **E22** | Fremden Token antippen: nur Namen zeigen oder auch „als Ziel markieren“ (für Angriffe)? | Click-Dummy zeigt nur den Namen. Ziel markieren hilft im Kampf, war aber nicht Teil der Rückmeldung → nach dem Spike entscheiden |
+| **E23** | Wohin kommt die Kampfreihenfolge (5.1), wenn es keine untere Navigation mehr gibt? | Vorschlag: Leiste über der Szene, nur während eines Kampfes sichtbar, „Du bist dran“ hervorgehoben. Im Click-Dummy noch nicht gebaut |
 
 ## 10. Vorgehen in Phasen (Vorschlag)
+
+> **Neu geordnet nach der Rückmeldung von Lyynix:** siehe Abschnitt 13.8. Phase 0 und 2 sind weitgehend erledigt (Click-Dummy Runde 3 + 4).
 
 0. **Entscheidungen** E1–E19 klären. Community-Module recherchieren. Issue #7 (CSS) ist umgesetzt (2026-10-05, `release/0.5.0`): Hover steckt bereits in `@media (hover: hover)`, das Mobil-CSS stellt die Tokens `--hit-sm/md/lg` (24/26/28 px, Ziel ≥ 44 px), `--fs-data`, `--fs-base`, `--fs-panel-title`, `--fs-tab-title` um und folgt der Abschnittsgliederung (PROJEKTDOKU „CSS-Gliederung“).
 1. **Machbarkeit (Spike, Foundry live):** Einstellung „Hybrides Spiel“ + Auswahl-Overlay vor `setupGame` + `noCanvas` + Body-Klasse + Auflösungs-Warnung weg. Ein Smartphone verbindet sich, wählt „Smartphone“, sieht Chat und kann würfeln. Ergebnis: Liste der Stolpersteine (iOS-Tastatur, Tooltips, ContextMenu, Systemdialoge).
@@ -286,3 +296,129 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 | Leistung/Akku (Foundry ohne Canvas lädt trotzdem viele Daten, Dice So Nice) | Live messen. Empfehlung für schwere Module dokumentieren |
 | Großer Aufwand, bremst den Bogen | Eigener Meilenstein, Phasen einzeln freigeben. Desktop bleibt unberührt (alles hinter `dsa5h-mobile`) |
 | Andere Module (z. B. Steigerungsplaner) brechen mobil | Nur geprüfte Module offiziell, Rest „best effort“ |
+
+## 13. Umsetzungskonzept Foundry (nach Rückmeldung Lyynix, 2026-10-15)
+
+Grundlage: [MOBILE-FEEDBACK-2026-10-14.md](MOBILE-FEEDBACK-2026-10-14.md) und der Click-Dummy `clickdummy/mobile/` (Runde 4, Einstieg `index.html` bzw. `app.html`). Der Grundsatz bleibt: Foundry-DOM und Systemlogik nutzen, nichts parallel nachbauen. Quellen: Foundry v14 (`foundry-nodejs-v14/client`), DSA5 8.1.x (`systems/dsa5/modules`).
+
+| Punkt der Rückmeldung | Click-Dummy (Runde 4) | Foundry-Umsetzung | Abschnitt |
+|---|---|---|---|
+| 1 Szene | Karte oben, wischen/zoomen/pingen, eigenen Token lange drücken und ziehen, Zentrieren, Vergrößern | Foundry-Canvas im Vollbild hinter der Shell, eigene Touch-Gestenebene | 13.3 |
+| 1 Startseite | Szene, darunter „Meine Helden“, Journal und Chat als schwebende Knöpfe, Sprechblase mit Zähler | Eigene Shell + Foundrys Chat-Benachrichtigungen | 13.1, 13.4 |
+| 2 Schips im Chat | eigene Probe antippen → Blatt „Schip verwenden“ (eigene/Gruppe, Wurf wiederholen, QS erhöhen) | Kontextmenü des Systems per Langdruck/Aktionen-Knopf, Systemdialog `UnifiedFateDSA5` bildschirmfüllend | 13.4 |
+| 3 Journal-Ordner | Ordnerbaum mit Farben, auf-/zuklappen, Unterordner | Foundrys Journal-Verzeichnis bildschirmfüllend | 13.5 |
+| 4 Proben anfordern | SL: Talent/Eigenschaft, Modifikator, Sichtbarkeit, Helden → Anfrage-Karte; Spieler: Blatt „Würfeln/Später“ | `RollRequestService` des Systems, Dialoge bildschirmfüllend | 13.6 |
+| 5 Oberfläche automatisch | Konto-Menü: Automatisch/Smartphone/Tablet + Hinweis, was erkannt wurde | Automatik im `init`-Hook, Client-Einstellung zum Überschreiben | 13.2 |
+| Falls ohne Szene | Konto-Menü: „Spielfeld An/Aus“ | `core.noCanvas` pro Gerät; gleicher Benutzer an PC und Handy prüfen | 13.3, 13.7 |
+
+### 13.1 Zielbild
+
+```
+┌───────────────────────────┐
+│ Kopf: Welt · Sitzung  (A) │  eigene Leiste, (A) = Konto-Menü
+├───────────────────────────┤
+│ Szenenname          [⌖]   │  Foundry-Canvas (#board) liegt im Vollbild dahinter
+│                     [⤢]   │  ⌖ = auf eigenen Helden zentrieren, ⤢ = Spielfeld vergrößern
+│        (Szene)            │
+├───────────────────────────┤
+│ Meine Helden              │  eigene Shell-Vorlage, Antippen → unser Bogen (Vollbild)
+│ Layariel  LeP/AsP/KaP   › │
+├───────────────────────────┤
+│ (Journal)  [Blase] (Chat1)│  schwebende Knöpfe, Sprechblase + Zähler über dem Chat
+└───────────────────────────┘
+```
+
+- **Smartphone:** Chat und Journal öffnen bildschirmfüllend (Zurück-Pfeil im Kopf).
+- **Tablet:** Der Chat ist eine rechte Spalte (400 px), die der Chat-Knopf ein- und ausblendet. Das Journal ersetzt den Szenenbereich.
+- **Bogen:** wie Runde 3 (unverändert), Vollbild, Zurück-Pfeil führt zur Startseite.
+- **SL:** gleiche Shell mit „Helden der Gruppe“ (Spielername, Online-Punkt) und dem Knopf „Probe anfordern“. Die SL kann alle Token ziehen.
+
+### 13.2 Oberfläche automatisch wählen (Punkt 5, ersetzt die Kachel-Abfrage aus Abschnitt 4)
+
+Die Entscheidung fällt synchron im `init`-Hook, ohne Overlay:
+
+1. URL-Parameter `?dsa5h-ui=auto|phone|tablet|foundry` (Notausgang, überschreibt alles).
+2. Client-Einstellung `dsa5-helpers.uiMode` (`auto` als Standard, sonst `phone`, `tablet` oder `foundry`). Änderbar im Konto-Menü und in den Moduleinstellungen, danach neu laden.
+3. Automatik, einmal beim Start gemessen (Bildschirmgröße `screen`, nicht das Fenster, damit Drehen nicht umschaltet):
+   - keine Touch-Eingabe (`(any-pointer: coarse)` trifft nicht zu) → Foundry-Oberfläche;
+   - kurze Bildschirmseite < 600 px → Smartphone, sonst Tablet;
+   - ab 1200 px Breite und mit Maus als Hauptzeiger (`(pointer: fine)`, z. B. Touch-Laptop) → Foundry-Oberfläche.
+   
+   Innerhalb einer Klasse reagiert das Layout per CSS auf hoch/quer.
+4. Danach, weiter im `init`-Hook: Body-Klasse `dsa5h-ui-phone` / `dsa5h-ui-tablet` und eigene `CONFIG.ui`-Klassen (z. B. `Notifications` ohne Auflösungswarnung). Das reicht, weil `initializeUI` erst später in `setupGame` läuft (2a).
+5. Nur bei „Spielfeld aus“: `core.noCanvas` muss vor `initializeCanvas` stehen. Core-Einstellungen werden erst nach `init` registriert, deshalb im `setup`-Hook setzen (läuft in `setupGame` vor `initializeCanvas`). Den vorherigen Wert merken und beim Zurückschalten wiederherstellen. Damit entfällt das Umhüllen von `setupGame` (E17), im Spike bestätigen.
+
+Die Welt-Einstellung „Hybrides Spiel“ bleibt der Hauptschalter: Steht sie auf „nein“, läuft keine Mobil-Logik.
+
+### 13.3 Szene (Punkt 1)
+
+**Grundsatz: Foundrys Canvas bleibt im Vollbild**, die Shell liegt darüber. Der Canvas rechnet an vielen Stellen mit `window.innerWidth/innerHeight` (`canvas/board.mjs`: `_onResize`, `pan`, Zoom-Grenzen). Ihn auf einen Teilbereich zu zwingen, wäre ein Eingriff in Interna. Folge: Heldenkarte und Knöpfe verdecken den unteren Teil der Karte. „Zentrieren“ setzt das Ziel deshalb in die Mitte des **sichtbaren** Bereichs (Versatz = Höhe der Heldenkarte). „Vergrößern“ blendet die Heldenkarte aus.
+
+Was Foundry v14 schon mitbringt und was fehlt:
+
+| Geste | Foundry v14 (Quellcode geprüft) | Bei uns |
+|---|---|---|
+| Langdruck auf die Karte → Ping | Eingebaut: Langdruck-Timer im `MouseInteractionManager` → `ControlsLayer#_onLongPress` → `canvas.ping()`. Nur auf der Token-Ebene, Recht `PING_CANVAS` | Nutzen. Unsere Gestenebene muss den Druck durchlassen oder selbst `canvas.ping()` rufen |
+| Eigenen Token ziehen | Eingebaut als Links-Ziehen, sofort und ohne Langdruck. Langdruck auf einen Token pingt und bricht das Ziehen ab (`PlaceableObject#_onLongPress`) | **Ändern:** Ein-Finger-Wischen verschiebt die Karte. Erst Langdruck auf den eigenen Token startet das Ziehen (sonst verrutschen Token beim Scrollen) |
+| Karte verschieben | Nur Rechts-Ziehen (`_onDragRightMove`). Links-Ziehen auf leerer Fläche = Auswahlrechteck | Eigene Geste |
+| Zoomen | Mausrad (`_onMouseWheel`). Pinch-Zoom unterdrückt Foundry sogar im ganzen Dokument (`Game#activateListeners`) | Eigene Zwei-Finger-Geste |
+
+Umsetzung in `scripts/mobile/canvas-touch.js`: ein Pointer-Listener in der Capture-Phase auf `#board`, nur für `pointerType === 'touch'` (Maus und Stift bleiben unberührt). Logik wie im Click-Dummy:
+
+- Ein Finger, mehr als 8 px Bewegung vor Ablauf von 500 ms → **verschieben**: Ereignisse nicht an PIXI weitergeben, `canvas.pan({x, y})`.
+- Zwei Finger → **zoomen** um den Mittelpunkt: `canvas.pan({x, y, scale})`, Grenzen wie bei Foundry (`CONFIG.Canvas.minZoom/maxZoom` bzw. die berechneten Szenengrenzen).
+- 500 ms ohne Bewegung auf leerer Fläche oder fremdem Token → **Ping** (`canvas.ping(point)`, gleiches Verhalten wie Foundry).
+- 500 ms auf einem Token, den man besitzt (`token.isOwner`; die SL besitzt alle) → **ziehen**: Token anheben, Zielfeld markieren (rot bei Wand), beim Loslassen einrasten (`canvas.grid.getSnappedPoint`). Die Bewegung läuft über Foundrys Token-Bewegung, damit Wände, Bewegungsregeln, Animation und Rechte gelten. Im Spike klären: v14-API (`TokenDocument#move`) direkt rufen oder nach dem Langdruck Foundrys eigenen Zieh-Ablauf freigeben.
+- Kurzes Antippen eines Tokens → Name einblenden (Ersatz für Hover). Ziel markieren: E22.
+- Beim Start den eigenen Token kontrollieren (`token.control()`). DSA5-Funktionen wie „Schaden anwenden“ greifen auf `canvas.tokens.controlled` zu.
+- Vor dem Spike prüfen: Community-Modul **Touch-VTT** (Touch-Gesten für Foundry, Stand für v14 unbekannt). Wird es gepflegt: Konflikte vermeiden, Ideen übernehmen oder empfehlen statt nachbauen.
+
+Leistung: auf dem Smartphone Foundrys Leistungsmodus „niedrig“ als Vorgabe (Client-Einstellung, nur wenn der Spieler sie nie selbst geändert hat). Im Konto-Menü gibt es „Spielfeld An/Aus“ (= `core.noCanvas`, mit Neuladen). Die Auflösungswarnung bleibt unterdrückt (2a), da sie mit Canvas genauso auftritt.
+
+### 13.4 Chat: Sprechblase, Zähler, Schips (Punkte 1 und 2)
+
+- **Sprechblase:** Gibt es in Foundry schon. `ChatLog#notify` zeigt neue Nachrichten in `#chat-notifications`, solange die Seitenleiste eingeklappt ist (`applications/sidebar/tabs/chat.mjs`). Wir setzen diesen Bereich per CSS als Blase über den Chat-Knopf (eine Nachricht, ca. 5 s) statt eine eigene zu bauen. DSA5 hängt sein Kontextmenü auch an diese Benachrichtigungen (`chat_context.js`), Schips gehen also auch direkt aus der Blase.
+- **Ungelesen-Zähler:** eigener Zähler über den Hook `createChatMessage` (nur sichtbare, nicht eigene Nachrichten, keine Systemhinweise), zurückgesetzt beim Öffnen des Chats.
+- **Chat:** Foundrys Chat-Log (`ui.chat`). Auf dem Smartphone bildschirmfüllend mit Eingabe unten (tastatursicher, `visualViewport`), auf dem Tablet als Spalte.
+- **Schips:** Das System bietet sie im Kontextmenü der Nachricht an: „Schip verwenden“ → `UnifiedFateDSA5.openFromLi`. Sichtbar ist der Eintrag nur, wenn `ConditionChecker.canUseSchip` zutrifft (eigener Held, Schips übrig, noch nicht verwendet). Das System schreibt danach eine Hinweisnachricht („Das Schicksal ändert sich“) und aktualisiert die Probenkarte selbst (`actor/concerns/faterolls.js`). Mobil:
+  - **Langdruck** (500 ms) auf eine Nachricht löst ein synthetisches `contextmenu`-Ereignis aus. Dann öffnet Foundrys `ContextMenu` mit allen Systemeinträgen (Schip, Begabung, Schaden/AsP anwenden …). Nötig, weil iOS bei Langdruck kein `contextmenu` sendet (2a).
+  - Zusätzlich ein sichtbarer **Aktionen-Knopf** (⋮, 44 px) an jeder Karte, damit man den Langdruck nicht kennen muss. Der Click-Dummy zeigt dafür „Antippen: Schip verwenden“ an eigenen Proben.
+  - Das Kontextmenü erscheint als Blatt von unten (CSS, ggf. eigene `CONFIG.ux.ContextMenu`-Unterklasse). Der Schip-Dialog des Systems (ApplicationV2) erscheint bildschirmfüllend wie alle Dialoge. Reiter (Wurf wiederholen, Schaden wiederholen, Ergebnis verbessern, QS erhöhen), Würfelauswahl, eigene/Gruppen-Schips und Ergebnis kommen vollständig vom System. Der Dummy zeigt nur, wie dieser Dialog mobil aussehen soll.
+  - Einen einzelnen Würfel per Antippen vorzuwählen (Vorschlag aus der Rückmeldung) geht mit dem Systemdialog nicht direkt. Die Auswahl passiert im Dialog. Kein eigener Nachbau (E20).
+
+### 13.5 Journal mit Ordnern (Punkt 3)
+
+- Foundrys Journal-Verzeichnis (`ui.journal`) zeigt Ordner, Farben und Sortierung wie am Desktop und blendet für Spieler aus, was sie nicht sehen dürfen. Mobil nutzen wir genau dieses Verzeichnis bildschirmfüllend (Journal-Knopf), mit Touch-CSS: Zeilen ≥ 48 px, Ordner per Antippen auf-/zuklappen (Foundry merkt sich den Zustand), Suche bleibt.
+- Einträge öffnen im Journal-Blatt bildschirmfüllend.
+- „Neu“-Markierung (Dummy): kleiner eigener Zusatz. Ein Client-Speicher merkt sich geteilte Einträge, die noch nicht geöffnet wurden (Hooks auf Rechteänderung und „Allen zeigen“). Optional, nicht v1-kritisch.
+- SL: „Für Spieler sichtbar“ und „Allen Spielern zeigen“ sind Foundry-Funktionen (Rechte, Zeigen an Spieler), mobil als große Knöpfe statt Kopfzeilen-Symbole.
+
+### 13.6 SL: Proben anfordern (Punkt 4)
+
+- Der Knopf „Probe anfordern“ (Kopf der Heldenkarte der SL und Chip über der Chat-Eingabe) ruft `game.dsa5.queries.RollRequestService.openRequestDialog()` auf (`modules/system/queries/roll-request.js`). Der Dialog (Talent/Eigenschaft/Regeneration, Modifikator, Sichtbarkeit, Heldenauswahl, technisch ein `DialogV2`) erscheint bildschirmfüllend. Der Dummy zeigt das Zielbild: Talent-Chips mit Suche statt der Select2-Liste. Lässt sich die Liste per CSS nicht touch-tauglich machen, ist das der einzige Punkt mit eigenem Template-Bedarf.
+- Anfrage-Karte im Chat und Ablauf kommen vollständig vom System: Spieler bekommen den Probendialog automatisch, die SL würfelt für abwesende Spieler oder überspringt sie und schließt die Anfrage ab. Mobil nur CSS: Zeilen ≥ 44 px, Text-Knöpfe statt Symbole.
+- Spieler: Der Probendialog öffnet sich automatisch (Query des Systems), mobil als Blatt von unten. „Später“ schließt ihn, die Karte im Chat behält den Würfeln-Knopf (so verhält sich das System schon).
+
+### 13.7 Falls ohne Szene: PC und Handy gleichzeitig
+
+Die Rückmeldung fragt, ob derselbe Benutzer gleichzeitig am PC (Szene) und am Handy (Bogen) angemeldet sein kann. Im v14-Client haben wir keine Sperre dafür gefunden, und nach unserem Kenntnisstand lässt Foundry mehrere Verbindungen desselben Benutzers zu (z. B. für Zweitbildschirme). Mit der automatischen Wahl ergibt sich der Rest von selbst: PC = Foundry-Oberfläche, Handy = Mobilansicht. **Live prüfen:** Bleiben beide Verbindungen aktiv? Wohin gehen Abfragen an den Benutzer (eine Probenanfrage öffnet sich womöglich auf beiden Geräten)? Erscheinen Cursor und Pings doppelt? Wenn das brauchbar ist, ist es ein guter Rückfall für schwache Handys („Spielfeld aus“).
+
+### 13.8 Dateien und Phasen (ersetzt Abschnitt 10)
+
+Dateien (Ergänzung zu Abschnitt 8):
+
+- `scripts/mobile/ui-mode.js` — Automatik, Einstellung `uiMode`, Body-Klasse, Notausgang, `noCanvas` bei „Spielfeld aus“.
+- `scripts/mobile/shell.js` + `templates/mobile/shell.hbs` — Kopf, Heldenkarte, schwebende Knöpfe, Zähler, Chat- und Journal-Ansicht, Konto-Menü.
+- `scripts/mobile/canvas-touch.js` — Gesten auf der Szene (13.3).
+- `scripts/mobile/touch-context.js` — Langdruck → `contextmenu`, Aktionen-Knopf an Chat-Karten.
+- `styles/dsa5-helpers-mobile.css` — Shell, Dialoge bildschirmfüllend, Kontextmenü als Blatt, Chat-Benachrichtigung als Sprechblase, Journal-Verzeichnis.
+
+Phasen (je Phase ein GitHub-Issue, sobald freigegeben):
+
+1. **Spike (Foundry live, echte Geräte):** Automatik + Body-Klasse + Auflösungswarnung weg. Canvas auf iPad und Android-Handy (Ladezeit, Bildrate, Akku). Gesten-Prototyp (wischen, zoomen, pingen, Token ziehen) inkl. `TokenDocument#move` vs. Foundry-Ziehen. Langdruck → Kontextmenü auf iOS. Gleicher Benutzer an zwei Geräten (13.7). Ergebnis: Liste der Stolpersteine, Entscheidung E21.
+2. **Shell:** Kopf, Szene + Heldenkarte, schwebende Knöpfe, Sprechblase und Zähler, Chat (Smartphone bildschirmfüllend, Tablet als Spalte), Journal-Verzeichnis, Konto-Menü (Oberfläche, Spielfeld, Thema, Desktop, Abmelden).
+3. **Touch-Ersatz und Dialoge:** Kontextmenü als Blatt, Aktionen-Knopf an Chat-Karten, alle Dialoge bildschirmfüllend (Proben, Schip, Probenanfrage, Journal, Item-Blätter).
+4. **Bogen mobil:** wie Phase 4 in Abschnitt 10 (Design aus Runde 3).
+5. **SL-Ansicht:** Probe anfordern, Journal freigeben/zeigen, alle Token ziehen.
+6. **Kampf:** Kampfreihenfolge (E23), Ziel markieren (E22).
+7. **Test in einer echten Runde**, danach Release.

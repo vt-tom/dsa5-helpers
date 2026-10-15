@@ -1,7 +1,7 @@
 # Clickdummy mobil — Heldenbogen & Foundry-Oberfläche (Smartphone/Tablet)
 
-Ziel im Repo: `clickdummy/mobile/` auf Branch `feature/mobile`.
-Gehört zu [project/MOBILE.md](../../project/MOBILE.md), Phase 2 („Click-Dummy mobil“).
+Ort: `clickdummy/mobile/` auf Branch `feature/mobile` (vorher `clickdummy/design_handoff_mobile/` als gepacktes Bundle).
+Gehört zu [project/MOBILE.md](../../project/MOBILE.md), Phase 2 („Click-Dummy mobil“). **Runde 4** (2026-10-15) setzt die Rückmeldung von Lyynix um, siehe Abschnitt „Runde 4“ unten und MOBILE.md Abschnitt 13.
 
 ## Was das ist
 
@@ -13,24 +13,34 @@ Fidelity: **High-Fidelity** für Layout, Abstände, Farben, Schrift und Bedienun
 
 | Datei / Ordner | Zweck |
 |---|---|
-| `index.html` | Übersicht: alle Varianten nebeneinander in Geräterahmen (3a Foundry-Oberfläche, 2a Dunkel / große Schrift / Leerzustände, 1a Bogen hell auf Smartphone und Tablet). Voll klickbar. |
-| `app.html` | Nur die Foundry-Oberfläche, bildschirmfüllend. Zum Testen **auf einem echten Gerät**. Wählt Smartphone/Tablet anhand der Bildschirmgröße, erzwingen mit `app.html?device=phone` bzw. `?device=tablet`. |
+| `index.html` | Übersicht: alle Varianten nebeneinander in Geräterahmen (4a Runde 4 mit Szene: Smartphone Spieler/SL, Tablet hoch Spieler, Tablet quer SL; 3a Foundry-Oberfläche; 2a Dunkel / große Schrift / Leerzustände; 1a Bogen hell auf Smartphone und Tablet). Voll klickbar. |
+| `app.html` | Nur die Foundry-Oberfläche, bildschirmfüllend. Zum Testen **auf einem echten Gerät**. Wählt Smartphone/Tablet anhand der Bildschirmgröße, erzwingen mit `app.html?device=phone` bzw. `?device=tablet` oder im Konto-Menü unter „Oberfläche“. |
+| `Foundry Mobil.dc.html` | **Quelltext** der Foundry-Oberfläche (Vorlage mit `sc-if`/`sc-for` + Klasse `Component` mit der Logik). Hier wird iteriert. |
+| `Heldenbogen Mobil.dc.html` | **Quelltext** des Heldenbogens (unverändert aus Runde 3). |
+| `support.js`, `vendor/` | Mini-Laufzeit des Design-Tools („dc-runtime“, generiert, nicht bearbeiten) und React 18.3.1 lokal, damit nichts aus dem Netz geladen wird. |
 | `dsa5-helpers-mobile.tokens.css` | Design-Tokens der Mobilansicht, auf die Token-Namen der Desktop-CSS abgebildet. Startpunkt für `styles/dsa5-helpers-mobile.css`. |
 | `screenshots/smartphone/` | 25 Ansichten, 390 × 844 px. |
 | `screenshots/tablet/` | 5 Ansichten, 1180 × 820 px (Querformat). |
+| `screenshots/runde4/` | 14 Ansichten aus Runde 4 (Smartphone 390 × 844, Tablet hoch 820 × 1180, quer 1180 × 820). |
 
-Öffnen: `index.html` läuft per Doppelklick (alles eingebettet). `app.html` lädt die Talent-, Würfel- und Zaubersymbole direkt aus `systems/dsa5/icons/` (keine Kopien im Repo) und muss deshalb wie der übrige Click-Dummy über `clickdummy/start-server.bat` geöffnet werden: <http://localhost:8877/modules/dsa5-helpers/clickdummy/design_handoff_mobile/app.html>.
+Öffnen: Beide Seiten laden Schriften und Symbole direkt aus `systems/dsa5/` und die Komponenten per `fetch` – also **nicht per Doppelklick**, sondern wie der übrige Click-Dummy über `clickdummy/start-server.bat`: <http://localhost:8877/modules/dsa5-helpers/clickdummy/mobile/index.html> bzw. `…/mobile/app.html`. Auf einem echten Gerät im selben WLAN statt `localhost` die IP des Rechners verwenden.
 
-## Ablage im Repo
+## Runde 4 — Rückmeldung Lyynix (2026-10-14)
 
-```
-git checkout feature/mobile
-# Inhalt dieses Ordners nach clickdummy/mobile/ kopieren
-git add clickdummy/mobile
-git commit -m "Clickdummy mobil: Heldenbogen und Foundry-Oberfläche (Design-Referenz)"
-```
+| Thema | Umsetzung im Dummy |
+|---|---|
+| Startseite | Szene oben (Kellerkarte aus CSS, keine neuen Bilder), darunter „Meine Helden“ bzw. „Helden der Gruppe“, unten links Journal- und rechts Chat-Knopf (56 px). Ersetzt die Kachel-Übersicht. |
+| Szene | Wischen verschiebt, zwei Finger bzw. Mausrad zoomen, lange drücken (500 ms, Kreis zeigt den Fortschritt) pingt mit Namen, eigenen Token lange drücken und ziehen (Zielfeld golden, an Wänden rot, rastet ein). SL zieht alle Token. Kurzes Antippen zeigt den Namen. Knöpfe: auf eigenen Helden zentrieren, Spielfeld vergrößern. Hinweis zu den Gesten, schließbar. Nach ca. 11 s pingt die SL. |
+| Chat-Knopf | Ungelesen-Zähler, neue Nachricht 5 s als Sprechblase darüber (Antippen öffnet den Chat). Smartphone: Chat bildschirmfüllend. Tablet: rechte Spalte ein-/ausblendbar. |
+| Schips | Eigene Probe (oder einzelnen Würfel) antippen → Blatt „Schip verwenden“: eigene/Gruppen-Schips, „Wurf wiederholen“ (Würfel wählen, über dem Wert rot vorausgewählt) bzw. „Qualitätsstufe erhöhen“. Ergebnis wie im System: Karte wird aktualisiert, Hinweis „Das Schicksal ändert sich …“. Rechnet mit Layariels echten Werten. |
+| Journal | Ordnerbaum mit Farben und Unterordnern, auf-/zuklappen, Spieler sehen nur Ordner mit freigegebenen Einträgen, Eintrag zeigt den Ordnerpfad. |
+| Proben anfordern (SL) | Knopf in der Heldenkarte und Chip über der Chat-Eingabe → Blatt mit Talent-/Eigenschafts-Chips (Suche), Modifikator, „Ergebnis sehen: Alle/Nur SL“, Heldenauswahl. Anfrage-Karte im Chat mit Status je Held, „Für Spieler würfeln“ (offline), überspringen, abschließen. Andere Spieler antworten simuliert nach wenigen Sekunden. |
+| Proben anfordern (Spieler) | Nach ca. 16 s fordert die SL „Sinnesschärfe −1“ an → Blatt „Die Spielleitung verlangt eine Probe“ mit Würfeln/Später; Ergebnis landet in der Karte. |
+| Oberfläche | Konto-Menü: Automatisch/Smartphone/Tablet mit Hinweis, was erkannt wurde; „Spielfeld An/Aus“. Keine Abfrage beim Start. |
 
-Danach laut AGENTS.md: Entscheidungen kurz in `project/MOBILE.md` (Abschnitt 9) bzw. `PROJEKTDOKU.md` nachtragen, offene Punkte in `project/AUFGABEN.md`.
+Bei der Umsetzung wird davon nichts übernommen; wie es in Foundry gebaut wird (Canvas, Kontextmenü des Systems, `RollRequestService`, Journal-Verzeichnis), steht in MOBILE.md Abschnitt 13.
+
+Technik-Hinweis: Die Laufzeit ruft `componentDidUpdate` nur mit den vorherigen Props auf, nicht mit dem vorherigen State. Vergleiche deshalb selbst merken (siehe `Foundry Mobil.dc.html`).
 
 ## Entscheidungen aus der Design-Runde
 
@@ -40,9 +50,9 @@ Danach laut AGENTS.md: Entscheidungen kurz in `project/MOBILE.md` (Abschnitt 9) 
 | Navigation im Bogen (Tablet quer) | Reiter-Rail rechts wie am Desktop, Kopf als feste linke Spalte (292 px). | 7.1, E3 |
 | Kopf (Smartphone) | Ausgeklappt: Porträt, Name, Modus-Schalter, Identität, AP, LeP/AsP/KaP, 8 Eigenschaftswürfel. Ab 90 px Scrollweg eingeklappt auf eine 54-px-Zeile (Porträt, Name, Mini-Balken, Schicksalspunkte), bei Scroll < 4 px wieder ausgeklappt. Auf dem Reiter Eigenschaften entfällt die Würfelzeile (auch am Tablet), weil die Werte dort als Kacheln stehen. | 7.1 |
 | Bogen verlassen | Zurück-Pfeil links im Kopf (aus- und eingeklappt), am Tablet „‹ Übersicht“ oben in der linken Spalte. | 6 |
-| Shell nach dem Verlassen | **Kachel-Übersicht** statt unterer Navigation: Helden, Chat (Vorschau + Ungelesen-Zähler), Journal. Am Tablet ist der Chat als rechte Spalte (400 px) dauerhaft offen. | **weicht von 6 ab** (dort: untere Navigation Held/Chat/Kampf/Journal) |
+| Shell nach dem Verlassen | **Kachel-Übersicht** statt unterer Navigation: Helden, Chat (Vorschau + Ungelesen-Zähler), Journal. Am Tablet ist der Chat als rechte Spalte (400 px) dauerhaft offen. **Runde 4:** Szene + Helden, Journal und Chat als schwebende Knöpfe, Tablet-Chat ein-/ausblendbar. | **weicht von 6 ab** (dort: untere Navigation Held/Chat/Kampf/Journal) |
 | Rollen | Spieler **und** SL. Die SL sieht alle Helden mit Spielername und Online-Punkt, alle Journale, kann Einträge freigeben und „Allen Spielern zeigen“. | **weicht von E1/E2 ab** (Vorschlag dort: nur Spieler) |
-| Spielfeld | Keine Karte. | E18 |
+| Spielfeld | Keine Karte. **Runde 4: Szene oben auf der Startseite** (Rückmeldung Lyynix). | E18 |
 | Würfelergebnis | Ergebnis im Probe-Blatt, zusätzlich als Würfelkarte im Chat. Kein Toast, kein automatischer Wechsel zum Chat. | E9 (Toast-Vorschlag nicht umgesetzt) |
 | Trefferzonen (Status) | Liste der Zonen mit RS und Wunden, keine Körper-Silhouette. | 7.1 „Kampf › Körper“ |
 | Gefährten | Liste; Tippen öffnet einen Mini-Bogen als Blatt von unten. | 5.2 |
