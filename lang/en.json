@@ -360,7 +360,8 @@
       "Panel": {
         "chat": "Chat",
         "journal": "Journal",
-        "settings": "Settings"
+        "settings": "Settings",
+        "combat": "Combat"
       },
       "Connected": "{n} of {total} players connected",
       "ChatUnread": "Chat, {n} unread",
@@ -387,7 +388,17 @@
       "NoToken": "Your hero has no token in this scene.",
       "Paused": "The game is paused.",
       "Blocked": "The token cannot move there (wall).",
-      "MessageActions": "Message actions"
+      "MessageActions": "Message actions",
+      "More": "More",
+      "Round": "Round {n}",
+      "CombatNotStarted": "Combat prepared",
+      "YourTurn": "Your turn!",
+      "RollInitiative": "Roll initiative",
+      "Target": "Target",
+      "Untarget": "Untarget",
+      "Theme": "Theme",
+      "Light": "Light",
+      "Dark": "Dark"
     }
   }
 }

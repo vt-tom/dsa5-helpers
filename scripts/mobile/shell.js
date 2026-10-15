@@ -61,6 +61,27 @@ function renderHead() {
   els.account.textContent = game.user.isGM ? 'SL' : (game.user.name?.[0] ?? '?').toUpperCase();
 }
 
+// ----- Kampfreihenfolge (E23): Leiste unter dem Kopf, nur solange ein Kampf mit Teilnehmern läuft.
+function renderCombat() {
+  if (!els.combat) return;
+  const combat = game.combat;
+  const turns = combat ? combat.turns.filter(t => t.visible) : [];
+  const on = turns.length > 0;
+  els.combat.hidden = !on;
+  document.body.classList.toggle('dsa5h-m-in-combat', on);
+  if (!on) return;
+  const current = combat.started ? combat.combatant : null;
+  const mine = turns.filter(t => t.isOwner && !game.user.isGM);
+  const myTurn = current && mine.includes(current);
+  const unrolled = turns.filter(t => t.isOwner && t.initiative === null && (!game.user.isGM || t.hasPlayerOwner === false));
+  const round = combat.started ? game.i18n.format('DSA5HELPERS.Mobile.Round', { n: combat.round }) : L('CombatNotStarted');
+  els.combat.innerHTML = `<span class="dsa5h-m-cbt-round${myTurn ? ' mine' : ''}">${esc(myTurn ? L('YourTurn') : round)}</span>
+    <span class="dsa5h-m-cbt-list">${turns.map(t => `<span class="dsa5h-m-cbt${t === current ? ' current' : ''}${t.isOwner ? ' own' : ''}${t.defeated ? ' defeated' : ''}">
+      <img src="${esc(t.img)}" alt="${esc(t.name)}"><b>${t.initiative === null ? '–' : Math.trunc(t.initiative)}</b></span>`).join('')}</span>
+    ${unrolled.length && !game.user.isGM ? `<button type="button" data-do="initiative">${esc(L('RollInitiative'))}</button>` : ''}`;
+  els.combat.querySelector('.dsa5h-m-cbt.current')?.scrollIntoView({ inline: 'center', block: 'nearest' });
+}
+
 // ----- Panels (Seitenleisten-Reiter von Foundry)
 function openPanel(tab) {
   if (state.panel === tab) return closePanel();
@@ -121,6 +142,8 @@ function openAccount() {
   closeAccount();
   const ui_ = game.settings.get(MODULE_ID, 'uiMode');
   const noCanvas = game.settings.get('core', 'noCanvas');
+  const uiConfig = game.settings.get('core', 'uiConfig');
+  const dark = (uiConfig.colorScheme?.applications || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
   const opt = (group, value, label, on) => `<button type="button" data-group="${group}" data-value="${value}" aria-pressed="${on}">${esc(label)}</button>`;
   const detected = L(`Mode.${state.info.detected}`);
   const wrap = document.createElement('div');
@@ -131,6 +154,8 @@ function openAccount() {
     <div class="dsa5h-m-setting"><span>${esc(L('Settings.Mode.Name'))}</span><div class="dsa5h-m-seg">
       ${['auto', 'phone', 'tablet'].map(m => opt('mode', m, L(`Mode.${m}`), ui_ === m)).join('')}</div>
       <small>${esc(game.i18n.format('DSA5HELPERS.Mobile.Detected', { mode: detected, w: screen.width, h: screen.height }))}</small></div>
+    <div class="dsa5h-m-setting"><span>${esc(L('Theme'))}</span><div class="dsa5h-m-seg">
+      ${opt('theme', 'light', L('Light'), !dark)}${opt('theme', 'dark', L('Dark'), dark)}</div></div>
     <div class="dsa5h-m-setting"><span>${esc(L('Scene'))}</span><div class="dsa5h-m-seg">
       ${opt('canvas', 'on', L('On'), !noCanvas)}${opt('canvas', 'off', L('Off'), noCanvas)}</div>
       <small>${esc(L('SceneHint'))}</small></div>
@@ -143,6 +168,11 @@ function openAccount() {
     const b = ev.target.closest('button');
     if (!b) return;
     if (b.dataset.group === 'mode') return b.dataset.value !== ui_ && setAndReload(MODULE_ID, 'uiMode', b.dataset.value);
+    if (b.dataset.group === 'theme') {
+      const cfg = foundry.utils.deepClone(uiConfig);
+      cfg.colorScheme = { ...(cfg.colorScheme ?? {}), applications: b.dataset.value, interface: b.dataset.value };
+      return game.settings.set('core', 'uiConfig', cfg).then(openAccount);
+    }
     if (b.dataset.group === 'canvas') { const off = b.dataset.value === 'off'; return off !== noCanvas && setAndReload('core', 'noCanvas', off); }
     if (b.dataset.do === 'settings') { closeAccount(); return openPanel('settings'); }
     if (b.dataset.do === 'desktop') return setAndReload(MODULE_ID, 'uiMode', 'foundry');
@@ -163,6 +193,7 @@ function build() {
       <span class="dsa5h-m-titles"><strong></strong><small></small></span>
       <button type="button" class="dsa5h-m-account" aria-label="${esc(L('Account'))}"></button>
     </header>
+    <div class="dsa5h-m-combat" data-do="combat" hidden></div>
     <div class="dsa5h-m-scenebtns">
       <button type="button" data-do="center" aria-label="${esc(L(gm ? 'CenterGM' : 'Center'))}"><i class="fa-solid fa-crosshairs" inert></i></button>
       <button type="button" data-do="full" aria-pressed="false" aria-label="${esc(L('Enlarge'))}"><i class="fa-solid fa-expand" inert></i></button>
@@ -180,7 +211,7 @@ function build() {
     root, title: root.querySelector('.dsa5h-m-titles strong'), sub: root.querySelector('.dsa5h-m-titles small'),
     account: root.querySelector('.dsa5h-m-account'), heroes: root.querySelector('.dsa5h-m-heroes'), heroList: root.querySelector('.dsa5h-m-hero-list'),
     chatFab: root.querySelector('.dsa5h-m-fab.chat'), badge: root.querySelector('.dsa5h-m-badge'),
-    fullBtn: root.querySelector('[data-do="full"]'), panelTitle: root.querySelector('.dsa5h-m-panelbar span'),
+    fullBtn: root.querySelector('[data-do="full"]'), combat: root.querySelector('.dsa5h-m-combat'), panelTitle: root.querySelector('.dsa5h-m-panelbar span'),
   });
   root.addEventListener('click', ev => {
     const hero = ev.target.closest('.dsa5h-m-hero');
@@ -191,6 +222,11 @@ function build() {
     if (act === 'full') return toggleFull();
     if (act === 'journal' || act === 'chat') return openPanel(act);
     if (act === 'close') return closePanel();
+    if (act === 'initiative') {
+      const ids = game.combat?.combatants.filter(c => c.isOwner && c.initiative === null).map(c => c.id) ?? [];
+      return ids.length && game.combat.rollInitiative(ids);
+    }
+    if (act === 'combat') return openPanel('combat');
     if (act === 'request') {
       const svc = game.dsa5?.queries?.RollRequestService;
       return svc?.openRequestDialog ? svc.openRequestDialog() : ui.notifications.warn('DSA5HELPERS.Mobile.NoRequest', { localize: true });
@@ -206,6 +242,9 @@ export function initShell(mode, info) {
   renderHeroes();
   renderBadge();
   closePanel();
+  renderCombat();
+  const combatHook = foundry.utils.debounce(renderCombat, 100);
+  for (const hook of ['createCombat', 'updateCombat', 'deleteCombat', 'createCombatant', 'updateCombatant', 'deleteCombatant', 'combatTurnChange']) Hooks.on(hook, combatHook);
 
   const rerender = foundry.utils.debounce(() => { renderHeroes(); renderHead(); }, 150);
   for (const hook of ['createActor', 'deleteActor', 'updateActor', 'userConnected', 'updateUser', 'canvasReady']) Hooks.on(hook, rerender);

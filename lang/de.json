@@ -360,7 +360,8 @@
       "Panel": {
         "chat": "Chat",
         "journal": "Journal",
-        "settings": "Einstellungen"
+        "settings": "Einstellungen",
+        "combat": "Kampf"
       },
       "Connected": "{n} von {total} Spielern verbunden",
       "ChatUnread": "Chat, {n} ungelesen",
@@ -387,7 +388,17 @@
       "NoToken": "Dein Held hat keinen Token in dieser Szene.",
       "Paused": "Das Spiel ist pausiert.",
       "Blocked": "Dort kommt der Token nicht hin (Wand).",
-      "MessageActions": "Aktionen zur Nachricht"
+      "MessageActions": "Aktionen zur Nachricht",
+      "More": "Mehr",
+      "Round": "Runde {n}",
+      "CombatNotStarted": "Kampf vorbereitet",
+      "YourTurn": "Du bist dran!",
+      "RollInitiative": "Initiative würfeln",
+      "Target": "Ziel",
+      "Untarget": "Ziel aufheben",
+      "Theme": "Darstellung",
+      "Light": "Hell",
+      "Dark": "Dunkel"
     }
   }
 }

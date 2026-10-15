@@ -31,6 +31,54 @@ function chosenMode() {
   return game.settings.get(MODULE_ID, 'uiMode');
 }
 
+/**
+ * Unser Bogen auf dem Smartphone (MOBILE.md 7.1, Click-Dummy Runde 3): Reiterleiste unten mit 4 Reitern + „Mehr“
+ * (klappt die übrigen Reiter auf; ist einer davon aktiv, zeigt „Mehr“ dessen Symbol), Kopf klappt beim Scrollen
+ * zusammen. Läuft nach jedem Rendern, die Reiter selbst bleiben die Knöpfe des Bogens (data-action dsa5hSetTab).
+ */
+function setupPhoneSheet(el) {
+  const rail = el.querySelector('nav.dsa5h-rail');
+  if (rail && !rail.querySelector('.dsa5h-m-more')) {
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'dsa5h-m-more';
+    more.setAttribute('aria-expanded', 'false');
+    more.innerHTML = `<i class="fa-solid fa-ellipsis" inert></i><img alt="" inert><span class="dsa5h-rail-label">${game.i18n.localize('DSA5HELPERS.Mobile.More')}</span>`;
+    rail.append(more);
+    const sync = () => {
+      const tabs = [...rail.querySelectorAll('.dsa5h-rail-btn')];
+      const active = tabs.findIndex(b => b.classList.contains('active'));
+      const extra = active >= 4 ? tabs[active] : null;
+      more.classList.toggle('current', !!extra);
+      more.querySelector('img').src = extra?.querySelector('img')?.src ?? '';
+      more.querySelector('.dsa5h-rail-label').textContent = extra ? extra.querySelector('.dsa5h-rail-label')?.textContent : game.i18n.localize('DSA5HELPERS.Mobile.More');
+      more.hidden = tabs.length <= 5 && !extra;
+    };
+    more.addEventListener('click', () => {
+      const open = !rail.classList.contains('dsa5h-m-more-open');
+      rail.classList.toggle('dsa5h-m-more-open', open);
+      more.setAttribute('aria-expanded', String(open));
+    });
+    rail.addEventListener('click', ev => {
+      if (!ev.target.closest('.dsa5h-rail-btn')) return;
+      rail.classList.remove('dsa5h-m-more-open');
+      more.setAttribute('aria-expanded', 'false');
+      setTimeout(sync, 0);
+    });
+    sync();
+  }
+  if (!el.dataset.dsa5hScroll) {
+    el.dataset.dsa5hScroll = '1';
+    // Kopf einklappen ab 90 px Scrollweg, unter 4 px wieder aufklappen (Click-Dummy-Verhalten)
+    el.addEventListener('scroll', ev => {
+      if (!ev.target.classList?.contains('dsa5h-content')) return;
+      const y = ev.target.scrollTop;
+      if (y > 90) el.classList.add('dsa5h-m-compact');
+      else if (y < 4) el.classList.remove('dsa5h-m-compact');
+    }, true);
+  }
+}
+
 /** Im init-Hook aufrufen. */
 export function initMobile() {
   game.settings.register(MODULE_ID, 'hybridPlay', {
@@ -73,9 +121,7 @@ export function initMobile() {
     const el = element instanceof HTMLElement ? element : element?.[0];
     if (!el || !(el.classList.contains('window-app') || app.hasFrame)) return;
     el.classList.add('dsa5h-m-window');
-    // Unser Bogen ist fest 770 px breit; auf dem Smartphone verkleinern, bis das Mobil-Layout kommt (Phase 4).
-    const content = el.querySelector('.window-content');
-    if (mode === 'phone' && content && el.classList.contains('dsa5-helpers-sheet')) content.style.zoom = String(Math.min(1, innerWidth / 770));
+    if (mode === 'phone' && el.classList.contains('dsa5-helpers-sheet')) setupPhoneSheet(el);
   };
   Hooks.on('renderApplicationV2', markWindow);
   Hooks.on('renderApplication', markWindow);

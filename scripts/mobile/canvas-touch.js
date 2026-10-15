@@ -47,17 +47,33 @@ function replayClick(p) {
   setTimeout(() => view.dispatchEvent(new PointerEvent('pointerup', { ...base, button: 0, buttons: 0 })), 30);
 }
 
+let label = null;
+/** Name am Token einblenden (Ersatz für Hover); bei fremden Token mit Knopf „Ziel“ (E22, ersetzt Taste T). */
 function showLabel(token) {
-  const name = token.document.name;
-  if (!name || !token.document.isOwner && token.document.displayName === CONST.TOKEN_DISPLAY_MODES.NONE) return;
-  const c = toClient({ x: token.center.x, y: token.document.y });
-  const el = document.createElement('div');
+  label?.remove();
+  const doc = token.document;
+  const hiddenName = !doc.isOwner && doc.displayName === CONST.TOKEN_DISPLAY_MODES.NONE;
+  const canTarget = !doc.isOwner || game.user.isGM;
+  if (hiddenName && !canTarget) return;
+  const c = toClient({ x: token.center.x, y: doc.y });
+  const el = label = document.createElement('div');
   el.className = 'dsa5h-m-token-label';
-  el.textContent = name;
+  if (!hiddenName) el.append(Object.assign(document.createElement('span'), { textContent: doc.name }));
+  if (canTarget) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const set = () => {
+      btn.classList.toggle('on', token.isTargeted);
+      btn.innerHTML = `<i class="fa-solid fa-bullseye" inert></i> ${game.i18n.localize(token.isTargeted ? 'DSA5HELPERS.Mobile.Untarget' : 'DSA5HELPERS.Mobile.Target')}`;
+    };
+    btn.addEventListener('click', () => { token.setTarget(!token.isTargeted, { releaseOthers: true }); set(); clearTimeout(el.timer); el.timer = setTimeout(() => el.remove(), 1500); });
+    set();
+    el.append(btn);
+  }
   el.style.left = `${c.x}px`;
   el.style.top = `${c.y}px`;
   document.body.append(el);
-  setTimeout(() => el.remove(), 1600);
+  el.timer = setTimeout(() => el.remove(), canTarget ? 3500 : 1600);
 }
 
 // ----- Token ziehen: eigene HTML-Vorschau (Token-Bild am Finger + Zielfeld), bewegt wird erst beim Loslassen.

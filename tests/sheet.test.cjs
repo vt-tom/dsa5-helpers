@@ -69,7 +69,7 @@ test('mobile: CSS loaded and scoped, all texts localized',()=>{
  const en=JSON.parse(read('lang/en.json'));const get=(o,k)=>k.split('.').reduce((a,x)=>a?.[x],o);
  const src=['mobile','shell','canvas-touch','touch-context'].map(f=>read(`scripts/mobile/${f}.js`)).join('\n');
  const used=new Set([...src.matchAll(/DSA5HELPERS\.Mobile\.([A-Za-z.]*[A-Za-z])/g)].map(m=>m[1]));for(const m of src.matchAll(/L\('([A-Za-z.]+)'\)/g))used.add(m[1]);
- for(const k of ['auto','phone','tablet','foundry'])used.add(`Mode.${k}`);for(const k of ['chat','journal','settings'])used.add(`Panel.${k}`);
+ for(const k of ['auto','phone','tablet','foundry'])used.add(`Mode.${k}`);for(const k of ['chat','journal','settings','combat'])used.add(`Panel.${k}`);
  used.delete('Mode');used.delete('Panel'); // nur als Präfix `…Mode.${m}`, Einzelwerte oben ergänzt
  for(const k of used){assert.equal(typeof get(own.DSA5HELPERS.Mobile,k),'string','de: Mobile.'+k);assert.equal(typeof get(en.DSA5HELPERS.Mobile,k),'string','en: Mobile.'+k);}
 });

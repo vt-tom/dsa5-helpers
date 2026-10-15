@@ -13,6 +13,7 @@
    8. Fenster bildschirmfüllend, Kontextmenü als Blatt
    9. Konto-Menü
   10. Szene: Token ziehen, Namen
+  11. Heldenbogen auf Smartphone und Tablet
    ========================================================================== */
 
 /* 1. Variablen ------------------------------------------------------------ */
@@ -44,7 +45,14 @@ body.dsa5h-mobile #board { touch-action: none; }
 /* 2. Foundry-Oberfläche ausblenden / umordnen ------------------------------- */
 body.dsa5h-mobile #ui-left,
 body.dsa5h-mobile #ui-bottom,
-body.dsa5h-mobile #sidebar-tabs { display: none; }
+body.dsa5h-mobile #sidebar-tabs,
+body.dsa5h-mobile #sc-quickbar,
+body.dsa5h-mobile #dsa-calendar-widget,
+body.dsa5h-mobile .dsa5.initTracker { display: none; }
+/* System-Elemente, die mobil ersetzt werden: #sc-quickbar (Gruppenleiste → Heldenkarte), .initTracker (→ Kampfleiste +
+   Kampf-Panel), #dsa-calendar-widget (passt nicht in die Kopfzeile) */
+/* Foundry blendet Teile der Oberfläche ohne Maus-Hover ab (.faded-ui) — Touch kennt kein Hover */
+body.dsa5h-mobile .faded-ui { opacity: 1; }
 body.dsa5h-mobile #ui-right {
   position: fixed;
   inset: auto 0 0 0;
@@ -81,6 +89,25 @@ body.dsa5h-mobile #ui-right {
   background: rgba(20, 18, 16, .78); color: #f4e8d6; font-size: 18px; line-height: 44px;
 }
 #dsa5h-m-shell .dsa5h-m-scenebtns button[aria-pressed="true"] { background: var(--dsa5h-m-gold); color: #1c1917; }
+
+/* Kampfreihenfolge (E23) */
+.dsa5h-m-combat {
+  position: absolute; left: 0; right: 0; top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px)); height: 56px;
+  display: flex; align-items: center; gap: 8px; padding: 0 8px; box-sizing: border-box;
+  background: rgba(39, 35, 32, .92); color: #f4e8d6; border-bottom: 1px solid rgba(224, 192, 128, .4); cursor: pointer;
+}
+.dsa5h-m-combat[hidden] { display: none; }
+.dsa5h-m-cbt-round { flex: none; max-width: 30%; font-size: 13px; font-weight: 700; line-height: 1.2; }
+.dsa5h-m-cbt-round.mine { padding: 4px 8px; border-radius: 12px; background: #e0c48c; color: #1c1917; }
+.dsa5h-m-cbt-list { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.dsa5h-m-cbt { flex: none; position: relative; width: 40px; height: 40px; }
+.dsa5h-m-cbt img { width: 40px; height: 40px; border: 2px solid rgba(244, 232, 214, .35); border-radius: 50%; object-fit: cover; box-sizing: border-box; }
+.dsa5h-m-cbt.own img { border-color: #b99a5c; }
+.dsa5h-m-cbt.current img { border-color: #e0c48c; box-shadow: 0 0 0 3px rgba(224, 196, 140, .5); }
+.dsa5h-m-cbt.defeated { opacity: .4; }
+.dsa5h-m-cbt b { position: absolute; right: -3px; bottom: -3px; min-width: 18px; padding: 0 3px; border-radius: 9px; background: #1c1917; font-size: 11px; line-height: 16px; text-align: center; }
+#dsa5h-m-shell .dsa5h-m-combat button { flex: none; width: auto; height: 40px; margin: 0; padding: 0 10px; border: 0; border-radius: 6px; background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); font-size: 13px; font-weight: 700; line-height: 40px; }
+body.dsa5h-m-in-combat .dsa5h-m-scenebtns { top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 66px); }
 
 /* 5. Heldenkarte ----------------------------------------------------------- */
 .dsa5h-m-heroes {
@@ -160,6 +187,7 @@ body.dsa5h-mobile.dsa5h-m-panel-open #sidebar {
   pointer-events: auto; background: var(--color-cool-5, #1a1a1d);
   padding-bottom: var(--dsa5h-m-safe-b); box-sizing: border-box;
 }
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar { --sidebar-width: 100%; --sidebar-scroll-gutter: 0px; }
 body.dsa5h-mobile.dsa5h-m-panel-open #sidebar-content { width: 100%; margin: 0; transition: none; }
 body.dsa5h-mobile.dsa5h-m-panel-open #sidebar-content .tab { width: 100%; }
 .dsa5h-m-panelbar {
@@ -185,7 +213,7 @@ body.dsa5h-mobile .dsa5h-m-window {
   position: fixed !important;
   inset: calc(env(safe-area-inset-top, 0px) + 6px) 0 0 0 !important;
   width: auto !important; height: auto !important; max-width: none !important; max-height: none !important;
-  transform: none !important; border-radius: 10px 10px 0 0;
+  min-width: 0 !important; min-height: 0 !important; transform: none !important; border-radius: 10px 10px 0 0;
 }
 body.dsa5h-tablet .dsa5h-m-window.dialog,
 body.dsa5h-tablet .dsa5h-m-window.dialog-dsa5 { inset: auto 0 0 0 !important; max-height: 90vh !important; margin: 0 auto; width: min(640px, 100vw) !important; }
@@ -194,6 +222,10 @@ body.dsa5h-mobile .dsa5h-m-window .window-header button.header-control { width: 
 body.dsa5h-mobile .dsa5h-m-window .window-content { overflow: auto; }
 body.dsa5h-mobile .dsa5h-m-window .window-resize-handle,
 body.dsa5h-mobile .dsa5h-m-window .window-resizable-handle { display: none; }
+/* Journal-Blatt auf dem Smartphone: Seitenliste über dem Text statt daneben (fest 300 px breit) */
+body.dsa5h-phone .dsa5h-m-window.journal-sheet .window-content { flex-direction: column; }
+body.dsa5h-phone .dsa5h-m-window.journal-sheet .journal-sidebar { width: auto; flex: none; max-height: 26vh; overflow-y: auto; }
+body.dsa5h-phone .dsa5h-m-window.journal-sheet .journal-entry-content { width: auto; flex: 1; min-height: 0; }
 body.dsa5h-mobile #context-menu {
   position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important;
   width: auto !important; max-width: 520px; max-height: 70vh; margin: 0 auto; overflow-y: auto;
@@ -238,8 +270,85 @@ body.dsa5h-mobile #context-menu .context-item { min-height: 48px; display: flex;
 .dsa5h-m-drop.blocked { background: rgba(179, 36, 26, .35); outline-color: #cf4a3e; }
 .dsa5h-m-ghost { position: absolute; border: 0; border-radius: 50%; opacity: .9; transform: scale(1.12); filter: drop-shadow(0 12px 16px rgba(0, 0, 0, .6)); }
 .dsa5h-m-token-label {
-  position: fixed; z-index: 35; transform: translate(-50%, -120%); padding: 2px 8px; border-radius: 10px;
-  background: rgba(20, 18, 16, .85); color: #f4e8d6; font-size: 13px; white-space: nowrap; pointer-events: none;
-  animation: dsa5h-m-fade 1.6s ease-out forwards;
+  position: fixed; z-index: 35; transform: translate(-50%, calc(-100% - 6px)); padding: 3px 4px 3px 10px; border-radius: 16px;
+  display: flex; align-items: center; gap: 8px; background: rgba(20, 18, 16, .88); color: #f4e8d6; font-size: 13px; white-space: nowrap;
+  animation: dsa5h-m-fade 3.5s ease-out forwards;
 }
-@keyframes dsa5h-m-fade { 0% { opacity: 0; } 12% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+.dsa5h-m-token-label:not(:has(button)) { padding-right: 10px; pointer-events: none; animation-duration: 1.6s; }
+.dsa5h-m-token-label button {
+  width: auto; height: 34px; margin: 0; padding: 0 12px; border: 1px solid #b3241a; border-radius: 17px;
+  background: transparent; color: #f19a90; font-size: 13px; font-weight: 700; line-height: 32px;
+}
+.dsa5h-m-token-label button.on { background: #b3241a; color: #fff; }
+@keyframes dsa5h-m-fade { 0% { opacity: 0; } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+
+/* 11. Heldenbogen auf Smartphone und Tablet ---------------------------------
+   Gleicher Bogen wie am Desktop (E10), nur umgeordnet. Smartphone: Reiterleiste unten (4 Reiter + „Mehr“),
+   Kopf klappt beim Scrollen zusammen (Klasse dsa5h-m-compact aus scripts/mobile/mobile.js), Titelblatt einspaltig.
+   Tablet: Reiterleiste rechts im Fenster statt außen daneben. */
+body.dsa5h-phone .dsa5-helpers-sheet .window-content { padding-bottom: calc(64px + var(--dsa5h-m-safe-b)) !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .window-content nav.dsa5h-rail {
+  position: fixed !important; inset: auto 0 0 0 !important; z-index: 6 !important;
+  display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px !important;
+  padding: 4px 4px calc(4px + var(--dsa5h-m-safe-b)) !important; margin: 0 !important;
+  background: #272320 !important; border: 0 !important; border-top: 1px solid rgba(224, 192, 128, .45) !important; border-radius: 0 !important;
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, .35);
+}
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail:not(.dsa5h-m-more-open) > .dsa5h-rail-btn:nth-of-type(n+5),
+body.dsa5h-mobile .dsa5-helpers-sheet nav.dsa5h-rail > button[hidden] { display: none !important; }
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button,
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button {
+  width: auto !important; height: 54px !important; min-width: 0; margin: 0 !important; padding: 0 2px !important;
+  display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  border: 0 !important; border-radius: 6px !important; background: transparent !important; color: #f4e8d6;
+}
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button.active,
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button.active,
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button.dsa5h-m-more.current { background: rgba(224, 192, 128, .2) !important; box-shadow: inset 0 2px 0 #e0c48c; }
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button img,
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button img { width: 24px !important; height: 24px !important; }
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label,
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label {
+  display: block !important; position: static; transform: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+  padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 11px; line-height: 1.1;
+}
+.dsa5h-m-more > i { font-size: 20px; line-height: 24px; }
+.dsa5h-m-more:not(.current) > img { display: none; }
+.dsa5h-m-more.current > i { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail.dsa5h-m-more-open { box-shadow: 0 -12px 30px rgba(0, 0, 0, .55); }
+
+/* Kopf: kompakter, Name bekommt die volle Zeile */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head { gap: 10px; padding: 10px 12px; cursor: default; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-portrait { flex: 0 0 64px; width: 64px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top { flex-wrap: wrap; gap: 2px 10px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top .dsa5h-name { flex: 1 1 100%; font-size: 28px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-main { gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content { padding: 0 10px 16px; }
+/* Beim Scrollen eingeklappt: nur Porträt klein, Name, Ressourcen */
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { padding: 6px 10px; align-items: center; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait { flex-basis: 40px; width: 40px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-name { font-size: 20px !important; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-ap-block, .dsa5h-badges),
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-attr-overlay { display: none; }
+
+/* Titelblatt einspaltig: Leiste (Porträt, Ressourcen, Zustände) über dem Inhalt, begrenzt hoch */
+body.dsa5h-phone .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
+  grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: auto auto auto auto minmax(0, 1fr) !important;
+  grid-template-areas: "head" "sidebar" "attrbar" "tabtitle" "content" !important;
+}
+body.dsa5h-phone .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar { max-height: 36vh; border-bottom: 1px solid rgba(224, 192, 128, .3); }
+body.dsa5h-phone .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar .dsa5h-portrait { width: 96px; flex-basis: 96px; align-self: center; }
+
+/* Favoriten: feste Wertespalten schmaler, damit der Name Platz hat */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fav-grid { grid-template-columns: minmax(0, 1fr); padding: 8px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fav-card { grid-template-columns: 24px minmax(0, 1fr) auto auto 24px; gap: 6px; }
+
+/* Breite Tabellen waagerecht scrollbar statt abgeschnitten */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .panel { overflow-x: auto; }
+
+/* Tablet: Reiterleiste rechts im Fenster */
+body.dsa5h-tablet .dsa5-helpers-sheet .window-content { padding-right: 84px !important; }
+body.dsa5h-tablet .dsa5-helpers-sheet .window-content nav.dsa5h-rail {
+  left: auto !important; right: 10px; top: 60px; bottom: 10px; z-index: 6 !important; width: 66px;
+  overflow-y: auto; gap: 4px;
+}
