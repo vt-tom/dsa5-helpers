@@ -285,6 +285,38 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 - **Live:** Echte Geräte, mindestens ein iPhone (Safari) und ein Android-Handy (Chrome). Remote-Debugging (Safari Web Inspector / `chrome://inspect`). Foundry ist von außen erreichbar (LAN-IP bzw. Weiterleitung) — Einrichtung beim Nutzer, hier läuft kein Foundry.
 - **Checkliste je Phase:** die Kriterien aus 3.2.
 
+### 11.1 Testversion installieren und testen (Mobil-Kanal, seit 2026-10-15)
+
+Testversionen von `feature/mobile` erscheinen in einem eigenen Kanal (veröffentlichen: [RELEASE.md](RELEASE.md) „Mobil-Kanal“). Erste Testversion: **0.6.0** (Tag `mobile-v0.6.0`).
+
+**Installieren**
+
+1. **Nicht in diesem Data-Ordner** (`v14/Data/modules/dsa5-helpers` ist das Git-Arbeitsverzeichnis und würde überschrieben). Eine andere Foundry-Installation nehmen, z. B. den eigentlichen Spielserver.
+2. Foundry-Startseite → **Add-on-Module → Modul installieren** → unten bei **Manifest-URL** einfügen:
+   `https://github.com/vt-tom/dsa5-helpers/releases/download/mobile/module.json` → **Installieren**.
+   Ist DSA5 Helpers dort schon aus dem Stabil- oder Beta-Kanal installiert, das Modul vorher deinstallieren (Welt-Einstellungen und Bogen-Wahl bleiben erhalten, sie hängen an der Modul-ID). Sonst bleibt die alte Manifest-URL aktiv und es kommt kein Mobil-Update.
+3. DSA5-Welt starten, als SL **Module verwalten** → DSA5 Helpers aktivieren.
+4. **Einstellungen → Moduleinstellungen → DSA5 Helpers → „Hybrides Spiel (Tablet/Smartphone)“** einschalten, speichern, neu laden. Ohne diese Einstellung läuft keine Mobil-Logik.
+5. **Updates:** Spätere Testversionen bietet Foundry unter Add-on-Module → **Updates prüfen** an. Wer so installiert hat, bleibt im Mobil-Kanal.
+6. **Zurück zur normalen Version:** Modul deinstallieren und mit `…/releases/latest/download/module.json` (Stabil) bzw. `…/releases/download/beta/module.json` (Beta) neu installieren.
+
+**Mit Handy/Tablet verbinden**
+
+- Foundry muss vom Gerät aus erreichbar sein: im gleichen WLAN über die LAN-Adresse des Servers (z. B. `http://192.168.x.y:30000`), sonst über die Internet-Adresse/Weiterleitung. Die Adressen zeigt Foundry in der Welt unter **Einstellungen → Einladungslinks**. Unter Windows ggf. die Firewall für den Foundry-Port freigeben.
+- Im Browser des Geräts die Adresse öffnen und sich mit einem Benutzer anmelden. Die Oberfläche wird automatisch gewählt (13.2): Smartphone bei kurzer Bildschirmseite unter 600 px, sonst Tablet. Ein PC mit Maus bleibt bei der normalen Oberfläche, eine Abfrage gibt es bewusst nicht.
+- Überschreiben pro Gerät: Konto-Menü der Mobil-Oberfläche bzw. Moduleinstellung **„Oberfläche auf diesem Gerät“** (Automatisch/Smartphone/Tablet/Foundry), oder `?dsa5h-ui=phone|tablet|foundry` an die Adresse hängen (z. B. `…/game?dsa5h-ui=foundry`, falls eine Ansicht kaputt ist).
+- Die Szene ist auch auf dem Smartphone an (E18/E21). Abschalten pro Gerät im Konto-Menü („Spielfeld aus“ = `core.noCanvas`).
+- Gleichen Benutzer an PC und Handy gleichzeitig: sollte gehen, ist aber noch nicht live geprüft (Fragen dazu in 13.7).
+
+**Am PC ausprobieren (ohne Gerät)**
+
+- Chrome/Edge: F12 → Gerätesymbol (Strg+Umschalt+M) → z. B. „iPhone 12 Pro“ oder „iPad Air“ → Seite neu laden. Die Emulation meldet einen Touch-Zeiger, die Automatik greift.
+- Oder ohne Emulation `?dsa5h-ui=phone` bzw. `?dsa5h-ui=tablet` an die Adresse hängen. Gesten lassen sich mit der Maus aber nur eingeschränkt prüfen.
+
+**Was prüfen**
+
+Die Checkliste steht in [AUFGABEN.md](AUFGABEN.md) („Mobil Stufe 1 + 2“). Mindestens ein iPhone/iPad (Safari) **und** ein Android-Gerät (Chrome). Fehler mit Gerät, Browser und Schritt in AUFGABEN.md bzw. als GitHub-Issue festhalten. Fehlersuche am Gerät: Android über `chrome://inspect` am PC (USB-Debugging), iPhone über Safari → Entwickler am Mac.
+
 ## 12. Risiken
 
 | Risiko | Gegenmaßnahme |
