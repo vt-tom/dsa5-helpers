@@ -387,6 +387,7 @@
       "NoRequest": "Roll requests are not available in this DSA5 version.",
       "NoToken": "Your hero has no token in this scene.",
       "DesktopSite": "“Desktop site” is enabled in your browser, which makes everything tiny. In Chrome: menu ⋮ → untick “Desktop site” (or turn it off for this site under Settings → Site settings → Desktop site).",
+      "SwitchSheet": "Switch sheet",
       "Paused": "The game is paused.",
       "Blocked": "The token cannot move there (wall).",
       "MessageActions": "Message actions",

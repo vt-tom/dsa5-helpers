@@ -965,10 +965,12 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     root.querySelectorAll('[data-side-tab]').forEach(el => el.setAttribute('aria-selected', String(el.dataset.sideTab === this._coverSideTab)));
     root.querySelectorAll('[data-side-panel]').forEach(el => { el.hidden = el.dataset.sidePanel !== this._coverSideTab; });
     root.querySelector('[data-attr-overlay]')?.toggleAttribute('hidden', this._currentTab === 'main');
-    // Move the same controls, so the overview never duplicates named form fields.
+    // Move the same controls, so the overview never duplicates named form fields. Smartphone (feature/mobile): Porträt,
+    // Ressourcen und Schips bleiben auf allen Reitern im Kopf (MOBILE.md 14, Ü2).
+    const keepInHead = !!document.body?.classList.contains('dsa5h-phone');
     root.querySelectorAll('[data-cover-move]').forEach(el => {
       const slot = el.dataset.coverMove;
-      if (this._currentTab === 'cover') root.querySelector('[data-cover-slot="' + slot + '"]')?.append(el);
+      if (this._currentTab === 'cover' && !keepInHead) root.querySelector('[data-cover-slot="' + slot + '"]')?.append(el);
       else root.querySelector('[data-header-slot="' + slot + '"]')?.after(el);
     });
     this._fitName();

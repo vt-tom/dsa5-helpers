@@ -31,10 +31,39 @@ function chosenMode() {
   return game.settings.get(MODULE_ID, 'uiMode');
 }
 
+/** „Mehr“-Blatt (MOBILE.md 14, Ü4): die Reiter ab dem fünften als Kacheln, dazu Bogen-Thema und Bogen wechseln. */
+function openMoreSheet(el) {
+  const rail = el.querySelector('nav.dsa5h-rail');
+  const tabs = [...rail.querySelectorAll('.dsa5h-rail-btn')].slice(4);
+  const wrap = document.createElement('div');
+  wrap.className = 'dsa5h-m-more-backdrop';
+  const tile = b => `<button type="button" data-tab="${b.dataset.tab}"${b.classList.contains('active') ? ' class="active"' : ''}>
+    <img src="${b.querySelector('img')?.getAttribute('src') ?? ''}" alt=""><span>${foundry.utils.escapeHTML(b.querySelector('.dsa5h-rail-label')?.textContent ?? '')}</span></button>`;
+  const theme = el.querySelector('.header-control[data-action="dsa5hTheme"]');
+  const switcher = el.querySelector('.dsa5h-sheet-switcher');
+  wrap.innerHTML = `<div class="dsa5h-m-more-sheet" role="dialog" aria-label="${game.i18n.localize('DSA5HELPERS.Mobile.More')}">
+    <div class="dsa5h-m-grip"></div>
+    <div class="dsa5h-m-more-tiles">${tabs.map(tile).join('')}</div>
+    <div class="dsa5h-m-more-actions">
+      ${theme ? `<button type="button" data-do="theme"><i class="${theme.querySelector('i')?.className ?? theme.className.replace(/header-control|icon/g, '')}" inert></i> ${game.i18n.localize('DSA5HELPERS.Theme')}</button>` : ''}
+      ${switcher ? `<button type="button" data-do="switch"><i class="fa-solid fa-arrow-right-arrow-left" inert></i> ${game.i18n.localize('DSA5HELPERS.Mobile.SwitchSheet')}</button>` : ''}
+    </div></div>`;
+  wrap.addEventListener('click', ev => {
+    const b = ev.target.closest('button');
+    if (ev.target === wrap || b) wrap.remove();
+    if (!b) return;
+    if (b.dataset.tab) rail.querySelector(`.dsa5h-rail-btn[data-tab="${b.dataset.tab}"]`)?.click();
+    else if (b.dataset.do === 'theme') theme?.click();
+    else if (b.dataset.do === 'switch') switcher?.click();
+  });
+  el.append(wrap);
+}
+
 /**
- * Unser Bogen auf dem Smartphone (MOBILE.md 7.1, Click-Dummy Runde 3): Reiterleiste unten mit 4 Reitern + „Mehr“
- * (klappt die übrigen Reiter auf; ist einer davon aktiv, zeigt „Mehr“ dessen Symbol), Kopf klappt beim Scrollen
- * zusammen. Läuft nach jedem Rendern, die Reiter selbst bleiben die Knöpfe des Bogens (data-action dsa5hSetTab).
+ * Unser Bogen auf dem Smartphone (MOBILE.md 7.1 und 14, Click-Dummy Runde 3): Reiterleiste unten mit 4 Reitern +
+ * „Mehr“ (öffnet ein Blatt mit den übrigen Reitern; ist einer davon aktiv, zeigt „Mehr“ dessen Symbol), Kopf klappt
+ * beim Scrollen zusammen, Antippen einer Probenzeile würfelt. Läuft nach jedem Rendern, die Reiter selbst bleiben die
+ * Knöpfe des Bogens (data-action dsa5hSetTab).
  */
 function setupPhoneSheet(el) {
   const rail = el.querySelector('nav.dsa5h-rail');
@@ -42,7 +71,6 @@ function setupPhoneSheet(el) {
     const more = document.createElement('button');
     more.type = 'button';
     more.className = 'dsa5h-m-more';
-    more.setAttribute('aria-expanded', 'false');
     more.innerHTML = `<i class="fa-solid fa-ellipsis" inert></i><img alt="" inert><span class="dsa5h-rail-label">${game.i18n.localize('DSA5HELPERS.Mobile.More')}</span>`;
     rail.append(more);
     const sync = () => {
@@ -54,29 +82,33 @@ function setupPhoneSheet(el) {
       more.querySelector('.dsa5h-rail-label').textContent = extra ? extra.querySelector('.dsa5h-rail-label')?.textContent : game.i18n.localize('DSA5HELPERS.Mobile.More');
       more.hidden = tabs.length <= 5 && !extra;
     };
-    more.addEventListener('click', () => {
-      const open = !rail.classList.contains('dsa5h-m-more-open');
-      rail.classList.toggle('dsa5h-m-more-open', open);
-      more.setAttribute('aria-expanded', String(open));
-    });
-    rail.addEventListener('click', ev => {
-      if (!ev.target.closest('.dsa5h-rail-btn')) return;
-      rail.classList.remove('dsa5h-m-more-open');
-      more.setAttribute('aria-expanded', 'false');
-      setTimeout(sync, 0);
-    });
+    more.addEventListener('click', () => openMoreSheet(el));
+    rail.addEventListener('click', ev => { if (ev.target.closest('.dsa5h-rail-btn')) setTimeout(sync, 0); });
     sync();
   }
-  if (!el.dataset.dsa5hScroll) {
-    el.dataset.dsa5hScroll = '1';
-    // Kopf einklappen ab 90 px Scrollweg, unter 4 px wieder aufklappen (Click-Dummy-Verhalten)
-    el.addEventListener('scroll', ev => {
-      if (!ev.target.classList?.contains('dsa5h-content')) return;
-      const y = ev.target.scrollTop;
-      if (y > 90) el.classList.add('dsa5h-m-compact');
-      else if (y < 4) el.classList.remove('dsa5h-m-compact');
-    }, true);
-  }
+  if (el.dataset.dsa5hPhone) return;
+  el.dataset.dsa5hPhone = '1';
+  // Kopf einklappen ab 90 px Scrollweg, unter 4 px wieder aufklappen (Click-Dummy-Verhalten)
+  el.addEventListener('scroll', ev => {
+    if (!ev.target.classList?.contains('dsa5h-content')) return;
+    const y = ev.target.scrollTop;
+    if (y > 90) el.classList.add('dsa5h-m-compact');
+    else if (y < 4) el.classList.remove('dsa5h-m-compact');
+  }, true);
+  // Zeile antippen würfelt (Frage 14.5, Vorschlag): gilt für Zeilen mit genau einer Probe (Talente, Zauber, Liturgien,
+  // Sammelproben), nur im Spielmodus. Das Gegenstandsblatt öffnet der Langdruck über das Kontextmenü („Bearbeiten“).
+  el.addEventListener('click', ev => {
+    if (el.dataset.mode === 'edit') return;
+    const row = ev.target.closest('.dsa5h-content .row.item, .dsa5h-content .row.dsa5h-aggregated-talent');
+    if (!row) return;
+    const interactive = ev.target.closest('button, input, select, textarea, label, a, [data-action]');
+    if (interactive && !interactive.closest('.withContext')) return;
+    const probes = row.querySelectorAll('.dsa5h-skill-probe');
+    if (probes.length !== 1) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    probes[0].click();
+  }, true);
 }
 
 /** Im init-Hook aufrufen. */
