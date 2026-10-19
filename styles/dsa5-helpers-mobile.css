@@ -348,8 +348,6 @@ body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label {
   padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 11px; line-height: 1.1;
 }
 .dsa5h-m-more > i { font-size: 20px; line-height: 24px; }
-.dsa5h-m-more:not(.current) > img { display: none; }
-.dsa5h-m-more.current > i { display: none; }
 
 /* Kopf (MOBILE.md 14, Ü2, Vorbild Dummy 07): Porträt links über zwei Zeilen, daneben Name + AP/Schips und die
    Identitäts-Chips in einer Zeile; darunter LeP/AsP/KaP in einer Zeile über die volle Breite, dann die Würfel.
@@ -394,13 +392,39 @@ body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-ap-b
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-attr-overlay { display: none; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-bar { height: 24px; }
 
-/* Titelblatt einspaltig: Kopf wie auf den anderen Reitern, darunter der Kasten Statuseffekte/Persönliche Daten */
+/* Titelblatt einspaltig: Kopf wie auf den anderen Reitern; der Kasten Statuseffekte/Persönliche Daten steht unter den
+   Favoriten (mobile.js verschiebt ihn in den Titelblatt-Reiter), die Seitenleiste selbst entfällt. */
 body.dsa5h-phone .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
-  grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: auto auto auto auto minmax(0, 1fr) !important;
-  grid-template-areas: "head" "attrbar" "sidebar" "tabtitle" "content" !important;
+  grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: auto auto auto minmax(0, 1fr) !important;
+  grid-template-areas: "head" "attrbar" "tabtitle" "content" !important;
 }
-body.dsa5h-phone .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar { max-height: none; padding: 0 10px 10px; border: 0; }
-body.dsa5h-phone .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar > :not(.dsa5h-side-tabs-panel) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-cover-sidebar { display: none !important; }
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="cover"] > .dsa5h-side-tabs-panel { margin-top: 12px; overflow: hidden; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tabs { border-bottom: 1px solid var(--line); background: var(--dsa5h-m-phead); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tab {
+  flex: 1 1 0; min-width: 0; height: 44px; margin: 0; padding: 0 8px; border: 0; border-bottom: 3px solid transparent; border-radius: 0;
+  background: none; box-shadow: none; color: var(--muted); font-family: 'Andalus', serif; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tab[aria-selected="true"] { border-bottom-color: var(--accent); color: var(--ink); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) auto 44px; gap: 8px; align-items: center; min-height: 52px; margin: 0; padding: 4px 12px;
+  border-top: 1px solid var(--line); font-size: 16px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition:first-child { border-top: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition img { width: 28px; height: 28px; border-radius: 3px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition a { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition .dsa5h-step { width: 44px; height: 44px; margin: 0; font-size: 22px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition > strong { font-size: 18px; text-align: center; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-more {
+  display: block; width: 100%; height: 44px; margin: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0;
+  background: var(--field); color: var(--ink); font-size: 15px; box-shadow: none;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-empty { margin: 12px; color: var(--muted); font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details { padding: 0 12px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details div { display: block; padding: 8px 0; border-top: 1px solid var(--line); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details div:first-child { border-top: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details dt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details dd { color: var(--ink); font-size: 16px; white-space: normal; overflow-wrap: anywhere; }
 
 /* Reitertitel + Unterreiter (Ü5): Titel und Linie in einer Zeile, Unterreiter darunter über die volle Breite.
    Bis 3 Einträge als Segment-Schalter, mehr als 3 als waagerecht wischbare Chips (einzige waagerechte Bewegung). */
@@ -491,6 +515,7 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item {
 }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(2) { grid-column: 2 / span 3; grid-row: 1; align-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > .withContext a { font-size: 16px; line-height: 1.2; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :is(:nth-child(5), :nth-child(6), :nth-child(7)) {
   grid-row: 2; align-self: start; justify-self: start; white-space: nowrap; font-size: 13px; color: var(--muted, rgba(43, 39, 33, .72)); text-align: left;
 }
@@ -503,7 +528,7 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6) button { height: 28px; margin-left: 4px; padding: 0 6px; font-size: 13px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :is(:nth-child(3), :nth-child(4), :nth-child(8)) { grid-row: 1 / span 2; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(3) { grid-column: 5; margin-left: 6px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(4) { grid-column: 6; min-width: 26px; margin-left: 6px; text-align: right; font-weight: 700; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(4) { grid-column: 6; min-width: 26px; margin-left: 6px; text-align: right; font-weight: 700; font-size: 16px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(8) { grid-column: 7; }
 body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-spell-row.item > :nth-child(3) { grid-column: 5 / span 2; grid-row: 1; justify-self: end; align-self: end; }
 body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-spell-row.item > :nth-child(4) { grid-column: 5 / span 2; grid-row: 2; justify-self: end; }
@@ -563,29 +588,53 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-2h-note {
   border: 1px solid var(--line); border-radius: 6px; background: var(--field);
 }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-2h-note { display: block; padding-block: 8px; }
-/* Hand mit Waffe: Bild | Hand, Name, Kampftechnik | TP; darunter AT/PA, Fernkampf, Handwahl */
+/* Hand mit Waffe (überarbeitet nach Rückmeldung 2026-10-19, Vorbild Dummy 11):
+     [Bild] HAUPTHAND / Name / Kampftechnik                 [⇄]
+     [(8) AT] [(6) PA]                                  ■ 1W6+2
+   Die Handwahl ist das unsichtbare <select> über dem ⇄-Knopf, die Würfel sind Pillen mit Beschriftung (title des Knopfs
+   als ::after, gehört zur Trefferfläche des Knopfs). */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot.item {
-  display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; column-gap: 10px; row-gap: 2px; align-items: center;
+  position: relative; display: grid; grid-template-columns: 48px auto auto minmax(0, 1fr) 44px; column-gap: 10px; row-gap: 2px; align-items: center;
 }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile { display: contents; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > img {
-  position: static; grid-column: 1; grid-row: 1 / span 3; width: 48px; height: 48px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper);
+  position: static; grid-column: 1; grid-row: 1 / span 3; align-self: start; width: 48px; height: 48px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper);
 }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > meter { position: static; grid-column: 1; grid-row: 4; width: 48px; align-self: start; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-figure-col-title { grid-column: 2; grid-row: 1; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-body-item-name { grid-column: 2; grid-row: 2; font-size: 17px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-ct-link { grid-column: 2; grid-row: 3; justify-self: start; align-self: start; text-align: left; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-damage { grid-column: 3; grid-row: 1 / span 3; margin: 0; min-height: 40px; padding-inline: 10px; font-size: 16px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > .dsa5h-onuse { position: static; grid-column: 3; grid-row: 4; justify-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > meter { position: static; grid-column: 1; grid-row: 3; align-self: end; width: 48px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-figure-col-title { grid-column: 2 / span 3; grid-row: 1; font-size: 11px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-body-item-name { grid-column: 2 / span 3; grid-row: 2; font-family: 'Andalus', serif; font-size: 21px; font-weight: normal; line-height: 1.1; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-ct-link { grid-column: 2 / span 3; grid-row: 3; justify-self: start; align-self: start; text-align: left; font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-hand-select {
+  position: absolute; top: 8px; right: 8px; z-index: 1; width: 44px; height: 44px; margin: 0; opacity: 0;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item::after {
+  content: '⇄'; position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; display: grid; place-items: center; box-sizing: border-box;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--muted); font-size: 20px; pointer-events: none;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > .dsa5h-onuse { position: static; grid-column: 5; grid-row: 3; justify-self: center; }
+/* AT/PA bzw. FK als Pillen */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item :is(.dsa5h-hand-tile-at, .dsa5h-hand-tile-pa) {
-  position: relative; z-index: 0; left: auto; right: auto; bottom: auto; grid-row: 4; width: 44px; height: 44px; margin: 12px 0 6px 6px;
+  position: relative; inset: auto; grid-row: 4; display: flex; align-items: center; box-sizing: border-box; width: auto; height: 48px; margin-top: 10px;
+  padding: 3px 44px 3px 4px; border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 8px; background: var(--paper); transform: none !important;
 }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile-at { grid-column: 1; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile-pa { grid-column: 2; justify-self: start; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item .dsa5h-die-seal .dsa5h-combat-die { width: 44px; height: 44px; font-size: 17px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > :is(.dsa5h-hand-ranged, .dsa5h-hand-select, .dsa5h-hand-swap) { grid-column: 1 / -1; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-hand-ranged { display: flex; flex-wrap: wrap; justify-content: flex-start !important; gap: 6px; margin-top: 6px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot :is(.dsa5h-hand-select, .dsa5h-hand-swap) { height: 44px; margin-top: 8px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item :is(.dsa5h-hand-tile-at, .dsa5h-hand-tile-pa)::before,
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item :is(.dsa5h-hand-tile-at, .dsa5h-hand-tile-pa)::after { content: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile-at { grid-column: 1 / span 2; justify-self: start; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile-pa { grid-column: 3; justify-self: start; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item .dsa5h-die-seal .dsa5h-combat-die { position: static; width: 40px; height: 40px; font-size: 17px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item .dsa5h-die-seal .dsa5h-combat-die::after {
+  content: attr(title); position: absolute; top: 0; right: 0; bottom: 0; width: 44px; display: grid; place-items: center;
+  color: var(--ink); text-shadow: none; font-size: 16px; font-weight: 700;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-damage {
+  grid-column: 4 / span 2; grid-row: 4; justify-self: end; margin: 10px 0 0; min-height: 44px; padding-inline: 12px; font-size: 17px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > :is(.dsa5h-hand-ranged, .dsa5h-hand-swap) { grid-column: 1 / -1; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-hand-ranged { display: flex; flex-wrap: wrap; justify-content: flex-start !important; gap: 6px; margin-top: 8px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-hand-swap {
+  justify-self: start; height: 40px; margin-top: 8px; padding: 0 12px; border: 1px dashed var(--line2, rgba(43, 39, 33, .28)); background: none; font-size: 15px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot:not(.item) > .dsa5h-hand-select { height: 44px; font-size: 16px; }
 /* Leere Hand: eine Zeile „Haupthand“ + Auswahl */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot:not(.item) {
   display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 12px; padding-block: 6px;

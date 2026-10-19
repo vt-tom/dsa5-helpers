@@ -128,21 +128,26 @@ function setupPhoneSheet(el, app) {
     const more = document.createElement('button');
     more.type = 'button';
     more.className = 'dsa5h-m-more';
-    more.innerHTML = `<i class="fa-solid fa-ellipsis" inert></i><img alt="" inert><span class="dsa5h-rail-label">${game.i18n.localize('DSA5HELPERS.Mobile.More')}</span>`;
+    more.innerHTML = `<i class="fa-solid fa-ellipsis" inert></i><span class="dsa5h-rail-label">${game.i18n.localize('DSA5HELPERS.Mobile.More')}</span>`;
     rail.append(more);
+    // Ist ein Reiter aus dem „Mehr“-Blatt aktiv, bleibt der Knopf „••• Mehr“ (sonst findet man nicht zurück ins Blatt,
+    // Rückmeldung 2026-10-19) und ist nur hervorgehoben; welcher Reiter es ist, zeigt der Reitertitel.
     const sync = () => {
       const tabs = [...rail.querySelectorAll('.dsa5h-rail-btn')];
       const active = tabs.findIndex(b => b.classList.contains('active'));
-      const extra = active >= 4 ? tabs[active] : null;
-      more.classList.toggle('current', !!extra);
-      more.querySelector('img').src = extra?.querySelector('img')?.src ?? '';
-      more.querySelector('.dsa5h-rail-label').textContent = extra ? extra.querySelector('.dsa5h-rail-label')?.textContent : game.i18n.localize('DSA5HELPERS.Mobile.More');
-      more.hidden = tabs.length <= 5 && !extra;
+      more.classList.toggle('current', active >= 4);
+      more.hidden = tabs.length <= 5 && active < 4;
     };
     more.addEventListener('click', () => openMoreSheet(el, app));
     rail.addEventListener('click', ev => { if (ev.target.closest('.dsa5h-rail-btn')) setTimeout(sync, 0); });
     sync();
   }
+  // Titelblatt: Kasten „Statuseffekte | Persönliche Daten“ unter die Favoriten (Rückmeldung 2026-10-19) statt direkt
+  // unter die Eigenschaftswürfel. Der Bogen rendert immer komplett neu (ein PARTS-Eintrag), das Verschieben ist also
+  // bei jedem Rendern frisch; die Aktionen laufen weiter über data-action im Bogen.
+  const sidePanel = el.querySelector('.dsa5h-cover-sidebar .dsa5h-side-tabs-panel');
+  const coverTab = el.querySelector('[data-tab-panel="cover"]');
+  if (sidePanel && coverTab) coverTab.append(sidePanel);
   addResourceSteppers(el, app);
   if (el.dataset.dsa5hPhone) return;
   el.dataset.dsa5hPhone = '1';
