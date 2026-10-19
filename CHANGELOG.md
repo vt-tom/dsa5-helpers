@@ -7,6 +7,7 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 ### Geändert
 
 - Neuer Kopf im Heldenbogen: Oben ein Bannerstreifen mit Name und Schicksalspunkten. Im Bearbeiten-Modus lässt sich je Held ein eigenes Bannerbild wählen oder wieder entfernen, ohne Bild bleibt der Kopf dunkel. Das Porträt hat eine kräftige Goldfassung und lässt sich im Bearbeiten-Modus zwischen eckig und rund umschalten; darunter zeigt ein rotes Band den AP-Wert und die freien AP. Spezies, Kultur und Profession stehen als schlichte Zeile in Großbuchstaben unter dem Namen. LeP, AsP und KaP sind jetzt Kugeln, deren Füllstand den Verlust zeigt – der aktuelle Wert lässt sich weiterhin direkt in der Kugel ändern. Auf dem Titelblatt stehen Porträt, AP-Band und Kugeln in der linken Leiste.
+- Neue Waffenkarte im Kampf-Reiter › Körper ([#40](https://github.com/vt-tom/dsa5-helpers/issues/40)): Jede Waffe in der Hand steht auf einer eigenen Karte mit einem Wimpel für die Hand, dem Namen groß obenauf, dem Waffenbild frei auf einem Lichtschein und der Waffe als blassem Wasserzeichen dahinter. Daneben stehen Kampftechnik und Reichweite, darunter AT/PA bzw. FK als Knöpfe und der Schadenswurf. Die Waffe wechselt man über ⇄ oben rechts, ausgerüstete Waffen lassen sich jetzt auch hier als Favorit markieren. Beide Hände sind gleich groß, auch eine freie oder von einer beidhändigen Waffe belegte Hand.
 
 ## [0.5.1] — 2026-10-07
 

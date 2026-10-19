@@ -22,6 +22,8 @@ const A = {
   combatSkill: ICONS + "/categories/Combat_Skill.webp",
   meleeWeapon: ICONS + "/categories/Meleeweapon.webp",
   rangeWeapon: ICONS + "/categories/Rangeweapon.webp",
+  // Echte Waffenbilder aus dem Modul dsa5-core (bestehende Grafiken, keine neuen), für die Waffenkarte (Issue #40).
+  coreWeapon: (file) => "../../dsa5-core/icons/" + file,
   weaponless: ICONS + "/categories/attack_weaponless.webp",
   ritual: ICONS + "/categories/ritual.webp",
   ceremony: ICONS + "/categories/ceremony.webp",

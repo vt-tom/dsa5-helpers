@@ -3355,7 +3355,7 @@
 
 /* --- Körper: Hände --- */
 
-/* Hand: Titel, Name, Kachel (Waffenbild, AT/PA-Würfel auf der Unterkante), darunter TP-Knopf und Auswahl. */
+/* Hand: Grundgerüst (freie Nebenhand kompakt); die Waffenkarte selbst steht unter „Waffenkarte Banner“. */
 .dsa5-helpers-sheet .dsa5h-hand-slot {
   display: flex;
   flex-direction: column;
@@ -3375,25 +3375,6 @@
   background: var(--paper);
 }
 
-.dsa5-helpers-sheet .dsa5h-hand-tile > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: 3px;
-  object-fit: cover;
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-tile > meter {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 3px;
-}
-
 .dsa5-helpers-sheet .dsa5h-hand-tile.empty {
   display: flex;
   align-items: center;
@@ -3403,25 +3384,6 @@
   background: var(--field);
   font-size: var(--fs-meta);
   color: var(--muted);
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-tile-at,
-.dsa5-helpers-sheet .dsa5h-hand-tile-pa {
-  position: absolute;
-  bottom: -12px;
-  z-index: 1;
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-tile-at {
-  left: -8px;
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-tile-pa {
-  right: -8px;
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-slot > .dsa5h-damage {
-  margin-top: 4px;
 }
 
 .dsa5-helpers-sheet .dsa5h-hand-2h-note {
@@ -3560,75 +3522,6 @@
   }
 }
 
-/* --- Körper: AT/PA-Würfel im Siegel --- */
-
-/* AT/PA-Würfel in der „Wachssiegel“-Fassung der Kopf-Würfel (.dsa5h-attr-die-mini): dunkle Fassung in Würfelform +
-   Goldrand dahinter (Rückmeldung 2026-09-30). Gezoomt wird die ganze Fassung, nicht nur der Würfel. */
-.dsa5-helpers-sheet .dsa5h-die-seal {
-  display: block;
-  width: 30px;
-  height: 30px;
-  transition: transform .15s ease;
-  transform-origin: center;
-}
-
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-die-seal .dsa5h-combat-die {
-  display: block;
-  width: 30px;
-  height: 30px;
-  flex: none;
-  font-size: 14px;
-  filter: none;
-  background-color: transparent;
-  box-shadow: none;
-}
-
-/* Foundrys Button-Hintergrund (grau) + border-radius:50% ergab einen grauen Kreis im Siegel — transparent halten, auch bei Hover/Fokus (Rückmeldung 2026-09-30). */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-die-seal .dsa5h-combat-die:focus-visible {
-  transform: none;
-  background-color: transparent;
-  box-shadow: none;
-}
-
-.dsa5-helpers-sheet .dsa5h-die-seal:focus-within {
-  transform: scale(1.6);
-  z-index: 6;
-}
-
-.dsa5-helpers-sheet .dsa5h-die-seal::after,
-.dsa5-helpers-sheet .dsa5h-die-seal::before {
-  content: "";
-  position: absolute;
-  clip-path: polygon(50% 0%, 93% 28%, 93% 72%, 50% 100%, 7% 72%, 7% 28%);
-}
-
-.dsa5-helpers-sheet .dsa5h-die-seal::after {
-  inset: -5px;
-  z-index: -1;
-  background: var(--head-base);
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.55));
-}
-
-.dsa5-helpers-sheet .dsa5h-die-seal::before {
-  inset: -7px;
-  z-index: -2;
-  background: var(--accent);
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
-}
-
-@media (hover: hover) {
-  .dsa5-helpers-sheet .dsa5h-content .dsa5h-die-seal .dsa5h-combat-die:hover {
-    transform: none;
-    background-color: transparent;
-    box-shadow: none;
-  }
-
-  .dsa5-helpers-sheet .dsa5h-die-seal:hover {
-    transform: scale(1.6);
-    z-index: 6;
-  }
-}
-
 /* --- Körper: Kopfzeile (Schnellaktionen, Initiative, Zauber/Liturgien) --- */
 
 .dsa5-helpers-sheet .dsa5h-body-top {
@@ -3714,6 +3607,327 @@
     border-color: #fff;
     background: rgba(255,255,255,.25);
   }
+}
+
+/* --- Körper: Waffenkarte „Banner“ (Variante F, Issue #40, Nutzer-Entscheidung 2026-10-19) ---
+
+   Beide Hände gleich breit und gleich hoch (Raster mit gleichen Seitenspalten, Seiten strecken sich, die Karte füllt
+   ihre Seite); freie und belegte Hände als gestrichelte Karte derselben Größe. Karte: Wimpel mit der Hand, Name in
+   eigener Zeile über die volle Breite, Bild frei auf einem Lichtschein (kein Verschleiß-Rahmen, der Zustand steht im
+   Strukturbalken), die Waffe groß als blasses Wasserzeichen, Kampftechnik und Reichweite neben dem Bild, darunter AT/PA
+   bzw. FK als Pillen und TP. Vorlage: clickdummy (handSlot, .hand-slot.hv-f). */
+.dsa5-helpers-sheet .dsa5h-body-grid.sides {
+  grid-template-columns: minmax(0, 1fr) 110px minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side {
+  align-items: stretch;
+  text-align: left;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > :is(.dsa5h-hand-slot, .dsa5h-hand-2h-note) {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0;
+  border-radius: 6px;
+}
+
+/* Freie oder belegte Hand: gestrichelte Karte, Inhalt mittig */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > :is(.dsa5h-hand-free, .dsa5h-hand-empty, .dsa5h-hand-2h-note) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed rgba(185, 154, 92, .6);
+  text-align: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-free {
+  flex-direction: column-reverse;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-2h-note {
+  font-size: var(--fs-meta);
+  font-style: italic;
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-empty .dsa5h-hand-select {
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-empty-text {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+/* Die Karte */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-areas: "name name" "media sub" "media stats" "extra extra";
+  align-content: start;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 34px 12px 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  background: linear-gradient(160deg, rgba(255, 250, 238, .9), rgba(236, 226, 210, .4) 55%, rgba(185, 154, 92, .18)), var(--paper);
+  text-align: left;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-bg {
+  position: absolute;
+  top: -10px;
+  right: -40px;
+  z-index: -1;
+  width: 200px;
+  height: 200px;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  opacity: .16;
+  filter: grayscale(.3);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-banner {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  z-index: 1;
+  padding: 6px 10px 12px;
+  background: linear-gradient(180deg, #3a322b, #272320);
+  color: #f4e8d6;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 7px), 0 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-pick {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pick .dsa5h-hand-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: none;
+  padding-bottom: 4px;
+  background: linear-gradient(90deg, rgba(185, 154, 92, .8), rgba(185, 154, 92, 0)) bottom left / 100% 1px no-repeat;
+  font-family: 'Andalus', serif;
+  font-size: 22px;
+  font-weight: normal;
+  line-height: 1.1;
+  overflow-wrap: normal;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name .dsa5h-favorite {
+  flex: none;
+  margin: -4px 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media {
+  grid-area: media;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 236, 190, .95) 0%, rgba(255, 236, 190, .4) 45%, transparent 70%);
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media > img {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .35));
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media > meter {
+  position: absolute;
+  left: 18%;
+  bottom: -6px;
+  width: 64%;
+  height: 4px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-media > .dsa5h-onuse {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  z-index: 2;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-sub {
+  grid-area: sub;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-sub .dsa5h-ct-link {
+  align-self: flex-start;
+  text-align: left;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-stats {
+  grid-area: stats;
+  align-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  height: 36px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 9px 0 3px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .55);
+  color: var(--ink);
+  box-shadow: none;
+  font-family: 'GentiumBasic', Georgia, serif;
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill b {
+  font-size: 12px;
+  letter-spacing: .06em;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-die {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b, 1px 1px 1px #140f0b, -1px -1px 1px #140f0b, 1px -1px 1px #140f0b, -1px 1px 1px #140f0b;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage {
+  margin: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage small {
+  margin-right: 2px;
+  font-size: 10px;
+  letter-spacing: .1em;
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill:hover {
+    border-color: var(--accent);
+    transform: scale(1.05);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-pick:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-extra {
+  grid-area: extra;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra :is(.dsa5h-hand-ranged, .dsa5h-hand-ranged > .dsa5h-mag) {
+  justify-content: flex-start;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra .dsa5h-hand-swap {
+  margin: 0;
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, .06), transparent 60%), var(--paper);
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-hand-card .dsa5h-hand-media::before {
+  background: radial-gradient(circle, rgba(255, 220, 160, .35) 0%, transparent 70%);
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill {
+  background: rgba(255, 255, 255, .06);
 }
 
 /* --- Körper: Rüstung --- */

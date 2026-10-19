@@ -3844,21 +3844,9 @@ button.fav-chip-roll {
   margin-bottom: 0;
 }
 
-.hand-slot-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  align-self: stretch;
-}
 
-.hand-slot-side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  align-self: stretch;
-}
+
+
 
 .body-grid .hand-select {
   max-width: 100%;
@@ -4022,30 +4010,15 @@ button.fav-chip-roll {
   text-align: center;
 }
 
-.hand-tile-at,
-.hand-tile-pa {
-  position: absolute;
-  bottom: -12px;
-  z-index: 1;
-}
 
-.hand-tile-at {
-  left: -8px;
-}
 
-.hand-tile-pa {
-  right: -8px;
-}
 
-.hand-tile:has(.hand-tile-at) {
-  margin-bottom: 10px;
-}
 
-.hand-tile .die-qs.lg {
-  width: 30px;
-  height: 30px;
-  line-height: 30px;
-}
+
+
+
+
+
 
 /* Fernkampfhand (Körper): TP-Knopf + Nachladen/Zielen/Magazin untereinander. Die Handspalte ist bei zwei Händen nur
    ~120 px breit — deshalb zweizeilig: Beschriftung oben, Segmentbalken + Stand darunter, ↺ daneben. */
@@ -6850,3 +6823,333 @@ button.fav-chip-roll {
     filter: brightness(1.3);
   }
 }
+
+/* --- Körper: Waffenkarte „Banner“ (Variante F, Issue #40, Nutzer-Entscheidung 2026-10-19) ---
+
+   Beide Hände gleich breit und gleich hoch (Raster mit gleichen Seitenspalten, Seiten strecken sich, die Karte füllt
+   ihre Seite); freie und belegte Hände als gestrichelte Karte derselben Größe. Karte: Wimpel mit der Hand, Name in
+   eigener Zeile über die volle Breite, Bild frei auf einem Lichtschein (kein Verschleiß-Rahmen, der Zustand steht im
+   Strukturbalken), die Waffe groß als blasses Wasserzeichen, Kampftechnik und Reichweite neben dem Bild, darunter AT/PA
+   bzw. FK als Pillen und TP. Modul: body-hand.hbs + Abschnitt „Waffenkarte Banner“ der Bogen-CSS. */
+.body-grid.sides {
+  grid-template-columns: minmax(0, 1fr) 110px minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.body-side {
+  align-items: stretch;
+  text-align: left;
+}
+
+.body-side > :is(.hand-slot, .hand-2h-note) {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0;
+  border-radius: 6px;
+}
+
+/* Freie oder belegte Hand: gestrichelte Karte, Inhalt mittig */
+.body-side > :is(.hand-slot-free, .hand-empty, .hand-2h-note) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed rgba(185, 154, 92, .6);
+  text-align: center;
+}
+
+.body-side > .hand-slot-free {
+  flex-direction: column-reverse;
+}
+
+.body-side > .hand-2h-note {
+  font-size: var(--fs-meta);
+  font-style: italic;
+  color: var(--muted);
+}
+
+.hand-empty .hand-select {
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+}
+
+.hand-empty-text {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+/* Die Karte */
+.body-side > .hand-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-areas: "name name" "media sub" "media stats" "extra extra";
+  align-content: start;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 34px 12px 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  background: linear-gradient(160deg, rgba(255, 250, 238, .9), rgba(236, 226, 210, .4) 55%, rgba(185, 154, 92, .18)), var(--paper);
+  text-align: left;
+}
+
+.hand-card .hand-bg {
+  position: absolute;
+  top: -10px;
+  right: -40px;
+  z-index: -1;
+  width: 200px;
+  height: 200px;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  opacity: .16;
+  filter: grayscale(.3);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+
+.hand-card .hand-banner {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  z-index: 1;
+  padding: 6px 10px 12px;
+  background: linear-gradient(180deg, #3a322b, #272320);
+  color: #f4e8d6;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 7px), 0 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+}
+
+.hand-card .hand-pick {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.hand-card .hand-pick select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.hand-card .hand-name {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: none;
+  padding-bottom: 4px;
+  background: linear-gradient(90deg, rgba(185, 154, 92, .8), rgba(185, 154, 92, 0)) bottom left / 100% 1px no-repeat;
+  font-family: 'Andalus', serif;
+  font-size: 22px;
+  font-weight: normal;
+  line-height: 1.1;
+  overflow-wrap: normal;
+}
+
+.hand-card .hand-name .fav-star {
+  flex: none;
+  margin: -4px 0;
+}
+
+.hand-card .hand-media {
+  grid-area: media;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 88px;
+}
+
+.hand-card .hand-media::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 236, 190, .95) 0%, rgba(255, 236, 190, .4) 45%, transparent 70%);
+}
+
+.hand-card .hand-media > img,
+.hand-card .hand-media > .item-icon > img {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .35));
+}
+
+.hand-card .hand-media > .item-icon {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  outline: 0;
+}
+
+.hand-card .hand-media .structure-bar {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -6px;
+  height: 4px;
+}
+
+.hand-card .hand-media > .onuse-btn {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  z-index: 2;
+}
+
+.hand-card .hand-sub {
+  grid-area: sub;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-width: 0;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.hand-card .hand-sub .ct-link {
+  align-self: flex-start;
+  text-align: left;
+}
+
+.hand-card .hand-stats {
+  grid-area: stats;
+  align-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.hand-card .hand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  height: 36px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 9px 0 3px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .55);
+  color: var(--ink);
+  box-shadow: none;
+  font-family: 'GentiumBasic', Georgia, serif;
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+
+.hand-card .hand-pill b {
+  font-size: 12px;
+  letter-spacing: .06em;
+}
+
+.hand-card .hand-die {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b, 1px 1px 1px #140f0b, -1px -1px 1px #140f0b, 1px -1px 1px #140f0b, -1px 1px 1px #140f0b;
+}
+
+.hand-card .hand-stats .damage-roll {
+  margin: 0;
+}
+
+.hand-card .hand-stats .damage-roll small {
+  margin-right: 2px;
+  font-size: 10px;
+  letter-spacing: .1em;
+  color: var(--muted);
+}
+
+.hand-card .hand-pill:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .hand-card .hand-pill:hover {
+    border-color: var(--accent);
+    transform: scale(1.05);
+  }
+
+  .hand-card .hand-pick:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.hand-card .hand-extra {
+  grid-area: extra;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.hand-card .hand-extra :is(.hand-ranged-extras, .hand-ranged-extras > .mag) {
+  justify-content: flex-start;
+}
+
+.hand-card .hand-extra .hand-swap-btn {
+  margin: 0;
+}
+
+[data-theme='dark'] .body-side > .hand-card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, .06), transparent 60%), var(--paper);
+}
+
+[data-theme='dark'] .hand-card .hand-media::before {
+  background: radial-gradient(circle, rgba(255, 220, 160, .35) 0%, transparent 70%);
+}
+
+[data-theme='dark'] .hand-card .hand-pill {
+  background: rgba(255, 255, 255, .06);
+}
+

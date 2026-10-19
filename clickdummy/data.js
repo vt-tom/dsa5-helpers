@@ -310,8 +310,8 @@ const COMBAT_ACTIONS = [
 // Kampfentscheidung. Waffenlos hat im System kein Item und damit auch keine Griff-Einstellung.
 
 const MELEE = [
-  { name: "Elfischer Säbel", group: "Schwerter", at: 12, pa: 6, tp: "1W6+3", reach: "mittel", img: A.meleeWeapon, structure: { value: 6, max: 6 }, fav: true, worn: { requiresBothHands: false, offHand: false } },
-  { name: "Waldläuferdolch", group: "Dolche", at: 11, pa: 5, tp: "1W6+1", reach: "kurz", img: A.meleeWeapon, structure: { value: 3, max: 5 }, worn: { requiresBothHands: false, offHand: false } },
+  { name: "Elfischer Säbel", group: "Schwerter", at: 12, pa: 6, tp: "1W6+3", reach: "mittel", img: A.coreWeapon("meleeweapon/Saebel.webp"), structure: { value: 6, max: 6 }, fav: true, worn: { requiresBothHands: false, offHand: false } },
+  { name: "Waldläuferdolch", group: "Dolche", at: 11, pa: 5, tp: "1W6+1", reach: "kurz", img: A.coreWeapon("meleeweapon/Dolch.webp"), structure: { value: 3, max: 5 }, worn: { requiresBothHands: false, offHand: true } },
   { name: "Waffenlos", group: "Raufen", at: 8, pa: 6, tp: "1W6-1", reach: "kurz", img: A.weaponless },
 ];
 
@@ -341,7 +341,7 @@ const TRAITS = { meleeAttack: [], rangeAttack: [], armor: [] };
 // NICHT aus dem Kompendium, sie dienen nur dem Layout-Test der Waffenzeile (Paket C, 2026-09-25).
 const RANGED = [
   {
-    name: "Elfenbogen", group: "Bögen", at: 14, tp: "1W6+4", reach: "10/50/80", img: A.rangeWeapon,
+    name: "Elfenbogen", group: "Bögen", at: 14, tp: "1W6+4", reach: "10/50/80", img: A.coreWeapon("rangeweapon/Elfenbogen.webp"),
     ammoTypes: [
       { name: "Jagdpfeile", count: 14, selected: true },
       { name: "Brandpfeile", count: 4, selected: false },
@@ -352,7 +352,7 @@ const RANGED = [
     worn: { requiresBothHands: true, offHand: false },
   },
   {
-    name: "Armbrust", group: "Armbrüste", at: 6, tp: "1W6+3", reach: "10/50/80", img: A.rangeWeapon,
+    name: "Armbrust", group: "Armbrüste", at: 6, tp: "1W6+3", reach: "10/50/80", img: A.coreWeapon("rangeweapon/LeichteArmbrust.webp"),
     ammoTypes: [{ name: "Bolzen", count: 10, selected: true }],
     reloadTime: 3, reloadProgress: 1,
     aim: { progress: 0 },
@@ -360,13 +360,13 @@ const RANGED = [
     worn: { requiresBothHands: true, offHand: false },
   },
   {
-    name: "Eisenwalder", group: "Armbrüste", at: 11, tp: "1W6+4", reach: "10/50/80", img: A.rangeWeapon,
+    name: "Eisenwalder", group: "Armbrüste", at: 11, tp: "1W6+4", reach: "10/50/80", img: A.coreWeapon("rangeweapon/SchwereArmbrust.webp"),
     ammoTypes: [{ name: "Magazin (Eisenwalder)", count: 2, selected: true, mag: { current: 10, max: 10 } }],
     reloadTime: 2, reloadProgress: 0,
     aim: { progress: 0 },
     worn: { requiresBothHands: false, offHand: false },
   },
-  { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", reach: "2/5/10", ammo: "3", img: A.rangeWeapon, worn: { requiresBothHands: false, offHand: false } },
+  { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", reach: "2/5/10", ammo: "3", img: A.coreWeapon("meleeweapon/Wurfdolch.webp"), worn: { requiresBothHands: false, offHand: false } },
 ];
 
 const ARMOR = [

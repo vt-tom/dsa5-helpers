@@ -584,73 +584,37 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat { flex: 1;
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat small { font-size: 15px; text-transform: none; letter-spacing: 0; color: inherit; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat strong { font-size: 18px; }
 
-/* Hände als Karten untereinander */
+/* Hände untereinander, ohne Figur. Waffenkarte „Banner“ (Issue #40) aus der Bogen-CSS, fürs Handy angepasst:
+   Bild 84 px neben Kampftechnik/Reichweite, darunter AT/PA links und TP rechts in einer eigenen Reihe (wie im
+   Mobil-Click-Dummy), Tippziele 44 px. Freie/belegte Hand als schmale gestrichelte Zeile mit Auswahl. */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-grid { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-height: 0; padding: 0; isolation: auto; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-grid > :is(.dsa5h-body-figure, .dsa5h-body-figure-switch) { display: none; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side { display: block; width: 100%; text-align: left; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot,
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-2h-note {
-  box-sizing: border-box; width: 100%; max-width: none; margin: 0; padding: 10px 12px;
-  border: 1px solid var(--line); border-radius: 6px; background: var(--field);
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
+  grid-template-columns: 84px minmax(0, 1fr); grid-template-areas: "name name" "media sub" "stats stats" "extra extra"; padding: 36px 12px 12px;
 }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-2h-note { display: block; padding-block: 8px; }
-/* Hand mit Waffe (überarbeitet nach Rückmeldung 2026-10-19, Vorbild Dummy 11):
-     [Bild] HAUPTHAND / Name / Kampftechnik                 [⇄]
-     [(8) AT] [(6) PA]                                  ■ 1W6+2
-   Die Handwahl ist das unsichtbare <select> über dem ⇄-Knopf, die Würfel sind Pillen mit Beschriftung (title des Knopfs
-   als ::after, gehört zur Trefferfläche des Knopfs). */
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot.item {
-  position: relative; display: grid; grid-template-columns: 48px auto auto minmax(0, 1fr) 44px; column-gap: 10px; row-gap: 2px; align-items: center;
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-bg { width: 210px; height: 210px; right: -46px; top: -14px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media { width: 84px; height: 84px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-sub { align-self: center; font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name { font-size: 23px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name .dsa5h-favorite { width: 36px; height: 36px; margin: -6px 0; font-size: 20px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-pick { width: 40px; height: 40px; font-size: 17px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill { height: 44px; padding: 0 12px 0 4px; border-radius: 22px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill b { font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-die { width: 34px; height: 34px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage { margin-left: auto; min-height: 44px; padding-inline: 12px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra .dsa5h-hand-swap {
+  height: 40px; padding: 0 12px; border: 1px dashed var(--line2, rgba(43, 39, 33, .28)); background: none; font-size: 15px;
 }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile { display: contents; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > img {
-  position: static; grid-column: 1; grid-row: 1 / span 3; align-self: start; width: 48px; height: 48px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper);
+/* Freie oder belegte Hand: eine Zeile „Haupthand · frei“ + Auswahl */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > :is(.dsa5h-hand-free, .dsa5h-hand-empty, .dsa5h-hand-2h-note) {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 12px; padding: 6px 12px; text-align: left;
 }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > meter { position: static; grid-column: 1; grid-row: 3; align-self: end; width: 48px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-figure-col-title { grid-column: 2 / span 3; grid-row: 1; font-size: 11px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-body-item-name { grid-column: 2 / span 3; grid-row: 2; font-family: 'Andalus', serif; font-size: 21px; font-weight: normal; line-height: 1.1; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-body-item-name { display: flex; align-items: center; gap: 2px; min-width: 0; overflow-wrap: normal; word-break: normal; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-body-item-name .dsa5h-favorite { flex: none; width: 36px; height: 36px; margin: -6px 0; font-size: 20px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-ct-link { grid-column: 2 / span 3; grid-row: 3; justify-self: start; align-self: start; text-align: left; font-size: 13px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-hand-select {
-  position: absolute; top: 8px; right: 8px; z-index: 1; width: 44px; height: 44px; margin: 0; opacity: 0;
-}
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item::after {
-  content: '⇄'; position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; display: grid; place-items: center; box-sizing: border-box;
-  border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--muted); font-size: 20px; pointer-events: none;
-}
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > .dsa5h-onuse { position: static; grid-column: 5; grid-row: 3; justify-self: center; }
-/* AT/PA bzw. FK als Pillen */
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item :is(.dsa5h-hand-tile-at, .dsa5h-hand-tile-pa) {
-  position: relative; inset: auto; grid-row: 4; display: flex; align-items: center; box-sizing: border-box; width: auto; height: 48px; margin-top: 10px;
-  padding: 3px 44px 3px 4px; border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 8px; background: var(--paper); transform: none !important;
-}
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item :is(.dsa5h-hand-tile-at, .dsa5h-hand-tile-pa)::before,
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item :is(.dsa5h-hand-tile-at, .dsa5h-hand-tile-pa)::after { content: none; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile-at { grid-column: 1 / span 2; justify-self: start; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile-pa { grid-column: 3; justify-self: start; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item .dsa5h-die-seal .dsa5h-combat-die { position: static; width: 40px; height: 40px; font-size: 17px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item .dsa5h-die-seal .dsa5h-combat-die::after {
-  content: attr(title); position: absolute; top: 0; right: 0; bottom: 0; width: 44px; display: grid; place-items: center;
-  color: var(--ink); text-shadow: none; font-size: 16px; font-weight: 700;
-}
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-damage {
-  grid-column: 4 / span 2; grid-row: 4; justify-self: end; margin: 10px 0 0; min-height: 44px; padding-inline: 12px; font-size: 17px;
-}
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > :is(.dsa5h-hand-ranged, .dsa5h-hand-swap) { grid-column: 1 / -1; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-hand-ranged { display: flex; flex-wrap: wrap; justify-content: flex-start !important; gap: 6px; margin-top: 8px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-hand-swap {
-  justify-self: start; height: 40px; margin-top: 8px; padding: 0 12px; border: 1px dashed var(--line2, rgba(43, 39, 33, .28)); background: none; font-size: 15px;
-}
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot:not(.item) > .dsa5h-hand-select { height: 44px; font-size: 16px; }
-/* Leere Hand: eine Zeile „Haupthand“ + Auswahl */
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot:not(.item) {
-  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 12px; padding-block: 6px;
-}
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot:not(.item):not(.dsa5h-hand-free) > :is(.dsa5h-body-item-name, .dsa5h-hand-tile.empty) { display: none; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot:not(.item) > .dsa5h-hand-select { margin: 0; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot.dsa5h-hand-free { grid-template-columns: minmax(0, 1fr) 44px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.dsa5h-hand-free > .dsa5h-hand-tile { grid-column: 2; grid-row: 1; width: 44px; height: 44px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-2h-note { display: block; padding-block: 10px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-empty > .dsa5h-hand-empty-text { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-empty > .dsa5h-hand-select { width: 100%; height: 44px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-free { grid-template-columns: minmax(0, 1fr) 44px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-free > .dsa5h-hand-tile { grid-column: 2; grid-row: 1; width: 44px; height: 44px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-free-text { grid-column: 1; grid-row: 1; flex-direction: row; align-items: baseline; gap: 8px; }
 
 /* Weitere Waffen und Sonderfertigkeiten kommen vor der Rüstung */

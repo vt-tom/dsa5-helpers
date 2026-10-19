@@ -114,7 +114,7 @@ test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the 
  assert(html.includes('data-sub-panel="combat:body"'));assert(context.dsa5h.subnav.find(n=>n.tab==='combat').items.some(i=>i.id==='body'));
  assert.equal(context.dsa5h.body.hands.length,2);assert(html.includes('data-dsa5h-hand="offhand"'));assert(html.includes('data-current="off"'));
  const offSelect=elements(html,el=>el.attribs?.['data-dsa5h-hand']==='offhand')[0];assert(!dom.findAll(el=>el.attribs?.value==='main'&&Object.hasOwn(el.attribs,'selected'),offSelect.children).length);
- assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-die-seal')).length,4);
+ assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-pill')).length,4,'AT/PA pills on both hands (Waffenkarte F, #40)');assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-card')).length,2);
  assert(html.includes('data-action="dsa5hBodyFigure"'),'figure switch in edit mode');assert(html.includes('data-cast-dialog="spell"'));
  main.wieldedTwoHand=true;context=await sheet._prepareContext({});html=render(context);
  assert.equal(context.dsa5h.body.hands.length,1);assert(context.dsa5h.body.single);assert(!html.includes('data-dsa5h-hand="offhand"'));

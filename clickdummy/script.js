@@ -1425,37 +1425,9 @@ function handSlot(hand) {
     if (isMain && pick && pick.worn.requiresBothHands) HANDS.off = null;
     renderContent();
   });
-  // Hand als Kachel im Stil der Rüstungskacheln (Nutzerwunsch 2026-09-28): Waffenbild füllt die Kachel, AT/PA bzw.
-  // FK als Würfel auf der Unterkante (ragen heraus, damit der Hover-Zoom nicht abgeschnitten wird), gefasst wie die
-  // Eigenschaftswürfel im Kopf (dunkle Fassung mit Goldrand, Rückmeldung 2026-09-30). Name groß ÜBER der Kachel,
-  // TP-Knopf und Auswahl darunter.
-  let tile;
-  if (!w) tile = el("div", { class: "hand-tile empty" }, [el("span", { class: "hand-tile-note" }, "frei")]);
-  let tp = null;
-  if (w) {
-    const ranged = RANGED.includes(w);
-    const stats = ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
-    tile = el("div", { class: "hand-tile" }, [
-      itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
-      onUseBtn(w.name),
-      el("span", { class: "hand-tile-at die-seal" }, [combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`)]),
-      !ranged && stats.pa !== undefined ? el("span", { class: "hand-tile-pa die-seal" }, [combatDie(stats.pa, "d20in", `Parade mit ${w.name} würfeln`)]) : null,
-    ]);
-    tp = damageBtn(w.tp, w.name);
-    // Fernkampf: Nachladen/Zielen/Magazin wie in der Waffenzeile der Übersicht (reloadWidget() usw.) unter dem
-    // TP-Knopf (Vorschlag 2026-09-30, AUFGABEN.md). Nachladen und Zielen nebeneinander, solange die Spalte reicht
-    // (Live-Rückmeldung 2026-09-30: spart Höhe), Magazin in eigener Zeile. Modul: .dsa5h-hand-ranged in body.hbs.
-    if (ranged) {
-      // Munitionswahl hier, seit die Waffentabellen entfallen sind (Issue #29, 2026-10-02).
-      const ammo = w.ammoTypes ? selectedAmmo(w) : null;
-      const ammoPick = w.ammoTypes ? el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]) : null;
-      const extras = [ammoPick, w.reloadTime ? reloadWidget(w) : null, aimWidget(w), magWidget(w)].filter(Boolean);
-      if (extras.length) tp = el("div", { class: "hand-ranged" }, [tp, el("div", { class: "hand-ranged-extras" }, extras)]);
-    }
-  }
-  // Freie Nebenhand kompakt unter der Haupthand (Vorschlag 2026-09-30, Rückmeldung: nicht daneben, das schob die
-  // Haupthand nach rechts): kleine gestrichelte Kachel „+“, die selbst die Auswahlliste ist (unsichtbares <select>
-  // darüber), daneben „Nebenhand · frei“. Modul: body.hbs (.dsa5h-hand-free).
+  // Freie Nebenhand kompakt (Vorschlag 2026-09-30): kleine gestrichelte Kachel „+“, die selbst die Auswahlliste ist
+  // (unsichtbares <select> darüber), daneben „Nebenhand · frei“. Seit der Waffenkarte F eine gleich große, gestrichelte
+  // Karte (CSS). Modul: body-hand.hbs (.dsa5h-hand-free).
   if (!isMain && !w) {
     select.classList.add("hand-free-select");
     return el("div", { class: "hand-slot hand-slot-free" }, [
@@ -1463,11 +1435,19 @@ function handSlot(hand) {
       el("span", { class: "hand-free-text" }, [el("small", { class: "figure-col-title" }, "Nebenhand"), el("small", { class: "hand-free-note" }, "frei")]),
     ]);
   }
+  // Leere Haupthand: gestrichelte Karte mit Auswahl (Modul: .dsa5h-hand-empty).
+  if (!w) {
+    return el("div", { class: "hand-slot hand-empty" }, [
+      el("small", { class: "figure-col-title" }, "Haupthand"),
+      el("small", { class: "hand-empty-text" }, "frei"),
+      select,
+    ]);
+  }
   // Beidhändige Waffe: Knopf „⇄“ verschiebt sie auf die andere Seite der Figur (Issue #29, nur Bearbeiten-Modus;
   // Modul: Actor-Flag, Umschalten nur für Owner).
   const editMode = document.querySelector(".sheet").getAttribute("data-mode") === "edit";
   let swap = null;
-  if (isMain && w && w.worn.requiresBothHands && editMode) {
+  if (isMain && w.worn.requiresBothHands && editMode) {
     const target = TWO_HANDED_SIDE === "left" ? "rechts" : "links";
     swap = el("button", { type: "button", class: "hand-swap-btn", title: `Waffe nach ${target} verschieben`, "aria-label": `Beidhändige Waffe nach ${target} verschieben` }, [el("span", { "aria-hidden": "true" }, "⇄"), ` nach ${target}`]);
     swap.addEventListener("click", () => { TWO_HANDED_SIDE = TWO_HANDED_SIDE === "left" ? "right" : "left"; renderContent(); });
@@ -1475,7 +1455,7 @@ function handSlot(hand) {
   // Griffwechsel ein-/beidhändig (Rückmeldung 2026-10-05), in beiden Modi; nur Nahkampf, nicht Dolche/Fechtwaffen
   // (wie das System). Beidhändig belegt die Haupthand und macht die Nebenhand frei. Modul: dsa5hSwapGrip in body-hand.hbs.
   let grip = null;
-  if (w && MELEE.includes(w) && !["Dolche", "Fechtwaffen"].includes(w.group)) {
+  if (MELEE.includes(w) && !["Dolche", "Fechtwaffen"].includes(w.group)) {
     const toTwo = !w.worn.requiresBothHands;
     grip = el("button", { type: "button", class: "hand-swap-btn" }, toTwo ? "Beidhändig führen" : "Einhändig führen");
     grip.addEventListener("click", () => {
@@ -1484,11 +1464,35 @@ function handSlot(hand) {
       renderContent();
     });
   }
-  return el("div", { class: "hand-slot" }, [
-    el("small", { class: "figure-col-title" }, isMain ? (w && w.worn.requiresBothHands ? "Beide Hände" : "Haupthand") : "Nebenhand"),
-    el("span", { class: "body-item-name" }, w ? w.name : "—"),
-    w ? combatSkillLink(w.group) : null,
-    el("div", { class: "hand-slot-body" }, [tile, el("div", { class: "hand-slot-side" }, [tp, select, grip, swap])]),
+  // Waffenkarte „Banner“ (Variante F, Issue #40, Nutzer-Entscheidung 2026-10-19): Wimpel mit der Hand, Name in eigener
+  // Zeile oben, Bild frei auf einem Lichtschein (ohne Verschleiß-Rahmen, der Zustand steht im Strukturbalken), die Waffe
+  // groß als blasses Wasserzeichen, Kampftechnik und Reichweite neben dem Bild, darunter AT/PA bzw. FK als Pillen und TP.
+  // Die Handwahl ist das unsichtbare <select> über dem ⇄-Knopf. Modul: body-hand.hbs (.dsa5h-hand-card).
+  const ranged = RANGED.includes(w);
+  const stats = ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
+  const pill = (value, die, label, aria) => makeRollable(el("span", { class: "hand-pill" }, [el("span", { class: "hand-die", style: dieBg(die) }, String(value)), el("b", {}, label)]), aria);
+  let extras = null;
+  if (ranged) {
+    // Munitionswahl, Nachladen/Zielen/Magazin (Issue #29, Vorschlag 2026-09-30). Modul: .dsa5h-hand-ranged.
+    const ammo = w.ammoTypes ? selectedAmmo(w) : null;
+    const ammoPick = w.ammoTypes ? el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]) : null;
+    const list = [ammoPick, w.reloadTime ? reloadWidget(w) : null, aimWidget(w), magWidget(w)].filter(Boolean);
+    if (list.length) extras = el("div", { class: "hand-ranged-extras" }, list);
+  }
+  const handLabel = isMain ? (w.worn.requiresBothHands ? "Beide Hände" : "Haupthand") : "Nebenhand";
+  return el("div", { class: "hand-slot hand-card" + (ranged ? " ranged" : "") }, [
+    el("img", { class: "hand-bg", src: w.img, alt: "", "aria-hidden": "true" }),
+    el("small", { class: "hand-banner" }, handLabel),
+    el("label", { class: "hand-pick", title: `Waffe in der ${isMain ? "Haupthand" : "Nebenhand"}` }, [el("span", { "aria-hidden": "true" }, "⇄"), select]),
+    el("span", { class: "body-item-name hand-name" }, [el("span", {}, w.name), favStar(w)]),
+    el("div", { class: "hand-media" }, [itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"), onUseBtn(w.name)]),
+    el("div", { class: "hand-sub" }, [combatSkillLink(w.group), el("span", { class: "hand-reach" }, `RW ${w.reach}`)]),
+    el("div", { class: "hand-stats" }, [
+      pill(stats.at, "d20mu", ranged ? "FK" : "AT", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
+      !ranged && stats.pa !== undefined ? pill(stats.pa, "d20in", "PA", `Parade mit ${w.name} würfeln`) : null,
+      damageBtn(w.tp, w.name),
+    ]),
+    extras || grip || swap ? el("div", { class: "hand-extra" }, [extras, grip, swap]) : null,
   ]);
 }
 
