@@ -608,6 +608,8 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-figure-col-t
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-body-item-name { grid-column: 2 / span 3; grid-row: 2; font-family: 'Andalus', serif; font-size: 21px; font-weight: normal; line-height: 1.1; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-ct-link { grid-column: 2 / span 3; grid-row: 3; justify-self: start; align-self: start; text-align: left; font-size: 13px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-hand-select {
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-body-item-name { display: flex; align-items: center; gap: 2px; min-width: 0; overflow-wrap: normal; word-break: normal; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-body-item-name .dsa5h-favorite { flex: none; width: 36px; height: 36px; margin: -6px 0; font-size: 20px; }
   position: absolute; top: 8px; right: 8px; z-index: 1; width: 44px; height: 44px; margin: 0; opacity: 0;
 }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item::after {

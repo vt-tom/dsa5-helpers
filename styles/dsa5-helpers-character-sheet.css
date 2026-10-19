@@ -1538,6 +1538,15 @@
   top: 24px;
   right: 4px;
   z-index: 2;
+/* Favoriten-Stern hinter dem Waffennamen in der Hand (Kampf › Körper, Rückmeldung 2026-10-19) */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-item-name .dsa5h-favorite {
+  width: 24px;
+  height: 24px;
+  margin: -4px 0 -4px 4px;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
   margin: 0;
   background: var(--paper);
 }
