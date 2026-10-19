@@ -23,9 +23,6 @@ input::placeholder{color:var(--ink3)}
 @keyframes dsaHold{from{transform:translate(-50%,-50%) scale(.25);opacity:.15}to{transform:translate(-50%,-50%) scale(1);opacity:.95}}
 @keyframes dsaPop{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
 /* ---------- Chat & Journal im Modul-Design (Entwurf 2026-10-19, Entscheidungen in AUFGABEN.md) ---------- */
-[data-m="drafts"]{align-self:center;display:flex;align-items:center;gap:4px;padding:3px;border-radius:16px;background:rgba(39,35,32,.88);font-size:12px;color:#f4e8d6}
-[data-m="drafts"] button{height:26px;padding:0 10px;border:0;border-radius:13px;background:none;color:inherit;font:inherit;cursor:pointer}
-[data-m="drafts"] button[aria-pressed="true"]{background:#b99a5c;color:#1c1917;font-weight:700}
 [data-m="sys"]{align-self:center;display:flex;align-items:center;gap:8px;max-width:92%;font-size:13px;color:var(--ink2);text-align:center}
 [data-m="sys"]::before,[data-m="sys"]::after{content:"";flex:1 1 24px;height:1px;background:linear-gradient(90deg,transparent,rgba(185,154,92,.7),transparent)}
 [data-m="row"]{display:flex;gap:8px;align-items:flex-start}
@@ -63,24 +60,12 @@ input::placeholder{color:var(--ink3)}
 [data-m="actions"] button{height:36px;padding:0 12px;border:1px solid var(--accent);border-radius:18px;background:var(--field);color:var(--accenttext);font:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
 [data-m="actions"] img{width:18px;height:18px}
 [data-m="card"][data-whisper="true"]{border-color:var(--whisperline);background:linear-gradient(170deg,var(--whisper),transparent 70%),var(--paper)}
-/* Variante A „Pergament-Karten“: Kopf als Panel-Titel, Porträt im Kopf */
+/* Nachrichtenkarte (Variante A „Karten“, Nutzer-Entscheidung 2026-10-19): Kopf als Panel-Titel mit Porträt */
 [data-cv="a"] [data-m="row"] > [data-m="ava"]{display:none}
 [data-cv="a"] [data-m="head"]{background:var(--phead);border-bottom:1px solid rgba(185,154,92,.35)}
 [data-cv="a"] [data-m="head"]::before{content:attr(data-ini);flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--hava,#4a3f33);color:#f4e8d6;font-family:Andalus,serif;font-size:13px;border:1.5px solid #e0c48c}
 [data-cv="a"] [data-m="badge"]{margin-top:6px}
 [data-cv="a"] [data-m="card"][data-mine="true"]{box-shadow:inset 3px 0 0 var(--accent)}
-/* Variante B „Chronik“: Zeitleiste links, Porträt-Medaillon, Folgenachrichten ohne Kopf */
-[data-cv="b"] [data-m="list"]{position:relative}
-[data-cv="b"] [data-m="list"]::before{content:"";position:absolute;left:28px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,transparent,rgba(185,154,92,.55) 30px,rgba(185,154,92,.55) calc(100% - 30px),transparent)}
-[data-cv="b"] [data-m="row"]{position:relative}
-[data-cv="b"] [data-m="row"][data-grouped="true"]{margin-top:-4px}
-[data-cv="b"] [data-m="row"][data-grouped="true"] > [data-m="ava"]{visibility:hidden;height:0}
-[data-cv="b"] [data-m="row"][data-grouped="true"] [data-m="head"]{display:none}
-[data-cv="b"] [data-m="row"][data-grouped="true"] [data-m="body"]{padding-top:10px}
-[data-cv="b"] [data-m="card"]{border-color:var(--line2);border-radius:4px 10px 10px 10px;background:var(--card)}
-[data-cv="b"] [data-m="card"][data-mine="true"]{border-color:rgba(185,154,92,.75);background:linear-gradient(170deg,rgba(255,246,225,.9),rgba(236,226,210,.4)),var(--paper)}
-[data-cv="b"] [data-m="head"]::before{content:none}
-[data-cv="b"] [data-m="who"]{font-family:Andalus,serif;font-weight:normal;font-size:16px}
 /* Eingabe */
 [data-ci="wrap"]{flex:none;border-top:1px solid rgba(185,154,92,.55);background:linear-gradient(180deg,rgba(255,250,238,.6),transparent 40px),var(--sheet);padding:6px 10px 10px;display:flex;flex-direction:column;gap:6px}
 [data-ci="row"]{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -10px;padding:0 10px}
@@ -130,10 +115,13 @@ input::placeholder{color:var(--ink3)}
 [data-theme="dark"] [data-j="page"]{background:linear-gradient(175deg,rgba(255,255,255,.05),transparent),var(--paper)}
 </style>
 </helmet>
-<div ref="{{ rootRef }}" data-theme="{{ theme }}" style="position:{{ rootPos }};inset:0;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--paper);color:var(--ink);font-family:GentiumBasic,Georgia,serif;-webkit-font-smoothing:antialiased">
+<div ref="{{ rootRef }}" data-theme="{{ theme }}" style="position:{{ rootPos }};inset:0;width:100%;height:100%;display:flex;flex-direction:{{ rootDir }};overflow:hidden;background:var(--paper);color:var(--ink);font-family:GentiumBasic,Georgia,serif;-webkit-font-smoothing:antialiased">
 
   <sc-if value="{{ inSheet }}" hint-placeholder-val="{{ false }}">
-    <div style="flex:1;min-height:0;overflow:hidden">
+    <!-- Tablet: Bogen und Chat gleichzeitig (Rückmeldung 2026-10-19) — der Chat steht als Spalte rechts neben dem Bogen,
+         der runde Knopf unten rechts (neben der Reiterleiste) blendet ihn ein; im Modul: scripts/mobile/shell.js + Abschnitt 8 der Mobil-CSS. -->
+    <div style="flex:1;min-width:0;min-height:0;overflow:hidden;position:relative">
+      <sc-if value="{{ sheetChatFab }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openChat }}" aria-label="{{ chatFabLabel }}" style="position:absolute;right:104px;bottom:16px;z-index:5;width:56px;height:56px;border-radius:28px;border:2px solid rgba(39,35,32,.25);background:radial-gradient(circle at 35% 30%,#dcc189,#a3824a);box-shadow:0 4px 14px rgba(0,0,0,.35);display:grid;place-items:center;cursor:pointer;padding:0"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="#272320"></path></svg><sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-4px;right:-4px;min-width:24px;height:24px;padding:0 6px;box-sizing:border-box;border:2px solid var(--paper);border-radius:12px;background:var(--danger);color:#fff;font-size:12px;font-weight:700;line-height:20px">{{ unread }}</span></sc-if></button></sc-if>
       <dc-import name="Heldenbogen Mobil" device="{{ device }}" theme="{{ sheetTheme }}" on-back="{{ goHome }}" on-chat="{{ onSheetRoll }}" hint-size="100%,100%" style="width:100%;height:100%"></dc-import>
     </div>
   </sc-if>
@@ -166,7 +154,9 @@ input::placeholder{color:var(--ink3)}
       </div>
     </sc-if>
 
-    <div style="flex:1;min-height:0;display:flex;position:relative">
+  </sc-if>
+  <sc-if value="{{ showRow }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:{{ rowFlex }};width:{{ rowW }};min-height:0;display:flex;position:relative">
 
       <sc-if value="{{ showLeft }}" hint-placeholder-val="{{ true }}">
         <main style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
@@ -325,18 +315,16 @@ input::placeholder{color:var(--ink3)}
       </sc-if>
 
       <sc-if value="{{ showChat }}" hint-placeholder-val="{{ false }}">
-        <aside data-cv="{{ cv }}" style="flex:{{ chatFlex }};width:{{ chatW }};min-width:0;display:flex;flex-direction:column;background:var(--paper);border-left:{{ chatBorder }}">
+        <aside data-cv="a" style="flex:{{ chatFlex }};width:{{ chatW }};min-width:0;display:flex;flex-direction:column;background:var(--paper);border-left:{{ chatBorder }}">
           <sc-if value="{{ isTablet }}" hint-placeholder-val="{{ false }}">
             <div style="flex:none;padding:0 4px 0 12px;height:44px;background:var(--phead);font-family:Andalus,serif;font-size:19px;display:flex;align-items:center;justify-content:space-between"><span>Chat</span><button onClick="{{ closeChat }}" aria-label="Chat schließen" style="width:44px;height:44px;border:0;background:none;color:var(--ink);font-size:20px;cursor:pointer">✕</button></div>
           </sc-if>
           <div ref="{{ chatRef }}" data-scroll="1" style="flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:12px;display:flex;flex-direction:column;gap:8px">
-            <!-- Entwurf: Umschalter der Nachrichten-Varianten (nach der Wahl entfernen) -->
-            <div data-m="drafts" role="group" aria-label="Entwurf Chat"><span>Entwurf:</span><sc-for list="{{ cvOpts }}" as="o"><button onClick="{{ o.onClick }}" aria-pressed="{{ o.on }}">{{ o.label }}</button></sc-for></div>
             <div data-m="list" style="display:flex;flex-direction:column;gap:8px">
             <sc-for list="{{ messages }}" as="m" hint-placeholder-count="5">
               <sc-if value="{{ m.isSystem }}" hint-placeholder-val="{{ false }}"><div data-m="sys">{{ m.text }}</div></sc-if>
               <sc-if value="{{ m.isCard }}" hint-placeholder-val="{{ true }}">
-                <div data-m="row" data-grouped="{{ m.groupedStr }}">
+                <div data-m="row">
                   <span data-m="ava" style="background:{{ m.avaBg }}">{{ m.ini }}</span>
                   <div data-m="card" data-mine="{{ m.mineStr }}" data-whisper="{{ m.whStr }}" onClick="{{ m.onTap }}" style="cursor:{{ m.cursor }};--hava:{{ m.avaBg }}">
                     <div data-m="head" data-ini="{{ m.ini }}"><span data-m="who" style="color:{{ m.whoColor }}">{{ m.who }}</span><span data-m="time">{{ m.time }}</span><button data-m="more" onClick="{{ m.onMore }}" aria-label="Aktionen zur Nachricht">⋮</button></div>
@@ -603,7 +591,7 @@ class Component extends DCLogic {
     ui: 'auto', scene: true, sceneFull: false, hint: true, chatOpen: false,
     cam: null, toks: {}, drag: null, hold: null, pings: [], bubble: null, openF: {},
     fate: null, req: null, inc: null, schips: { own: 2, group: 3 }, targets: {}, combat: false, turn: 0, layIni: null,
-    msgs: [], cv: 'a', rollMode: 'public', wTo: {}, fmtOpen: false, free: { n: 1, d: 20, mod: 0 }, jq: '', page: 0, pagesOpen: false
+    msgs: [], rollMode: 'public', wTo: {}, fmtOpen: false, free: { n: 1, d: 20, mod: 0 }, jq: '', page: 0, pagesOpen: false
   };
 
   constructor(p) {
@@ -717,7 +705,7 @@ class Component extends DCLogic {
     this.initCam();
   }
   scrollChat() { const go = () => { const c = this.chatRef.current; if (c) c.scrollTop = c.scrollHeight; }; go(); setTimeout(go, 60); setTimeout(go, 250); }
-  chatVisible() { return this._dev === 'tablet' ? this.state.chatOpen && this.state.view !== 'sheet' : this.state.view === 'chat'; }
+  chatVisible() { return this._dev === 'tablet' ? this.state.chatOpen : this.state.view === 'chat'; }
   now() { this._t0 = this._t0 || Date.now(); const m = 47 + Math.floor((Date.now() - this._t0) / 60000); return (19 + Math.floor(m / 60)) + ':' + String(m % 60).padStart(2, '0'); }
   nextId() { this._id = Math.max(this._id || 0, ...this.state.msgs.map(m => m.id)) + 1; return this._id; }
   push(m) {
@@ -962,11 +950,11 @@ class Component extends DCLogic {
     const messages = visible.map(m => {
       const whisper = !!m.to, mine = isMine(m), fateOk = this.canFate(m, isGM);
       const okBox = m.ok === true ? ['var(--okbg)', 'var(--oktext)'] : m.ok === false ? ['var(--dangerbg)', 'var(--dangertext)'] : ['var(--sub)', 'var(--ink)'];
-      const h = heroOf(m), prev = visible[visible.indexOf(m) - 1];
+      const h = heroOf(m);
       const blindHidden = m.mode === 'blind' && !isGM;
       const base = { isSystem: m.type === 'system', isCard: m.type !== 'system', isText: m.type === 'text', isRoll: m.type === 'roll' && !blindHidden, isRequest: m.type === 'request',
         ini: m.gm ? 'SL' : h ? h.short[0] : (m.who || '?')[0], avaBg: m.gm ? 'radial-gradient(circle at 40% 35%,#5b4a7a,#2d2340)' : h ? h.bg : '#4a3f33',
-        groupedStr: prev && prev.type !== 'system' && prev.who === m.who && !prev.to === !m.to ? 'true' : 'false', mineStr: mine ? 'true' : 'false', whStr: whisper ? 'true' : 'false',
+        mineStr: mine ? 'true' : 'false', whStr: whisper ? 'true' : 'false',
         hasMode: !!m.mode && m.mode !== 'public', modeLabel: MODE_LABEL[m.mode] || '', onMore: e => { e.stopPropagation(); this.flash('Kontextmenü des Systems (Langdruck)'); },
         who: m.who + (m.owner && isGM ? ' (' + m.owner + ')' : ''), time: m.time, text: m.text,
         isWhisper: whisper, whisperLabel: whisper ? (m.gm ? (isGM ? 'Geflüstert an ' + m.to : 'Flüstern der Spielleitung') : 'Geflüstert an ' + (m.to === 'SL' ? 'die Spielleitung' : m.to)) : '',
@@ -1155,7 +1143,9 @@ class Component extends DCLogic {
       meInitial: me.initial, meName: me.name, meRole: me.role,
       openProfile: () => set({ profile: true }), closeProfile: () => set({ profile: false }), profileOpen: s.profile, settings,
       toDesktop: () => { set({ profile: false }); this.flash('Wechselt zur Desktop-Oberfläche'); }, logout: () => { set({ profile: false }); this.flash('Abgemeldet (Demo)'); },
-      showLeft: isTablet || v !== 'chat', showChat: chatShown,
+      showLeft: (isTablet || v !== 'chat') && v !== 'sheet', showChat: chatShown,
+      showRow: v !== 'sheet' || (isTablet && chatShown), rowFlex: v === 'sheet' ? 'none' : '1', rowW: v === 'sheet' ? '400px' : 'auto',
+      rootDir: v === 'sheet' && isTablet && chatShown ? 'row' : 'column', sheetChatFab: v === 'sheet' && isTablet && !chatShown,
       chatFlex: isTablet ? 'none' : '1', chatW: isTablet ? '400px' : 'auto', chatBorder: isTablet ? '1px solid var(--line2)' : '0',
       vHome: v === 'home', vList: v === 'journal' || v === 'entry', vJournal: v === 'journal', vEntry: v === 'entry' && !!ej,
 
@@ -1185,7 +1175,6 @@ class Component extends DCLogic {
       showFabs: v === 'home' || v === 'journal' || v === 'entry', showJournalFab: v === 'home',
       showChatFab: !chatShown, chatFabLabel: unread ? 'Chat, ' + unread + ' ungelesen' : 'Chat', bubbleOn: !!s.bubble && !chatShown, bubble: s.bubble || {},
       unread, hasUnread: unread > 0, journalNew,
-      cv: s.cv, cvOpts: [['a', 'A Karten'], ['b', 'B Chronik']].map(([id, label]) => ({ label, on: s.cv === id ? 'true' : 'false', onClick: () => set({ cv: id }) })),
       rollModes: [['public', 'Öffentlich'], ['gm', 'Privat · SL'], ['blind', 'Verdeckt'], ['self', 'Nur ich']].map(([id, label]) => ({ label, on: s.rollMode === id ? 'true' : 'false', onClick: () => set({ rollMode: id }) })),
       recipients: [{ id: null, label: 'Alle', ini: '', bg: '', hasAva: false }, ...(isGM ? [] : [{ id: 'SL', label: 'Spielleitung', ini: 'SL', bg: 'radial-gradient(circle at 40% 35%,#5b4a7a,#2d2340)', hasAva: true }]),
         ...this.HEROES.filter(h => !(h.mine && !isGM)).map(h => ({ id: h.short, label: h.short, ini: h.short[0], bg: h.bg, hasAva: true }))].map(r => {

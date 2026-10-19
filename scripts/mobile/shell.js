@@ -106,6 +106,8 @@ function closePanel() {
 function renderBadge() {
   els.badge.textContent = state.unread > 9 ? '9+' : String(state.unread);
   els.badge.hidden = state.unread === 0;
+  // Chat-Knopf in der Reiterleiste des Bogens (Tablet, mobile.js) zeigt denselben Zähler.
+  document.querySelectorAll('.dsa5h-m-rail-chat .dsa5h-m-badge').forEach(b => { b.textContent = els.badge.textContent; b.hidden = els.badge.hidden; });
   els.chatFab.setAttribute('aria-label', state.unread ? game.i18n.format('DSA5HELPERS.Mobile.ChatUnread', { n: state.unread }) : L('Panel.chat'));
 }
 
@@ -235,6 +237,16 @@ function build() {
 }
 
 /** Im ready-Hook aufrufen. */
+/** Chat-Panel ein-/ausblenden (Tablet: Knopf in der Reiterleiste des Bogens, Bogen und Chat stehen dann nebeneinander). */
+export function toggleChat() {
+  openPanel('chat');
+}
+
+/** Ungelesen-Zähler in neu gebauten Knöpfen nachziehen. */
+export function refreshBadges() {
+  if (els.badge) renderBadge();
+}
+
 export function initShell(mode, info) {
   Object.assign(state, { mode, info });
   build();

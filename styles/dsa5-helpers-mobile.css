@@ -217,6 +217,12 @@ body.dsa5h-mobile .dsa5h-m-window {
 }
 body.dsa5h-tablet .dsa5h-m-window.dialog,
 body.dsa5h-tablet .dsa5h-m-window.dialog-dsa5 { inset: auto 0 0 0 !important; max-height: 90vh !important; margin: 0 auto; width: min(640px, 100vw) !important; }
+/* Tablet quer: Fenster und Chat nebeneinander (Rückmeldung 2026-10-19). Ist der Chat offen, endet das Fenster an der
+   Chat-Spalte; Dialoge bleiben Blätter von unten. Unter 1000 px (Tablet hoch) wäre der Bogen zu schmal, dort liegt der
+   Chat wie bisher darüber. */
+@media (min-width: 1000px) {
+  body.dsa5h-tablet[data-dsa5h-panel="chat"] .dsa5h-m-window:not(.dialog, .dialog-dsa5) { right: var(--dsa5h-m-panel-w) !important; border-radius: 10px 0 0 0; }
+}
 body.dsa5h-mobile .dsa5h-m-window .window-header { min-height: 44px; }
 body.dsa5h-mobile .dsa5h-m-window .window-header button.header-control { width: 40px; height: 40px; font-size: 18px; }
 body.dsa5h-mobile .dsa5h-m-window .window-content { overflow: auto; }
@@ -806,6 +812,12 @@ body.dsa5h-phone .dsa5-helpers-sheet .steigerungsplaner-tab .planner-group-label
 /* Dunkles Bogen-Thema (Ü10): aktive Unterreiter und Chips sonst dunkel auf dunkel */
 body.dsa5h-phone .dsa5-helpers-sheet[data-theme="dark"] .dsa5h-sub-tabs button.active,
 body.dsa5h-phone .dsa5-helpers-sheet[data-theme="dark"] .dsa5h-m-chips button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff8ec; }
+
+/* Tablet: Chat-Knopf unten in der Reiterleiste des Bogens (mobile.js setupTabletSheet) */
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat { position: relative; margin-top: auto !important; }
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat > i { font-size: 22px; line-height: 24px; }
+body.dsa5h-tablet[data-dsa5h-panel="chat"] .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat { background: rgba(224, 192, 128, .2) !important; box-shadow: inset 0 2px 0 #e0c48c; }
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat .dsa5h-m-badge { top: 2px; right: 6px; }
 
 /* Tablet: Reiterleiste rechts im Fenster */
 body.dsa5h-tablet .dsa5-helpers-sheet .window-content { padding-right: 84px !important; }

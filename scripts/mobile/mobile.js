@@ -4,7 +4,7 @@
 //   oder Notausgang ?dsa5h-ui=auto|phone|tablet|foundry. Keine Abfrage, kein Umhüllen von setupGame:
 //   init läuft vor initializeUI, Body-Klasse und CONFIG.ui-Einträge reichen.
 // - „Spielfeld aus“ ist einfach Foundrys Client-Einstellung core.noCanvas (gilt nur für dieses Gerät).
-import { initShell } from './shell.js';
+import { initShell, toggleChat, refreshBadges } from './shell.js';
 import { initCanvasTouch } from './canvas-touch.js';
 import { initTouchContext } from './touch-context.js';
 
@@ -214,6 +214,23 @@ function setupPhoneSheet(el, app) {
   }, true);
 }
 
+/**
+ * Unser Bogen auf dem Tablet: Chat-Knopf unten in der Reiterleiste (Rückmeldung 2026-10-19: Bogen und Chat gleichzeitig).
+ * Ist der Chat offen, rückt das Fenster um die Panel-Breite nach links (Mobil-CSS Abschnitt 8), der Chat steht daneben.
+ */
+function setupTabletSheet(el) {
+  const rail = el.querySelector('nav.dsa5h-rail');
+  if (!rail || rail.querySelector('.dsa5h-m-rail-chat')) return;
+  const chat = document.createElement('button');
+  chat.type = 'button';
+  chat.className = 'dsa5h-m-rail-chat';
+  chat.setAttribute('aria-label', game.i18n.localize('DSA5HELPERS.Mobile.Panel.chat'));
+  chat.innerHTML = `<i class="fa-solid fa-comment" inert></i><span class="dsa5h-rail-label">${game.i18n.localize('DSA5HELPERS.Mobile.Panel.chat')}</span><span class="dsa5h-m-badge" hidden></span>`;
+  chat.addEventListener('click', () => toggleChat());
+  rail.append(chat);
+  refreshBadges();
+}
+
 /** Im init-Hook aufrufen. */
 export function initMobile() {
   game.settings.register(MODULE_ID, 'hybridPlay', {
@@ -262,6 +279,7 @@ export function initMobile() {
     if (!el || !(el.classList.contains('window-app') || app.hasFrame)) return;
     el.classList.add('dsa5h-m-window');
     if (mode === 'phone' && el.classList.contains('dsa5-helpers-sheet')) setupPhoneSheet(el, app);
+    if (mode === 'tablet' && el.classList.contains('dsa5-helpers-sheet')) setupTabletSheet(el);
   };
   Hooks.on('renderApplicationV2', markWindow);
   Hooks.on('renderApplication', markWindow);
