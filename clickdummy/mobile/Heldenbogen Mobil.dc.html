@@ -20,6 +20,27 @@ body{margin:0}
 main,aside,nav,[data-scroll]{scrollbar-width:none}main::-webkit-scrollbar,aside::-webkit-scrollbar,nav::-webkit-scrollbar{display:none}
 a{color:#8b6f3f}a:hover{color:#5e4a29}
 input::placeholder,textarea::placeholder{color:var(--ink3)}
+/* Waffenkarte Variante F (Issue #40) — Desktop-Entwurf: clickdummy/hand-variants.css */
+[data-hv="card"]{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:84px minmax(0,1fr);grid-template-areas:"name name" "media sub" "stats stats" "extra extra";gap:6px 12px;align-items:center;padding:36px 12px 12px;border:1px solid rgba(185,154,92,.6);border-radius:6px;background:linear-gradient(160deg,rgba(255,250,238,.9),rgba(236,226,210,.4) 55%,rgba(185,154,92,.18)),var(--paper)}
+[data-hv="bg"]{position:absolute;right:-46px;top:-14px;z-index:-1;width:210px;height:210px;object-fit:contain;opacity:.16;transform:rotate(-18deg);filter:grayscale(.3);pointer-events:none}
+[data-hv="hand"]{position:absolute;top:0;left:14px;padding:6px 10px 12px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#f4e8d6;background:linear-gradient(180deg,#3a322b,#272320);clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 7px),0 100%);box-shadow:0 2px 4px rgba(0,0,0,.3)}
+[data-hv="swap"]{position:absolute;top:6px;right:6px;width:40px;height:40px;display:grid;place-items:center;border:1px solid var(--line2);border-radius:50%;background:var(--field);color:var(--ink2);font:inherit;font-size:17px;cursor:pointer}
+[data-hv="name"]{grid-area:name;display:flex;align-items:center;gap:2px;padding-bottom:4px;font-family:Andalus,serif;font-size:23px;line-height:1.1;background:linear-gradient(90deg,rgba(185,154,92,.8),rgba(185,154,92,0)) bottom left/100% 1px no-repeat}
+[data-hv="star"]{flex:none;width:36px;height:36px;border:0;background:none;color:var(--accent);font-size:20px;cursor:pointer}
+[data-hv="media"]{grid-area:media;position:relative;width:84px;height:84px;display:grid;place-items:center}
+[data-hv="media"]::before{content:"";position:absolute;inset:-6px;z-index:-1;border-radius:50%;background:radial-gradient(circle,rgba(255,236,190,.95) 0%,rgba(255,236,190,.4) 45%,transparent 70%)}
+[data-hv="media"] img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 5px rgba(0,0,0,.35))}
+[data-hv="sub"]{grid-area:sub;align-self:center;display:flex;flex-direction:column;gap:1px;font-size:13px;color:var(--ink2)}
+[data-hv="stats"]{grid-area:stats;align-self:start;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+[data-hv="pill"]{display:flex;align-items:center;gap:4px;height:44px;padding:0 10px 0 3px;border:1px solid rgba(185,154,92,.6);border-radius:22px;background:rgba(255,255,255,.55);font:inherit;color:var(--ink);cursor:pointer}
+[data-hv="pill"] b{font-size:13px;letter-spacing:.06em}
+[data-hv="die"]{width:34px;height:34px;display:grid;place-items:center;background:center/contain no-repeat;color:#fff;font-weight:700;font-size:15px;text-shadow:0 0 1px #140f0b,1px 0 0 #140f0b,-1px 0 0 #140f0b,0 1px 0 #140f0b,0 -1px 0 #140f0b}
+[data-hv="tp"]{margin-left:auto;display:flex;align-items:center;gap:5px;height:44px;padding:0 10px;border:1px solid #b3241a;border-radius:6px;background:rgba(179,36,26,.08);font:inherit;font-weight:700;font-size:16px;color:var(--ink);cursor:pointer}
+[data-hv="tp"] small{font-size:11px;letter-spacing:.1em;color:var(--ink2)}
+[data-hv="extra"]{grid-area:extra;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+[data-theme="dark"] [data-hv="card"]{background:linear-gradient(160deg,rgba(255,255,255,.06),transparent 60%),var(--paper)}
+[data-theme="dark"] [data-hv="media"]::before{background:radial-gradient(circle,rgba(255,220,160,.35) 0%,transparent 70%)}
+[data-theme="dark"] [data-hv="pill"]{background:rgba(255,255,255,.06)}
 </style>
 </helmet>
 <div data-theme="{{ theme }}" data-ts="{{ ts }}" style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--paper);color:var(--ink);font-family:GentiumBasic,Georgia,serif;-webkit-font-smoothing:antialiased;user-select:none">
@@ -334,25 +355,23 @@ input::placeholder,textarea::placeholder{color:var(--ink3)}
             </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px">
               <sc-for list="{{ weapons }}" as="w" hint-placeholder-count="4">
-                <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:10px">
-                  <div style="display:flex;align-items:center;gap:10px">
-                    <img src="{{ w.img }}" alt="" style="width:32px;height:32px;flex:none"></img>
-                    <div style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-family:Andalus,serif;font-size:19px;line-height:1.1">{{ w.name }}</span><span style="font-size:13px;color:var(--ink2)">{{ w.meta }}</span></div>
-                    <sc-if value="{{ w.isFav }}" hint-placeholder-val="{{ false }}"><span style="color:var(--accent);font-size:18px">★</span></sc-if>
-                  </div>
-                  <div style="display:flex;gap:8px;align-items:stretch">
+                <!-- Waffenkarte Variante F „Banner“ (Issue #40, Rückmeldung 2026-10-19): Wimpel mit der Hand, Name oben über die
+                     volle Breite, Bild frei auf einem Lichtschein, die Waffe groß als Wasserzeichen, AT/PA als Pillen, TP daneben. -->
+                <section data-hv="card">
+                  <img data-hv="bg" src="{{ w.img }}" alt="" aria-hidden="true"></img>
+                  <span data-hv="hand">{{ w.hand }}</span>
+                  <button data-hv="swap" onClick="{{ w.onSwap }}" aria-label="Andere Waffe in diese Hand">⇄</button>
+                  <div data-hv="name"><span>{{ w.name }}</span><button data-hv="star" onClick="{{ w.onFav }}" aria-label="Favorit">{{ w.star }}</button></div>
+                  <div data-hv="media"><img src="{{ w.img }}" alt=""></img></div>
+                  <div data-hv="sub"><span>{{ w.group }} · <b>KtW {{ w.ktw }}</b></span><span>RW {{ w.rw }}</span></div>
+                  <div data-hv="stats">
                     <sc-for list="{{ w.rolls }}" as="r">
-                      <button onClick="{{ r.onRoll }}" style="flex:none;font:inherit;color:inherit;cursor:pointer;display:flex;align-items:center;gap:6px;padding:4px 10px 4px 6px;min-height:46px;border:1px solid var(--accent);border-radius:4px;background:var(--field)">
-                        <span style="width:34px;height:34px;display:grid;place-items:center;background:url(../../../../systems/dsa5/icons/dice/d20mu.svg) center/contain no-repeat;color:#fff;font-weight:700;font-size:14px;text-shadow:0 1px 2px rgba(0,0,0,.6)">{{ r.v }}</span>
-                        <span style="font-size:13px;font-weight:700;letter-spacing:.06em">{{ r.label }}</span>
-                      </button>
+                      <button data-hv="pill" onClick="{{ r.onRoll }}"><span data-hv="die" style="background-image:url({{ r.die }})">{{ r.v }}</span><b>{{ r.label }}</b></button>
                     </sc-for>
-                    <div style="flex:1;display:flex;justify-content:flex-end;gap:14px;align-items:center">
-                      <sc-for list="{{ w.stats }}" as="st"><div style="display:flex;flex-direction:column;align-items:flex-end"><span style="font-size:11px;letter-spacing:.1em;color:var(--ink2)">{{ st.k }}</span><span style="font-weight:700;font-size:15px">{{ st.v }}</span></div></sc-for>
-                    </div>
+                    <button data-hv="tp" onClick="{{ w.onTp }}"><small>TP</small><span>{{ w.tp }}</span></button>
                   </div>
                   <sc-if value="{{ w.hasAmmo }}" hint-placeholder-val="{{ false }}">
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                    <div data-hv="extra">
                       <sc-for list="{{ w.ammo }}" as="am"><button onClick="{{ am.onClick }}" style="white-space:nowrap;font:inherit;cursor:pointer;height:40px;padding:0 12px;border-radius:20px;border:1px solid {{ am.border }};background:{{ am.bg }};color:var(--ink);font-size:14px">{{ am.label }}</button></sc-for>
                       <sc-if value="{{ w.hasReload }}" hint-placeholder-val="{{ false }}"><button onClick="{{ w.onReload }}" style="white-space:nowrap;font:inherit;cursor:pointer;height:40px;padding:0 12px;border-radius:20px;border:1px solid var(--accent);background:{{ w.reloadBg }};color:{{ w.reloadColor }};font-size:14px;font-weight:700">{{ w.reloadLabel }}</button></sc-if>
                     </div>
@@ -903,9 +922,9 @@ class Component extends DCLogic {
     ];
   }
 
-  componentDidUpdate(pp, ps) {
-
-    if (ps.tab !== this.state.tab) { const c = this.contentRef.current; if (c) c.scrollTop = 0; }
+  // Die Laufzeit übergibt nur die vorigen Props (README), den vorigen Reiter deshalb selbst merken.
+  componentDidUpdate() {
+    if (this._lastTab !== this.state.tab) { this._lastTab = this.state.tab; const c = this.contentRef.current; if (c) c.scrollTop = 0; }
   }
   componentWillUnmount() { clearTimeout(this._tt); }
   postRoll(r, dmgOnly) {
@@ -1049,21 +1068,28 @@ class Component extends DCLogic {
       { label: 'Waffenloser Angriff', v: 8, img: I + 'categories/attack_weaponless.webp', onRoll: () => this.rollSingle('Waffenloser Angriff', 'Raufen · TP 1W6−1', 8, 'mu', { dieLabel: 'AT', tp: [1, -1, 6] }) },
       { label: 'Waffenlose Verteidigung', v: 6, img: I + 'categories/Armor.webp', onRoll: () => this.rollSingle('Waffenlose Verteidigung', 'Raufen', 6, 'ge', { dieLabel: 'PA' }) }
     ];
-    const W = (name, meta, img, at, pa, tp, rw, extra) => {
-      const rolls = [{ label: pa == null ? 'FK' : 'AT', v: at, onRoll: () => this.rollSingle(name, (pa == null ? 'Fernkampf' : 'Attacke') + ' · TP ' + tp, at, 'mu', { dieLabel: pa == null ? 'FK' : 'AT', tp: this.tp(tp) }) }];
-      if (pa != null) rolls.push({ label: 'PA', v: pa, onRoll: () => this.rollSingle(name, 'Parade', pa, 'ge', { dieLabel: 'PA' }) });
-      return { name, meta, img, rolls, stats: [{ k: 'TP', v: tp }, { k: 'RW', v: rw }], isFav: false, hasAmmo: false, hasReload: false, ...extra };
+    // Waffen in den Händen als Karten (Variante F, Issue #40). Bilder aus dsa5-core wie im Desktop-Entwurf.
+    const CORE = '../../../dsa5-core/icons/';
+    const ktw = (g) => (this.COMBAT_SKILLS.find(c => c.name === g) || {}).fw;
+    const W = (name, group, hand, img, at, pa, tp, rw, extra) => {
+      const rolls = [{ label: pa == null ? 'FK' : 'AT', v: at, die: I + 'dice/d20mu.svg', onRoll: () => this.rollSingle(name, (pa == null ? 'Fernkampf' : 'Attacke') + ' · TP ' + tp, at, 'mu', { dieLabel: pa == null ? 'FK' : 'AT', tp: this.tp(tp) }) }];
+      if (pa != null) rolls.push({ label: 'PA', v: pa, die: I + 'dice/d20in.svg', onRoll: () => this.rollSingle(name, 'Parade', pa, 'ge', { dieLabel: 'PA' }) });
+      const fav = (s.wfav || {})[name] ?? !!(extra && extra.isFav);
+      return { name, group, hand, img, rolls, tp, rw, ktw: ktw(group), star: fav ? '★' : '☆', hasAmmo: false, hasReload: false, ...extra,
+        onFav: () => set({ wfav: { ...(s.wfav || {}), [name]: !fav } }),
+        onSwap: () => this.flash('Waffe wählen: Liste der Waffen (Entwurf)'),
+        onTp: () => this.flash('🎲 Schaden ' + name + ' (' + tp + ')') };
     };
     const ammoItems = s.items.filter(i => i.cat === 'ammo');
     const weapons = [
-      W('Elfischer Säbel', 'Schwerter · Haupthand', I + 'categories/Meleeweapon.webp', 12, 6, '1W6+3', 'mittel', { isFav: true }),
-      W('Elfenbogen', 'Bögen · zweihändig', I + 'categories/Rangeweapon.webp', 14, null, '1W6+4', '10/50/80', { isFav: true, hasAmmo: true,
+      W('Elfischer Säbel', 'Schwerter', 'Haupthand', CORE + 'meleeweapon/Saebel.webp', 12, 6, '1W6+3', 'mittel', { isFav: true }),
+      W('Waldläuferdolch', 'Dolche', 'Nebenhand', CORE + 'meleeweapon/Dolch.webp', 11, 5, '1W6+1', 'kurz'),
+      W('Elfenbogen', 'Bögen', 'Beide Hände', CORE + 'rangeweapon/Elfenbogen.webp', 14, null, '1W6+4', '10/50/80', { isFav: true, hasAmmo: true,
         ammo: ammoItems.map((a, i) => ({ label: a.name + ' · ' + a.qty, onClick: () => set({ ammoSel: i }), bg: s.ammoSel === i ? 'var(--field)' : 'transparent', border: s.ammoSel === i ? 'var(--accent)' : 'var(--line2)' })) }),
-      W('Armbrust', 'Armbrüste · LZ 3', I + 'categories/Rangeweapon.webp', 6, null, '1W6+3', '10/50/80', { hasAmmo: true, hasReload: true,
+      W('Armbrust', 'Armbrüste', 'Beide Hände', CORE + 'rangeweapon/LeichteArmbrust.webp', 6, null, '1W6+3', '10/50/80', { hasAmmo: true, hasReload: true,
         ammo: [{ label: 'Bolzen · 10', onClick: () => { }, bg: 'var(--field)', border: 'var(--accent)' }],
         reloadLabel: s.reload >= 3 ? 'Geladen' : 'Nachladen ' + s.reload + ' / 3', reloadBg: s.reload >= 3 ? 'var(--accent)' : 'transparent', reloadColor: s.reload >= 3 ? 'var(--onaccent)' : 'var(--accenttext)',
         onReload: () => set({ reload: s.reload >= 3 ? 0 : s.reload + 1 }) }),
-      W('Waldläuferdolch', 'Dolche · Nebenhand', I + 'categories/Meleeweapon.webp', 11, 5, '1W6+1', 'kurz'),
     ];
     const armor = s.items.filter(i => i.cat === 'armor' && i.eq).map(i => ({ name: i.name, rs: { 'Waldläuferkluft': 2, 'Lederkappe': 1, 'Lederhandschuhe': 0 }[i.name], be: 0 }));
     const rsTotal = armor.reduce((a, x) => a + x.rs, 0);
