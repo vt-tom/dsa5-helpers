@@ -414,7 +414,37 @@
       "Untarget": "Untarget",
       "Theme": "Theme",
       "Light": "Light",
-      "Dark": "Dark"
+      "Dark": "Dark",
+      "Chat": {
+        "Visibility": "Show",
+        "To": "To",
+        "All": "All",
+        "GM": "Game Master",
+        "ToAll": "Message to everyone …",
+        "WhisperTo": "Whisper to {names} …",
+        "Mode": {
+          "public": "Public",
+          "ic": "In character",
+          "gm": "Private · GM",
+          "blind": "Blind",
+          "self": "Only me"
+        },
+        "Format": "Format",
+        "Dice": "Dice",
+        "Send": "Send",
+        "Die": "d",
+        "FewerDice": "Fewer dice",
+        "MoreDice": "More dice",
+        "ModDown": "Lower modifier",
+        "ModUp": "Raise modifier",
+        "RollFree": "Roll {roll}"
+      },
+      "Journal": {
+        "Pages": "Pages",
+        "PageOf": "Page {n} of {total}",
+        "Prev": "Previous",
+        "Next": "Next"
+      }
     }
   }
 }

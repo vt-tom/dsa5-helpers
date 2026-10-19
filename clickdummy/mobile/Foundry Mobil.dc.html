@@ -366,10 +366,10 @@ input::placeholder{color:var(--ink3)}
             </sc-for>
             </div>
           </div>
-          <!-- Eingabe (Entscheidung 2026-10-19): Sichtbarkeit der Würfe als Chips, Empfänger antippen statt /w, Würfel-Schnellknöpfe;
+          <!-- Eingabe (Entscheidung 2026-10-19): Sichtbarkeit (Foundrys Nachrichtenmodus, gilt für Text und Würfe) als Chips, Empfänger antippen statt /w, Würfel-Schnellknöpfe;
                Foundrys Editor-Leiste liegt hinter „Aa“. -->
           <div data-ci="wrap">
-            <div data-ci="row"><small>Würfe</small><sc-for list="{{ rollModes }}" as="o"><button data-ci="chip" onClick="{{ o.onClick }}" aria-pressed="{{ o.on }}">{{ o.label }}</button></sc-for></div>
+            <div data-ci="row"><small>Sicht</small><sc-for list="{{ rollModes }}" as="o"><button data-ci="chip" onClick="{{ o.onClick }}" aria-pressed="{{ o.on }}">{{ o.label }}</button></sc-for></div>
             <div data-ci="row"><small>An</small>
               <sc-if value="{{ isGM }}" hint-placeholder-val="{{ false }}"><button data-ci="chip" onClick="{{ openReq }}" style="border-color:var(--accent);color:var(--accenttext);font-weight:700">+ Probe anfordern</button></sc-if>
               <sc-for list="{{ recipients }}" as="r"><button data-ci="chip" data-tone="{{ r.tone }}" onClick="{{ r.onClick }}" aria-pressed="{{ r.on }}"><sc-if value="{{ r.hasAva }}" hint-placeholder-val="{{ false }}"><i style="background:{{ r.bg }}">{{ r.ini }}</i></sc-if>{{ r.label }}</button></sc-for>
@@ -955,7 +955,7 @@ class Component extends DCLogic {
       const base = { isSystem: m.type === 'system', isCard: m.type !== 'system', isText: m.type === 'text', isRoll: m.type === 'roll' && !blindHidden, isRequest: m.type === 'request',
         ini: m.gm ? 'SL' : h ? h.short[0] : (m.who || '?')[0], avaBg: m.gm ? 'radial-gradient(circle at 40% 35%,#5b4a7a,#2d2340)' : h ? h.bg : '#4a3f33',
         mineStr: mine ? 'true' : 'false', whStr: whisper ? 'true' : 'false',
-        hasMode: !!m.mode && m.mode !== 'public', modeLabel: MODE_LABEL[m.mode] || '', onMore: e => { e.stopPropagation(); this.flash('Kontextmenü des Systems (Langdruck)'); },
+        hasMode: !!MODE_LABEL[m.mode], modeLabel: MODE_LABEL[m.mode] || '', onMore: e => { e.stopPropagation(); this.flash('Kontextmenü des Systems (Langdruck)'); },
         who: m.who + (m.owner && isGM ? ' (' + m.owner + ')' : ''), time: m.time, text: m.text,
         isWhisper: whisper, whisperLabel: whisper ? (m.gm ? (isGM ? 'Geflüstert an ' + m.to : 'Flüstern der Spielleitung') : 'Geflüstert an ' + (m.to === 'SL' ? 'die Spielleitung' : m.to)) : '',
         bg: whisper ? 'var(--whisper)' : 'var(--card)', border: whisper ? 'var(--whisperline)' : 'var(--line2)', edge: whisper ? 'var(--whisperline)' : m.type === 'request' ? 'var(--accent)' : mine ? 'var(--accent)' : m.gm ? 'var(--sel)' : 'var(--line2)',
@@ -1003,7 +1003,7 @@ class Component extends DCLogic {
     const author = isGM ? { who: 'Spielleitung', gm: true } : { who: 'Layariel Wipfelglanz', owner: 'Anna' };
     const wList = Object.keys(s.wTo).filter(k => s.wTo[k]);
     const toField = wList.length ? { to: wList.join(', '), toList: wList } : {};
-    const modeField = s.rollMode === 'public' ? {} : { mode: s.rollMode };
+    const modeField = ['gm', 'blind', 'self'].includes(s.rollMode) ? { mode: s.rollMode } : {};
     const send = () => { const t = s.draft.trim(); if (!t) return; this.push({ type: 'text', ...author, ...toField, text: t }); set({ draft: '' }); };
     const quickDice = [['1W20', 1, 20], ['3W20', 3, 20], ['1W6', 1, 6], ['2W6', 2, 6]].map(([label, n, d]) => ({ label, onClick: () => {
       const dice = Array.from({ length: n }, () => 1 + Math.floor(Math.random() * d));
@@ -1175,7 +1175,7 @@ class Component extends DCLogic {
       showFabs: v === 'home' || v === 'journal' || v === 'entry', showJournalFab: v === 'home',
       showChatFab: !chatShown, chatFabLabel: unread ? 'Chat, ' + unread + ' ungelesen' : 'Chat', bubbleOn: !!s.bubble && !chatShown, bubble: s.bubble || {},
       unread, hasUnread: unread > 0, journalNew,
-      rollModes: [['public', 'Öffentlich'], ['gm', 'Privat · SL'], ['blind', 'Verdeckt'], ['self', 'Nur ich']].map(([id, label]) => ({ label, on: s.rollMode === id ? 'true' : 'false', onClick: () => set({ rollMode: id }) })),
+      rollModes: [['public', 'Öffentlich'], ['ic', 'Als Held'], ['gm', 'Privat · SL'], ['blind', 'Verdeckt'], ['self', 'Nur ich']].map(([id, label]) => ({ label, on: s.rollMode === id ? 'true' : 'false', onClick: () => set({ rollMode: id }) })),
       recipients: [{ id: null, label: 'Alle', ini: '', bg: '', hasAva: false }, ...(isGM ? [] : [{ id: 'SL', label: 'Spielleitung', ini: 'SL', bg: 'radial-gradient(circle at 40% 35%,#5b4a7a,#2d2340)', hasAva: true }]),
         ...this.HEROES.filter(h => !(h.mine && !isGM)).map(h => ({ id: h.short, label: h.short, ini: h.short[0], bg: h.bg, hasAva: true }))].map(r => {
           const on = r.id ? !!s.wTo[r.id] : !Object.values(s.wTo).some(Boolean);

@@ -414,7 +414,37 @@
       "Untarget": "Ziel aufheben",
       "Theme": "Darstellung",
       "Light": "Hell",
-      "Dark": "Dunkel"
+      "Dark": "Dunkel",
+      "Chat": {
+        "Visibility": "Sicht",
+        "To": "An",
+        "All": "Alle",
+        "GM": "Spielleitung",
+        "ToAll": "Nachricht an alle …",
+        "WhisperTo": "Flüstern an {names} …",
+        "Mode": {
+          "public": "Öffentlich",
+          "ic": "Als Held",
+          "gm": "Privat · SL",
+          "blind": "Verdeckt",
+          "self": "Nur ich"
+        },
+        "Format": "Formatieren",
+        "Dice": "Würfel",
+        "Send": "Senden",
+        "Die": "W",
+        "FewerDice": "Weniger Würfel",
+        "MoreDice": "Mehr Würfel",
+        "ModDown": "Modifikator senken",
+        "ModUp": "Modifikator erhöhen",
+        "RollFree": "{roll} würfeln"
+      },
+      "Journal": {
+        "Pages": "Seiten",
+        "PageOf": "Seite {n} von {total}",
+        "Prev": "Zurück",
+        "Next": "Weiter"
+      }
     }
   }
 }

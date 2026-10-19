@@ -7,6 +7,8 @@
 import { initShell, toggleChat, refreshBadges } from './shell.js';
 import { initCanvasTouch } from './canvas-touch.js';
 import { initTouchContext } from './touch-context.js';
+import { initChat } from './chat.js';
+import { initJournal } from './journal.js';
 
 export const MODULE_ID = 'dsa5-helpers';
 const MODES = ['auto', 'phone', 'tablet', 'foundry'];
@@ -266,6 +268,8 @@ export function initMobile() {
 
   initCanvasTouch();
   initTouchContext();
+  initChat();
+  initJournal();
   Hooks.once('ready', () => {
     initShell(mode, { chosen, detected: detectMode() });
     // „Desktop-Website“ (Chrome/Android u. a.): Der Browser ignoriert die Viewport-Angabe und baut die Seite ~980 px

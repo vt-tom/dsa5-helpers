@@ -14,6 +14,8 @@
    9. Konto-Menü
   10. Szene: Token ziehen, Namen
   11. Heldenbogen auf Smartphone und Tablet
+  12. Chat im Modul-Design (Karten, Probenkarten, Eingabe)
+  13. Journal im Modul-Design (Verzeichnis, Eintrag, Seitenliste)
    ========================================================================== */
 
 /* 1. Variablen ------------------------------------------------------------ */
@@ -228,10 +230,7 @@ body.dsa5h-mobile .dsa5h-m-window .window-header button.header-control { width: 
 body.dsa5h-mobile .dsa5h-m-window .window-content { overflow: auto; }
 body.dsa5h-mobile .dsa5h-m-window .window-resize-handle,
 body.dsa5h-mobile .dsa5h-m-window .window-resizable-handle { display: none; }
-/* Journal-Blatt auf dem Smartphone: Seitenliste über dem Text statt daneben (fest 300 px breit) */
-body.dsa5h-phone .dsa5h-m-window.journal-sheet .window-content { flex-direction: column; }
-body.dsa5h-phone .dsa5h-m-window.journal-sheet .journal-sidebar { width: auto; flex: none; max-height: 26vh; overflow-y: auto; }
-body.dsa5h-phone .dsa5h-m-window.journal-sheet .journal-entry-content { width: auto; flex: 1; min-height: 0; }
+/* Journal-Blatt: Abschnitt 13 */
 body.dsa5h-mobile #context-menu {
   position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important;
   width: auto !important; max-width: 520px; max-height: 70vh; margin: 0 auto; overflow-y: auto;
@@ -825,3 +824,276 @@ body.dsa5h-tablet .dsa5-helpers-sheet .window-content nav.dsa5h-rail {
   left: auto !important; right: 10px; top: 60px; bottom: 10px; z-index: 6 !important; width: 66px;
   overflow-y: auto; gap: 4px;
 }
+
+/* 12. Chat im Modul-Design -------------------------------------------------
+   Entwurf clickdummy/mobile „Foundry Mobil“, Variante A „Karten“ (Nutzer-Entscheidung 2026-10-19): Nachricht als Karte
+   mit Panel-Kopf und Porträt, eigene Nachrichten mit Goldkante, Flüstern violett. DSA5-Probenkarten: Titel in Andalus,
+   große Eigenschaftswürfel mit Kürzel + Zielwert, Ergebnis als grünes/rotes Band mit QS-Rauten. Eingabe: Chips für die
+   Sichtbarkeit und die Empfänger, rundes Eingabefeld, Würfel-Schnellknöpfe (scripts/mobile/chat.js). */
+body.dsa5h-mobile {
+  --dsa5h-m-sub: rgba(0, 0, 0, .045);
+  --dsa5h-m-accenttext: #6d5326;
+  --dsa5h-m-okbg: rgba(47, 107, 42, .12);
+  --dsa5h-m-oktext: #24561f;
+  --dsa5h-m-dangerbg: rgba(179, 36, 26, .08);
+  --dsa5h-m-dangertext: #8e1d15;
+  --dsa5h-m-whisper: rgba(110, 70, 140, .1);
+  --dsa5h-m-whisperline: #7a4f96;
+  --dsa5h-m-whispertext: #5c3a73;
+  --dsa5h-m-card: linear-gradient(170deg, rgba(255, 250, 238, .85), rgba(236, 226, 210, .45)), var(--dsa5h-m-paper);
+}
+body.dsa5h-mobile[data-dsa5h-panel="chat"] #sidebar,
+body.dsa5h-mobile[data-dsa5h-panel="journal"] #sidebar { background: var(--dsa5h-m-paper); }
+body.dsa5h-mobile #chat { background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); font-family: 'GentiumBasic', Georgia, serif; }
+body.dsa5h-mobile #chat .chat-scroll { padding: 10px 10px 6px; scrollbar-width: none; }
+body.dsa5h-mobile #chat .chat-log { display: flex; flex-direction: column; gap: 8px; padding: 0; }
+
+/* Karte */
+body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message {
+  position: relative; margin: 0; padding: 0; overflow: hidden;
+  border: 1px solid rgba(185, 154, 92, .55) !important; border-image: none; border-radius: 6px;
+  background: var(--dsa5h-m-card); color: var(--dsa5h-m-ink); box-shadow: none;
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+/* Chat und Journal bleiben auch im dunklen Foundry-Thema hell (wie Kopf und Heldenkarte der Mobilansicht) */
+body.dsa5h-mobile :is(#chat, #chat-notifications, #journal, .dsa5h-m-journal) {
+  --color-text-primary: var(--dsa5h-m-ink); --color-text-secondary: var(--dsa5h-m-ink2); --color-text-emphatic: var(--dsa5h-m-ink);
+  --color-text-subtle: var(--dsa5h-m-ink2); --color-form-label: var(--dsa5h-m-ink2);
+}
+body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message .message-content :is(b, strong, p, li, .card-content) { color: inherit; }
+body.dsa5h-mobile #chat .chat-message.dsa5h-m-mine { box-shadow: inset 3px 0 0 var(--dsa5h-m-accent); }
+body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message.whisper {
+  border-color: var(--dsa5h-m-whisperline) !important;
+  background: linear-gradient(170deg, var(--dsa5h-m-whisper), transparent 70%), var(--dsa5h-m-paper);
+}
+body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message .message-header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; min-height: 34px; margin: 0; padding: 0 2px 0 8px;
+  background: var(--dsa5h-m-phead); border: 0; border-bottom: 1px solid rgba(185, 154, 92, .35); line-height: 1.2;
+}
+body.dsa5h-mobile .chat-message .message-header :is(.sender-image, .dsa5h-m-ini) {
+  flex: none; width: 26px; height: 26px; margin: 0; box-sizing: border-box; border: 1.5px solid #e0c48c; border-radius: 50%; object-fit: cover;
+}
+body.dsa5h-mobile .chat-message .dsa5h-m-ini {
+  display: grid; place-items: center; background: var(--dsa5h-m-ini, #4a3f33); color: #f4e8d6; font-family: 'Andalus', serif; font-size: 13px;
+}
+body.dsa5h-mobile .chat-message .message-sender {
+  flex: 1; min-width: 0; margin: 0; padding: 0; color: var(--dsa5h-m-ink); font-family: inherit; font-size: 14px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dsa5h-mobile .chat-message .message-metadata { flex: none; display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; color: var(--dsa5h-m-ink2); }
+/* Löschen, Verdeckt- und Flüster-Symbol: über ⋮ bzw. als Abzeichen darunter */
+body.dsa5h-mobile .chat-message .message-metadata :is(.message-delete, .chatIndicator, .privateMessageIndicator) { display: none; }
+body.dsa5h-mobile .chat-message .message-header .dsa5h-m-msgmenu { order: 50; width: 34px; height: 34px; margin: 0; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile .chat-message .message-header:has(.whisper-to, .flavor-text)::after { content: ""; order: 60; flex-basis: 100%; height: 0; }
+body.dsa5h-mobile .chat-message .message-header .whisper-to {
+  order: 70; flex: none; max-width: 100%; margin: 6px 0 4px; padding: 2px 9px; box-sizing: border-box; border: 1px solid var(--dsa5h-m-whisperline); border-radius: 10px;
+  background: var(--dsa5h-m-whisper); color: var(--dsa5h-m-whispertext); font-size: 12px; font-weight: 700; letter-spacing: .03em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dsa5h-mobile .chat-message.blind .message-header::before {
+  content: "\f070"; order: 45; font-family: var(--font-awesome, 'Font Awesome 6 Pro'); font-weight: 900; font-size: 12px; color: var(--dsa5h-m-ink2);
+}
+body.dsa5h-mobile .chat-message .message-header .flavor-text { order: 80; flex-basis: 100%; margin: 2px 0 4px; font-size: 13px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message .message-content {
+  padding: 6px 10px 10px; color: var(--dsa5h-m-ink); font-size: 16px; line-height: 1.45; overflow-wrap: anywhere;
+}
+body.dsa5h-mobile .chat-message .message-content :is(button, .chat-button) {
+  width: auto; min-height: 36px; margin: 2px 4px 2px 0; padding: 0 12px; border: 1px solid var(--dsa5h-m-accent); border-radius: 18px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-accenttext); font-family: inherit; font-size: 14px; font-weight: 700; line-height: 34px;
+}
+/* Foundrys Würfelergebnis (/r …) */
+body.dsa5h-mobile .chat-message .dice-roll :is(.dice-formula, .dice-total) {
+  margin: 0 0 4px; border: 1px solid var(--dsa5h-m-line2); border-radius: 6px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); box-shadow: none;
+}
+body.dsa5h-mobile .chat-message .dice-roll .dice-formula { font-size: 14px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile .chat-message .dice-roll .dice-total { font-family: 'Andalus', serif; font-size: 24px; font-weight: normal; line-height: 40px; }
+
+/* DSA5-Probenkarte (templates/chat/roll/test-card.hbs des Systems) */
+body.dsa5h-mobile .chat-message .dsa5.chat-card { display: flex; flex-direction: column; gap: 6px; padding: 0; border: 0; background: none; color: var(--dsa5h-m-ink); }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .card-content { margin: 0; padding: 0; border: 0; background: none; font-size: 14px; line-height: 1.35; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .test-data { display: flex; align-items: center; gap: 8px; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .test-data > b { flex: 1; font-family: 'Andalus', serif; font-weight: normal; font-size: 20px; line-height: 1.1; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result { display: flex; flex-wrap: wrap; gap: 6px 10px; padding: 2px 0 16px; font-size: 0; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result > b { display: none; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result > span.display-toggle {
+  position: relative; width: 40px; height: 40px; margin: 0; background-size: contain; background-position: center; background-repeat: no-repeat;
+  font-size: 16px; line-height: 40px; text-align: center;
+}
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result > span.display-toggle::after {
+  content: attr(data-dsa5h-cap); position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 1px;
+  color: var(--dsa5h-m-ink2); font-size: 11px; font-weight: normal; line-height: 1.2; letter-spacing: .04em; white-space: nowrap; text-shadow: none;
+}
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result > span.fail::after { color: var(--dsa5h-m-danger); font-weight: 700; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .chatModifiers { font-size: 13px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-folded { display: none; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-res {
+  order: -1; display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 6px 10px; box-sizing: border-box;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 6px; background: var(--dsa5h-m-sub); font-size: 16px; font-weight: 700;
+}
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-res[data-ok="true"] { border-color: rgba(47, 107, 42, .4); background: var(--dsa5h-m-okbg); color: var(--dsa5h-m-oktext); }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-res[data-ok="false"] { border-color: rgba(179, 36, 26, .4); background: var(--dsa5h-m-dangerbg); color: var(--dsa5h-m-dangertext); }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-res[data-crit="true"] { border-width: 2px; }
+/* Ergebnisband direkt unter den Würfeln (vor den Modifikatoren) */
+body.dsa5h-mobile .chat-message .dsa5.chat-card.dsa5h-m-test > .test-data { order: -3; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card.dsa5h-m-test > .roll-result { order: -2; }
+.dsa5h-m-pips { margin-left: auto; display: flex; gap: 4px; padding-right: 2px; }
+.dsa5h-m-pips > i { width: 9px; height: 9px; transform: rotate(45deg); border: 1px solid currentColor; opacity: .45; }
+.dsa5h-m-pips > i.on { background: currentColor; opacity: 1; }
+
+/* Eingabe: Foundrys Formular als Raster. Unsere Leiste (.dsa5h-m-ci, display: contents) liefert Chips und Knöpfe,
+   Foundrys Eingabefeld #chat-message bleibt ein eigenes Kind des Formulars (siehe chat.js, placeInput). */
+body.dsa5h-mobile #chat .chat-form {
+  position: relative; flex: none; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px 44px; align-items: end; gap: 6px;
+  grid-template-areas: "modes modes modes modes" "to to to to" "aa input dice send" "panel panel panel panel";
+  margin: 0; padding: 6px 10px calc(10px + var(--dsa5h-m-safe-b)); border: 0; border-top: 1px solid rgba(185, 154, 92, .55);
+  background: linear-gradient(180deg, rgba(255, 250, 238, .6), transparent 40px), var(--dsa5h-m-paper);
+  font-family: 'GentiumBasic', Georgia, serif; color: var(--dsa5h-m-ink);
+}
+body.dsa5h-mobile #chat .chat-form > #chat-controls { display: none; }
+body.dsa5h-mobile #chat .chat-form > .jump-to-bottom { position: absolute; right: 12px; bottom: calc(100% + 8px); z-index: 2; }
+.dsa5h-m-ci { display: contents; }
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar:has(#chat.active) { padding-bottom: 0; }
+.dsa5h-m-ci button { font-family: inherit; }
+.dsa5h-m-ci-row { display: flex; align-items: center; gap: 6px; min-width: 0; margin: 0 -10px; padding: 0 10px; overflow-x: auto; scrollbar-width: none; }
+.dsa5h-m-ci-row[data-row="modes"] { grid-area: modes; }
+.dsa5h-m-ci-row[data-row="to"] { grid-area: to; }
+.dsa5h-m-ci-row::-webkit-scrollbar { display: none; }
+.dsa5h-m-ci-row > small { flex: none; min-width: 38px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-ci .dsa5h-m-chip {
+  flex: none; display: flex; align-items: center; gap: 6px; width: auto; height: 34px; margin: 0; padding: 0 12px;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 17px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink);
+  font-size: 14px; line-height: 1; white-space: nowrap;
+}
+.dsa5h-m-ci .dsa5h-m-chip[aria-pressed="true"] { border-color: #272320; background: #272320; color: #f4e8d6; }
+.dsa5h-m-ci .dsa5h-m-chip[data-tone="whisper"][aria-pressed="true"] { border-color: var(--dsa5h-m-whisperline); background: var(--dsa5h-m-whisperline); color: #fff; }
+.dsa5h-m-ci .dsa5h-m-chip > i {
+  width: 22px; height: 22px; margin-left: -8px; border: 1.5px solid #e0c48c; border-radius: 50%; box-sizing: border-box;
+  display: grid; place-items: center; background: var(--dsa5h-m-ini, #4a3f33); color: #f4e8d6; font-family: 'Andalus', serif; font-size: 11px; font-style: normal;
+}
+.dsa5h-m-ci .dsa5h-m-chip-req { border-color: var(--dsa5h-m-accent); color: var(--dsa5h-m-accenttext); font-weight: 700; }
+.dsa5h-m-ci .dsa5h-m-ci-round,
+.dsa5h-m-ci .dsa5h-m-ci-send {
+  flex: none; width: 44px; height: 44px; margin: 0; padding: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 22px;
+  display: grid; place-items: center; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 15px; font-weight: 700; line-height: 1;
+}
+.dsa5h-m-ci .dsa5h-m-ci-aa { grid-area: aa; font-family: 'Andalus', serif; font-size: 17px; font-weight: normal; }
+.dsa5h-m-ci .dsa5h-m-ci-dicebtn { grid-area: dice; }
+.dsa5h-m-ci .dsa5h-m-ci-round[aria-expanded="true"] { border-color: var(--dsa5h-m-accent); background: rgba(185, 154, 92, .25); }
+.dsa5h-m-ci .dsa5h-m-ci-round > img { width: 28px; height: 28px; border: 0; }
+.dsa5h-m-ci .dsa5h-m-ci-send { grid-area: send; border: 0; background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); font-size: 17px; }
+/* Foundrys Eingabefeld (ProseMirror) als rundes Feld; die Formatleiste nur mit „Aa“ */
+body.dsa5h-mobile #chat .chat-form > #chat-message {
+  grid-area: input; min-width: 0; height: auto; min-height: 44px; max-height: 32vh; margin: 0; padding: 0 14px; box-sizing: border-box;
+  display: flex; flex-direction: column; overflow-y: auto;
+  border: 1px solid rgba(185, 154, 92, .6); border-radius: 22px; background: rgba(255, 255, 255, .7);
+  color: var(--dsa5h-m-ink); font-family: inherit; font-size: 16px; line-height: 1.35;
+}
+body.dsa5h-mobile #chat .chat-form > #chat-message .editor-content { flex: 1; min-height: 0; padding: 11px 0; }
+body.dsa5h-mobile #chat .chat-form > #chat-message :is(.editor-container, .editor-content, .ProseMirror) { min-height: 20px; outline: 0; background: none; color: var(--dsa5h-m-ink); }
+body.dsa5h-mobile #chat .chat-form > #chat-message .ProseMirror > p::before { border: 0; outline: 0; box-shadow: none; background: none; color: rgba(43, 39, 33, .45); font-style: italic; }
+body.dsa5h-mobile #chat .chat-form > #chat-message .menu-container { display: none; }
+body.dsa5h-mobile #chat .chat-form:has(.dsa5h-m-ci-fmt) > #chat-message { border-radius: 12px; }
+body.dsa5h-mobile #chat .chat-form:has(.dsa5h-m-ci-fmt) > #chat-message .menu-container { display: block; margin: 6px -8px 0; }
+.dsa5h-m-ci-dice { grid-area: panel; display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid rgba(185, 154, 92, .5); border-radius: 8px; background: rgba(255, 255, 255, .35); }
+.dsa5h-m-ci-dice[hidden] { display: none; }
+.dsa5h-m-ci-quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.dsa5h-m-ci-quick > button {
+  height: 44px; margin: 0; border: 1px solid var(--dsa5h-m-accent); border-radius: 6px; background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-accenttext); font-size: 15px; font-weight: 700;
+}
+.dsa5h-m-ci-free { display: flex; align-items: center; gap: 6px; }
+.dsa5h-m-ci-free > span { flex: none; min-width: 26px; text-align: center; font-size: 16px; font-weight: 700; }
+.dsa5h-m-ci-free > button {
+  flex: none; width: 36px; height: 36px; margin: 0; padding: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 18px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 17px; line-height: 1;
+}
+.dsa5h-m-ci-free > .dsa5h-m-ci-die { width: auto; padding: 0 10px; font-size: 15px; font-weight: 700; }
+.dsa5h-m-ci-free > .dsa5h-m-ci-go {
+  flex: 1; min-width: 0; width: auto; height: 40px; border: 0; border-radius: 6px; background: var(--dsa5h-m-accent);
+  color: var(--dsa5h-m-onaccent); font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* 13. Journal im Modul-Design -----------------------------------------------
+   Verzeichnis: Suche als Pille, Ordner mit Farbkante, Einträge als Zeilen mit ›. Eintrag: Pergamentseite mit Ordnerpfad,
+   Titel in Andalus mit Goldlinie, „Seite x von y ▾“ öffnet die Seitenliste als Blatt, ‹ › unten, Text mit Initiale
+   (scripts/mobile/journal.js). Die Seitenleiste des Journal-Blatts ist mobil ausgeblendet. */
+body.dsa5h-mobile #journal { background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); font-family: 'GentiumBasic', Georgia, serif; }
+body.dsa5h-mobile #journal .directory-header { gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--dsa5h-m-line); }
+body.dsa5h-mobile #journal .directory-header search { gap: 4px; }
+body.dsa5h-mobile #journal .directory-header search input {
+  height: 40px; padding: 0 12px; border: 1px solid var(--dsa5h-m-line2); border-radius: 20px; background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink); font-size: 16px;
+}
+body.dsa5h-mobile #journal .directory-header :is(search button, .action-buttons button) { color: var(--dsa5h-m-ink); }
+body.dsa5h-mobile #journal .directory-header .action-buttons button {
+  min-height: 40px; border: 1px solid var(--dsa5h-m-accent); border-radius: 6px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-accenttext); font-weight: 700;
+}
+body.dsa5h-mobile #journal .directory-list { padding: 0; }
+body.dsa5h-mobile #journal .folder > .folder-header {
+  min-height: 48px; padding: 0 12px 0 16px; gap: 8px; border: 0 !important; border-top: 1px solid var(--dsa5h-m-line) !important; box-shadow: none;
+  background-image: linear-gradient(90deg, transparent 4px, #e3d7c3 4px); color: var(--dsa5h-m-ink); font-size: 16px; font-weight: 700; text-shadow: none;
+}
+body.dsa5h-mobile #journal .folder > .subdirectory { margin-left: 4px; border-left-width: 4px; }
+body.dsa5h-mobile #journal .directory-item.entry {
+  min-height: 56px; align-items: center; padding: 0 12px; border-top: 1px solid var(--dsa5h-m-line); background: none;
+}
+body.dsa5h-mobile #journal .directory-item.entry .entry-name { flex: 1; min-width: 0; color: var(--dsa5h-m-ink); font-size: 16px; line-height: 56px; }
+body.dsa5h-mobile #journal .directory-item.entry::after { content: "›"; flex: none; padding-left: 8px; font-size: 20px; color: var(--dsa5h-m-ink2); }
+
+body.dsa5h-mobile .dsa5h-m-journal .window-content { padding: 0; background: var(--dsa5h-m-paper); }
+body.dsa5h-mobile .dsa5h-m-journal .journal-sidebar { display: none !important; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-content {
+  flex: 1; width: auto; min-width: 0; margin: 8px; padding: 0; overflow: hidden; color: var(--dsa5h-m-ink);
+  border: 1px solid rgba(185, 154, 92, .6); border-radius: 6px;
+  background: linear-gradient(175deg, rgba(255, 250, 238, .9), rgba(236, 226, 210, .5)), var(--dsa5h-m-paper);
+  box-shadow: inset 0 0 0 3px var(--dsa5h-m-paper), inset 0 0 0 4px rgba(185, 154, 92, .35);
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-content > .journal-header {
+  display: flex; flex-direction: column; align-items: stretch; gap: 4px; margin: 0; padding: 14px 16px 8px; border: 0; background: none;
+}
+.dsa5h-m-jpath { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-content > .journal-header input.title {
+  height: auto; margin: 0; padding: 0 0 8px; border: 0; border-radius: 0; color: var(--dsa5h-m-ink); text-align: left;
+  background: linear-gradient(90deg, rgba(185, 154, 92, .85), rgba(185, 154, 92, 0)) bottom left / 100% 1px no-repeat;
+  font-family: 'Andalus', serif; font-size: 28px; line-height: 1.15; box-shadow: none;
+}
+body.dsa5h-mobile .dsa5h-m-journal .dsa5h-m-jpick {
+  align-self: flex-start; display: flex; align-items: center; gap: 8px; width: auto; max-width: 100%; height: 40px; margin: 4px 0 0; padding: 0 14px;
+  border: 1px solid rgba(185, 154, 92, .6); border-radius: 20px; background: rgba(255, 255, 255, .6); color: var(--dsa5h-m-ink);
+  font-family: inherit; font-size: 15px; line-height: 1;
+}
+.dsa5h-m-jpick > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-pages { padding: 0 16px 16px; background: none; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-page { margin: 0; padding: 0; border: 0; background: none; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-header { margin: 6px 0 0; padding: 0; border: 0; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-header :is(h1, h2, h3, h4) {
+  margin: 0; padding: 0; border: 0; color: var(--dsa5h-m-accenttext); font-family: 'Andalus', serif; font-weight: normal; font-size: 21px;
+}
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-page :is(.journal-page-header, .journal-page-content) { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-content { padding-top: 10px; color: var(--dsa5h-m-ink); font-family: inherit; font-size: 17px; line-height: 1.55; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-content p { margin: 0 0 .8em; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-page.text .journal-page-content > p:first-child::first-letter {
+  float: left; margin: 4px 8px 0 0; font-family: 'Andalus', serif; font-size: 52px; line-height: .85; color: var(--dsa5h-m-accenttext);
+}
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-content img { max-width: 100%; height: auto; }
+.dsa5h-m-jnav { flex: none; display: flex; gap: 8px; padding: 8px 12px calc(10px + var(--dsa5h-m-safe-b)); border-top: 1px solid rgba(185, 154, 92, .4); }
+body.dsa5h-mobile .dsa5h-m-jnav > button {
+  flex: 1; min-width: 0; height: 44px; margin: 0; padding: 0 10px; border: 1px solid var(--dsa5h-m-line2); border-radius: 6px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-family: inherit; font-size: 14px; line-height: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dsa5h-mobile .dsa5h-m-jnav > button:disabled { opacity: .4; }
+/* Seitenliste als Blatt */
+.dsa5h-m-sheet-title { font-family: 'Andalus', serif; font-weight: normal; font-size: 20px; }
+.dsa5h-m-jpage-list { display: flex; flex-direction: column; max-height: 60vh; overflow-y: auto; margin: 0 -6px; }
+.dsa5h-m-jpage-list > button {
+  display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%; min-height: 52px; margin: 0; padding: 0 6px;
+  border: 0; border-top: 1px solid var(--dsa5h-m-line); border-radius: 0; background: none; color: var(--dsa5h-m-ink);
+  font-family: inherit; font-size: 16px; text-align: left;
+}
+.dsa5h-m-jpage-list > button > b {
+  flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--dsa5h-m-sub); color: var(--dsa5h-m-ink2); font-size: 13px;
+}
+.dsa5h-m-jpage-list > button[aria-current="true"] > b { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
