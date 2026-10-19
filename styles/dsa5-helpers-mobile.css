@@ -324,13 +324,16 @@ body.dsa5h-phone dialog.application .dialog-form .form-footer > button:first-chi
 body.dsa5h-phone .dsa5-helpers-sheet .window-content { padding-bottom: calc(64px + var(--dsa5h-m-safe-b)) !important; }
 body.dsa5h-phone .dsa5-helpers-sheet .window-content nav.dsa5h-rail {
   position: fixed !important; inset: auto 0 0 0 !important; z-index: 6 !important;
-  display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px !important;
+  display: flex !important; flex-wrap: nowrap !important; gap: 2px !important; overflow-x: auto !important; overflow-y: hidden !important;
+  scrollbar-width: none; overscroll-behavior-x: contain; scroll-snap-type: x proximity;
   padding: 4px 4px calc(4px + var(--dsa5h-m-safe-b)) !important; margin: 0 !important;
   background: #272320 !important; border: 0 !important; border-top: 1px solid rgba(224, 192, 128, .45) !important; border-radius: 0 !important;
   box-shadow: 0 -4px 14px rgba(0, 0, 0, .35);
 }
-body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-rail-btn:nth-of-type(n+5),
 body.dsa5h-mobile .dsa5-helpers-sheet nav.dsa5h-rail > button[hidden] { display: none !important; }
+/* Wischbar (Nutzer-Entscheidung 2026-10-19): gut fünf Reiter im Bild, der angeschnittene sechste zeigt, dass es weitergeht */
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail::-webkit-scrollbar { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button { flex: 0 0 calc((100vw - 8px) / 5.4) !important; scroll-snap-align: start; }
 body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button,
 body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button {
   width: auto !important; height: 54px !important; min-width: 0; margin: 0 !important; padding: 0 2px !important;
@@ -338,8 +341,7 @@ body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button {
   border: 0 !important; border-radius: 6px !important; background: transparent !important; color: #f4e8d6;
 }
 body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button.active,
-body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button.active,
-body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button.dsa5h-m-more.current { background: rgba(224, 192, 128, .2) !important; box-shadow: inset 0 2px 0 #e0c48c; }
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button.active { background: rgba(224, 192, 128, .2) !important; box-shadow: inset 0 2px 0 #e0c48c; }
 body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button img,
 body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button img { width: 24px !important; height: 24px !important; }
 body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label,
@@ -347,7 +349,6 @@ body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label {
   display: block !important; position: static; transform: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
   padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 11px; line-height: 1.1;
 }
-.dsa5h-m-more > i { font-size: 20px; line-height: 24px; }
 
 /* Kopf (MOBILE.md 14, Ü2, Vorbild Dummy 07): Porträt links über zwei Zeilen, daneben Name + AP/Schips und die
    Identitäts-Chips in einer Zeile; darunter LeP/AsP/KaP in einer Zeile über die volle Breite, dann die Würfel.
@@ -383,7 +384,13 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-back {
   position: absolute; left: 0; top: 0; width: 40px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0;
   background: none; box-shadow: none; color: #f4e8d6; font-size: 20px;
 }
-body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-m-back { height: 52px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-m-back, .dsa5h-m-menu) { height: 52px; }
+/* „⋮“ oben rechts: Bogen-Menü (Thema, Spieleransicht, Einträge der Fensterleiste) */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head { padding-right: 40px !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-menu {
+  position: absolute; right: 0; top: 0; width: 40px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0;
+  background: none; box-shadow: none; color: #f4e8d6; font-size: 20px;
+}
 /* Beim Scrollen eingeklappt: kleines Porträt, Name, Ressourcen */
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { grid-template-columns: 34px minmax(0, 1fr); padding: 6px 10px; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait { grid-row: 1; width: 34px; height: 40px; }
@@ -406,6 +413,7 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tab {
   background: none; box-shadow: none; color: var(--muted); font-family: 'Andalus', serif; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tab[aria-selected="true"] { border-bottom-color: var(--accent); color: var(--ink); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tab:is(:focus, :active, :focus-visible) { outline: none; box-shadow: none; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition {
   display: grid; grid-template-columns: 28px minmax(0, 1fr) auto 44px; gap: 8px; align-items: center; min-height: 52px; margin: 0; padding: 4px 12px;
   border-top: 1px solid var(--line); font-size: 16px;
@@ -423,7 +431,7 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-empty { 
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details { padding: 0 12px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details div { display: block; padding: 8px 0; border-top: 1px solid var(--line); }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details div:first-child { border-top: 0; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details dt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details dt { margin: 0 0 2px; color: var(--muted); font-family: 'GentiumBasic', Georgia, serif; font-size: 14px; font-weight: normal; text-transform: none; letter-spacing: 0; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details dd { color: var(--ink); font-size: 16px; white-space: normal; overflow-wrap: anywhere; }
 
 /* Reitertitel + Unterreiter (Ü5): Titel und Linie in einer Zeile, Unterreiter darunter über die volle Breite.
@@ -460,22 +468,17 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .row.item { min-height: 48px
 /* Status: doppelter Spaltenkopf der Modifikatoren (nur für die zweispaltige Desktop-Ansicht gedacht) */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-dup { display: none; }
 
-/* „Mehr“-Blatt (Ü4): die übrigen Reiter als Kacheln von unten, darunter Bogen-Thema und Bogen wechseln */
+/* Bogen-Menü „⋮“ als Blatt von unten (früher „Mehr“-Blatt mit Reiter-Kacheln) */
 .dsa5h-m-more-backdrop { position: fixed; inset: 0; z-index: 210; display: flex; align-items: flex-end; background: rgba(0, 0, 0, .5); }
 .dsa5h-m-more-sheet {
   width: 100%; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; padding: 8px 14px calc(18px + var(--dsa5h-m-safe-b)); display: flex; flex-direction: column; gap: 12px;
   background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, .45);
   font-family: 'GentiumBasic', Georgia, serif;
 }
-.dsa5h-m-more-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .dsa5h-m-more-sheet button {
   margin: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 6px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink);
   font: inherit; font-size: 15px; box-shadow: none;
 }
-.dsa5h-m-more-tiles button { height: 92px; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; line-height: 1.1; }
-.dsa5h-m-more-tiles button.active { border-color: var(--dsa5h-m-accent); box-shadow: inset 0 0 0 1px var(--dsa5h-m-accent); }
-.dsa5h-m-more-tiles img { width: 40px; height: 40px; border: 0; padding: 6px; border-radius: 8px; background: rgba(147, 123, 72, .15); }
-.dsa5h-m-more-tiles span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dsa5h-m-more-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .dsa5h-m-more-list { display: flex; flex-direction: column; border-top: 1px solid var(--dsa5h-m-line); }
 .dsa5h-m-more-sheet .dsa5h-m-more-list button { height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 6px; border: 0; border-bottom: 1px solid var(--dsa5h-m-line); border-radius: 0; background: none; text-align: left; justify-content: flex-start; font-weight: normal; }
@@ -760,7 +763,80 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + 
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > button { grid-column: 3; grid-row: 1 / span 2; }
 
 /* Leere Abschnitte im Spielmodus ausblenden (Ü8, vorgezogen für Magie, Religion und Kampf) */
-body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] :is([data-tab-panel="magic"], [data-tab-panel="religion"], [data-tab-panel="combat"]) .panel:has(.dsa5h-empty):not(:has(.item, .chip)) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] :is([data-tab-panel="magic"], [data-tab-panel="religion"], [data-tab-panel="combat"]) .panel:not(.dsa5h-body-panel):has(> .dsa5h-empty, > .chips, > div > .dsa5h-empty):not(:has(.item, .chip)) { display: none; }
+
+/* Seiten-Umbau P3 (MOBILE.md 14.3) ------------------------------------------ */
+/* Titelblatt: Favoriten-Karten mit größerem Namen; die ganze Karte würfelt (mobile.js, Talente/Zauber/Liturgien) */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-card { min-height: 52px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-card .withContext a { font-size: 16px; }
+
+/* Ausrüstung: Kategorie-Chips (mobile.js addInventoryChips), Zeilen mit Gewicht als Unterzeile, Taschen als Liste */
+.dsa5h-m-chips {
+  display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+  margin: 8px -10px; padding: 0 10px;
+}
+.dsa5h-m-chips::-webkit-scrollbar { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-m-chips button {
+  flex: none; width: auto; height: 40px; margin: 0; padding: 0 14px; border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 20px;
+  background: var(--field); color: var(--ink); font-family: 'Andalus', serif; font-size: 15px; white-space: nowrap; box-shadow: none;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-m-chips button small { margin-left: 4px; color: var(--muted); font-size: 12px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-m-chips button[aria-pressed="true"] { border-color: #272320; background: #272320; color: #f4e8d6; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-m-chips button[aria-pressed="true"] small { color: rgba(244, 232, 214, .7); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-m-filtered { display: none !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row-head { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row {
+  grid-template-columns: 40px minmax(0, 1fr) auto 44px auto 34px; row-gap: 0; min-height: 56px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(2) { grid-column: 2; grid-row: 1; align-self: end; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(5) {
+  display: block; grid-column: 2; grid-row: 2; align-self: start; justify-self: start; font-size: 13px; color: var(--muted); text-align: left;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(5):not(:empty)::after { content: '\a0' attr(data-dsa5h-unit); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :is(:nth-child(3), :nth-child(4), :nth-child(6), :nth-child(7)) { grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(3) { grid-column: 3; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(4) { grid-column: 4; height: 36px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(6) { grid-column: 5; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(7) { grid-column: 6; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(4)::before { content: '×'; margin-right: 1px; color: var(--muted); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-equip-toggle { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-equip-toggle[aria-pressed="true"] { border-color: var(--accent); background: rgba(139, 111, 63, .15); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-bag-tiles { display: flex; flex-direction: column; gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-bag { width: 100%; max-width: none; box-sizing: border-box; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-bag-open { flex: 1; min-width: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-inventory-entry details > summary { min-height: 40px; display: flex; align-items: center; padding: 0 12px; font-size: 15px; }
+/* Leere Abschnitte mit Drag-&-Drop-Hinweis im Spielmodus aus (Ü8) */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] [data-tab-panel="inventory"] .panel:has(.dsa5h-empty):not(:has(.item)) { display: none; }
+
+/* Notizen: Persönliche Daten einspaltig „Bezeichnung über Wert“, leere Textfelder kleiner */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid { display: block; padding: 0 12px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid label { display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 8px 0; border-top: 1px solid var(--line); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid label:first-child { border-top: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid label > span { color: var(--muted); font-size: 14px; text-transform: none; letter-spacing: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid :is(input, select) { width: 100%; max-width: none; padding: 0; text-align: left; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-details-grid label:has(:is(input, select):disabled) :is(input, select) { border: 0; background: none; color: var(--ink); -webkit-text-fill-color: var(--ink); opacity: 1; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-notes-text :is(.dsa5h-richtext, .dsa5h-richtext prose-mirror) { min-height: 88px; }
+/* Leere Angaben im Spielmodus weglassen (formInput schreibt den Wert ins value-Attribut) */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-details-grid label:has(input[value=""]:disabled) { display: none; }
+
+/* Gefährten: Name kleiner und zweizeilig, Knöpfe 44 px */
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] h3.ellipsis { flex-wrap: wrap; gap: 4px 10px; min-width: 0; font-size: 22px; line-height: 1.15; white-space: normal; overflow: visible; }
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] h3.ellipsis > a {
+  flex: 1 1 100%; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;
+  overflow-wrap: normal; word-break: normal; hyphens: auto;
+}
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] button:not(.dsa5h-step) { min-height: 44px; }
+
+/* Steigerungsplaner (Modul von Lyynix): Zeilen umbrechen, die Kacheln stehen unter dem Namen und brechen selbst um */
+body.dsa5h-phone .dsa5-helpers-sheet .steigerungsplaner-tab .row-section.wrap.skills.lineheight.tableOdd { flex-wrap: wrap; row-gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .steigerungsplaner-tab .planner-steps { flex: 1 1 100%; flex-wrap: wrap; gap: 6px; overflow: visible; }
+body.dsa5h-phone .dsa5-helpers-sheet .steigerungsplaner-tab .planner-step { margin-right: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .steigerungsplaner-tab .planner-group-label { min-width: 0; flex: 1 1 auto; }
+
+/* Dunkles Bogen-Thema (Ü10): aktive Unterreiter und Chips sonst dunkel auf dunkel */
+body.dsa5h-phone .dsa5-helpers-sheet[data-theme="dark"] .dsa5h-sub-tabs button.active,
+body.dsa5h-phone .dsa5-helpers-sheet[data-theme="dark"] .dsa5h-m-chips button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff8ec; }
 
 /* Tablet: Reiterleiste rechts im Fenster */
 body.dsa5h-tablet .dsa5-helpers-sheet .window-content { padding-right: 84px !important; }

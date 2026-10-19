@@ -7,7 +7,6 @@
 import { initShell } from './shell.js';
 import { initCanvasTouch } from './canvas-touch.js';
 import { initTouchContext } from './touch-context.js';
-import { openMenu as openSheetSwitcher } from '../sheet-switcher.js';
 
 export const MODULE_ID = 'dsa5-helpers';
 const MODES = ['auto', 'phone', 'tablet', 'foundry'];
@@ -33,30 +32,24 @@ function chosenMode() {
 }
 
 /**
- * „Mehr“-Blatt (MOBILE.md 14, Ü3/Ü4): die Reiter ab dem fünften als Kacheln, dazu die Knöpfe der Fensterleiste, die auf
- * dem Smartphone ausgeblendet ist: Bogen-Thema, Bogen wechseln, Spieleransicht und die Einträge des Menüs „⋮“
- * (Bogen konfigurieren, Token, Gefährten-Reiter …). Die Sperre fehlt bewusst, mobil gibt es nur den Spielmodus (#34).
+ * Fenster-Menü „⋮“ oben rechts im Kopf (MOBILE.md 14, Ü3; seit 2026-10-19 ohne Reiter-Kacheln, die Reiterleiste ist
+ * wischbar): die Knöpfe der auf dem Smartphone ausgeblendeten Fensterleiste als Blatt von unten — Bogen-Thema,
+ * Spieleransicht und die Einträge des Menüs „⋮“ (Bogen konfigurieren, Token, Gefährten-Reiter …). Die Sperre fehlt
+ * bewusst, mobil gibt es nur den Spielmodus (#34); „Bogen wechseln“ fehlt, weil das System keinen Handy-Bogen hat.
  * Menü-Einträge sind Knöpfe mit data-action im Bogen-Element, Foundry führt sie wie in der Fensterleiste aus.
  */
-function openMoreSheet(el, app) {
-  const rail = el.querySelector('nav.dsa5h-rail');
-  const tabs = [...rail.querySelectorAll('.dsa5h-rail-btn')].slice(4);
+function openMenuSheet(el, app) {
   const wrap = document.createElement('div');
   wrap.className = 'dsa5h-m-more-backdrop';
-  const tile = b => `<button type="button" data-tab="${b.dataset.tab}"${b.classList.contains('active') ? ' class="active"' : ''}>
-    <img src="${b.querySelector('img')?.getAttribute('src') ?? ''}" alt=""><span>${foundry.utils.escapeHTML(b.querySelector('.dsa5h-rail-label')?.textContent ?? '')}</span></button>`;
   const theme = el.querySelector('.header-control[data-action="dsa5hTheme"]');
-  const switcher = el.querySelector('.dsa5h-sheet-switcher');
   const playerView = el.querySelector('.header-control[data-action="playerview"]');
   const visible = c => (typeof c.visible === 'function' ? c.visible.call(app) : c.visible ?? true);
   const controls = (app?._getHeaderControls?.() ?? []).filter(c => c.action !== 'detach' && visible(c));
   const esc = foundry.utils.escapeHTML;
-  wrap.innerHTML = `<div class="dsa5h-m-more-sheet" role="dialog" aria-label="${game.i18n.localize('DSA5HELPERS.Mobile.More')}">
+  wrap.innerHTML = `<div class="dsa5h-m-more-sheet" role="dialog" aria-label="${game.i18n.localize('DSA5HELPERS.Mobile.Menu')}">
     <div class="dsa5h-m-grip"></div>
-    <div class="dsa5h-m-more-tiles">${tabs.map(tile).join('')}</div>
     <div class="dsa5h-m-more-actions">
       ${theme ? `<button type="button" data-do="theme"><i class="${theme.querySelector('i')?.className ?? theme.className.replace(/header-control|icon/g, '')}" inert></i> ${game.i18n.localize('DSA5HELPERS.Theme')}</button>` : ''}
-      ${switcher ? `<button type="button" data-do="switch"><i class="fa-solid fa-arrow-right-arrow-left" inert></i> ${game.i18n.localize('DSA5HELPERS.Mobile.SwitchSheet')}</button>` : ''}
       ${playerView ? `<button type="button" data-do="playerview"><i class="${playerView.className.match(/fa-toggle-\w+/) ? `fas ${playerView.className.match(/fa-toggle-\w+/)[0]}` : 'fas fa-toggle-off'}" inert></i> ${game.i18n.localize('SHEET.switchLimited')}</button>` : ''}
     </div>
     ${controls.length ? `<div class="dsa5h-m-more-list">${controls.map(c => `<button type="button" data-action="${esc(c.action)}"><i class="${esc(c.icon ?? '')} fa-fw" inert></i> ${esc(game.i18n.localize(c.label))}</button>`).join('')}</div>` : ''}
@@ -66,12 +59,18 @@ function openMoreSheet(el, app) {
     // Erst nach Foundrys Klick-Verarbeitung entfernen (data-action-Einträge laufen über den Bogen-Handler).
     if (ev.target === wrap || b) setTimeout(() => wrap.remove(), 0);
     if (!b) return;
-    if (b.dataset.tab) rail.querySelector(`.dsa5h-rail-btn[data-tab="${b.dataset.tab}"]`)?.click();
-    else if (b.dataset.do === 'theme') theme?.click();
-    else if (b.dataset.do === 'switch') openSheetSwitcher(app, rail.querySelector('.dsa5h-m-more') ?? rail);
+    if (b.dataset.do === 'theme') theme?.click();
     else if (b.dataset.do === 'playerview') playerView?.click();
   });
   el.append(wrap);
+}
+
+/** Aktiven Reiter in der wischbaren Reiterleiste mittig zeigen (nur waagerecht scrollen, nicht die Seite). */
+function centerActiveRail(rail, smooth) {
+  const active = rail?.querySelector('.dsa5h-rail-btn.active');
+  if (!active) return;
+  const left = active.offsetLeft - (rail.clientWidth - active.offsetWidth) / 2;
+  rail.scrollTo({ left: Math.max(0, left), behavior: smooth ? 'smooth' : 'instant' });
 }
 
 /**
@@ -105,9 +104,41 @@ function addResourceSteppers(el, app) {
 }
 
 /**
- * Unser Bogen auf dem Smartphone (MOBILE.md 7.1 und 14, Click-Dummy Runde 3): Reiterleiste unten mit 4 Reitern +
- * „Mehr“ (öffnet ein Blatt mit den übrigen Reitern; ist einer davon aktiv, zeigt „Mehr“ dessen Symbol), Kopf klappt
- * beim Scrollen zusammen, Antippen einer Probenzeile würfelt. Läuft nach jedem Rendern, die Reiter selbst bleiben die
+ * Ausrüstung auf dem Smartphone (MOBILE.md 14.3, Dummy 15): Kategorie-Chips über den Abschnitten (Taschen und die
+ * Abschnitte des Systems mit Inhalt) statt alle Abschnitte untereinander. Die Wahl merkt sich der Bogen (app), eine
+ * Suche zeigt wieder alle Abschnitte.
+ */
+function addInventoryChips(el, app) {
+  const tab = el.querySelector('[data-tab-panel="inventory"]');
+  if (!tab || tab.querySelector('.dsa5h-m-chips')) return;
+  const count = section => section.querySelectorAll(':scope > .dsa5h-inventory-entry, :scope > .dsa5h-bag-tiles > .dsa5h-bag').length;
+  const sections = [...tab.querySelectorAll('section[data-dsa5h-section]')].filter(count);
+  if (sections.length < 2) return;
+  const esc = foundry.utils.escapeHTML;
+  const apply = filter => {
+    app._dsa5hInvFilter = filter;
+    sections.forEach(section => section.classList.toggle('dsa5h-m-filtered', filter !== 'all' && section.dataset.dsa5hSection !== filter));
+    bar.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
+  };
+  const chip = (id, label, n) => `<button type="button" data-filter="${esc(id)}" aria-pressed="false">${esc(label)}${n ? ` <small>${n}</small>` : ''}</button>`;
+  const bar = document.createElement('div');
+  bar.className = 'dsa5h-m-chips';
+  bar.setAttribute('role', 'group');
+  bar.innerHTML = chip('all', game.i18n.localize('DSA5HELPERS.Mobile.AllItems'))
+    + sections.map(section => chip(section.dataset.dsa5hSection, section.querySelector('.panel-title')?.textContent.trim() ?? '', count(section))).join('');
+  bar.addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-filter]');
+    if (b) apply(b.dataset.filter);
+  });
+  const search = tab.querySelector('.dsa5h-inventory-summary');
+  (search ?? tab.firstElementChild).after(bar);
+  search?.querySelector('input')?.addEventListener('input', ev => { if (ev.target.value) apply('all'); });
+  apply(sections.some(section => section.dataset.dsa5hSection === app._dsa5hInvFilter) ? app._dsa5hInvFilter : 'all');
+}
+
+/**
+ * Unser Bogen auf dem Smartphone (MOBILE.md 7.1 und 14, Click-Dummy Runde 3): wischbare Reiterleiste unten, „‹“ und
+ * „⋮“ im Kopf, Kopf klappt beim Scrollen zusammen, Antippen einer Probenzeile würfelt. Läuft nach jedem Rendern, die Reiter selbst bleiben die
  * Knöpfe des Bogens (data-action dsa5hSetTab).
  */
 function setupPhoneSheet(el, app) {
@@ -123,24 +154,23 @@ function setupPhoneSheet(el, app) {
     back.addEventListener('click', () => app?.close());
     head.prepend(back);
   }
+  // Fenster-Menü „⋮“ rechts im Kopf (Rückmeldung 2026-10-19: ersetzt das „Mehr“-Blatt der Reiterleiste)
+  if (head && !head.querySelector('.dsa5h-m-menu')) {
+    const menu = document.createElement('button');
+    menu.type = 'button';
+    menu.className = 'dsa5h-m-menu';
+    menu.setAttribute('aria-label', game.i18n.localize('DSA5HELPERS.Mobile.Menu'));
+    menu.innerHTML = '<i class="fa-solid fa-ellipsis-vertical" inert></i>';
+    menu.addEventListener('click', () => openMenuSheet(el, app));
+    head.append(menu);
+  }
+  // Reiterleiste: alle Reiter in einer waagerecht wischbaren Leiste (Nutzer-Entscheidung 2026-10-19), der aktive steht
+  // immer im Bild.
   const rail = el.querySelector('nav.dsa5h-rail');
-  if (rail && !rail.querySelector('.dsa5h-m-more')) {
-    const more = document.createElement('button');
-    more.type = 'button';
-    more.className = 'dsa5h-m-more';
-    more.innerHTML = `<i class="fa-solid fa-ellipsis" inert></i><span class="dsa5h-rail-label">${game.i18n.localize('DSA5HELPERS.Mobile.More')}</span>`;
-    rail.append(more);
-    // Ist ein Reiter aus dem „Mehr“-Blatt aktiv, bleibt der Knopf „••• Mehr“ (sonst findet man nicht zurück ins Blatt,
-    // Rückmeldung 2026-10-19) und ist nur hervorgehoben; welcher Reiter es ist, zeigt der Reitertitel.
-    const sync = () => {
-      const tabs = [...rail.querySelectorAll('.dsa5h-rail-btn')];
-      const active = tabs.findIndex(b => b.classList.contains('active'));
-      more.classList.toggle('current', active >= 4);
-      more.hidden = tabs.length <= 5 && active < 4;
-    };
-    more.addEventListener('click', () => openMoreSheet(el, app));
-    rail.addEventListener('click', ev => { if (ev.target.closest('.dsa5h-rail-btn')) setTimeout(sync, 0); });
-    sync();
+  if (rail && !rail.dataset.dsa5hPhone) {
+    rail.dataset.dsa5hPhone = '1';
+    rail.addEventListener('click', ev => { if (ev.target.closest('.dsa5h-rail-btn')) setTimeout(() => centerActiveRail(rail, true), 0); });
+    requestAnimationFrame(() => centerActiveRail(rail, false));
   }
   // Titelblatt: Kasten „Statuseffekte | Persönliche Daten“ unter die Favoriten (Rückmeldung 2026-10-19) statt direkt
   // unter die Eigenschaftswürfel. Der Bogen rendert immer komplett neu (ein PARTS-Eintrag), das Verschieben ist also
@@ -149,6 +179,7 @@ function setupPhoneSheet(el, app) {
   const coverTab = el.querySelector('[data-tab-panel="cover"]');
   if (sidePanel && coverTab) coverTab.append(sidePanel);
   addResourceSteppers(el, app);
+  addInventoryChips(el, app);
   if (el.dataset.dsa5hPhone) return;
   el.dataset.dsa5hPhone = '1';
   el.addEventListener('click', ev => {
@@ -168,10 +199,10 @@ function setupPhoneSheet(el, app) {
     else if (y < 4) el.classList.remove('dsa5h-m-compact');
   }, true);
   // Zeile antippen würfelt (Frage 14.5, Vorschlag): gilt für Zeilen mit genau einer Probe (Talente, Zauber, Liturgien,
-  // Sammelproben), nur im Spielmodus. Das Gegenstandsblatt öffnet der Langdruck über das Kontextmenü („Bearbeiten“).
+  // Sammelproben, Favoriten-Karten auf dem Titelblatt), nur im Spielmodus. Das Gegenstandsblatt öffnet der Langdruck über das Kontextmenü („Bearbeiten“).
   el.addEventListener('click', ev => {
     if (el.dataset.mode === 'edit') return;
-    const row = ev.target.closest('.dsa5h-content .row.item, .dsa5h-content .row.dsa5h-aggregated-talent');
+    const row = ev.target.closest('.dsa5h-content .row.item, .dsa5h-content .row.dsa5h-aggregated-talent, .dsa5h-content .dsa5h-fav-card');
     if (!row) return;
     const interactive = ev.target.closest('button, input, select, textarea, label, a, [data-action]');
     if (interactive && !interactive.closest('.withContext')) return;
