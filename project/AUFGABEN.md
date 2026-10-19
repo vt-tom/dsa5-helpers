@@ -11,9 +11,10 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
   - **Journal mobil:** eigenes Journal-Blatt für das Handy oder Foundrys Blatt weiter per CSS anpassen? Vorschlag: Foundrys Blatt behalten (Seitenlinks, Bilder, Module wie Monk's Enhanced Journal funktionieren weiter) und gezielt umbauen. Dafür braucht es konkrete Stellen vom Nutzer (Screenshots).
   - **Chat mobil:** Vorschlag wie beim Journal: kein eigener Chat (die Karten von System und Modulen, Dice So Nice, Schips und das Kontextmenü hängen am Foundry-Chat), sondern Foundrys Chat-Log fürs Handy umbauen (Eingabe unten fest, größere Knöpfe, Karten auf volle Breite). Konkrete Stellen vom Nutzer sammeln.
   - **Steigerungsplaner-Reiter** (Modul von Lyynix) läuft auf dem Handy rechts heraus (`ol.planner-steps`, Kacheln nebeneinander). Fremdes Modul: an Lyynix melden oder bei uns per CSS umbrechen.
-  - **Nebenspalten** auf dem Handy ausgeblendet (Behinderung bei Talenten; Kosten, Zauberdauer, Reichweite bei Zaubern/Liturgien; Gewicht in der Ausrüstung). Sie stehen im Gegenstandsblatt. Prüfen, ob etwas davon am Tisch fehlt.
+  - **Nebenspalten** auf dem Handy ausgeblendet (Behinderung bei Talenten; Gewicht in der Ausrüstung). Sie stehen im Gegenstandsblatt. Prüfen, ob etwas davon am Tisch fehlt. Kosten, Dauer und Reichweite der Zauber/Liturgien stehen seit P2 wieder in einer Unterzeile.
   - **Tablet** noch nicht getestet.
-  - **Feinschliff Bogen auf dem Smartphone** ([MOBILE.md](MOBILE.md) Abschnitt 14): P1 umgesetzt (Probendialog, Kopf, „Mehr“-Blatt, Unterreiter, Tippziele, Zeile antippen würfelt). Ü3 Fensterknöpfe ebenfalls umgesetzt („‹“ im Kopf, Rest im „Mehr“-Blatt). Offen: P2 (Kampf ohne Silhouette, Magie/Religion mit Unterzeile, Status, Grundwerte), P3. Nur Spielmodus, Modi siehe Issue #34.
+  - **Feinschliff Bogen auf dem Smartphone** ([MOBILE.md](MOBILE.md) Abschnitt 14): P1 und Ü3 umgesetzt (Probendialog, Kopf, „Mehr“-Blatt, Unterreiter, Tippziele, Zeile antippen würfelt, „‹“ im Kopf). P2 umgesetzt 2026-10-19 (Kampf als Waffen · Rüstung · Kampftechniken ohne Silhouette, Traditionskarte mit AsP/KaP-Regler und Unterzeile je Zauber, Status-Kacheln und Zustands-Blatt, Grundwerte mit −/+). Offen: P3. Nur Spielmodus, Modi siehe Issue #34.
+  - **Beim P2-Test aufgefallen (Testwelt, betrifft auch den Desktop):** Wulfgrimm trägt Langschwert (Haupthand) und Thorwalerschild (Nebenhand), die Haupthand bleibt trotzdem leer und das Langschwert fehlt auch unter „Weitere Waffen“ — `prepare.wornMeleeWeapons` des Systems enthält nur den Schild. Prüfen, ob das System das so will (Langschwert + Schild) oder `_bodyContext()` getragene Waffen außerhalb dieser Liste zeigen muss.
   - Neue Testversion im Mobil-Kanal (z. B. `mobile-v0.6.1`), sobald der Nutzer sie freigibt.
 
 - **Fehler (gefunden 2026-10-15, betrifft auch den Desktop):** In `styles/dsa5-helpers-character-sheet.css` Abschnitt 18 zielen zwei Container-Regeln auf `.dsa5h-main` selbst (Titelblatt-Raster bei < 700 px und < 520 px). `.dsa5h-main` ist aber der Container — ein Element kann sich nicht selbst abfragen, die Regeln greifen nie. Schmale Bogenfenster behalten deshalb das zweispaltige Titelblatt. Mobil ist das über `styles/dsa5-helpers-mobile.css` gelöst; für den Desktop die Regeln auf ein Kind-Element bzw. eine Media-Query umstellen.
@@ -47,13 +48,22 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-15 11:09 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-19 08:26 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (0)**
+**Offen (5)**
 
-_Keine offenen Issues._
+- **[#34](https://github.com/vt-tom/dsa5-helpers/issues/34) feat: Drei Modi im Heldenbogen – Spielen, Steigern, Bearbeiten (Desktop, Tablet, Smartphone)**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-15
+- **[#35](https://github.com/vt-tom/dsa5-helpers/issues/35) Portrait im Dark Mode - Aura oder Spotlight**
+  - offen · Bearbeiter: niemand · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-19
+- **[#36](https://github.com/vt-tom/dsa5-helpers/issues/36) Kampf Tab: Übersicht - Rüstung zentral über dem Portrait**
+  - offen · Bearbeiter: niemand · von @vt-tom · 1 Kommentar · zuletzt geändert 2026-10-19
+- **[#37](https://github.com/vt-tom/dsa5-helpers/issues/37) Status Tab: Suche bei den Zuständen**
+  - offen · Bearbeiter: niemand · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-19
+- **[#38](https://github.com/vt-tom/dsa5-helpers/issues/38) Magie/Glaube Tab: 2 Spalten Ansicht für Sonderfertigkeitenhinzufügen**
+  - offen · Bearbeiter: niemand · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-19
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 
@@ -67,18 +77,4 @@ _Keine offenen Issues._
   - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 1 Kommentar · geschlossen 2026-10-05
 - **[#1](https://github.com/vt-tom/dsa5-helpers/issues/1) feat: Animation zwischen Titelblatt und den anderen seiten**
   - erledigt · Bearbeiter: @vt-tom · von @Lyynix · Meilenstein: 0.5.0 · 1 Kommentar · geschlossen 2026-10-05
-- **[#7](https://github.com/vt-tom/dsa5-helpers/issues/7) chore: CSS-Datei aufräumen**
-  - erledigt · Bearbeiter: niemand · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 1 Kommentar · geschlossen 2026-10-05
-- **[#28](https://github.com/vt-tom/dsa5-helpers/issues/28) feat: Würfelstatistik – Ergebnisse je Spieler und Würfeltyp auswerten**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 1 Kommentar · geschlossen 2026-10-02
-- **[#29](https://github.com/vt-tom/dsa5-helpers/issues/29) feat: Kampf › Körper – Hände links/rechts der Figur, RS/BE-Badge entfernen, Rüstung neu platzieren**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 1 Kommentar · geschlossen 2026-10-02
-- **[#32](https://github.com/vt-tom/dsa5-helpers/issues/32) feat: Unterreiter in allen Reitern wie bei den Talenten (Sprungmarken)**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.4.0 · 1 Kommentar · geschlossen 2026-10-02
-- **[#26](https://github.com/vt-tom/dsa5-helpers/issues/26) feat: Persönliche Daten als eigene Registerkarte im Reiter Notizen**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 1 Kommentar · geschlossen 2026-10-01
-- **[#25](https://github.com/vt-tom/dsa5-helpers/issues/25) feat: Heldenname im Kopfbereich passt Schriftgröße an die Fensterbreite an**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.3.3 · 1 Kommentar · geschlossen 2026-10-01
-- **[#3](https://github.com/vt-tom/dsa5-helpers/issues/3) feat: hover Effekt bei Proben**
-  - erledigt · Bearbeiter: niemand · von @Lyynix · 1 Kommentar · geschlossen 2026-10-01
 <!-- GITHUB-ISSUES:END -->

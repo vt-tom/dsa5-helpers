@@ -91,7 +91,7 @@
 
               <div class="subhead">{{localize "DSA5HELPERS.Resources"}}</div>
               <div class="row-head derived-row"><span></span><span>{{localize "DSA5HELPERS.ColCurrent"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.advances"}}</span><span>{{localize "ABBR.max"}}</span></div>
-              <div class="row derived-row">
+              <div class="row derived-row" data-dsa5h-res="wounds">
                 <span class="left"><span data-tooltip="FORMULA.wounds">{{localize "wounds"}}</span>{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="wounds" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize 'wounds')}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="wounds" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize 'wounds')}}">+</button></span>{{/if}}</span>
                 <span class="muted center">{{document.system.status.wounds.current}}</span>
                 <span class="center">{{formInput systemFields.status.fields.wounds.fields.modifier value=document.system.status.wounds.modifier disabled=(not dsa5h.editMode)}}</span>
@@ -108,7 +108,7 @@
               </div>
               {{/if}}
               {{#if prepare.magic.hasSpells}}
-              <div class="row derived-row">
+              <div class="row derived-row" data-dsa5h-res="astralenergy">
                 <span class="left"><span data-tooltip="FORMULA.astralenergy">{{localize "astralenergy"}}</span>{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="astralenergy" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize 'astralenergy')}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="astralenergy" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize 'astralenergy')}}">+</button></span>{{/if}}</span>
                 <span class="muted center">{{document.system.status.astralenergy.current}}</span>
                 <span class="center">{{formInput systemFields.status.fields.astralenergy.fields.modifier value=document.system.status.astralenergy.modifier disabled=(not dsa5h.editMode)}}</span>
@@ -133,7 +133,7 @@
               {{/if}}
               {{/if}}
               {{#if prepare.magic.hasPrayers}}
-              <div class="row derived-row">
+              <div class="row derived-row" data-dsa5h-res="karmaenergy">
                 <span class="left"><span data-tooltip="FORMULA.karmaenergy">{{localize "karmaenergy"}}</span>{{#if prepare.canAdvance}}<span class="dsa5h-inline-steps"><button type="button" data-action="advanceWrapper" data-fct="_refundPointsAdvance" data-attr="karmaenergy" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize 'karmaenergy')}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advancePoints" data-attr="karmaenergy" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize 'karmaenergy')}}">+</button></span>{{/if}}</span>
                 <span class="muted center">{{document.system.status.karmaenergy.current}}</span>
                 <span class="center">{{formInput systemFields.status.fields.karmaenergy.fields.modifier value=document.system.status.karmaenergy.modifier disabled=(not dsa5h.editMode)}}</span>
@@ -157,7 +157,7 @@
               </div>
               {{/if}}
               {{/if}}
-              <div class="row derived-row">
+              <div class="row derived-row" data-dsa5h-res="fatePoints">
                 <span class="left"><span data-tooltip="FORMULA.fatePoints">{{localize "fatePoints"}}</span></span>
                 <span class="muted center">{{formInput systemFields.status.fields.fatePoints.fields.current value=document.system.status.fatePoints.current disabled=(not dsa5h.editMode)}}</span>
                 <span class="center">{{formInput systemFields.status.fields.fatePoints.fields.modifier value=document.system.status.fatePoints.modifier disabled=(not dsa5h.editMode)}}</span>

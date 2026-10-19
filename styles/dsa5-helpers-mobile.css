@@ -482,9 +482,31 @@ body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-ski
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-talent { grid-template-columns: 24px minmax(0, 1fr) auto 32px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-head { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 2px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-head > :first-child { grid-column: 1 / -1; }
-/* Zauber/Liturgien: Bild | Name | Probe | FW | Stern (ohne Kosten, Dauer, Reichweite) */
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row { grid-template-columns: 34px minmax(0, 1fr) auto auto 28px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row > :is(:nth-child(5), :nth-child(6), :nth-child(7)) { display: none; }
+/* Zauber/Liturgien: Bild | Name | Probe | FW | Stern, darunter „8 AsP · Dauer 4 · 8 Schritt“ (MOBILE.md 14.3). Die drei
+   Zellen der Desktop-Spalten rücken in die zweite Zeile unter den Namen; Einheit und Bezeichnung aus data-Attributen
+   (spell-list.hbs). Ein Spaltenkopf ist dann überflüssig. */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.row-head { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item {
+  grid-template-columns: 42px auto auto minmax(0, 1fr) auto auto 34px; gap: 0; align-items: center; min-height: 56px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(2) { grid-column: 2 / span 3; grid-row: 1; align-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :is(:nth-child(5), :nth-child(6), :nth-child(7)) {
+  grid-row: 2; align-self: start; justify-self: start; white-space: nowrap; font-size: 13px; color: var(--muted, rgba(43, 39, 33, .72)); text-align: left;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(5) { grid-column: 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6) { grid-column: 3; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(7) { grid-column: 4; min-width: 0; overflow: hidden; text-overflow: ellipsis; justify-self: stretch; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(5):not(:empty)::after { content: '\a0' attr(data-dsa5h-unit); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6)::before { content: '\a0·\a0' attr(data-dsa5h-label) '\a0'; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(7):not(:empty)::before { content: '\a0·\a0'; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6) button { height: 28px; margin-left: 4px; padding: 0 6px; font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :is(:nth-child(3), :nth-child(4), :nth-child(8)) { grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(3) { grid-column: 5; margin-left: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(4) { grid-column: 6; min-width: 26px; margin-left: 6px; text-align: right; font-weight: 700; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(8) { grid-column: 7; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-spell-row.item > :nth-child(3) { grid-column: 5 / span 2; grid-row: 1; justify-self: end; align-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-spell-row.item > :nth-child(4) { grid-column: 5 / span 2; grid-row: 2; justify-self: end; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-row { grid-template-columns: 26px minmax(0, 1fr) auto 32px 40px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-tradition-row { grid-template-columns: 34px minmax(0, 1fr) auto auto; }
 /* Kampf */
@@ -500,14 +522,196 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-modifier-row { grid-t
 /* FW-Feld im Bearbeiten-Modus: feste Breite (sonst drückt es den Namen auf null), Knöpfe fingergerecht */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-value input { flex: none; width: 36px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-skill-value button { flex-basis: 28px; width: 28px; height: 32px; }
-/* Magie/Religion: Leitwert usw. unter der Traditions-Pille statt daneben */
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta { flex-basis: 100%; min-width: 0; gap: 8px; border-left: 0; padding-left: 0; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta label { min-width: 0; overflow-wrap: anywhere; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta label > span { white-space: normal; }
 /* Gefährten (System-Template): Loyalität über der Schnellleiste statt daneben */
 body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] .companion-loyalty-row { flex-wrap: wrap; justify-content: center; gap: 8px; }
 body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] .companion-hotbar { flex: 1 1 100%; min-width: 0; max-width: 100%; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-disease-row { grid-template-columns: minmax(0, 2fr) 36px minmax(0, 1fr) minmax(0, 1fr) auto 28px; }
+
+/* Seiten-Umbau P2 (MOBILE.md 14.3) ------------------------------------------
+   Kampf: ohne Körper-Silhouette. Der Abschnitt „Waffen“ ist eine Spalte: Zauber/Liturgien wirken, Schnellaktionen mit
+   Initiative (2 Spalten), je Hand eine Karte, weitere Waffen, Kampf-Sonderfertigkeiten; die Rüstung (eigene
+   Sprungmarke) steht zuletzt. Das Körper-Panel löst sich dafür auf (display: contents), seine Teile werden geordnet. */
+body.dsa5h-phone .dsa5-helpers-sheet [data-sub-panel="combat:body"] { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet [data-sub-panel="combat:body"] > * { margin: 0 !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel { display: contents; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel > .panel-title { display: flex; padding: 0; min-height: 0; background: none; border: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel > .panel-title > span:not(.dsa5h-cast-btns) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel > .panel-title:not(:has(.dsa5h-cast-btns)) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-cast-btns { display: flex; flex: 1; gap: 8px; margin: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-btn { flex: 1 1 0; min-width: 0; height: 44px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel > .panel-title .dsa5h-cast-btn > span { flex: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0; border: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-quick-actions { display: contents; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-top :is(.dsa5h-quick-actions button, .dsa5h-body-ini) {
+  box-sizing: border-box; width: auto; min-width: 0; height: auto; min-height: 52px; margin: 0; padding: 6px 10px;
+  display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 8px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--field); text-align: left; font-size: 15px; line-height: 1.15;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-quick-actions img { width: 28px; height: 28px; flex: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-ini { order: -1; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat { flex: 1; flex-direction: row; align-items: center; justify-content: space-between; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat small { font-size: 15px; text-transform: none; letter-spacing: 0; color: inherit; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat strong { font-size: 18px; }
+
+/* Hände als Karten untereinander */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-grid { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-height: 0; padding: 0; isolation: auto; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-grid > :is(.dsa5h-body-figure, .dsa5h-body-figure-switch) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side { display: block; width: 100%; text-align: left; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot,
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-2h-note {
+  box-sizing: border-box; width: 100%; max-width: none; margin: 0; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--field);
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-2h-note { display: block; padding-block: 8px; }
+/* Hand mit Waffe: Bild | Hand, Name, Kampftechnik | TP; darunter AT/PA, Fernkampf, Handwahl */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot.item {
+  display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; column-gap: 10px; row-gap: 2px; align-items: center;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile { display: contents; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > img {
+  position: static; grid-column: 1; grid-row: 1 / span 3; width: 48px; height: 48px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper);
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > meter { position: static; grid-column: 1; grid-row: 4; width: 48px; align-self: start; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-figure-col-title { grid-column: 2; grid-row: 1; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-body-item-name { grid-column: 2; grid-row: 2; font-size: 17px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-ct-link { grid-column: 2; grid-row: 3; justify-self: start; align-self: start; text-align: left; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-damage { grid-column: 3; grid-row: 1 / span 3; margin: 0; min-height: 40px; padding-inline: 10px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > .dsa5h-onuse { position: static; grid-column: 3; grid-row: 4; justify-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item :is(.dsa5h-hand-tile-at, .dsa5h-hand-tile-pa) {
+  position: relative; z-index: 0; left: auto; right: auto; bottom: auto; grid-row: 4; width: 44px; height: 44px; margin: 12px 0 6px 6px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile-at { grid-column: 1; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile-pa { grid-column: 2; justify-self: start; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item .dsa5h-die-seal .dsa5h-combat-die { width: 44px; height: 44px; font-size: 17px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > :is(.dsa5h-hand-ranged, .dsa5h-hand-select, .dsa5h-hand-swap) { grid-column: 1 / -1; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-hand-ranged { display: flex; flex-wrap: wrap; justify-content: flex-start !important; gap: 6px; margin-top: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot :is(.dsa5h-hand-select, .dsa5h-hand-swap) { height: 44px; margin-top: 8px; font-size: 16px; }
+/* Leere Hand: eine Zeile „Haupthand“ + Auswahl */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot:not(.item) {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 12px; padding-block: 6px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot:not(.item):not(.dsa5h-hand-free) > :is(.dsa5h-body-item-name, .dsa5h-hand-tile.empty) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot:not(.item) > .dsa5h-hand-select { margin: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side .dsa5h-hand-slot.dsa5h-hand-free { grid-template-columns: minmax(0, 1fr) 44px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.dsa5h-hand-free > .dsa5h-hand-tile { grid-column: 2; grid-row: 1; width: 44px; height: 44px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-free-text { grid-column: 1; grid-row: 1; flex-direction: row; align-items: baseline; gap: 8px; }
+
+/* Weitere Waffen und Sonderfertigkeiten kommen vor der Rüstung */
+body.dsa5h-phone .dsa5-helpers-sheet [data-sub-panel="combat:body"] > .panel { order: 3; }
+
+/* Rüstung: Kacheln RS / BE, darunter die getragenen Rüstungen als Liste */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor-row {
+  order: 5; display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--field);
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor-row > .dsa5h-figure-col-title { order: -2; font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-shield {
+  order: -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: auto; padding: 0;
+  border: 0; border-radius: 0; background: none; box-shadow: none; cursor: default;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-shield > span { padding: 8px 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-shield small { font-size: 12px; text-transform: uppercase; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-shield strong { font-size: 24px !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor { flex-direction: column; flex-wrap: nowrap; gap: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor-item {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) auto auto; align-items: center; gap: 10px; max-width: none; min-height: 52px; text-align: left;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor-item + .dsa5h-body-armor-item { border-top: 1px solid var(--line); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot { display: contents; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot-image { position: static; grid-column: 1; grid-row: 1; width: 40px; height: 40px; border-radius: 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-body-item-name { grid-column: 2; grid-row: 1; font-size: 16px; white-space: normal; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor :is(.dsa5h-armor-slot-rs, .dsa5h-armor-slot-be) {
+  position: static; grid-row: 1; padding: 0; background: none; color: var(--ink); text-shadow: none; font-size: 14px; white-space: nowrap;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot-rs { grid-column: 3; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot-be { grid-column: 4; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot meter { position: static; grid-column: 1; grid-row: 2; width: 40px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot > .dsa5h-onuse { position: static; grid-column: 2; grid-row: 2; justify-self: start; }
+
+/* Magie/Religion: Traditionskarte (Dummy 13) mit Symbol, Name, Leiteigenschaft/Merkmal/Faktor und AsP- bzw. KaP-Regler */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header {
+  display: flex; flex-wrap: wrap; gap: 8px 12px; margin: 6px 0 10px; padding: 12px;
+  border: 0; border-radius: 6px; background: var(--dsa5h-m-hdr); color: #f4e8d6; box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-name { flex: 1 1 100%; width: auto; padding: 0; background: none; gap: 10px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-icon { width: 36px; height: 36px; padding: 4px; border-radius: 6px; background: rgba(224, 192, 128, .18); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header :is(.dsa5h-tradition-name-text, .dsa5h-tradition-name input) { font-size: 22px; white-space: normal; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta { flex: 1 1 100%; min-width: 0; gap: 8px; border-left: 0; padding-left: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta label { min-width: 0; overflow-wrap: anywhere; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta label > span { white-space: normal; color: rgba(244, 232, 214, .7); font-size: 11px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta :is(input, select) { max-width: 100%; color: #f4e8d6 !important; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta :is(input, select):disabled { opacity: 1; -webkit-text-fill-color: #f4e8d6; appearance: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta .dsa5h-tradition-accent :is(input, select) { color: #e0c48c !important; -webkit-text-fill-color: #e0c48c; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header > .dsa5h-m-stepper { flex: 1 1 100%; }
+
+/* −/+-Regler (mobile.js addResourceSteppers): Balken mit Wert, Knöpfe 44 px */
+.dsa5h-m-stepper { display: flex; align-items: center; gap: 8px; min-width: 0; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-content .dsa5h-m-stepper > button {
+  flex: none; width: 44px; min-width: 44px; height: 44px; margin: 0; padding: 0; border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 6px;
+  background: var(--field, #fff); color: var(--ink, #2b2721); font-size: 22px; line-height: 1; box-shadow: none;
+}
+.dsa5h-m-stepper > button:disabled { opacity: .4; }
+.dsa5h-m-step-bar {
+  position: relative; flex: 1; min-width: 0; height: 36px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  border-radius: 4px; background: rgba(0, 0, 0, .35); color: #fff; font-family: 'Andalus', serif;
+}
+.dsa5h-m-step-bar > span { position: absolute; inset: 0 auto 0 0; background: var(--dsa5h-m-res, #8b6f3f); }
+.dsa5h-m-step-bar > b { position: relative; font-size: 16px; white-space: nowrap; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+.dsa5h-m-res-wounds { --dsa5h-m-res: linear-gradient(90deg, #7d1d17, #b3241a); }
+.dsa5h-m-res-astralenergy { --dsa5h-m-res: linear-gradient(90deg, #1d4f8a, #2f74c0); }
+.dsa5h-m-res-karmaenergy { --dsa5h-m-res: linear-gradient(90deg, #3f6b1f, #5f9a2c); }
+.dsa5h-m-res-fatePoints { --dsa5h-m-res: linear-gradient(90deg, #8b6f3f, #c39a4c); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-m-stepper > button { background: rgba(255, 255, 255, .08); border-color: rgba(224, 192, 128, .45); color: #f4e8d6; }
+
+/* Eigenschaften › Grundwerte im Spielmodus: Name über dem Regler statt der Tabelle Aktuell/Mod./Steig./Max
+   (bleibt im Bearbeitungsmodus). */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row.derived-row:has(> .dsa5h-m-stepper) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-block: 8px; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row.derived-row:has(> .dsa5h-m-stepper) > :not(.left, .dsa5h-m-stepper) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row.derived-row > .left { flex: 1 1 100%; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row.derived-row > .dsa5h-m-stepper { flex: 1 1 100%; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row-head.derived-row { display: none; }
+
+/* Status: Kacheln Schmerz · Belastung · Traglast (status.hbs, nur Smartphone) */
+.dsa5h-m-status-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 6px 0 10px; }
+.dsa5h-m-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 8px 4px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--field); text-align: center;
+}
+.dsa5h-m-tile > small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.dsa5h-m-tile > strong { font-family: 'Andalus', serif; font-size: 26px; line-height: 1.1; }
+.dsa5h-m-tile > span { font-size: 12px; color: var(--muted); }
+.dsa5h-m-tile.active { border-color: var(--dsa5h-m-danger); }
+.dsa5h-m-tile.active > strong { color: var(--dsa5h-m-danger); }
+/* Zustände: eine Spalte, Stufe mit −/+ in Fingergröße */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-two-col { display: block; columns: auto; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-conditions-panel .dsa5h-effect-row { grid-template-columns: 32px minmax(0, 1fr) auto 44px 40px; min-height: 56px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-cond-steps { display: flex; gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-cond-steps .dsa5h-step { width: 44px; height: 44px; margin: 0; font-size: 22px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row > strong { font-size: 20px; text-align: center; }
+/* „Zustand hinzufügen“ als Knopf, die Auswahl als Blatt von unten; Antippen daneben (über die Zusammenfassung) schließt */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-picker > summary {
+  display: flex; align-items: center; justify-content: center; height: 44px; margin: 8px; list-style: none;
+  border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 6px; background: var(--field); font-size: 16px; font-weight: 700;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-picker > summary::-webkit-details-marker { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-picker[open] > summary::before { content: ''; position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, .5); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-picker[open] > .dsa5h-condition-grid {
+  position: fixed; inset: auto 0 0 0; z-index: 31; max-height: 70vh; overflow-y: auto; overscroll-behavior: contain;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 14px 12px calc(16px + var(--dsa5h-m-safe-b));
+  border-radius: 14px 14px 0 0; background: var(--dsa5h-m-paper); box-shadow: 0 -8px 30px rgba(0, 0, 0, .45);
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-grid button { min-height: 48px; margin: 0; justify-content: flex-start; gap: 8px; font-size: 15px; text-align: left; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-grid button img { width: 28px; height: 28px; flex: none; }
+/* Übertragene Effekte: Name, darunter die Quelle */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) { grid-template-columns: 32px minmax(0, 1fr) 40px; row-gap: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > :first-child { grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > a:nth-of-type(1) { grid-column: 2; grid-row: 1; align-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > a:nth-of-type(2) { grid-column: 2; grid-row: 2; align-self: start; text-align: left; font-size: 13px; color: var(--muted); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > span:empty { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > button { grid-column: 3; grid-row: 1 / span 2; }
+
+/* Leere Abschnitte im Spielmodus ausblenden (Ü8, vorgezogen für Magie, Religion und Kampf) */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] :is([data-tab-panel="magic"], [data-tab-panel="religion"], [data-tab-panel="combat"]) .panel:has(.dsa5h-empty):not(:has(.item, .chip)) { display: none; }
 
 /* Tablet: Reiterleiste rechts im Fenster */
 body.dsa5h-tablet .dsa5-helpers-sheet .window-content { padding-right: 84px !important; }

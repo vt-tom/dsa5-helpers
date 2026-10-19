@@ -75,6 +75,36 @@ function openMoreSheet(el, app) {
 }
 
 /**
+ * Große −/+-Regler für LeP, AsP, KaP und Schicksalspunkte (MOBILE.md 14.3, Dummy 09 und 13): in den Zeilen der Grundwerte
+ * (main.hbs, data-dsa5h-res) und als Balken unter der Traditionskarte in Magie/Religion. Nur im Spielmodus; der Regler
+ * ändert den aktuellen Wert wie das Feld im Kopf (Actor-Update), unter 0 geht es nicht, über das Maximum nur mit
+ * dem Feld im Kopf. Wird bei jedem Rendern neu gebaut.
+ */
+const RESOURCES = { wounds: 'LeP', astralenergy: 'AsP', karmaenergy: 'KaP', fatePoints: 'fatePoints' };
+function addResourceSteppers(el, app) {
+  const actor = app?.actor;
+  if (el.dataset.mode === 'edit' || !actor?.isOwner) return;
+  const targets = [...el.querySelectorAll('[data-dsa5h-res]')].map(node => [node, node.dataset.dsa5hRes]);
+  const magic = el.querySelector('[data-tab-panel="magic"] .dsa5h-tradition-header');
+  const religion = el.querySelector('[data-tab-panel="religion"] .dsa5h-tradition-header');
+  if (magic) targets.push([magic, 'astralenergy']);
+  if (religion) targets.push([religion, 'karmaenergy']);
+  for (const [node, res] of targets) {
+    const status = actor.system.status?.[res];
+    if (!status || node.querySelector(':scope > .dsa5h-m-stepper')) continue;
+    const value = Number(status.value) || 0, max = Number(status.max) || 0;
+    const name = game.i18n.localize(res);
+    const stepper = document.createElement('span');
+    stepper.className = `dsa5h-m-stepper dsa5h-m-res-${res}`;
+    stepper.dataset.res = res;
+    stepper.innerHTML = `<button type="button" data-step="-1" aria-label="${game.i18n.format('DSA5HELPERS.Mobile.Decrease', { name })}"${value <= 0 ? ' disabled' : ''}>−</button>
+      <span class="dsa5h-m-step-bar"><span style="width:${max ? Math.min(100, Math.max(0, value / max * 100)) : 0}%"></span><b>${game.i18n.localize(`CHARAbbrev.${RESOURCES[res]}`)} ${value} / ${max}</b></span>
+      <button type="button" data-step="1" aria-label="${game.i18n.format('DSA5HELPERS.Mobile.Increase', { name })}"${value >= max ? ' disabled' : ''}>+</button>`;
+    node.append(stepper);
+  }
+}
+
+/**
  * Unser Bogen auf dem Smartphone (MOBILE.md 7.1 und 14, Click-Dummy Runde 3): Reiterleiste unten mit 4 Reitern +
  * „Mehr“ (öffnet ein Blatt mit den übrigen Reitern; ist einer davon aktiv, zeigt „Mehr“ dessen Symbol), Kopf klappt
  * beim Scrollen zusammen, Antippen einer Probenzeile würfelt. Läuft nach jedem Rendern, die Reiter selbst bleiben die
@@ -113,8 +143,18 @@ function setupPhoneSheet(el, app) {
     rail.addEventListener('click', ev => { if (ev.target.closest('.dsa5h-rail-btn')) setTimeout(sync, 0); });
     sync();
   }
+  addResourceSteppers(el, app);
   if (el.dataset.dsa5hPhone) return;
   el.dataset.dsa5hPhone = '1';
+  el.addEventListener('click', ev => {
+    const button = ev.target.closest('.dsa5h-m-stepper button[data-step]');
+    if (!button) return;
+    const res = button.closest('.dsa5h-m-stepper').dataset.res;
+    const status = app.actor.system.status[res];
+    const value = Number(status.value) || 0;
+    const next = Number(button.dataset.step) < 0 ? Math.max(0, value - 1) : Math.min(Number(status.max) || 0, value + 1);
+    if (next !== value) app.actor.update({ [`system.status.${res}.value`]: next });
+  });
   // Kopf einklappen ab 90 px Scrollweg, unter 4 px wieder aufklappen (Click-Dummy-Verhalten)
   el.addEventListener('scroll', ev => {
     if (!ev.target.classList?.contains('dsa5h-content')) return;

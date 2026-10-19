@@ -283,19 +283,30 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     ];
     if (context.owner) noteSubtabs.push({ id: 'ownernotes', label: localize('ownerNotes') });
     if (context.isGM) noteSubtabs.push({ id: 'gmnotes', label: localize('DSA5HELPERS.GMNotes') });
+    // Smartphone-Oberfläche (Mobile Support, scripts/mobile/mobile.js setzt die Body-Klasse in init): einzelne Bausteine
+    // nur dort, z. B. die Status-Kacheln. Am Desktop immer false.
+    const phone = !!globalThis.document?.body?.classList?.contains('dsa5h-phone');
     const subnav = [
       // Own SKILL.* strings ("Körpertalente" etc.) end in "-talente" — dropped here to keep the sub-tabs compact,
       // matching the click-dummy's buildSkillSubTabs() (the full name still shows in the panel title below).
       { tab: 'skills', items: [...skillGroups.map(group => ({ id: group.id, label: localize('SKILL.' + group.id).replace(/s?talente$/i, '') })), { id: 'aggregated', label: localize('aggregatedTests') }] },
       // „Körper“ ersetzt die frühere „Übersicht“ (Issue #29, Nutzer-Entscheidung 2026-10-02); deren Waffentabellen
       // stehen jetzt unter dem Körper-Panel.
-      { tab: 'combat', items: [{ id: 'body', label: localize('DSA5HELPERS.Body') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
+      // Smartphone (Mobile Support, MOBILE.md 14.3): ohne Körper-Silhouette heißt der erste Abschnitt „Waffen“, die Rüstung
+      // bekommt eine eigene Sprungmarke (body.hbs setzt dafür data-sub-panel="combat:armor").
+      { tab: 'combat', items: phone
+        ? [{ id: 'body', label: localize('DSA5HELPERS.Mobile.Weapons') }, { id: 'armor', label: localize('Equipment.armor') }, { id: 'skills', label: localize('DSA5HELPERS.Mobile.CombatSkills') }]
+        : [{ id: 'body', label: localize('DSA5HELPERS.Body') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
       ...['magic', 'religion'].map(tab => ({ tab, items: [{ id: 'spells', label: localize(tab === 'magic' ? 'spells' : 'liturgies') }, { id: 'equipment', label: localize('DSA5HELPERS.Tabs.inventory') }] })),
       { tab: 'notes', items: noteSubtabs },
     ];
     const status = this.actor.system.status;
     context.dsa5h = {
       limited, tabs, subnav, skillGroups, favorites, favoriteGroups, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
+      phone,
+      // Status-Kacheln auf dem Smartphone (MOBILE.md 14.3, Dummy 17): Schmerz und Belastung aus den Zuständen des Systems,
+      // Traglast wie im Ausrüstungs-Reiter.
+      statusTiles: phone ? ['inpain', 'encumbered'].map(id => ({ id, value: (context.conditions ?? []).find(c => c.descriptor === id)?.value ?? 0 })) : [],
       currentTab: this._currentTab,
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
       editMode: this.isEditable && !prepare.sheetLocked,
