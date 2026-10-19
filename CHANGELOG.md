@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.6.0] — unveröffentlicht
+
+### Geändert
+
+- Neuer Kopf im Heldenbogen: Oben ein Bannerstreifen mit Name und Schicksalspunkten. Im Bearbeiten-Modus lässt sich je Held ein eigenes Bannerbild wählen oder wieder entfernen, ohne Bild bleibt der Kopf dunkel. Das Porträt hat eine kräftige Goldfassung und lässt sich im Bearbeiten-Modus zwischen eckig und rund umschalten; darunter zeigt ein rotes Band den AP-Wert und die freien AP. Spezies, Kultur und Profession stehen als schlichte Zeile in Großbuchstaben unter dem Namen. LeP, AsP und KaP sind jetzt Kugeln, deren Füllstand den Verlust zeigt – der aktuelle Wert lässt sich weiterhin direkt in der Kugel ändern. Auf dem Titelblatt stehen Porträt, AP-Band und Kugeln in der linken Leiste.
+
 ## [0.5.1] — 2026-10-07
 
 ### Neu

@@ -78,6 +78,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       traditionItemDelete: this._deleteTraditionItem,
       selectTraditionItem: this._selectTraditionItem,
       dsa5hBodyFigure: this._setBodyFigure,
+      dsa5hBannerPick: this._pickBanner,
+      dsa5hBannerClear: this._clearBanner,
+      dsa5hPortraitShape: this._togglePortraitShape,
       dsa5hTwoHandedSide: this._setTwoHandedSide,
       dsa5hSwapGrip: this._swapGrip,
       dsa5hConsume: this._consume,
@@ -205,7 +208,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // Kurzes Aufleuchten der geänderten Zeile nach einem Re-Render (UI/UX-Review 2026-09-25, Punkt 9): für Knöpfe
   // über _restoreFocus(), für Eingabefelder (z. B. LeP im Kopf) über den gemerkten Feldnamen aus dem change-Event.
   _flash(node) {
-    const target = node?.closest('.row, .dsa5h-bar, .dsa5h-fate-points, .dsa5h-cover-condition');
+    const target = node?.closest('.row, .dsa5h-orb, .dsa5h-fate-points, .dsa5h-cover-condition');
     if (!target) return;
     target.classList.remove('dsa5h-just-changed');
     void target.offsetWidth;
@@ -308,6 +311,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       // Traglast wie im Ausrüstungs-Reiter.
       statusTiles: phone ? ['inpain', 'encumbered'].map(id => ({ id, value: (context.conditions ?? []).find(c => c.descriptor === id)?.value ?? 0 })) : [],
       currentTab: this._currentTab,
+      // Kopf „Wappenbanner“ (2026-10-19): Bannerbild und Porträtform je Held als Actor-Flags.
+      banner: this.actor.getFlag?.(MODULE_ID, 'bannerImg') || '',
+      portraitRound: this.actor.getFlag?.(MODULE_ID, 'portraitShape') === 'round',
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
       editMode: this.isEditable && !prepare.sheetLocked,
       specGeneral: { groups: specs.general, showSubheads: specs.general.length > 1 },
@@ -391,14 +397,17 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       this._listenerElement = this.element;
       this.element.addEventListener('change', event => { if (event.target?.name) this._flashName = event.target.name; });
       // Heldenname einpassen (Issue #25): beim Tippen, bei geänderter Fensterbreite und sobald die Schrift geladen ist.
-      this.element.addEventListener('input', event => { if (event.target?.closest?.('.dsa5h-name')) this._fitName(); });
+      this.element.addEventListener('input', event => {
+        if (event.target?.closest?.('.dsa5h-name')) this._fitName();
+        if (event.target?.closest?.('.dsa5h-ident')) this._sizeIdentity();
+      });
       let observedWidth = 0;
       new ResizeObserver(([entry]) => {
         if (entry.contentRect.width === observedWidth) return;
         observedWidth = entry.contentRect.width;
         this._fitName();
       }).observe(this.element);
-      document.fonts?.ready.then(() => this._fitName());
+      document.fonts?.ready.then(() => { this._fitName(); this._sizeIdentity(); });
       // Knöpfe mit eigener Rechtsklick-Bedeutung (Nachladen zurücksetzen, Zustand senken, Menge verringern …):
       // das contextmenu-Ereignis würde sonst bis zur Zeile hochlaufen und dort zusätzlich das Kontextmenü des
       // Systems öffnen (Nutzer-Feedback 2026-09-28). Die Aktion selbst kommt über auxclick und bleibt unberührt.
@@ -642,6 +651,30 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     await this.actor.setFlag(MODULE_ID, 'bodyFigure', target.dataset.figure === 'portrait' ? 'portrait' : 'placeholder');
   }
 
+  // Bannerbild im Kopf (2026-10-19): Foundrys Dateiauswahl, Pfad als Actor-Flag bannerImg. Kein mitgeliefertes Bild —
+  // ohne eigenes Bild bleibt der dunkle Kopf (Systemgrafiken wie das DSA5-Banner sind © Ulisses und nicht für uns gedacht).
+  static async _pickBanner() {
+    if (!this.isEditable) return;
+    const Picker = foundry.applications.apps?.FilePicker?.implementation ?? globalThis.FilePicker;
+    await new Picker({
+      type: 'image',
+      current: this.actor.getFlag(MODULE_ID, 'bannerImg') || '',
+      callback: path => this.actor.setFlag(MODULE_ID, 'bannerImg', path),
+    }).render(true);
+  }
+
+  static async _clearBanner() {
+    if (!this.isEditable) return;
+    await this.actor.unsetFlag(MODULE_ID, 'bannerImg');
+  }
+
+  // Porträtform eckig (Standard) / rund (2026-10-19): Actor-Flag portraitShape; Umschalter mit beiden Symbolen am
+  // Porträt (Rückmeldung 2026-10-19: ein Knopf mit der Zielform war nicht eindeutig), nur im Bearbeiten-Modus.
+  static async _togglePortraitShape(_event, target) {
+    if (!this.isEditable) return;
+    await this.actor.setFlag(MODULE_ID, 'portraitShape', target.dataset.shape === 'round' ? 'round' : 'octagon');
+  }
+
   // Seite der beidhändigen Waffe im Reiter „Körper“ (Issue #29): Actor-Flag, Knopf nur im Bearbeiten-Modus.
   static async _setTwoHandedSide(_event, target) {
     if (!this.isEditable) return;
@@ -774,7 +807,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   _glideTargets() {
     const root = this.element;
     const map = new Map();
-    const selectors = { portrait: '.dsa5h-portrait', name: '.dsa5h-name', fate: '.dsa5h-fate-points', attr: '[data-attr-overlay]', lep: '.dsa5h-res-lep', asp: '.dsa5h-res-asp', kap: '.dsa5h-res-kap' };
+    const selectors = { portrait: '.dsa5h-portrait-medal', name: '.dsa5h-name', fate: '.dsa5h-fate-points', attr: '[data-attr-overlay]', lep: '.dsa5h-res-lep', asp: '.dsa5h-res-asp', kap: '.dsa5h-res-kap' };
     for (const [key, selector] of Object.entries(selectors)) {
       const node = root?.querySelector(selector);
       const rect = node?.getBoundingClientRect();
@@ -985,6 +1018,25 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       else root.querySelector('[data-header-slot="' + slot + '"]')?.after(el);
     });
     this._fitName();
+    this._sizeIdentity();
+  }
+
+  // Spezies · Kultur · Profession (Kopf „Wappenbanner“): jedes Feld genau so breit wie sein Text in Großbuchstaben mit
+  // Sperrung — das autosizing des Systems ((Zeichen + 1) ch) wäre dafür zu schmal. Gemessen per Canvas wie _fitName();
+  // zu lange Werte kürzt max-width im CSS mit „…“ (Tooltip am Wrapper).
+  _sizeIdentity() {
+    const inputs = this.element?.querySelectorAll('.dsa5h-ident input');
+    if (!inputs?.length) return;
+    const context = (this._nameCanvas ??= document.createElement('canvas')).getContext('2d');
+    for (const input of inputs) {
+      const style = getComputedStyle(input);
+      const text = (input.value || input.placeholder || '');
+      const shown = style.textTransform === 'uppercase' ? text.toLocaleUpperCase(game.i18n.lang) : text;
+      context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const spacing = (parseFloat(style.letterSpacing) || 0) * shown.length;
+      const pad = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+      input.style.width = Math.ceil(context.measureText(shown).width + spacing + pad + 2) + 'px';
+    }
   }
 
   // Heldenname (Issue #25): Schrift so weit verkleinern (bis 22 px), dass der ganze Name in die Zeile passt — die

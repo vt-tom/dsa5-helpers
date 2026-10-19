@@ -8,7 +8,18 @@ let CHARACTER_NAME = "Layariel Wipfelglanz";
 // IDEEN.md: Hintergrundbild im Kopfbereich, je Charakter über einen simulierten FilePicker wählbar (siehe
 // openHeaderBgPicker() in script.js) — null = kein Bild (bisheriger Zustand, reine --head-Farbe). "let" statt
 // "const", da per Auswahl ersetzbar.
-let HEADER_BG_IMG = null;
+// Seit dem „Wappenbanner“-Kopf (2026-10-19) füllt das Bild den Bannerstreifen oben im Kopf. Vorgabe: kein Bild (dunkler
+// Kopf), im Bearbeiten-Modus wählbar. Eintrag aus A.bgHeaderOptions ({ img, pos, size }) oder null. Das DSA5-Banner
+// des Systems (© Ulisses) steht bewusst nicht zur Wahl (Nutzer-Entscheidung 2026-10-19).
+let HEADER_BG = null;
+
+// Porträt des Helden: im Modul actor.img. Der Click-Dummy hat kein eigenes Heldenbild und verweist (wie bei allen Grafiken,
+// ohne Kopie) auf einen Ausschnitt des DSA5-Banners im Systemordner (size/pos = Gesicht der Elfe) — nur Platzhalter.
+const PORTRAIT_IMG = { img: ICONS + "/backgrounds/dsa5_github_banner.jpg", size: "600% auto", pos: "28% 43%" };
+
+// Form des Porträts im Kopf und auf dem Titelblatt: "octagon" (Ecken gekappt, Goldfassung) oder "round" (Medaillon
+// mit Goldring). Je Held im Bearbeiten-Modus umschaltbar (Knopf am Porträt), im Modul ein Actor-Flag.
+let PORTRAIT_SHAPE = "octagon";
 
 const TABS = [
   // Titelblatt: eigenständige Startseite, kommt im echten DSA5-Systembogen nicht vor (siehe TITELBLATT.md) —

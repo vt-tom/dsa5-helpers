@@ -367,7 +367,7 @@ function flipTargets() {
   add("name", document.querySelector("#headName h1"));
   add("fate", document.getElementById("fatePoints"));
   add("attr", document.getElementById("attrOverlay"));
-  document.querySelectorAll(".bar").forEach((bar) => add(bar.querySelector("[data-fkey^='res:']")?.dataset.fkey || "", bar));
+  document.querySelectorAll(".orb").forEach((orb) => add(orb.querySelector("[data-fkey^='res:']")?.dataset.fkey || "", orb));
   return map;
 }
 
@@ -2880,7 +2880,7 @@ function openIdentityModal(data) {
 // IDEEN.md: simuliert den echten Foundry-FilePicker für das Kopfzeilen-Hintergrundbild — der Click-Dummy hat
 // keinen echten Dateizugriff, zeigt daher statt eines Datei-Browsers eine feste Auswahl vorhandener
 // DSA5-System-Assets (A.bgHeaderOptions in assets-map.js) als Kachel-Raster, analog zu openBagModal()/
-// openIdentityModal(). Klick auf eine Kachel setzt HEADER_BG_IMG direkt und rendert die Kopfzeile neu.
+// openIdentityModal(). Klick auf eine Kachel setzt HEADER_BG direkt und rendert die Kopfzeile neu.
 function openHeaderBgPicker() {
   const closeBtn = el("button", { type: "button", class: "modal-close" }, "✕");
   closeBtn.addEventListener("click", closeModal);
@@ -2889,9 +2889,9 @@ function openHeaderBgPicker() {
     "div",
     { class: "filepicker-grid" },
     A.bgHeaderOptions.map((opt) => {
-      const tile = el("button", { type: "button", class: "filepicker-tile" }, [el("img", { src: opt.img, alt: "" }), el("span", {}, opt.label)]);
+      const tile = el("button", { type: "button", class: "filepicker-tile" + (HEADER_BG === opt ? " active" : "") }, [el("img", { src: opt.img, alt: "" }), el("span", {}, opt.label)]);
       tile.addEventListener("click", () => {
-        HEADER_BG_IMG = opt.img;
+        HEADER_BG = opt;
         closeModal();
         renderHeader();
       });
@@ -2899,16 +2899,16 @@ function openHeaderBgPicker() {
     })
   );
 
-  const clearBtn = el("button", { type: "button", class: "fav-remove-btn" }, "Kein Hintergrundbild");
+  const clearBtn = el("button", { type: "button", class: "fav-remove-btn" }, "Kein Bannerbild");
   clearBtn.addEventListener("click", () => {
-    HEADER_BG_IMG = null;
+    HEADER_BG = null;
     closeModal();
     renderHeader();
   });
 
   openModal(
-    el("div", { class: "panel" }, [el("div", { class: "panel-title flex" }, [el("span", {}, "Hintergrundbild wählen"), closeBtn]), grid, clearBtn]),
-    { label: "Hintergrundbild wählen" }
+    el("div", { class: "panel" }, [el("div", { class: "panel-title flex" }, [el("span", {}, "Bannerbild wählen"), closeBtn]), grid, clearBtn]),
+    { label: "Bannerbild wählen" }
   );
 }
 
@@ -2919,7 +2919,7 @@ function initHeaderBgPicker() {
 // Ersetzt die früher statischen <span class="badge"> in index.html (#headBadges) — dieselbe Optik, aber
 // anklickbar (öffnet die Item-Vorschau oben). Einmalig beim Laden gefüllt, siehe initHeadBadges() unten.
 function identityBadge(data) {
-  const btn = el("button", { type: "button", class: "badge", title: data.name }, data.name);
+  const btn = el("button", { type: "button", class: "ident-link", title: data.name }, data.name);
   btn.addEventListener("click", () => openIdentityModal(data));
   return btn;
 }
@@ -2934,10 +2934,12 @@ function chargenButton() {
   return btn;
 }
 
+// Spezies · Kultur · Profession als gesperrte Kapitälchen-Zeile mit Trennpunkten (Kopf-Variante A, 2026-10-19;
+// vorher gerahmte Badges), jeder Name bleibt ein Knopf.
 function initHeadBadges() {
   const wrap = document.getElementById("headBadges");
-  wrap.appendChild(SHOW_CHARGEN ? chargenButton() : identityBadge(IDENTITY.species));
-  [IDENTITY.culture, IDENTITY.career].forEach((d) => wrap.appendChild(identityBadge(d)));
+  const sep = () => el("span", { class: "ident-sep", "aria-hidden": "true" }, "·");
+  wrap.append(SHOW_CHARGEN ? chargenButton() : identityBadge(IDENTITY.species), sep(), identityBadge(IDENTITY.culture), sep(), identityBadge(IDENTITY.career));
 }
 
 // Sammelt alle per favStar() markierten Einträge aus genau den vier auf dem Titelblatt geforderten Kategorien
@@ -3052,42 +3054,40 @@ function resourceByLabel(label) {
   return RESOURCES.find((r) => r.label === label);
 }
 
-// Eine LeP/AsP/KaP-Ressourcenleiste (Füllstand + "Aktuell / Max"-Zahl) — von renderHeader() (Kopfzeile) UND
-// coverResourcesCompact() (Titelblatt-Leiste) genutzt, da beide dieselben RESOURCES-Werte zeigen (siehe Kommentar
-// über #coverSidebar in index.html). Der aktuelle Wert ist laut BEARBEITEN.md in BEIDEN Modi editierbar (anders
-// als z.B. die Mod/Zukauf-Felder auf dem Eigenschaften-Tab, die nur im Bearbeiten-Modus editierbar wirken) —
-// daher hier fest verdrahtet statt über die dortigen editMod-Flags gesteuert.
-function vitalBar(cls, label, prefix) {
+// Eine LeP/AsP/KaP-Kugel (Kopf-Variante B „Kugeln“, Nutzer-Entscheidung 2026-10-19; vorher flache Leisten): runde
+// Glaskugel, von unten bis zum Füllstand gefüllt, darin Kürzel, aktueller Wert und „/ Max“. Von renderHeader()
+// (Kopf) UND coverResourcesCompact() (Titelblatt-Leiste) genutzt. Der aktuelle Wert ist in BEIDEN Modi editierbar
+// (BEARBEITEN.md) — Klick auf die Zahl öffnet das Eingabefeld in der Kugel.
+function vitalOrb(cls, label, prefix) {
   const r = resourceByLabel(label);
   const pct = Math.max(0, Math.min(100, Math.round((r.wert / r.max) * 100)));
-  const valSpan = el("span", {}, String(r.wert));
-  // Präfix (LeP/AsP/KaP) und Wert als getrennte Spans mit eigenem Gap (.bar-label), statt nur durch ein
-  // Leerzeichen getrennter Text — Nutzer-Feedback 2026-09-14: "steht viel zu nah an den Werten".
-  const labelEl = el("div", { class: "bar-label" }, [
-    el("span", { class: "bar-label-prefix" }, prefix),
-    el("span", { class: "bar-label-value" }, [valSpan, " / " + r.max]),
-  ]);
+  const valSpan = el("span", { class: "orb-cur" }, String(r.wert));
   valSpan.dataset.fkey = `res:${prefix}`;
   makeEditable(valSpan, r.wert, (n) => { r.wert = n; renderHeader(); renderContent(); }, { type: "number", min: 0, max: r.max });
-  return el("div", { class: "bar " + cls }, [el("div", { class: "bar-fill", style: `width:${pct}%` }), labelEl]);
+  return el("div", { class: "orb " + cls, title: `${label}: ${r.wert} von ${r.max}`, style: `--pct:${pct}%` }, [
+    el("div", { class: "orb-liquid" }),
+    el("div", { class: "orb-val" }, [
+      el("span", { class: "orb-key" }, prefix),
+      valSpan,
+      el("span", { class: "orb-max" }, "/ " + r.max),
+    ]),
+  ]);
 }
 
 // Testschalter (initOnlyLepToggle()): Vorschau einer Figur ohne Astral-/Karmaenergie (kein Zauberer/Geweihter) —
 // rein visuell, blendet AsP/KaP in der Ressourcengruppe aus, ändert RESOURCES in data.js nicht.
 let ONLY_LEP = false;
 
-// Gemeinsamer Baustein für die LeP/AsP/KaP-Ressourcengruppe (Kopfzeile UND Titelblatt-Leiste, siehe vitalBar()-
-// Kommentar) — jede Leiste steckt einzeln in einer eigenen goldgerahmten .res-card (.resource-frame/.res-card in
-// style.css), dazu ein gemeinsamer Regenerations-Button. `colLayout` schaltet zwischen Zeilen- (Kopfzeile) und
-// Spalten-Anordnung (schmale Titelblatt-Leiste) um.
+// LeP/AsP/KaP-Kugeln + gemeinsamer Regenerations-Knopf (Kopf UND Titelblatt-Leiste). `colLayout` = Titelblatt:
+// dort steht der Regenerations-Knopf nicht in der Reihe, sondern neben den Schips (coverResourcesCompact()).
 function resourceGroup(colLayout) {
-  const cards = [el("div", { class: "res-card res-lep" }, [vitalBar("bar-lep", "Lebenskraft", "LeP")])];
+  const orbs = [vitalOrb("orb-lep", "Lebenskraft", "LeP")];
   if (!ONLY_LEP) {
-    cards.push(el("div", { class: "res-card res-asp" }, [vitalBar("bar-asp", "Astralenergie", "AsP")]));
-    cards.push(el("div", { class: "res-card res-kap" }, [vitalBar("bar-kap", "Karmaenergie", "KaP")]));
+    orbs.push(vitalOrb("orb-asp", "Astralenergie", "AsP"));
+    orbs.push(vitalOrb("orb-kap", "Karmaenergie", "KaP"));
   }
-  return el("div", { class: "resource-frame" + (colLayout ? " resource-frame-col" : "") }, [
-    ...cards,
+  return el("div", { class: "resource-frame" + (colLayout ? " resource-frame-cover" : "") }, [
+    ...orbs,
     el("button", { type: "button", class: "regen-btn", title: "Regeneration (LeP/AsP/KaP)" }, "☾"),
   ]);
 }
@@ -3117,7 +3117,41 @@ function fatePointsRow() {
   return wrap;
 }
 
-// Kopfzeile (Charaktername + LeP/AsP/KaP-Leisten + Schicksalspunkte): einzige Stelle, die #headName/#bars/
+// Porträt-Medaillon (#portrait): Bild in der gewählten Form (PORTRAIT_SHAPE: eckig mit Goldfassung oder rund mit
+// Goldring, Kopf-Varianten A/B 2026-10-19), darunter das AP-Band (Element aus Variante B) mit AP-Wert und freien AP —
+// „frei“ wird immer aus total − spent berechnet (experienceAvailable()). Im Bearbeiten-Modus schaltet der kleine
+// Knopf am Porträt die Form um (im Modul ein Actor-Flag). Das Element wandert mit auf das Titelblatt.
+function renderPortrait() {
+  const wrap = document.getElementById("portrait");
+  const mode = document.querySelector(".sheet").getAttribute("data-mode");
+  const round = PORTRAIT_SHAPE === "round";
+  wrap.classList.toggle("shape-round", round);
+  // Umschalter mit beiden Formen als Symbol, die aktive golden hinterlegt (Rückmeldung 2026-10-19: ein Knopf mit der
+  // Zielform war nicht eindeutig).
+  const shapeBtn = el("div", { class: "portrait-shapes", role: "group", "aria-label": "Porträtform" }, [["octagon", "Porträt eckig"], ["round", "Porträt rund"]].map(([shape, label]) => {
+    const btn = el("button", { type: "button", title: label, "aria-label": label, "aria-pressed": String(PORTRAIT_SHAPE === shape) }, el("i", { class: "shape-ico " + shape }));
+    btn.addEventListener("click", () => {
+      PORTRAIT_SHAPE = shape;
+      renderHeader();
+    });
+    return btn;
+  }));
+  wrap.replaceChildren(
+    el("div", { class: "portrait-frame" }, el("div", {
+      class: "portrait",
+      role: "img",
+      "aria-label": `Porträt von ${CHARACTER_NAME}`,
+      style: `background-image:url('${PORTRAIT_IMG.img}');background-size:${PORTRAIT_IMG.size};background-position:${PORTRAIT_IMG.pos}`,
+    })),
+    el("div", { class: "ap-ribbon", title: `Abenteuerpunkte: ${formatNum(EXPERIENCE.total)} gesamt, ${formatNum(experienceAvailable())} frei` }, [
+      el("span", { class: "ap-ribbon-total" }, `${formatNum(EXPERIENCE.total)} AP`),
+      el("span", { class: "ap-ribbon-free" }, `${formatNum(experienceAvailable())} frei`),
+    ]),
+  );
+  if (mode === "edit") wrap.append(shapeBtn);
+}
+
+// Kopfzeile (Charaktername + LeP/AsP/KaP-Kugeln + Schicksalspunkte): einzige Stelle, die #headName/#bars/
 // #fatePoints (index.html) befüllt — anders als der übrige Bogeninhalt liegt die Kopfzeile außerhalb von
 // #content und wird daher nicht von renderContent() mit erneuert, sondern separat bei jeder Änderung aufgerufen
 // (Werteditor-Commits, Modus-Umschalter). Name ist nur im Bearbeiten-Modus editierbar (BEARBEITEN.md
@@ -3126,11 +3160,15 @@ function renderHeader() {
   const restoreFocus = rememberFocus();
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
 
-  // IDEEN.md: optionales Hintergrundbild (HEADER_BG_IMG in data.js) — .has-bg blendet .head-bg-layer/
-  // .head-bg-fade ein (siehe style.css), sonst bleibt die normale --head-Farbe wie bisher.
+  // Bannerbild (HEADER_BG in data.js) im Streifen oben — .has-bg blendet es ein, sonst bleibt ein dunkler Verlauf.
   const head = document.querySelector(".head");
-  head.classList.toggle("has-bg", !!HEADER_BG_IMG);
-  document.getElementById("headBgLayer").style.backgroundImage = HEADER_BG_IMG ? `url('${HEADER_BG_IMG}')` : "";
+  head.classList.toggle("has-bg", !!HEADER_BG);
+  const bgLayer = document.getElementById("headBgLayer");
+  bgLayer.style.backgroundImage = HEADER_BG ? `url('${HEADER_BG.img}')` : "";
+  bgLayer.style.backgroundPosition = HEADER_BG?.pos || "";
+  bgLayer.style.backgroundSize = HEADER_BG?.size || "";
+
+  renderPortrait();
 
   const headName = document.getElementById("headName");
   headName.innerHTML = "";
@@ -3147,7 +3185,6 @@ function renderHeader() {
   fp.innerHTML = "";
   fp.appendChild(fatePointsRow());
 
-  document.getElementById("apText").textContent = `AP ${formatNum(EXPERIENCE.total)} · ${formatNum(experienceAvailable())} frei`;
   restoreFocus();
 }
 
@@ -3267,7 +3304,7 @@ function flashChanged() {
   if (!pendingFlash) return;
   const key = pendingFlash;
   document.querySelectorAll(`[data-fkey="${CSS.escape(key)}"]`).forEach((node) => {
-    const target = node.closest(".list-row, .row, .bar, .fate-points, .companion-loyalty-row") || node;
+    const target = node.closest(".list-row, .row, .orb, .fate-points, .companion-loyalty-row") || node;
     target.classList.remove("just-changed");
     void target.offsetWidth;
     target.classList.add("just-changed");
@@ -3451,3 +3488,9 @@ initSheetResize();
 initHeaderBgPicker();
 initAmmoMenuOutsideClick();
 initModalEscape();
+
+// Direktaufruf für Screenshots und Vergleiche (nur Click-Dummy): ?tab=<Reiter-id>&mode=edit&portrait=round
+const START_PARAMS = new URLSearchParams(location.search);
+if (START_PARAMS.get("portrait") === "round") { PORTRAIT_SHAPE = "round"; renderHeader(); }
+if (START_PARAMS.get("mode") === "edit") document.querySelector('#modeSwitch [data-mode="edit"]').click();
+if (TABS.some((t) => t.id === START_PARAMS.get("tab"))) setTab(START_PARAMS.get("tab"));

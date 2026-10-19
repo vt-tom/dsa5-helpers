@@ -1,63 +1,80 @@
-    <header class="dsa5h-head">
-      
-      <span data-header-slot="portrait" hidden></span><div class="dsa5h-portrait" data-cover-move="portrait">
-        <img class="charimg" data-action="editImage" data-edit="img" src="{{document.img}}" alt="{{document.name}}" />
+    {{!-- Kopf „Wappenbanner“ (Nutzer-Entscheidung 2026-10-19, Kombination der Kopf-Varianten A und B aus dem Click-Dummy):
+          oben ein Bannerstreifen (Bannerbild des Helden, Actor-Flag bannerImg; ohne Bild dunkler Kopfton) mit Name und
+          Schips-Plakette, darunter ein Band mit Spezies · Kultur · Profession und den LeP/AsP/KaP-Kugeln. Das Porträt ragt
+          als Medaillon über die Goldlinie, darunter das AP-Band. Porträt, Schips, Kugeln und Regeneration wandern auf dem
+          Titelblatt in die linke Leiste (data-cover-move, _applyCurrentTab). --}}
+    <header class="dsa5h-head{{#if dsa5h.banner}} has-banner{{/if}}">
+      <div class="dsa5h-banner"{{#if dsa5h.banner}} style="background-image:url('{{dsa5h.banner}}')"{{/if}}></div>
+      {{#if dsa5h.editMode}}
+      <div class="dsa5h-banner-tools">
+        <button type="button" data-action="dsa5hBannerPick" data-tooltip="DSA5HELPERS.BannerPick" aria-label="{{localize 'DSA5HELPERS.BannerPick'}}"><i class="fas fa-image" inert></i></button>
+        {{#if dsa5h.banner}}<button type="button" data-action="dsa5hBannerClear" data-tooltip="DSA5HELPERS.BannerClear" aria-label="{{localize 'DSA5HELPERS.BannerClear'}}"><i class="fas fa-times" inert></i></button>{{/if}}
       </div>
+      {{/if}}
+
+      <span data-header-slot="portrait" hidden></span><div class="dsa5h-portrait-medal{{#if dsa5h.portraitRound}} shape-round{{/if}}" data-cover-move="portrait">
+        <div class="dsa5h-portrait">
+          <img class="charimg" data-action="editImage" data-edit="img" src="{{document.img}}" alt="{{document.name}}" />
+        </div>
+        <div class="dsa5h-ap-ribbon" data-tooltip="{{localize 'DSA5HELPERS.ApRibbon' total=(dsa5hFormatNum document.system.details.experience.total) free=(dsa5hFormatNum document.system.details.experience.current)}}">
+          <span class="dsa5h-ap-ribbon-total">{{dsa5hFormatNum document.system.details.experience.total}} {{localize "DSA5HELPERS.APAbbrev"}}</span>
+          <span class="dsa5h-ap-ribbon-free">{{dsa5hFormatNum document.system.details.experience.current}} {{localize "DSA5HELPERS.Free"}}</span>
+        </div>
+        {{#if dsa5h.editMode}}
+        <div class="dsa5h-portrait-shapes" role="group" aria-label="{{localize 'DSA5HELPERS.PortraitShape'}}">
+          <button type="button" data-action="dsa5hPortraitShape" data-shape="octagon" aria-pressed="{{#if dsa5h.portraitRound}}false{{else}}true{{/if}}" data-tooltip="DSA5HELPERS.PortraitOctagon" aria-label="{{localize 'DSA5HELPERS.PortraitOctagon'}}"><i class="dsa5h-shape-ico octagon" inert></i></button>
+          <button type="button" data-action="dsa5hPortraitShape" data-shape="round" aria-pressed="{{#if dsa5h.portraitRound}}true{{else}}false{{/if}}" data-tooltip="DSA5HELPERS.PortraitRound" aria-label="{{localize 'DSA5HELPERS.PortraitRound'}}"><i class="dsa5h-shape-ico round" inert></i></button>
+        </div>
+        {{/if}}
+      </div>
+
       <div class="dsa5h-head-main">
         <div class="dsa5h-head-top">
           <h1 class="dsa5h-name"{{#unless dsa5h.editMode}} data-tooltip="{{document.name}}"{{/unless}}>{{formInput fields.name value=document.name placeholder=(localize 'Name') disabled=(not dsa5h.editMode)}}</h1>
-          <div class="dsa5h-ap-block">
-            <span class="dsa5h-ap-text">{{localize "APValue"}} {{dsa5hFormatNum document.system.details.experience.total}} · {{dsa5hFormatNum document.system.details.experience.current}} {{localize "DSA5HELPERS.Free"}}</span>
-            
-            <span data-header-slot="fate" hidden></span><div class="dsa5h-fate-points" data-cover-move="fate">
-              {{#each prepare.schips as |item|}}
-              <button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="schipUpdate" data-val="{{item.value}}" data-tooltip="fatePoints" aria-label="{{localize 'DSA5HELPERS.FatePointSet' value=item.value current=../document.system.status.fatePoints.value max=../document.system.status.fatePoints.max}}"></button>
-              {{/each}}
-            </div>
+          <span data-header-slot="fate" hidden></span><div class="dsa5h-fate-points" data-cover-move="fate">
+            {{#each prepare.schips as |item|}}
+            <button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="schipUpdate" data-val="{{item.value}}" data-tooltip="fatePoints" aria-label="{{localize 'DSA5HELPERS.FatePointSet' value=item.value current=../document.system.status.fatePoints.value max=../document.system.status.fatePoints.max}}"></button>
+            {{/each}}
           </div>
         </div>
 
-        {{!-- Je Feld ein Wrapper mit dem vollen Text als Tooltip: lange Werte werden mit „…“ gekürzt (Issue #14), und ein
-              gesperrtes Eingabefeld (Spielmodus) bekommt keine Mausereignisse, der Wrapper schon. --}}
-        <div class="dsa5h-badges autosizing">
-          {{!-- Wie im Systembogen (actor-header.hbs): ohne Spezies und mit installiertem Charakterbauer statt des Spezies-Feldes (Issue #10). --}}
-          {{#if prepare.canBuild}}
-          <button type="button" class="dsa5h-chargen" data-action="startCharacterBuilder" data-tooltip="CHARGEN.chargenTT"><i class="fas fa-user-edit"></i> {{localize "CHARGEN.chargen"}}</button>
-          {{else}}
+        <div class="dsa5h-head-band">
+          {{!-- Spezies · Kultur · Profession als gesperrte Kapitälchen-Zeile (Variante A). Je Feld ein Wrapper mit dem vollen
+                Text als Tooltip (Issue #14), ein gesperrtes Feld (Spielmodus) bekommt keine Mausereignisse, der Wrapper schon.
+                Breite misst _sizeIdentity() (das autosizing des Systems rechnet ohne Großbuchstaben und Sperrung). --}}
+          <div class="dsa5h-ident">
+            {{!-- Wie im Systembogen (actor-header.hbs): ohne Spezies und mit installiertem Charakterbauer statt des Spezies-Feldes (Issue #10). --}}
+            {{#if prepare.canBuild}}
+            <button type="button" class="dsa5h-chargen" data-action="startCharacterBuilder" data-tooltip="CHARGEN.chargenTT"><i class="fas fa-user-edit"></i> {{localize "CHARGEN.chargen"}}</button>
+            {{else}}
             <span class="dsa5h-badge"{{#if document.system.details.species.value}} data-tooltip="{{document.system.details.species.value}}"{{/if}}>{{formInput systemFields.details.fields.species.fields.value value=document.system.details.species.value placeholder=(localize 'TYPES.Item.species') readonly=true disabled=(not dsa5h.editMode)}}</span>
-          {{/if}}
-          <span class="dsa5h-badge"{{#if document.system.details.culture.value}} data-tooltip="{{document.system.details.culture.value}}"{{/if}}>{{formInput systemFields.details.fields.culture.fields.value value=document.system.details.culture.value placeholder=(localize 'TYPES.Item.culture') disabled=(not dsa5h.editMode)}}</span>
-          <span class="dsa5h-badge"{{#if document.system.details.career.value}} data-tooltip="{{document.system.details.career.value}}"{{/if}}>{{formInput systemFields.details.fields.career.fields.value value=document.system.details.career.value placeholder=(localize 'TYPES.Item.career') disabled=(not dsa5h.editMode)}}</span>
-        </div>
+            {{/if}}
+            <span class="dsa5h-ident-sep" aria-hidden="true">·</span>
+            <span class="dsa5h-badge"{{#if document.system.details.culture.value}} data-tooltip="{{document.system.details.culture.value}}"{{/if}}>{{formInput systemFields.details.fields.culture.fields.value value=document.system.details.culture.value placeholder=(localize 'TYPES.Item.culture') disabled=(not dsa5h.editMode)}}</span>
+            <span class="dsa5h-ident-sep" aria-hidden="true">·</span>
+            <span class="dsa5h-badge"{{#if document.system.details.career.value}} data-tooltip="{{document.system.details.career.value}}"{{/if}}>{{formInput systemFields.details.fields.career.fields.value value=document.system.details.career.value placeholder=(localize 'TYPES.Item.career') disabled=(not dsa5h.editMode)}}</span>
+          </div>
 
-        
-        
-        <span data-header-slot="resources" hidden></span><div class="dsa5h-resource-frame" data-cover-move="resources">
-          <div class="dsa5h-res-card dsa5h-res-lep">
-            <div class="dsa5h-bar dsa5h-bar-lep">
-              <div class="dsa5h-bar-fill" style="width:{{dsa5hPercent document.system.status.wounds.value document.system.status.wounds.max}}%"></div>
-              <div class="dsa5h-bar-label"><span class="dsa5h-bar-label-prefix">{{localize "CHARAbbrev.LeP"}}</span><span class="dsa5h-bar-label-value">{{formInput systemFields.status.fields.wounds.fields.value value=document.system.status.wounds.value tooltip="Current"}} / {{document.system.status.wounds.max}}</span></div>
+          {{!-- LeP/AsP/KaP als Kugeln (Variante B): Füllstand per --pct, der aktuelle Wert bleibt ein Formularfeld (beide Modi). --}}
+          <span data-header-slot="resources" hidden></span><div class="dsa5h-resource-frame" data-cover-move="resources">
+            <div class="dsa5h-orb dsa5h-res-lep" style="--pct:{{dsa5hPercent document.system.status.wounds.value document.system.status.wounds.max}}%">
+              <div class="dsa5h-orb-liquid"></div>
+              <div class="dsa5h-orb-val"><span class="dsa5h-orb-key">{{localize "CHARAbbrev.LeP"}}</span>{{formInput systemFields.status.fields.wounds.fields.value value=document.system.status.wounds.value tooltip="Current"}}<span class="dsa5h-orb-max">/ {{document.system.status.wounds.max}}</span></div>
             </div>
-          </div>
-          {{#if prepare.magic.hasSpells}}
-          <div class="dsa5h-res-card dsa5h-res-asp">
-            <div class="dsa5h-bar dsa5h-bar-asp">
-              <div class="dsa5h-bar-fill" style="width:{{dsa5hPercent document.system.status.astralenergy.value document.system.status.astralenergy.max}}%"></div>
-              <div class="dsa5h-bar-label"><span class="dsa5h-bar-label-prefix">{{localize "CHARAbbrev.AsP"}}</span><span class="dsa5h-bar-label-value">{{formInput systemFields.status.fields.astralenergy.fields.value value=document.system.status.astralenergy.value tooltip="Current"}} / {{document.system.status.astralenergy.max}}</span></div>
+            {{#if prepare.magic.hasSpells}}
+            <div class="dsa5h-orb dsa5h-res-asp" style="--pct:{{dsa5hPercent document.system.status.astralenergy.value document.system.status.astralenergy.max}}%">
+              <div class="dsa5h-orb-liquid"></div>
+              <div class="dsa5h-orb-val"><span class="dsa5h-orb-key">{{localize "CHARAbbrev.AsP"}}</span>{{formInput systemFields.status.fields.astralenergy.fields.value value=document.system.status.astralenergy.value tooltip="Current"}}<span class="dsa5h-orb-max">/ {{document.system.status.astralenergy.max}}</span></div>
             </div>
-          </div>
-          {{/if}}
-          {{#if prepare.magic.hasPrayers}}
-          <div class="dsa5h-res-card dsa5h-res-kap">
-            <div class="dsa5h-bar dsa5h-bar-kap">
-              <div class="dsa5h-bar-fill" style="width:{{dsa5hPercent document.system.status.karmaenergy.value document.system.status.karmaenergy.max}}%"></div>
-              <div class="dsa5h-bar-label"><span class="dsa5h-bar-label-prefix">{{localize "CHARAbbrev.KaP"}}</span><span class="dsa5h-bar-label-value">{{formInput systemFields.status.fields.karmaenergy.fields.value value=document.system.status.karmaenergy.value tooltip="Current"}} / {{document.system.status.karmaenergy.max}}</span></div>
+            {{/if}}
+            {{#if prepare.magic.hasPrayers}}
+            <div class="dsa5h-orb dsa5h-res-kap" style="--pct:{{dsa5hPercent document.system.status.karmaenergy.value document.system.status.karmaenergy.max}}%">
+              <div class="dsa5h-orb-liquid"></div>
+              <div class="dsa5h-orb-val"><span class="dsa5h-orb-key">{{localize "CHARAbbrev.KaP"}}</span>{{formInput systemFields.status.fields.karmaenergy.fields.value value=document.system.status.karmaenergy.value tooltip="Current"}}<span class="dsa5h-orb-max">/ {{document.system.status.karmaenergy.max}}</span></div>
             </div>
+            {{/if}}
+            <span data-header-slot="regen" hidden></span><button type="button" class="dsa5h-regen-btn" data-cover-move="regen" data-action="chRegenerate" data-char="regenerate" data-mod="regenerate" data-tooltip="regenerate" aria-label="{{localize 'regenerate'}}">🌙</button>
           </div>
-          {{/if}}
-          <span data-header-slot="regen" hidden></span><button type="button" class="dsa5h-regen-btn" data-cover-move="regen" data-action="chRegenerate" data-char="regenerate" data-mod="regenerate" data-tooltip="regenerate" aria-label="{{localize 'regenerate'}}">🌙</button>
         </div>
       </div>
     </header>
-
-    

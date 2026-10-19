@@ -401,11 +401,18 @@
 
 /* --- Aufbau & Fenster ziehen --- */
 
+/* Kopf „Wappenbanner“ (Nutzer-Entscheidung 2026-10-19, Kombination der Kopf-Varianten A und B im Click-Dummy): oben ein
+   Bannerstreifen (--dsa5h-banner-h) mit dem Bannerbild des Helden, unten von einer Goldlinie begrenzt; Name und Schips-
+   Plakette stehen darauf, darunter das Band mit Spezies · Kultur · Profession und den LeP/AsP/KaP-Kugeln. Das Porträt-
+   Medaillon ragt über die Goldlinie. Vorher: einfarbiger Kopf, Badges, flache Leisten. */
 .dsa5-helpers-sheet .dsa5h-head {
+  --dsa5h-banner-h: 92px;
+  --dsa5h-orb: 64px;
+  position: relative;
   display: flex;
-  align-items: stretch;
-  gap: 16px;
-  padding: 15px 16px 15px;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 14px 16px 12px;
   background: var(--head-base);
   color: var(--headink);
   border-bottom: 1px solid rgba(224, 192, 128, .3);
@@ -430,44 +437,110 @@
   cursor: inherit;
 }
 
-.dsa5-helpers-sheet .dsa5h-head-main {
-  flex: 1;
-  min-width: 0;
+/* Alles außer Banner und Banner-Knöpfen liegt über dem Bild. */
+.dsa5-helpers-sheet .dsa5h-head > :not(.dsa5h-banner, .dsa5h-banner-tools) {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Bannerbild --- */
+
+/* Ohne Bild ein warmer Lichtschein auf dem Kopfton, mit Bild (Actor-Flag bannerImg, .has-banner) das Bild selbst. */
+.dsa5-helpers-sheet .dsa5h-banner {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 0;
+  height: var(--dsa5h-banner-h);
+  background-color: transparent;
+  background-image: radial-gradient(ellipse at 70% 0%, rgba(224, 192, 128, .16), transparent 65%);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  pointer-events: none;
+}
+
+/* Abdunklung („Scrim“) nach unten und links, damit Name und Plakette auf jedem Bild lesbar bleiben. */
+.dsa5-helpers-sheet .dsa5h-head.has-banner .dsa5h-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(28, 25, 23, 0) 20%, rgba(28, 25, 23, .92) 100%),
+    linear-gradient(90deg, rgba(28, 25, 23, .55) 0%, rgba(28, 25, 23, 0) 60%);
+}
+
+/* Goldlinie an der Unterkante des Banners (mit und ohne Bild). */
+.dsa5-helpers-sheet .dsa5h-banner::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(224, 192, 128, .7) 18%, rgba(224, 192, 128, .7) 82%, transparent);
+}
+
+/* Bild wählen / entfernen — nur im Bearbeiten-Modus vorhanden, oben rechts im Banner. */
+.dsa5-helpers-sheet .dsa5h-banner-tools {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 2;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+}
+
+.dsa5-helpers-sheet .dsa5h-banner-tools button {
+  flex: none;
+  width: var(--hit-lg);
+  height: var(--hit-lg);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(224, 192, 128, .5);
+  border-radius: 50%;
+  background: rgba(46, 40, 35, .75);
+  color: #ecd8b1;
+  font-size: 12px;
+  line-height: 1;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.dsa5-helpers-sheet .dsa5h-head-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+.dsa5-helpers-sheet .dsa5h-banner-tools button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
-/* --- Porträt --- */
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-banner-tools button:hover {
+    background: rgba(224, 192, 128, .35);
+  }
+}
 
-/* Zierrahmen: "Ecken gekappt" — Nutzer-Entscheidung 2026-09-18 nach drei Vergleichsrunden im Click-Dummy (siehe
-   project/STATUS.md), am offiziellen "Deluxe Heldendokument"-PDF orientiert (die "Schicksalspunkte"-Box dort
-   nutzt dieselbe dünne Tintenlinie mit diagonal gekappten Ecken statt Gold/Ornamenten). Dazu ein leichter
-   Gold-Saum (Nutzerwunsch: "wie bei den LeP") — dieselbe gedämpfte Randfarbe wie die LeP/AsP/KaP-
-   Ressourcenkarten (rgba(224,192,128,.4), siehe .dsa5h-res-card), nur als dünne innen liegende Linie statt
-   Vollrahmen. Löst den bisherigen, zweitverwendeten cite_v45.webp-Rahmen ab — reines CSS, kein Bild-Asset mehr. */
-.dsa5-helpers-sheet .dsa5h-portrait {
-  /* Festes Seitenverhältnis 118:142 in Kopf UND Titelblatt (Nutzer-Feedback 2026-09-28: das Bild war auf dem
-     Titelblatt fast quer, im Kopf so hoch wie der Kopf — unterschiedlich beschnitten). aspect-ratio greift nur
-     mit fester Breite, nicht bei per align-items gestreckter Höhe. */
+/* --- Porträt-Medaillon --- */
+
+/* .dsa5h-portrait-medal = Porträt + AP-Band (+ Formknopf im Bearbeiten-Modus), wandert als Ganzes aufs Titelblatt.
+   Eckig (Standard): „Ecken gekappt“, Seitenverhältnis 118:142 in Kopf UND Titelblatt (2026-09-28), aber mit kräftiger
+   Goldfassung statt dünner Tintenlinie (Nutzer 2026-10-19: „Rahmen um das Porträt ist viel deutlicher“). Rund
+   (.shape-round, Actor-Flag portraitShape): Medaillon mit Goldring. */
+.dsa5-helpers-sheet .dsa5h-portrait-medal {
+  position: relative;
   flex: 0 0 118px;
   width: 118px;
   height: auto;
   aspect-ratio: 118 / 142;
   align-self: flex-start;
-  border: 3px solid var(--frame-ink);
-  box-shadow: inset 0 0 0 1px rgba(224, 192, 128, .5);
-  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
-  overflow: hidden;
-  background-color: var(--paper);
-  background-image: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  border: 0;
+  background: linear-gradient(160deg, #e9cf94, #8b6f3f 55%, #d8bb7c);
+  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 0 calc(100% - 16px), 0 16px);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .6));
 }
 
 .dsa5-helpers-sheet .dsa5h-portrait img {
@@ -477,9 +550,179 @@
   object-fit: cover;
   margin: 0;
   border: none;
+  background-color: var(--paper);
+  clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
 }
 
-/* --- Heldenname --- */
+.dsa5-helpers-sheet .dsa5h-portrait-medal.shape-round {
+  flex-basis: 128px;
+  width: 128px;
+  aspect-ratio: 1;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-medal.shape-round .dsa5h-portrait {
+  padding: 0;
+  background: none;
+  clip-path: none;
+  filter: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-medal.shape-round .dsa5h-portrait img {
+  border-radius: 50%;
+  clip-path: none;
+  box-shadow:
+    0 0 0 3px #2b2721,
+    0 0 0 6px #c2a267,
+    0 0 0 7px #5e4a2a,
+    0 6px 16px 6px rgba(0, 0, 0, .55);
+}
+
+/* AP-Band (Element aus Variante B): AP-Wert und freie AP auf einem roten Band mit Schwalbenschwanz-Enden, das unten über
+   die Fassung reicht. Reine Anzeige, bearbeitet wird im Erfahrung-Panel (Eigenschaften). */
+.dsa5-helpers-sheet .dsa5h-ap-ribbon {
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  z-index: 2;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 2px 16px;
+  background: linear-gradient(180deg, #8e2a20, #5e1a14);
+  color: #f4e8d6;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 50%, 100% 100%, 0 100%, 7px 50%);
+  filter: drop-shadow(0 1px 0 #c2a267) drop-shadow(0 -1px 0 #c2a267);
+}
+
+.dsa5-helpers-sheet .dsa5h-ap-ribbon-total {
+  font-weight: 700;
+}
+
+.dsa5-helpers-sheet .dsa5h-ap-ribbon-free {
+  opacity: .85;
+}
+
+.dsa5-helpers-sheet .dsa5h-ap-ribbon-free::before {
+  content: "·";
+  margin-right: 7px;
+  opacity: .7;
+}
+
+/* Umschalter eckig/rund oben mittig auf dem Porträt (Rückmeldung 2026-10-19): beide Formen als Symbol nebeneinander,
+   die aktive golden hinterlegt — vorher ein einzelner Knopf mit der Zielform, das war nicht eindeutig. */
+.dsa5-helpers-sheet .dsa5h-portrait-shapes {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  z-index: 3;
+  transform: translateX(-50%);
+  display: flex;
+  padding: 2px;
+  border: 1px solid rgba(224, 192, 128, .6);
+  border-radius: 12px;
+  background: #2e2823;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-shapes button {
+  flex: none;
+  width: var(--hit-sm);
+  height: 20px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  box-shadow: none;
+  color: rgba(236, 216, 177, .7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-shapes button[aria-pressed="true"] {
+  background: #c2a267;
+  color: #2b2721;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-shapes button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.dsa5-helpers-sheet .dsa5h-shape-ico {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid currentColor;
+}
+
+.dsa5-helpers-sheet .dsa5h-shape-ico.round {
+  border-radius: 50%;
+}
+
+/* Eckiges Symbol = hochkantes Rechteck mit gekappten Ecken (Form des eckigen Porträts), als Umriss: äußere Fläche in
+   Schriftfarbe, innen per zweiter, gleicher Form ausgespart. */
+.dsa5-helpers-sheet .dsa5h-shape-ico.octagon {
+  position: relative;
+  width: 10px;
+  height: 13px;
+  border: 0;
+  background: currentColor;
+  clip-path: polygon(30% 0, 70% 0, 100% 22%, 100% 78%, 70% 100%, 30% 100%, 0 78%, 0 22%);
+}
+
+.dsa5-helpers-sheet .dsa5h-shape-ico.octagon::after {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  background: #2e2823;
+  clip-path: inherit;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-shapes button[aria-pressed="true"] .dsa5h-shape-ico.octagon::after {
+  background: #c2a267;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-portrait-shapes button[aria-pressed="false"]:hover {
+    color: #f4e8d6;
+    background: rgba(224, 192, 128, .25);
+  }
+}
+
+/* --- Heldenname & Schips-Plakette --- */
+
+/* Raster rechts vom Porträt (Rückmeldung 2026-10-19): links Name (im Banner) und direkt unter der Goldlinie Spezies ·
+   Kultur · Profession; rechts oben die Schips-Plakette, darunter die Kugeln, die um die halbe Kugelhöhe nach oben über
+   die Linie ragen — die Linie läuft hinter ihnen durch. .dsa5h-head-top und .dsa5h-head-band lösen sich dafür auf
+   (display: contents), ihre Kinder sind die Rasterzellen. Zeile 1 ist so hoch wie der Banner abzüglich Innenabstand. */
+.dsa5-helpers-sheet .dsa5h-head-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: calc(var(--dsa5h-banner-h) - 14px) auto;
+  column-gap: 16px;
+}
+
+.dsa5-helpers-sheet .dsa5h-head-top,
+.dsa5-helpers-sheet .dsa5h-head-band {
+  display: contents;
+}
+
+.dsa5-helpers-sheet .dsa5h-head-top > .dsa5h-name {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  padding-bottom: 6px;
+}
 
 .dsa5-helpers-sheet .dsa5h-name {
   flex: 1 1 auto;
@@ -487,10 +730,11 @@
   margin: 0;
   font-family: 'Andalus', serif;
   /* Höchstgröße — passt der Name nicht, verkleinert _fitName() sie per Inline-Stil (Issue #25). */
-  font-size: 39px;
+  font-size: 40px;
   font-weight: normal;
   line-height: 1.1;
   color: #f4e8d6;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .85);
 }
 
 .dsa5-helpers-sheet .dsa5h-name input {
@@ -502,6 +746,8 @@
   color: #f4e8d6;
   font: inherit;
   font-size: inherit !important;
+  text-shadow: inherit;
+  text-align: left;
   text-overflow: ellipsis;
   width: 100%;
   min-width: 0;
@@ -514,28 +760,29 @@
   border-bottom-color: transparent;
 }
 
-/* --- Abenteuerpunkte & Schicksalspunkte --- */
-
-.dsa5-helpers-sheet .dsa5h-ap-block {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  /* Platz für die darüber schwebende Knopfgruppe der Fensterleiste. */
-  padding-top: 26px;
-}
-
-.dsa5-helpers-sheet .dsa5h-ap-text {
-  font-size: 13px;
-  color: var(--headmuted);
-  font-family: 'GentiumBasic', Georgia, serif;
-  white-space: nowrap;
-}
-
 .dsa5-helpers-sheet .dsa5h-fate-points {
   display: flex;
   gap: 0;
+}
+
+/* Im Kopf als Plakette oben rechts auf dem Banner (Variante A); auf dem Titelblatt steht sie ohne Plakette in der Leiste. */
+.dsa5-helpers-sheet .dsa5h-head .dsa5h-fate-points {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  flex: none;
+  align-self: start;
+  margin-top: -4px;
+  padding: 3px 6px;
+  border: 1px solid rgba(224, 192, 128, .55);
+  border-radius: 20px;
+  background: rgba(28, 25, 23, .72);
+  backdrop-filter: blur(3px);
+}
+
+/* Im Bearbeiten-Modus Platz für die Banner-Knöpfe oben rechts. */
+.dsa5-helpers-sheet[data-mode="edit"] .dsa5h-head .dsa5h-fate-points {
+  margin-right: 64px;
 }
 
 .dsa5-helpers-sheet .dsa5h-fatepoint {
@@ -561,38 +808,24 @@
   opacity: .45;
 }
 
-/* --- Badges & Heldenerschaffung --- */
+/* --- Band: Spezies · Kultur · Profession & Heldenerschaffung --- */
 
-.dsa5-helpers-sheet .dsa5h-badges {
+/* Gesperrte Kapitälchen-Zeile mit Trennpunkten statt gerahmter Badges (Variante A). Die Felder bleiben die
+   Formularfelder des Systems (im Bearbeiten-Modus editierbar, Spezies nur lesbar); Breite setzt _sizeIdentity(). */
+.dsa5-helpers-sheet .dsa5h-ident {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  padding-top: 6px;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 2px 7px;
 }
 
-.dsa5-helpers-sheet .dsa5h-badges input {
-  flex: 0 0 auto;
-  /* DSA5's own autosizing (actor-sheet.js _onRender) sets an inline `width: Nch` sized purely to fit the text
-     content — but our blanket `.window-content *{box-sizing:border-box}` rule (section 2, "Fensterinhalt & Grundschrift")
-     turns that into an OUTER width, so the 22px of left/right padding plus the 2px border get subtracted from
-     the space actually available for text instead of added on top, clipping longer values (Nutzer-Feedback:
-     "Spezies ist im Header abgeschnitten und nicht komplett lesbar"). Reverting to content-box here restores
-     the padding/border as extra room around the autosized text box, exactly as the vanilla DSA5 sheet renders it. */
-  box-sizing: content-box;
-  background: rgba(224, 192, 128, .12);
-  border: 1px solid rgba(224, 192, 128, .45);
-  color: #ecd8b1;
-  border-radius: 3px;
-  padding: 2px 11px;
-  font-size: 14px;
-  line-height: 1.4;
-  width: auto;
-  /* Nie breiter als die Kopfzeile (Issue #14: lange Professionsnamen ragten rechts aus dem Bogen) — das Inline-
-     `width: Nch` der Autosizing-Logik bleibt, wird hier nur gedeckelt; 24px = Padding + Rand (content-box). Der
-     Rest wird mit „…“ gekürzt, den vollen Text zeigt der Tooltip am Wrapper .dsa5h-badge. */
-  max-width: calc(100% - 24px);
-  text-overflow: ellipsis;
-  height: auto;
+.dsa5-helpers-sheet .dsa5h-ident-sep {
+  color: rgba(224, 192, 128, .5);
 }
 
 .dsa5-helpers-sheet .dsa5h-badge {
@@ -601,14 +834,45 @@
   max-width: 100%;
 }
 
+.dsa5-helpers-sheet .dsa5h-ident input {
+  flex: 0 0 auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 0 2px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #d9bf87;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+}
+
+/* Bearbeiten-Modus: dezente Unterstreichung als Eingabe-Hinweis. */
+.dsa5-helpers-sheet .dsa5h-ident input:not(:disabled) {
+  border-bottom-color: rgba(224, 192, 128, .45);
+}
+
+.dsa5-helpers-sheet .dsa5h-ident input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+  box-shadow: none;
+}
+
 /* Gesperrt (Spielmodus) bekäme das Feld keine Mausereignisse für den Tooltip — der Wrapper übernimmt sie. Ziehen
    und Doppelklick des Kopfs funktionieren dort wie bisher (gesperrte Felder stehen nicht in DRAG_EXCLUDE). */
-.dsa5-helpers-sheet .dsa5h-badges input:disabled {
+.dsa5-helpers-sheet .dsa5h-ident input:disabled {
   pointer-events: none;
 }
 
-/* Heldenerschaffung (Issue #10): statt des Spezies-Feldes, gleiche Pillenform wie die Badges, aber als Knopf */
-.dsa5-helpers-sheet .dsa5h-badges .dsa5h-chargen {
+/* Heldenerschaffung (Issue #10): statt des Spezies-Feldes, bleibt gerahmt, damit der Knopf auffällt. */
+.dsa5-helpers-sheet .dsa5h-ident .dsa5h-chargen {
   flex: 0 0 auto;
   width: auto;
   height: auto;
@@ -623,116 +887,154 @@
   cursor: pointer;
 }
 
-.dsa5-helpers-sheet .dsa5h-badges .dsa5h-chargen:focus-visible {
+.dsa5-helpers-sheet .dsa5h-ident .dsa5h-chargen:focus-visible {
   background: rgba(224, 192, 128, .45);
   color: #fff;
 }
 
 @media (hover: hover) {
-  .dsa5-helpers-sheet .dsa5h-badges .dsa5h-chargen:hover {
+  .dsa5-helpers-sheet .dsa5h-ident .dsa5h-chargen:hover {
     background: rgba(224, 192, 128, .45);
     color: #fff;
   }
 }
 
-/* --- LeP/AsP/KaP --- */
+/* --- LeP/AsP/KaP-Kugeln --- */
 
+/* Kugeln (Variante B): dunkle Glaskugel mit Goldring, von unten bis zum Füllstand (--pct) gefüllt, Glanzlicht oben links.
+   Darin Kürzel, aktueller Wert (Formularfeld, beide Modi) und „/ Max“. Ersetzt die flachen Leisten (.dsa5h-res-card/
+   .dsa5h-bar). Farben wie bisher Rot/Blau/Grün. */
 .dsa5-helpers-sheet .dsa5h-resource-frame {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.dsa5-helpers-sheet .dsa5h-res-card {
-  flex: 1 1 140px;
-  display: flex;
-  border: 1px solid rgba(224, 192, 128, .4);
-  border-radius: 6px;
-  background: rgba(0, 0, 0, .18);
+/* Im Kopf: Mitte der Kugeln auf der Goldlinie (halbe Kugelhöhe nach oben). */
+.dsa5-helpers-sheet .dsa5h-head .dsa5h-resource-frame {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  align-self: start;
+  margin-top: calc(var(--dsa5h-orb) / -2);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar {
+.dsa5-helpers-sheet .dsa5h-orb {
+  --sz: var(--dsa5h-orb, 64px);
   position: relative;
-  width: 100%;
-  height: 30px;
-  border-radius: 4px;
+  flex: none;
+  width: var(--sz);
+  height: var(--sz);
+  border-radius: 50%;
   overflow: hidden;
-  background: rgba(255, 255, 255, .1);
-  margin: 0;
+  background: radial-gradient(circle at 50% 40%, #2c2622, #141110);
+  box-shadow:
+    0 0 0 2px #2b2721,
+    0 0 0 4px #c2a267,
+    0 0 0 5px #4a3a22,
+    0 3px 8px 3px rgba(0, 0, 0, .5);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-fill {
+.dsa5-helpers-sheet .dsa5h-res-lep {
+  --liq: linear-gradient(180deg, #c42c24, #6e1511);
+}
+
+.dsa5-helpers-sheet .dsa5h-res-asp {
+  --liq: linear-gradient(180deg, #3558c4, #163d70);
+}
+
+.dsa5-helpers-sheet .dsa5h-res-kap {
+  --liq: linear-gradient(180deg, #4f9a37, #1f5a2a);
+}
+
+.dsa5-helpers-sheet .dsa5h-orb-liquid {
   position: absolute;
-  inset: 0 auto 0 0;
+  inset: auto 0 0;
+  height: var(--pct);
+  background: var(--liq);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-lep .dsa5h-bar-fill {
-  background: linear-gradient(90deg, #841a16, #c42c24);
+/* Flüssigkeitsoberfläche */
+.dsa5-helpers-sheet .dsa5h-orb-liquid::before {
+  content: "";
+  position: absolute;
+  inset: -3px 0 auto;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .22);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-asp .dsa5h-bar-fill {
-  background: linear-gradient(90deg, #1c6f9e, #3558c4);
-}
-
-.dsa5-helpers-sheet .dsa5h-bar-kap .dsa5h-bar-fill {
-  background: linear-gradient(90deg, #5d8f24, #2a7a3a);
-}
-
-.dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-label {
-  position: relative;
+/* Glanzlicht + Randabdunklung über allem, klickt nicht mit. */
+.dsa5-helpers-sheet .dsa5h-orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   z-index: 1;
-  height: 100%;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 26%),
+    radial-gradient(circle at 50% 50%, transparent 58%, rgba(0, 0, 0, .45) 100%);
+}
+
+.dsa5-helpers-sheet .dsa5h-orb-val {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
   color: #fff;
-  font-size: 16px;
-  letter-spacing: .04em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .55);
-  margin: 0;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-label-prefix {
+.dsa5-helpers-sheet .dsa5h-orb-key {
+  font-size: calc(var(--sz) * .15);
+  letter-spacing: .08em;
   opacity: .85;
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-label-value input {
-  background: rgba(0, 0, 0, .38);
+.dsa5-helpers-sheet .dsa5h-orb-max {
+  font-size: calc(var(--sz) * .16);
+  opacity: .85;
+}
+
+/* Aktueller Wert: Formularfeld ohne Rahmen, wirkt wie die Zahl selbst; beim Fokus ein „eingelassenes Display“. */
+.dsa5-helpers-sheet .dsa5h-orb-val input {
+  width: 2.2em;
+  min-width: 0;
+  height: auto;
+  margin: 1px 0;
+  padding: 0 2px;
   border: none;
   border-radius: 4px;
   outline: none;
+  background: transparent;
+  box-shadow: none;
   color: #fff;
   font: inherit;
-  font-weight: 600;
-  font-size: 16px;
+  font-size: calc(var(--sz) * .33);
   text-align: center;
-  width: 2.4em;
-  min-width: 0;
-  padding: 1px 3px;
-  height: auto;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .55);
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .65), inset 0 -1px 0 rgba(255, 255, 255, .12);
+  text-shadow: inherit;
   appearance: textfield;
   -moz-appearance: textfield;
-  transition: box-shadow .15s ease, background .15s ease;
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-label-value input:focus {
-  background: rgba(0, 0, 0, .48);
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .7), inset 0 -1px 0 rgba(255, 255, 255, .12), 0 0 0 2px rgba(224, 192, 128, .55);
+.dsa5-helpers-sheet .dsa5h-orb-val input:focus {
+  background: rgba(0, 0, 0, .45);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .65), 0 0 0 2px rgba(224, 192, 128, .55);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-label-value input::-webkit-inner-spin-button,
-.dsa5-helpers-sheet .dsa5h-bar-label-value input::-webkit-outer-spin-button {
+.dsa5-helpers-sheet .dsa5h-orb-val input::-webkit-inner-spin-button,
+.dsa5-helpers-sheet .dsa5h-orb-val input::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
-}
-
-.dsa5-helpers-sheet .dsa5h-bar-label-value input:not(:disabled):focus {
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
-  cursor: text;
 }
 
 .dsa5-helpers-sheet .dsa5h-regen-btn {
@@ -763,10 +1065,13 @@
 }
 
 @media (hover: hover) {
-  .dsa5-helpers-sheet .dsa5h-bar-label-value input:not(:disabled):hover {
+  .dsa5-helpers-sheet .dsa5h-orb:hover {
+    filter: brightness(1.12);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-orb-val input:not(:disabled):hover {
     text-decoration: underline dotted;
     text-underline-offset: 3px;
-    cursor: text;
   }
 
   .dsa5-helpers-sheet .dsa5h-regen-btn:hover {
@@ -1137,8 +1442,7 @@
 }
 
 /* Zahlen in Textschrift statt Andalus (Überschriften bleiben Andalus). */
-.dsa5-helpers-sheet .dsa5h-content :is(.big, .xp-num),
-.dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-label {
+.dsa5-helpers-sheet .dsa5h-content :is(.big, .xp-num) {
   font-family: 'GentiumBasic', Georgia, serif;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -1285,6 +1589,15 @@
 }
 
 /* Favoritenstern in SF-Chips (Issue #30): kleiner als in Zeilen, steht vorn in den Chip-Aktionen. */
+/* Favoriten-Stern hinter dem Waffennamen in der Hand (Kampf › Körper, Rückmeldung 2026-10-19) */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-item-name .dsa5h-favorite {
+  width: 24px;
+  height: 24px;
+  margin: -4px 0 -4px 4px;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-favorite.dsa5h-chip-fav {
   width: 22px;
   height: 22px;
@@ -1538,15 +1851,6 @@
   top: 24px;
   right: 4px;
   z-index: 2;
-/* Favoriten-Stern hinter dem Waffennamen in der Hand (Kampf › Körper, Rückmeldung 2026-10-19) */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-item-name .dsa5h-favorite {
-  width: 24px;
-  height: 24px;
-  margin: -4px 0 -4px 4px;
-  font-size: 16px;
-  vertical-align: middle;
-}
-
   margin: 0;
   background: var(--paper);
 }
@@ -1769,6 +2073,10 @@
   font-size: 44px;
 }
 
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-ident input {
+  font-size: 15px;
+}
+
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-attr-overlay {
   grid-area: attrbar;
 }
@@ -1805,20 +2113,24 @@
 /* border/border-image absichtlich NICHT mehr überschrieben (früher border:0) — der Zierrahmen (siehe .dsa5h-portrait
    im Kopf, Abschnitt 4) soll auch auf dem vergrößerten Titelblatt-Porträt sichtbar sein, nicht nur in der Kopfzeile
    (Nutzer-Feedback 2026-09-18: "Rahmen ist noch nicht auf dem Titelblatt angewendet"). */
-.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-portrait {
+/* Medaillon samt AP-Band (Kopf „Wappenbanner“ 2026-10-19); unten Platz für das überstehende Band. Rund: 180 × 180. */
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-portrait-medal {
   width: 180px;
   height: auto;
   min-height: 0;
   aspect-ratio: 118 / 142;
   flex: 0 0 auto;
-  margin: 0;
-  align-self: center;
+  margin: 0 auto 12px;
 }
 
-/* Titelblatt: Porträt mittig in der Seitenleiste — es steckt im Platzhalter [data-cover-slot="portrait"], daher
-   zentriert per Auto-Rand statt align-self (Nutzer-Feedback 2026-09-28: stand links). */
-.dsa5-helpers-sheet .dsa5h-cover-sidebar [data-cover-slot="portrait"] .dsa5h-portrait {
-  margin: 0 auto;
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-portrait-medal.shape-round {
+  aspect-ratio: 1;
+  margin-top: 8px;
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-ap-ribbon {
+  font-size: 13px;
+  padding: 3px 20px;
 }
 
 .dsa5-helpers-sheet .dsa5h-cover-resources {
@@ -1827,28 +2139,16 @@
   color: var(--headink);
 }
 
-/* Variante G (Issues #27/#31): flachere Leisten, damit der Reiterkasten darunter Platz hat. */
+/* LeP/AsP/KaP-Kugeln zentriert in einer Reihe (seit 2026-10-19 statt flacher Leisten); 3 × 60 px passen in die 240-px-Leiste. */
 .dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-resource-frame {
-  flex-direction: column;
-  gap: 4px;
+  justify-content: center;
+  gap: 14px;
+  margin: 0;
+  padding: 5px 0;
 }
 
-.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-bar {
-  height: 24px;
-}
-
-.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-bar .dsa5h-bar-label {
-  font-size: 14px;
-}
-
-.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-bar-label-value input {
-  padding: 0 3px;
-  font-size: 14px;
-}
-
-.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-res-card {
-  flex: 0 0 auto;
-  width: 100%;
+.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-orb {
+  --sz: 60px;
 }
 
 /* Schips links, Regeneration rechts in einer Zeile unter den Leisten (Variante G). */
@@ -4995,10 +5295,6 @@
 
   .dsa5-helpers-sheet .dsa5h-side-tabs-body {
     max-height: 220px;
-  }
-
-  .dsa5-helpers-sheet .dsa5h-head {
-    flex-wrap: wrap;
   }
 
   .dsa5-helpers-sheet .dsa5h-details-grid {

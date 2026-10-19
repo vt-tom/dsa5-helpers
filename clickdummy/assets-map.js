@@ -70,11 +70,12 @@ const A = {
   // (openHeaderBgPicker() in script.js) — echte Systemgrafiken aus icons/backgrounds statt erfundener Bilder,
   // auch wenn es dort eigentlich UI-Texturen statt Szenerie-Artworks sind. Der echte FilePicker würde beliebige
   // vom Nutzer hochgeladene Bilder zeigen; das kann der Click-Dummy ohne Dateizugriff nicht simulieren.
+  // pos/size = Bildausschnitt im Bannerstreifen (background-position/-size, ohne size: cover).
   bgHeaderOptions: [
-    { label: "Pergament", img: ICONS + "/backgrounds/anotherpaper.webp" },
-    { label: "Kapitelanfang", img: ICONS + "/backgrounds/kapitelstart.webp" },
-    { label: "Buchrand", img: ICONS + "/backgrounds/garadanb.webp" },
-    { label: "DSA-Kopf", img: ICONS + "/backgrounds/dsahead.webp" },
+    { label: "Pergament", img: ICONS + "/backgrounds/anotherpaper.webp", pos: "center" },
+    { label: "Kapitelanfang", img: ICONS + "/backgrounds/kapitelstart.webp", pos: "center" },
+    { label: "Buchrand", img: ICONS + "/backgrounds/garadanb.webp", pos: "center" },
+    { label: "DSA-Kopf", img: ICONS + "/backgrounds/dsahead.webp", pos: "center" },
   ],
 };
 

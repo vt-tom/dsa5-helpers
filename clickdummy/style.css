@@ -387,41 +387,52 @@ button {
    4. Kopf
    ========================================================================== */
 
-/* --- Aufbau & Hintergrundbild --- */
+/* --- Aufbau & Bannerbild --- */
 
+/* „Wappenbanner“ (Kopf-Varianten A+B, Nutzer-Entscheidung 2026-10-19, Vergleich siehe AUFGABEN.md): oben ein
+   Bannerstreifen (--banner-h) mit dem Hintergrundbild des Helden, unten von einer Goldlinie begrenzt; Name und
+   Schips-Plakette stehen auf dem Bild, darunter das Band mit Spezies · Kultur · Profession und den LeP/AsP/KaP-
+   Kugeln. Das Porträt-Medaillon ragt über die Goldlinie. Vorher: einfarbiger Kopf, Badges, flache Leisten. */
 .head {
+  --banner-h: 92px;
   position: relative;
-  overflow: hidden;
   flex: none;
   background: var(--head);
   border-bottom: 1px solid rgba(224,192,128,.3);
-  padding: 15px 16px;
+  padding: 14px 16px 12px;
 }
 
-/* IDEEN.md: optionales Hintergrundbild je Charakter (HEADER_BG_IMG in data.js) — .head-bg-layer trägt das Bild
-   (background-image per JS gesetzt, siehe renderHeader()), .head-bg-fade blendet es nach unten hin zur
-   normalen --head-Farbe aus ("wie eine Art Seiten-Header"). Beide bleiben unsichtbar ohne .has-bg auf .head. */
+/* Bannerstreifen: ohne Bild ein warmer Lichtschein auf dem Kopfton, mit Bild (.has-bg, renderHeader()) das Bild
+   selbst — background-image/-position/-size setzt renderHeader() inline aus HEADER_BG (data.js). */
 .head-bg-layer,
 .head-bg-fade {
   position: absolute;
-  inset: 0;
+  inset: 0 0 auto;
+  height: var(--banner-h);
   z-index: 0;
-  display: none;
-}
-
-.head.has-bg .head-bg-layer,
-.head.has-bg .head-bg-fade {
-  display: block;
 }
 
 .head-bg-layer {
+  background-image: radial-gradient(ellipse at 70% 0%,rgba(224,192,128,.16),transparent 65%);
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
 }
 
-.head-bg-fade {
-  background: linear-gradient(to bottom,transparent 0%,var(--head-base) 92%);
+/* Abdunklung („Scrim“) nach unten und links, damit Name und Plakette auf jedem Bild lesbar bleiben. */
+.head.has-bg .head-bg-fade {
+  background:
+    linear-gradient(180deg,rgba(28,25,23,0) 20%,rgba(28,25,23,.92) 100%),
+    linear-gradient(90deg,rgba(28,25,23,.55) 0%,rgba(28,25,23,0) 60%);
+}
+
+/* Goldlinie an der Unterkante des Banners (in beiden Fällen, mit und ohne Bild). */
+.head-bg-fade::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(90deg,transparent,rgba(224,192,128,.7) 18%,rgba(224,192,128,.7) 82%,transparent);
 }
 
 .head-inner {
@@ -429,16 +440,16 @@ button {
   z-index: 1;
   display: flex;
   gap: 18px;
-  align-items: stretch;
+  align-items: flex-start;
 }
 
 /* Öffnet den simulierten FilePicker (openHeaderBgPicker()) — nur im Bearbeiten-Modus sichtbar (.edit-only,
    siehe die globale Spielmodus-Regel weiter unten), Zoom-Effekt bei Hover wie bei den anderen kleinen Buttons
-   (.regen-btn/.row-delete/.chip-delete). */
+   (.regen-btn/.row-delete/.chip-delete). Sitzt oben rechts im Banner, die Schips-Plakette rückt dafür nach links. */
 .header-bg-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   z-index: 2;
   width: 28px;
   height: 28px;
@@ -462,81 +473,217 @@ button {
   }
 }
 
-/* --- Porträt --- */
+/* --- Porträt-Medaillon --- */
 
-/* Zierrahmen: "Ecken gekappt" — Nutzer-Entscheidung 2026-09-18 nach drei Vergleichsrunden im Click-Dummy (siehe
-   STATUS.md), am offiziellen "Deluxe Heldendokument"-PDF orientiert (die "Schicksalspunkte"-Box dort nutzt
-   dieselbe dünne Tintenlinie mit diagonal gekappten Ecken statt Gold/Ornamenten). Dazu ein leichter Gold-Saum
-   (Nutzerwunsch: "wie bei den LeP") — dieselbe gedämpfte Randfarbe wie die LeP/AsP/KaP-Ressourcenkarten
-   (rgba(224,192,128,.4), siehe .res-card), nur als dünne innen liegende Linie statt Vollrahmen. */
-.portrait {
+/* #portrait = Medaillon (renderPortrait()): .portrait-frame (Fassung) + .portrait (Bild) + .ap-ribbon (AP-Band).
+   Eckig (Standard): „Ecken gekappt“ wie bisher (Seitenverhältnis 118:142), aber mit kräftiger Goldfassung statt
+   dünner Tintenlinie (Nutzer 2026-10-19: „Rahmen um das Porträt ist viel deutlicher“). Rund (.shape-round): Medaillon
+   mit Goldring wie eine Münze. Form je Held im Bearbeiten-Modus umschaltbar (.portrait-shapes). */
+.portrait-medal {
   position: relative;
   flex: 0 0 118px;
+  width: 118px;
   height: 142px;
-  border: 3px solid var(--frame-ink);
-  border-radius: 0;
-  box-shadow: inset 0 0 0 1px rgba(224,192,128,.5);
-  clip-path: polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);
-  overflow: hidden;
+}
+
+.portrait-frame {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  background: linear-gradient(160deg,#e9cf94,#8b6f3f 55%,#d8bb7c);
+  clip-path: polygon(16px 0,calc(100% - 16px) 0,100% 16px,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px),0 16px);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.6));
+}
+
+.portrait {
+  width: 100%;
+  height: 100%;
   background-color: var(--paper);
-  background-image: repeating-linear-gradient(135deg,rgba(247,236,224,.1) 0 6px,transparent 6px 12px);
+  background-repeat: no-repeat;
+  clip-path: polygon(13px 0,calc(100% - 13px) 0,100% 13px,100% calc(100% - 13px),calc(100% - 13px) 100%,13px 100%,0 calc(100% - 13px),0 13px);
+}
+
+.portrait-medal.shape-round {
+  flex-basis: 128px;
+  width: 128px;
+  height: 128px;
+}
+
+.portrait-medal.shape-round .portrait-frame {
+  padding: 0;
+  border-radius: 50%;
+  background: none;
+  clip-path: none;
+  filter: none;
+}
+
+.portrait-medal.shape-round .portrait {
+  border-radius: 50%;
+  clip-path: none;
+  box-shadow:
+    0 0 0 3px #2b2721,
+    0 0 0 6px #c2a267,
+    0 0 0 7px #5e4a2a,
+    0 6px 16px 6px rgba(0,0,0,.55);
+}
+
+/* AP-Band (Element aus Variante B): AP-Wert und freie AP auf einem roten Band mit Schwalbenschwanz-Enden, das unten
+   über die Fassung reicht. Die Zahlen sind reine Anzeige, bearbeitet wird im Erfahrung-Panel (Eigenschaften). */
+.ap-ribbon {
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  z-index: 2;
+  transform: translateX(-50%);
   display: flex;
-  align-items: flex-end;
+  align-items: baseline;
+  gap: 7px;
+  padding: 2px 16px;
+  background: linear-gradient(180deg,#8e2a20,#5e1a14);
+  color: #f4e8d6;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
+  clip-path: polygon(0 0,100% 0,calc(100% - 7px) 50%,100% 100%,0 100%,7px 50%);
+  filter: drop-shadow(0 1px 0 #c2a267) drop-shadow(0 -1px 0 #c2a267);
+}
+
+.ap-ribbon-total {
+  font-weight: 700;
+}
+
+.ap-ribbon-free {
+  opacity: .85;
+}
+
+.ap-ribbon-free::before {
+  content: "·";
+  margin-right: 7px;
+  opacity: .7;
+}
+
+/* Umschalter eckig/rund oben mittig auf dem Porträt — nur im Bearbeiten-Modus vorhanden (renderPortrait()). Beide Formen
+   als Symbol nebeneinander, die aktive golden hinterlegt (Rückmeldung 2026-10-19). */
+.portrait-shapes {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  z-index: 3;
+  transform: translateX(-50%);
+  display: flex;
+  padding: 2px;
+  border: 1px solid rgba(224,192,128,.6);
+  border-radius: 12px;
+  background: #2e2823;
+  box-shadow: 0 1px 3px rgba(0,0,0,.5);
+}
+
+.portrait-shapes button {
+  width: 24px;
+  height: 20px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: rgba(236,216,177,.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding-bottom: 7px;
 }
 
-.portrait span {
-  font-family: ui-monospace,Menlo,monospace;
-  font-size: 11px;
-  letter-spacing: .1em;
-  color: rgba(247,236,224,.66);
-  text-transform: uppercase;
+.portrait-shapes button[aria-pressed="true"] {
+  background: #c2a267;
+  color: #2b2721;
 }
 
-/* --- Heldenname --- */
+.portrait-shapes button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 
+@media (hover: hover) {
+  .portrait-shapes button[aria-pressed="false"]:hover {
+    color: #f4e8d6;
+    background: rgba(224,192,128,.25);
+  }
+}
+
+/* Form-Symbole als Umriss: Kreis per Rahmen, Achteck als Fläche mit ausgespartem Innen-Achteck. */
+.shape-ico {
+  position: relative;
+  display: block;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid currentColor;
+}
+
+.shape-ico.round {
+  border-radius: 50%;
+}
+
+/* Hochkantes Rechteck mit gekappten Ecken — dieselbe Form wie das eckige Porträt, damit es sich klar vom Kreis abhebt. */
+.shape-ico.octagon {
+  width: 10px;
+  height: 13px;
+  border: 0;
+  background: currentColor;
+  clip-path: polygon(30% 0,70% 0,100% 22%,100% 78%,70% 100%,30% 100%,0 78%,0 22%);
+}
+
+.shape-ico.octagon::after {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  background: #2e2823;
+  clip-path: inherit;
+}
+
+.portrait-shapes button[aria-pressed="true"] .shape-ico.octagon::after {
+  background: #c2a267;
+}
+
+/* --- Heldenname & Schips-Plakette --- */
+
+/* Raster rechts vom Porträt (Rückmeldung 2026-10-19, wie im Modul): links Name (im Banner) und direkt unter der Goldlinie
+   Spezies · Kultur · Profession; rechts oben die Schips-Plakette, darunter die Kugeln, die um die halbe Kugelhöhe über
+   die Linie ragen — die Linie läuft hinter ihnen durch. .head-top/.head-band lösen sich dafür auf (display: contents). */
 .head-main {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  grid-template-rows: calc(var(--banner-h) - 14px) auto;
+  column-gap: 16px;
 }
 
-.head-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+.head-top,
+.head-band {
+  display: contents;
 }
 
 /* Issue #25 (wie im Modul): font-size ist die Höchstgröße, fitName() (script.js) verkleinert bis 22px, bis der Name
    passt; was dann noch nicht passt, wird mit „…“ gekürzt (voller Name im Tooltip). */
 .head-name {
-  flex: 1 1 auto;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
   min-width: 0;
-}
-
-.head-top h1 {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.head-top h1 .inline-edit-input {
-  width: 100%;
-  box-sizing: border-box;
+  padding-bottom: 6px;
 }
 
 .head-top h1 {
   margin: 0;
   font-family: 'Andalus',serif;
-  font-size: 39px;
+  font-size: 40px;
   font-weight: normal;
   line-height: 1.02;
   color: var(--headink);
-  text-shadow: 0 1px 3px rgba(0,0,0,.65);
+  text-shadow: 0 2px 6px rgba(0,0,0,.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .head-top h1.editable-value {
@@ -546,31 +693,27 @@ button {
 .head-top .inline-edit-input {
   font-family: 'Andalus',serif;
   font-size: 32px;
-  width: min(100%,360px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* --- Abenteuerpunkte & Schicksalspunkte --- */
-
-/* padding-top 4px → 18px (Nutzer-Feedback zur Kopf-Vorschau 2026-09-15: "AP und Schicksalspunkte etwas tiefer
-   platzieren") — .head-top richtet Name und AP-Block per align-items:flex-start auf derselben Oberkante aus; die
-   große Namensüberschrift wirkt trotzdem "tiefer", weil ihre Zeilenhöhe optisch mehr Raum einnimmt, während der
-   kleine AP-Text direkt an dieser Oberkante klebt — dort kollidiert er mit dem darüber schwebenden
-   .fake-window-chrome-Overlay (Menü-/Würfel-/Schließen-Icons). Eigener Versatz nur für den AP-Block, Name bleibt
-   unverändert oben. */
-.ap-block {
-  margin-left: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  padding-top: 18px;
+/* Schicksalspunkte als Plakette oben rechts auf dem Banner (Variante A). */
+.head-plaque {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  flex: none;
+  align-self: start;
+  margin-top: -4px;
+  padding: 3px 6px;
+  border: 1px solid rgba(224,192,128,.55);
+  border-radius: 20px;
+  background: rgba(28,25,23,.72);
+  backdrop-filter: blur(3px);
 }
 
-.ap-text {
-  font-size: 13px;
-  color: var(--headmuted);
-  font-family: 'GentiumBasic',Georgia,serif;
-  white-space: nowrap;
+.sheet[data-mode="edit"] .head-plaque {
+  margin-right: 30px;
 }
 
 .fate-points {
@@ -605,15 +748,57 @@ button {
   }
 }
 
-/* --- Badges & Heldenerschaffung --- */
+/* --- Band: Spezies · Kultur · Profession --- */
 
-.badges {
+
+/* Gesperrte Kapitälchen-Zeile mit Trennpunkten statt gerahmter Badges (Variante A); jeder Name ist ein Knopf und
+   öffnet die Item-Vorschau (identityBadge()/openIdentityModal()). Lange Namen umbrechen statt abzuschneiden. */
+.head-ident {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  padding-top: 6px;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 2px 7px;
+  font-size: 14px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #d9bf87;
 }
 
+.ident-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.ident-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ident-sep {
+  color: rgba(224,192,128,.5);
+}
+
+@media (hover: hover) {
+  .ident-link:hover {
+    color: #f4e8d6;
+    border-bottom-color: rgba(224,192,128,.6);
+  }
+}
+
+/* Heldenerschaffung (Issue #10): Knopf statt der Spezies, bleibt als Badge gerahmt, damit er auffällt. */
 .badge {
   padding: 2px 11px;
   border: 1px solid rgba(224,192,128,.45);
@@ -623,165 +808,154 @@ button {
   font-size: 14px;
 }
 
-/* Spezies/Kultur/Profession-Badges in der Kopfzeile sind jetzt anklickbare <button>s (identityBadge() in
-   script.js, ersetzt die früher statischen <span>) statt reiner Anzeige — öffnen eine kurze Item-Vorschau im
-   bestehenden Modal (openIdentityModal(), identity-modal-body unten). .badge selbst überschreibt bereits Rahmen/
-   Hintergrund/Padding, hier nur noch Button-Reset + Zeigercursor/Hover als Klick-Affordanz ergänzt. */
-/* Lange Namen (Issue #14) einzeilig mit „…“ auf die Kopfbreite kürzen, voller Name im Tooltip (title). */
-.badges .badge {
+.head-ident .badge.chargen {
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-@media (hover: hover) {
-  .badges .badge:hover {
-    border-color: #f4e8d6;
-    background: rgba(224,192,128,.28);
-  }
-}
-
-.badges .badge.chargen {
+  letter-spacing: normal;
+  text-transform: none;
   border-color: rgba(224,192,128,.75);
   background: rgba(224,192,128,.28);
 }
 
 @media (hover: hover) {
-  .badges .badge.chargen:hover {
+  .head-ident .badge.chargen:hover {
     background: rgba(224,192,128,.45);
     color: #fff;
   }
 }
 
-/* --- LeP/AsP/KaP --- */
+/* --- LeP/AsP/KaP-Kugeln --- */
 
-/* LeP/AsP/KaP-Ressourcengruppe (Kopfzeile UND Titelblatt-Leiste, siehe resourceGroup() in script.js). Jede
-   Leiste steckt in einer eigenen .res-card mit eigenem goldenem Rahmen, der die Leiste eng umschließt (Nutzer-
-   Feedback 2026-09-14 nach Vergleich dreier Varianten: "Rahmen A gefällt mir am besten, allerdings sollte der
-   Rahmen direkt um das Pillenelement liegen und es einschließen" — daher knapper statt großzügiger Innenabstand).
-   Der Regenerations-Button (wirkt auf alle drei Leisten) ist ein eigenständiger kleiner Knopf am Ende der
-   Gruppe, kein Rahmen-Overlay nötig, da jede Karte schon einzeln gerahmt ist. (Frühere Varianten B/C — ein
-   gemeinsamer Rahmen mit Trennlinien bzw. beschriftete Karten — wurden nach dem Live-Vergleich verworfen.) */
+/* Kugeln (Variante B, „gefallen mir richtig gut“): dunkle Glaskugel mit Goldring, von unten bis zum Füllstand (--pct,
+   vitalOrb()) gefüllt, Glanzlicht oben links. Darin Kürzel, aktueller Wert (editierbar, beide Modi) und „/ Max“.
+   Ersetzt die flachen Leisten (.res-card/.bar, Varianten-Vergleich 2026-09-14). Farben wie bisher Rot/Blau/Grün. */
 .resource-frame {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.resource-frame-col {
-  flex-direction: column;
-  align-items: stretch;
+/* Im Kopf: Mitte der Kugeln auf der Goldlinie (halbe Kugelhöhe nach oben). */
+.head .bars {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  align-self: start;
+  margin-top: -33px;
 }
 
-.res-card {
-  display: flex;
-  border: 1px solid rgba(224,192,128,.4);
-  border-radius: 6px;
-  background: rgba(0,0,0,.18);
-}
-
-.res-lep {
-  flex: 1.25;
-}
-
-.res-asp,
-.res-kap {
-  flex: 1;
-}
-
-.resource-frame-col .res-card {
+.orb {
+  --sz: 66px;
+  position: relative;
   flex: none;
-}
-
-.res-card .bar {
-  width: 100%;
-}
-
-.bar {
-  position: relative;
-  height: 30px;
-  border-radius: 4px;
+  width: var(--sz);
+  height: var(--sz);
+  border-radius: 50%;
   overflow: hidden;
-  background: rgba(255,255,255,.1);
+  background: radial-gradient(circle at 50% 40%,#2c2622,#141110);
+  box-shadow:
+    0 0 0 2px #2b2721,
+    0 0 0 4px #c2a267,
+    0 0 0 5px #4a3a22,
+    0 3px 8px 3px rgba(0,0,0,.5);
 }
 
-.bar-fill {
+.orb-lep {
+  --liq: linear-gradient(180deg,#c42c24,#6e1511);
+}
+
+.orb-asp {
+  --liq: linear-gradient(180deg,#3558c4,#163d70);
+}
+
+.orb-kap {
+  --liq: linear-gradient(180deg,#4f9a37,#1f5a2a);
+}
+
+.orb-liquid {
   position: absolute;
-  inset: 0 auto 0 0;
+  inset: auto 0 0;
+  height: var(--pct);
+  background: var(--liq);
+  transition: height .4s ease;
 }
 
-/* UI/UX-Review 2026-09-25 Punkt 2: etwas weniger leuchtend (v. a. KaP-Hellgrün), Zuordnung Rot/Blau/Grün bleibt. */
-.bar-lep .bar-fill {
-  background: linear-gradient(90deg,#841a16,#c42c24);
+/* Flüssigkeitsoberfläche */
+.orb-liquid::before {
+  content: "";
+  position: absolute;
+  inset: -3px 0 auto;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.22);
 }
 
-.bar-asp .bar-fill {
-  background: linear-gradient(90deg,#1c6f9e,#3558c4);
+/* Glanzlicht + Randabdunklung über allem, klickt nicht mit. */
+.orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 34% 26%,rgba(255,255,255,.42),rgba(255,255,255,0) 26%),
+    radial-gradient(circle at 50% 50%,transparent 58%,rgba(0,0,0,.45) 100%);
 }
 
-.bar-kap .bar-fill {
-  background: linear-gradient(90deg,#5d8f24,#2a7a3a);
-}
-
-/* .bar-label-prefix/.bar-label-value als eigene Spans mit Gap statt nur einem Leerzeichen dazwischen —
-   Nutzer-Feedback 2026-09-14: "steht viel zu nah an den Werten". */
-.bar-label {
-  position: relative;
-  height: 100%;
+.orb-val {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
   color: #fff;
-  font-size: 16px;
-  letter-spacing: .04em;
-  text-shadow: 0 1px 2px rgba(0,0,0,.55);
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0,0,0,.9);
 }
 
-.bar-label-prefix {
+.orb-key {
+  font-size: calc(var(--sz) * .15);
+  letter-spacing: .08em;
   opacity: .85;
 }
 
-/* LeP/AsP/KaP-Wert sitzt auf einer farbigen Leiste, nicht auf hellem Papier — der generische weiße Input-Kasten
-   (s.o.) wirkt dort wie ein Fremdkörper. Nutzer-Feedback 2026-09-16: auch die erste halbtransparente Box-mit-
-   Unterstrich-Fassung wirkte noch wie ein aufgesetztes Formularfeld ("billig") — jetzt stattdessen ein
-   "eingelassenes Display": kein sichtbarer Rahmen/Unterstrich mehr, sondern ein abgerundetes, per inset-box-
-   shadow in den Balken eingesenktes Fenster (dunkler Schatten oben, dezente helle Kante unten). Die Browser-
-   eigenen Zahlen-Pfeile passen auf der schmalen, runden Leiste ohnehin nicht und fallen daher weg. */
-.bar-label .inline-edit-input {
-  width: 2.4em;
+.orb-cur {
+  font-size: calc(var(--sz) * .33);
+  margin: 1px 0;
+}
+
+.orb-max {
+  font-size: calc(var(--sz) * .16);
+  opacity: .85;
+}
+
+.orb-cur.editable-value {
+  cursor: text;
+}
+
+/* Eingabefeld in der Kugel: „eingelassenes Display“ wie früher auf den Leisten (2026-09-16), ohne Zahlenpfeile. */
+.orb-val .inline-edit-input {
+  width: 2.2em;
   text-align: center;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: calc(var(--sz) * .27);
+  font-weight: 700;
   border: none;
   border-radius: 4px;
   outline: none;
-  background: rgba(0,0,0,.38);
+  background: rgba(0,0,0,.45);
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.55);
-  box-shadow: inset 0 2px 3px rgba(0,0,0,.65),inset 0 -1px 0 rgba(255,255,255,.12);
-  padding: 1px 3px;
+  box-shadow: inset 0 2px 3px rgba(0,0,0,.65),0 0 0 2px rgba(224,192,128,.55);
+  padding: 1px 2px;
   appearance: textfield;
   -moz-appearance: textfield;
-  transition: box-shadow .15s ease,background .15s ease;
 }
 
-.bar-label .inline-edit-input:focus {
-  background: rgba(0,0,0,.48);
-  box-shadow: inset 0 2px 3px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,255,255,.12),0 0 0 2px rgba(224,192,128,.55);
-}
-
-.bar-label .inline-edit-input::selection {
-  background: rgba(224,192,128,.55);
-  color: #fff;
-}
-
-.bar-label .inline-edit-input::-webkit-inner-spin-button,
-.bar-label .inline-edit-input::-webkit-outer-spin-button {
+.orb-val .inline-edit-input::-webkit-inner-spin-button,
+.orb-val .inline-edit-input::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -808,6 +982,10 @@ button {
 }
 
 @media (hover: hover) {
+  .orb:hover {
+    filter: brightness(1.12);
+  }
+
   .regen-btn:hover {
     transform: scale(1.45);
     background: rgba(224,192,128,.35);
@@ -2174,14 +2352,13 @@ button.probe-die:focus-visible,
   font-size: 44px;
 }
 
-.sheet[data-tab="cover"] .badge {
-  font-size: 16px;
-  padding: 4px 14px;
+.sheet[data-tab="cover"] .head-ident {
+  font-size: 15px;
 }
 
 /* LeP/AsP/KaP/Schips leben jetzt nur noch in #coverSidebar (s.u.), nicht mehr zusätzlich in der Kopfzeile. */
 .sheet[data-tab="cover"] .head .bars,
-.sheet[data-tab="cover"] .head .fate-points {
+.sheet[data-tab="cover"] .head-plaque {
   display: none;
 }
 
@@ -2212,12 +2389,24 @@ button.probe-die:focus-visible,
    2026-09-15: bei 3 Ressourcenleisten (LeP/AsP/KaP) reichte der Platz nicht mehr aus, die Leiste bekam wieder
    einen Scrollbalken). */
 /* Gleiches Seitenverhältnis wie im Kopf (118×142), damit das Bild überall gleich beschnitten wird (2026-09-28). */
-.sheet[data-tab="cover"] #coverSidebar .portrait {
+/* Medaillon samt AP-Band; unten Platz für das überstehende Band. Rund: 180 × 180. */
+.sheet[data-tab="cover"] #coverSidebar .portrait-medal {
   width: 180px;
   height: auto;
   aspect-ratio: 118/142;
   flex: 0 0 auto;
   align-self: center;
+  margin-bottom: 12px;
+}
+
+.sheet[data-tab="cover"] #coverSidebar .portrait-medal.shape-round {
+  aspect-ratio: 1;
+  margin-top: 8px;
+}
+
+.sheet[data-tab="cover"] #coverSidebar .ap-ribbon {
+  font-size: 13px;
+  padding: 3px 20px;
 }
 
 .sheet[data-tab="cover"] #coverSidebar .fate-points img {
@@ -2227,24 +2416,22 @@ button.probe-die:focus-visible,
 
 /* --- LeP/AsP/KaP, Schicksalspunkte und Zustände in der Seitenleiste --- */
 
-/* LeP/AsP/KaP/Schips direkt auf der dunklen Leiste, ohne eigene Panel-Box — .bar/.bar-fill/.bar-label/
-   .resource-frame/.regen-btn sind ursprünglich schon für genau diesen dunklen Untergrund gestaltet (siehe .head
-   weiter oben), brauchen hier also keine Anpassung, nur .resource-frame-col für die Spalten- statt Zeilen-
-   Anordnung in der schmalen Leiste (siehe coverResourcesCompact() in script.js). */
+/* LeP/AsP/KaP-Kugeln + Schips direkt auf der dunklen Leiste, ohne eigene Panel-Box — die Kugeln stehen zentriert in
+   einer Reihe (coverResourcesCompact() in script.js), darunter Schips + Regeneration. */
 .cover-resources {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.cover-resources .bar {
-  height: 34px;
-  width: 100%;
+.cover-resources .resource-frame {
+  justify-content: center;
+  gap: 14px;
+  padding: 5px 0;
 }
 
-.cover-resources .bar-label {
-  font-size: 16px;
-  padding: 0 6px;
+.cover-resources .orb {
+  --sz: 68px;
 }
 
 .cover-resources .fate-points {
@@ -2585,22 +2772,10 @@ button.fav-chip-roll {
 
 /* --- Titelblatt-Leiste, Variante G (Issues #27/#31, Nutzer-Entscheidung 2026-10-05) --- */
 
-/* Flache LeP/AsP/KaP-Leisten, Schips + Regeneration in einer Zeile, darunter ein Kasten mit zwei Reitern, der den
-   Rest der Leiste füllt (nur der Inhalt scrollt, falls nötig). */
+/* LeP/AsP/KaP-Kugeln (seit 2026-10-19 statt flacher Leisten), Schips + Regeneration in einer Zeile, darunter ein
+   Kasten mit zwei Reitern, der den Rest der Leiste füllt (nur der Inhalt scrollt, falls nötig). */
 .cover-resources.compact {
-  gap: 6px;
-}
-
-.cover-resources.compact .resource-frame {
-  gap: 4px;
-}
-
-.cover-resources.compact .bar {
-  height: 24px;
-}
-
-.cover-resources.compact .bar-label {
-  font-size: 14px;
+  gap: 8px;
 }
 
 .cover-res-row {
@@ -2879,7 +3054,8 @@ button.fav-chip-roll {
 .info-value,
 .armor-hero .badge-rs,
 .armor-hero .badge-be,
-.bar-label {
+.orb-val,
+.ap-ribbon {
   font-family: 'GentiumBasic',Georgia,serif;
   font-weight: 700;
   font-variant-numeric: tabular-nums;

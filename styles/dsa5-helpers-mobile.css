@@ -350,35 +350,33 @@ body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label {
   padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 11px; line-height: 1.1;
 }
 
-/* Kopf (MOBILE.md 14, Ü2, Vorbild Dummy 07): Porträt links über zwei Zeilen, daneben Name + AP/Schips und die
-   Identitäts-Chips in einer Zeile; darunter LeP/AsP/KaP in einer Zeile über die volle Breite, dann die Würfel.
-   .dsa5h-head-main löst sich auf (display: contents), damit die Ressourcen unter das Porträt reichen. */
+/* Kopf „Wappenbanner“ auf dem Smartphone (2026-10-19, Desktop-Kopf siehe Abschnitt 4 im Bogen-CSS): Banner oben mit „‹“
+   und „⋮“, Porträt-Medaillon links über drei Zeilen (Name + Schips, Identität), darunter die LeP/AsP/KaP-Kugeln über die
+   volle Breite, dann die Würfel. .dsa5h-head-main und das Band lösen sich auf (display: contents) und werden Rasterzellen. */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head {
+  --dsa5h-banner-h: 64px;
   position: relative; padding-left: 40px !important;
-  display: grid !important; grid-template-columns: 64px minmax(0, 1fr); align-items: center; gap: 4px 10px;
+  display: grid !important; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 4px 10px;
   padding: 10px 12px 8px; cursor: default;
 }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-main { display: contents; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-portrait { grid-column: 1; grid-row: 1 / span 2; width: 64px; height: 76px; flex: none; align-self: start; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top { grid-column: 2; min-width: 0; display: flex; flex-direction: column; align-items: stretch; gap: 0; margin: 0; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top .dsa5h-name { flex: none; margin: 0; font-size: 26px; text-align: left; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head :is(.dsa5h-head-main, .dsa5h-head-band) { display: contents; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-portrait-medal { grid-column: 1; grid-row: 1 / span 2; width: 72px; flex: none; align-self: start; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-portrait-medal.shape-round { width: 72px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ap-ribbon { bottom: -9px; padding: 1px 10px; font-size: 11px; gap: 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ap-ribbon-free::before { margin-right: 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top { display: flex; align-items: flex-end; grid-column: 2; grid-row: 1; min-width: 0; height: calc(var(--dsa5h-banner-h) - 10px); padding: 0 0 4px; gap: 6px; margin: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top .dsa5h-name { flex: 1 1 auto; margin: 0; font-size: 26px; text-align: left; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top .dsa5h-name input { text-align: left; padding: 0; height: auto; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-ap-block { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; margin: 0; padding: 0; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-ap-text { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fate-points { flex: none; gap: 2px; margin: 0; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fate-points .dsa5h-fatepoint { width: 22px; height: 22px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-badges { grid-column: 2; display: flex; flex-wrap: nowrap; gap: 4px; min-width: 0; overflow: hidden; margin: 0; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-badges > * { flex: 0 0 auto; min-width: 0; max-width: 100%; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-badges > :last-child { flex-shrink: 1; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-badges input { max-width: 100%; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-badges .dsa5h-badge input { font-size: 12px; height: 24px; padding: 0 6px; text-overflow: ellipsis; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-resource-frame { grid-column: 1 / -1; display: flex; gap: 6px; margin: 4px 0 0; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-res-card { flex: 1 1 0; min-width: 0; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-bar { height: 30px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-bar .dsa5h-bar-label { gap: 3px; font-size: 13px; letter-spacing: 0; white-space: nowrap; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-bar-label-value { display: flex; align-items: center; gap: 2px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-bar-label-value input { width: 2.1em; font-size: 15px; padding: 1px 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-fate-points { align-self: flex-end; gap: 0; margin: 0 0 2px; padding: 2px 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fate-points .dsa5h-fatepoint { flex-basis: 22px; width: 22px; height: 22px; background-size: 20px 20px; margin: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ident { grid-column: 2; grid-row: 2; align-self: start; gap: 0 5px; padding-top: 2px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top > .dsa5h-name { padding-bottom: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ident input { font-size: 12px; letter-spacing: .08em; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-resource-frame { grid-column: 1 / -1; grid-row: 3; justify-self: stretch; justify-content: center; gap: 18px; margin: 12px 0 2px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head { --dsa5h-orb: 58px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-orb-val input { font-size: 19px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-regen-btn { flex: none; width: 34px; height: 34px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-banner-tools { top: 6px; right: 44px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content { padding: 0 10px 16px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-back {
   position: absolute; left: 0; top: 0; width: 40px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0;
@@ -391,13 +389,18 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-menu {
   position: absolute; right: 0; top: 0; width: 40px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0;
   background: none; box-shadow: none; color: #f4e8d6; font-size: 20px;
 }
-/* Beim Scrollen eingeklappt: kleines Porträt, Name, Ressourcen */
-body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { grid-template-columns: 34px minmax(0, 1fr); padding: 6px 10px; }
-body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait { grid-row: 1; width: 34px; height: 40px; }
+/* Beim Scrollen eingeklappt: eine Zeile mit kleinem Porträt, Name und kleinen Kugeln (Banner füllt die Zeile) */
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { --dsa5h-banner-h: 52px; grid-template-columns: 34px minmax(0, 1fr) auto; padding: 6px 10px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait-medal { grid-row: 1; width: 34px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait { padding: 2px; clip-path: none; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait img { clip-path: none; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head-top { height: auto; padding: 0; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-name { font-size: 20px !important; }
-body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-ap-block, .dsa5h-badges),
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-ap-ribbon, .dsa5h-fate-points, .dsa5h-ident, .dsa5h-regen-btn, .dsa5h-orb-key, .dsa5h-orb-max),
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-attr-overlay { display: none; }
-body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-bar { height: 24px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-resource-frame { grid-column: 3; grid-row: 1; gap: 8px; margin: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { --dsa5h-orb: 34px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-orb-val input { font-size: 13px; margin: 0; }
 
 /* Titelblatt einspaltig: Kopf wie auf den anderen Reitern; der Kasten Statuseffekte/Persönliche Daten steht unter den
    Favoriten (mobile.js verschiebt ihn in den Titelblatt-Reiter), die Seitenleiste selbst entfällt. */
@@ -606,10 +609,10 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > im
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item .dsa5h-hand-tile > meter { position: static; grid-column: 1; grid-row: 3; align-self: end; width: 48px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-figure-col-title { grid-column: 2 / span 3; grid-row: 1; font-size: 11px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-body-item-name { grid-column: 2 / span 3; grid-row: 2; font-family: 'Andalus', serif; font-size: 21px; font-weight: normal; line-height: 1.1; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-ct-link { grid-column: 2 / span 3; grid-row: 3; justify-self: start; align-self: start; text-align: left; font-size: 13px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-hand-select {
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item > .dsa5h-body-item-name { display: flex; align-items: center; gap: 2px; min-width: 0; overflow-wrap: normal; word-break: normal; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-body-item-name .dsa5h-favorite { flex: none; width: 36px; height: 36px; margin: -6px 0; font-size: 20px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-ct-link { grid-column: 2 / span 3; grid-row: 3; justify-self: start; align-self: start; text-align: left; font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-slot.item > .dsa5h-hand-select {
   position: absolute; top: 8px; right: 8px; z-index: 1; width: 44px; height: 44px; margin: 0; opacity: 0;
 }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-slot.item::after {

@@ -7,6 +7,7 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
+- **Kopf „Wappenbanner“ live prüfen (2026-10-19, Modul + Click-Dummy umgesetzt, auf `feature/mobile` noch nicht committet; Stand und offene Punkte in GitHub-Issues #41 Banner/Desktop und #42 Smartphone/Tablet).** Headless in der Testinstanz geprüft (Desktop, Titelblatt, Bearbeiten-Modus, rund, Bannerbild, LeP-Eingabe in der Kugel, Smartphone aus-/eingeklappt). Noch selbst ansehen: Bannerbild mit eigenem Bild (Ausschnitt `cover`/`center` — reicht das, oder braucht es eine Ausschnittwahl?), Tablet, Gleiten beim Reiterwechsel, Tooltips, sehr lange Namen/Professionen.
 - **Mobil: erster Gerätetest Smartphone (Nutzer, 2026-10-15, Android/Chrome, Testversion 0.6.0).** Erledigt auf `feature/mobile`: Bogen scrollt auf allen Reitern nur noch senkrecht (bei 360 und 390 px gemessen, Spiel- und Bearbeitungsmodus, 5 Helden); bei aktiver „Desktop-Website“ erscheint ein Hinweis (die Automatik selbst hat funktioniert, nur die Seite war 980 px breit). Noch offen:
   - **Journal mobil:** eigenes Journal-Blatt für das Handy oder Foundrys Blatt weiter per CSS anpassen? Vorschlag: Foundrys Blatt behalten (Seitenlinks, Bilder, Module wie Monk's Enhanced Journal funktionieren weiter) und gezielt umbauen. Dafür braucht es konkrete Stellen vom Nutzer (Screenshots).
   - **Chat mobil:** Vorschlag wie beim Journal: kein eigener Chat (die Karten von System und Modulen, Dice So Nice, Schips und das Kontextmenü hängen am Foundry-Chat), sondern Foundrys Chat-Log fürs Handy umbauen (Eingabe unten fest, größere Knöpfe, Karten auf volle Breite). Konkrete Stellen vom Nutzer sammeln.
@@ -48,11 +49,11 @@ Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-19 08:26 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-19 12:08 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (5)**
+**Offen (9)**
 
 - **[#34](https://github.com/vt-tom/dsa5-helpers/issues/34) feat: Drei Modi im Heldenbogen – Spielen, Steigern, Bearbeiten (Desktop, Tablet, Smartphone)**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-15
@@ -64,17 +65,17 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-19 08:26 UTC) — ni
   - offen · Bearbeiter: niemand · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-19
 - **[#38](https://github.com/vt-tom/dsa5-helpers/issues/38) Magie/Glaube Tab: 2 Spalten Ansicht für Sonderfertigkeitenhinzufügen**
   - offen · Bearbeiter: niemand · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-19
+- **[#39](https://github.com/vt-tom/dsa5-helpers/issues/39) Vorschlag: Dramatis Personae/ Bestiarium und Auftragsbuch mit dem Charakterbogen verbinden**
+  - offen · Bearbeiter: niemand · von @WiCoPala · 0 Kommentare · zuletzt geändert 2026-10-19
+- **[#40](https://github.com/vt-tom/dsa5-helpers/issues/40) feat: Ausgerüstete Waffen im Kampf-Reiter neu gestalten (Foundry, Tablet, Smartphone)**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-19
+- **[#41](https://github.com/vt-tom/dsa5-helpers/issues/41) feat: Kopf „Wappenbanner“ mit wählbarem Bannerbild (Foundry & Titelblatt)**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 1 Kommentar · zuletzt geändert 2026-10-19
+- **[#42](https://github.com/vt-tom/dsa5-helpers/issues/42) feat: Kopf „Wappenbanner“ auf Smartphone und Tablet (Mobile Support)**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 1 Kommentar · zuletzt geändert 2026-10-19
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 
 - **[#33](https://github.com/vt-tom/dsa5-helpers/issues/33) Switch für das schnelle Umschalten zwischen den Bögen**
   - erledigt · Bearbeiter: @Lyynix, @vt-tom · von @vt-tom · Meilenstein: 0.5.1 · 1 Kommentar · geschlossen 2026-10-07
-- **[#31](https://github.com/vt-tom/dsa5-helpers/issues/31) feat: Konzept für die Aufteilung des Reiters Notizen**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 1 Kommentar · geschlossen 2026-10-05
-- **[#30](https://github.com/vt-tom/dsa5-helpers/issues/30) feat: Ausrüstung und Sonderfertigkeiten als Favoriten markieren**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 1 Kommentar · geschlossen 2026-10-05
-- **[#27](https://github.com/vt-tom/dsa5-helpers/issues/27) feat: Persönliche Daten auf dem Titelblatt anzeigen**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.5.0 · 1 Kommentar · geschlossen 2026-10-05
-- **[#1](https://github.com/vt-tom/dsa5-helpers/issues/1) feat: Animation zwischen Titelblatt und den anderen seiten**
-  - erledigt · Bearbeiter: @vt-tom · von @Lyynix · Meilenstein: 0.5.0 · 1 Kommentar · geschlossen 2026-10-05
 <!-- GITHUB-ISSUES:END -->
