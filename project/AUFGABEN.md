@@ -15,7 +15,7 @@ Mobile Support erscheint mit 0.6.0 als Beta. GitHub-Meilenstein `0.6.0`.
 
 - **Enthalten:** Mobile Support ([#43](https://github.com/vt-tom/dsa5-helpers/issues/43)), Kopf „Wappenbanner“ ([#41](https://github.com/vt-tom/dsa5-helpers/issues/41), [#42](https://github.com/vt-tom/dsa5-helpers/issues/42)), Waffenkarte „Banner“ ([#40](https://github.com/vt-tom/dsa5-helpers/issues/40)), Suche bei „Zustand hinzufügen“ ([#37](https://github.com/vt-tom/dsa5-helpers/issues/37)), Sonderfertigkeiten zweispaltig ([#38](https://github.com/vt-tom/dsa5-helpers/issues/38)), Aura um freigestellte Porträts ([#35](https://github.com/vt-tom/dsa5-helpers/issues/35)). CHANGELOG 0.6.0 ist vollständig.
 - **Nicht in 0.6.0** (Nutzer 2026-10-20): #34, #36 (Rüstung zentral, für ein späteres Update; beim Umsetzen die Waffenkarte im Kampf-Reiter mitprüfen), #39, #44, #45.
-- **Beta veröffentlichen** (Nutzer braucht die Beta-Manifest-URL zum Testen auf seinem Server): lokal vorbereitet am 2026-10-20 — `module.json` 0.6.0, verified Foundry 14.369 / DSA5 8.1.10, CHANGELOG mit Datum und Vergleichslink, Release-Notizen mit Tester-Hinweis zum Mobil-Kanal. Offen nach Freigabe: Push, Tag `v0.6.0`, Pre-release (RELEASE.md „Beta veröffentlichen“). Danach Mobil-Kanal einstellen (Job `mobile` in `release.yml` entfernen?).
+- **Beta veröffentlicht 2026-10-20** als Pre-release `v0.6.0` (Beta-URL liefert 0.6.0, stabile URL weiter 0.5.1). Offen: Mobil-Kanal einstellen (Job `mobile` in `release.yml` entfernen?); zum normalen Release erklären erst nach Freigabe durch den Nutzer (RELEASE.md „Beta zum normalen Release machen“), dann Issues des Meilensteins schließen.
 
 ### Live prüfen (0.6.0)
 
