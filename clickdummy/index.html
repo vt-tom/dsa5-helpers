@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=216">
+<link rel="stylesheet" href="style.css?v=219">
 </head>
 <body>
 
@@ -12,9 +12,13 @@
   <span>Heldenbogen v2 · Click-Dummy</span>
   <span class="spacer"></span>
   <div class="mode-switch" id="modeSwitch">
-    <button type="button" data-mode="play" class="active" aria-pressed="true">Spielmodus</button>
+    <button type="button" data-mode="play" class="active" aria-pressed="true">Spielen</button>
+    <button type="button" data-mode="advance" aria-pressed="false">Steigern</button>
     <button type="button" data-mode="edit" aria-pressed="false">Bearbeiten</button>
   </div>
+  <!-- Issue #34: als Spieler ansehen + Welt-Einstellung „Spieler dürfen bearbeiten“ (aus = nur die SL bearbeitet). -->
+  <button type="button" id="asPlayerToggle" aria-pressed="false">Als Spieler (Test)</button>
+  <button type="button" id="playersEditToggle" aria-pressed="false">Spieler ohne Bearbeiten (Welt)</button>
   <!-- Test-Schalter: Vorschau, wie die Ressourcengruppe aussieht, wenn eine Figur nur Lebenskraft hat (kein
        Zauberer/Geweihter, kein AsP/KaP) — siehe initOnlyLepToggle(). Rein visuell, ändert data.js nicht. -->
   <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
@@ -42,7 +46,8 @@
     <div class="fake-window-chrome" aria-hidden="true">
       <span class="fwc-title"></span>
       <button type="button" tabindex="-1" title="Spieleransicht">◐</button>
-      <button type="button" tabindex="-1" title="Bogen sperren">🔓</button>
+      <!-- Schloss mit Auswahl Spielen · Steigern · Bearbeiten (Issue #34): zeigt den aktuellen Modus. -->
+      <button type="button" tabindex="-1" title="Modus: Spielen — wechseln" id="modeLockBtn">🔒</button>
       <button type="button" tabindex="-1" title="Dunkles Thema">☾</button>
       <!-- Bogen-Umschalter (2026-10-05): im Modul eigener Knopf vor ⋮ (scripts/sheet-switcher.js), öffnet die Liste der
            Heldenbögen; hier nur als Platzhalter. -->
@@ -128,7 +133,7 @@
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
 <script src="assets-map.js?v=18"></script>
 <script src="data.js?v=39"></script>
-<script src="script.js?v=153"></script>
+<script src="script.js?v=154"></script>
 <script type="module" src="dice-stats.js?v=6"></script>
 <script type="module" src="house-rules.js?v=3"></script>
 </body>

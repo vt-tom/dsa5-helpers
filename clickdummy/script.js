@@ -156,8 +156,8 @@ function advanceStepper(getValue, setValue, stf, min, onChange, label) {
   const prefix = label ? `${label} ` : "";
   const minusTitle = current > min ? `${prefix}senken (${calcAdvCost(current, stf, 0)} AP zurück)` : `${prefix}Minimalwert erreicht`;
   const plusTitle = advanceCost !== undefined ? `${prefix}steigern (${advanceCost} AP)` : `${prefix}Maximalwert erreicht`;
-  const minus = stepButton("minus edit-only", "−", minusTitle, current <= min, `adv-minus:${label}`);
-  const plus = stepButton("plus edit-only", "+", plusTitle, advanceCost === undefined, `adv-plus:${label}`);
+  const minus = stepButton("minus adv-only", "−", minusTitle, current <= min, `adv-minus:${label}`);
+  const plus = stepButton("plus adv-only", "+", plusTitle, advanceCost === undefined, `adv-plus:${label}`);
   plus.addEventListener("click", (e) => {
     e.stopPropagation();
     const v = getValue();
@@ -457,12 +457,12 @@ function buildAttrDetailPanel() {
       el("span", { class: "left muted" }, label),
       ...ATTRS.map((a) => {
         const span = el("span", { class: "center attr-matrix-val" }, String(a[field]));
-        makeEditable(span, a[field], (v) => { a[field] = v; renderContent(); renderHeader(); }, { type: "number", min, max: 99 });
+        if (sheetMode() === "edit") makeEditable(span, a[field], (v) => { a[field] = v; renderContent(); renderHeader(); }, { type: "number", min, max: 99 });
         return span;
       }),
     ]);
 
-  return el("div", { class: "panel edit-only" }, [
+  return el("div", { class: "panel adv-only" }, [
     el("div", { class: "panel-title" }, "Start · Fortschritte · Modifikator"),
     headerRow,
     valueRow("Start", "initial"),
@@ -633,7 +633,7 @@ function buildSimpleRow(d) {
 // analog zu favStar()).
 function deletableChip(iconSrc, label, list, item, extra = null) {
   const delLabel = `${typeof label === "string" ? label : "Eintrag"} löschen`;
-  const delBtn = el("button", { type: "button", class: "chip-delete edit-only", title: delLabel, "aria-label": delLabel }, "×");
+  const delBtn = el("button", { type: "button", class: "chip-delete adv-only", title: delLabel, "aria-label": delLabel }, "×");
   delBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const idx = list.indexOf(item);
@@ -1859,9 +1859,10 @@ function magicIcon(item) {
 
 // Zeilen-Lösch-"×" für Tabellenzeilen (magicTable/artifactTable) — analog zu deletableChip(), aber für ganze
 // Grid-Zeilen statt Chips: `list` ist die Original-Array-Referenz, `item` der zu löschende Eintrag.
-function rowDeleteBtn(list, item) {
+// cls "adv-only" für Einträge, deren Entfernen AP erstattet (Zauber, Liturgien — Issue #34: Steigern + Bearbeiten).
+function rowDeleteBtn(list, item, cls = "edit-only") {
   const label = `${item.name || "Eintrag"} löschen`;
-  const btn = el("button", { type: "button", class: "row-delete edit-only", title: label, "aria-label": label }, "×");
+  const btn = el("button", { type: "button", class: `row-delete ${cls}`, title: label, "aria-label": label }, "×");
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     const idx = list.indexOf(item);
@@ -1889,7 +1890,7 @@ function duplicateBtn(list, item) {
 }
 
 function rowActionsCell(list, item, lead = null) {
-  return el("span", { class: "row-actions-cell" }, [lead, duplicateBtn(list, item), rowDeleteBtn(list, item)]);
+  return el("span", { class: "row-actions-cell" }, [lead, duplicateBtn(list, item), rowDeleteBtn(list, item, "adv-only")]);
 }
 
 // Gemeinsame Zeile/Tabelle für Zauber/Rituale/Liturgien/Zeremonien — im System (spell-section.hbs) identische
@@ -3515,23 +3516,79 @@ function initThemeToggle() {
   });
 }
 
-// Spielmodus (schlank, nur Spielwerte) vs. Bearbeiten-Modus (zusätzliche/editierbare Detailwerte, z.B. Eigenschaften-Aufschlüsselung).
-function initModeSwitch() {
-  const sheet = document.querySelector(".sheet");
-  const switcher = document.getElementById("modeSwitch");
-  switcher.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-mode]");
-    if (!btn) return;
-    sheet.setAttribute("data-mode", btn.dataset.mode);
-    switcher.querySelectorAll("button").forEach((b) => {
-      b.classList.toggle("active", b === btn);
-      b.setAttribute("aria-pressed", String(b === btn));
-    });
-    // Mehrere Editierbarkeiten hängen vom Modus ab (Name in der Kopfzeile, Mod/Zukauf/Trefferzone/Löschen im
-    // Content-Bereich) und müssen beim Umschalten sofort neu gerendert werden, nicht erst beim nächsten Klick.
-    renderHeader();
-    renderContent();
+// Drei Modi (Issue #34, Festlegung 2026-10-20): "play" Spielen (nur Spielwerte, LeP/Zustände/Anzahl bleiben änderbar),
+// "advance" Steigern (nur AP-gekoppelte +/−, Neues lernen und Entfernen mit Erstattung — .adv-only), "edit" Bearbeiten
+// (zusätzlich direkte Änderungen ohne AP — .edit-only, makeEditable). Im Modul: Schloss des Systems zu = Spielen, offen
+// = Steigern/Bearbeiten, Unterschied als Actor-Flag. Umschalten über das Schloss in der Plakette (Auswahl) oder die
+// Werkzeugleiste. PLAYERS_MAY_EDIT bildet die Welt-Einstellung „Spieler dürfen bearbeiten“ nach (Testschalter).
+const MODE_INFO = {
+  play: { glyph: "🔒", label: "Spielen", hint: "Würfeln, LeP und Zustände — nichts versehentlich ändern" },
+  advance: { glyph: "⬆", label: "Steigern", hint: "Werte mit AP steigern oder zurücknehmen" },
+  edit: { glyph: "✎", label: "Bearbeiten", hint: "Alles frei ändern, ohne AP" },
+};
+let PLAYERS_MAY_EDIT = true;
+let AS_PLAYER = false;
+
+function sheetMode() {
+  return document.querySelector(".sheet").getAttribute("data-mode");
+}
+
+function canEdit() {
+  return PLAYERS_MAY_EDIT || !AS_PLAYER;
+}
+
+function setMode(mode) {
+  if (mode === "edit" && !canEdit()) return flashNotice("Bearbeiten ist in dieser Welt der Spielleitung vorbehalten");
+  document.querySelector(".sheet").setAttribute("data-mode", mode);
+  document.querySelectorAll("#modeSwitch button").forEach((b) => {
+    b.classList.toggle("active", b.dataset.mode === mode);
+    b.setAttribute("aria-pressed", String(b.dataset.mode === mode));
   });
+  const lock = document.getElementById("modeLockBtn");
+  lock.textContent = MODE_INFO[mode].glyph;
+  lock.title = `Modus: ${MODE_INFO[mode].label} — wechseln`;
+  // Mehrere Editierbarkeiten hängen vom Modus ab (Name in der Kopfzeile, Mod/Zukauf/Trefferzone/Löschen im
+  // Content-Bereich) und müssen beim Umschalten sofort neu gerendert werden, nicht erst beim nächsten Klick.
+  renderHeader();
+  renderContent();
+}
+
+function initModeSwitch() {
+  document.getElementById("modeSwitch").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-mode]");
+    if (btn) setMode(btn.dataset.mode);
+  });
+  // Schloss in der Plakette: kleine Auswahl wie das Fenstermenü „⋮“.
+  const lock = document.getElementById("modeLockBtn");
+  lock.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    document.querySelector(".fwc-menu")?.remove();
+    const items = Object.entries(MODE_INFO).map(([mode, info]) => {
+      const locked = mode === "edit" && !canEdit();
+      const b = el("button", { type: "button", role: "menuitemradio", "aria-checked": String(sheetMode() === mode), class: "fwc-mode" + (sheetMode() === mode ? " active" : ""), title: locked ? "Nur die Spielleitung darf bearbeiten (Welt-Einstellung)" : info.hint }, [
+        el("span", { class: "fwc-mode-glyph", "aria-hidden": "true" }, info.glyph),
+        el("span", { class: "fwc-mode-text" }, [el("strong", {}, info.label), el("small", {}, locked ? "nur Spielleitung" : info.hint)]),
+      ]);
+      if (locked) b.disabled = true;
+      b.addEventListener("click", () => { menu.remove(); setMode(mode); });
+      return b;
+    });
+    const menu = el("div", { class: "fwc-menu fwc-mode-menu", role: "menu", "aria-label": "Modus des Bogens" }, items);
+    lock.closest(".fake-window-chrome").appendChild(menu);
+    setTimeout(() => document.addEventListener("click", () => menu.remove(), { once: true }));
+  });
+  // Testschalter: als Spieler ansehen + Welt-Einstellung „Spieler dürfen bearbeiten“.
+  const flag = (id, get, set) => {
+    const btn = document.getElementById(id);
+    btn.addEventListener("click", () => {
+      set(!get());
+      btn.classList.toggle("active", get());
+      btn.setAttribute("aria-pressed", String(get()));
+      if (sheetMode() === "edit" && !canEdit()) setMode("advance");
+    });
+  };
+  flag("asPlayerToggle", () => AS_PLAYER, (v) => { AS_PLAYER = v; });
+  flag("playersEditToggle", () => !PLAYERS_MAY_EDIT, (v) => { PLAYERS_MAY_EDIT = !v; });
 }
 
 // Fensterrahmen + Titelleiste (GitHub-Issue #22, Nutzer-Entscheidung 2026-10-01): Nachbau des Systemrahmens mit
@@ -3675,5 +3732,5 @@ initModalEscape();
 // Direktaufruf für Screenshots und Vergleiche (nur Click-Dummy): ?tab=<Reiter-id>&mode=edit&portrait=round
 const START_PARAMS = new URLSearchParams(location.search);
 if (START_PARAMS.get("portrait") === "round") { PORTRAIT_SHAPE = "round"; renderHeader(); }
-if (START_PARAMS.get("mode") === "edit") document.querySelector('#modeSwitch [data-mode="edit"]').click();
+if (["advance", "edit"].includes(START_PARAMS.get("mode"))) setMode(START_PARAMS.get("mode"));
 if (TABS.some((t) => t.id === START_PARAMS.get("tab"))) setTab(START_PARAMS.get("tab"));

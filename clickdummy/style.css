@@ -267,6 +267,53 @@ button {
   pointer-events: auto;
 }
 
+/* Modus-Auswahl am Schloss (Issue #34): Symbol | Name + Kurzhinweis, der aktive Modus hervorgehoben */
+/* Die Plakette liegt sonst gleichauf mit der Eigenschaftsleiste (z-index 5); offenes Menü darüber. */
+.fake-window-chrome:has(.fwc-menu) {
+  z-index: 30;
+}
+
+.fwc-mode-menu {
+  min-width: 260px;
+}
+
+.fake-window-chrome .fwc-mode-menu .fwc-mode {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: auto;
+  padding: 7px 12px;
+  text-align: left;
+  text-shadow: none;
+}
+
+.fwc-mode-glyph {
+  font-size: 16px;
+  text-align: center;
+}
+
+.fwc-mode-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.fwc-mode-text small {
+  font-size: 12px;
+  opacity: .75;
+}
+
+.fwc-mode-menu .fwc-mode.active {
+  background: rgba(224, 192, 128, .22);
+}
+
+.fwc-mode-menu .fwc-mode:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
 .fwc-menu button {
   display: block;
   width: 100%;
@@ -1515,8 +1562,10 @@ button {
   background-color: rgba(224,192,128,.18);
 }
 
-/* Spielmodus vs. Bearbeiten-Modus: .edit-only-Elemente (z.B. hideInPlay-Zeilen, Eigenschaften-Aufschlüsselung) erscheinen nur im Bearbeiten-Modus. */
-.sheet[data-mode="play"] .edit-only {
+/* Drei Modi (Issue #34): .adv-only (AP-Stepper, Neues lernen, Entfernen mit Erstattung) in Steigern und Bearbeiten,
+   .edit-only (direkte Änderungen ohne AP, z.B. hideInPlay-Zeilen, Gegenstände löschen) nur im Bearbeiten-Modus. */
+.sheet:not([data-mode="edit"]) .edit-only,
+.sheet[data-mode="play"] .adv-only {
   display: none;
 }
 

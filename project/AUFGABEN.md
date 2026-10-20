@@ -17,6 +17,8 @@ Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen f�
 - **Enthalten:** #36 Rüstung mittig über der Figur (Wappenschild, Trefferzonen), Waffenkarte in drei Bändern, Lesbarkeit im Körper-Reiter.
 - Die Beta 0.6.0 wird damit nicht mehr zum normalen Release erklärt; zum stabilen Release wird später die letzte gute 0.6.x-Beta. Dann die Issues der Meilensteine `0.6.0` und `0.6.1` schließen und nach `main` mergen.
 
+- **#34 Drei Modi — Click-Dummy-Entwurf (2026-10-20):** Nutzer-Entscheidungen: Modus am Helden gespeichert (wie das Schloss), Bearbeiten für Spieler per Welt-Einstellung abschaltbar (Standard: erlaubt), Umschalter = Schloss in der Plakette mit Auswahl Spielen · Steigern · Bearbeiten; Neues lernen (Drag & Drop) und Entfernen mit AP-Erstattung in Steigern + Bearbeiten, Gegenstände löschen nur Bearbeiten. Click-Dummy: Klassen `.adv-only` (Steigern + Bearbeiten) und `.edit-only` (nur Bearbeiten), `setMode()`, Testschalter „Als Spieler“ / „Spieler ohne Bearbeiten (Welt)“. Offen: Abnahme durch den Nutzer, dann Foundry (Schloss des Systems `sheetLocked` = Spielen, offen + Actor-Flag = Steigern/Bearbeiten), Mobil.
+
 ### Live prüfen (0.6.1)
 
 - **#36 / Waffenkarte** (in der Testinstanz an Wulfgrimm geprüft: Schild, weitere Teile, Hauptrüstung wählen, Trefferzonen bei 800/720/560 px, hell/dunkel, Hover): Fernkampfhand mit Nachladen/Zielen/Magazin live ansehen; Tablet ansehen; Smartphone behält die Rüstungszeile, die Karte hat dort jetzt die Meta-Zeile — auf dem Gerät prüfen. Mobil-Click-Dummy (`clickdummy/mobile/`) ist noch nicht angepasst.
