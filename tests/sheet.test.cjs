@@ -89,6 +89,25 @@ test('Heldenname (#25): Tooltip im Spielmodus, Schrift wird bis 22px eingepasst,
 });
 test('personal details are the first, default notes sub-tab (issue #26)',async()=>{const {sheet,context}=await prepare();const html=render(context);assert.deepEqual(context.dsa5h.subnav.find(n=>n.tab==='notes').items.slice(0,3).map(i=>i.id),['details','biography','notes']);assert.equal(sheet._subtabs.notes,'details');assert(!html.includes('dsa5h-notes-layout'));const panel=id=>elements(html,el=>el.attribs?.['data-sub-panel']==='notes:'+id)[0];assert(panel('details')&&!('hidden' in panel('details').attribs));assert(!('hidden' in panel('biography').attribs),'all notes sections stacked (#32)');assert.equal(elements(html,el=>el.name==='input'&&/^system\.details\.(gender|family|age|height|weight|Home|socialstate|haircolor|eyecolor|distinguishingmark)\.value$/.test(el.attribs?.name||'')).length,10);});
 test('notes editors and coin inputs follow the real ApplicationV2 context flag "editable"',async()=>{const {context}=await prepare();delete context.isEditable;context.editable=true;let html=render(context);const coin=()=>elements(html,el=>el.attribs?.class==='money-change')[0];const editors=()=>elements(html,el=>['system.details.biography.value','system.details.notes.value','system.details.notes.ownerdescription','system.details.notes.gmdescription'].includes(el.attribs?.name));assert(coin());assert(!('disabled' in coin().attribs));assert.equal(editors().length,4);assert(editors().every(el=>!('disabled' in el.attribs)));context.editable=false;html=render(context);assert('disabled' in coin().attribs);assert(editors().every(el=>'disabled' in el.attribs));});
+test('three modes (#34): lock closed = play, open = advance or edit (actor flag), edit can be reserved for the GM',async()=>{
+ const {sheet,actor}=await prepare();const saved=global.game;
+ try {
+  const ctx=async()=>(await sheet._prepareContext({})).dsa5h;
+  assert.equal((await ctx()).mode,'edit','unlocked without flag: edit as before');
+  actor.flags.sheetMode='advance';let d=await ctx();assert.equal(d.mode,'advance');assert(d.advanceMode&&!d.editMode);
+  let html=render(await sheet._prepareContext({}));
+  assert(html.includes('data-fct="_advanceItem"'),'advance: AP steppers');assert(elements(html,el=>el.attribs?.class==='skill-advances').every(el=>Object.hasOwn(el.attribs,'disabled')),'advance: no direct FW input');
+  assert(elements(html,el=>String(el.attribs?.['data-fct']).includes('Advance')||el.attribs?.['data-fct']==='_advanceItem').every(el=>!String(el.attribs.class??'').includes('dsa5h-edit-only')),'steppers are adv-only, not edit-only');
+  actor.flags.sheetMode='edit';sheet.context.prepare.sheetLocked=true;assert.equal((await ctx()).mode,'play');sheet.context.prepare.sheetLocked=false;
+  global.game={...saved,user:{isGM:false},settings:{get:(m,k)=>k==='playersMayEdit'?false:'light'}};
+  assert.equal((await ctx()).mode,'advance','players without edit right fall back to advance');assert.equal(sheet._mayEdit(),false);
+  global.game={...saved,user:{isGM:true},settings:{get:(m,k)=>k==='playersMayEdit'?false:'light'}};assert.equal((await ctx()).mode,'edit','GM may always edit');
+  // Spielmodus: nichts Neues lernen per Drag & Drop, Ausrüstung schon
+  let notified=null;global.game={...saved,user:{isGM:true}};global.ui={notifications:{info:k=>{notified=k;},warn:k=>{notified=k;}}};
+  sheet.context.prepare.sheetLocked=true;actor.system.sheetLocked.value=true;
+  actor.uuid='Actor.hero';await sheet._onDropItem({}, {type:'specialability',parent:null});assert.equal(notified,'DSA5HELPERS.Mode.dropLocked');
+ } finally { global.game=saved;delete actor.flags.sheetMode;actor.system.sheetLocked.value=false;sheet.context.prepare.sheetLocked=false; }
+});
 test('play mode disables FW correction, preserves rolls',async()=>{const {sheet}=await prepare();sheet.context.prepare.sheetLocked=true;sheet.context.prepare.canAdvance=false;const context=await sheet._prepareContext({});const html=render(context);const values=elements(html,el=>el.attribs?.class==='skill-advances');assert(values.length);assert(values.every(el=>Object.hasOwn(el.attribs,'disabled')));assert(html.includes('data-action="skillSelect"'));assert(!html.includes('data-fct="_advanceItem"'));});
 test('favorites use actor flags, remove missing items and enforce ownership',async()=>{const {sheet,actor,context}=await prepare();assert.equal(context.dsa5h.favorites.missing,undefined);assert.equal(context.dsa5h.favoriteGroups.length,2);await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'skill'}});assert.deepEqual(actor.saved.value,['weapon']);delete actor.saved;sheet.isEditable=false;await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'spell'}});assert.equal(actor.saved,undefined);});
 test('empty character still renders every tab',async()=>{const {sheet}=await prepare();sheet.context.prepare={};sheet.context.conditions=[];const html=render(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']).length,10);assert(html.includes(localize('DSA5HELPERS.NoFavorites')));});

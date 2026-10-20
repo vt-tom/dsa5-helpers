@@ -171,6 +171,10 @@
       "DefaultSheet": {
         "Name": "Standard-Bogen für Helden",
         "Hint": "Macht den DSA5-Helpers-Bogen zum Standard für alle Helden. Helden, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Nach dem Ändern wird Foundry neu geladen."
+      },
+      "PlayersMayEdit": {
+        "Name": "Spieler dürfen bearbeiten",
+        "Hint": "Erlaubt Spielern den Bearbeiten-Modus im Heldenbogen (Werte ohne AP ändern). Ausgeschaltet können Spieler nur spielen und steigern; die Spielleitung darf immer bearbeiten."
       }
     },
     "Changelog": {
@@ -472,6 +476,17 @@
         "Prev": "Zurück",
         "Next": "Weiter"
       }
+    },
+    "Mode": {
+      "title": "Modus",
+      "play": "Spielen",
+      "playHint": "Würfeln, LeP und Zustände — nichts versehentlich ändern",
+      "advance": "Steigern",
+      "advanceHint": "Werte mit AP steigern, Neues lernen oder zurücknehmen",
+      "edit": "Bearbeiten",
+      "editHint": "Alles frei ändern, ohne AP",
+      "gmOnly": "Bearbeiten ist in dieser Welt der Spielleitung vorbehalten",
+      "dropLocked": "Im Spielmodus lässt sich nichts Neues lernen — Modus über das Schloss auf „Steigern“ stellen."
     }
   }
 }

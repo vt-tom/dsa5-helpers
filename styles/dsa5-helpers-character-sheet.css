@@ -213,6 +213,67 @@
   display: none !important;
 }
 
+/* Auswahl Spielen · Steigern · Bearbeiten unter dem Schloss der Titelleiste (Issue #34, _openModeMenu) */
+.dsa5-helpers-sheet .dsa5h-mode-menu {
+  position: absolute;
+  z-index: 100;
+  min-width: 260px;
+  padding: 4px 0;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 4px;
+  background: #1c1917;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
+}
+
+.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #ecd8b1;
+  font: 14px 'GentiumBasic', Georgia, serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item > span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item small {
+  font-size: 12px;
+  opacity: .75;
+}
+
+.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item.active {
+  background: rgba(224, 192, 128, .22);
+}
+
+.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item:focus-visible {
+  outline: 2px solid rgba(224, 192, 128, .8);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item:not(:disabled):hover {
+    background: rgba(224, 192, 128, .15);
+  }
+}
+
 .dsa5-helpers-sheet.minimized .window-header {
   left: -6px !important;
   padding: 0 4px 0 10px !important;
@@ -1513,10 +1574,11 @@
   padding-right: 4px;
 }
 
-/* Play mode: elements only meant for setup/build actions (Sheet: hideable via .dsa5h-edit-only class, e.g. the
-   FW advance/refund steppers in skill-value.hbs) — mirrors the click-dummy's .sheet[data-mode="play"] .edit-only
-   rule. [data-mode] is set in _onRender() from dsa5h.editMode. */
-.dsa5-helpers-sheet[data-mode="play"] .dsa5h-edit-only {
+/* Drei Modi (Issue #34, [data-mode] aus dsa5h.mode in _onRender): .dsa5h-adv-only (AP-Stepper, z. B. FW in
+   skill-value.hbs) in Steigern und Bearbeiten, .dsa5h-edit-only (direkte Änderungen ohne AP) nur im Bearbeiten-Modus —
+   wie .adv-only/.edit-only im Click-Dummy. */
+.dsa5-helpers-sheet:not([data-mode="edit"]) .dsa5h-edit-only,
+.dsa5-helpers-sheet[data-mode="play"] .dsa5h-adv-only {
   display: none;
 }
 

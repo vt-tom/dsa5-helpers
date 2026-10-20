@@ -171,6 +171,10 @@
       "DefaultSheet": {
         "Name": "Default sheet for heroes",
         "Hint": "Makes the DSA5 Helpers sheet the default for all heroes. Heroes with an explicitly chosen sheet keep it. Foundry reloads after changing this."
+      },
+      "PlayersMayEdit": {
+        "Name": "Players may edit",
+        "Hint": "Allows players to use the edit mode of the hero sheet (change values without AP). When off, players can only play and advance; the GM can always edit."
       }
     },
     "Changelog": {
@@ -472,6 +476,17 @@
         "Prev": "Previous",
         "Next": "Next"
       }
+    },
+    "Mode": {
+      "title": "Mode",
+      "play": "Play",
+      "playHint": "Roll, LP and conditions — nothing changes by accident",
+      "advance": "Advance",
+      "advanceHint": "Raise values with AP, learn new things or refund",
+      "edit": "Edit",
+      "editHint": "Change anything freely, without AP",
+      "gmOnly": "Editing is reserved for the GM in this world",
+      "dropLocked": "Nothing new can be learned in play mode — switch to “Advance” via the lock."
     }
   }
 }

@@ -33,6 +33,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hJumpCombatSkill: this._jumpToCombatSkill,
       dsa5hCoverSideTab: this._setCoverSideTab,
       dsa5hOpenDetails: this._openPersonalDetails,
+      // Schloss der Titelleiste (Systemaktion locksheet) öffnet die Auswahl Spielen · Steigern · Bearbeiten (Issue #34).
+      locksheet: this._openModeMenu,
     },
     // DSA5's own roll/damage actions (attribute dice, combat rolls, advances, item toggles, …) live in
     // ownerRollActions/ownerActions, not the plain `actions` table above — a separate permission-gated dispatch
@@ -318,7 +320,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       banner: this.actor.getFlag?.(MODULE_ID, 'bannerImg') || '',
       portraitRound: this.actor.getFlag?.(MODULE_ID, 'portraitShape') === 'round',
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
-      editMode: this.isEditable && !prepare.sheetLocked,
+      // Drei Modi (Issue #34): Schloss des Systems zu = Spielen; offen = Steigern oder Bearbeiten (Actor-Flag sheetMode).
+      // editMode = direkte Änderungen ohne AP, advanceMode = AP-Stepper, Lernen und Entfernen mit Erstattung.
+      mode: this._sheetMode(prepare),
+      editMode: this._sheetMode(prepare) === 'edit',
+      advanceMode: this._sheetMode(prepare) !== 'play',
       specGeneral: { groups: specs.general, showSubheads: specs.general.length > 1 },
       // Füllstand wie im Inhalt-Reiter des DSA5-Item-Sheets (item-sheet.js _prepareContext: weightSum = Summe
       // Gewicht × Anzahl der direkten Inhalte). system.bagweight taugt dafür nicht: kein Schema-Feld, geht in der
@@ -384,7 +390,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
 
   async _onRender(context, options) {
     await super._onRender(context, options);
-    this.element.dataset.mode = context.dsa5h.editMode ? 'edit' : 'play';
+    this.element.dataset.mode = context.dsa5h.mode;
+    this._updateModeButton(context.dsa5h.mode);
     this.element.dataset.theme = game.settings.get(MODULE_ID, 'theme');
     this._applyCurrentTab();
     // Listener des Planer-Reiters (Anwenden/Verwerfen) — jedes Rendern baut den Reiter neu, also jedes Mal.
@@ -732,6 +739,96 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       return event.clientY < top + parseFloat(getComputedStyle(this.element).borderTopWidth);
     }
     return !!target?.closest?.('.dsa5h-head') && !target.closest(this.constructor.DRAG_EXCLUDE);
+  }
+
+  // Modus des Bogens (Issue #34): ohne Bearbeitungsrecht oder bei geschlossenem Schloss Spielen; sonst das Actor-Flag
+  // sheetMode ('advance' | 'edit', ohne Flag wie bisher Bearbeiten). Bearbeiten nur, wenn der Nutzer darf
+  // (_mayEdit) — sonst fällt ein gespeichertes 'edit' für ihn auf Steigern zurück.
+  _sheetMode(prepare = {}) {
+    if (!this.isEditable || prepare.sheetLocked || this.actor.system?.sheetLocked?.value) return 'play';
+    const mode = this.actor.getFlag?.(MODULE_ID, 'sheetMode') === 'advance' ? 'advance' : 'edit';
+    return mode === 'edit' && !this._mayEdit() ? 'advance' : mode;
+  }
+
+  // Welt-Einstellung „Spieler dürfen bearbeiten“ (Issue #34, Standard ja); die Spielleitung darf immer.
+  _mayEdit() {
+    if (game.user?.isGM) return true;
+    try { return game.settings.get(MODULE_ID, 'playersMayEdit') !== false; } catch { return true; }
+  }
+
+  static MODES = {
+    play: { icon: 'fa-lock', label: 'DSA5HELPERS.Mode.play', hint: 'DSA5HELPERS.Mode.playHint' },
+    advance: { icon: 'fa-arrow-up', label: 'DSA5HELPERS.Mode.advance', hint: 'DSA5HELPERS.Mode.advanceHint' },
+    edit: { icon: 'fa-pen', label: 'DSA5HELPERS.Mode.edit', hint: 'DSA5HELPERS.Mode.editHint' },
+  };
+
+  // Schloss-Symbol der Titelleiste zeigt den Modus (das System kennt nur Schloss zu/offen).
+  _updateModeButton(mode) {
+    const button = this.element?.querySelector?.('[data-action="locksheet"]');
+    if (!button) return;
+    const { icon, label } = this.constructor.MODES[mode];
+    button.classList.remove('fa-lock', 'fa-unlock', 'fa-arrow-up', 'fa-pen');
+    button.classList.add(icon);
+    const text = `${game.i18n.localize('DSA5HELPERS.Mode.title')}: ${game.i18n.localize(label)}`;
+    button.dataset.tooltip = text;
+    button.setAttribute('aria-label', text);
+    button.setAttribute('aria-haspopup', 'menu');
+  }
+
+  // Auswahl unter dem Schloss: Spielen · Steigern · Bearbeiten (Bearbeiten ausgegraut, wenn die Welt es Spielern
+  // nicht erlaubt). Schließt bei Klick daneben oder Escape.
+  static _openModeMenu(event, target) {
+    event?.preventDefault?.();
+    this.element.querySelector('.dsa5h-mode-menu')?.remove();
+    const current = this._sheetMode();
+    const may = this._mayEdit();
+    const menu = document.createElement('div');
+    menu.className = 'dsa5h-mode-menu';
+    menu.setAttribute('role', 'menu');
+    menu.setAttribute('aria-label', game.i18n.localize('DSA5HELPERS.Mode.title'));
+    for (const [mode, info] of Object.entries(this.constructor.MODES)) {
+      const locked = mode === 'edit' && !may;
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'dsa5h-mode-item' + (mode === current ? ' active' : '');
+      item.setAttribute('role', 'menuitemradio');
+      item.setAttribute('aria-checked', String(mode === current));
+      item.disabled = locked;
+      item.innerHTML = `<i class="fas ${info.icon}" aria-hidden="true"></i><span><strong></strong><small></small></span>`;
+      item.querySelector('strong').textContent = game.i18n.localize(info.label);
+      item.querySelector('small').textContent = game.i18n.localize(locked ? 'DSA5HELPERS.Mode.gmOnly' : info.hint);
+      item.addEventListener('click', ev => { ev.stopPropagation(); close(); this._setMode(mode); });
+      menu.append(item);
+    }
+    const box = this.element.getBoundingClientRect();
+    const anchor = (target ?? event?.target)?.getBoundingClientRect?.();
+    menu.style.top = `${anchor ? anchor.bottom - box.top + 4 : 30}px`;
+    menu.style.right = `${anchor ? Math.max(4, box.right - anchor.right - 8) : 8}px`;
+    this.element.append(menu);
+    const onDoc = ev => { if (!menu.contains(ev.target)) close(); };
+    const onKey = ev => { if (ev.key === 'Escape') close(); };
+    const close = () => { menu.remove(); document.removeEventListener('pointerdown', onDoc, true); document.removeEventListener('keydown', onKey, true); };
+    setTimeout(() => { document.addEventListener('pointerdown', onDoc, true); document.addEventListener('keydown', onKey, true); });
+    menu.querySelector('.active, button:not(:disabled)')?.focus();
+  }
+
+  // Modus setzen: Spielen schließt das Schloss des Systems, Steigern/Bearbeiten öffnen es und merken die Wahl am Helden.
+  async _setMode(mode) {
+    if (!this.actor.isOwner) return;
+    if (mode === 'edit' && !this._mayEdit()) return ui.notifications.warn('DSA5HELPERS.Mode.gmOnly', { localize: true });
+    if (mode === 'play') return this.actor.update({ 'system.sheetLocked.value': true });
+    await this.actor.update({ 'system.sheetLocked.value': false, [`flags.${MODULE_ID}.sheetMode`]: mode });
+  }
+
+  // Im Spielmodus nichts Neues lernen (Issue #34): Sonderfertigkeiten, Vor-/Nachteile, Zauber, Liturgien … kosten AP
+  // und gehören zum Steigern; Ausrüstung lässt sich weiter hineinziehen.
+  static LEARNABLE_TYPES = new Set(['advantage', 'disadvantage', 'specialability', 'spell', 'liturgy', 'ritual', 'ceremony', 'blessing', 'magictrick', 'spellextension', 'species', 'culture', 'career', 'itempackage']);
+
+  async _onDropItem(event, item) {
+    if (this._sheetMode() === 'play' && this.constructor.LEARNABLE_TYPES.has(item?.type) && item.parent?.uuid !== this.actor.uuid) {
+      return ui.notifications.info('DSA5HELPERS.Mode.dropLocked', { localize: true });
+    }
+    return super._onDropItem(event, item);
   }
 
   // Menü „⋮“ der Titelleiste: Reiter Gefährten je Held aus-/einblenden (Issue #21, Variante A — immer erreichbar,

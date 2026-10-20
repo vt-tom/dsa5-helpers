@@ -4,6 +4,15 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 ## [0.6.1] — unveröffentlicht
 
+### Neu
+
+- Drei Modi im Heldenbogen: Spielen, Steigern, Bearbeiten ([#34](https://github.com/vt-tom/dsa5-helpers/issues/34)). Das Schloss in der Titelleiste öffnet eine Auswahl und zeigt den aktuellen Modus (Schloss, Pfeil nach oben, Stift).
+  - **Spielen:** würfeln, LeP, Zustände und Statuseffekte, Anzahl von Gegenständen – sonst ändert sich nichts.
+  - **Steigern:** alle +/−-Knöpfe, die AP kosten oder erstatten (Eigenschaften, LeP/AsP/KaP-Zukauf, Talente, Kampftechniken, Zauber, Liturgien), dazu Neues lernen (Ziehen aus dem Kompendium) und Entfernen mit AP-Erstattung. Werte direkt eintippen geht hier nicht.
+  - **Bearbeiten:** zusätzlich alle Werte direkt ändern, ohne die AP zu berühren, und Gegenstände anlegen oder löschen.
+  - Neue Welt-Einstellung „Spieler dürfen bearbeiten“ (Standard an): ausgeschaltet können Spieler nur spielen und steigern, die Spielleitung darf immer bearbeiten.
+  - Im Spielmodus lässt sich nichts Neues lernen; wer eine Sonderfertigkeit, einen Zauber o. Ä. hineinzieht, bekommt einen Hinweis.
+
 ### Geändert
 
 - Kampf › Körper: Die Rüstung steht jetzt mittig zwischen den Händen über der Figur statt in einer eigenen Zeile darunter, der Bogen wird dadurch kürzer ([#36](https://github.com/vt-tom/dsa5-helpers/issues/36)). Ein Wappenschild zeigt das Bild der Hauptrüstung mit Rüstungsschutz (samt Zauber-/Liturgieschutz) und Belastung, darunter ihren Namen. Trägt der Held mehrere Teile, stehen die übrigen klein darunter. Hauptrüstung ist das Teil mit dem höchsten RS; im Bearbeiten-Modus macht ein Klick auf ein anderes Teil es zur Hauptrüstung. In schmalen Fenstern (z. B. Tablet mit Chat daneben) zieht die Rüstung in eine freie oder von einer beidhändigen Waffe belegte Hand; sind beide Hände belegt, bleibt ein kleineres Schild in der Mitte, die weiteren Teile dann als Bildchen mit RS (Name beim Überfahren).
