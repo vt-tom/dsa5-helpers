@@ -13,6 +13,7 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
   - Neue Welt-Einstellung „Spieler: Werte ohne AP ändern (Bearbeiten-Modus)“ (Standard an): ausgeschaltet können Spieler nur spielen und steigern, die Spielleitung darf immer bearbeiten.
   - Löschen-Knöpfe an Vor-/Nachteilen, Zaubern und Liturgien heißen jetzt „Löschen (AP zurückerstatten)“.
   - Im Spielmodus lässt sich nichts Neues lernen; wer eine Sonderfertigkeit, einen Zauber o. Ä. hineinzieht, bekommt einen Hinweis.
+- Hausregeln auch im Standardbogen des Systems ([#44](https://github.com/vt-tom/dsa5-helpers/issues/44)): Ist eine Hausregel aktiv, gibt es sie jetzt auch in den Helden- und NSC-Bögen des DSA5-Systems – die Wundeinschätzung als Herz hinter „Heilkunde Wunden“, „Helfen“ im Menü ⋮ des Bogens. Schaltet die Spielleitung eine Regel um, aktualisieren sich offene Bögen sofort.
 - Bannerbild ohne Foundry-Dateibrowser ([#46](https://github.com/vt-tom/dsa5-helpers/issues/46)): Die Spielleitung legt in den Moduleinstellungen einen Standardordner für Bannerbilder fest. Spieler wählen dann ein Bild von ihrem eigenen Rechner; es wird verkleinert, über die angemeldete Spielleitung in diesen Ordner hochgeladen und als Bannerbild gesetzt – ganz ohne Rechte auf den Dateibrowser. Fehlt der Ordner oder ist keine Spielleitung angemeldet, gibt es einen Hinweis. Wer den Dateibrowser öffnen darf (Spielleitung, Spieler mit diesem Recht), wählt zwischen „Vom Computer hochladen“ und „Foundry-Dateibrowser“.
 
 ### Geändert

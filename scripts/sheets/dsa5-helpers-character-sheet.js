@@ -5,7 +5,7 @@ const MODULE_ID = 'dsa5-helpers';
 const NARROW_WIDTH = 560;
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
-import { isRuleActive, woundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
+import { isRuleActive, runWoundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -1462,12 +1462,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // Hausregel Wundeinschätzung (Knigge): ohne markiertes Ziel nur ein Hinweis direkt am Knopf, sonst der normale
   // Probendialog des Systems und danach der Ablauf aus scripts/house-rules/wound-check.js.
   static async _woundCheck(_event, target) {
-    if (!game.user.targets.first()?.actor) {
-      game.tooltip.activate(target, { text: game.i18n.localize('DSA5HELPERS.HouseRules.woundCheck.PickTarget'), direction: 'UP' });
-      target.addEventListener('pointerleave', () => game.tooltip.deactivate(), { once: true });
-      return;
-    }
-    await woundCheck(this.actor);
+    await runWoundCheck(this.actor, target);
   }
 
   // Hausregel Helfen: Talent wählen, Probe über den Probendialog des Systems, Hinweis im Chat (help-action.js).

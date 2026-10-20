@@ -15,6 +15,10 @@ Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen f�
 
 - Der Nutzer arbeitet die Rückmeldungen von Lyynix ein und entscheidet, welche Issues dazukommen.
 - **Enthalten:** #36 Rüstung mittig über der Figur (Wappenschild, Trefferzonen), Waffenkarte in drei Bändern, Lesbarkeit im Körper-Reiter.
+- **Nächste Issues (Plan 2026-10-20, Reihenfolge #44 → #45 → #39):**
+  - **#44** erledigt (live geprüft: Iago, NSC, Kreatur ohne Einstiege; Umschalten aktualisiert sofort). Live prüfen als Spieler.
+  - **#45** Grundmanöver Stufe 1 + 2 (Rest in #48): Buchseite mit Einzelschaltern, Modifikatoren über `dsa5.prepareRollSituationalModifiers`, Waffenfilter, Vorstoß-Malus, Verteidigungshaltung, Zielen (System-Zielen dann ausgeblendet; Runden laut Tabelle), Block im Kampf-Reiter. Antäuschen: Paradeabzug nur gegen diesen Angriff.
+  - **#39** Reiter „Aufträge“ und „Personen“ (Dramatis Personae · Bestiarium): Liste im Bogen, Details/Notizen im Almanach des Systems; nur wenn Feature + Journale eingerichtet. Erst Click-Dummy.
 - Die Beta 0.6.0 wird damit nicht mehr zum normalen Release erklärt; zum stabilen Release wird später die letzte gute 0.6.x-Beta. Dann die Issues der Meilensteine `0.6.0` und `0.6.1` schließen und nach `main` mergen.
 
 - **#34 Drei Modi** in Foundry umgesetzt und live geprüft (Spieler ohne Bearbeiten vom Nutzer bestätigt). Nachtrag 2026-10-20: Eigenschaften-+/− auch im Steigern-Modus, Lösch-Tooltip „(AP zurückerstatten)“.

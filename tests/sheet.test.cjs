@@ -57,7 +57,7 @@ let Sheet;
 // data:-URLs, weil die Modul-.js hier sonst als CommonJS gälten; der eine relative Import wird mit ersetzt.
 const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
 // Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
-function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))));}
+function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))));}
 async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
@@ -131,6 +131,17 @@ test('banner upload (#46): hints without folder or GM, the GM client uploads for
   assert.equal(flag,null);assert.equal(emitted.pop().error,'DSA5HELPERS.Banner.NoPermission');
   global.game.user={id:'gm2',isGM:true};flag=null;await handler({type:'bannerUpload',requestId:'r3',userId:'owner',actorId:'a1',fileName:'y.webp',dataUrl:'data:'});assert.equal(flag,null,'only the active GM handles requests');
  } finally { Object.assign(global,saved); }
+});
+test('house rules in the system sheet (#44): every rule names its entries, system sheets get the heart and the header entry, ours are left alone',async()=>{
+ const {rules}=await houseRuleModules();const S=await import(dataUrl(read('scripts/house-rules/system-sheet.js')));
+ for(const rule of rules.HOUSE_RULES){assert(Array.isArray(rule.entries)&&rule.entries.length,rule.id+' names its entries');assert(rule.entries.some(e=>e.sheet),rule.id+': module sheet');assert(rule.entries.some(e=>['skill','header','dialog'].includes(e.system)),rule.id+': system sheet');
+  for(const e of rule.entries.filter(e=>['skill','header'].includes(e.system)))assert.equal(typeof e.run,'function',rule.id+' entry runs');}
+ const app=(type,classes)=>({actor:{type},options:{classes}});
+ assert(S.isSystemSheet(app('character',['dsa5','actor'])));assert(S.isSystemSheet(app('npc',['dsa5','actor'])));
+ assert(!S.isSystemSheet(app('creature',['dsa5','actor'])),'no creatures');assert(!S.isSystemSheet(app('character',['dsa5','dsa5-helpers-sheet'])),'not our sheet');
+ const on=id=>id==='helpAction';
+ assert.deepEqual(S.activeEntries('header',rules.HOUSE_RULES,on).map(x=>x.rule.id),['helpAction']);assert.deepEqual(S.activeEntries('skill',rules.HOUSE_RULES,on),[],'inactive rule: no heart');
+ assert.deepEqual(S.activeEntries('skill',rules.HOUSE_RULES,()=>true).map(x=>x.rule.id),['woundCheck']);
 });
 test('play mode disables FW correction, preserves rolls',async()=>{const {sheet}=await prepare();sheet.context.prepare.sheetLocked=true;sheet.context.prepare.canAdvance=false;const context=await sheet._prepareContext({});const html=render(context);const values=elements(html,el=>el.attribs?.class==='skill-advances');assert(values.length);assert(values.every(el=>Object.hasOwn(el.attribs,'disabled')));assert(html.includes('data-action="skillSelect"'));assert(!html.includes('data-fct="_advanceItem"'));});
 test('favorites use actor flags, remove missing items and enforce ownership',async()=>{const {sheet,actor,context}=await prepare();assert.equal(context.dsa5h.favorites.missing,undefined);assert.equal(context.dsa5h.favoriteGroups.length,2);await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'skill'}});assert.deepEqual(actor.saved.value,['weapon']);delete actor.saved;sheet.isEditable=false;await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'spell'}});assert.equal(actor.saved,undefined);});
