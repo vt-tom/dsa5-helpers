@@ -7,8 +7,7 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-- **Gefährten-Karte:** bei langem Namen („Esel mit Zügel und Krams und noch mehr“, 800 px Fenster) laufen die Knöpfe (Fertigkeiten, H…) rechts aus der Karte. Löschen geht über ⋮ → „Löschen“ (Systemmenü) — evtl. sichtbarer machen?
-- **Moduleinstellungen gruppieren** (Nutzer 2026-10-20: nicht unübersichtlich werden lassen, Zusammengehöriges in Untermenüs). Vorschlag siehe Antwort, Entscheidung offen.
+_(leer)_
 
 ## Version 0.6.1 — nächste Beta (Branch `release/0.6.1`)
 

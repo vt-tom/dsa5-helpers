@@ -91,7 +91,8 @@
       "skills": "Skills",
       "hotbar": "Hotbar",
       "train": "Trick",
-      "mount": "Mount"
+      "mount": "Mount",
+      "remove": "Remove"
     },
     "SearchCombatSkills": "Search combat techniques …",
     "SearchConditions": "Search conditions …",
@@ -179,6 +180,11 @@
       "BannerPath": {
         "Name": "Default folder for banner images",
         "Hint": "The module stores banner images uploaded by players from their computers here. Players do not need file browser permission for this; a GM has to be logged in."
+      },
+      "SheetMenu": {
+        "Title": "Hero sheet",
+        "Label": "Configure hero sheet",
+        "Hint": "Default sheet for heroes, edit mode for players and folder for banner images."
       }
     },
     "Changelog": {
@@ -505,6 +511,9 @@
       "Failed": "The banner image could not be uploaded.",
       "Timeout": "No answer from the GM — please try again."
     },
-    "DeleteRefund": "Delete (refund AP)"
+    "DeleteRefund": "Delete (refund AP)",
+    "CompanionRemove": "Remove companion",
+    "CompanionRemoveConfirm": "Remove {name} from this hero's companions? The actor itself is kept.",
+    "CompanionRemoveFailed": "The companion could not be removed — please use ⋮ → Delete."
   }
 }

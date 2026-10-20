@@ -1,0 +1,18 @@
+{{!-- Untermenü „Heldenbogen“ der Moduleinstellungen (scripts/apps/sheet-settings.js). --}}
+<div class="dsa5h-sheet-settings">
+<div class="dsa5h-sheet-settings-fields">
+  {{#each settings as |s|}}
+  <div class="form-group">
+    <label for="dsa5h-setting-{{s.key}}">{{localize s.name}}</label>
+    <div class="form-fields">
+      {{#if s.checkbox}}<input type="checkbox" id="dsa5h-setting-{{s.key}}" name="{{s.key}}" {{checked s.value}}>{{/if}}
+      {{#if s.folder}}<file-picker id="dsa5h-setting-{{s.key}}" name="{{s.key}}" type="folder" value="{{s.value}}"></file-picker>{{/if}}
+    </div>
+    <p class="hint">{{localize s.hint}}</p>
+  </div>
+  {{/each}}
+</div>
+<footer class="form-footer">
+  <button type="submit"><i class="fas fa-save" inert></i> {{localize 'EDITOR.Save'}}</button>
+</footer>
+</div>

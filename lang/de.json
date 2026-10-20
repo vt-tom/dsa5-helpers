@@ -91,7 +91,8 @@
       "skills": "Fähigkeiten",
       "hotbar": "Hotbar",
       "train": "Trick",
-      "mount": "Reittier"
+      "mount": "Reittier",
+      "remove": "Entfernen"
     },
     "SearchCombatSkills": "Kampftechniken suchen …",
     "SearchConditions": "Zustand suchen …",
@@ -179,6 +180,11 @@
       "BannerPath": {
         "Name": "Standardordner für Bannerbilder",
         "Hint": "Hier speichert das Modul Bannerbilder, die Spieler von ihrem Computer hochladen. Spieler brauchen dafür kein Recht auf den Dateibrowser; eine Spielleitung muss angemeldet sein."
+      },
+      "SheetMenu": {
+        "Title": "Heldenbogen",
+        "Label": "Heldenbogen einrichten",
+        "Hint": "Standard-Bogen für Helden, Bearbeiten-Modus für Spieler und Ordner für Bannerbilder."
       }
     },
     "Changelog": {
@@ -505,6 +511,9 @@
       "Failed": "Das Bannerbild konnte nicht hochgeladen werden.",
       "Timeout": "Keine Antwort der Spielleitung — bitte erneut versuchen."
     },
-    "DeleteRefund": "Löschen (AP zurückerstatten)"
+    "DeleteRefund": "Löschen (AP zurückerstatten)",
+    "CompanionRemove": "Begleiter entfernen",
+    "CompanionRemoveConfirm": "{name} aus den Begleitern dieses Helden entfernen? Der Akteur selbst bleibt erhalten.",
+    "CompanionRemoveFailed": "Der Begleiter konnte nicht entfernt werden — bitte über ⋮ → Löschen."
   }
 }

@@ -88,6 +88,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hPortraitShape: this._togglePortraitShape,
       dsa5hTwoHandedSide: this._setTwoHandedSide,
       dsa5hMainArmor: this._setMainArmor,
+      dsa5hRemoveCompanion: this._removeCompanion,
       dsa5hSwapGrip: this._swapGrip,
       dsa5hConsume: this._consume,
     },
@@ -570,6 +571,27 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       actions.classList.add('dsa5h-companion-actions');
       slot.prepend(actions);
     });
+    // Begleiter entfernen sichtbar machen (Nutzer 2026-10-20: im ⋮-Menü zu versteckt) — beschrifteter Knopf im
+    // Knopfraster der Karte (freie Zelle neben „Trick“), nur im Bearbeiten-Modus. Neben dem ⋮ lag er unter dem
+    // Zahm/Wild-Auswahlfeld des Systems. Optik von den Systemknöpfen übernommen (ohne deren Symbolklasse).
+    if (this._sheetMode() === 'edit') {
+      root.querySelectorAll('.companion-header-ui .dsa5h-companion-actions').forEach(actions => {
+        if (actions.querySelector('.dsa5h-companion-remove')) return;
+        const sibling = actions.querySelector('button.dsa5h-labeled');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `${(sibling?.className ?? '').split(/\s+/).filter(c => c && !c.startsWith('fa-') && c !== 'fa-rotate-180').join(' ')} fas fa-trash dsa5h-labeled dsa5h-companion-remove`;
+        button.dataset.action = 'dsa5hRemoveCompanion';
+        const label = game.i18n.localize('DSA5HELPERS.CompanionRemove');
+        button.dataset.tooltip = label;
+        button.setAttribute('aria-label', label);
+        const text = document.createElement('span');
+        text.className = 'dsa5h-btn-short';
+        text.textContent = game.i18n.localize('DSA5HELPERS.CompanionShort.remove');
+        button.append(text);
+        actions.append(button);
+      });
+    }
   }
 
   // Reiter „Körper“ (Kampf-Unterreiter, Issue #6/#29): Hände links und rechts der Figur (Haupthand links, Nebenhand
@@ -906,6 +928,29 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static async _setTwoHandedSide(_event, target) {
     if (!this.isEditable) return;
     await this.actor.setFlag(MODULE_ID, 'twoHandedSide', target.dataset.side === 'right' ? 'right' : 'left');
+  }
+
+  // Begleiter entfernen (Nutzer 2026-10-20): das System bietet das nur im Kontextmenü am ⋮ an
+  // (CompanionHandler._companionContextMenuAction → _removeCompanionAction, Klasse nicht öffentlich). Nach Rückfrage
+  // öffnen wir dieses Menü und führen seinen Eintrag „Löschen“ aus — so läuft genau die Systemlogik (Verknüpfung,
+  // Loyalität, Begleiter-Merkmal).
+  static async _removeCompanion(event, target) {
+    const card = target.closest('.companion-header-ui');
+    const trigger = card?.querySelector('[data-action="memberContextMenu"]');
+    const handler = this.options.ownerActions?.memberContextMenu ?? this.options.actions?.memberContextMenu;
+    if (!trigger || !handler) return;
+    const name = card.querySelector('.member-card h3 > a')?.textContent.trim() ?? '';
+    const ok = await foundry.applications.api.DialogV2.confirm({
+      window: { title: 'DSA5HELPERS.CompanionRemove' },
+      content: `<p>${game.i18n.format('DSA5HELPERS.CompanionRemoveConfirm', { name: foundry.utils.escapeHTML(name) })}</p>`,
+    });
+    if (!ok) return;
+    await (handler.handler ?? handler).call(this, event, trigger);
+    const menu = ui.context;
+    const entry = menu?.menuItems?.find(item => String(item.icon ?? '').includes('fa-trash'));
+    await menu?.close?.({ animate: false });
+    if (entry) await entry.onClick?.(event, trigger);
+    else ui.notifications.warn('DSA5HELPERS.CompanionRemoveFailed', { localize: true });
   }
 
   // Hauptrüstung im Reiter „Körper“ (Issue #36): Actor-Flag mit der Item-ID, nur im Bearbeiten-Modus wählbar.

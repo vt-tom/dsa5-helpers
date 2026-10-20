@@ -13,11 +13,10 @@ export function registerBannerSettings() {
     name: 'DSA5HELPERS.Settings.BannerPath.Name',
     hint: 'DSA5HELPERS.Settings.BannerPath.Hint',
     scope: 'world',
-    config: true,
-    restricted: true,
+    // Steht im Untermenü „Heldenbogen“ (scripts/apps/sheet-settings.js), nicht in der Liste.
+    config: false,
     type: String,
     default: '',
-    filePicker: 'folder',
   });
 }
 
