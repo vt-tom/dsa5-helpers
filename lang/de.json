@@ -184,7 +184,8 @@
       "SheetMenu": {
         "Title": "Heldenbogen",
         "Label": "Heldenbogen einrichten",
-        "Hint": "Standard-Bogen für Helden, Bearbeiten-Modus für Spieler und Ordner für Bannerbilder."
+        "Hint": "Standard-Bogen für Helden, Bearbeiten-Modus für Spieler und Ordner für Bannerbilder.",
+        "Save": "Speichern"
       }
     },
     "Changelog": {

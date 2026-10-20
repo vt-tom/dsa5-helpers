@@ -184,7 +184,8 @@
       "SheetMenu": {
         "Title": "Hero sheet",
         "Label": "Configure hero sheet",
-        "Hint": "Default sheet for heroes, edit mode for players and folder for banner images."
+        "Hint": "Default sheet for heroes, edit mode for players and folder for banner images.",
+        "Save": "Save"
       }
     },
     "Changelog": {

@@ -6415,6 +6415,11 @@
   margin-top: 12px;
 }
 
+/* Abstand zum Zierrahmen unten (DSA5-Design „Immersive“): der Knopf klebte sonst am Rahmen (Rückmeldung 2026-10-20). */
+#dsa5-helpers-sheet-settings .dsa5h-sheet-settings > .form-footer {
+  margin: 16px 0 18px;
+}
+
 /* ==========================================================================
    19. Reduzierte Bewegung
    ========================================================================== */
