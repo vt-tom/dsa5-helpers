@@ -39,7 +39,7 @@ Hooks.once('init', async () => {
   game.settings.registerMenu('dsa5-helpers', 'houseRules', { name: 'DSA5HELPERS.HouseRules.Title', label: 'DSA5HELPERS.HouseRules.Menu.Label', hint: 'DSA5HELPERS.HouseRules.Menu.Hint', icon: 'fas fa-book', type: getHouseRulesApp(), restricted: false });
   // Für Makros und das spätere HUD des Moduls.
   game.modules.get('dsa5-helpers').api = { ...(game.modules.get('dsa5-helpers').api ?? {}), openDiceStats, openHouseRules };
-  // Mobile Support (feature/mobile, project/MOBILE.md 13): Welt-Einstellung „Hybrides Spiel“, Oberfläche je Gerät.
+  // Mobile Support (project/MOBILE.md 13): Welt-Einstellung „Hybrides Spiel“, Oberfläche je Gerät.
   initMobile();
   // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
   initSheetSwitcher();

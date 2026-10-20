@@ -1,6 +1,6 @@
 # MOBILE.md — Planung „Mobile Support“ (Tablet & Smartphone)
 
-Stand: 2026-10-15 · Status: **Stufe 1 + 2 gebaut, in einer Testinstanz live geprüft** (Foundry 14.369, DSA5 8.1.10, headless Chrome mit Touch-Emulation; Smartphone 390×844, Tablet 820×1180, Desktop unverändert). Code: `scripts/mobile/`, `styles/dsa5-helpers-mobile.css`. Noch offen: Test auf echten Geräten (iOS Safari, Android Chrome) und die Punkte in 13.10.
+Stand: 2026-10-20 · Status: **erscheint mit 0.6.0 als Beta** (Branch `release/0.6.0`, Stand in [Issue #43](https://github.com/vt-tom/dsa5-helpers/issues/43)); Stufe 1 + 2 gebaut, in einer Testinstanz live geprüft (Foundry 14.369, DSA5 8.1.10, headless Chrome mit Touch-Emulation; Smartphone 390×844, Tablet 820×1180, Desktop unverändert). Code: `scripts/mobile/`, `styles/dsa5-helpers-mobile.css`. Noch offen: Test auf echten Geräten (iOS Safari, Android Chrome) und die Punkte in 13.10.
 
 ---
 
@@ -287,7 +287,7 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 
 ### 11.1 Testversion installieren und testen (Mobil-Kanal, seit 2026-10-15)
 
-Testversionen von `feature/mobile` erscheinen in einem eigenen Kanal (veröffentlichen: [RELEASE.md](RELEASE.md) „Mobil-Kanal“). Erste Testversion: **0.6.0** (Tag `mobile-v0.6.0`).
+**Seit 2026-10-20:** Mobile Support erscheint mit **0.6.0 als Beta** (Branch `release/0.6.0`, Stand in [Issue #43](https://github.com/vt-tom/dsa5-helpers/issues/43)). Installiert wird dann über den Beta-Kanal `https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json`; Schritte 2–6 gelten sinngemäß mit dieser URL. Bis dahin gab es Testversionen in einem eigenen Mobil-Kanal (Tag `mobile-v0.6.0`, [RELEASE.md](RELEASE.md) „Mobil-Kanal“, ruht).
 
 **Installieren**
 
@@ -457,7 +457,7 @@ Phasen (je Phase ein GitHub-Issue, sobald freigegeben):
 
 ### 13.9 CHANGELOG-Entwurf
 
-Der Branch hat noch keine Version (AGENTS.md, Punkt 7). Sobald der Nutzer sie festlegt, kommt dieser Text unter „Neu“ in CHANGELOG.md:
+Version festgelegt (2026-10-20): 0.6.0, als Beta. Der Text steht in CHANGELOG.md unter 0.6.0 › „Neu“ und wird dort weitergepflegt; hier nur noch als Entwurf:
 
 - Hybrides Spiel (experimentell): Mit der Welt-Einstellung „Hybrides Spiel (Tablet/Smartphone)“ (nur Spielleitung, Standard aus) bekommen Tablets und Smartphones eine eigene Oberfläche. Welche, wählt jedes Gerät automatisch: Smartphone, Tablet oder – an Rechnern mit Maus – die normale Foundry-Oberfläche. Ändern lässt sich das im Konto-Menü (Kreis oben rechts) oder in den Moduleinstellungen; hilft gar nichts mehr, `?dsa5h-ui=foundry` an die Adresse hängen.
 - In dieser Oberfläche ist oben die Szene: mit einem Finger verschieben, mit zwei Fingern zoomen, lange drücken pingt, den eigenen Token lange drücken und dann ziehen bewegt ihn (rastet ein, Wände gelten). Kurz antippen wählt wie ein Mausklick (Token, Türen) und zeigt den Namen. Knöpfe: auf den eigenen Helden zentrieren, Spielfeld vergrößern.

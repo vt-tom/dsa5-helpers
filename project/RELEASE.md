@@ -79,7 +79,12 @@ git checkout main && git merge --no-ff release/0.4.0 && git push origin main
 
 ---
 
-## Mobil-Kanal (Testversionen von `feature/mobile`, seit 2026-10-15)
+## Mobil-Kanal (Testversionen von `feature/mobile`, 2026-10-15 bis 2026-10-20, ruht)
+
+**Nicht mehr nutzen.** Mobile Support erscheint mit 0.6.0 als Beta über den Beta-Kanal; `feature/mobile` wurde zu
+`release/0.6.0`. Wer `mobile-v0.6.0` installiert hat, deinstalliert das Modul einmal und installiert es über die
+Beta-URL neu (gleiche Versionsnummer, daher kein Update-Angebot). Der Job `mobile` in `release.yml` bleibt vorerst
+stehen. Ablauf zur Erinnerung:
 
 Eigene Manifest-URL, nur für Tester von Mobile Support:
 

@@ -7,56 +7,55 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-- **Kopf „Wappenbanner“ live prüfen (2026-10-19, Modul + Click-Dummy umgesetzt, auf `feature/mobile` noch nicht committet; Stand und offene Punkte in GitHub-Issues #41 Banner/Desktop und #42 Smartphone/Tablet).** Headless in der Testinstanz geprüft (Desktop, Titelblatt, Bearbeiten-Modus, rund, Bannerbild, LeP-Eingabe in der Kugel, Smartphone aus-/eingeklappt). Noch selbst ansehen: Bannerbild mit eigenem Bild (Ausschnitt `cover`/`center` — reicht das, oder braucht es eine Ausschnittwahl?), Tablet, Gleiten beim Reiterwechsel, Tooltips, sehr lange Namen/Professionen.
-- **Waffenkarte „Banner“ live prüfen ([Issue #40](https://github.com/vt-tom/dsa5-helpers/issues/40), 2026-10-19 im Modul und Click-Dummy umgesetzt).** In der Testinstanz geprüft: Desktop (Wulfgrimm Streitaxt + Schild, Allacaya Elfenbogen beidhändig, Testitest ohne Waffe, Newbie Kurzbogen), Smartphone hell/dunkel, 360 px ohne Überlauf. Noch selbst ansehen: Handwahl über ⇄ (natives Auswahlmenü), Griffwechsel und Seitenwechsel einer beidhändigen Waffe (Bearbeiten-Modus), Fernkampf mit Nachladen/Magazin, sehr lange Waffennamen, Tablet. Issue erst mit dem Release schließen.
-- **Mobil: erster Gerätetest Smartphone (Nutzer, 2026-10-15, Android/Chrome, Testversion 0.6.0).** Erledigt auf `feature/mobile`: Bogen scrollt auf allen Reitern nur noch senkrecht (bei 360 und 390 px gemessen, Spiel- und Bearbeitungsmodus, 5 Helden); bei aktiver „Desktop-Website“ erscheint ein Hinweis (die Automatik selbst hat funktioniert, nur die Seite war 980 px breit). Noch offen:
-  - **Chat und Journal im Modul-Design live prüfen** (2026-10-19 im Modul umgesetzt, Entwurf Variante A im Mobil-Click-Dummy; `scripts/mobile/chat.js`, `scripts/mobile/journal.js`, Abschnitte 12 + 13 der Mobil-CSS). In der Testinstanz geprüft: Smartphone 390 px und Tablet quer, helles und dunkles Foundry-Thema, Senden über ➤, Flüstern an die Spielleitung, 3W20-Schnellknopf, Probenkarten mit Ergebnisband und QS-Rauten, Journal mit Seitenwahl-Blatt und ‹ ›. Seit 2026-10-20 (Rückmeldung): Tablet mit Seitenliste links, Smartphone mit Steuerleiste unten „‹ · Seite x von y ▾ · ›“; Rechtsklick-Menü an Chatkarten schließt sich am PC im Tablet-Modus (Touch-Emulation) nicht mehr sofort — in der Testinstanz nachgestellt und behoben, bitte am PC noch einmal versuchen und sagen, wie der Tablet-Modus eingestellt war (Einstellung „Oberfläche“ oder Geräteemulation im Browser). Noch selbst ansehen: Seitenliste am echten Tablet (Foundry nummeriert ab 0, die Handy-Liste ab 1), Senden mit der Enter-Taste der Handy-Tastatur (Android fügt evtl. nur eine Zeile ein, dann ➤ nutzen), Flüstern an mehrere Spieler, „Als Held“, Formatleiste hinter „Aa“, Angriffs-/Zauberkarten mit Knöpfen (Schaden, Parade), Bild- und PDF-Seiten im Journal, Sprechblase bei neuer Nachricht. Chat und Journal bleiben auch im dunklen Foundry-Thema hell.
-  - **SL-Werkzeuge und Anforderungskarte** (Rückmeldung 2026-10-20, Modul und Dummy umgesetzt, in der Testinstanz geprüft): Pause-Knopf für die SL unter den Szenen-Knöpfen (▶ gold = pausiert, gilt für alle; Foundrys Pause-Anzeige steht jetzt oben unter dem Kopf statt verdeckt unter der Heldenkarte). Dritter schwebender Knopf „Akteure“ (nur SL) = Foundrys Akteur-Verzeichnis als Panel im Journal-Design, getrennt von der Heldenkarte; Tablet als rechte Spalte, Smartphone bildschirmfüllend. Symbole auf der Karte „Probe anfordern“ (Würfeln, ⋮) fehlten, weil unsere Chat-Knopf-Regel die Symbolschrift überschrieb. Noch selbst ansehen: Akteure-Panel mit vielen Ordnern, Kontextmenü an Akteuren (Langdruck greift dort noch nicht, nur an Chat-Nachrichten), Pause am echten Gerät.
-  - **Entscheidung offen – eigene Journal-Ansicht?** Nutzer fragte 2026-10-20, ob Journale eine eigene Ansicht brauchen. Vorschlag: nein, Foundrys Blatt mit unseren Anpassungen behalten (Bearbeiten, Bild-/PDF-/Video-Seiten, Verknüpfungen, Proben-Links und andere Module funktionieren dann weiter). Die Blätter-Leiste erscheint erst ab 2 Seiten („Proben Requests“ hat nur eine).
-  - **Tablet: Bogen und Chat nebeneinander** (Rückmeldung 2026-10-19, Modul und Dummy umgesetzt): Chat-Knopf unten in der Reiterleiste des Bogens; ist der Chat offen, endet jedes Fenster (Bogen, Journal) an der Chat-Spalte (400 px), Dialoge bleiben Blätter von unten. Nur im Querformat ab 1000 px Breite, im Hochformat liegt der Chat wie bisher über dem Fenster (der Bogen wäre sonst ~420 px schmal). In der Testinstanz bei 1180 × 820 und 820 × 1180 geprüft; auf einem echten Tablet ansehen.
-  - **Steigerungsplaner-Reiter** (Modul von Lyynix): seit 2026-10-19 bricht er auf dem Handy per CSS um (Zeilen und Kacheln, `styles/dsa5-helpers-mobile.css`). In der Testwelt gab es keine geplanten Schritte, die Kacheln sind deshalb nur live prüfbar. Lyynix trotzdem Bescheid geben?
-  - **Nebenspalten** auf dem Handy ausgeblendet (Behinderung bei Talenten; Gewicht in der Ausrüstung). Sie stehen im Gegenstandsblatt. Prüfen, ob etwas davon am Tisch fehlt. Kosten, Dauer und Reichweite der Zauber/Liturgien stehen seit P2 wieder in einer Unterzeile.
-  - **Tablet:** in der Testinstanz (820 × 1180) ohne waagerechten Überlauf; der Bogen nutzt dort das Desktop-Layout mit der Reiterleiste rechts im Fenster. Auf dem echten Gerät prüfen, ob die Fensterknöpfe oben rechts (Plakette, ~16 px) mit dem Finger treffbar sind; sonst wie auf dem Handy vergrößern oder ersetzen.
-  - **Feinschliff Bogen auf dem Smartphone** ([MOBILE.md](MOBILE.md) Abschnitt 14): P1 und Ü3 umgesetzt (Probendialog, Kopf, „Mehr“-Blatt, Unterreiter, Tippziele, Zeile antippen würfelt, „‹“ im Kopf). P2 umgesetzt 2026-10-19 (Kampf als Waffen · Rüstung · Kampftechniken ohne Silhouette, Traditionskarte mit AsP/KaP-Regler und Unterzeile je Zauber, Status-Kacheln und Zustands-Blatt, Grundwerte mit −/+). P3 umgesetzt 2026-10-19 (Favoriten-Karten, Ausrüstung mit Kategorie-Chips, Notizen einspaltig, leere Abschnitte, Gefährten, dunkles Thema, Gegenstandsblätter geprüft), dazu wischbare Reiterleiste und Bogen-Menü „⋮“ im Kopf. Ü7 (Bearbeitungsmodus) ruht bis Issue #34.
-  - **Entscheidung nötig – Waffe aus einem Behälter in die Hand (betrifft auch den Desktop, gefunden 2026-10-19):** Wulfgrimms Langschwert liegt im Beutel „Habseligkeiten von Wulfgrimm“. Das System zählt Gegenstände in Behältern nie als geführte Waffe (`prepare.wornMeleeWeapons`), unsere Handauswahl im Kampf-Reiter bietet sie aber an: Auswählen setzt „angelegt“, die Hand bleibt trotzdem leer. Vorschlag A: beim Ziehen in die Hand aus dem Behälter nehmen (`system.parent_id` leeren). Vorschlag B: Waffen in Behältern in der Handauswahl nicht anbieten.
-  - Neue Testversion im Mobil-Kanal (z. B. `mobile-v0.6.1`), sobald der Nutzer sie freigibt.
+_(leer)_
 
-- **Entscheidung nötig – schmales Titelblatt am Desktop (Fehler gefunden 2026-10-15):** In `styles/dsa5-helpers-character-sheet.css` Abschnitt 18 fragen zwei Container-Regeln `.dsa5h-main` ab und stellen `.dsa5h-main` selbst um (Titelblatt-Raster bei < 700 px und < 520 px); sie greifen deshalb nie. Test 2026-10-19 mit dem Fensterinneren als Container: Greifen sie, wird es schlechter. Bei 650 px ist die 150-px-Seitenleiste zu schmal (Reiter „Statuseffekte | Persönliche Daten“ überlappen, Porträt abgeschnitten). Bei 480 px steht die Leiste mit großem Porträt oben und der Inhalt rutscht unten aus dem Fenster. Änderung zurückgenommen, schmale Fenster behalten das zweispaltige Titelblatt (240 px Leiste). Zu klären: Wie soll das Titelblatt in schmalen Fenstern aussehen? Vorschlag: unter ~560 px wie auf dem Handy (Kopf oben, Kasten unter den Favoriten, keine Seitenleiste), dazwischen das jetzige zweispaltige Raster. Sonst die beiden toten Regeln löschen.
+## Version 0.6.0 — in Arbeit (Branch `release/0.6.0`, als Beta geplant)
 
-- **Mobil-Click-Dummy Runde 4 ansehen** (2026-10-15): Die Rückmeldung von Lyynix ([MOBILE-FEEDBACK-2026-10-14.md](MOBILE-FEEDBACK-2026-10-14.md)) ist in `clickdummy/mobile/` eingebaut (Szene mit Gesten, schwebende Knöpfe mit Sprechblase, Schips im Chat, Journal-Ordner, „Probe anfordern“, automatische Oberfläche). Das Umsetzungskonzept steht in [MOBILE.md](MOBILE.md) Abschnitt 13. Öffnen über `clickdummy/start-server.bat`, dann `…/clickdummy/mobile/index.html` (Übersicht) bzw. `app.html` (echtes Gerät). Rückmeldung an Lyynix?
+Seit 2026-10-20: `feature/mobile` wurde zu `release/0.6.0` umbenannt, Mobile Support erscheint mit 0.6.0 als Beta. GitHub-Meilenstein `0.6.0`.
 
-## Version 0.5.1 — veröffentlicht 2026-10-07
+- **Enthalten:** Mobile Support ([#43](https://github.com/vt-tom/dsa5-helpers/issues/43), Stand und Prüfliste dort), Kopf „Wappenbanner“ ([#41](https://github.com/vt-tom/dsa5-helpers/issues/41) Desktop, [#42](https://github.com/vt-tom/dsa5-helpers/issues/42) Smartphone/Tablet), Waffenkarte „Banner“ im Kampf-Reiter ([#40](https://github.com/vt-tom/dsa5-helpers/issues/40)). CHANGELOG 0.6.0 ist auf diesem Stand.
+- **Nutzer entscheidet:** welche weiteren offenen Issues (#34–#39, siehe unten) noch in 0.6.0 kommen.
+- **Vor dem Release:** `version` in `module.json` auf `0.6.0`, ggf. `verified` hochsetzen (Testinstanz lief mit Foundry 14.369 und DSA5 8.1.10), Release-Notes mit Hinweis für Tester aus dem Mobil-Kanal: `mobile-v0.6.0` hat dieselbe Versionsnummer, Foundry bietet kein Update an → Modul einmal deinstallieren und über die Beta-URL neu installieren. Danach den Mobil-Kanal einstellen (Job `mobile` in `release.yml` entfernen?).
 
-Direkt als normales Release (ohne Beta, Wunsch des Nutzers), `release/0.5.1` nach `main` gemergt, Issue #33 geschlossen. Enthalten: Bogen-Umschalter mit Vorschau (#33), Sozialstatus als Name statt Zahl, Anpassung an DSA5 8.1.9 (Sammelproben), `verified` 8.1.9. Für die nächste Version gibt es noch keinen Branch.
+### Live prüfen (0.6.0)
 
-## Live in Foundry prüfen
-
-- **Bogen-Umschalter** (in 0.5.1 veröffentlicht): Knopf ⇄ in der Titelleiste von Helfer- und Systembogen, Menü-Einträge (Systemstandard, Helfer-Heldenbogen, ggf. weitere), Wechsel als Spieler, neuer Bogen an derselben Stelle, Menü-Position an der Plakette. Vorschau beim Darüberfahren: Wartezeit beim Aufbau, kein Aufblitzen beim Wechsel, keine liegengebliebenen unsichtbaren Fenster (z. B. `foundry.applications.instances` nach dem Schließen des Menüs), keine ungewollten Akteur-Updates durch die Vorschau-Instanzen.
-- **DSA5 8.1.9, Sammelproben** (in 0.5.1 veröffentlicht): Talente › Sammelproben — eine Sammelprobe mit geänderter Ziel-QS (z. B. 5) zeigt „x / 5“, eine mit 0 erlaubten Proben „unbegrenzt“; normale Sammelproben weiter „x / 10“ und „x / 7“. Sonst einmal quer durch den Bogen (Gefährten-Reiter mit der neuen Loyalität je Besitzer, Zustände jetzt alphabetisch).
-- **Sozialstatus** (in 0.5.1 veröffentlicht): Titelblatt › Persönliche Daten zeigt Unfrei/Frei/Niederadel/Adel/Hochadel statt Zahl; ohne gewählten Status fehlt die Zeile.
-- **#7 Touch:** erst mit dem Mobil-UI (`feature/mobile`).
-- **Mobil Stufe 1 + 2** (`feature/mobile`, 2026-10-15, MOBILE.md 13; in einer Testinstanz per headless Chrome schon geprüft, echte Geräte fehlen): Testversion 0.6.0 über den Mobil-Kanal installieren und verbinden: Anleitung in [MOBILE.md](MOBILE.md) 11.1. Prüfen: (1) Automatik wählt Smartphone/Tablet, Desktop bleibt normal; `?dsa5h-ui=foundry` als Notausgang. (2) Keine Meldung „Auflösung zu niedrig“. (3) Szene: wischen, zwei Finger zoomen, lange drücken pingt (sehen andere den Ping?), eigenen Token lange drücken + ziehen (Zielfeld, Wand rot, Bewegung kommt bei allen an), kurzes Antippen wählt Token/öffnet Türen. (4) Heldenkarte: Werte aktuell, Antippen öffnet den Bogen bildschirmfüllend (Handy: verkleinert). (5) Chat-Knopf: Zähler, Sprechblase, Chat als Panel, Eingabe ohne ungewollte Tastatur beim Öffnen. (6) Langdruck/⋮ an eigener Probe → Kontextmenü als Blatt → „Schip verwenden“ → Systemdialog benutzbar. (7) Journal-Knopf: Ordner wie am Desktop. (8) SL: „Probe anfordern“, Spieler bekommt den Probendialog. (9) Konto-Menü: Oberfläche wechseln, Spielfeld aus/an, Hell/Dunkel, Abmelden. (11) Kampf: Leiste mit Reihenfolge, „Du bist dran!“, Initiative würfeln, Antippen öffnet den Tracker. (12) Fremden Token antippen → „Ziel“. (13) Bogen auf dem Handy: Reiterleiste unten + „Mehr“, Kopf klappt beim Scrollen ein. (10) iPhone/iPad (Safari) **und** Android (Chrome). Stolpersteine hier notieren (Phase-1-Ergebnis).
+- **Kopf „Wappenbanner“** (#41, #42; in der Testinstanz headless geprüft): Bannerbild mit eigenem Bild (reicht der Ausschnitt `cover`/`center`, oder braucht es eine Ausschnittwahl?), Tablet, Gleiten beim Reiterwechsel, Tooltips, sehr lange Namen/Professionen.
+- **Waffenkarte** (#40; in der Testinstanz geprüft): Handwahl über ⇄ (natives Auswahlmenü), Griff- und Seitenwechsel einer beidhändigen Waffe (Bearbeiten-Modus), Fernkampf mit Nachladen/Magazin, sehr lange Waffennamen, Tablet.
+- **Mobile Support** (#43): Prüfliste für echte Geräte steht im Issue. Dazu offen aus der Rückmeldung vom 2026-10-20:
+  - **Rückfrage an den Nutzer:** Das Rechtsklick-Menü an Chatkarten schloss sich am PC im Tablet-Modus sofort (in der Testinstanz nachgestellt und behoben). Bitte noch einmal versuchen und sagen, wie der Tablet-Modus eingestellt war (Einstellung „Oberfläche“ oder Geräteemulation im Browser).
+  - Journal-Seitenliste am echten Tablet (Foundry nummeriert ab 0, die Handy-Liste ab 1).
+  - Langdruck an Akteuren im Akteure-Panel greift noch nicht (nur an Chat-Nachrichten).
 
 ## Offene Entscheidungen
 
-- **Mobile Support (Tablet/Smartphone, „Hybrides Spiel“):** Planung in [MOBILE.md](MOBILE.md), Umsetzungskonzept in Abschnitt 13. Stufe 1 + 2 sind gebaut und folgen den Vorschlägen zu allen Entscheidungen E1–E23 (Kurzfassung in MOBILE.md 13.10). Offen: Test auf echten Geräten, danach Version festlegen (CHANGELOG-Entwurf in MOBILE.md 13.9).
+- **Waffe aus einem Behälter in die Hand** (gefunden 2026-10-19, betrifft auch den Desktop): Wulfgrimms Langschwert liegt im Beutel „Habseligkeiten von Wulfgrimm“. Das System zählt Gegenstände in Behältern nie als geführte Waffe (`prepare.wornMeleeWeapons`), unsere Handauswahl im Kampf-Reiter bietet sie aber an: Auswählen setzt „angelegt“, die Hand bleibt trotzdem leer. Vorschlag A: beim Ziehen in die Hand aus dem Behälter nehmen (`system.parent_id` leeren). Vorschlag B: Waffen in Behältern in der Handauswahl nicht anbieten.
+- **Schmales Titelblatt am Desktop** (Fehler gefunden 2026-10-15): In `styles/dsa5-helpers-character-sheet.css` Abschnitt 18 fragen zwei Container-Regeln `.dsa5h-main` ab und stellen `.dsa5h-main` selbst um (Titelblatt-Raster bei < 700 px und < 520 px); sie greifen deshalb nie. Test 2026-10-19: Greifen sie, wird es schlechter (650 px: Seitenleiste zu schmal, Reiter überlappen; 480 px: Inhalt rutscht aus dem Fenster). Vorschlag: unter ~560 px wie auf dem Handy (Kopf oben, Kasten unter den Favoriten, keine Seitenleiste), dazwischen das jetzige zweispaltige Raster. Sonst die beiden toten Regeln löschen.
+- **Eigene Journal-Ansicht mobil?** (Frage des Nutzers 2026-10-20) Vorschlag: nein, Foundrys Blatt mit unseren Anpassungen behalten (Bearbeiten, Bild-/PDF-/Video-Seiten, Verknüpfungen, Proben-Links und andere Module funktionieren dann weiter). Die Blätter-Leiste erscheint erst ab 2 Seiten.
+- **Lyynix Bescheid geben?** Seine Rückmeldung zum Mobil-Click-Dummy ([MOBILE-FEEDBACK-2026-10-14.md](MOBILE-FEEDBACK-2026-10-14.md)) ist im Modul umgesetzt (MOBILE.md 13). Sein Steigerungsplaner-Reiter bricht auf dem Handy per CSS um (`styles/dsa5-helpers-mobile.css`), mit geplanten Schritten aber noch nicht geprüft.
+
+## Live in Foundry prüfen (0.5.1, veröffentlicht 2026-10-07)
+
+- **Bogen-Umschalter:** Knopf ⇄ in der Titelleiste von Helfer- und Systembogen, Menü-Einträge, Wechsel als Spieler, neuer Bogen an derselben Stelle. Vorschau beim Darüberfahren: kein Aufblitzen, keine liegengebliebenen unsichtbaren Fenster (`foundry.applications.instances`), keine ungewollten Akteur-Updates durch die Vorschau-Instanzen.
+- **DSA5 8.1.9, Sammelproben:** geänderte Ziel-QS zeigt „x / 5“, 0 erlaubte Proben „unbegrenzt“, normale weiter „x / 10“ bzw. „x / 7“.
+- **Sozialstatus:** Titelblatt › Persönliche Daten zeigt Unfrei/Frei/Niederadel/Adel/Hochadel; ohne Status fehlt die Zeile.
 
 ## Features / Backlog
 
-Seit 2026-09-30 als GitHub-Issues geführt (#7 CSS aufräumen; #10–#13 mit 0.3.0 erledigt) – siehe unten. Neue Feature-Ideen dort anlegen oder hier kurz notieren.
+Seit 2026-09-30 als GitHub-Issues geführt – siehe unten. Neue Feature-Ideen dort anlegen oder hier kurz notieren.
 
-- **Eigenes HUD des Moduls** (Idee 2026-10-01): ein Einstieg für mehrere Modulfunktionen. Nicht in 0.5.0 (Nutzer 2026-10-05: erst, wenn es mehr Funktionen dafür gibt). Fest eingeplant: Würfelstatistik öffnen (#28), nur wenn sie aktiviert ist. Noch kein Issue.
+- **Eigenes HUD des Moduls** (Idee 2026-10-01): ein Einstieg für mehrere Modulfunktionen, erst, wenn es mehr Funktionen dafür gibt (Nutzer 2026-10-05). Fest eingeplant: Würfelstatistik öffnen (#28), nur wenn sie aktiviert ist. Noch kein Issue.
+- **Mobil, später:** „Neu“-Markierung im Journal, eigene Tablet-Bogenansicht, Steigern/Bearbeiten auf dem Handy (mit #34), Tablet-Fensterknöpfe vergrößern falls am Gerät zu klein (siehe #43).
 
 ---
 
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 04:24 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 05:24 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (9)**
+**Offen (10)**
 
 - **[#34](https://github.com/vt-tom/dsa5-helpers/issues/34) feat: Drei Modi im Heldenbogen – Spielen, Steigern, Bearbeiten (Desktop, Tablet, Smartphone)**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-15
@@ -71,11 +70,13 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 04:24 UTC) — ni
 - **[#39](https://github.com/vt-tom/dsa5-helpers/issues/39) Vorschlag: Dramatis Personae/ Bestiarium und Auftragsbuch mit dem Charakterbogen verbinden**
   - offen · Bearbeiter: niemand · von @WiCoPala · 0 Kommentare · zuletzt geändert 2026-10-19
 - **[#40](https://github.com/vt-tom/dsa5-helpers/issues/40) feat: Ausgerüstete Waffen im Kampf-Reiter neu gestalten (Foundry, Tablet, Smartphone)**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-19
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#41](https://github.com/vt-tom/dsa5-helpers/issues/41) feat: Kopf „Wappenbanner“ mit wählbarem Bannerbild (Foundry & Titelblatt)**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 1 Kommentar · zuletzt geändert 2026-10-19
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 1 Kommentar · zuletzt geändert 2026-10-20
 - **[#42](https://github.com/vt-tom/dsa5-helpers/issues/42) feat: Kopf „Wappenbanner“ auf Smartphone und Tablet (Mobile Support)**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 1 Kommentar · zuletzt geändert 2026-10-19
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 1 Kommentar · zuletzt geändert 2026-10-20
+- **[#43](https://github.com/vt-tom/dsa5-helpers/issues/43) feat: Mobile Support (Beta) – Tablet und Smartphone, „Hybrides Spiel“**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 0 Kommentare · zuletzt geändert 2026-10-20
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 
