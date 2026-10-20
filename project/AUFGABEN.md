@@ -9,13 +9,20 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 _(leer)_
 
+## Version 0.6.1 — nächste Beta (Branch `release/0.6.1`)
+
+Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen für die Beta, GitHub-Meilenstein `0.6.1`. CHANGELOG-Abschnitt „0.6.1 — unveröffentlicht“ steht bereit.
+
+- **Enthalten:** noch nichts. Der Nutzer arbeitet die Rückmeldungen von Lyynix ein und entscheidet, welche Issues dazukommen.
+- Die Beta 0.6.0 wird damit nicht mehr zum normalen Release erklärt; zum stabilen Release wird später die letzte gute 0.6.x-Beta. Dann die Issues der Meilensteine `0.6.0` und `0.6.1` schließen und nach `main` mergen.
+
 ## Version 0.6.0 — Beta (Branch `release/0.6.0`)
 
 Mobile Support erscheint mit 0.6.0 als Beta. GitHub-Meilenstein `0.6.0`.
 
 - **Enthalten:** Mobile Support ([#43](https://github.com/vt-tom/dsa5-helpers/issues/43)), Kopf „Wappenbanner“ ([#41](https://github.com/vt-tom/dsa5-helpers/issues/41), [#42](https://github.com/vt-tom/dsa5-helpers/issues/42)), Waffenkarte „Banner“ ([#40](https://github.com/vt-tom/dsa5-helpers/issues/40)), Suche bei „Zustand hinzufügen“ ([#37](https://github.com/vt-tom/dsa5-helpers/issues/37)), Sonderfertigkeiten zweispaltig ([#38](https://github.com/vt-tom/dsa5-helpers/issues/38)), Aura um freigestellte Porträts ([#35](https://github.com/vt-tom/dsa5-helpers/issues/35)). CHANGELOG 0.6.0 ist vollständig.
 - **Nicht in 0.6.0** (Nutzer 2026-10-20): #34, #36 (Rüstung zentral, für ein späteres Update; beim Umsetzen die Waffenkarte im Kampf-Reiter mitprüfen), #39, #44, #45.
-- **Beta veröffentlicht 2026-10-20** als Pre-release `v0.6.0` (Beta-URL liefert 0.6.0, stabile URL weiter 0.5.1). Offen: Mobil-Kanal einstellen (Job `mobile` in `release.yml` entfernen?); zum normalen Release erklären erst nach Freigabe durch den Nutzer (RELEASE.md „Beta zum normalen Release machen“), dann Issues des Meilensteins schließen.
+- **Beta veröffentlicht 2026-10-20** als Pre-release `v0.6.0` (Beta-URL liefert 0.6.0, stabile URL weiter 0.5.1). Offen: Mobil-Kanal einstellen (Job `mobile` in `release.yml` entfernen?).
 
 ### Live prüfen (0.6.0)
 

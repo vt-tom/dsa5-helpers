@@ -2,6 +2,8 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+## [0.6.1] — unveröffentlicht
+
 ## [0.6.0] — 2026-10-20
 
 ### Neu
@@ -173,6 +175,7 @@ Erste Version, installierbar über die Manifest-URL.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
 
+[0.6.1]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/vt-tom/dsa5-helpers/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.4.0...v0.5.0
