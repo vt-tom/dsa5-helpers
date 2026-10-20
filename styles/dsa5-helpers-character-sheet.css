@@ -3645,6 +3645,7 @@
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side {
   align-items: stretch;
   text-align: left;
+  container: dsa5h-hand / inline-size;
 }
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > :is(.dsa5h-hand-slot, .dsa5h-hand-2h-note) {
@@ -6133,9 +6134,12 @@
   background: var(--head-base);
 }
 
-/* Körper: Rüstung im schmaleren Panel (Issue #36, benannter Container dsa5h-body auf .dsa5h-body-panel). Bis 560 px bleibt
-   das Zonenkreuz humanoid, nur schmaler (eine Spalte untereinander war schlechter, Rückmeldung 2026-10-20); darunter
-   rutschen Zonen bzw. Wappenschild unter die Hände, die Zonen als kleine Kacheln Bild | Zone + Teil | RS. */
+/* Körper: Rüstung im schmaleren Panel (Issue #36, benannter Container dsa5h-body auf .dsa5h-body-panel).
+   Rückmeldung 2026-10-20 (Tablet mit Chat daneben): das Schild rutschte unter die Hände, obwohl daneben eine fast leere
+   Karte stand. Jetzt: Ist eine Hand frei oder von der beidhändigen Waffe belegt (.free-left/.free-right), kommt die
+   Rüstung in diese Karte, der Hinweis wird zur Kopfzeile. Sind beide Hände belegt, bleibt ein kleineres Schild in der
+   Mitte, weitere Teile als Bildchen mit RS (Name im Tooltip). Das Zonenkreuz rutscht nur bei zwei belegten Händen und
+   sehr schmalem Panel unter die Hände. */
 @container dsa5h-body (max-width: 690px) {
   .dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones {
     --mid: 188px;
@@ -6152,45 +6156,108 @@
 }
 
 @container dsa5h-body (max-width: 680px) {
-  .dsa5-helpers-sheet .dsa5h-body-grid.sides {
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides,
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones:is(.free-left, .free-right) {
     --mid: 110px;
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-center-crest {
-    grid-column: 1 / -1;
-    grid-row: 2;
+  /* Rüstung in der freien bzw. belegten Hand: dieselbe Rasterzelle wie die gestrichelte Karte, darüber gelegt */
+  .dsa5-helpers-sheet .dsa5h-body-grid:is(.free-left, .free-right) > .dsa5h-body-side {
+    grid-row: 1;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid.free-right > .dsa5h-armor-center {
+    grid-column: 3;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid.free-left > .dsa5h-armor-center {
+    grid-column: 1;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:is(.free-left, .free-right) > .dsa5h-armor-center {
+    position: relative;
+    z-index: 1;
+    margin-top: 62px;
+    padding: 0 10px 10px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:is(.free-left, .free-right) .dsa5h-body-side > :is(.dsa5h-hand-free, .dsa5h-hand-empty, .dsa5h-hand-2h-note) {
+    justify-content: flex-start;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:is(.free-left, .free-right) .dsa5h-body-side > .dsa5h-hand-free {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  /* Beide Hände belegt: kleineres Schild in der schmalen Mitte, weitere Teile als Bildchen mit RS */
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-crest {
+    width: 92px;
+    height: 106px;
+    padding-bottom: 14px;
+    border-radius: 6px 6px 46px 46px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-crest-rs strong {
+    font-size: 24px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-crest-name {
+    max-width: 108px;
+    padding-inline: 6px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-extras {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px 16px;
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-center-crest .dsa5h-armor-extras {
-    width: 190px;
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-extra-main {
+    grid-template-columns: 22px auto;
+    padding-right: 6px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:not(.free-left):not(.free-right) :is(.dsa5h-armor-extra-name, .dsa5h-armor-extras-hint) {
+    display: none;
   }
 }
 
-@container dsa5h-body (max-width: 560px) {
-  .dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones {
-    --mid: 110px;
+/* Waffenkarte zu schmal für Bild und Würfel nebeneinander (Container dsa5h-hand = Seite): Würfelraster unter dem Bild
+   über die volle Breite — normale Karte unter 250 px, kompakte neben dem Zonenkreuz unter 205 px. */
+@container dsa5h-hand (max-width: 250px) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:not(.armor-zones) .dsa5h-body-side > .dsa5h-hand-card {
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas: "name name" "meta meta" "media media" "stats stats" "extra extra";
+    row-gap: 10px;
   }
+}
 
-  /* Karte zu schmal für Bild und Würfel nebeneinander: Würfelraster unter dem Bild über die volle Breite */
+@container dsa5h-hand (max-width: 205px) {
   .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
     grid-template-rows: auto auto auto auto 1fr;
     grid-template-areas: "name name" "meta meta" "media media" "stats stats" "extra extra";
+    row-gap: 10px;
+  }
+}
+
+/* Sehr schmales Panel: Zonen bei zwei belegten Händen unter den Händen, als kleine Kacheln Bild | Zone + Teil | RS,
+   zwei bis drei je Zeile. */
+@container dsa5h-body (max-width: 560px) {
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones:not(.free-left):not(.free-right) {
+    --mid: 110px;
   }
 
-  .dsa5-helpers-sheet .armor-zones > .dsa5h-armor-center {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) > .dsa5h-armor-center {
     grid-column: 1 / -1;
     grid-row: 2;
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-zone-cross {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross {
     grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   }
 
-  .dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-zone-cross > .dsa5h-armor-zone {
+  .dsa5-helpers-sheet .dsa5h-content .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone {
     grid-column: auto;
     grid-row: auto;
     align-self: stretch;
@@ -6206,7 +6273,7 @@
     text-align: left;
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone img {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone img {
     position: static;
     grid-area: img;
     width: 28px;
@@ -6215,7 +6282,7 @@
     opacity: 1;
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone.empty::before {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone.empty::before {
     content: "";
     grid-area: img;
     width: 28px;
@@ -6225,20 +6292,20 @@
     border-radius: 50%;
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-armor-zone-label {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-armor-zone-label {
     grid-area: label;
     color: var(--muted);
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-zl-short {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-zl-short {
     display: none;
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-zl-long {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-zl-long {
     display: inline;
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-armor-zone-item {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-armor-zone-item {
     grid-area: item;
     display: block;
     max-width: 100%;
@@ -6248,7 +6315,7 @@
     font-size: var(--fs-small);
   }
 
-  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone strong {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone strong {
     grid-area: rs;
     font-size: 18px;
   }

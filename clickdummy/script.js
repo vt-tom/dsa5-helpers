@@ -1630,6 +1630,8 @@ function renderBody() {
     right = [handSlot("off")];
   }
 
+  // Freie bzw. von der beidhändigen Waffe belegte Seite: im schmalen Panel nimmt sie die Rüstung auf (CSS, Abschnitt 18).
+  const freeSide = twoHanded ? (TWO_HANDED_SIDE === "left" ? "right" : "left") : !HANDS.off ? "right" : !HANDS.main ? "left" : null;
   // Aufschlüsselung von Rüstungsschutz und Belastung je Teil als Tooltip des Wappenschilds.
   const shieldTip = [
     `Rüstungsschutz ${armorSum.sum}${magicText ? ` (${magicText})` : ""}`,
@@ -1752,7 +1754,7 @@ function renderBody() {
       top,
       // Komplettes Artenbild als Hintergrund der ganzen Fläche, abgeblendet (Nutzer-Feedback 2026-09-28); als echtes
       // <img> (url() in einer CSS-Variable löst Chrome gegen den Stylesheet-Pfad auf, 2026-09-30).
-      el("div", { class: "body-grid sides" + (twoHanded ? " two-handed" : "") + (ARMOR_ZONES ? " armor-zones" : ""), "data-figure": BODY_FIGURE }, [
+      el("div", { class: "body-grid sides" + (twoHanded ? " two-handed" : "") + (ARMOR_ZONES ? " armor-zones" : "") + (freeSide ? ` free-${freeSide}` : ""), "data-figure": BODY_FIGURE }, [
         el("img", { class: "body-figure", src: figureSrc, alt: "", "aria-hidden": "true" }),
         figureSwitch,
         el("div", { class: "body-side left" }, left),

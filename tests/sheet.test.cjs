@@ -112,12 +112,14 @@ test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the 
  p.wornMeleeWeapons=[main,off];p.wornRangedWeapons=[];actor.items.set('main',main);actor.items.set('off',off);
  let context=await sheet._prepareContext({});let html=render(context);
  assert(html.includes('data-sub-panel="combat:body"'));assert(context.dsa5h.subnav.find(n=>n.tab==='combat').items.some(i=>i.id==='body'));
- assert.equal(context.dsa5h.body.hands.length,2);assert(html.includes('data-dsa5h-hand="offhand"'));assert(html.includes('data-current="off"'));
+ assert.equal(context.dsa5h.body.hands.length,2);assert.equal(context.dsa5h.body.freeSide,null,'both hands busy: no free side');assert(html.includes('data-dsa5h-hand="offhand"'));assert(html.includes('data-current="off"'));
  const offSelect=elements(html,el=>el.attribs?.['data-dsa5h-hand']==='offhand')[0];assert(!dom.findAll(el=>el.attribs?.value==='main'&&Object.hasOwn(el.attribs,'selected'),offSelect.children).length);
  assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-pill')).length,4,'AT/PA pills on both hands (Waffenkarte F, #40)');assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-card')).length,2);
  assert(html.includes('data-action="dsa5hBodyFigure"'),'figure switch in edit mode');assert(html.includes('data-cast-dialog="spell"'));
  main.wieldedTwoHand=true;context=await sheet._prepareContext({});html=render(context);
  assert.equal(context.dsa5h.body.hands.length,1);assert(context.dsa5h.body.single);assert(!html.includes('data-dsa5h-hand="offhand"'));
+ // Schmaler Bogen (Issue #36): die von der beidhändigen Waffe belegte Seite nimmt die Rüstung auf (CSS über free-*).
+ assert.equal(context.dsa5h.body.freeSide,'right');assert(html.includes('dsa5h-body-grid sides free-right'));
  const mainOptions=context.dsa5h.body.hands[0].options;assert(mainOptions.find(o=>o.id==='main').twoHanded);
  context.dsa5h.editMode=false;assert(!render(context).includes('data-action="dsa5hBodyFigure"'),'figure switch only in edit mode');
  assert(elements(html,el=>el.name==='img'&&String(el.attribs?.class??'').includes('dsa5h-body-figure')&&el.attribs.src===context.dsa5h.body.figure).length===1,'figure is a real img, not a CSS url() variable');assert(!html.includes('--figure'));

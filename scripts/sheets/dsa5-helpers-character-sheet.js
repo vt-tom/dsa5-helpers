@@ -647,7 +647,13 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     return {
       armor,
       mainArmor,
-      extraArmor: armor.length > 1 ? armor.filter(item => item !== mainArmor) : [],
+      // Weitere Teile mit Tooltip (Name, RS, BE; escaped wie das Schild) — im schmalen Bogen steht nur das Bild mit RS.
+      extraArmor: armor.length > 1 ? armor.filter(item => item !== mainArmor).map(item => ({
+        item,
+        tooltip: `${esc(item.name)}: ${esc(game.i18n.localize('CHARAbbrev.RS'))} ${item.system?.protection?.value ?? 0}, ${esc(game.i18n.localize('DSA5HELPERS.EncumbranceAbbr'))} ${item.system?.calculatedEncumbrance ?? 0}`,
+      })) : [],
+      // Freie bzw. von der beidhändigen Waffe belegte Seite: im schmalen Bogen nimmt sie die Rüstung auf (CSS, Abschnitt 18).
+      freeSide: mainTwoHanded ? (twoHandedSide === 'left' ? 'right' : 'left') : !off ? 'right' : !main ? 'left' : null,
       zones: this._armorZones(armor),
       encumbrance,
       armorTooltip,

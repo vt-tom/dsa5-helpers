@@ -4371,6 +4371,7 @@ button.fav-chip-roll {
 .body-side {
   align-items: stretch;
   text-align: left;
+  container: dsa5h-hand / inline-size;
 }
 
 .body-side > :is(.hand-slot, .hand-2h-note) {
@@ -6451,8 +6452,13 @@ button.fav-chip-roll {
   background: none;
 }
 
-/* --- Körper: Rüstung im schmaleren Panel (Issue #36, benannter Container dsa5h-body auf .body-panel) --- */
+/* --- Körper: Rüstung im schmaleren Panel (Issue #36, benannter Container dsa5h-body auf .body-panel) ---
 
+   Rückmeldung 2026-10-20 (Tablet mit Chat daneben): das Schild rutschte unter die Hände, obwohl daneben eine fast leere
+   Karte stand. Jetzt: Ist eine Hand frei oder von der beidhändigen Waffe belegt (.free-left/.free-right), kommt die
+   Rüstung in diese Karte, der Hinweis wird zur Kopfzeile. Sind beide Hände belegt, bleibt ein kleineres Schild in der
+   Mitte, weitere Teile als Bildchen mit RS (Name im Tooltip). Das Zonenkreuz rutscht nur bei zwei belegten Händen und
+   sehr schmalem Panel unter die Hände. */
 @container dsa5h-body (max-width: 690px) {
   .body-grid.sides.armor-zones {
     --mid: 188px;
@@ -6466,35 +6472,112 @@ button.fav-chip-roll {
   .zone-value {
     height: 84px;
   }
-
-  .armor-zone-label {
-    font-size: var(--fs-meta);
-  }
 }
 
-/* Sehr schmales Panel: kein Platz mehr neben den Händen — die Zonen rutschen darunter, als kleine Kacheln
-   Bild | Zone + Teil | RS, zwei bis drei je Zeile. */
-@container dsa5h-body (max-width: 560px) {
-  .body-grid.sides.armor-zones {
+@container dsa5h-body (max-width: 680px) {
+  .body-grid.sides,
+  .body-grid.sides.armor-zones:is(.free-left, .free-right) {
     --mid: 110px;
   }
 
-  /* Karte zu schmal für Bild und Würfel nebeneinander: Würfelraster unter dem Bild über die volle Breite */
+  /* Rüstung in der freien bzw. belegten Hand: dieselbe Rasterzelle wie die gestrichelte Karte, darüber gelegt */
+  .body-grid.free-right > .armor-center {
+    grid-column: 3;
+  }
+
+  .body-grid.free-left > .armor-center {
+    grid-column: 1;
+  }
+
+  .body-grid:is(.free-left, .free-right) > .body-side {
+    grid-row: 1;
+  }
+
+  .body-grid:is(.free-left, .free-right) > .armor-center {
+    position: relative;
+    z-index: 1;
+    margin-top: 62px;
+    padding: 0 10px 10px;
+  }
+
+  .body-grid:is(.free-left, .free-right) .body-side > :is(.hand-slot-free, .hand-empty, .hand-2h-note) {
+    justify-content: flex-start;
+  }
+
+  .body-grid:is(.free-left, .free-right) .body-side > .hand-slot-free {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  /* Beide Hände belegt: kleineres Schild in der schmalen Mitte, weitere Teile als Bildchen mit RS */
+  .body-grid:not(.free-left):not(.free-right) .armor-crest {
+    width: 92px;
+    height: 106px;
+    padding-bottom: 14px;
+    border-radius: 6px 6px 46px 46px;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) .armor-crest-rs strong {
+    font-size: 24px;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) .armor-crest-name {
+    max-width: 108px;
+    padding-inline: 6px;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) .armor-extras {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) .armor-extra {
+    grid-template-columns: 22px auto;
+    width: auto;
+    padding-right: 6px;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) :is(.armor-extra-name, .armor-extras-hint) {
+    display: none;
+  }
+}
+
+/* Waffenkarte zu schmal für Bild und Würfel nebeneinander (Container dsa5h-hand = Seite): Würfelraster unter dem Bild
+   über die volle Breite — normale Karte unter 250 px, kompakte neben dem Zonenkreuz unter 205 px. */
+@container dsa5h-hand (max-width: 250px) {
+  .body-grid:not(.armor-zones) .body-side > .hand-card {
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas: "name name" "meta meta" "media media" "stats stats" "extra extra";
+    row-gap: 10px;
+  }
+}
+
+@container dsa5h-hand (max-width: 205px) {
   .body-side > .hand-card {
     grid-template-rows: auto auto auto auto 1fr;
     grid-template-areas: "name name" "meta meta" "media media" "stats stats" "extra extra";
+    row-gap: 10px;
+  }
+}
+
+/* Sehr schmales Panel: Zonen bei zwei belegten Händen unter den Händen, als kleine Kacheln Bild | Zone + Teil | RS,
+   zwei bis drei je Zeile. */
+@container dsa5h-body (max-width: 560px) {
+  .body-grid.sides.armor-zones:not(.free-left):not(.free-right) {
+    --mid: 110px;
   }
 
-  .armor-zones > .armor-center {
+  .armor-zones:not(.free-left):not(.free-right) > .armor-center {
     grid-column: 1 / -1;
     grid-row: 2;
   }
 
-  .armor-zone-cross {
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross {
     grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   }
 
-  .armor-zone-cross > .armor-zone {
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone {
     grid-column: auto;
     grid-row: auto;
     align-self: stretch;
@@ -6510,7 +6593,7 @@ button.fav-chip-roll {
     text-align: left;
   }
 
-  .armor-zone-cross > .armor-zone img {
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone img {
     position: static;
     grid-area: img;
     width: 28px;
@@ -6519,7 +6602,7 @@ button.fav-chip-roll {
     opacity: 1;
   }
 
-  .armor-zone-cross > .armor-zone.empty::before {
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone.empty::before {
     content: "";
     grid-area: img;
     width: 28px;
@@ -6529,21 +6612,20 @@ button.fav-chip-roll {
     box-sizing: border-box;
   }
 
-  .armor-zone-cross > .armor-zone .armor-zone-label {
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone .armor-zone-label {
     grid-area: label;
-    font-size: var(--fs-meta);
     color: var(--muted);
   }
 
-  .armor-zone-cross > .armor-zone .zl-short {
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone .zl-short {
     display: none;
   }
 
-  .armor-zone-cross > .armor-zone .zl-long {
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone .zl-long {
     display: inline;
   }
 
-  .armor-zone-cross > .armor-zone .armor-zone-item {
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone .armor-zone-item {
     grid-area: item;
     display: block;
     max-width: 100%;
@@ -6553,29 +6635,9 @@ button.fav-chip-roll {
     font-size: var(--fs-small);
   }
 
-  .armor-zone-cross > .armor-zone strong {
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone strong {
     grid-area: rs;
     font-size: 18px;
-  }
-}
-
-/* Schmales Panel: Wappenschild unter den Händen, weitere Teile daneben. */
-@container dsa5h-body (max-width: 680px) {
-  .body-grid.sides {
-    --mid: 110px;
-  }
-
-  .armor-center-crest {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 16px;
-  }
-
-  .armor-center-crest .armor-extras {
-    width: 190px;
   }
 }
 
