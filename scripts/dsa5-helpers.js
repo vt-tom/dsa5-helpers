@@ -25,6 +25,8 @@ function findTraditionIcon(text, names, folder) {
 }
 
 Hooks.once('init', async () => {
+  // Changelog als erstes Menü — Foundry zeigt Menüs in der Reihenfolge ihrer Registrierung (Nutzer 2026-10-20).
+  game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
   game.settings.register('dsa5-helpers', 'theme', { scope: 'client', config: false, type: String, default: 'light', choices: { light: 'Light', dark: 'Dark' } });
   // Standard-Bogen für Helden (Issue #13): nur der Foundry-Weg über makeDefault — eine ausdrückliche Wahl am Akteur
   // oder unter „Standard-Bögen konfigurieren“ hat weiter Vorrang (Nutzerentscheidung 2026-09-30).
@@ -48,7 +50,6 @@ Hooks.once('init', async () => {
   initMobile();
   // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
   initSheetSwitcher();
-  game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
   Handlebars.registerHelper('dsa5hFormatNum', value => String(value ?? 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' '));

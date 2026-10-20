@@ -7,7 +7,8 @@ Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen 
 
 ## Neu (noch nicht bearbeitet)
 
-_(leer)_
+- **Gefährten-Karte:** bei langem Namen („Esel mit Zügel und Krams und noch mehr“, 800 px Fenster) laufen die Knöpfe (Fertigkeiten, H…) rechts aus der Karte. Löschen geht über ⋮ → „Löschen“ (Systemmenü) — evtl. sichtbarer machen?
+- **Moduleinstellungen gruppieren** (Nutzer 2026-10-20: nicht unübersichtlich werden lassen, Zusammengehöriges in Untermenüs). Vorschlag siehe Antwort, Entscheidung offen.
 
 ## Version 0.6.1 — nächste Beta (Branch `release/0.6.1`)
 
@@ -17,9 +18,9 @@ Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen f�
 - **Enthalten:** #36 Rüstung mittig über der Figur (Wappenschild, Trefferzonen), Waffenkarte in drei Bändern, Lesbarkeit im Körper-Reiter.
 - Die Beta 0.6.0 wird damit nicht mehr zum normalen Release erklärt; zum stabilen Release wird später die letzte gute 0.6.x-Beta. Dann die Issues der Meilensteine `0.6.0` und `0.6.1` schließen und nach `main` mergen.
 
-- **#34 Drei Modi** in Foundry umgesetzt (2026-10-20, live geprüft: Wechsel über das Schloss, Stepper/Eingabefelder je Modus). Live prüfen: Spieler-Konto mit „Spieler dürfen bearbeiten“ aus; Neues per Drag & Drop im Spielmodus; Tablet-Fensterleiste. Mobil (Smartphone) weiter nur Spielmodus — Steigern/Bearbeiten auf dem Handy siehe Backlog.
+- **#34 Drei Modi** in Foundry umgesetzt und live geprüft (Spieler ohne Bearbeiten vom Nutzer bestätigt). Nachtrag 2026-10-20: Eigenschaften-+/− auch im Steigern-Modus, Lösch-Tooltip „(AP zurückerstatten)“.
 
-- **#46 Bannerbild ohne Dateibrowser** umgesetzt (2026-10-20, live geprüft: Player2 ohne Datei-Rechte lädt über die SL hoch, Datei im Standardordner, Flag gesetzt; SL-Menü). Live prüfen: echter Datei-Dialog auf Windows/Tablet/Handy; Forge-Speicher (`forgevtt`) ungetestet.
+- **#46 Bannerbild:** Windows-Datei-Dialog vom Nutzer bestätigt; Tablet/Handy und The Forge (`forgevtt`) warten auf Rückmeldungen der Nutzer.
 
 ### Live prüfen (0.6.1)
 

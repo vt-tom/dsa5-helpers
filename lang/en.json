@@ -173,8 +173,8 @@
         "Hint": "Makes the DSA5 Helpers sheet the default for all heroes. Heroes with an explicitly chosen sheet keep it. Foundry reloads after changing this."
       },
       "PlayersMayEdit": {
-        "Name": "Players may edit",
-        "Hint": "Allows players to use the edit mode of the hero sheet (change values without AP). When off, players can only play and advance; the GM can always edit."
+        "Name": "Players: change values without AP (edit mode)",
+        "Hint": "Allows players to use the hero sheet's “Edit” mode, where values can be changed directly without adventure points. When off, players can only play and advance with AP; the GM can always edit."
       },
       "BannerPath": {
         "Name": "Default folder for banner images",
@@ -504,6 +504,7 @@
       "NoPermission": "No permission for this hero.",
       "Failed": "The banner image could not be uploaded.",
       "Timeout": "No answer from the GM — please try again."
-    }
+    },
+    "DeleteRefund": "Delete (refund AP)"
   }
 }

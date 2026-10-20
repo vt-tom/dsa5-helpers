@@ -632,7 +632,7 @@ function buildSimpleRow(d) {
 // die Original-Array-Referenz aus data.js, `item` der zu löschende Eintrag (Mutation direkt auf den Daten,
 // analog zu favStar()).
 function deletableChip(iconSrc, label, list, item, extra = null) {
-  const delLabel = `${typeof label === "string" ? label : "Eintrag"} löschen`;
+  const delLabel = `${typeof label === "string" ? label : "Eintrag"} löschen (AP zurückerstatten)`;
   const delBtn = el("button", { type: "button", class: "chip-delete adv-only", title: delLabel, "aria-label": delLabel }, "×");
   delBtn.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -1862,7 +1862,7 @@ function magicIcon(item) {
 // cls "adv-only" für Einträge, deren Entfernen AP erstattet (Zauber, Liturgien — Issue #34: Steigern + Bearbeiten).
 // cls "" für Zustände und Statuseffekte: in allen Modi entfernbar (Issue #34, im Modul per Rechtsklick/Kontextmenü).
 function rowDeleteBtn(list, item, cls = "edit-only") {
-  const label = `${item.name || "Eintrag"} löschen`;
+  const label = `${item.name || "Eintrag"} löschen${cls === "adv-only" ? " (AP zurückerstatten)" : ""}`;
   const btn = el("button", { type: "button", class: `row-delete ${cls}`, title: label, "aria-label": label }, "×");
   btn.addEventListener("click", (e) => {
     e.stopPropagation();

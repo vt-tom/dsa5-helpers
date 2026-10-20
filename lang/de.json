@@ -173,8 +173,8 @@
         "Hint": "Macht den DSA5-Helpers-Bogen zum Standard für alle Helden. Helden, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Nach dem Ändern wird Foundry neu geladen."
       },
       "PlayersMayEdit": {
-        "Name": "Spieler dürfen bearbeiten",
-        "Hint": "Erlaubt Spielern den Bearbeiten-Modus im Heldenbogen (Werte ohne AP ändern). Ausgeschaltet können Spieler nur spielen und steigern; die Spielleitung darf immer bearbeiten."
+        "Name": "Spieler: Werte ohne AP ändern (Bearbeiten-Modus)",
+        "Hint": "Erlaubt Spielern im Heldenbogen den Modus „Bearbeiten“, in dem sich Werte direkt und ohne Abenteuerpunkte ändern lassen. Ausgeschaltet können Spieler nur spielen und mit AP steigern; die Spielleitung darf immer bearbeiten."
       },
       "BannerPath": {
         "Name": "Standardordner für Bannerbilder",
@@ -504,6 +504,7 @@
       "NoPermission": "Keine Berechtigung für diesen Helden.",
       "Failed": "Das Bannerbild konnte nicht hochgeladen werden.",
       "Timeout": "Keine Antwort der Spielleitung — bitte erneut versuchen."
-    }
+    },
+    "DeleteRefund": "Löschen (AP zurückerstatten)"
   }
 }
