@@ -9,8 +9,9 @@
 import { initWoundCheck, woundCheck, findTreatWounds } from './wound-check.js';
 import { helpAction } from './help-action.js';
 import { initSystemSheetEntries, rerenderSystemSheets } from './system-sheet.js';
+import { initManeuvers, toggleStance, aimRound, MANEUVER_IDS, SETTING as MANEUVER_SETTING, enabledManeuvers, sheetData as maneuverSheetData } from './maneuvers.js';
 
-export { woundCheck, findTreatWounds, helpAction };
+export { woundCheck, findTreatWounds, helpAction, toggleStance, aimRound, MANEUVER_IDS, enabledManeuvers, maneuverSheetData };
 
 const MODULE_ID = 'dsa5-helpers';
 export const SETTING = 'houseRules';
@@ -28,6 +29,17 @@ export const HOUSE_RULES = [
     entries: [
       { sheet: 'quick-actions' },
       { system: 'header', label: 'DSA5HELPERS.HouseRules.helpAction.Button', run: app => helpAction(app.actor, app.getTokenId?.()) },
+    ],
+  },
+  {
+    // Grundmanöver (Paladose, #45): Modifikatoren über den Probendialog (jeder Bogen); Verteidigungshaltung und Zielen
+    // im Kampf-Reiter bzw. im Kopfmenü des Systembogens. Je Manöver ein Schalter auf der Buchseite.
+    id: 'maneuvers', icon: 'fas fa-khanda', credit: 'Paladose', page: `modules/${MODULE_ID}/templates/house-rules/maneuvers.hbs`,
+    entries: [
+      { sheet: 'combat (block)' },
+      { system: 'dialog' },
+      { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.stance.Toggle', when: () => enabledManeuvers().includes('stance'), run: app => toggleStance(app.actor) },
+      { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.aim.Button', when: () => enabledManeuvers().includes('aim'), run: app => aimRound(app.actor) },
     ],
   },
 ];
@@ -53,6 +65,12 @@ export function isRuleActive(id) {
   return !!activeRules()[id];
 }
 
+/** Nur SL: ein einzelnes Grundmanöver ein- oder ausschalten (Buchseite, #45). */
+export async function setManeuverEnabled(id, enabled) {
+  if (!game.user.isGM || !MANEUVER_IDS.includes(id)) return;
+  await game.settings.set(MODULE_ID, MANEUVER_SETTING, { ...(game.settings.get(MODULE_ID, MANEUVER_SETTING) ?? {}), [id]: !!enabled });
+}
+
 /** Nur die SL: Regel ein- oder ausschalten. */
 export async function setRuleActive(id, active) {
   if (!game.user.isGM || !HOUSE_RULES.some(rule => rule.id === id)) return;
@@ -74,4 +92,13 @@ export function registerHouseRules() {
   });
   initWoundCheck(() => isRuleActive('woundCheck'));
   initSystemSheetEntries(HOUSE_RULES, isRuleActive);
+  initManeuvers(() => isRuleActive('maneuvers'));
+  // Einzelschalter der Grundmanöver: Buch und Bögen neu zeichnen wie bei der Haupteinstellung.
+  Hooks.on('updateSetting', setting => {
+    if (setting.key !== `${MODULE_ID}.${MANEUVER_SETTING}`) return;
+    for (const app of foundry.applications.instances.values()) {
+      if (app.id === 'dsa5-helpers-house-rules' || (app.rendered && app.options?.classes?.includes('dsa5-helpers-sheet'))) app.render();
+    }
+    rerenderSystemSheets();
+  });
 }

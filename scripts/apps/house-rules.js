@@ -3,7 +3,7 @@
 // - Buch: Inhaltsverzeichnis, dann je Regel eine Seite (eigenes Template je Regel) mit dem Schalter oben rechts im
 //   Seitenkopf; Blättern per Pfeilknöpfen neben der Seite, Inhaltsverzeichnis oder Pfeiltasten, mit Umblätter-Animation.
 // Geöffnet über die Moduleinstellungen (registerMenu, für alle lesbar) oder api.openHouseRules().
-import { HOUSE_RULES, isRuleActive, setRuleActive } from '../house-rules/rules.js';
+import { HOUSE_RULES, isRuleActive, setRuleActive, setManeuverEnabled, MANEUVER_IDS, enabledManeuvers } from '../house-rules/rules.js';
 
 const MODULE_ID = 'dsa5-helpers';
 const APP_ID = 'dsa5-helpers-house-rules';
@@ -19,7 +19,7 @@ export function getHouseRulesApp() {
       classes: ['dsa5-helpers-house-rules'],
       window: { title: 'DSA5HELPERS.HouseRules.Title', icon: 'fas fa-book', resizable: true },
       position: { width: 640, height: 640 },
-      actions: { setView: this._setView, openPage: this._openPage, turnPage: this._turnPage, toggleRule: this._toggleRule },
+      actions: { setView: this._setView, openPage: this._openPage, turnPage: this._turnPage, toggleRule: this._toggleRule, toggleManeuver: this._toggleManeuver },
     };
 
     static PARTS = { main: { template: `modules/${MODULE_ID}/templates/house-rules.hbs`, scrollable: ['.dsa5h-hr-body'] } };
@@ -31,8 +31,12 @@ export function getHouseRulesApp() {
       const context = await super._prepareContext(options);
       const rules = HOUSE_RULES.map((rule, index) => ({ ...rule, index, number: index + 1, pageIndex: index + 1, active: isRuleActive(rule.id), key: `DSA5HELPERS.HouseRules.${rule.id}` }));
       const page = Math.min(Math.max(this.state.page, 0), rules.length);
+      const enabled = enabledManeuvers();
       return Object.assign(context, {
         isGM: game.user.isGM,
+        // Sprache des Regeltexts (Grundmanöver: eigener Text je Sprache) und Einzelschalter der Manöver.
+        lang: game.i18n.lang === 'de' ? 'de' : 'en',
+        maneuverStates: Object.fromEntries(MANEUVER_IDS.map(id => [id, { enabled: enabled.includes(id) }])),
         view: this.state.view,
         list: this.state.view === 'list',
         rules,
@@ -84,6 +88,11 @@ export function getHouseRulesApp() {
     static async _toggleRule(_event, target) {
       if (!game.user.isGM) return;
       await setRuleActive(target.dataset.ruleId, !isRuleActive(target.dataset.ruleId));
+    }
+    static async _toggleManeuver(_event, target) {
+      if (!game.user.isGM) return;
+      const id = target.dataset.maneuver;
+      await setManeuverEnabled(id, !enabledManeuvers().includes(id));
     }
   };
   return HouseRulesApp;

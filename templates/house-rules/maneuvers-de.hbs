@@ -1,0 +1,99 @@
+{{! Regeltext „Möglichkeiten des Kampfes“ von Paladose (Veröffentlichung mit dem Modul genehmigt, 2026-10-20), deutsch. }}
+<section class="dsa5h-hr-section">
+  <h3>Möglichkeiten des Kampfes</h3>
+  <p>DSA ist in jeder seiner Editionen ein Duellsimulator, wenn es um den Kampf geht. DSA5 ist besonders reglementiert, da es dem Charakter den Zugang zu selbst einfachsten Handlungen oder Manövern grundsätzlich verwehrt. Mit den folgenden Regelungen werden viele Basismanöver allen Charakteren zugänglich gemacht. Sie werden als Grundmanöver aufgeführt und stellen eine Option im Kampf dar. Der Vollständigkeit halber werden im Folgenden auch alle anderen Aktionen, die möglich sind, aufgeführt.</p>
+  <p>Grundmanöver haben die Eigenheit, dass sie von einer Leiteigenschaft beeinflusst werden. Je höher diese ist, desto effektiver kann das Grundmanöver eingesetzt werden. Dies soll dafür sorgen, dass Spieler, die sich nicht vollständig auf Kampf ausrichten, auch auf späteren Ebenen einzigartig handlungsfähig sind und bleiben.</p>
+</section>
+
+<section class="dsa5h-hr-section">
+  <h3>So funktioniert es im Modul</h3>
+  <ul>
+    <li>Die Grundmanöver erscheinen im Probendialog des Systems bei Angriff, Parade und Ausweichen als auswählbare Modifikatoren, mit der Stufe im Namen (z. B. „Vorstoß (MU 15): AT +4“). Von jedem Manöver lässt sich nur ein Eintrag anhaken.</li>
+    <li>Ein Manöver erscheint nur, wenn es mit der verwendeten Waffe erlaubt ist (nach Kampftechnik, siehe Hinweise). Sonderfälle einzelner Waffen oder Umstände prüft das Modul nicht – Spielleitung und Spieler achten selbst darauf.</li>
+    <li>Die Kombinationsregel (siehe „Grundmanöver einsetzen“) wird nur angezeigt, nicht erzwungen.</li>
+    <li>Verteidigungshaltung und Zielen schaltet man im Kampf-Reiter des Heldenbogens (Block „Grundmanöver“) bzw. im Menü ⋮ des Systembogens. Ist das Grundmanöver Zielen an, entfällt das Zielen des Systems.</li>
+  </ul>
+</section>
+
+<section class="dsa5h-hr-section">
+  <h3>Aktionen im Kampf</h3>
+  <h4>Grundmanöver einsetzen</h4>
+  <p>Wenn nichts anderes angegeben ist, kann ein Spieler seinen Charakter ein Grundmanöver einsetzen lassen und dies ggf. besonders blumig beschreiben. Grundmanöver sind weiter unten ausführlich beschrieben. Pro Attacke darf ein Grundmanöver mit einem Grundmanöver oder einem Spezialmanöver kombiniert werden. Passive Manöver dürfen beliebig hinzuaddiert werden.</p>
+  <h4>Benutzung der Kampfumgebung</h4>
+  <p>Dies sind vornehmlich die Manöver und der Talenteinsatz gemäß Aventurischem Kompendium 1, S. 124 ff. Der Vollständigkeit halber werden sie hier aber noch einmal aufgeführt und ggf. leicht angepasst oder erweitert.</p>
+  <h4>Bis zu Geschwindigkeitswert in Schritt laufen</h4>
+  <p>Solange ein Charakter nicht behindert ist, darf er ohne Abzüge seine GS in Schritt als Aktion zurücklegen. Ist er behindert durch großes Gewicht, Rüstung, Umgebungseffekte, Magie oder Ähnlichem, darf er mit einer gelungenen Probe auf Körperbeherrschung, die um die fehlenden GS erschwert ist, seine volle Reichweite laufen. Beabsichtigt der Held auch seine freie Aktion zum Laufen zu verwenden, verdoppelt sich die Erschwerung, es sei denn, der Held will in der freien Aktion wieder nur die reduzierte GS laufen.</p>
+  <h4>Waffe ziehen</h4>
+  <p>Wird eine Waffe über der Schulter oder in einem Wehrgehänge getragen, kann sie innerhalb einer Aktion kampfbereit gemacht werden. Verstaute Waffen hervorzuholen dauert 2 Kampfrunden.</p>
+  <h4>Schusswaffe laden</h4>
+  <p>Je nachdem, um welche Schusswaffe es sich handelt, dauert das Laden bzw. Nachladen einer Schusswaffe mehrere Aktionen. Dies wird unter LZ bei der Waffe angegeben. Sonderfertigkeiten, Zauber oder Liturgien können Einfluss auf die Ladegeschwindigkeit nehmen.</p>
+  <h4>Zauber/Liturgie wirken</h4>
+  <p>Wirkt der Held einen Zauber oder ruft einen karmalen Effekt hervor, kann dies mindestens eine Aktion, meist jedoch viele Aktionen mehr dauern.</p>
+</section>
+
+<section class="dsa5h-hr-section">
+  <h3>Grundmanöver</h3>
+  <h4>Attacke</h4>
+  <p><em>Beherzt, die Waffe in der Hand, tritt der Held auf seinen Gegner zu und schlägt nach ihm.</em></p>
+  <p><strong>Regel:</strong> Der Held greift seinen Gegner entweder waffenlos oder mittels einer Nahkampfwaffe an. Dabei würfelt der Held gleich oder unter seinem Angriffswert. Der Würfelwurf oder Angriffswert kann durch verschiedene Faktoren beeinflusst werden.</p>
+
+  <div class="dsa5h-hr-maneuver-head"><h4>Angriff antäuschen</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="feint"}}</div>
+  <p><em>Die Heldin hebt die Waffe, um sie auf ihren Feind niederfahren zu lassen… nur um im letzten Augenblick mit einer geschickten Drehung der Hände aus einer vollkommen anderen Richtung zuzuschlagen und die Deckung ihres Gegners zu überwinden.</em></p>
+  <p><strong>Regel:</strong> Die Heldin täuscht einen Angriff aus einer Richtung an. Dazu erschwert sie den Angriff um bis zu −2. Gelingt der Angriff, zwingt dies ihren Gegner dazu, sich zu öffnen. Die gegnerische Parade ist dabei bis zum nächsten Angriff der Heldin um dieselbe Summe erschwert. Gelingt die Parade, hat der Gegner das Täuschungsmanöver durchschaut und ist schnell genug gewesen. Misslingt die Parade, ist die Täuschung geglückt und die Heldin konnte ihren Gegner mit einem überraschenden Richtungswechsel ihrer Waffe treffen.</p>
+  <p>Je höher die GE der Heldin ist, desto besser und effektiver wird sie im Antäuschen.</p>
+  <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>GE-Wert</th><th>AT-/PA-Malus</th></tr></thead><tbody><tr><td>bis 12</td><td>−2</td></tr><tr><td>13</td><td>−4</td></tr><tr><td>15</td><td>−6</td></tr><tr><td>17</td><td>−8</td></tr></tbody></table>
+  <p class="dsa5h-hr-note"><strong>Hinweis:</strong> Dieses Manöver lässt sich nur mit Dolchen, Fechtwaffen, Hiebwaffen, Schwertern, Stangenwaffen und Raufen durchführen. Ausnahmen hiervon sind bei den jeweiligen Waffen aufgeführt.</p>
+
+  <h4>Fernkampfangriff durchführen</h4>
+  <p><em>Den Bogen, die Armbrust oder das Wurfmesser zur Hand, greift ein Held entfernte Gegner an.</em></p>
+  <p><strong>Regel:</strong> Der Held greift seine Gegnerin mittels einer Fernkampfwaffe an. Dabei würfelt der Held gleich oder unter seinem Angriffswert. Der Würfelwurf oder Angriffswert kann durch verschiedene Faktoren (Entfernung, Bewegung, Sicht etc.) beeinflusst werden.</p>
+
+  <div class="dsa5h-hr-maneuver-head"><h4>Gezielter Angriff/Schuss</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="targeted"}}</div>
+  <p><em>Manchmal ist es notwendig, bestimmte Körperteile eines Gegners gezielt auszuschalten.</em></p>
+  <p><strong>Regel:</strong> Die Heldin greift gezielt eine Zone ihres Gegners an. Je nach Zone wird der Angriffswurf erschwert und ist die Auswirkung durch einen Treffer anders.</p>
+  <div class="dsa5h-hr-table-wrap"><table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>Trefferzone</th><th>Malus</th><th>Auswirkungen</th><th>Widerstandsprobe</th></tr></thead><tbody>
+    <tr><td>Kopf</td><td>−10</td><td>Pro 5 SP 1 Stufe Betäubung</td><td>Selbstbeherrschung (Handlungsfähigkeit bewahren)</td></tr>
+    <tr><td>Torso</td><td>−4</td><td>Zusätzlich 1W3+1 SP</td><td>Selbstbeherrschung (Handlungsfähigkeit bewahren)</td></tr>
+    <tr><td>Arme</td><td>−8</td><td>Held lässt in dieser Hand gehaltene Objekte los. Dies kann dazu führen, dass eine Einhandwaffe oder ein anderer Gegenstand zu Boden fällt. Waffen, die mit zwei Händen gehalten werden, und Schilde sind davon nicht betroffen.</td><td>Selbstbeherrschung (Störungen ignorieren)</td></tr>
+    <tr><td>Beine</td><td>−8</td><td>Held geht zu Boden und erleidet den Status Liegend.</td><td>Selbstbeherrschung (Störungen ignorieren)</td></tr>
+    <tr><td>Auge</td><td>−16</td><td>SP &gt; 5 = tot, SP &lt; 5 = geblendet</td><td>Sonderregel „Dem Tod von der Schippe springen“</td></tr>
+    <tr><td>Fuß</td><td>−12</td><td>Pro 5 SP 1 Stufe Schmerz, GS halbiert</td><td>Selbstbeherrschung (Handlungsfähigkeit bewahren)</td></tr>
+    <tr><td>Hals</td><td>−14</td><td>SP &gt; 8 = tot, SP &lt; 8 = blutend (1W3+1 SP/KR)</td><td>Erste Hilfe, kleine Heilungen, Heiltränke, final Sonderregel „Dem Tod von der Schippe springen“</td></tr>
+    <tr><td>Hand</td><td>−12</td><td>SP &gt; 5 = +1 Stufe Schmerz, Hand unbrauchbar</td><td>Selbstbeherrschung (Handlungsfähigkeit bewahren)</td></tr>
+  </tbody></table></div>
+  <p class="dsa5h-hr-note"><strong>Hinweis:</strong> Gezielte Angriffe sind grundsätzlich mit allen Waffen möglich. Ausnahmen oder gesonderte Erschwerungen werden an den entsprechenden Waffen aufgeführt.</p>
+  <p>Die SF „Gezielter Angriff“ reduziert alle Mali um die Hälfte. Je höher die IN eines Helden ist, desto mehr reduziert sich die Erschwernis für gezielte Angriffe. Sie kann insgesamt jedoch nie weniger als −1 werden.</p>
+  <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>IN-Wert</th><th>Malus-Verbesserung</th></tr></thead><tbody><tr><td>bis 12</td><td>0</td></tr><tr><td>13</td><td>+1</td></tr><tr><td>15</td><td>+2</td></tr><tr><td>17</td><td>+3</td></tr></tbody></table>
+  <p class="dsa5h-hr-note">Im Modul: Erst halbiert die SF, dann wird die IN-Verbesserung abgezogen. Bei genau 5 SP (Auge, Hand) bzw. 8 SP (Hals) treten die fatalen Folgen bereits ein. Die Folgen eines Treffers handhabt die Spielleitung (Automatik folgt später).</p>
+
+  <div class="dsa5h-hr-maneuver-head"><h4>Mächtiger Angriff</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="mighty"}}</div>
+  <p><em>Mit aller Gewalt greift der Held seine Waffe und schmettert sie seinem Gegner entgegen.</em></p>
+  <p><strong>Regel:</strong> Der Held schlägt kraftvoll zu, auf Kosten der Genauigkeit. Er erschwert seinen Angriff um bis zu −2. Gelingt der Angriff und wird nicht abgewehrt, erhöht sich der Schaden des Helden um bis zu +2, je nach Höhe der Erschwernis.</p>
+  <p>Je höher die KK des Helden, desto höher werden Erschwernis und Schaden, die der Held damit anrichten kann. Mächtiger Angriff funktioniert nur mit Nahkampfwaffen.</p>
+  <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>KK-Wert</th><th>Max. AT-Malus</th><th>Schadensbonus</th></tr></thead><tbody><tr><td>bis 12</td><td>−2</td><td>+2</td></tr><tr><td>13</td><td>−4</td><td>+4</td></tr><tr><td>15</td><td>−6</td><td>+6</td></tr><tr><td>17</td><td>−8</td><td>+8</td></tr></tbody></table>
+  <p class="dsa5h-hr-note"><strong>Hinweis:</strong> Dieses Manöver kann mit allen Waffen außer Fernkampfwaffen, Fächern, Fechtwaffen, Lanzen und Peitschen durchgeführt werden. Ausnahmen werden an der jeweiligen Waffe angegeben.</p>
+
+  <h4>Schwachpunkte erkennen</h4>
+  <p><em>Die Heldin hält inne, um ihre oder eine andere Gegnerin auf dem Schlachtfeld zu analysieren. Dabei werden Schwachpunkte in Kampfweise und/oder Ausrüstung offenbart.</em></p>
+  <p><strong>Regel:</strong> Die Heldin legt als Aktion eine Probe auf Menschenkenntnis (für Kulturschaffende), Tierkunde (für Tiere und Ungeheuer) und Sphärenkunde (für Dämonen) ab. Je volle QS darf sie nun entweder ihre PA erhöhen oder den RS der Gegnerin reduzieren. Rüstungsreduktion funktioniert nicht bei Dämonen, Geistern, Elementaren oder magischem Rüstungsschutz. Der Bonus bzw. Malus gilt nur gegenüber einer Gegnerin bis zum Ende des Kampfes. Weitere Gegner müssen einzeln analysiert werden. Der Bonus kann auch anderen mitgeteilt werden. Dies kostet eine freie Aktion und der Bonus ist nur noch eine Runde aktiv, da die Gegnerin, so sie Kulturschaffende ist, sich keine Blöße gibt und ab da auf Schwachpunkte achtgibt.</p>
+  <p class="dsa5h-hr-note">Im Modul noch ohne Automatik – die Spielleitung handhabt dieses Manöver von Hand.</p>
+
+  <div class="dsa5h-hr-maneuver-head"><h4>Verteidigungshaltung</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="stance"}}</div>
+  <p><em>Nicht jeder Held will immer in jedem Handgemenge mitmischen. Wenn der Held lieber auf sich achtgeben will, kann er sich auf die Abwehr von Angriffen beschränken.</em></p>
+  <p><strong>Regel:</strong> Der Held verzichtet auf Angriffe und nutzt seine Aufmerksamkeit, um abzuwehren. Er darf keine offensiven Aktionen durchführen, sich aber sehr wohl bewegen. Dazu erhält er einen Bonus von +2 auf PA und AW. Der Bonus hält an, bis der Held die Verteidigungshaltung verlässt oder abbricht. Verteidigungshaltung muss am Anfang der Kampfrunde angesagt werden.</p>
+  <p>Je höher der IN-Wert des Helden ist, desto höher steigt der Verteidigungsbonus, den der Held erhält.</p>
+  <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>IN-Wert</th><th>Bonus</th></tr></thead><tbody><tr><td>bis 12</td><td>+2</td></tr><tr><td>13</td><td>+4</td></tr><tr><td>15</td><td>+6</td></tr><tr><td>17</td><td>+8</td></tr></tbody></table>
+  <p class="dsa5h-hr-note"><strong>Hinweis:</strong> Die Verteidigungshaltung kann nicht mit Fernkampfwaffen, Kettenwaffen, Lanzen oder Peitschen durchgeführt werden.</p>
+
+  <div class="dsa5h-hr-maneuver-head"><h4>Vorstoß</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="advance"}}</div>
+  <p><em>Ein überraschender, schneller Angriff kann einen sicheren Treffer bringen, jedoch öffnen sich die meisten dann einem verheerenden Gegenangriff ihres Gegners.</em></p>
+  <p><strong>Regel:</strong> Der Angriff des Helden erhöht sich für den Angriff um +2. Dafür nimmt er einen Malus von −4 auf Parade und Ausweichen bis zum Ende der Kampfrunde in Kauf. Je höher der MU-Wert des Helden, desto mehr verändern sich Boni und Mali.</p>
+  <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>MU-Wert</th><th>Bonus/Malus</th></tr></thead><tbody><tr><td>bis 12</td><td>+2/−4</td></tr><tr><td>13</td><td>+2/−2</td></tr><tr><td>15</td><td>+4/−2</td></tr><tr><td>17</td><td>+4/0</td></tr></tbody></table>
+  <p class="dsa5h-hr-note"><strong>Hinweis:</strong> Dieses Manöver lässt sich nur mit Dolchen, Fächern, Fechtwaffen, Hiebwaffen, Kettenwaffen, Schwertern, Spießwaffen, Stangenwaffen, Zweihandhiebwaffen und Zweihandschwertern und im Raufen durchführen.</p>
+
+  <div class="dsa5h-hr-maneuver-head"><h4>Zielen (mit einer Fernkampfwaffe)</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="aim"}}</div>
+  <p><em>Manchmal muss der Held sich etwas Zeit lassen, um einen sicheren und tödlichen Schuss oder Wurf abzugeben.</em></p>
+  <p><strong>Regel:</strong> Der Held verzichtet auf den Angriff mit der Fernkampfwaffe, fixiert sein Ziel jedoch. Der FK und der Schaden mit der Waffe steigt um jeweils +1. Ein Held kann maximal zwei Runden lang zielen, wobei sich die Boni je Runde miteinander addieren. Je höher der FF-Wert des Helden ist, desto mehr verändern sich die Boni des Grundmanövers.</p>
+  <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>FF-Wert</th><th>FK-/Schadensbonus</th><th>Maximale Runden zielen</th></tr></thead><tbody><tr><td>bis 12</td><td>+1/+1</td><td>2</td></tr><tr><td>13</td><td>+2/+1</td><td>2</td></tr><tr><td>15</td><td>+2/+2</td><td>3</td></tr><tr><td>17</td><td>+3/+2</td><td>3</td></tr></tbody></table>
+  <p class="dsa5h-hr-note"><strong>Hinweis:</strong> Dieses Manöver lässt sich nur mit Fernkampfwaffen durchführen. Ausnahme hiervon ist Feuerspeien. Im Modul gilt die Tabelle für die Zahl der Runden.</p>
+</section>

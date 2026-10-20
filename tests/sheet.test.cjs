@@ -57,8 +57,9 @@ let Sheet;
 // data:-URLs, weil die Modul-.js hier sonst als CommonJS gälten; der eine relative Import wird mit ersetzt.
 const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
 // Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
-function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))));}
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))))));return Sheet;}
+function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))).replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))));}
+function houseRulesAppUrl(){return dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())));}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
@@ -661,17 +662,53 @@ test('Hausregel Wundeinschätzung: QS-Staffel und Veralten wie in Knigges World 
  assert(wound.isFresh({lep:20},29,40),'Änderung unter einem Viertel bleibt gültig');assert(!wound.isFresh({lep:20},30,40),'ab einem Viertel veraltet');assert(!wound.isFresh(undefined,20,40));
  for(const key of ['none','unhurt','hurt','incapacitated','critical','severe','marked','light','range','about'])assert(lookup(own,'DSA5HELPERS.HouseRules.woundCheck.Text.'+key),key);
 });
+test('Grundmanöver (#45): Stufen, Waffenfilter, Modifikatoren im Probendialog, Zustände und Buchseite mit Einzelschaltern',async()=>{
+ const saved=global.game;
+ try {
+  const M=await import(dataUrl(read('scripts/house-rules/maneuvers.js')));
+  assert.deepEqual([10,12,13,14,15,16,17,20].map(M.paladoseTier),[0,0,1,1,2,2,3,3]);
+  assert.equal(M.targetedMalus(-10,0,false),-10);assert.equal(M.targetedMalus(-10,1,true),-4,'erst halbieren, dann IN abziehen');assert.equal(M.targetedMalus(-4,3,true),-1,'nie besser als −1');
+  const de={'LocalizedCTs.Schwerter':'Swords','LocalizedCTs.Fechtwaffen':'Fencing Weapons','LocalizedCTs.Bögen':'Bows','LocalizedCTs.Raufen':'Brawling','LocalizedCTs.Lanzen':'Lances','LocalizedCTs.Swords':'Swords'};
+  const loc=k=>de[k]??k;
+  global.game={...saved,i18n:{localize:k=>de[k]??k,format:(k,d)=>k+JSON.stringify(d)}};
+  const w=(type,ct,mode='attack')=>({mode,source:{type,system:{combatskill:{value:ct}}}});
+  assert.equal(M.techniqueKey(w('meleeweapon','Schwerter').source,loc),'Swords');assert.equal(M.techniqueKey(w('meleeweapon','Swords').source,loc),'Swords','englische Welt');
+  assert(M.allowed('feint',w('meleeweapon','Schwerter'),loc));assert(!M.allowed('feint',w('meleeweapon','Lanzen'),loc));assert(!M.allowed('feint',w('meleeweapon','Schwerter','parry'),loc),'nur Angriff');
+  assert(!M.allowed('mighty',w('meleeweapon','Fechtwaffen'),loc));assert(M.allowed('mighty',w('meleeweapon','Raufen'),loc));assert(!M.allowed('mighty',w('rangeweapon','Bögen'),loc));
+  assert(M.allowed('stance',{source:{type:'dodge'}},loc));assert(M.allowed('stance',w('meleeweapon','Schwerter','parry'),loc));assert(!M.allowed('stance',w('meleeweapon','Lanzen','parry'),loc));
+  assert(M.allowed('aim',w('rangeweapon','Bögen'),loc));assert(!M.allowed('aim',w('meleeweapon','Schwerter'),loc));assert(M.allowed('targeted',w('rangeweapon','Bögen'),loc));
+  const actor={type:'character',items:[],system:{characteristics:{mu:{value:15},ge:{value:13},kk:{value:12},in:{value:17},ff:{value:15}}}};
+  const all=M.MANEUVER_IDS;const none={advanceMalus:0,stance:false,aim:0};
+  let mods=M.buildModifiers(actor,w('meleeweapon','Schwerter'),{enabled:all,st:none,t:k=>k,localize:loc});
+  const ids=mods.map(m=>m.ref.id);
+  assert.deepEqual(ids.filter(i=>i.startsWith('dsa5h:feint')),['dsa5h:feint:1','dsa5h:feint:2','dsa5h:feint:3','dsa5h:feint:4'],'GE 13: −1 … −4');
+  const feint=mods.find(m=>m.ref.id==='dsa5h:feint:3');assert.equal(feint.value,-3);assert.equal(feint.dmmalus,-3,'Parade des Gegners um denselben Wert');assert.equal(feint.selected,false);
+  const mighty=mods.find(m=>m.ref.id==='dsa5h:mighty:2');assert.equal(mighty.value,-2);assert.equal(mighty.damageBonus,2);assert(!mods.some(m=>m.ref.id==='dsa5h:mighty:3'),'KK 12: höchstens −2');
+  assert.equal(mods.find(m=>m.ref.id.startsWith('dsa5h:advance')).value,4,'MU 15: +4');
+  assert.equal(mods.filter(m=>M.maneuverGroup(m.ref.id)==='targeted').length,8,'acht Zonen');
+  mods=M.buildModifiers(actor,w('meleeweapon','Schwerter'),{enabled:['feint'],st:none,t:k=>k,localize:loc});assert(mods.every(m=>M.maneuverGroup(m.ref.id)==='feint'),'abgeschaltete Manöver fehlen');
+  mods=M.buildModifiers(actor,w('meleeweapon','Schwerter','parry'),{enabled:all,st:{advanceMalus:-2,stance:true,aim:0},t:k=>k,localize:loc});
+  assert.deepEqual(mods.map(m=>[m.ref.id,m.value,m.selected]),[['dsa5h:advanceMalus',-2,true],['dsa5h:stance',8,true]],'Verteidigung: Vorstoß-Malus und Haltung (IN 17: +8) angehakt');
+  mods=M.buildModifiers(actor,w('rangeweapon','Bögen'),{enabled:all,st:{...none,aim:3},t:k=>k,localize:loc});
+  const aim=mods.find(m=>M.maneuverGroup(m.ref.id)==='aim');assert.deepEqual([aim.value,aim.damageBonus,aim.selected],[6,6,true],'FF 15: 3 Runden × +2/+2');
+  assert.deepEqual(M.enabledManeuvers(()=>({feint:false})),all.filter(i=>i!=='feint'),'ohne Eintrag an');
+  assert.equal(M.maneuverGroup('dsa5h:feint:2'),'feint');assert.equal(M.maneuverGroup('abc'),null);
+  // Buchseite: beide Sprachen mit je sechs Einzelschaltern, „Stören und Ablenken“ fehlt.
+  for(const l of ['de','en']){const page=read(`templates/house-rules/maneuvers-${l}.hbs`);assert.equal((page.match(/maneuver-toggle\.hbs/g)||[]).length,6,l);assert(!/Stören und Ablenken|Disrupt and distract/i.test(page),l);}
+  const entry=read('scripts/dsa5-helpers.js');for(const p of ['maneuvers.hbs','maneuvers-de.hbs','maneuvers-en.hbs','maneuver-toggle.hbs'])assert(entry.includes('templates/house-rules/'+p),p+' wird geladen');
+ } finally { global.game=saved; }
+});
 test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, Einstellung je Welt',async()=>{
  const settings={houseRules:{},theme:'light'};let isGM=true;
  global.game={i18n:{localize},settings:{get:(_m,k)=>settings[k],async set(_m,k,v){settings[k]=v;}},get user(){return {isGM};}};
  global.foundry={applications:{api:{ApplicationV2:class{async _prepareContext(){return {};}_onRender(){}render(){this.rendered=(this.rendered??0)+1;}},HandlebarsApplicationMixin:B=>B},instances:new Map()}};
  const {rules,app}=await houseRuleModules();const App=app.getHouseRulesApp();const tpl=H.compile(read('templates/house-rules.hbs'));
- assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','VTTom']]);
+ assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','VTTom'],['maneuvers','Paladose']]);
  const sheet=new App();missing.clear();let html=tpl(await sheet._prepareContext({}));
- assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,2);
- assert(html.includes('Idee: Knigge')&&html.includes('Idee: VTTom'),'Urheber je Regel');
- assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,2);
- assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,2);
+ assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,3);
+ assert(html.includes('Idee: Knigge')&&html.includes('Idee: VTTom')&&html.includes('Idee: Paladose'),'Urheber je Regel');
+ assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,3);
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,3);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true});assert(rules.isRuleActive('woundCheck'));
  App.DEFAULT_OPTIONS.actions.setView.call(sheet,{},{dataset:{view:'book'}});html=tpl(await sheet._prepareContext({}));
  assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-toc')).length,1,'Buch beginnt mit dem Inhaltsverzeichnis');
@@ -680,7 +717,7 @@ test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, 
  App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'1'}});html=tpl(await sheet._prepareContext({}));
  const top=elements(html,el=>el.attribs?.class==='dsa5h-hr-page-top')[0];assert(top&&dom.findAll(el=>el.attribs?.role==='switch',top.children).length===1,'Schalter oben rechts im Seitenkopf');
  assert(html.includes('Knigge'),'Urheber auf der Buchseite');assert.equal(elements(html,el=>el.name==='tr').length,7,'Kopf + 6 QS-Zeilen');
- assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 3'));
+ assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 4'));
  isGM=false;html=tpl(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.role==='switch').length,0);assert.equal(elements(html,el=>el.attribs?.class==='dsa5h-hr-state active').length,1);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true},'Spieler schalten nichts um');
  assert.deepEqual([...missing].filter(k=>k.startsWith('DSA5HELPERS')),[]);

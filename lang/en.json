@@ -380,6 +380,56 @@
           "Note2": "Helping costs the helper's action for this combat round.",
           "Note3": "If the check fails, there is no bonus."
         }
+      },
+      "maneuvers": {
+        "Title": "Basic maneuvers",
+        "Summary": "Options in combat: every hero may use basic maneuvers such as feint attack, advance or defensive stance; their strength depends on a key attribute. Selectable modifiers in the roll dialog.",
+        "CombineHint": "Basic maneuvers: per attack one basic maneuver plus one basic or special maneuver; passive maneuvers freely.",
+        "Block": "Basic maneuvers",
+        "BlockHint": "Tier per key attribute; pick the maneuvers in the roll dialog.",
+        "OpenBook": "Read rules",
+        "feint": {
+          "Name": "Feint attack",
+          "Defense": "opponent PA −{x}"
+        },
+        "targeted": {
+          "Name": "Targeted attack",
+          "Zone": {
+            "head": "Head",
+            "torso": "Torso",
+            "arm": "Arm",
+            "leg": "Leg",
+            "eye": "Eye",
+            "foot": "Foot",
+            "neck": "Neck",
+            "hand": "Hand"
+          }
+        },
+        "mighty": {
+          "Name": "Mighty attack"
+        },
+        "advance": {
+          "Name": "Advance",
+          "Later": "then PA/dodge {malus} until end of round",
+          "MalusActive": "PA/dodge penalty until end of round",
+          "Status": "Advance: PA/dodge {malus} until end of round"
+        },
+        "stance": {
+          "Name": "Defensive stance",
+          "Toggle": "Defensive stance on/off",
+          "On": "Defensive stance active",
+          "Off": "Take defensive stance",
+          "AttackHint": "Defensive stance: no offensive actions"
+        },
+        "aim": {
+          "Name": "Aim",
+          "Button": "Aim (one round)",
+          "Rounds": "{n} round(s)",
+          "Status": "Aim {count}/{max}",
+          "NoCombat": "Aiming only counts during a running combat.",
+          "OncePerRound": "You already aimed this combat round.",
+          "Max": "Your tier does not allow more than {max} rounds of aiming."
+        }
       }
     },
     "NoConditions": "No conditions.",

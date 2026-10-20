@@ -380,6 +380,56 @@
           "Note2": "Helfen kostet die Aktion des Helfenden in dieser Kampfrunde.",
           "Note3": "Misslingt die Probe, gibt es keine Erleichterung."
         }
+      },
+      "maneuvers": {
+        "Title": "Grundmanöver",
+        "Summary": "Möglichkeiten des Kampfes: Jeder Held darf Grundmanöver wie Angriff antäuschen, Vorstoß oder Verteidigungshaltung einsetzen; ihre Stärke hängt von einer Leiteigenschaft ab. Im Probendialog als auswählbare Modifikatoren.",
+        "CombineHint": "Grundmanöver: pro Attacke ein Grundmanöver plus ein Grund- oder Spezialmanöver; passive Manöver beliebig.",
+        "Block": "Grundmanöver",
+        "BlockHint": "Stufe je Leiteigenschaft; die Manöver wählst du im Probendialog.",
+        "OpenBook": "Regeln lesen",
+        "feint": {
+          "Name": "Angriff antäuschen",
+          "Defense": "PA des Gegners −{x}"
+        },
+        "targeted": {
+          "Name": "Gezielter Angriff",
+          "Zone": {
+            "head": "Kopf",
+            "torso": "Torso",
+            "arm": "Arm",
+            "leg": "Bein",
+            "eye": "Auge",
+            "foot": "Fuß",
+            "neck": "Hals",
+            "hand": "Hand"
+          }
+        },
+        "mighty": {
+          "Name": "Mächtiger Angriff"
+        },
+        "advance": {
+          "Name": "Vorstoß",
+          "Later": "danach PA/AW {malus} bis Rundenende",
+          "MalusActive": "PA/AW-Malus bis Rundenende",
+          "Status": "Vorstoß: PA/AW {malus} bis Rundenende"
+        },
+        "stance": {
+          "Name": "Verteidigungshaltung",
+          "Toggle": "Verteidigungshaltung an/aus",
+          "On": "Verteidigungshaltung aktiv",
+          "Off": "Verteidigungshaltung einnehmen",
+          "AttackHint": "Verteidigungshaltung: keine offensiven Aktionen"
+        },
+        "aim": {
+          "Name": "Zielen",
+          "Button": "Zielen (eine Runde)",
+          "Rounds": "{n} Runde(n)",
+          "Status": "Zielen {count}/{max}",
+          "NoCombat": "Zielen zählt nur in einem laufenden Kampf.",
+          "OncePerRound": "In dieser Kampfrunde wurde schon gezielt.",
+          "Max": "Mehr als {max} Runden Zielen erlaubt die Stufe nicht."
+        }
       }
     },
     "NoConditions": "Keine Zustände.",

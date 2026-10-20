@@ -16,7 +16,7 @@ export function isSystemSheet(app) {
 
 /** Einstiege der aktiven Regeln für eine Stelle ('skill' | 'header'). */
 export function activeEntries(where, rules = RULES, active = isActive) {
-  return rules.filter(rule => active(rule.id)).flatMap(rule => (rule.entries ?? []).filter(e => e.system === where).map(e => ({ rule, entry: e })));
+  return rules.filter(rule => active(rule.id)).flatMap(rule => (rule.entries ?? []).filter(e => e.system === where && (e.when?.() ?? true)).map(e => ({ rule, entry: e })));
 }
 
 export function initSystemSheetEntries(rules, active) {
@@ -50,9 +50,10 @@ export function initSystemSheetEntries(rules, active) {
   Hooks.on('getHeaderControlsActorSheetV2', (app, controls) => {
     if (!isSystemSheet(app)) return;
     for (const { rule, entry } of activeEntries('header')) {
-      if (controls.some(c => c.action === `dsa5hRule-${rule.id}`)) continue;
+      const action = `dsa5hRule-${rule.id}-${entry.label}`;
+      if (controls.some(c => c.action === action)) continue;
       controls.push({
-        action: `dsa5hRule-${rule.id}`,
+        action,
         icon: rule.icon,
         label: entry.label,
         visible: () => app.isEditable,

@@ -5,7 +5,8 @@ const MODULE_ID = 'dsa5-helpers';
 const NARROW_WIDTH = 560;
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
-import { isRuleActive, runWoundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
+import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, maneuverSheetData } from '../house-rules/rules.js';
+import { openHouseRules } from '../apps/house-rules.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -34,6 +35,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hJumpCombatSkill: this._jumpToCombatSkill,
       dsa5hCoverSideTab: this._setCoverSideTab,
       dsa5hOpenDetails: this._openPersonalDetails,
+      dsa5hOpenManeuvers: this._openManeuverRules,
       // Schloss der Titelleiste (Systemaktion locksheet) öffnet die Auswahl Spielen · Steigern · Bearbeiten (Issue #34).
       locksheet: this._openModeMenu,
     },
@@ -54,6 +56,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       rollDisease: this._rollDisease,
       dsa5hWoundCheck: this._woundCheck,
       dsa5hHelpAction: this._helpAction,
+      dsa5hStance: this._maneuverStance,
+      dsa5hAimRound: this._maneuverAim,
     },
     ownerActions: {
       schipUpdate: this._schipUdate,
@@ -376,6 +380,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       woundCheckSkill: !limited && isRuleActive('woundCheck') ? findTreatWounds(this.actor)?.id ?? null : null,
       // Hausregel Helfen: Knopf in den Schnellaktionen des Kampf-Reiters (quick-actions.hbs).
       helpAction: !limited && isRuleActive('helpAction'),
+      // Grundmanöver (Paladose, #45): Stufen und Knöpfe im Kampf-Reiter.
+      maneuvers: !limited && isRuleActive('maneuvers') ? maneuverSheetData(this.actor) : null,
       body,
       happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
@@ -1463,6 +1469,19 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // Probendialog des Systems und danach der Ablauf aus scripts/house-rules/wound-check.js.
   static async _woundCheck(_event, target) {
     await runWoundCheck(this.actor, target);
+  }
+
+  // Grundmanöver (#45): Verteidigungshaltung an/aus, Zielen eine Runde mehr; Regeln im Hausregelbuch.
+  static async _maneuverStance() {
+    await toggleStance(this.actor);
+  }
+
+  static async _maneuverAim() {
+    await aimRound(this.actor);
+  }
+
+  static _openManeuverRules() {
+    openHouseRules('maneuvers');
   }
 
   // Hausregel Helfen: Talent wählen, Probe über den Probendialog des Systems, Hinweis im Chat (help-action.js).
