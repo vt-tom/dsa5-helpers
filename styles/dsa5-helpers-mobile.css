@@ -595,25 +595,25 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat { flex: 1;
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat small { font-size: 15px; text-transform: none; letter-spacing: 0; color: inherit; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat strong { font-size: 18px; }
 
-/* Hände untereinander, ohne Figur. Waffenkarte „Banner“ (Issue #40) aus der Bogen-CSS, fürs Handy angepasst:
-   Bild 84 px neben Kampftechnik/Reichweite, darunter AT/PA links und TP rechts in einer eigenen Reihe (wie im
-   Mobil-Click-Dummy), Tippziele 44 px. Freie/belegte Hand als schmale gestrichelte Zeile mit Auswahl. */
+/* Hände untereinander, ohne Figur. Waffenkarte (Issue #40, drei Bänder seit 2026-10-20) aus der Bogen-CSS, fürs Handy
+   angepasst: Name, darunter Kampftechnik · KtW · RW, dann Bild 84 px neben AT | PA und TP, Tippziele 44 px.
+   Freie/belegte Hand als schmale gestrichelte Zeile mit Auswahl. */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-grid { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-height: 0; padding: 0; isolation: auto; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-grid > :is(.dsa5h-body-figure, .dsa5h-body-figure-switch) { display: none; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side { display: block; width: 100%; text-align: left; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
-  grid-template-columns: 84px minmax(0, 1fr); grid-template-areas: "name name" "media sub" "stats stats" "extra extra"; padding: 36px 12px 12px;
+  grid-template-columns: 84px minmax(0, 1fr); grid-template-areas: "name name" "meta meta" "media stats" "extra extra"; padding: 36px 12px 12px;
 }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-bg { width: 210px; height: 210px; right: -46px; top: -14px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media { width: 84px; height: 84px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-sub { align-self: center; font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-meta { font-size: 13px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name { font-size: 23px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name .dsa5h-favorite { width: 36px; height: 36px; margin: -6px 0; font-size: 20px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-pick { width: 40px; height: 40px; font-size: 17px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill { height: 44px; padding: 0 12px 0 4px; border-radius: 22px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill b { font-size: 13px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-die { width: 34px; height: 34px; font-size: 15px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage { margin-left: auto; min-height: 44px; padding-inline: 12px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage { height: 44px; min-height: 44px; padding-inline: 12px; font-size: 16px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra .dsa5h-hand-swap {
   height: 40px; padding: 0 12px; border: 1px dashed var(--line2, rgba(43, 39, 33, .28)); background: none; font-size: 15px;
 }

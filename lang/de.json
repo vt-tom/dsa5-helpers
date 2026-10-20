@@ -145,6 +145,27 @@
     "CastSpellsTitle": "Zauber, Rituale & Zaubertricks",
     "CastLiturgiesTitle": "Liturgien, Zeremonien & Segnungen",
     "NoArmorWorn": "Keine Rüstung getragen",
+    "NoArmor": "Keine Rüstung",
+    "MainArmorHint": "Klick wählt die Hauptrüstung",
+    "MainArmorPick": "Als Hauptrüstung zeigen",
+    "MagicArmorShort": "Magie",
+    "ArmorBonus": "Rüstungsbonus",
+    "Zone": {
+      "head": "Kopf",
+      "value": "Torso",
+      "rightarm": "Rechter Arm",
+      "leftarm": "Linker Arm",
+      "rightleg": "Rechtes Bein",
+      "leftleg": "Linkes Bein"
+    },
+    "ZoneShort": {
+      "head": "Kopf",
+      "value": "Torso",
+      "rightarm": "Arm r.",
+      "leftarm": "Arm l.",
+      "rightleg": "Bein r.",
+      "leftleg": "Bein l."
+    },
     "Close": "Schließen",
     "Settings": {
       "DefaultSheet": {

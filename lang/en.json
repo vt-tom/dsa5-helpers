@@ -145,6 +145,27 @@
     "CastSpellsTitle": "Spells, rituals & cantrips",
     "CastLiturgiesTitle": "Liturgies, ceremonies & blessings",
     "NoArmorWorn": "No armor worn",
+    "NoArmor": "No armor",
+    "MainArmorHint": "Click picks the main armor",
+    "MainArmorPick": "Show as main armor",
+    "MagicArmorShort": "Magic",
+    "ArmorBonus": "Armor bonus",
+    "Zone": {
+      "head": "Head",
+      "value": "Torso",
+      "rightarm": "Right arm",
+      "leftarm": "Left arm",
+      "rightleg": "Right leg",
+      "leftleg": "Left leg"
+    },
+    "ZoneShort": {
+      "head": "Head",
+      "value": "Torso",
+      "rightarm": "Arm R",
+      "leftarm": "Arm L",
+      "rightleg": "Leg R",
+      "leftleg": "Leg L"
+    },
     "Close": "Close",
     "Settings": {
       "DefaultSheet": {

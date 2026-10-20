@@ -3247,7 +3247,7 @@
 
 /* Kampf-Unterreiter „Körper“ (body.hbs, Issue #6/#29; Click-Dummy renderBody()): Figur in der Mitte (Artenbild als
    Platzhalter oder Akteur-Porträt, abgeblendet), Haupthand links, Nebenhand rechts; darüber Schnellaktionen und
-   Initiative, darunter die Rüstungszeile (Variante A, Nutzer-Entscheidung 2026-10-02). */
+   Initiative, die Rüstung mittig über der Figur (Issue #36; Smartphone: Rüstungszeile darunter). */
 .dsa5-helpers-sheet .dsa5h-body-grid {
   position: relative;
   isolation: isolate;
@@ -3627,15 +3627,18 @@
   }
 }
 
-/* --- Körper: Waffenkarte „Banner“ (Variante F, Issue #40, Nutzer-Entscheidung 2026-10-19) ---
+/* --- Körper: Waffenkarte (Issue #40 „Banner“, Aufbau in drei Bändern seit 2026-10-20) ---
 
    Beide Hände gleich breit und gleich hoch (Raster mit gleichen Seitenspalten, Seiten strecken sich, die Karte füllt
-   ihre Seite); freie und belegte Hände als gestrichelte Karte derselben Größe. Karte: Wimpel mit der Hand, Name in
-   eigener Zeile über die volle Breite, Bild frei auf einem Lichtschein (kein Verschleiß-Rahmen, der Zustand steht im
-   Strukturbalken), die Waffe groß als blasses Wasserzeichen, Kampftechnik und Reichweite neben dem Bild, darunter AT/PA
-   bzw. FK als Pillen und TP. Vorlage: clickdummy (handSlot, .hand-slot.hv-f). */
+   ihre Seite); freie und belegte Hände als gestrichelte Karte derselben Größe. Karte: Wimpel mit der Hand, dann drei
+   feste Bänder statt frei verteilter Elemente (Rückmeldung 2026-10-20) — Kopf (Name + Stern + Anwendungswürfel, darunter
+   Kampftechnik · KtW · RW), Mitte (Bild auf Lichtschein | Würfelraster: AT und PA gleich breit, TP bzw. FK über die volle
+   Breite), Fuß (Aktionen und Fernkampf-Status als gleich hohe Pillen mit Trennlinie). Die Waffe liegt als blasses
+   Wasserzeichen dahinter. Mittelspalte --mid für die Rüstung (Abschnitt „Körper: Rüstung mittig“). Vorlage: clickdummy
+   handSlot(). */
 .dsa5-helpers-sheet .dsa5h-body-grid.sides {
-  grid-template-columns: minmax(0, 1fr) 110px minmax(0, 1fr);
+  --mid: 150px;
+  grid-template-columns: minmax(0, 1fr) var(--mid) minmax(0, 1fr);
   align-items: stretch;
 }
 
@@ -3692,11 +3695,11 @@
   isolation: isolate;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  grid-template-areas: "name name" "media sub" "media stats" "extra extra";
-  align-content: start;
+  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-rows: auto auto auto 1fr;
+  grid-template-areas: "name name" "meta meta" "media stats" "extra extra";
   align-items: center;
-  gap: 6px 12px;
+  gap: 4px 12px;
   padding: 34px 12px 12px;
   border: 1px solid rgba(185, 154, 92, .6);
   background: linear-gradient(160deg, rgba(255, 250, 238, .9), rgba(236, 226, 210, .4) 55%, rgba(185, 154, 92, .18)), var(--paper);
@@ -3714,7 +3717,7 @@
   margin: 0;
   border: 0;
   object-fit: contain;
-  opacity: .16;
+  opacity: .1;
   filter: grayscale(.3);
   transform: rotate(-18deg);
   pointer-events: none;
@@ -3728,9 +3731,9 @@
   padding: 6px 10px 12px;
   background: linear-gradient(180deg, #3a322b, #272320);
   color: #f4e8d6;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: .12em;
+  letter-spacing: .1em;
   text-transform: uppercase;
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 7px), 0 100%);
   box-shadow: 0 2px 4px rgba(0, 0, 0, .3);
@@ -3769,7 +3772,7 @@
   grid-area: name;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
   max-width: none;
   padding-bottom: 4px;
@@ -3781,18 +3784,46 @@
   overflow-wrap: normal;
 }
 
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name .dsa5h-favorite {
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name :is(.dsa5h-favorite, .dsa5h-onuse) {
   flex: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name .dsa5h-favorite {
   margin: -4px 0;
+}
+
+/* Unter dem Namen: Kampftechnik · KtW · RW in Textfarbe, nur die Punkte blass */
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6px;
+  margin-bottom: 4px;
+  font-size: var(--fs-meta);
+  color: var(--ink);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-meta .dsa5h-ct-link {
+  margin: 0;
+  color: var(--ink);
+  text-align: left;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-meta .dsa5h-hand-reach::before {
+  content: "·";
+  margin-right: 6px;
+  color: var(--muted);
 }
 
 .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media {
   grid-area: media;
   position: relative;
+  justify-self: center;
   display: grid;
   place-items: center;
-  width: 88px;
-  height: 88px;
+  width: 76px;
+  height: 76px;
 }
 
 .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media::before {
@@ -3821,44 +3852,30 @@
   height: 4px;
 }
 
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-media > .dsa5h-onuse {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  z-index: 2;
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-sub {
-  grid-area: sub;
-  align-self: end;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-  min-width: 0;
-  font-size: var(--fs-meta);
-  color: var(--muted);
-}
-
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-sub .dsa5h-ct-link {
-  align-self: flex-start;
-  text-align: left;
-}
-
 .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-stats {
   grid-area: stats;
-  align-self: start;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-self: center;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
 }
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats > * {
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage, .dsa5h-hand-card.ranged .dsa5h-hand-stats .dsa5h-hand-pill) {
+  grid-column: 1 / -1;
+}
+
+/* AT/PA/FK und TP als gleich hohe Pillen mit demselben Hover (Rückmeldung 2026-10-20: TP zoomte stärker) */
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  width: auto;
   height: 36px;
   min-height: 0;
   margin: 0;
@@ -3874,7 +3891,7 @@
 }
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill b {
-  font-size: 12px;
+  font-size: var(--fs-meta);
   letter-spacing: .06em;
 }
 
@@ -3887,31 +3904,41 @@
   background-repeat: no-repeat;
   background-size: contain;
   color: #fff;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b, 1px 1px 1px #140f0b, -1px -1px 1px #140f0b, 1px -1px 1px #140f0b, -1px 1px 1px #140f0b;
 }
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage {
+  min-height: 0;
+  height: 32px;
   margin: 0;
+  border-radius: 20px;
+  font-size: var(--fs-data);
 }
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage small {
   margin-right: 2px;
-  font-size: 10px;
+  font-size: var(--fs-meta);
   letter-spacing: .1em;
   color: var(--muted);
 }
 
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill:focus-visible {
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card :is(.dsa5h-hand-pill, .dsa5h-hand-stats .dsa5h-damage):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
+  transform: none;
 }
 
 @media (hover: hover) {
-  .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill:hover {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card :is(.dsa5h-hand-pill, .dsa5h-hand-stats .dsa5h-damage):hover {
     border-color: var(--accent);
     transform: scale(1.05);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage:hover {
+    border-color: var(--dmg);
+    background: var(--dmg-bg);
   }
 
   .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-pick:hover {
@@ -3920,20 +3947,78 @@
   }
 }
 
+/* Fuß: Aktionen und Fernkampf-Status (Munition, Nachladen, Zielen, Magazin) als eine Reihe gleich hoher Pillen */
 .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-extra {
   grid-area: extra;
+  align-self: end;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(185, 154, 92, .35);
 }
 
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra :is(.dsa5h-hand-ranged, .dsa5h-hand-ranged > .dsa5h-mag) {
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra .dsa5h-hand-ranged {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: flex-start;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
 }
 
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra .dsa5h-hand-swap {
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-ranged > *,
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-ranged .dsa5h-reload {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  width: auto;
   margin: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card :is(.dsa5h-ammo-pick > summary, .dsa5h-reload-btn, .dsa5h-aim, .dsa5h-mag, .dsa5h-hand-swap) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: 30px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .55);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-reload-reset {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 50%;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-mag .dsa5h-mag-swap {
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0 0 2px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: var(--fs-data);
 }
 
 .dsa5-helpers-sheet[data-theme="dark"] .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
@@ -3944,11 +4029,14 @@
   background: radial-gradient(circle, rgba(255, 220, 160, .35) 0%, transparent 70%);
 }
 
-.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill {
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-content .dsa5h-hand-card :is(.dsa5h-hand-pill, .dsa5h-ammo-pick > summary, .dsa5h-reload-btn, .dsa5h-aim, .dsa5h-mag, .dsa5h-hand-swap) {
   background: rgba(255, 255, 255, .06);
 }
 
 /* --- Körper: Rüstung --- */
+
+/* Seit Issue #36 nur noch die Rüstungszeile des Smartphones (body.hbs, Mobil-CSS); Desktop/Tablet: „Körper: Rüstung
+   mittig“ unten. */
 
 /* Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich im Click-Dummy,
    siehe clickdummy/script.js renderArmorSlotsBody()/Konzept 2 "Ausrüstungsreihe"): jedes getragene Rüstungsteil
@@ -4114,6 +4202,412 @@
   align-self: center;
   justify-self: center;
   margin: 0;
+}
+
+/* --- Körper: Lesbarkeit (Rückmeldung 2026-10-20: Schrift zu klein) ---
+
+   Im ganzen Körper-Panel Beschriftungen mindestens 13 px (--fs-meta), blasse Texte kräftiger, die Figur dahinter
+   schwächer, damit kleine Schrift nicht auf unruhigem Grund steht. Benannter Container für die breitenabhängigen
+   Regeln der Rüstung (Abschnitt 18). */
+.dsa5-helpers-sheet .dsa5h-body-panel {
+  --fs-meta: max(13px, calc(var(--fs-data) - 2px));
+  --muted: rgba(43, 39, 33, .82);
+  container: dsa5h-body / inline-size;
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-body-panel {
+  --muted: #cbbfac;
+}
+
+.dsa5-helpers-sheet .dsa5h-body-grid > .dsa5h-body-figure {
+  opacity: .24;
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-body-grid > .dsa5h-body-figure {
+  opacity: .18;
+}
+
+/* --- Körper: Rüstung mittig über der Figur, „Wappenschild“ (Issue #36, Nutzer-Entscheidung 2026-10-20) ---
+
+   Die Rüstung steht in der Mittelspalte zwischen den Händen statt in einer eigenen Zeile darunter: ein Schild mit dem
+   Bild der Hauptrüstung und dem Gesamtschutz, ihr Name als Band darunter, weitere Teile (nur bei mehr als einem) als
+   kleine Zeilen. Mit Trefferzonen-Regel (Kompendium 1 + Rüstkammer 2) ein Zonenkreuz (Kopf, Arme, Torso, Beine) mit RS
+   je Zone; dafür wird die Mittelspalte breiter und die Waffenkarten kompakter. Breitenabhängig (Abschnitt 18): bis
+   560 px Panelbreite bleibt das Zonenkreuz humanoid, darunter rutscht die Rüstung unter die Hände. Smartphone: weiter
+   die Rüstungszeile (Abschnitt „Körper: Rüstung“, Mobil-CSS). Vorlage: clickdummy renderBody(). */
+.dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones {
+  --mid: 216px;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-center {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+}
+
+/* Wappenschild */
+.dsa5-helpers-sheet .dsa5h-armor-crest-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-crest {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 112px;
+  height: 128px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0 18px;
+  border: 2px solid var(--accent);
+  border-radius: 6px 6px 56px 56px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.05;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .3), inset 0 0 0 3px rgba(185, 154, 92, .25);
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-crest.empty {
+  border-style: dashed;
+  box-shadow: none;
+  cursor: default;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest-img {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  object-fit: cover;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 85%);
+  mask-image: linear-gradient(180deg, #000 30%, transparent 85%);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest :is(.dsa5h-armor-crest-rs, .dsa5h-armor-crest-be) {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest-rs strong {
+  font-size: 30px;
+  text-shadow: 0 0 6px var(--paper), 0 0 3px var(--paper);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest-be strong {
+  font-size: var(--fs-data);
+}
+
+.dsa5-helpers-sheet :is(.dsa5h-armor-crest, .dsa5h-armor-sum-bar) small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  letter-spacing: .05em;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest .dsa5h-armor-sum-magic {
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest-name {
+  z-index: 1;
+  max-width: 140px;
+  margin-top: -14px;
+  padding: 2px 10px;
+  border-radius: 3px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: bold;
+  font-size: var(--fs-small);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-armor-crest-name {
+  color: #1c1917;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-crest-group > .dsa5h-onuse {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 2;
+}
+
+/* Weitere Teile: kleine Zeilen Bild | Name | RS; im Bearbeiten-Modus wählt ein Klick die Hauptrüstung. */
+.dsa5-helpers-sheet .dsa5h-armor-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extra {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-extra-main {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 5px 2px 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extra-main img {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extra-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extra-rs {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-armor-extra-main {
+  border-style: dashed;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-extra-main:focus-visible {
+  border-color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extras-hint {
+  font-size: var(--fs-meta);
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* Trefferzonen: Kreuz aus sechs Zellen auf einem 6er-Raster (Kopf oben, Arme neben dem Torso, Beine darunter), jede
+   Zelle mit Zonenname (kurz), blassem Bild des Teils und großem RS; der volle Name steht im Tooltip. */
+.dsa5-helpers-sheet .dsa5h-armor-zone-cross {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 5px;
+  width: 100%;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-zone {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: auto;
+  height: 70px;
+  min-height: 0;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone img {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  object-fit: cover;
+  opacity: .35;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone-label {
+  font-size: var(--fs-meta);
+  letter-spacing: .03em;
+  color: var(--ink);
+  text-shadow: 0 0 3px var(--paper);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone :is(.dsa5h-armor-zone-item, .dsa5h-zl-long) {
+  display: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone strong {
+  font-size: 22px;
+  line-height: 1;
+  text-shadow: 0 0 4px var(--paper), 0 0 2px var(--paper);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-zone.empty {
+  border-style: dashed;
+  background: none;
+  box-shadow: none;
+  cursor: default;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone.empty strong {
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-content button.dsa5h-armor-zone:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-head {
+  grid-column: 3 / 5;
+  grid-row: 1;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-rightarm {
+  grid-column: 1 / 3;
+  grid-row: 2;
+  align-self: start;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-value {
+  grid-column: 3 / 5;
+  grid-row: 2;
+  height: 96px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-leftarm {
+  grid-column: 5 / 7;
+  grid-row: 2;
+  align-self: start;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-rightleg {
+  grid-column: 2 / 4;
+  grid-row: 3;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-leftleg {
+  grid-column: 4 / 6;
+  grid-row: 3;
+}
+
+/* BE (+ Zauber-/Liturgieschutz) unter dem Zonenkreuz */
+.dsa5-helpers-sheet .dsa5h-armor-sum-bar {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 3px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--paper);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  cursor: help;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-sum-bar span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-sum-bar strong {
+  font-size: var(--fs-data);
+}
+
+/* Kompakte Waffenkarten neben dem Zonenkreuz: kleineres Bild und kleinere Würfel, gleicher Aufbau. */
+.dsa5-helpers-sheet .dsa5h-content .armor-zones > .dsa5h-body-side > .dsa5h-hand-card {
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 4px 10px;
+  padding: 30px 10px 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .armor-zones .dsa5h-hand-card .dsa5h-hand-name {
+  font-size: 19px;
+}
+
+.dsa5-helpers-sheet .armor-zones .dsa5h-hand-card .dsa5h-hand-media {
+  width: 56px;
+  height: 56px;
+}
+
+.dsa5-helpers-sheet .armor-zones .dsa5h-hand-card .dsa5h-hand-bg {
+  width: 160px;
+  height: 160px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .armor-zones .dsa5h-hand-card .dsa5h-hand-pill {
+  height: 30px;
+  gap: 3px;
+  padding: 0 6px 0 2px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .armor-zones .dsa5h-hand-card .dsa5h-hand-die {
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
+}
+
+.dsa5-helpers-sheet .armor-zones .dsa5h-hand-card .dsa5h-hand-stats {
+  gap: 5px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .armor-zones .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage {
+  height: 30px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-extra-main:hover {
+    border-color: var(--accent);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content button.dsa5h-armor-zone:hover {
+    outline: 2px solid var(--accent);
+  }
 }
 
 /* --- Weitere Waffen --- */
@@ -5637,6 +6131,127 @@
 .dsa5-helpers-sheet.dsa5h-narrow .dsa5h-cover-sidebar .dsa5h-cover-condition img {
   padding: 2px;
   background: var(--head-base);
+}
+
+/* Körper: Rüstung im schmaleren Panel (Issue #36, benannter Container dsa5h-body auf .dsa5h-body-panel). Bis 560 px bleibt
+   das Zonenkreuz humanoid, nur schmaler (eine Spalte untereinander war schlechter, Rückmeldung 2026-10-20); darunter
+   rutschen Zonen bzw. Wappenschild unter die Hände, die Zonen als kleine Kacheln Bild | Zone + Teil | RS. */
+@container dsa5h-body (max-width: 690px) {
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones {
+    --mid: 188px;
+    gap: 10px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-zone {
+    height: 62px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-value {
+    height: 84px;
+  }
+}
+
+@container dsa5h-body (max-width: 680px) {
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides {
+    --mid: 110px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-center-crest {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 16px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-center-crest .dsa5h-armor-extras {
+    width: 190px;
+  }
+}
+
+@container dsa5h-body (max-width: 560px) {
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones {
+    --mid: 110px;
+  }
+
+  /* Karte zu schmal für Bild und Würfel nebeneinander: Würfelraster unter dem Bild über die volle Breite */
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas: "name name" "meta meta" "media media" "stats stats" "extra extra";
+  }
+
+  .dsa5-helpers-sheet .armor-zones > .dsa5h-armor-center {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-zone-cross {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-zone-cross > .dsa5h-armor-zone {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    grid-template-areas: "img label rs" "img item rs";
+    align-items: center;
+    justify-items: start;
+    gap: 0 8px;
+    height: auto;
+    min-height: 40px;
+    padding: 4px 10px 4px 4px;
+    text-align: left;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone img {
+    position: static;
+    grid-area: img;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    opacity: 1;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone.empty::before {
+    content: "";
+    grid-area: img;
+    width: 28px;
+    height: 28px;
+    box-sizing: border-box;
+    border: 1px dashed var(--line);
+    border-radius: 50%;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-armor-zone-label {
+    grid-area: label;
+    color: var(--muted);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-zl-short {
+    display: none;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-zl-long {
+    display: inline;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-armor-zone-item {
+    grid-area: item;
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--fs-small);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-armor-zone-cross > .dsa5h-armor-zone strong {
+    grid-area: rs;
+    font-size: 18px;
+  }
 }
 
 /* ==========================================================================

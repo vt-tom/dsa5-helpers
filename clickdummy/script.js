@@ -1368,8 +1368,8 @@ function helpActionButton() {
 // Gesamtschutz (siehe MAGIC_ARMOR-Kommentar bei ARMOR in data.js): Summe aller getragenen, bereits
 // verschleiß-bereinigten Rüstungsteile plus separat ausgewiesene magische Boni, exakt wie actor-combat.hbs:158
 // ("protection ({{prepare.armorSum}}...)").
-function computeArmorSum() {
-  const sum = ARMOR.reduce((s, a) => s + effectiveArmor(a).rs, 0);
+function computeArmorSum(list = ARMOR) {
+  const sum = list.reduce((s, a) => s + effectiveArmor(a).rs, 0);
   const magicParts = [];
   if (MAGIC_ARMOR.spell) magicParts.push(`+${MAGIC_ARMOR.spell} Zauber`);
   if (MAGIC_ARMOR.liturgy) magicParts.push(`+${MAGIC_ARMOR.liturgy} Liturgie`);
@@ -1392,6 +1392,39 @@ const HANDS = { main: null, off: null };
 // Umschalter nur im Bearbeiten-Modus; im Modul ein Actor-Flag, das Bild ist document.img. Der Click-Dummy hat kein
 // echtes Ganzkörper-Porträt — dort steht stellvertretend das Menschen-Artenbild.
 let BODY_FIGURE = "species";
+
+// Issue #36 (Nutzer-Entscheidung 2026-10-20 aus „Kachel“ und „Wappenschild“): Rüstung mittig über der Figur statt
+// als eigene Zeile darunter — Gesamtschutz im Wappenschild mit dem Bild der Hauptrüstung, weitere Teile nur bei mehr
+// als einem Teil klein darunter. Mit Trefferzonen-Regel ein Zonenkreuz, die Waffenkarten werden dafür kompakter.
+// Testschalter: Trefferzonen-Regel aktiv (im Modul: Einstellung aus Kompendium 1 / Rüstkammer 2) bzw. nur ein Teil.
+let ARMOR_ZONES = false;
+let ARMOR_ONE = false;
+// Gewählte Hauptrüstung (Name; im Modul ein Actor-Flag). Ohne Wahl gilt das Teil mit dem höchsten RS.
+let MAIN_ARMOR = null;
+
+function wornArmor() {
+  return ARMOR_ONE ? ARMOR.slice(0, 1) : ARMOR;
+}
+
+function mainArmorOf(list) {
+  return list.find((a) => a.name === MAIN_ARMOR) || list.reduce((best, a) => (!best || effectiveArmor(a).rs > effectiveArmor(best).rs ? a : best), null);
+}
+
+// Trefferzonen wie system.protection (value = Torso). Aus Sicht des Betrachters: die Figur schaut einen an, ihr
+// rechter Arm/rechtes Bein steht links — passt zur Haupthand links.
+const ARMOR_ZONE_LIST = [
+  ["head", "Kopf", "Kopf"], ["value", "Torso", "Torso"], ["rightarm", "Rechter Arm", "Arm r."], ["leftarm", "Linker Arm", "Arm l."],
+  ["rightleg", "Rechtes Bein", "Bein r."], ["leftleg", "Linkes Bein", "Bein l."],
+];
+
+// RS einer Zone inkl. Verschleiß wie effectiveArmor(): Grad 1–2 ziehen 1 ab, ab Grad 3 kein Schutz.
+function zoneArmor(list, zone) {
+  const a = list.find((x) => x.zones && x.zones[zone] !== undefined);
+  if (!a) return null;
+  const wear = wearLevel(a.structure);
+  const rs = wear >= 3 ? 0 : Math.max(0, a.zones[zone] - (wear >= 1 ? 1 : 0));
+  return { item: a, rs };
+}
 
 function handWeapons() {
   return [...MELEE, ...RANGED].filter((w) => w.worn);
@@ -1481,13 +1514,16 @@ function handSlot(hand) {
     if (list.length) extras = el("div", { class: "hand-ranged-extras" }, list);
   }
   const handLabel = isMain ? (w.worn.requiresBothHands ? "Beide Hände" : "Haupthand") : "Nebenhand";
+  // Drei feste Bänder (Rückmeldung 2026-10-20: Elemente wirkten willkürlich verteilt): Kopf mit Name, Stern und
+  // Anwendungswürfel, darunter Kampftechnik · KtW · RW; Mitte Bild | Würfelraster (AT | PA, TP über die volle Breite);
+  // Fuß mit den Aktionen an der Unterkante.
   return el("div", { class: "hand-slot hand-card" + (ranged ? " ranged" : "") }, [
     el("img", { class: "hand-bg", src: w.img, alt: "", "aria-hidden": "true" }),
     el("small", { class: "hand-banner" }, handLabel),
     el("label", { class: "hand-pick", title: `Waffe in der ${isMain ? "Haupthand" : "Nebenhand"}` }, [el("span", { "aria-hidden": "true" }, "⇄"), select]),
-    el("span", { class: "body-item-name hand-name" }, [el("span", {}, w.name), favStar(w)]),
-    el("div", { class: "hand-media" }, [itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"), onUseBtn(w.name)]),
-    el("div", { class: "hand-sub" }, [combatSkillLink(w.group), el("span", { class: "hand-reach" }, `RW ${w.reach}`)]),
+    el("span", { class: "body-item-name hand-name" }, [el("span", {}, w.name), favStar(w), onUseBtn(w.name)]),
+    el("div", { class: "hand-meta" }, [combatSkillLink(w.group), el("span", { class: "hand-reach" }, `RW ${w.reach}`)]),
+    el("div", { class: "hand-media" }, [itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon")]),
     el("div", { class: "hand-stats" }, [
       pill(stats.at, "d20mu", ranged ? "FK" : "AT", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
       !ranged && stats.pa !== undefined ? pill(stats.pa, "d20in", "PA", `Parade mit ${w.name} würfeln`) : null,
@@ -1496,6 +1532,7 @@ function handSlot(hand) {
     extras || grip || swap ? el("div", { class: "hand-extra" }, [extras, grip, swap]) : null,
   ]);
 }
+
 
 // Seite der beidhändigen Waffe (Issue #29): bleibt im Spielmodus auf der zuletzt gewählten Seite.
 let TWO_HANDED_SIDE = "left";
@@ -1549,8 +1586,9 @@ function renderBody() {
     initHands();
     HANDS.ready = true;
   }
-  const armorSum = computeArmorSum();
-  const be = ARMOR.reduce((t, a) => t + effectiveArmor(a).be, 0);
+  const armor = wornArmor();
+  const armorSum = computeArmorSum(armor);
+  const be = armor.reduce((t, a) => t + effectiveArmor(a).be, 0);
   const inHands = [HANDS.main, HANDS.off].filter(Boolean);
   const twoHanded = !!(HANDS.main && HANDS.main.worn.requiresBothHands);
   const others = handWeapons().filter((w) => !inHands.includes(w));
@@ -1566,19 +1604,6 @@ function renderBody() {
   const figureSwitch = editMode
     ? segmented([["species", "Platzhalter"], ["portrait", "Akteur-Porträt"]], BODY_FIGURE, (v) => { BODY_FIGURE = v; renderContent(); }, "body-figure-switch", "Figur im Hintergrund")
     : null;
-  // Rüstungsteil als Kachel (Bild füllt die Kachel, RS/BE als Ecken), Name darüber (Nutzer-Feedback 2026-09-30).
-  const armorTile = (a) => {
-    const st = effectiveArmor(a);
-    return el("div", { class: "body-armor-item" }, [
-      el("span", { class: "body-item-name", title: a.name }, a.name),
-      el("div", { class: "armor-slot" }, [
-        itemIcon(A.armor, a.name, a.structure, "armor"),
-        onUseBtn(a.name),
-        el("span", { class: "armor-slot-rs" }, `RS ${st.rs}`),
-        el("span", { class: "armor-slot-be" }, `BE ${st.be}`),
-      ]),
-    ]);
-  };
   const magicText = armorSum.magicParts.length ? armorSum.magicParts.join(", ") : "";
   const ini = COMBAT_DERIVED[1].max;
   // Zauber/Liturgien nur für Figuren mit AsP/KaP (hier: nicht im "Nur LeP"-Test) — im Modul magic.hasSpells/hasPrayers.
@@ -1605,26 +1630,77 @@ function renderBody() {
     right = [handSlot("off")];
   }
 
-  // Rüstungsschild (Issue #29, Nutzer-Entscheidung 2026-10-02): rechtsbündig in der Rüstungszeile, der Tooltip
-  // schlüsselt Rüstungsschutz und Belastung auf. Ganz oben nur Schnellaktionen + Initiative.
+  // Aufschlüsselung von Rüstungsschutz und Belastung je Teil als Tooltip des Wappenschilds.
   const shieldTip = [
     `Rüstungsschutz ${armorSum.sum}${magicText ? ` (${magicText})` : ""}`,
-    ...ARMOR.map((a) => { const st = effectiveArmor(a); return `  ${a.name}: RS ${st.rs}, BE ${st.be}`; }),
+    ...armor.map((a) => { const st = effectiveArmor(a); return `  ${a.name}: RS ${st.rs}, BE ${st.be}`; }),
     `Belastung ${be}`,
   ].join("\n");
-  const shield = el("div", { class: "body-shield", title: shieldTip, tabindex: "0", "aria-label": shieldTip.replace(/\n\s*/g, "; ") }, [
-    el("span", { class: "body-shield-rs" }, [el("small", {}, "RS"), el("strong", {}, String(armorSum.sum)), magicText ? el("small", { class: "body-shield-magic" }, `+${armorSum.magicParts.map((m) => m.match(/\d+/)[0]).reduce((a, b) => a + Number(b), 0)}`) : null]),
-    el("span", { class: "body-shield-be" }, [el("small", {}, "BE"), el("strong", {}, String(be))]),
-  ]);
+  const magicBonus = armorSum.magicParts.map((m) => Number(m.match(/\d+/)[0])).reduce((a, b) => a + b, 0);
   const top = el("div", { class: "body-top" }, [
     renderCombatActions(),
     el("div", { class: "body-top-stats" }, [el("div", { class: "body-bigstat" }, [el("small", {}, "Initiative"), el("strong", {}, String(ini))])]),
   ]);
-  const armorRow = el("div", { class: "body-armor-row" }, [
-    el("small", { class: "figure-col-title" }, "Rüstung"),
-    ARMOR.length ? el("div", { class: "body-armor-row-tiles" }, ARMOR.map(armorTile)) : el("div", { class: "muted body-armor-empty" }, "Keine Rüstung getragen"),
-    shield,
-  ]);
+  // Issue #36: Rüstung mittig über der Figur. Klick auf ein Teil öffnet das Item-Fenster (Modul: itemEdit); im
+  // Bearbeiten-Modus macht ein Klick auf ein weiteres Teil es zur Hauptrüstung.
+  const mainArmor = mainArmorOf(armor);
+  const openArmor = (a) => openItemWindow({ name: a.name, img: a.img || A.armor });
+  const extraChip = (a) => {
+    const st = effectiveArmor(a);
+    const label = editMode ? `${a.name} als Hauptrüstung zeigen` : `${a.name}: RS ${st.rs}, BE ${st.be}`;
+    const b = el("button", { type: "button", class: "armor-extra", title: label, "aria-label": label }, [
+      el("img", { src: a.img || A.armor, alt: "" }),
+      el("span", { class: "armor-extra-name" }, a.name),
+      el("span", { class: "armor-extra-rs" }, `RS ${st.rs}`),
+    ]);
+    b.addEventListener("click", () => { if (editMode) { MAIN_ARMOR = a.name; renderContent(); } else openArmor(a); });
+    return b;
+  };
+  const extras = armor.length > 1
+    ? el("div", { class: "armor-extras" }, [
+        ...armor.filter((a) => a !== mainArmor).map(extraChip),
+        editMode ? el("small", { class: "muted armor-extras-hint" }, "Klick wählt die Hauptrüstung") : null,
+      ])
+    : null;
+  let armorCenter;
+  if (ARMOR_ZONES) {
+    // Trefferzonen-Regel: je Zone höchstens ein Teil, eigener RS je Zone; kein Gesamt-RS, nur BE (+ Zauberschutz).
+    // Im Kreuz der Kurzname (lesbar groß in der schmalen Zelle), in der Kachelliste und im Tooltip der volle Name.
+    const zoneCell = ([zone, label, short]) => {
+      const z = zoneArmor(armor, zone);
+      const tip = z ? `${label}: ${z.item.name}, RS ${z.rs}` : `${label}: keine Rüstung`;
+      const cell = el(z ? "button" : "div", { class: `armor-zone zone-${zone}` + (z ? "" : " empty"), title: tip, "aria-label": tip, ...(z ? { type: "button" } : {}) }, [
+        z ? el("img", { src: z.item.img || A.armor, alt: "" }) : null,
+        el("span", { class: "armor-zone-label" }, [el("span", { class: "zl-short" }, short), el("span", { class: "zl-long" }, label)]),
+        el("span", { class: "armor-zone-item" }, z ? z.item.name : "keine Rüstung"),
+        el("strong", {}, z ? String(z.rs) : "–"),
+      ]);
+      if (z) cell.addEventListener("click", () => openArmor(z.item));
+      return cell;
+    };
+    armorCenter = el("div", { class: "armor-center armor-center-zones" }, [
+      el("div", { class: "armor-zone-cross" }, ARMOR_ZONE_LIST.map(zoneCell)),
+      el("div", { class: "armor-sum-bar", title: `Belastung ${be}${magicText ? `\nZauber-/Liturgieschutz: ${magicText}` : ""}` }, [
+        el("span", {}, [el("small", {}, "BE"), el("strong", {}, String(be))]),
+        magicBonus ? el("span", {}, [el("small", {}, "Magie"), el("strong", {}, `+${magicBonus}`)]) : null,
+      ]),
+    ]);
+  } else {
+    // Wappenschild: Gesamtschutz auf dem Bild der Hauptrüstung, ihr Name als Band darunter.
+    const crest = el("button", { type: "button", class: "armor-crest" + (mainArmor ? "" : " empty"), title: shieldTip, "aria-label": shieldTip.replace(/\n\s*/g, "; ") }, [
+      mainArmor ? el("img", { class: "armor-crest-img", src: mainArmor.img || A.armor, alt: "" }) : null,
+      el("span", { class: "armor-crest-rs" }, [el("small", {}, "RS"), el("strong", {}, String(armorSum.sum)), magicBonus ? el("small", { class: "armor-sum-magic" }, `+${magicBonus}`) : null]),
+      el("span", { class: "armor-crest-be" }, [el("small", {}, "BE"), el("strong", {}, String(be))]),
+    ]);
+    if (mainArmor) crest.addEventListener("click", () => openArmor(mainArmor));
+    armorCenter = el("div", { class: "armor-center armor-center-crest" }, [
+      el("div", { class: "armor-crest-group" }, [
+        crest,
+        el("div", { class: "armor-crest-name", title: mainArmor ? mainArmor.name : "" }, mainArmor ? mainArmor.name : "Keine Rüstung"),
+      ]),
+      extras,
+    ]);
+  }
 
   // Kurzübersicht der übrigen Waffen statt der früheren Waffentabellen (Rückmeldung 2026-10-02: die Hände wählen die
   // Waffe, darunter reicht ein Überblick); alle Waffen außerhalb der Hände, nicht nur getragene (2026-10-05). Würfel
@@ -1676,13 +1752,13 @@ function renderBody() {
       top,
       // Komplettes Artenbild als Hintergrund der ganzen Fläche, abgeblendet (Nutzer-Feedback 2026-09-28); als echtes
       // <img> (url() in einer CSS-Variable löst Chrome gegen den Stylesheet-Pfad auf, 2026-09-30).
-      el("div", { class: "body-grid sides" + (twoHanded ? " two-handed" : ""), "data-figure": BODY_FIGURE }, [
+      el("div", { class: "body-grid sides" + (twoHanded ? " two-handed" : "") + (ARMOR_ZONES ? " armor-zones" : ""), "data-figure": BODY_FIGURE }, [
         el("img", { class: "body-figure", src: figureSrc, alt: "", "aria-hidden": "true" }),
         figureSwitch,
         el("div", { class: "body-side left" }, left),
+        armorCenter,
         el("div", { class: "body-side right" + (!twoHanded && !HANDS.off ? " off-free" : "") }, right),
       ]),
-      armorRow,
     ]),
     shortList.length ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Weitere Waffen"), el("div", { class: "short-weapons" }, shortList)]) : null,
     // Kampfsonderfertigkeiten auch hier, damit im Kampf alles auf einer Seite steht (Nutzer-Feedback 2026-09-30).
@@ -3516,6 +3592,21 @@ function initOnlyLepToggle() {
   });
 }
 
+// Issue #36: Testschalter Trefferzonen-Regel / ein Rüstungsteil (index.html).
+function initArmorToggles() {
+  const flag = (id, get, set) => {
+    const btn = document.getElementById(id);
+    btn.addEventListener("click", () => {
+      set(!get());
+      btn.classList.toggle("active", get());
+      btn.setAttribute("aria-pressed", String(get()));
+      renderContent();
+    });
+  };
+  flag("armorZonesToggle", () => ARMOR_ZONES, (v) => { ARMOR_ZONES = v; });
+  flag("armorOneToggle", () => ARMOR_ONE, (v) => { ARMOR_ONE = v; });
+}
+
 // Ziehgriff unten rechts wie am Foundry-Fenster (Nutzerwunsch 2026-09-25): Standardgröße bleibt 770×740 (style.css
 // .sheet), der Griff setzt nur width/height inline; Doppelklick stellt die Standardgröße wieder her. Die Breite
 // wächst doppelt so schnell wie die Mausbewegung, weil .sheet-wrap Bogen + Rail zentriert (die rechte Kante wandert
@@ -3567,6 +3658,7 @@ renderHeader();
 initThemeToggle();
 initModeSwitch();
 initOnlyLepToggle();
+initArmorToggles();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
 document.fonts.ready.then(fitName);
 initWindowMenu();

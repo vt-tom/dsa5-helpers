@@ -13,8 +13,13 @@ _(leer)_
 
 Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen für die Beta, GitHub-Meilenstein `0.6.1`. CHANGELOG-Abschnitt „0.6.1 — unveröffentlicht“ steht bereit.
 
-- **Enthalten:** noch nichts. Der Nutzer arbeitet die Rückmeldungen von Lyynix ein und entscheidet, welche Issues dazukommen.
+- Der Nutzer arbeitet die Rückmeldungen von Lyynix ein und entscheidet, welche Issues dazukommen.
+- **Enthalten:** #36 Rüstung mittig über der Figur (Wappenschild, Trefferzonen), Waffenkarte in drei Bändern, Lesbarkeit im Körper-Reiter.
 - Die Beta 0.6.0 wird damit nicht mehr zum normalen Release erklärt; zum stabilen Release wird später die letzte gute 0.6.x-Beta. Dann die Issues der Meilensteine `0.6.0` und `0.6.1` schließen und nach `main` mergen.
+
+### Live prüfen (0.6.1)
+
+- **#36 / Waffenkarte** (in der Testinstanz an Wulfgrimm geprüft: Schild, weitere Teile, Hauptrüstung wählen, Trefferzonen bei 800/720/560 px, hell/dunkel, Hover): Fernkampfhand mit Nachladen/Zielen/Magazin live ansehen; Tablet ansehen; Smartphone behält die Rüstungszeile, die Karte hat dort jetzt die Meta-Zeile — auf dem Gerät prüfen. Mobil-Click-Dummy (`clickdummy/mobile/`) ist noch nicht angepasst.
 
 ## Version 0.6.0 — Beta (Branch `release/0.6.0`)
 
@@ -42,7 +47,7 @@ Seit 2026-09-30 als GitHub-Issues geführt – siehe unten. Neue Feature-Ideen d
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 08:48 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 09:20 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 

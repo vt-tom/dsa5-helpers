@@ -1,8 +1,9 @@
 {{!-- Eine Hand im Reiter „Körper“ (body.hbs): side = { slot, twoHanded, moveTo } oder { note } (Issue #29).
-     Waffenkarte Variante F „Banner“ (Issue #40, Nutzer-Entscheidung 2026-10-19, Vorlage clickdummy/hand-variants.css):
-     Wimpel mit der Hand, Name in eigener Zeile oben, Bild frei auf einem Lichtschein, die Waffe groß als Wasserzeichen,
-     AT/PA bzw. FK als Pillen, TP daneben. Die Handwahl ist das unsichtbare <select> über dem ⇄-Knopf. Freie und belegte
-     Hände sind gleich große, gestrichelte Karten (CSS). --}}
+     Waffenkarte „Banner“ (Issue #40) mit Wimpel der Hand und der Waffe als Wasserzeichen, seit 2026-10-20 in drei festen
+     Bändern (Rückmeldung: Elemente wirkten willkürlich verteilt; Vorlage clickdummy handSlot()): Kopf mit Name, Stern und
+     Anwendungswürfel, darunter Kampftechnik · KtW · RW; Mitte Bild | Würfelraster (AT | PA, TP bzw. FK über die volle
+     Breite); Fuß mit Aktionen und Fernkampf-Status. Die Handwahl ist das unsichtbare <select> über dem ⇄-Knopf. Freie
+     und belegte Hände sind gleich große, gestrichelte Karten (CSS). --}}
 {{#if side.note}}<small class="dsa5h-hand-2h-note">{{localize 'DSA5HELPERS.BodyTwoHandedNote'}}</small>{{else}}{{#with side.slot as |slot|}}{{#if (and (eq slot.hand "offhand") (not slot.item))}}<div class="dsa5h-hand-slot dsa5h-hand-free">
   <div class="dsa5h-hand-tile empty compact" data-tooltip="DSA5HELPERS.HandFreeChoose"><span aria-hidden="true">+</span>
     <select class="dsa5h-hand-select" data-dsa5h-hand="{{slot.hand}}" data-current="" aria-label="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><option value="">{{localize 'DSA5HELPERS.HandFreeOption'}}</option>{{#each slot.options}}<option value="{{id}}">{{name}}{{#if twoHanded}} {{localize 'DSA5HELPERS.TwoHandedSuffix'}}{{/if}}{{#if container}} {{localize 'DSA5HELPERS.InContainerSuffix' name=container}}{{/if}}</option>{{/each}}</select>
@@ -14,11 +15,11 @@
   <label class="dsa5h-hand-pick" data-tooltip="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><span aria-hidden="true">⇄</span>
     <select class="dsa5h-hand-select" data-dsa5h-hand="{{slot.hand}}" data-current="{{slot.item._id}}" aria-label="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><option value="">{{localize 'DSA5HELPERS.HandFreeOption'}}</option>{{#each slot.options}}<option value="{{id}}"{{#if selected}} selected{{/if}}>{{name}}{{#if twoHanded}} {{localize 'DSA5HELPERS.TwoHandedSuffix'}}{{/if}}{{#if container}} {{localize 'DSA5HELPERS.InContainerSuffix' name=container}}{{/if}}</option>{{/each}}</select>
   </label>
-  <span class="dsa5h-body-item-name dsa5h-hand-name withContext"><a data-action="itemEdit">{{slot.item.name}}</a>{{> "modules/dsa5-helpers/templates/actors/parts/favorite.hbs" item=slot.item}}</span>
+  <span class="dsa5h-body-item-name dsa5h-hand-name withContext"><a data-action="itemEdit">{{slot.item.name}}</a>{{> "modules/dsa5-helpers/templates/actors/parts/favorite.hbs" item=slot.item}}{{#if slot.item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=slot.item.name}}{{/if}}</span>
+  <div class="dsa5h-hand-meta">{{> "modules/dsa5-helpers/templates/actors/parts/combatskill-link.hbs" item=slot.item}}<span class="dsa5h-hand-reach">{{localize 'CHARAbbrev.RW'}} {{#if slot.ranged}}{{slot.item.system.reach.value}}{{else}}{{localize (concat 'Range-' slot.item.system.reach.value)}}{{/if}}</span></div>
   <div class="dsa5h-hand-media">
-    <img src="{{slot.item.img}}" alt="">{{#if slot.item.structureMax}}<meter min="0" max="{{slot.item.structureMax}}" value="{{slot.item.structureCurrent}}"></meter>{{/if}}{{#if slot.item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=slot.item.name}}{{/if}}
+    <img src="{{slot.item.img}}" alt="">{{#if slot.item.structureMax}}<meter min="0" max="{{slot.item.structureMax}}" value="{{slot.item.structureCurrent}}"></meter>{{/if}}
   </div>
-  <div class="dsa5h-hand-sub">{{> "modules/dsa5-helpers/templates/actors/parts/combatskill-link.hbs" item=slot.item}}<span class="dsa5h-hand-reach">{{localize 'CHARAbbrev.RW'}} {{#if slot.ranged}}{{slot.item.system.reach.value}}{{else}}{{localize (concat 'Range-' slot.item.system.reach.value)}}{{/if}}</span></div>
   <div class="dsa5h-hand-stats">
     <button type="button" class="dsa5h-hand-pill" data-action="chRollCombat" data-mode="attack" aria-label="{{#if slot.ranged}}{{localize 'DSA5HELPERS.RollRangedWith' name=slot.item.name}}{{else}}{{localize 'DSA5HELPERS.RollAttackWith' name=slot.item.name}}{{/if}}"><span class="dsa5h-hand-die dsa5h-die-attack">{{slot.item.attack}}</span><b>{{#if slot.ranged}}{{localize 'CHARAbbrev.FK'}}{{else}}{{localize 'CHARAbbrev.AT'}}{{/if}}</b></button>
     {{#unless slot.ranged}}<button type="button" class="dsa5h-hand-pill" data-action="chRollCombat" data-mode="parry" aria-label="{{localize 'DSA5HELPERS.RollParryWith' name=slot.item.name}}"><span class="dsa5h-hand-die dsa5h-die-parry">{{slot.item.parry}}</span><b>{{localize 'CHARAbbrev.PA'}}</b></button>{{/unless}}

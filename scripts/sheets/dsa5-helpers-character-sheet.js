@@ -84,6 +84,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hBannerClear: this._clearBanner,
       dsa5hPortraitShape: this._togglePortraitShape,
       dsa5hTwoHandedSide: this._setTwoHandedSide,
+      dsa5hMainArmor: this._setMainArmor,
       dsa5hSwapGrip: this._swapGrip,
       dsa5hConsume: this._consume,
     },
@@ -564,7 +565,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   }
 
   // Reiter „Körper“ (Kampf-Unterreiter, Issue #6/#29): Hände links und rechts der Figur (Haupthand links, Nebenhand
-  // rechts), Rüstung darunter. Haupt-/Nebenhand kommen aus den vom System vorbereiteten getragenen Waffen
+  // rechts), Rüstung mittig über der Figur (Issue #36). Haupt-/Nebenhand kommen aus den vom System vorbereiteten getragenen Waffen
   // (system.worn.offHand); beidhändig wie im System (weapon_hands.js isTwoHandedWeapon: Nahkampf über RuleChaos,
   // Fernkampf über worn.requiresBothHands). Eine beidhändige Waffe steht auf der per Actor-Flag gewählten Seite, die
   // andere Seite zeigt nur einen Hinweis.
@@ -637,8 +638,17 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       ...(prepare.traits?.meleeAttack ?? []).map(item => ({ item, ranged: false })),
       ...(prepare.traits?.rangeAttack ?? []).map(item => ({ item, ranged: true })),
     ];
+    // Rüstung mittig über der Figur (Issue #36, Nutzer-Entscheidung 2026-10-20 „Wappenschild“): Gesamtschutz auf dem
+    // Bild der Hauptrüstung, weitere Teile nur bei mehr als einem darunter. Hauptrüstung = per Actor-Flag gewähltes
+    // getragenes Teil, sonst das mit dem höchsten RS.
+    const flagged = this.actor.getFlag?.(MODULE_ID, 'mainArmor');
+    const mainArmor = armor.find(item => item._id === flagged)
+      ?? armor.reduce((best, item) => (!best || (Number(item.system?.protection?.value) || 0) > (Number(best.system?.protection?.value) || 0) ? item : best), null);
     return {
       armor,
+      mainArmor,
+      extraArmor: armor.length > 1 ? armor.filter(item => item !== mainArmor) : [],
+      zones: this._armorZones(armor),
       encumbrance,
       armorTooltip,
       magicArmor,
@@ -654,6 +664,38 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       figure: portrait ? this.actor.img : `systems/dsa5/icons/species/${placeholder}.webp`,
       initiative: Math.floor(this.actor.system?.status?.initiative?.value ?? 0),
     };
+  }
+
+  // Trefferzonen-Regel (Kompendium 1 „enableHitzones“ + Rüstkammer 2 „enableArmorZones“, wie dort registerSetup) —
+  // nur für Charaktere. Je Zone die Summe der getragenen Teile (prepare.wornArmor, Verschleiß schon vom System
+  // eingerechnet) plus system.totalArmor, wie Rüstkammer 2 renderArmorZones. Ohne die Regel null. Die Belastung bleibt
+  // die des Wappenschilds (dsa5h.body.encumbrance).
+  // Reihenfolge Kopf, Torso, Arme, Beine; im Kreuz steht der rechte Arm links (die Figur schaut einen an).
+  _armorZones(armor) {
+    const active = id => game.modules?.get(id)?.active;
+    const on = (module, key) => { try { return !!game.settings.get(module, key); } catch { return false; } };
+    if (this.actor.type !== 'character' || !active('dsa5-compendium') || !active('dsa5-armory2')
+      || !on('dsa5-compendium', 'enableHitzones') || !on('dsa5-armory2', 'enableArmorZones')) return null;
+    const bonus = Number(this.actor.system?.totalArmor) || 0;
+    const esc = text => String(text ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const rsAbbr = game.i18n.localize('CHARAbbrev.RS');
+    return ['head', 'value', 'rightarm', 'leftarm', 'rightleg', 'leftleg'].map(key => {
+      const items = armor.filter(item => Number(item.system?.protection?.[key]) > 0);
+      const label = game.i18n.localize(`DSA5HELPERS.Zone.${key}`);
+      const rs = items.reduce((sum, item) => sum + Number(item.system.protection[key]), 0) + bonus;
+      // Tooltip als HTML wie das Schild: Namen escaped, Foundry setzt den Inhalt per innerHTML.
+      const tooltip = [`<strong>${esc(label)}: ${rsAbbr} ${rs}</strong>`, ...items.map(item => `${esc(item.name)}: ${rsAbbr} ${Number(item.system.protection[key])}`), ...(bonus ? [`${esc(game.i18n.localize('DSA5HELPERS.ArmorBonus'))}: +${bonus}`] : [])].join('<br>');
+      return {
+        key,
+        label,
+        short: game.i18n.localize(`DSA5HELPERS.ZoneShort.${key}`),
+        rs,
+        names: items.map(item => item.name).join(', '),
+        tooltip,
+        img: items[0]?.img ?? '',
+        itemId: items[0]?._id ?? '',
+      };
+    });
   }
 
   // Behälter, in dem ein Gegenstand liegt (system.parent_id), sonst null — wie das System nur, wenn es den Behälter gibt.
@@ -740,6 +782,13 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   static async _setTwoHandedSide(_event, target) {
     if (!this.isEditable) return;
     await this.actor.setFlag(MODULE_ID, 'twoHandedSide', target.dataset.side === 'right' ? 'right' : 'left');
+  }
+
+  // Hauptrüstung im Reiter „Körper“ (Issue #36): Actor-Flag mit der Item-ID, nur im Bearbeiten-Modus wählbar.
+  static async _setMainArmor(_event, target) {
+    if (!this.isEditable) return;
+    const id = this._getItemId(target);
+    if (this.actor.items.get(id)?.type === 'armor') await this.actor.setFlag(MODULE_ID, 'mainArmor', id);
   }
 
   // Griffwechsel an der Hand im Reiter „Körper“ (Rückmeldung 2026-10-05: dort fehlte der Wechsel auf beidhändig).

@@ -372,11 +372,14 @@ const RANGED = [
   { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", reach: "2/5/10", ammo: "3", img: A.coreWeapon("meleeweapon/Wurfdolch.webp"), worn: { requiresBothHands: false, offHand: false }, container: { name: "Rucksack", img: A.tabInventory } },
 ];
 
+// zones: Rüstungsschutz je Trefferzone wie system.protection im System (value = Torso, head, leftarm, rightarm,
+// leftleg, rightleg) — nur bei aktiver Trefferzonen-Regel aus Kompendium 1 / Rüstkammer 2 relevant (Issue #36).
+// Je Zone trägt der Held höchstens ein Rüstungsteil.
 const ARMOR = [
-  { name: "Waldläuferkluft", rs: 2, be: 0, structure: { value: 5, max: 8 } },
-  { name: "Lederkappe", rs: 1, be: 0 },
+  { name: "Waldläuferkluft", rs: 2, be: 0, img: A.coreWeapon("armor/Lederruestung.webp"), structure: { value: 5, max: 8 }, zones: { value: 2, leftleg: 1, rightleg: 1 } },
+  { name: "Lederkappe", rs: 1, be: 0, zones: { head: 1 } },
   // Drittes Teil, damit „Körper“ die Rüstungstabelle (ab drei Teilen, 2026-09-30) zeigt.
-  { name: "Lederhandschuhe", rs: 0, be: 0 },
+  { name: "Lederhandschuhe", rs: 0, be: 0, zones: { leftarm: 1, rightarm: 1 } },
 ];
 
 // Gesamtschutz-Anzeige (actor-combat.hbs:158 "protection ({{prepare.armorSum}}...)"): Summe aller getragenen

@@ -122,10 +122,22 @@ test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the 
  context.dsa5h.editMode=false;assert(!render(context).includes('data-action="dsa5hBodyFigure"'),'figure switch only in edit mode');
  assert(elements(html,el=>el.name==='img'&&String(el.attribs?.class??'').includes('dsa5h-body-figure')&&el.attribs.src===context.dsa5h.body.figure).length===1,'figure is a real img, not a CSS url() variable');assert(!html.includes('--figure'));
  const armor=n=>Array.from({length:n},(_,i)=>{const a=item('a'+i,'armor');a.system.protection={value:1};a.system.calculatedEncumbrance=0;return a;});
- // Rüstung unter der Figur (Issue #29, Variante A): immer Kacheln in einer Zeile, Initiative rechts daneben, keine Wertezeile/Badge mehr.
- p.wornArmor=armor(4);context=await sheet._prepareContext({});html=render(context);
- const armorRow=elements(html,el=>el.attribs?.class==='dsa5h-body-armor-row')[0];assert(armorRow,'armor row');
- assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-body-armor-item'),armorRow.children).length,4,'tiles also from three pieces on');
+ // Rüstung mittig über der Figur (Issue #36, „Wappenschild“): Hauptrüstung = höchster RS, die übrigen Teile darunter;
+ // zwischen den Händen; die Rüstungszeile gibt es nur noch auf dem Smartphone (eigene Sprungmarke, alle Teile als Kacheln).
+ p.wornArmor=armor(4);p.wornArmor[2].system.protection.value=3;context=await sheet._prepareContext({});html=render(context);
+ assert(!elements(html,el=>el.attribs?.class==='dsa5h-body-armor-row').length,'no armor row on desktop');
+ assert.equal(context.dsa5h.body.mainArmor._id,'a2','highest RS is the main armor');assert.equal(context.dsa5h.body.zones,null,'no zones without the hit zone rule');
+ const grid=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-body-grid'))[0];const gridKids=grid.children.filter(n=>n.type==='tag').map(n=>n.attribs.class);
+ const centerAt=gridKids.findIndex(c=>c.includes('dsa5h-armor-center-crest'));assert(centerAt>0&&gridKids[centerAt-1].includes('left')&&gridKids[centerAt+1].includes('right'),'armor between the hands');
+ const crestGroup=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-armor-crest-group'))[0];assert.equal(crestGroup.attribs['data-item-id'],'a2');
+ assert.deepEqual(elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-armor-extra')).map(e=>e.attribs['data-item-id']),['a0','a1','a3'],'other pieces below the crest');
+ assert(html.includes('data-action="dsa5hMainArmor"'),'edit mode: a click on another piece picks the main armor');
+ context.dsa5h.editMode=false;assert(!render(context).includes('data-action="dsa5hMainArmor"'),'play mode: pieces open the item');context.dsa5h.editMode=true;
+ actor.flags.mainArmor='a3';assert.equal((await sheet._prepareContext({})).dsa5h.body.mainArmor._id,'a3','flag picks the main armor');delete actor.flags.mainArmor;
+ context.dsa5h.phone=true;const phoneHtml=render(context);context.dsa5h.phone=false;
+ const armorRow=elements(phoneHtml,el=>el.attribs?.class==='dsa5h-body-armor-row')[0];assert(armorRow,'armor row on the phone');assert.equal(armorRow.attribs['data-sub-panel'],'combat:armor');
+ assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-body-armor-item'),armorRow.children).length,4,'phone: every piece as a tile');
+ assert(!phoneHtml.includes('dsa5h-armor-center'),'phone: no armor in the middle');
  const top=elements(html,el=>el.attribs?.class==='dsa5h-body-top')[0];assert(top,'top bar');assert(dom.findAll(el=>el.attribs?.class==='dsa5h-body-ini',top.children).length===1,'initiative at the top');assert(dom.findAll(el=>el.attribs?.class==='dsa5h-quick-actions',top.children).length===1,'quick actions at the top');
  assert(!html.includes('dsa5h-figure-badge')&&!html.includes('dsa5h-figure-stats')&&!html.includes('dsa5h-body-armor-table'));
  const panelHtml=html.slice(html.indexOf('dsa5h-body-panel'));assert(panelHtml.indexOf('dsa5h-body-top')<panelHtml.indexOf('dsa5h-body-grid'),'quick actions above everything');
@@ -508,7 +520,7 @@ test('Würfelstatistik (#28): Fenster „Karten“ – Karten je Spieler, Diagra
  assert(/registerMenu\('dsa5-helpers', 'diceStats'[\s\S]*?restricted: false/.test(read('scripts/dsa5-helpers.js')),'für alle über die Moduleinstellungen erreichbar');
  assert(read('scripts/dsa5-helpers.js').includes('"modules/dsa5-helpers/templates/dice-stats.hbs"'));
 });
-test('body tab (#29): armor shield in the armor row with breakdown tooltip, ammo picker in the ranged hand, short list of other weapons and trait attacks',async()=>{
+test('body tab (#29/#36): armor crest with breakdown tooltip, ammo picker in the ranged hand, short list of other weapons and trait attacks',async()=>{
  const {sheet,actor}=await prepare();const p=sheet.context.prepare;
  const armor=(id,rs,be,name)=>{const a=item(id,'armor');a.name=name;a.system.protection={value:rs};a.system.calculatedEncumbrance=be;return a;};
  p.wornArmor=[armor('a1',2,1,'Kettenhemd'),armor('a2',1,0,'Helm <b>')];p.armorSum=3;p.spellArmor=1;p.liturgyArmor=0;
@@ -519,9 +531,9 @@ test('body tab (#29): armor shield in the armor row with breakdown tooltip, ammo
  p.wornMeleeWeapons=[dagger,spare];p.wornRangedWeapons=[ranged];p.traits={meleeAttack:[bite],rangeAttack:[]};
  for(const w of [ranged,dagger,spare])actor.items.set(w._id,w);
  const context=await sheet._prepareContext({});const html=render(context);
- const armorRow=elements(html,el=>el.attribs?.class==='dsa5h-body-armor-row')[0];
- const shield=dom.findAll(el=>el.attribs?.class==='dsa5h-body-shield',armorRow.children)[0];assert(shield,'shield in the armor row');assert.equal(armorRow.children.filter(n=>n.type==='tag').at(-1),shield,'right-aligned at the end');
+ const shield=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-armor-crest withContext'))[0];assert(shield,'armor crest');
  assert(dom.textContent(shield).includes('3')&&dom.textContent(shield).includes('+1'),'RS sum and magic bonus');
+ assert.equal(dom.textContent(elements(html,el=>el.attribs?.class==='dsa5h-armor-crest-name')[0]),'Kettenhemd','main armor named below the crest');
  const tip=shield.attribs['data-tooltip'];assert(tip.includes('Kettenhemd')&&tip.includes('Helm &amp;lt;b&amp;gt;')||tip.includes('Helm &lt;b&gt;'),'pieces listed, names escaped');assert(!tip.includes('<b>'));
  assert.equal(context.dsa5h.body.magicArmor,1);assert(shield.attribs['aria-label']);
  const hands=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-body-side'));
@@ -530,6 +542,23 @@ test('body tab (#29): armor shield in the armor row with breakdown tooltip, ammo
  assert.deepEqual(short.map(r=>r.attribs['data-item-id']),['spare','bite'],'worn weapon outside the hands + trait attack');
  assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='chRollCombat',short[1].children).length,3,'trait attack stays rollable (AT, PA, TP)');
  assert(dom.findAll(el=>String(el.attribs?.class??'').includes('withContext'),short[0].children).length,'context menu target');
+});
+test('body tab (#36): hit zone rule (Kompendium 1 + Rüstkammer 2) shows the zone cross with RS per zone',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;const saved=global.game;
+ const armor=(id,name,protection)=>{const a=item(id,'armor');a.name=name;a.system.protection={value:0,head:0,leftarm:0,rightarm:0,leftleg:0,rightleg:0,...protection};a.system.calculatedEncumbrance=1;return a;};
+ p.wornArmor=[armor('k','Kettenhemd',{value:4,leftarm:2,rightarm:2}),armor('h','Helm <b>',{head:3}),armor('g','Gambeson',{value:1})];actor.system.totalArmor=1;actor.type='character';
+ try {
+  global.game={...saved,modules:{get:id=>['dsa5-compendium','dsa5-armory2'].includes(id)?{active:true}:undefined},settings:{get:(m,k)=>(m==='dsa5-compendium'&&k==='enableHitzones')||(m==='dsa5-armory2'&&k==='enableArmorZones')?true:'light'}};
+  const context=await sheet._prepareContext({});const html=render(context);const zones=context.dsa5h.body.zones;
+  assert.deepEqual(zones.map(z=>[z.key,z.rs]),[['head',4],['value',6],['rightarm',3],['leftarm',3],['rightleg',1],['leftleg',1]],'sum of the pieces per zone + totalArmor, like Rüstkammer 2');
+  assert(zones[1].tooltip.includes('Kettenhemd')&&zones[1].tooltip.includes('Gambeson'));assert(zones[0].tooltip.includes('Helm &lt;b&gt;'),'names escaped');
+  assert(html.includes('dsa5h-body-grid sides armor-zones'));assert(!html.includes('dsa5h-armor-crest'),'cross instead of the crest');
+  const cells=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-armor-zone dsa5h-zone-'));assert.equal(cells.length,6);
+  assert.equal(cells.filter(c=>c.name==='button').length,4,'zones with armor open the item');assert.equal(cells.find(c=>c.attribs.class.includes('zone-rightleg')).name,'div');
+  assert.equal(cells[0].attribs['data-item-id'],'h');
+  actor.type='npc';assert.equal((await sheet._prepareContext({})).dsa5h.body.zones,null,'characters only');actor.type='character';
+  global.game.settings={get:()=>false};assert.equal((await sheet._prepareContext({})).dsa5h.body.zones,null,'rule off');
+ } finally { global.game=saved; }
 });
 test('sub-tabs as jump marks in every tab (#32): all sections render, a sub-tab scrolls to its section, scrolling moves the mark',async()=>{
  const {sheet,context}=await prepare();const html=render(context);
