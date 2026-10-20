@@ -6431,6 +6431,203 @@ button.fav-chip-roll {
   }
 }
 
+/* --- Aufträge und Personen (Issue #39): Liste aus dem Almanach des Systems --- */
+.almanac-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.almanac-btn {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 14px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.quest-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.quest-card {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.quest-card.closed {
+  opacity: .7;
+}
+
+.quest-img {
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.quest-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.quest-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 8px;
+}
+
+.quest-title {
+  font-family: 'Andalus', serif;
+  font-size: 19px;
+  font-weight: normal;
+}
+
+.quest-badge {
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--odd);
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.quest-badge.prio-0 {
+  background: var(--accent);
+  color: #fff;
+}
+
+.quest-badge.status-1 {
+  background: rgba(47, 107, 42, .15);
+  color: var(--use);
+}
+
+.quest-badge.status-2 {
+  background: var(--dmg-bg);
+  color: var(--dmg);
+}
+
+.quest-meta,
+.quest-progress {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.quest-summary {
+  font-size: var(--fs-small);
+}
+
+.quest-objectives ul {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-small);
+}
+
+.quest-objectives li {
+  display: flex;
+  gap: 6px;
+}
+
+.quest-objectives li.done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.quest-check {
+  width: 14px;
+  color: var(--accent);
+}
+
+.quest-closed > summary {
+  cursor: pointer;
+}
+
+.persona-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.persona-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.persona-card img {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  background: var(--paper);
+}
+
+.persona-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.persona-text strong {
+  font-size: var(--fs-data);
+}
+
+.persona-text small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.persona-important {
+  color: var(--accent);
+}
+
+:is(.quest-card, .persona-card, .almanac-btn):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .quest-card:hover {
+    background: var(--odd);
+  }
+
+  :is(.persona-card, .almanac-btn):hover {
+    border-color: var(--accent);
+  }
+}
+
 /* ==========================================================================
    16. Steigerungsplaner
    ========================================================================== */

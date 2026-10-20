@@ -41,6 +41,28 @@ const TABS = [
   // actor-companion.hbs), nicht auf dem Kampf-Tab — der ursprüngliche Gap-Report hatte die Quelle falsch als
   // actor-combat.hbs referenziert, hier korrigiert.
   { id: "companions", label: "Gefährten", icon: A.tabCompanion, title: "Gefährten", hint: "" },
+  // Issue #39: Aufträge und Personen aus dem Almanach des Systems (Auftrags- und Dramatis-Personae-Journale). Nur da,
+  // wenn die SL das Feature eingeschaltet und Journale eingerichtet hat; Details und Notizen pflegt man im Almanach.
+  { id: "quests", label: "Aufträge", icon: A.tabQuests, title: "Aufträge", hint: "" },
+  { id: "personae", label: "Personen", icon: A.tabPersonae, title: "Personen", hint: "" },
+];
+
+// Demo-Aufträge wie DSAQuestLogEntry (system.quests): priority 0 Haupt-, 1 Neben-, 2 persönlicher Auftrag; status
+// 0 offen, 1 beendet, 2 fehlgeschlagen; Ziele mit eigenem Status. Spieler sehen nur, was die SL freigegeben hat.
+const QUESTS = [
+  { title: "Das Erbe des Grafen", priority: 0, status: 0, img: ICONS + "/backgrounds/library.webp", location: "Gratenfels", summary: "Findet heraus, wer das Testament des alten Grafen gefälscht hat.", objectives: [{ text: "Mit dem Notar sprechen", status: 1 }, { text: "Den Siegelring finden", status: 0 }, { text: "Beweise dem Baron vorlegen", status: 0 }] },
+  { title: "Wölfe im Forst", priority: 1, status: 0, location: "Rodaschquell", summary: "Der Förster bittet um Hilfe gegen ein Rudel, das Schafe reißt.", objectives: [{ text: "Spuren lesen", status: 1 }, { text: "Das Rudel vertreiben", status: 0 }] },
+  { title: "Ein Brief für Mutter", priority: 2, status: 0, summary: "Layariel will ihrer Mutter in den Salamandersteinen schreiben.", objectives: [] },
+  { title: "Die Brücke am Fluss", priority: 1, status: 1, summary: "Die Brücke ist repariert, die Händler ziehen wieder.", objectives: [{ text: "Holz besorgen", status: 1 }] },
+];
+
+// Demo-Personen wie DSAPersonaEntry (system.personae): type 0 Dramatis Personae, 1 Bestiarium; important = wichtig.
+const PERSONAE = [
+  { name: "Baron Ugdalf von Gratenfels", type: 0, important: true, subtitle: "Lehnsherr", faction: "Haus Gratenfels", img: ICONS + "/species/Mensch.webp" },
+  { name: "Notar Elgor Brandeisen", type: 0, subtitle: "Schreiber, nervös", faction: "Gratenfels", img: ICONS + "/species/Zwerg.webp" },
+  { name: "Förster Answin", type: 0, subtitle: "Auftraggeber", faction: "Rodaschquell", img: ICONS + "/species/Mensch.webp" },
+  { name: "Grauwolf", type: 1, subtitle: "Rudeltier", faction: "Forst", img: ICONS + "/categories/Tiere.webp" },
+  { name: "Waldschrat", type: 1, important: true, subtitle: "Gerüchte im Dorf", faction: "Forst", img: ICONS + "/categories/Tiere.webp" },
 ];
 
 // Spezies/Kultur/Profession als eigene Item-Referenzen (system.details.species/culture/career im echten System

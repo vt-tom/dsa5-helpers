@@ -984,6 +984,7 @@ const NOTES_SECTIONS = [
 // alle Abschnitte untereinander (Element mit data-section), ein Unterreiter scrollt nur dorthin, beim Scrollen wandert
 // die Markierung mit (initSkillScrollSpy). Modul: _jumpSections()/_jumpTo()/_onContentScroll().
 const SECTION_TABS = {
+  personae: [["dramatis", "Dramatis Personae"], ["bestiary", "Bestiarium"]],
   combat: [["koerper", "Körper"], ["kampftalente", "Kampftalente"]],
   magic: [["spells", "Zauber"], ["items", "Ausrüstung"]],
   religion: [["liturgies", "Liturgien"], ["items", "Ausrüstung"]],
@@ -3476,6 +3477,75 @@ function renderPlanner() {
   ]);
 }
 
+// Issue #39: Aufträge und Personen im Bogen — Liste aus den Journalen des Almanachs; ein Klick öffnet die Details im
+// Almanach des Systems (dort auch Notizen). Im Modul nur, wenn die SL das Feature eingeschaltet und Journale eingerichtet hat.
+const QUEST_STATUS = ["Offen", "Beendet", "Fehlgeschlagen"];
+const QUEST_PRIORITY = ["Hauptauftrag", "Nebenauftrag", "Persönlich"];
+function openInAlmanac(kind, name) {
+  flashNotice(`📖 Almanach öffnet sich: ${kind} „${name}“`);
+}
+
+function questCard(q) {
+  const done = q.objectives.filter((o) => o.status === 1).length;
+  const card = el("button", { type: "button", class: "quest-card" + (q.status ? " closed" : ""), title: "Im Almanach öffnen" }, [
+    el("img", { class: "quest-img", src: q.img || A.questPlaceholder, alt: "" }),
+    el("span", { class: "quest-body" }, [
+      el("span", { class: "quest-head" }, [
+        el("strong", { class: "quest-title" }, q.title),
+        el("span", { class: `quest-badge prio-${q.priority}` }, QUEST_PRIORITY[q.priority]),
+        q.status ? el("span", { class: `quest-badge status-${q.status}` }, QUEST_STATUS[q.status]) : null,
+      ]),
+      q.location ? el("small", { class: "quest-meta" }, q.location) : null,
+      q.summary ? el("span", { class: "quest-summary" }, q.summary) : null,
+      q.objectives.length ? el("span", { class: "quest-objectives" }, [
+        el("small", { class: "quest-progress" }, `Ziele ${done}/${q.objectives.length}`),
+        el("ul", {}, q.objectives.map((o) => el("li", { class: o.status === 1 ? "done" : o.status === 2 ? "failed" : "" }, [el("span", { class: "quest-check", "aria-hidden": "true" }, o.status === 1 ? "✓" : o.status === 2 ? "✕" : "○"), o.text]))),
+      ]) : null,
+    ]),
+  ]);
+  card.addEventListener("click", () => openInAlmanac("Auftrag", q.title));
+  return card;
+}
+
+function renderQuests() {
+  const open = QUESTS.filter((q) => !q.status);
+  const closed = QUESTS.filter((q) => q.status);
+  const group = (label, list) => list.length ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, label), el("div", { class: "quest-list" }, list.map(questCard))]) : null;
+  const almanac = el("button", { type: "button", class: "almanac-btn" }, "📖 Almanach öffnen");
+  almanac.addEventListener("click", () => openInAlmanac("Reiter", "Aufträge"));
+  return el("div", {}, [
+    el("div", { class: "almanac-bar" }, [el("small", { class: "muted" }, "Freigegebene Aufträge der Gruppe. Details und Notizen im Almanach."), almanac]),
+    group("Hauptaufträge", open.filter((q) => q.priority === 0)),
+    group("Nebenaufträge", open.filter((q) => q.priority === 1)),
+    group("Persönliche Aufträge", open.filter((q) => q.priority === 2)),
+    closed.length ? el("details", { class: "panel quest-closed" }, [el("summary", { class: "panel-title" }, `Abgeschlossen (${closed.length})`), el("div", { class: "quest-list" }, closed.map(questCard))]) : null,
+  ]);
+}
+
+function personaCard(p) {
+  const card = el("button", { type: "button", class: "persona-card", title: "Im Almanach öffnen" }, [
+    el("img", { src: p.img, alt: "" }),
+    el("span", { class: "persona-text" }, [
+      el("strong", {}, [p.name, p.important ? el("span", { class: "persona-important", title: "Wichtig" }, " ★") : null]),
+      p.subtitle ? el("small", {}, p.subtitle) : null,
+      p.faction ? el("small", { class: "persona-faction" }, p.faction) : null,
+    ]),
+  ]);
+  card.addEventListener("click", () => openInAlmanac(p.type ? "Bestiarium" : "Dramatis Personae", p.name));
+  return card;
+}
+
+function renderPersonae() {
+  const list = (type) => el("div", { class: "persona-grid" }, PERSONAE.filter((p) => p.type === type).map(personaCard));
+  const almanac = el("button", { type: "button", class: "almanac-btn" }, "📖 Almanach öffnen");
+  almanac.addEventListener("click", () => openInAlmanac("Reiter", "Dramatis Personae"));
+  return el("div", {}, [
+    el("div", { class: "almanac-bar" }, [el("small", { class: "muted" }, "Freigegebene Personen und Wesen. Notizen der Gruppe im Almanach."), almanac]),
+    section("dramatis", [el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Dramatis Personae"), list(0)])]),
+    section("bestiary", [el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Bestiarium"), list(1)])]),
+  ]);
+}
+
 const RENDERERS = {
   cover: renderCover,
   main: renderMain,
@@ -3487,6 +3557,8 @@ const RENDERERS = {
   status: renderStatus,
   notes: renderNotes,
   companions: renderCompanions,
+  quests: renderQuests,
+  personae: renderPersonae,
   steigerungsplaner: renderPlanner,
 };
 

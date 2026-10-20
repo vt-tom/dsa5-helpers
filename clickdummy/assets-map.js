@@ -47,6 +47,10 @@ const A = {
   tabStatus: ICONS + "/categories/ability_ceremonial.webp",
   tabNotes: ICONS + "/categories/Ability_Language.webp",
   tabCompanion: ICONS + "/categories/ability_animal.webp",
+  // Issue #39: Aufträge und Personen (Dramatis Personae · Bestiarium) aus dem Almanach des Systems.
+  tabQuests: ICONS + "/categories/Career.webp",
+  tabPersonae: ICONS + "/categories/Weltliche.webp",
+  questPlaceholder: ICONS + "/backgrounds/library.webp",
   // Spezies/Kultur/Profession-Verweise auf dem Titelblatt (IDENTITY in data.js): thematisch passende, bereits
   // vorhandene Kategorie-Icons statt eigener Rasse-/Kultur-Symbole (die es im System nicht gibt).
   species: ICONS + "/categories/wesenszug.webp",
