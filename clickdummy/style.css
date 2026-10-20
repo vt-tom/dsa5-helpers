@@ -50,6 +50,8 @@
 :root {
   --paper: #ece2d2;
   --ink: #2b2721;
+  --portrait-aura-core: rgba(176,134,58,.55);
+  --portrait-aura: rgba(176,134,58,.4);
   --frame-ink: #2b2721;
   /* Porträtrahmen, im dunklen Thema bewusst gleich (Issue #19) */
   --muted: rgba(43,39,33,.72);
@@ -79,6 +81,8 @@
 [data-theme='dark'] {
   --paper: #241f1c;
   --ink: #ede3d1;
+  --portrait-aura-core: rgba(255,228,170,.6);
+  --portrait-aura: rgba(235,185,100,.4);
   --muted: rgba(237,227,209,.7);
   --line: rgba(237,227,209,.18);
   --panel: rgba(255,255,255,.05);
@@ -498,8 +502,8 @@ button {
 .portrait {
   width: 100%;
   height: 100%;
+  overflow: hidden;
   background-color: var(--paper);
-  background-repeat: no-repeat;
   clip-path: polygon(13px 0,calc(100% - 13px) 0,100% 13px,100% calc(100% - 13px),calc(100% - 13px) 100%,13px 100%,0 calc(100% - 13px),0 13px);
 }
 
@@ -525,6 +529,21 @@ button {
     0 0 0 6px #c2a267,
     0 0 0 7px #5e4a2a,
     0 6px 16px 6px rgba(0,0,0,.55);
+}
+
+/* Bild als eigene Ebene in .portrait (Papierfläche + Beschnitt), damit Licht zwischen Papier und Bild passt (Issue #35). */
+.portrait-img {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+}
+
+/* Aura (Issue #35, Idee Nimuee, Nutzer-Entscheidung 2026-10-20): Porträts ohne Hintergrund bekommen einen dezenten
+   goldenen Schein entlang der Umrisse der Figur (drop-shadow folgt dem Alphakanal), in beiden Themen. Bei Bildern mit
+   eigenem Hintergrund liegt der Schein außerhalb des Beschnitts und ist unsichtbar. Verworfen: Spotlight (Lichtkegel
+   von oben). */
+.portrait-img {
+  filter: drop-shadow(0 0 1px var(--portrait-aura-core)) drop-shadow(0 0 6px var(--portrait-aura));
 }
 
 /* AP-Band (Element aus Variante B): AP-Wert und freie AP auf einem roten Band mit Schwalbenschwanz-Enden, das unten
@@ -2356,9 +2375,10 @@ button.probe-die:focus-visible,
   font-size: 15px;
 }
 
-/* LeP/AsP/KaP/Schips leben jetzt nur noch in #coverSidebar (s.u.), nicht mehr zusätzlich in der Kopfzeile. */
-.sheet[data-tab="cover"] .head .bars,
-.sheet[data-tab="cover"] .head-plaque {
+/* LeP/AsP/KaP/Schips leben jetzt nur noch in #coverSidebar (s.u.), nicht mehr zusätzlich in der Kopfzeile — außer im
+   schmalen Fenster (.narrow), dort bleibt alles im Kopf. */
+.sheet[data-tab="cover"]:not(.narrow) .head .bars,
+.sheet[data-tab="cover"]:not(.narrow) .head-plaque {
   display: none;
 }
 
@@ -4359,6 +4379,33 @@ button.fav-chip-roll {
   height: 30px;
 }
 
+.short-weapon-icon {
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+
+.short-weapon-icon > img:first-child,
+.short-weapon-icon > .item-icon {
+  width: 30px;
+  height: 30px;
+}
+
+/* Waffe liegt in einem Behälter (wie .dsa5h-in-container im Modul): Behälterbild als Plakette unten rechts. */
+.short-weapon-icon > .in-container {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  object-fit: contain;
+  cursor: help;
+}
+
 /* Lange Namen gekürzt statt mitten im Wort umgebrochen (seit der Ausrüsten-Spalte, 2026-10-05), voller Name im Tooltip. */
 .short-weapon-row .weapon-name > span:first-child {
   display: block;
@@ -4749,6 +4796,26 @@ button.fav-chip-roll {
   outline-offset: 1px;
 }
 
+/* --- Sonderfertigkeiten, Patron, Tricks/Segnungen zweispaltig (Issue #38) ---
+   Wie im Modul (.dsa5h-panel-cols): kurze Chip-Panels nebeneinander, ein allein stehendes letztes über die ganze Zeile. */
+.panel-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 16px;
+}
+
+.panel + .panel-cols {
+  margin-top: 16px;
+}
+
+.panel-cols > .panel + .panel {
+  margin-top: 0;
+}
+
+.panel-cols > .panel:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 /* ==========================================================================
    12. Ausrüstung
    ========================================================================== */
@@ -5098,6 +5165,54 @@ button.fav-chip-roll {
 /* ==========================================================================
    13. Status
    ========================================================================== */
+
+/* „Zustand hinzufügen“ mit Suche (Issue #37), wie .dsa5h-condition-picker im Modul. Statt der weißen Foundry-
+   Symbole (icons/svg/…, liegen nicht unter Data) nur die dunkle Plakette. */
+.condition-picker {
+  grid-column: 1 / -1;
+  column-span: all;
+  padding: 10px 11px;
+  border-bottom: 1px solid var(--line);
+}
+
+.condition-picker > summary {
+  cursor: pointer;
+}
+
+.condition-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
+  gap: 6px;
+  padding-top: 10px;
+}
+
+.condition-grid > button {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 34px;
+  padding: 3px 6px;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.condition-grid > .cond-search,
+.condition-grid > .cond-none {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.condition-grid > [hidden] {
+  display: none;
+}
+
+.cond-plate {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: var(--head-base);
+}
 
 .modifier-row {
   grid-template-columns: 1fr 50px 1fr;
@@ -5590,6 +5705,58 @@ button.fav-chip-roll {
   .rail button .rail-label {
     display: none;
   }
+}
+
+/* --- Schmales Fenster: Titelblatt einspaltig (.narrow, initNarrowSheet(); im Modul .dsa5h-narrow, 2026-10-20) ---
+   Kopf oben wie auf den anderen Reitern, #coverSidebar (nur noch der Reiterkasten) im Inhalt unter den Favoriten. */
+.sheet.narrow[data-tab="cover"] {
+  grid-template-columns: minmax(0,1fr);
+  grid-template-rows: auto auto auto minmax(0,1fr);
+  grid-template-areas: "head" "attrbar" "tabtitle" "content";
+}
+
+/* Kopf im schmalen Fenster (alle Reiter, wie .dsa5h-narrow im Modul): kleinere Kugeln und Porträt, Spezies · Kultur ·
+   Profession als eigene Zeile unter den Kugeln über die volle Breite. */
+.sheet.narrow .head-inner {
+  gap: 12px;
+}
+
+.sheet.narrow .head-inner > .portrait-medal {
+  flex-basis: 96px;
+  width: 96px;
+  height: 116px;
+}
+
+.sheet.narrow .head-inner > .portrait-medal.shape-round {
+  height: 96px;
+}
+
+.sheet.narrow .head-main {
+  column-gap: 10px;
+}
+
+.sheet.narrow .head .bars {
+  margin-top: -26px;
+}
+
+.sheet.narrow .head .orb {
+  --sz: 52px;
+}
+
+.sheet.narrow .head-ident {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  padding-top: 4px;
+}
+
+.sheet.narrow[data-tab="cover"] #coverSidebar {
+  --headink: var(--ink);
+  --headmuted: var(--muted);
+  display: block;
+  margin-top: 16px;
+  padding: 0;
+  overflow: visible;
+  background: none;
 }
 
 /* ==========================================================================
@@ -6589,6 +6756,12 @@ button.fav-chip-roll {
   color: #1c1917;
   font-weight: bold;
   border-color: var(--accent,#8b6f3f);
+}
+
+.mode-switch button.active {
+  background: var(--accent,#8b6f3f);
+  color: #1c1917;
+  font-weight: bold;
 }
 
 /* Steuerungen (Modus-/Tab-Stil-Umschalter, Theme-Button) sollen als Gruppe umbrechen statt einzelne Buttons zu quetschen. */

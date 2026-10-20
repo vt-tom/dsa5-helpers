@@ -1411,7 +1411,7 @@ function handSlot(hand) {
     ...handWeapons()
       .filter((x) => isMain || !x.worn.requiresBothHands)
       .map((x, i) => {
-        const opt = el("option", { value: String(i) }, x.name + (x.worn.requiresBothHands ? " (beidhändig)" : ""));
+        const opt = el("option", { value: String(i) }, x.name + (x.worn.requiresBothHands ? " (beidhändig)" : "") + (x.container ? ` (in ${x.container.name})` : ""));
         if (x === w) opt.selected = true;
         return opt;
       }),
@@ -1419,6 +1419,7 @@ function handSlot(hand) {
   const options = handWeapons().filter((x) => isMain || !x.worn.requiresBothHands);
   select.addEventListener("change", () => {
     const pick = select.value === "" ? null : options[Number(select.value)];
+    if (pick) delete pick.container;
     HANDS[hand] = pick;
     const other = isMain ? "off" : "main";
     if (pick && HANDS[other] === pick) HANDS[other] = null;
@@ -1633,7 +1634,10 @@ function renderBody() {
     const trait = !!w.trait;
     const stats = trait ? { at: w.at, pa: w.pa } : ranged ? effectiveRangedStats(w) : effectiveMeleeStats(w);
     return el("div", { class: "row short-weapon-row" }, [
-      trait ? el("img", { src: w.img || A.combatSkill, alt: "" }) : itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
+      trait ? el("img", { src: w.img || A.combatSkill, alt: "" }) : el("span", { class: "short-weapon-icon" }, [
+        itemIcon(w.img, "", w.structure, ranged ? "rangeweapon" : "meleeweapon"),
+        w.container ? el("img", { class: "in-container", src: w.container.img, alt: inContainerText(w), title: inContainerText(w) }) : null,
+      ]),
       el("span", { class: "left weapon-name" }, [el("span", { title: w.name }, w.name), el("small", { class: "weapon-sub" }, trait ? "Angeboren" : w.group)]),
       el("span", { class: "short-weapon-dice" }, [
         combatDie(stats.at, "d20mu", `${ranged ? "Fernkampf" : "Attacke"} mit ${w.name} würfeln`),
@@ -1644,12 +1648,14 @@ function renderBody() {
       trait ? el("span", {}) : favStar(w),
     ]);
   };
+  const inContainerText = (w) => `In „${w.container.name}“ verstaut – wird beim Anlegen herausgenommen`;
   // Ausrüsten-Schild wie in Foundry (Rückmeldung 2026-10-05): Klick nimmt die Waffe in die Hand wie das System mit
   // hand "auto" (beidhändig → Haupthand, sonst freie Hand, sonst Haupthand). Klon von equipToggle() ohne dessen Listener.
   const handEquipBtn = (w) => {
     const btn = equipToggle({ eq: false }).cloneNode(true);
     btn.title = "In die Hand nehmen";
     btn.addEventListener("click", () => {
+      delete w.container;
       const twoHand = !!w.worn.requiresBothHands;
       const hand = twoHand || !HANDS.main || (HANDS.main.worn.requiresBothHands) || HANDS.off ? "main" : "off";
       HANDS[hand] = w;
@@ -1962,15 +1968,18 @@ function renderMagicSpells(withHeader = true) {
     withHeader ? traditionHeader(MAGIC_TRADITION, "magic") : null,
     magicTable("Zauber", SPELLS),
     magicTable("Rituale", RITUALS),
-    el("div", { class: "panel" }, [
-      el("div", { class: "panel-title" }, "Zaubertricks"),
-      el("div", { class: "chips" }, TRICKS.map((t) => deletableChip(A.spellTrick, t, TRICKS, t))),
+    // Issue #38: Chip-Panels zweispaltig.
+    el("div", { class: "panel-cols" }, [
+      el("div", { class: "panel" }, [
+        el("div", { class: "panel-title" }, "Zaubertricks"),
+        el("div", { class: "chips" }, TRICKS.map((t) => deletableChip(A.spellTrick, t, TRICKS, t))),
+      ]),
+      specialsBlock("Sonderfertigkeiten (Magie)", MAGIC_SPECIALS),
+      PATRONS.length ? el("div", { class: "panel" }, [
+        el("div", { class: "panel-title" }, "Patron"),
+        el("div", { class: "chips" }, PATRONS.map((p) => el("span", { class: "chip" }, p))),
+      ]) : null,
     ]),
-    specialsBlock("Sonderfertigkeiten (Magie)", MAGIC_SPECIALS),
-    PATRONS.length ? el("div", { class: "panel" }, [
-      el("div", { class: "panel-title" }, "Patron"),
-      el("div", { class: "chips" }, PATRONS.map((p) => el("span", { class: "chip" }, p))),
-    ]) : null,
   ]);
 }
 
@@ -1998,11 +2007,14 @@ function renderReligionLiturgies(withHeader = true) {
     withHeader ? traditionHeader(RELIGION_TRADITION, "religion") : null,
     magicTable("Liturgien", LITURGIES),
     magicTable("Zeremonien", CEREMONIES),
-    el("div", { class: "panel" }, [
-      el("div", { class: "panel-title" }, "Segnungen"),
-      el("div", { class: "chips" }, BLESSINGS.map((b) => deletableChip(A.blessing, b, BLESSINGS, b))),
+    // Issue #38: Chip-Panels zweispaltig.
+    el("div", { class: "panel-cols" }, [
+      el("div", { class: "panel" }, [
+        el("div", { class: "panel-title" }, "Segnungen"),
+        el("div", { class: "chips" }, BLESSINGS.map((b) => deletableChip(A.blessing, b, BLESSINGS, b))),
+      ]),
+      specialsBlock("Sonderfertigkeiten (Religion)", RELIGION_SPECIALS),
     ]),
-    specialsBlock("Sonderfertigkeiten (Religion)", RELIGION_SPECIALS),
   ]);
 }
 
@@ -2284,11 +2296,12 @@ function increaseStep(getValue, setValue, max, onChange, label = "Wert") {
 // Zustände-Panel als eigene Funktion (statt inline in renderStatus), damit die Titelblatt-Leiste dieselben Zeilen im
 // Reiter „Statuseffekte“ wiederverwenden kann (coverSideTabs()). Wert (gefüllte Pips) in BEIDEN Modi reduzierbar,
 // ganze Zeile nur im Bearbeiten-Modus löschbar. `limit` deckelt die Liste optional mit einem Sprung-Button zum Status-Tab.
-function buildConditionsPanel(limit) {
+function buildConditionsPanel(limit, withPicker = false) {
   const capped = limit && CONDITIONS.length > limit;
   const shown = capped ? CONDITIONS.slice(0, limit) : CONDITIONS;
   const panel = el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Zustände"),
+    withPicker ? conditionPicker() : null,
     ...shown.map((c) =>
       el("div", { class: "list-row" }, [
         el("span", { class: "name" }, c.name),
@@ -2312,6 +2325,52 @@ function buildConditionsPanel(limit) {
   return panel;
 }
 
+// „Zustand hinzufügen“ wie im Modul (status.hbs .dsa5h-condition-picker): Aufklapper mit Raster und Suche über die
+// Namen (Issue #37). Enter fügt den einzigen Treffer hinzu, Escape leert bzw. schließt; „Eigener Zustand“ bleibt sichtbar.
+function conditionPicker() {
+  const add = (choice) => {
+    const existing = CONDITIONS.find((c) => c.name === choice.name);
+    if (existing) existing.filled = Math.min(existing.pips, existing.filled + 1);
+    else CONDITIONS.push({ name: choice.name, pips: choice.pips, filled: 1 });
+    renderContent();
+  };
+  const buttons = CONDITION_CHOICES.map((choice) => {
+    const btn = el("button", { type: "button" }, [el("span", { class: "cond-plate", "aria-hidden": "true" }), el("span", {}, choice.name)]);
+    btn.addEventListener("click", () => add(choice));
+    return btn;
+  });
+  const custom = el("button", { type: "button" }, "Eigener Zustand");
+  custom.addEventListener("click", () => flashNotice("Eigener Zustand: in Foundry öffnet sich der Effekt-Dialog des Systems"));
+  const none = el("p", { class: "cond-none muted", hidden: "" }, "Keine Treffer.");
+  const input = el("input", { type: "search", class: "cond-search", placeholder: "Zustand suchen …", "aria-label": "Zustand suchen …" });
+  const visible = () => buttons.filter((b) => !b.hidden);
+  const apply = () => {
+    const q = input.value.trim().toLocaleLowerCase("de");
+    buttons.forEach((b) => { b.hidden = !!q && !b.textContent.toLocaleLowerCase("de").includes(q); });
+    none.hidden = visible().length > 0;
+  };
+  input.addEventListener("input", apply);
+  const picker = el("details", { class: "condition-picker" }, [el("summary", {}, "Zustand hinzufügen"), el("div", { class: "condition-grid" }, [input, ...buttons, none, custom])]);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const hits = visible();
+      if (input.value.trim() && hits.length === 1) hits[0].click();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      if (input.value) { input.value = ""; apply(); }
+      else { picker.open = false; picker.querySelector("summary").focus(); }
+    }
+  });
+  picker.addEventListener("toggle", () => {
+    if (!picker.open) return;
+    input.value = "";
+    apply();
+    if (window.matchMedia("(pointer: fine)").matches) input.focus();
+  });
+  return picker;
+}
+
 function buildActiveEffectsPanel() {
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Aktive Effekte"),
@@ -2320,7 +2379,7 @@ function buildActiveEffectsPanel() {
 }
 
 function renderStatus() {
-  const conditionsPanel = buildConditionsPanel();
+  const conditionsPanel = buildConditionsPanel(undefined, true);
 
   // Kumulative und übertragene Zustandseffekte sind im System eigene Blöcke neben den normalen Zuständen
   // (status_effects.hbs), bisher komplett ohne Entsprechung — siehe CUMULATIVE_CONDITIONS/TRANSFERRED_CONDITIONS
@@ -3130,6 +3189,8 @@ function renderPortrait() {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
   const round = PORTRAIT_SHAPE === "round";
   wrap.classList.toggle("shape-round", round);
+  // ?cutout: freigestelltes Testbild (Spezies-Bild des Systems), um die Aura (Issue #35) zu sehen.
+  const portrait = new URLSearchParams(location.search).has("cutout") ? PORTRAIT_CUTOUT : PORTRAIT_IMG;
   // Umschalter mit beiden Formen als Symbol, die aktive golden hinterlegt (Rückmeldung 2026-10-19: ein Knopf mit der
   // Zielform war nicht eindeutig).
   const shapeBtn = el("div", { class: "portrait-shapes", role: "group", "aria-label": "Porträtform" }, [["octagon", "Porträt eckig"], ["round", "Porträt rund"]].map(([shape, label]) => {
@@ -3141,12 +3202,12 @@ function renderPortrait() {
     return btn;
   }));
   wrap.replaceChildren(
-    el("div", { class: "portrait-frame" }, el("div", {
-      class: "portrait",
+    el("div", { class: "portrait-frame" }, el("div", { class: "portrait" }, el("div", {
+      class: "portrait-img",
       role: "img",
       "aria-label": `Porträt von ${CHARACTER_NAME}`,
-      style: `background-image:url('${PORTRAIT_IMG.img}');background-size:${PORTRAIT_IMG.size};background-position:${PORTRAIT_IMG.pos}`,
-    })),
+      style: `background-image:url('${portrait.img}');background-size:${portrait.size};background-position:${portrait.pos}`,
+    }))),
     el("div", { class: "ap-ribbon", title: `Abenteuerpunkte: ${formatNum(EXPERIENCE.total)} gesamt, ${formatNum(experienceAvailable())} frei` }, [
       el("span", { class: "ap-ribbon-total" }, `${formatNum(EXPERIENCE.total)} AP`),
       el("span", { class: "ap-ribbon-free" }, `${formatNum(experienceAvailable())} frei`),
@@ -3199,6 +3260,14 @@ function renderCoverSidebar() {
   const sidebar = document.getElementById("coverSidebar");
   const portrait = document.getElementById("portrait");
   sidebar.innerHTML = "";
+  // Schmales Fenster (.narrow, initNarrowSheet()): wie im Modul (_applyNarrow) bleibt das Porträt im Kopf, die Leiste
+  // mit nur dem Reiterkasten steht im Inhalt unter den Favoriten.
+  if (document.querySelector(".sheet").classList.contains("narrow")) {
+    document.querySelector(".head-inner").prepend(portrait);
+    sidebar.append(coverSideTabs());
+    document.getElementById("content").append(sidebar);
+    return;
+  }
   sidebar.appendChild(portrait);
   // Variante G (Issues #27/#31): kompakte Ressourcen + Reiterkasten „Statuseffekte | Persönliche Daten“.
   sidebar.append(coverResourcesCompact(), coverSideTabs());
@@ -3210,6 +3279,18 @@ function leaveCoverSidebar() {
   const portrait = document.getElementById("portrait");
   const headInner = document.querySelector(".head-inner");
   if (portrait.parentElement !== headInner) headInner.prepend(portrait);
+}
+
+// Schmales Fenster (Nutzer-Entscheidung 2026-10-20, wie .dsa5h-narrow im Modul): unter 560 px Inhaltsbreite ist das
+// Titelblatt einspaltig — Kopf oben, Reiterkasten „Statuseffekte | Persönliche Daten“ unter den Favoriten.
+function initNarrowSheet() {
+  const sheet = document.querySelector(".sheet");
+  new ResizeObserver(() => {
+    const narrow = sheet.clientWidth < 560;
+    if (narrow === sheet.classList.contains("narrow")) return;
+    sheet.classList.toggle("narrow", narrow);
+    if (currentTab === "cover") renderContent();
+  }).observe(sheet);
 }
 
 function renderCover() {
@@ -3274,6 +3355,9 @@ const RENDERERS = {
 function renderContent() {
   const restoreFocus = rememberFocus();
   const content = document.getElementById("content");
+  // Im schmalen Fenster steckt #coverSidebar im Inhalt (renderCoverSidebar()) — vor dem Leeren an ihren Platz zurück.
+  const sidebar = document.getElementById("coverSidebar");
+  if (content.contains(sidebar)) document.getElementById("attrOverlay").before(sidebar);
   content.innerHTML = "";
   content.appendChild(RENDERERS[currentTab]());
   // Porträt+Werte+Status leben nur auf dem Titelblatt in #coverSidebar (siehe renderCoverSidebar()) — beim
@@ -3445,7 +3529,7 @@ function initSheetResize() {
     handle.setPointerCapture(e.pointerId);
     const start = { x: e.clientX, y: e.clientY, w: sheet.offsetWidth, h: sheet.offsetHeight };
     const move = (ev) => {
-      sheet.style.width = `${Math.max(560, start.w + 2 * (ev.clientX - start.x))}px`;
+      sheet.style.width = `${Math.max(420, start.w + 2 * (ev.clientX - start.x))}px`;
       sheet.style.height = `${Math.max(480, start.h + ev.clientY - start.y)}px`;
     };
     const up = () => {
@@ -3489,6 +3573,7 @@ initWindowMenu();
 initWindowFrame();
 initSkillScrollSpy();
 initSheetResize();
+initNarrowSheet();
 initHeaderBgPicker();
 initAmmoMenuOutsideClick();
 initModalEscape();

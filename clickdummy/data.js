@@ -16,6 +16,8 @@ let HEADER_BG = null;
 // Porträt des Helden: im Modul actor.img. Der Click-Dummy hat kein eigenes Heldenbild und verweist (wie bei allen Grafiken,
 // ohne Kopie) auf einen Ausschnitt des DSA5-Banners im Systemordner (size/pos = Gesicht der Elfe) — nur Platzhalter.
 const PORTRAIT_IMG = { img: ICONS + "/backgrounds/dsa5_github_banner.jpg", size: "600% auto", pos: "28% 43%" };
+// Porträt ohne Hintergrund (per ?cutout), zeigt die Aura (Issue #35) — Ausschnitt des Mannes aus dem Spezies-Bild.
+const PORTRAIT_CUTOUT = { img: ICONS + "/species/Mensch.webp", size: "230% auto", pos: "22% 4%" };
 
 // Form des Porträts im Kopf und auf dem Titelblatt: "octagon" (Ecken gekappt, Goldfassung) oder "round" (Medaillon
 // mit Goldring). Je Held im Bearbeiten-Modus umschaltbar (Knopf am Porträt), im Modul ein Actor-Flag.
@@ -366,7 +368,8 @@ const RANGED = [
     aim: { progress: 0 },
     worn: { requiresBothHands: false, offHand: false },
   },
-  { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", reach: "2/5/10", ammo: "3", img: A.coreWeapon("meleeweapon/Wurfdolch.webp"), worn: { requiresBothHands: false, offHand: false } },
+  // container: liegt in einem Behälter (im Modul system.parent_id) — Plakette mit dem Behälterbild, Anlegen nimmt heraus.
+  { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", reach: "2/5/10", ammo: "3", img: A.coreWeapon("meleeweapon/Wurfdolch.webp"), worn: { requiresBothHands: false, offHand: false }, container: { name: "Rucksack", img: A.tabInventory } },
 ];
 
 const ARMOR = [
@@ -579,6 +582,15 @@ const CONDITIONS = [
   { name: "Furcht", pips: 4, filled: 1 },
   { name: "Verwirrung", pips: 4, filled: 0 },
 ];
+
+// Auswahl „Zustand hinzufügen“ (Status-Reiter, Issue #37): Namen aus CONFIG.statusEffects des Systems (config-dsa5.js,
+// Texte aus lang/de.json CONDITION.*), alphabetisch wie im Modul. pips 4 = abgestuft, 1 = an/aus.
+const CONDITION_CHOICES = [
+  ["Belastung", 4], ["Besiegt", 1], ["Betäubung", 4], ["Bewegungsunfähig", 1], ["Bewusstlos", 1], ["Blind", 1],
+  ["Blutrausch", 1], ["Brennend", 3], ["Eingeengt", 1], ["Entrückung", 4], ["Fixiert", 1], ["Furcht", 4],
+  ["Handlungsunfähig", 1], ["Krank", 1], ["Liegend", 1], ["Paralyse", 4], ["Schmerz", 4], ["Stumm", 1], ["Taub", 1],
+  ["Überrascht", 1], ["Unsichtbar", 1], ["Vergiftet", 1], ["Verwirrung", 4],
+].map(([name, pips]) => ({ name, pips }));
 
 // Kumulative Zustandseffekte (status_effects.hbs "cumulativeConditions"): eigene, stapelbare Zustände (z.B.
 // Blutung) statt der abgestuften Pip-Zustände oben — bisher komplett ohne Entsprechung im Click-Dummy.

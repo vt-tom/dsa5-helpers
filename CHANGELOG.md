@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
-## [0.6.0] — unveröffentlicht
+## [0.6.0] — 2026-10-20
 
 ### Neu
 
@@ -10,16 +10,26 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 - Konto-Menü der Mobil-Oberfläche: Oberfläche wählen, Spielfeld auf diesem Gerät an/aus (spart Akku), Hell/Dunkel, Foundry-Einstellungen, zur vollständigen Foundry-Oberfläche, Abmelden.
 - In dieser Oberfläche ist oben die Szene: mit einem Finger verschieben, mit zwei Fingern zoomen, lange drücken pingt, den eigenen Token lange drücken und dann ziehen bewegt ihn (rastet ein, Wände gelten). Kurz antippen wählt wie ein Mausklick (Token, Türen) und zeigt den Namen. Knöpfe: auf den eigenen Helden zentrieren, Spielfeld vergrößern.
 - Darunter die eigenen Helden mit LeP/AsP/KaP (Spielleitung: alle Helden der Gruppe mit Spielern und Online-Punkt); Antippen öffnet den Bogen bildschirmfüllend. Unten links Journal, unten rechts Chat mit Zähler für ungelesene Nachrichten; neue Nachrichten erscheinen kurz als Sprechblase darüber.
-- Chat-Nachrichten: lange drücken oder ⋮ öffnet das Kontextmenü des Systems als Blatt von unten, z. B. „Schip verwenden“ oder „Schaden anwenden“. Fenster und Dialoge erscheinen bildschirmfüllend.
+- Chat-Nachrichten: lange drücken oder ⋮ öffnet das Kontextmenü des Systems als Blatt von unten, z. B. „Schip verwenden“ oder „Schaden anwenden“. Ebenso öffnet langes Drücken auf einen Akteur im Akteure-Panel dessen Kontextmenü. Fenster und Dialoge erscheinen bildschirmfüllend.
 - Spielleitung: „Probe anfordern“ an der Heldenkarte öffnet die Probenanfrage des Systems. Unter den Szenen-Knöpfen pausiert ▶ das Spiel für alle, ein eigener schwebender Knopf „Akteure“ öffnet das Akteur-Verzeichnis.
 - Kampf: Unter der Kopfleiste stehen die Kampfreihenfolge, „Du bist dran!“ und „Initiative würfeln“; Antippen öffnet den Kampf-Tracker. Fremde Token antippen zeigt den Namen und „Ziel“ zum Markieren.
 - Heldenbogen auf dem Smartphone: Reiterleiste unten (wischbar), Bogen-Menü über „⋮“ oben rechts, der Kopf klappt beim Scrollen zusammen, das Titelblatt ist einspaltig. Probendialoge erscheinen als Blatt von unten, eine Talent- oder Zauberzeile antippen würfelt. Kampf zeigt Waffen als Karten statt der Figur, Zauber und Liturgien haben Kosten, Dauer und Reichweite in einer Unterzeile, Status beginnt mit Schmerz, Belastung und Traglast, LeP/AsP/KaP/Schips lassen sich mit großen −/+-Knöpfen ändern, die Ausrüstung lässt sich über Kategorie-Chips filtern. Auf dem Tablet steht die Reiterleiste rechts im Fenster; im Querformat lassen sich Bogen und Chat nebeneinander anzeigen (Chat-Knopf in der Reiterleiste).
 - Chat und Journal im Modul-Design: Nachrichten als Karten mit Porträt, Probenkarten mit großen Würfeln, Ergebnisband und QS-Rauten. Unter dem Chat Chips für die Sichtbarkeit (Öffentlich, Als Held, Privat · SL, Verdeckt, Nur ich) und für Empfänger zum Flüstern, Würfel-Schnellknöpfe (1W20, 3W20, 1W6, 2W6 und ein freier Wurf), ➤ zum Senden und „Aa“ für die Formatleiste. Journal-Einträge zeigen eine Seite auf einmal; auf dem Tablet stehen die Seiten links, auf dem Smartphone blättert eine Leiste unten (‹ › und „Seite x von y ▾“ für die Seitenliste).
 
+- Status › Zustände: „Zustand hinzufügen“ hat jetzt ein Suchfeld. Es filtert die Zustände beim Tippen, Enter fügt den einzigen Treffer hinzu, Escape leert die Suche bzw. schließt die Auswahl ([#37](https://github.com/vt-tom/dsa5-helpers/issues/37)).
+
 ### Geändert
 
 - Neuer Kopf im Heldenbogen: Oben ein Bannerstreifen mit Name und Schicksalspunkten. Im Bearbeiten-Modus lässt sich je Held ein eigenes Bannerbild wählen oder wieder entfernen, ohne Bild bleibt der Kopf dunkel. Das Porträt hat eine kräftige Goldfassung und lässt sich im Bearbeiten-Modus zwischen eckig und rund umschalten; darunter zeigt ein rotes Band den AP-Wert und die freien AP. Spezies, Kultur und Profession stehen als schlichte Zeile in Großbuchstaben unter dem Namen. LeP, AsP und KaP sind jetzt Kugeln, deren Füllstand den Verlust zeigt – der aktuelle Wert lässt sich weiterhin direkt in der Kugel ändern. Auf dem Titelblatt stehen Porträt, AP-Band und Kugeln in der linken Leiste.
 - Neue Waffenkarte im Kampf-Reiter › Körper ([#40](https://github.com/vt-tom/dsa5-helpers/issues/40)): Jede Waffe in der Hand steht auf einer eigenen Karte mit einem Wimpel für die Hand, dem Namen groß obenauf, dem Waffenbild frei auf einem Lichtschein und der Waffe als blassem Wasserzeichen dahinter. Daneben stehen Kampftechnik und Reichweite, darunter AT/PA bzw. FK als Knöpfe und der Schadenswurf. Die Waffe wechselt man über ⇄ oben rechts, ausgerüstete Waffen lassen sich jetzt auch hier als Favorit markieren. Beide Hände sind gleich groß, auch eine freie oder von einer beidhändigen Waffe belegte Hand.
+- Porträts ohne Hintergrund (freigestellte Figuren) haben im Kopf und auf dem Titelblatt einen dezenten goldenen Schein entlang der Umrisse und heben sich so besser vom Rahmen ab, im hellen wie im dunklen Thema ([#35](https://github.com/vt-tom/dsa5-helpers/issues/35)).
+- Magie und Religion: Sonderfertigkeiten, Patron, Zaubertricks und Segnungen stehen jetzt zweispaltig nebeneinander statt jeweils über die volle Breite; ein allein stehendes letztes Feld nimmt die ganze Zeile, in schmalen Fenstern und auf dem Smartphone bleibt es einspaltig ([#38](https://github.com/vt-tom/dsa5-helpers/issues/38)).
+
+### Behoben
+
+- Kampf-Reiter: Eine Waffe, die in einem Behälter liegt (z. B. im Rucksack), ließ sich in die Hand wählen, die Hand blieb aber leer. Jetzt wird sie dabei aus dem Behälter genommen. Solange sie in einem Behälter liegt, zeigt unter „Weitere Waffen“ ein kleines Bild des Behälters das an (Name im Tooltip), in der Handauswahl steht „(in …)“ dahinter.
+- Titelblatt in schmalen Fenstern (unter etwa 560 px): Der Kopf steht oben wie auf den anderen Reitern, der Kasten „Statuseffekte | Persönliche Daten“ unter den Favoriten, statt dass die linke Leiste den Inhalt zusammendrückt.
+- Titelblatt › Persönliche Daten: Die Bezeichnungen (z. B. „Sozialstatus“) hatten einen dunklen Textschatten aus Foundry und waren schlecht lesbar.
 
 ## [0.5.1] — 2026-10-07
 
@@ -163,6 +173,7 @@ Erste Version, installierbar über die Manifest-URL.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
 
+[0.6.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/vt-tom/dsa5-helpers/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.3.3...v0.4.0

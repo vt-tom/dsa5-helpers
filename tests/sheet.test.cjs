@@ -690,3 +690,34 @@ test('Sammelproben (DSA5 8.1.9): Ziel-QS aus dem Item, 0 erlaubte Proben = unbeg
  assert.equal(p.progress,'3 / 5');assert.equal(p.allowed,localize('GROUPCHECK.unlimited'));
  const html=render(await sheet._prepareContext({}));assert(html.includes('3 / 5'),'Anzeige im Talente-Reiter');
 });
+test('Zustand hinzufügen mit Suche (#37), Sonderfertigkeiten in Magie/Religion zweispaltig (#38)',async()=>{
+ const {sheet,context}=await prepare();
+ context.manualConditions=[{id:'blind',name:'CONDITION.blind',img:'icons/svg/blind.svg'},{id:'prone',name:'CONDITION.prone',img:'icons/svg/falling.svg'}];
+ const html=render(context);
+ assert(html.includes('class="dsa5h-condition-search"')&&html.includes(localize('DSA5HELPERS.SearchConditions')),'Suchfeld mit Platzhalter');
+ assert(/dsa5h-condition-none" hidden/.test(html),'Hinweis „Keine Treffer“ zunächst aus');
+ for(const t of ['magic','religion'])assert(read(`templates/actors/parts/${t}.hbs`).includes('<div class="dsa5h-panel-cols">'),`${t}: Chip-Panels im Raster`);
+ const css=read('styles/dsa5-helpers-character-sheet.css');assert(css.includes('.dsa5h-condition-grid > [hidden]'),'ausgeblendete Treffer trotz display:flex weg');
+ // Filterlogik ohne DOM: Knöpfe als Attrappen.
+ const mk=t=>({textContent:t,hidden:false,clicks:0,click(){this.clicks++;}});const buttons=[mk('Blind'),mk('Liegend'),mk('Bewusstlos')];
+ const L={},P={};const input={value:'',addEventListener:(t,f)=>{L[t]=f;},focus(){}};const none={hidden:true};
+ const picker={open:false,addEventListener:(t,f)=>{P[t]=f;},querySelector:q=>q.includes('search')?input:q.includes('none')?none:{focus(){}},querySelectorAll:()=>buttons};
+ sheet.element={querySelector:q=>q==='.dsa5h-condition-picker'?picker:null};global.window??={};window.matchMedia??=()=>({matches:false});
+ sheet._attachConditionSearch();
+ input.value='li';L.input();assert.deepEqual(buttons.map(b=>b.hidden),[false,false,true],'Teilstring, ohne Groß-/Kleinschreibung');
+ input.value='lieg';L.input();L.keydown({key:'Enter',preventDefault(){}});assert.equal(buttons[1].clicks,1,'Enter fügt den einzigen Treffer hinzu');
+ input.value='xyz';L.input();assert(!none.hidden,'Hinweis bei keinem Treffer');
+ L.keydown({key:'Escape',preventDefault(){},stopPropagation(){}});assert.equal(input.value,'','Escape leert zuerst');
+ picker.open=true;L.keydown({key:'Escape',preventDefault(){},stopPropagation(){}});assert.equal(picker.open,false,'dann schließt Escape');
+});
+test('Waffe aus einem Behälter: Plakette am Gegenstand, Anlegen nimmt sie heraus (2026-10-20)',async()=>{
+ const {sheet}=await prepare();const updates=[];
+ const bag={id:'bag1',name:'Beutel',img:'bag.webp'};const sword={id:'sw1',system:{parent_id:'bag1'},update:u=>updates.push(u)};const loose={id:'sw2',system:{parent_id:''},update:u=>updates.push(u)};
+ const items=new Map([['bag1',bag],['sw1',sword],['sw2',loose]]);sheet.actor={...sheet.actor,items:{get:id=>items.get(id)}};
+ assert.deepEqual(sheet._containerInfo(sword),{name:'Beutel',img:'bag.webp'});assert.equal(sheet._containerInfo(loose),null);
+ assert.equal(sheet._containerOf({id:'x',system:{parent_id:'gone'}}),null,'nur, wenn es den Behälter gibt');
+ await sheet._takeOutOfContainer('sw2');assert.equal(updates.length,0);await sheet._takeOutOfContainer('sw1');assert.deepEqual(updates,[{'system.parent_id':''}]);
+ const html=H.compile(read('templates/actors/parts/weapon-short.hbs'))({item:{_id:'sw1',name:'Langschwert',img:'s.webp',system:{}},container:{name:'Beutel',img:'bag.webp'}});
+ assert(html.includes('class="dsa5h-in-container" src="bag.webp"'),'Plakette mit Behälterbild');
+ for(const l of ['de','en'])for(const k of ['InContainer','InContainerSuffix'])assert.equal(typeof JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS[k],'string',`${l}: ${k}`);
+});

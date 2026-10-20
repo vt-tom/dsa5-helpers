@@ -14,7 +14,7 @@
 
       <span data-header-slot="portrait" hidden></span><div class="dsa5h-portrait-medal{{#if dsa5h.portraitRound}} shape-round{{/if}}" data-cover-move="portrait">
         <div class="dsa5h-portrait">
-          <img class="charimg" data-action="editImage" data-edit="img" src="{{document.img}}" alt="{{document.name}}" />
+          <div class="dsa5h-portrait-inner"><img class="charimg" data-action="editImage" data-edit="img" src="{{document.img}}" alt="{{document.name}}" /></div>
         </div>
         <div class="dsa5h-ap-ribbon" data-tooltip="{{localize 'DSA5HELPERS.ApRibbon' total=(dsa5hFormatNum document.system.details.experience.total) free=(dsa5hFormatNum document.system.details.experience.current)}}">
           <span class="dsa5h-ap-ribbon-total">{{dsa5hFormatNum document.system.details.experience.total}} {{localize "DSA5HELPERS.APAbbrev"}}</span>

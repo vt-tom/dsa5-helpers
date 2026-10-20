@@ -404,7 +404,7 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-menu {
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { --dsa5h-banner-h: 52px; grid-template-columns: 34px minmax(0, 1fr) auto; padding: 6px 10px; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait-medal { grid-row: 1; width: 34px; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait { padding: 2px; clip-path: none; }
-body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait img { clip-path: none; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait-inner { clip-path: none; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head-top { height: auto; padding: 0; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-name { font-size: 20px !important; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-ap-ribbon, .dsa5h-fate-points, .dsa5h-ident, .dsa5h-regen-btn, .dsa5h-orb-key, .dsa5h-orb-max),
@@ -734,6 +734,11 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-picker[open] > .dsa5h-cond
 }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-grid button { min-height: 48px; margin: 0; justify-content: flex-start; gap: 8px; font-size: 15px; text-align: left; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-grid button img { width: 28px; height: 28px; flex: none; }
+/* Suche (Issue #37) bleibt beim Scrollen oben im Blatt; 16 px, sonst zoomt iOS beim Antippen */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-grid > .dsa5h-condition-search {
+  position: sticky; top: -14px; z-index: 1; height: 44px; font-size: 16px;
+  box-shadow: 0 -14px 0 var(--dsa5h-m-paper), 0 6px 0 var(--dsa5h-m-paper);
+}
 /* Übertragene Effekte: Name, darunter die Quelle */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) { grid-template-columns: 32px minmax(0, 1fr) 40px; row-gap: 0; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > :first-child { grid-row: 1 / span 2; }

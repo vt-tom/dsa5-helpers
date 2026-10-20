@@ -94,6 +94,7 @@
       "mount": "Reittier"
     },
     "SearchCombatSkills": "Kampftechniken suchen …",
+    "SearchConditions": "Zustand suchen …",
     "NoSearchResults": "Keine Treffer.",
     "JumpToCombatSkill": "{name}, Kampftechnikwert {value} — zur Kampftechnik springen",
     "HandFreeChoose": "Nebenhand frei — Waffe wählen",
@@ -120,6 +121,8 @@
     "HandFree": "frei",
     "HandFreeOption": "— frei —",
     "TwoHandedSuffix": "(beidhändig)",
+    "InContainerSuffix": "(in {name})",
+    "InContainer": "In „{name}“ verstaut – wird beim Anlegen herausgenommen",
     "WeaponInHand": "Waffe in der {hand}",
     "BodyFigure": "Figur im Hintergrund",
     "BodyFigurePlaceholder": "Platzhalter",

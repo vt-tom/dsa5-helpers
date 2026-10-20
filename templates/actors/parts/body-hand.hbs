@@ -5,14 +5,14 @@
      Hände sind gleich große, gestrichelte Karten (CSS). --}}
 {{#if side.note}}<small class="dsa5h-hand-2h-note">{{localize 'DSA5HELPERS.BodyTwoHandedNote'}}</small>{{else}}{{#with side.slot as |slot|}}{{#if (and (eq slot.hand "offhand") (not slot.item))}}<div class="dsa5h-hand-slot dsa5h-hand-free">
   <div class="dsa5h-hand-tile empty compact" data-tooltip="DSA5HELPERS.HandFreeChoose"><span aria-hidden="true">+</span>
-    <select class="dsa5h-hand-select" data-dsa5h-hand="{{slot.hand}}" data-current="" aria-label="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><option value="">{{localize 'DSA5HELPERS.HandFreeOption'}}</option>{{#each slot.options}}<option value="{{id}}">{{name}}</option>{{/each}}</select>
+    <select class="dsa5h-hand-select" data-dsa5h-hand="{{slot.hand}}" data-current="" aria-label="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><option value="">{{localize 'DSA5HELPERS.HandFreeOption'}}</option>{{#each slot.options}}<option value="{{id}}">{{name}}{{#if twoHanded}} {{localize 'DSA5HELPERS.TwoHandedSuffix'}}{{/if}}{{#if container}} {{localize 'DSA5HELPERS.InContainerSuffix' name=container}}{{/if}}</option>{{/each}}</select>
   </div>
   <span class="dsa5h-hand-free-text"><small class="dsa5h-figure-col-title">{{localize slot.label}}</small><small>{{localize 'DSA5HELPERS.HandFree'}}</small></span>
 </div>{{else if slot.item}}<div class="dsa5h-hand-slot dsa5h-hand-card item combat-weapon{{#if slot.ranged}} ranged{{/if}}" data-item-id="{{slot.item._id}}">
   <img class="dsa5h-hand-bg" src="{{slot.item.img}}" alt="" aria-hidden="true">
   <small class="dsa5h-hand-banner">{{#if ../side.twoHanded}}{{localize 'DSA5HELPERS.BothHands'}}{{else}}{{localize slot.label}}{{/if}}</small>
   <label class="dsa5h-hand-pick" data-tooltip="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><span aria-hidden="true">⇄</span>
-    <select class="dsa5h-hand-select" data-dsa5h-hand="{{slot.hand}}" data-current="{{slot.item._id}}" aria-label="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><option value="">{{localize 'DSA5HELPERS.HandFreeOption'}}</option>{{#each slot.options}}<option value="{{id}}"{{#if selected}} selected{{/if}}>{{name}}{{#if twoHanded}} {{localize 'DSA5HELPERS.TwoHandedSuffix'}}{{/if}}</option>{{/each}}</select>
+    <select class="dsa5h-hand-select" data-dsa5h-hand="{{slot.hand}}" data-current="{{slot.item._id}}" aria-label="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><option value="">{{localize 'DSA5HELPERS.HandFreeOption'}}</option>{{#each slot.options}}<option value="{{id}}"{{#if selected}} selected{{/if}}>{{name}}{{#if twoHanded}} {{localize 'DSA5HELPERS.TwoHandedSuffix'}}{{/if}}{{#if container}} {{localize 'DSA5HELPERS.InContainerSuffix' name=container}}{{/if}}</option>{{/each}}</select>
   </label>
   <span class="dsa5h-body-item-name dsa5h-hand-name withContext"><a data-action="itemEdit">{{slot.item.name}}</a>{{> "modules/dsa5-helpers/templates/actors/parts/favorite.hbs" item=slot.item}}</span>
   <div class="dsa5h-hand-media">
@@ -32,5 +32,5 @@
 </div>{{else}}<div class="dsa5h-hand-slot dsa5h-hand-empty">
   <small class="dsa5h-figure-col-title">{{localize slot.label}}</small>
   <small class="dsa5h-hand-empty-text">{{localize 'DSA5HELPERS.HandFree'}}</small>
-  <select class="dsa5h-hand-select" data-dsa5h-hand="{{slot.hand}}" data-current="" aria-label="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><option value="">{{localize 'DSA5HELPERS.HandFreeOption'}}</option>{{#each slot.options}}<option value="{{id}}">{{name}}{{#if twoHanded}} {{localize 'DSA5HELPERS.TwoHandedSuffix'}}{{/if}}</option>{{/each}}</select>
+  <select class="dsa5h-hand-select" data-dsa5h-hand="{{slot.hand}}" data-current="" aria-label="{{localize 'DSA5HELPERS.WeaponInHand' hand=(localize slot.label)}}"><option value="">{{localize 'DSA5HELPERS.HandFreeOption'}}</option>{{#each slot.options}}<option value="{{id}}">{{name}}{{#if twoHanded}} {{localize 'DSA5HELPERS.TwoHandedSuffix'}}{{/if}}{{#if container}} {{localize 'DSA5HELPERS.InContainerSuffix' name=container}}{{/if}}</option>{{/each}}</select>
 </div>{{/if}}{{/with}}{{/if}}

@@ -1,6 +1,8 @@
 /** Alternative presentation; all rule actions and actor updates are inherited from DSA5. */
 const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
 const MODULE_ID = 'dsa5-helpers';
+// Unter dieser Inhaltsbreite (px) zeigt der Desktop-Bogen das Titelblatt einspaltig wie auf dem Smartphone.
+const NARROW_WIDTH = 560;
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { isRuleActive, woundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
 
@@ -405,7 +407,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       new ResizeObserver(([entry]) => {
         if (entry.contentRect.width === observedWidth) return;
         observedWidth = entry.contentRect.width;
-        this._fitName();
+        if (this._applyNarrow()) this._applyCurrentTab();
+        else this._fitName();
       }).observe(this.element);
       document.fonts?.ready.then(() => { this._fitName(); this._sizeIdentity(); });
       // Knöpfe mit eigener Rechtsklick-Bedeutung (Nachladen zurücksetzen, Zustand senken, Menge verringern …):
@@ -443,7 +446,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         if (!select) return;
         event.stopPropagation();
         const hand = select.dataset.dsa5hHand;
-        if (select.value) this.actor.equipWeaponToHand(select.value, { hand, equip: true });
+        if (select.value) this._takeOutOfContainer(select.value).then(() => this.actor.equipWeaponToHand(select.value, { hand, equip: true }));
         else if (select.dataset.current) this.actor.equipWeaponToHand(select.dataset.current, { equip: false });
       }, { capture: true });
       // Zauber-/Liturgie-Dialog im Reiter „Körper“: showModal() legt ihn in den Top-Layer über alles, auch über Foundrys
@@ -486,6 +489,43 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     }
     this._applyGearSearch();
     this._applyCombatSkillSearch();
+    this._attachConditionSearch();
+  }
+
+  // „Zustand hinzufügen“ mit Suche (Issue #37): filtert die Knöpfe nach Namen, Enter fügt den einzigen Treffer hinzu,
+  // Escape leert bzw. schließt. Beim Aufklappen leer und (nur mit Maus) fokussiert — auf Touch-Geräten würde sonst
+  // sofort die Bildschirmtastatur das Blatt verdecken.
+  _attachConditionSearch() {
+    const picker = this.element.querySelector('.dsa5h-condition-picker');
+    const input = picker?.querySelector('.dsa5h-condition-search');
+    if (!input) return;
+    const entries = [...picker.querySelectorAll('[data-action="statusAdd"]:not([data-id="custom"])')];
+    const none = picker.querySelector('.dsa5h-condition-none');
+    const visible = () => entries.filter(button => !button.hidden);
+    const apply = () => {
+      const query = input.value.trim().toLocaleLowerCase(game.i18n.lang);
+      for (const button of entries) button.hidden = !!query && !button.textContent.toLocaleLowerCase(game.i18n.lang).includes(query);
+      if (none) none.hidden = visible().length > 0;
+    };
+    input.addEventListener('input', apply);
+    input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const hits = visible();
+        if (input.value.trim() && hits.length === 1) hits[0].click();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        if (input.value) { input.value = ''; apply(); }
+        else { picker.open = false; picker.querySelector('summary')?.focus(); }
+      }
+    });
+    picker.addEventListener('toggle', () => {
+      if (!picker.open) return;
+      input.value = '';
+      apply();
+      if (window.matchMedia('(pointer: fine)').matches) input.focus();
+    });
   }
 
   // Gefährten-Reiter nutzt die Systemvorlage (actor-companion.hbs) unverändert; deren reine Symbolknöpfe bekommen
@@ -552,7 +592,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       item,
       gripSwitch: gripSwitch(item),
       ranged: item?.type === 'rangeweapon',
-      options: weapons.filter(w => hand === 'main' || !twoHanded(w)).map(w => ({ id: w.id, name: w.name, twoHanded: twoHanded(w), selected: w.id === item?._id })),
+      options: weapons.filter(w => hand === 'main' || !twoHanded(w)).map(w => ({ id: w.id, name: w.name, twoHanded: twoHanded(w), container: this._containerOf(w)?.name ?? '', selected: w.id === item?._id })),
     });
     const armor = prepare.wornArmor ?? [];
     const species = String(this.actor.system?.details?.species?.value ?? '');
@@ -579,7 +619,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // (ohne Nebenhand-Modifikator), auf einer frischen Kopie, damit die Inventardaten unberührt bleiben (Rückmeldung 2026-10-05).
     const ActorClass = this.actor.constructor;
     const ammo = [...(this.actor.items?.values?.() ?? [])].filter(item => item.type === 'ammunition').map(item => item.system.prepareEmbeddedItemSheet());
-    const unworn = weapons.filter(item => !item.system?.worn?.value).flatMap(item => {
+    // Waffen in einem Behälter führt das System nie als getragen, auch wenn „angelegt“ gesetzt ist — sie gehören hierher.
+    const unworn = weapons.filter(item => !worn.some(w => w._id === item.id)).flatMap(item => {
       try {
         const data = item.system.prepareEmbeddedItemSheet();
         return [item.type === 'meleeweapon'
@@ -592,7 +633,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     });
     const others = [
       ...worn.filter(w => w !== main && w !== off).map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true })),
-      ...unworn.map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true })),
+      ...unworn.map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true, container: this._containerInfo(item) })),
       ...(prepare.traits?.meleeAttack ?? []).map(item => ({ item, ranged: false })),
       ...(prepare.traits?.rangeAttack ?? []).map(item => ({ item, ranged: true })),
     ];
@@ -613,6 +654,26 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       figure: portrait ? this.actor.img : `systems/dsa5/icons/species/${placeholder}.webp`,
       initiative: Math.floor(this.actor.system?.status?.initiative?.value ?? 0),
     };
+  }
+
+  // Behälter, in dem ein Gegenstand liegt (system.parent_id), sonst null — wie das System nur, wenn es den Behälter gibt.
+  _containerOf(item) {
+    const parentId = item?.system?.parent_id;
+    const id = item?.id ?? item?._id;
+    return parentId && parentId !== id ? this.actor.items.get(parentId) ?? null : null;
+  }
+
+  // Für die Anzeige am Gegenstand: Symbol = Bild des Behälters, Tooltip mit Namen (Nutzer 2026-10-20).
+  _containerInfo(item) {
+    const bag = this._containerOf(item);
+    return bag ? { name: bag.name, img: bag.img } : null;
+  }
+
+  // Gegenstände in Behältern zählt das System nie als getragen (prepare.wornMeleeWeapons …): Anlegen allein ließe die
+  // Hand leer. Vorher herausnehmen wie das System beim Ziehen aus dem Behälter (Nutzer 2026-10-20).
+  async _takeOutOfContainer(itemId) {
+    const item = this.actor.items.get(itemId);
+    if (this._containerOf(item)) await item.update({ 'system.parent_id': '' });
   }
 
   // Freie Stelle im dunklen Kopf oder oberes Rahmenband: beide verschieben das Fenster / minimieren per Doppelklick.
@@ -736,7 +797,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // Hand-Logik des Systems auf (actor-dsa5.js equipWeaponToHand/swapWeaponHandSlot, meleeweapon.js
   // swapNumberWeaponHands); Menü-Aufbau wie im System (creature-sheet.js _traitCompanionContextMenu).
   static async _dsa5hEquip(event, target) {
-    if (event.button !== 2) return this.constructor._itemToggle.call(this, event, target);
+    if (event.button !== 2) {
+      const toggled = this.actor.items.get(this._getItemId(target));
+      if (toggled && !toggled.system.worn?.value) await this._takeOutOfContainer(toggled.id);
+      return this.constructor._itemToggle.call(this, event, target);
+    }
     const item = this.actor.items.get(this._getItemId(target));
     if (!['meleeweapon', 'rangeweapon'].includes(item?.type)) return;
     event.preventDefault();
@@ -747,6 +812,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const gripSwitchable = melee && !item.system.constructor.NOT_TWO_HANDED_WEAPON_TYPES?.has(game.i18n.localize('LocalizedCTs.' + item.system.combatskill.value));
     const oneHandPossible = !twoHanded || gripSwitchable;
     const toHand = async hand => {
+      await this._takeOutOfContainer(item.id);
       if (twoHanded && gripSwitchable) await item.system.swapNumberWeaponHands();
       if (worn) await actor.swapWeaponHandSlot(item.id, hand);
       else await actor.equipWeaponToHand(item.id, { hand, equip: true });
@@ -758,6 +824,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       {
         label: 'DSA5HELPERS.GripTwoHanded', icon: icon(worn && twoHanded, 'hands'), visible: gripSwitchable || (melee && twoHanded),
         onClick: async () => {
+          await this._takeOutOfContainer(item.id);
           if (!twoHanded) await item.system.swapNumberWeaponHands();
           if (!worn) await actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
         },
@@ -1011,7 +1078,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     root.querySelector('[data-attr-overlay]')?.toggleAttribute('hidden', this._currentTab === 'main');
     // Move the same controls, so the overview never duplicates named form fields. Smartphone (Mobile Support): Porträt,
     // Ressourcen und Schips bleiben auf allen Reitern im Kopf (MOBILE.md 14, Ü2).
-    const keepInHead = !!document.body?.classList.contains('dsa5h-phone');
+    // Schmales Fenster am Desktop ebenso (_applyNarrow).
+    this._applyNarrow();
+    const keepInHead = !!document.body?.classList.contains('dsa5h-phone') || !!root.classList?.contains('dsa5h-narrow');
     root.querySelectorAll('[data-cover-move]').forEach(el => {
       const slot = el.dataset.coverMove;
       if (this._currentTab === 'cover' && !keepInHead) root.querySelector('[data-cover-slot="' + slot + '"]')?.append(el);
@@ -1019,6 +1088,28 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     });
     this._fitName();
     this._sizeIdentity();
+  }
+
+  // Schmales Fenster (Inhalt < NARROW_WIDTH, Nutzer-Entscheidung 2026-10-20): Titelblatt wie auf dem Smartphone — Kopf
+  // oben, Kasten „Statuseffekte | Persönliche Daten“ (die ganze Leiste) unter den Favoriten, keine Seitenleiste. Per
+  // Klasse statt Container-Abfrage: der Container wäre .dsa5h-main selbst, dessen Raster umgestellt werden muss. Das
+  // Smartphone hat eigene Regeln (mobile.js). Liefert true, wenn sich der Zustand geändert hat.
+  _applyNarrow() {
+    const root = this.element;
+    if (!root?.classList) return false;
+    const phone = !!document.body?.classList.contains('dsa5h-phone');
+    const width = root.querySelector('.window-content')?.clientWidth ?? 0;
+    const narrow = !phone && width > 0 && width < NARROW_WIDTH;
+    const changed = root.classList.contains('dsa5h-narrow') !== narrow;
+    root.classList.toggle('dsa5h-narrow', narrow);
+    const aside = root.querySelector('[data-cover-sidebar]');
+    const cover = root.querySelector('[data-tab-panel="cover"]');
+    const main = root.querySelector('.dsa5h-main');
+    if (aside && cover && main) {
+      if (narrow && aside.parentElement !== cover) cover.append(aside);
+      else if (!narrow && aside.parentElement !== main) main.prepend(aside);
+    }
+    return changed;
   }
 
   // Spezies · Kultur · Profession (Kopf „Wappenbanner“): jedes Feld genau so breit wie sein Text in Großbuchstaben mit

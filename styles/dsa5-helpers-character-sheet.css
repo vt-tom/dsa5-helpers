@@ -56,6 +56,9 @@
 .dsa5-helpers-sheet {
   --paper: #ece2d2;
   --ink: #2b2721;
+  /* Aura um freigestellte Porträts (Issue #35): innerer Kern + weicher Schein. */
+  --portrait-aura-core: rgba(176, 134, 58, .55);
+  --portrait-aura: rgba(176, 134, 58, .4);
   /* Porträtrahmen (Tintenlinie): in beiden Themen dasselbe Braun — mit --ink wurde er im dunklen Thema zur hellen
      Linie und passte nicht mehr zum hellen Thema (Issue #19). Im dunklen Thema bewusst nicht überschrieben. */
   --frame-ink: #2b2721;
@@ -96,6 +99,8 @@
 .dsa5-helpers-sheet[data-theme="dark"] {
   --paper: #272320;
   --ink: #e9dfcd;
+  --portrait-aura-core: rgba(255, 228, 170, .6);
+  --portrait-aura: rgba(235, 185, 100, .4);
   --muted: #b9ad9b;
   --line: #ffffff2e;
   --panel: #ffffff08;
@@ -543,6 +548,18 @@
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .6));
 }
 
+/* Papierfläche + Beschnitt als eigene Ebene, damit die Aura (Issue #35) zwischen Papier und Bild liegt. */
+.dsa5-helpers-sheet .dsa5h-portrait-inner {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--paper);
+  clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+}
+
+/* Aura (Issue #35, Idee Nimuee, Nutzer-Entscheidung 2026-10-20): Porträts ohne Hintergrund bekommen einen dezenten
+   goldenen Schein entlang der Umrisse der Figur (drop-shadow folgt dem Alphakanal), in beiden Themen. Bei Bildern mit
+   eigenem Hintergrund liegt er außerhalb des Beschnitts. Verworfen: Spotlight (Lichtkegel von oben). */
 .dsa5-helpers-sheet .dsa5h-portrait img {
   display: block;
   width: 100%;
@@ -550,8 +567,7 @@
   object-fit: cover;
   margin: 0;
   border: none;
-  background-color: var(--paper);
-  clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+  filter: drop-shadow(0 0 1px var(--portrait-aura-core)) drop-shadow(0 0 6px var(--portrait-aura));
 }
 
 .dsa5-helpers-sheet .dsa5h-portrait-medal.shape-round {
@@ -567,7 +583,7 @@
   filter: none;
 }
 
-.dsa5-helpers-sheet .dsa5h-portrait-medal.shape-round .dsa5h-portrait img {
+.dsa5-helpers-sheet .dsa5h-portrait-medal.shape-round .dsa5h-portrait-inner {
   border-radius: 50%;
   clip-path: none;
   box-shadow:
@@ -2254,11 +2270,13 @@
   border-top: 0;
 }
 
+/* Foundrys Grundregel „dl dt“ gibt einen schwarzen Textschatten mit — machte „Sozialstatus“ unlesbar (Rückmeldung 2026-10-20). */
 .dsa5-helpers-sheet .dsa5h-side-details dt {
   flex: none;
   margin: 0;
   color: var(--headmuted);
   font-weight: normal;
+  text-shadow: none;
 }
 
 /* Farbe ausdrücklich: Foundry färbt dd sonst dunkel — auf der dunklen Leiste unlesbar (Rückmeldung 2026-10-05). */
@@ -4141,6 +4159,21 @@
   height: 3px;
 }
 
+/* Waffe liegt in einem Behälter (2026-10-20): Bild des Behälters als Plakette unten rechts am Waffenbild, Name im Tooltip. */
+.dsa5-helpers-sheet .dsa5h-short-weapon .dsa5h-item-image .dsa5h-in-container {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  object-fit: contain;
+  cursor: help;
+}
+
 /* Lange Namen gekürzt statt mitten im Wort umgebrochen (seit der Ausrüsten-Spalte, 2026-10-05), voller Name im Tooltip. */
 .dsa5-helpers-sheet .dsa5h-short-weapon .withContext > a {
   display: block;
@@ -4491,6 +4524,23 @@
   color: #1c1917;
   background: #e0c080;
   border-radius: 50%;
+}
+
+/* --- Sonderfertigkeiten, Patron, Tricks/Segnungen zweispaltig (Issue #38) ---
+   Die Chip-Panels sind meist kurz; über die volle Breite blieb rechts viel leere Fläche. Ein allein stehendes
+   letztes Panel nimmt die ganze Zeile. Unter 560 px einspaltig (Abschnitt 18). */
+.dsa5-helpers-sheet .dsa5h-panel-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 16px;
+}
+
+.dsa5-helpers-sheet .dsa5h-panel-cols > .panel:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.dsa5-helpers-sheet [data-sub-panel] > .panel + .dsa5h-panel-cols {
+  margin-top: 16px;
 }
 
 /* ==========================================================================
@@ -4883,6 +4933,21 @@
   white-space: normal;
   line-height: 1.15;
   overflow-wrap: anywhere;
+}
+
+/* Suche (Issue #37): eigene Zeile über dem Raster; Treffer per [hidden] aus — die Knöpfe sind sonst display:flex. */
+.dsa5-helpers-sheet .dsa5h-condition-grid > .dsa5h-condition-search,
+.dsa5-helpers-sheet .dsa5h-condition-grid > .dsa5h-condition-none {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-condition-grid > .dsa5h-condition-search {
+  text-align: left;
+}
+
+.dsa5-helpers-sheet .dsa5h-condition-grid > [hidden] {
+  display: none !important;
 }
 
 .dsa5-helpers-sheet .dsa5h-condition-grid img {
@@ -5478,10 +5543,6 @@
     gap: 4px;
   }
 
-  .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
-    grid-template-columns: 150px minmax(0,1fr);
-  }
-
   .dsa5-helpers-sheet .dsa5h-rail-label {
     display: none !important;
   }
@@ -5490,25 +5551,6 @@
 @container (max-width: 520px) {
   .dsa5-helpers-sheet .dsa5h-content .grid-2 {
     grid-template-columns: 1fr;
-  }
-
-  .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto 1fr;
-    grid-template-areas: "sidebar" "head" "attrbar" "tabtitle" "content";
-  }
-
-  .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar {
-    border-bottom: 1px solid rgba(224,192,128,.3);
-  }
-
-  /* Leiste steht hier über dem Kopf statt daneben: Reiterkasten mit fester Höhe statt „Rest füllen“. */
-  .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tabs-panel {
-    flex: none;
-  }
-
-  .dsa5-helpers-sheet .dsa5h-side-tabs-body {
-    max-height: 220px;
   }
 
   .dsa5-helpers-sheet .dsa5h-details-grid {
@@ -5526,13 +5568,75 @@
 }
 
 @container (max-width: 560px) {
-  .dsa5-helpers-sheet .dsa5h-two-col {
+  .dsa5-helpers-sheet :is(.dsa5h-two-col, .dsa5h-panel-cols) {
     grid-template-columns: 1fr;
   }
 
   .dsa5-helpers-sheet .dsa5h-head-dup {
     display: none;
   }
+}
+
+/* --- Schmales Fenster: Titelblatt einspaltig (.dsa5h-narrow, _applyNarrow(), Nutzer-Entscheidung 2026-10-20) ---
+   Unter 560 px Inhalt wie auf dem Smartphone: Kopf oben wie auf den anderen Reitern, die Leiste (nur noch der Kasten
+   „Statuseffekte | Persönliche Daten“) steht im Titelblatt-Reiter unter den Favoriten, auf hellem Grund. Früher zwei
+   Container-Regeln auf .dsa5h-main selbst, die nie griffen (und gegriffen schlechter aussahen). */
+.dsa5-helpers-sheet.dsa5h-narrow[data-tab="cover"] .dsa5h-main {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-areas: "head" "attrbar" "tabtitle" "content";
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow[data-tab="cover"] [data-tab-panel="cover"] > .dsa5h-cover-sidebar {
+  --headink: var(--ink);
+  --headmuted: var(--muted);
+  display: block;
+  margin-top: 16px;
+  padding: 0;
+  overflow: visible;
+  background: none;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-cover-sidebar > :not(.dsa5h-side-tabs-panel) {
+  display: none;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-cover-sidebar .dsa5h-side-tabs-panel {
+  min-height: 0;
+}
+
+/* Kopf im schmalen Fenster (alle Reiter, Nutzer 2026-10-20): mit drei Kugeln verdrängten Porträt und Kugeln sonst den
+   Namen. Kleinere Kugeln, etwas kleineres Porträt, engere Abstände. */
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-head {
+  --dsa5h-orb: 52px;
+  gap: 12px;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-head .dsa5h-portrait-medal {
+  flex-basis: 96px;
+  width: 96px;
+}
+
+/* Spezies · Kultur · Profession als eigene Zeile unter den Kugeln über die volle Breite (sonst untereinander und gekürzt). */
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-head-main {
+  column-gap: 10px;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-head .dsa5h-ident {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  padding-top: 4px;
+}
+
+/* Die Mindestbreite der Zeilen in schmalen Panels (Container-Regel < 520 px) gilt hier nicht — sonst ist die Stufe
+   abgeschnitten. Die weißen Zustandssymbole bekommen auf hellem Grund eine dunkle Plakette. */
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-cover-sidebar .dsa5h-cover-condition {
+  min-width: 0;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-cover-sidebar .dsa5h-cover-condition img {
+  padding: 2px;
+  background: var(--head-base);
 }
 
 /* ==========================================================================
