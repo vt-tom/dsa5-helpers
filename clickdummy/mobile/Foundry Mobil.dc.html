@@ -99,7 +99,18 @@ input::placeholder{color:var(--ink3)}
 [data-j="head"]{padding:14px 16px 8px;display:flex;flex-direction:column;gap:4px}
 [data-j="path"]{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
 [data-j="title"]{margin:0;font-family:Andalus,serif;font-weight:normal;font-size:28px;line-height:1.1;padding-bottom:8px;background:linear-gradient(90deg,rgba(185,154,92,.85),rgba(185,154,92,0)) bottom left/100% 1px no-repeat}
-[data-j="pick"]{align-self:flex-start;display:flex;align-items:center;gap:8px;height:40px;margin-top:4px;padding:0 14px;border:1px solid rgba(185,154,92,.6);border-radius:20px;background:rgba(255,255,255,.6);color:var(--ink);font:inherit;font-size:15px;cursor:pointer;max-width:100%}
+[data-j="entry"]{display:flex;gap:10px;align-items:flex-start}
+[data-j="entry"]>[data-j="page"]{flex:1;min-width:0}
+[data-j="toc"]{flex:0 0 248px;position:sticky;top:0;max-height:calc(100vh - 140px);overflow-y:auto;background:var(--card);border:1px solid rgba(185,154,92,.6);border-radius:6px;display:flex;flex-direction:column}
+[data-j="tocrow"]{display:flex;align-items:center;gap:10px;min-height:48px;padding:4px 10px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:15px;line-height:1.2;text-align:left;cursor:pointer}
+[data-j="tocrow"]:first-child{border-top:0}
+[data-j="tocrow"] b{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--sub);font-size:13px;color:var(--ink2)}
+[data-j="tocrow"][aria-current="true"]{background:rgba(185,154,92,.22);font-weight:700}
+[data-j="tocrow"][aria-current="true"] b{background:var(--accent);color:var(--onaccent)}
+[data-j="bar"]{position:sticky;bottom:0;display:flex;gap:8px;margin:auto -14px -90px;padding:8px 12px 12px;background:var(--paper);border-top:1px solid rgba(185,154,92,.4)}
+[data-j="bar"]>button{flex:0 0 52px;height:44px;border:1px solid var(--line2);border-radius:6px;background:var(--field);color:var(--ink);font:inherit;font-size:26px;line-height:1;cursor:pointer}
+[data-j="bar"]>button:disabled{opacity:.4;cursor:default}
+[data-j="pick"]{flex:1 1 auto!important;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 14px;border:1px solid rgba(185,154,92,.6)!important;border-radius:22px!important;background:rgba(255,255,255,.6)!important;color:var(--ink);font:inherit!important;font-size:15px!important;cursor:pointer}
 [data-j="pick"] small{color:var(--ink2)}
 [data-j="pick"] span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 [data-j="ptitle"]{margin:6px 16px 0;font-family:Andalus,serif;font-weight:normal;font-size:21px;color:var(--accenttext)}
@@ -201,7 +212,14 @@ input::placeholder{color:var(--ink3)}
                     <button onClick="{{ toggleFull }}" aria-label="{{ fullLabel }}" aria-pressed="{{ fullStr }}" style="width:44px;height:44px;border:0;border-radius:6px;background:{{ fullBg }};color:{{ fullColor }};cursor:pointer;display:grid;place-items:center;padding:0">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="{{ fullPath }}"></path></svg>
                     </button>
+                    <!-- Pause (nur SL, Rückmeldung 2026-10-20: am Tablet/Handy fehlt die Leertaste) -->
+                    <sc-if value="{{ isGM }}" hint-placeholder-val="{{ false }}"><button onClick="{{ togglePause }}" aria-label="{{ pauseLabel }}" aria-pressed="{{ pausedStr }}" style="width:44px;height:44px;border:0;border-radius:6px;background:{{ pauseBg }};color:{{ pauseColor }};cursor:pointer;display:grid;place-items:center;padding:0">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="{{ pausePath }}"></path></svg>
+                    </button></sc-if>
                   </div>
+                  <sc-if value="{{ paused }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;left:50%;top:10px;transform:translateX(-50%);pointer-events:none;padding:8px 20px;border-radius:24px;background:rgba(20,18,16,.78);color:#f4e8d6;font-family:Andalus,serif;font-size:18px;letter-spacing:.2em;text-transform:uppercase;white-space:nowrap">Spiel pausiert</div>
+                  </sc-if>
                 </div>
               </sc-if>
 
@@ -246,7 +264,26 @@ input::placeholder{color:var(--ink3)}
 
           <sc-if value="{{ vList }}" hint-placeholder-val="{{ false }}">
             <div data-scroll="1" style="flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain">
-              <div style="padding:14px 14px 90px;display:flex;flex-direction:column;gap:14px;max-width:1000px">
+              <div style="padding:14px 14px 90px;display:flex;flex-direction:column;gap:14px;max-width:1000px;min-height:100%;box-sizing:border-box">
+
+                <!-- Akteure (nur SL, Rückmeldung 2026-10-20): alle Akteure nach Ordnern, getrennt von der Heldenkarte (nur Spielerhelden).
+                     Im Modul = Foundrys Akteur-Verzeichnis als Panel im Modul-Design. -->
+                <sc-if value="{{ vActors }}" hint-placeholder-val="{{ false }}">
+                  <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
+                    <div style="padding:8px 12px;background:var(--phead);font-family:Andalus,serif;font-size:19px">Akteure</div>
+                    <div data-j="search"><input placeholder="Akteure durchsuchen" aria-label="Akteure durchsuchen"></input></div>
+                    <sc-for list="{{ actorGroups }}" as="g">
+                      <div style="display:flex;align-items:center;min-height:48px;padding:0 16px;border-top:1px solid var(--line);background-image:linear-gradient(90deg,{{ g.color }} 4px,var(--sub) 4px);font-weight:700">{{ g.name }}</div>
+                      <sc-for list="{{ g.items }}" as="a">
+                        <button onClick="{{ a.onOpen }}" style="width:100%;display:flex;align-items:center;gap:10px;min-height:56px;padding:0 12px 0 20px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer">
+                          <span style="flex:none;width:40px;height:40px;border-radius:3px;border:1.5px solid #b99a5c;background:{{ a.bg }};display:grid;place-items:center;color:#f4e8d6;font-family:Andalus,serif;font-size:18px">{{ a.ini }}</span>
+                          <span style="flex:1;min-width:0;display:flex;flex-direction:column"><span style="font-size:16px">{{ a.name }}</span><span style="font-size:13px;color:var(--ink2)">{{ a.sub }}</span></span>
+                          <span style="flex:none;font-size:20px;color:var(--ink2)">›</span>
+                        </button>
+                      </sc-for>
+                    </sc-for>
+                  </section>
+                </sc-if>
 
                 <sc-if value="{{ vJournal }}" hint-placeholder-val="{{ false }}">
                   <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
@@ -278,20 +315,30 @@ input::placeholder{color:var(--ink3)}
                 </sc-if>
 
                 <sc-if value="{{ vEntry }}" hint-placeholder-val="{{ false }}">
-                  <!-- Eintrag (Entscheidung 2026-10-19): Kopf mit Titel + Seitenwahl als Blatt, ‹ › unten, Text in Modul-Typografie mit Initiale -->
+                  <!-- Eintrag (Entscheidung 2026-10-19, Seitenwahl 2026-10-20): Tablet = Inhaltsverzeichnis links + ‹ › mit Titeln unten,
+                       Smartphone = Steuerleiste unten „‹ · Seite x von y ▾ · ›“ (Mitte öffnet die Seitenliste als Blatt). Text in Modul-Typografie mit Initiale -->
+                  <div data-j="entry">
+                  <sc-if value="{{ entry.toc }}" hint-placeholder-val="{{ false }}">
+                    <nav data-j="toc" aria-label="Seiten">
+                      <sc-for list="{{ entry.pages }}" as="p"><button data-j="tocrow" onClick="{{ p.onClick }}" aria-current="{{ p.cur }}"><b>{{ p.no }}</b><span>{{ p.title }}</span></button></sc-for>
+                    </nav>
+                  </sc-if>
                   <article data-j="page">
                     <div data-j="head">
                       <span data-j="path">{{ entry.path }}</span>
                       <h2 data-j="title">{{ entry.title }}</h2>
-                      <sc-if value="{{ entry.multi }}" hint-placeholder-val="{{ false }}"><button data-j="pick" onClick="{{ entry.openPages }}" aria-haspopup="dialog"><span>Seite {{ entry.pageNo }} von {{ entry.pageCount }}</span><b aria-hidden="true">▾</b></button></sc-if>
                     </div>
                     <sc-if value="{{ entry.multi }}" hint-placeholder-val="{{ false }}"><h3 data-j="ptitle">{{ entry.pageTitle }}</h3></sc-if>
                     <sc-if value="{{ entry.pageImg }}" hint-placeholder-val="{{ false }}"><div data-j="img">HANDOUT-BILD · TIPPEN ZUM VERGRÖSSERN</div></sc-if>
                     <div data-j="text">{{ entry.pageText }}</div>
-                    <sc-if value="{{ entry.multi }}" hint-placeholder-val="{{ false }}">
+                    <sc-if value="{{ entry.toc }}" hint-placeholder-val="{{ false }}">
                       <div data-j="nav"><button onClick="{{ entry.prev }}" disabled="{{ entry.noPrev }}">‹ {{ entry.prevTitle }}</button><button onClick="{{ entry.next }}" disabled="{{ entry.noNext }}">{{ entry.nextTitle }} ›</button></div>
                     </sc-if>
                   </article>
+                  </div>
+                  <sc-if value="{{ entry.bar }}" hint-placeholder-val="{{ false }}">
+                    <div data-j="bar"><button onClick="{{ entry.prev }}" disabled="{{ entry.noPrev }}" aria-label="{{ entry.prevTitle }}">‹</button><button data-j="pick" onClick="{{ entry.openPages }}" aria-haspopup="dialog"><span>Seite {{ entry.pageNo }} von {{ entry.pageCount }}</span><b aria-hidden="true">▾</b></button><button onClick="{{ entry.next }}" disabled="{{ entry.noNext }}" aria-label="{{ entry.nextTitle }}">›</button></div>
+                  </sc-if>
                   <sc-if value="{{ isGM }}" hint-placeholder-val="{{ false }}">
                     <section style="background:var(--card);border:1px solid var(--line2);border-radius:4px;overflow:hidden">
                       <div style="padding:6px 12px;background:var(--sub);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)">Spielleitung</div>
@@ -399,6 +446,9 @@ input::placeholder{color:var(--ink3)}
       </sc-if>
 
       <sc-if value="{{ showFabs }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ showActorsFab }}" hint-placeholder-val="{{ false }}"><button onClick="{{ goActors }}" aria-label="Akteure" style="position:absolute;left:84px;bottom:16px;z-index:5;width:56px;height:56px;border-radius:28px;border:2px solid rgba(39,35,32,.25);background:radial-gradient(circle at 35% 30%,#dcc189,#a3824a);box-shadow:0 4px 14px rgba(0,0,0,.35);display:grid;place-items:center;cursor:pointer;padding:0">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#272320" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"></path><circle cx="17" cy="9" r="2.5"></circle><path d="M16.5 14.5c2.6.2 4.4 1.9 5 4.5"></path></svg>
+        </button></sc-if>
         <sc-if value="{{ showJournalFab }}" hint-placeholder-val="{{ true }}"><button onClick="{{ goJournal }}" aria-label="Journal" style="position:absolute;left:16px;bottom:16px;z-index:5;width:56px;height:56px;border-radius:28px;border:2px solid rgba(39,35,32,.25);background:radial-gradient(circle at 35% 30%,#dcc189,#a3824a);box-shadow:0 4px 14px rgba(0,0,0,.35);display:grid;place-items:center;cursor:pointer;padding:0">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#272320" stroke-width="2" stroke-linejoin="round"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"></path><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"></path><path d="M9 7h6"></path></svg>
           <sc-if value="{{ journalNew }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:0;right:0;width:16px;height:16px;border-radius:8px;background:var(--accent);border:2px solid var(--paper);box-sizing:border-box"></span></sc-if>
@@ -588,7 +638,7 @@ class Component extends DCLogic {
   state = {
     view: 'home', entry: null, role: null, theme: null, profile: false, toast: '',
     draft: '', target: 'all', diceOpen: false, seen: 0, shared: {}, newIds: { 1: true, 7: true },
-    ui: 'auto', scene: true, sceneFull: false, hint: true, chatOpen: false,
+    ui: 'auto', scene: true, sceneFull: false, paused: false, hint: true, chatOpen: false,
     cam: null, toks: {}, drag: null, hold: null, pings: [], bubble: null, openF: {},
     fate: null, req: null, inc: null, schips: { own: 2, group: 3 }, targets: {}, combat: false, turn: 0, layIni: null,
     msgs: [], rollMode: 'public', wTo: {}, fmtOpen: false, free: { n: 1, d: 20, mod: 0 }, jq: '', page: 0, pagesOpen: false
@@ -726,6 +776,17 @@ class Component extends DCLogic {
   role() { return this.state.role ?? (this.props.rolle === 'SL' ? 'gm' : 'player'); }
 
   // ---------- Szene: Kamera, Gesten, Ping, Token ziehen ----------
+  actorGroups(set) {
+    const hero = h => ({ name: h.name, sub: h.sub + ' · ' + h.owner, ini: h.short[0], bg: h.bg, onOpen: () => { set({ view: 'sheet' }); if (!h.mine) this.flash('Demo: zeigt Layariels Bogen'); } });
+    const npc = (name, sub, ini) => ({ name, sub, ini, bg: '#5a4a3a', onOpen: () => this.flash('Demo: öffnet den NSC-Bogen des Systems') });
+    return [
+      { name: 'Helden', color: '#b99a5c', items: this.HEROES.map(hero) },
+      { name: 'Gegner · Sägewerk', color: '#9a3b33', items: this.FOES.map(f => npc(f.name, 'NSC · Szene „Sägewerk“', f.ini)) },
+      { name: 'Personen', color: '#3e5d8f', items: [npc('Alrik, der Müller', 'NSC', 'A'), npc('Wirtin Hesindiane', 'NSC', 'H')] },
+      { name: 'Kreaturen', color: '#5d8f24', items: [npc('Höhlenbär', 'Kreatur', 'H'), npc('Riesenratte', 'Kreatur', 'R')] }
+    ];
+  }
+
   tokPos(id) { const t = this.state.toks[id] || [...this.HEROES, ...this.FOES].find(x => x.id === id).tok; return t; }
   initCam() {
     const el = this.sceneRef.current;
@@ -1042,7 +1103,7 @@ class Component extends DCLogic {
       const pi = Math.min(s.page, pages.length - 1), pg = pages[pi];
       const go = n => set({ page: n, pagesOpen: false });
       entry = { ...ej, path: ej.kind + ' · ' + path.join(' › '),
-        multi: pages.length > 1, pageNo: pi + 1, pageCount: pages.length, pageTitle: pg.title, pageText: pg.text, pageImg: !!pg.img,
+        multi: pages.length > 1, toc: pages.length > 1 && isTablet, bar: pages.length > 1 && !isTablet, pageNo: pi + 1, pageCount: pages.length, pageTitle: pg.title, pageText: pg.text, pageImg: !!pg.img,
         openPages: () => set({ pagesOpen: true }), noPrev: pi === 0, noNext: pi === pages.length - 1,
         prevTitle: pi > 0 ? pages[pi - 1].title : 'Zurück', nextTitle: pi < pages.length - 1 ? pages[pi + 1].title : 'Weiter',
         prev: () => pi > 0 && go(pi - 1), next: () => pi < pages.length - 1 && go(pi + 1),
@@ -1104,7 +1165,7 @@ class Component extends DCLogic {
 
     const v = s.view;
     const showScene = s.scene && v === 'home';
-    const titles = { home: ['Die Rabenschatten', 'Sitzung 14 · 3 von 4 Spielern verbunden'], chat: ['Chat', 'Die Rabenschatten'], journal: ['Journal', 'Die Rabenschatten'], entry: [ej ? ej.title : '', ej ? ej.kind : ''] };
+    const titles = { home: ['Die Rabenschatten', 'Sitzung 14 · 3 von 4 Spielern verbunden'], chat: ['Chat', 'Die Rabenschatten'], journal: ['Journal', 'Die Rabenschatten'], actors: ['Akteure', 'Die Rabenschatten'], entry: [ej ? ej.title : '', ej ? ej.kind : ''] };
     const opt = (label, on, onClick) => ({ label, onClick, bg: on ? 'var(--accent)' : 'transparent', color: on ? 'var(--onaccent)' : 'var(--ink)' });
     const devName = d => d === 'tablet' ? 'Tablet' : 'Smartphone';
     // ----- Kampfreihenfolge (E23, wie scripts/mobile/shell.js renderCombat)
@@ -1147,7 +1208,7 @@ class Component extends DCLogic {
       showRow: v !== 'sheet' || (isTablet && chatShown), rowFlex: v === 'sheet' ? 'none' : '1', rowW: v === 'sheet' ? '400px' : 'auto',
       rootDir: v === 'sheet' && isTablet && chatShown ? 'row' : 'column', sheetChatFab: v === 'sheet' && isTablet && !chatShown,
       chatFlex: isTablet ? 'none' : '1', chatW: isTablet ? '400px' : 'auto', chatBorder: isTablet ? '1px solid var(--line2)' : '0',
-      vHome: v === 'home', vList: v === 'journal' || v === 'entry', vJournal: v === 'journal', vEntry: v === 'entry' && !!ej,
+      vHome: v === 'home', vList: v === 'journal' || v === 'entry' || v === 'actors', vJournal: v === 'journal', vActors: v === 'actors', vEntry: v === 'entry' && !!ej,
 
       inCombat: s.combat, cbt, cbtLabel: myTurn ? 'Du bist dran!' : 'Runde ' + (1 + Math.floor(s.turn / order.length)),
       cbtBg: myTurn ? '#e0c48c' : 'transparent', cbtColor: myTurn ? '#1c1917' : '#f4e8d6', cbtPad: myTurn ? '4px 8px' : '0',
@@ -1167,12 +1228,16 @@ class Component extends DCLogic {
       centerLabel: isGM ? 'Auf die Gruppe zentrieren' : 'Auf meinen Helden zentrieren',
       centerMe: () => { const el = this.sceneRef.current; if (el) set({ cam: this.camOn(isGM ? [7, 5] : this.tokPos('lay'), el.clientWidth, el.clientHeight, cam.s) }); },
       toggleFull: () => set({ sceneFull: !s.sceneFull }), fullStr: s.sceneFull ? 'true' : 'false', fullLabel: s.sceneFull ? 'Helden wieder einblenden' : 'Spielfeld vergrößern',
+      togglePause: () => { set({ paused: !s.paused }); this.flash(s.paused ? 'Spiel fortgesetzt' : 'Spiel pausiert – für alle'); },
+      paused: s.paused, pausedStr: s.paused ? 'true' : 'false', pauseLabel: s.paused ? 'Spiel fortsetzen' : 'Spiel pausieren',
+      pauseBg: s.paused ? '#b99a5c' : 'rgba(20,18,16,.78)', pauseColor: s.paused ? '#1c1917' : '#f4e8d6', pausePath: s.paused ? 'M8 5v14l11-7z' : 'M7 5h4v14H7zM13 5h4v14h-4z',
       fullBg: s.sceneFull ? '#b99a5c' : 'rgba(20,18,16,.78)', fullColor: s.sceneFull ? '#1c1917' : '#f4e8d6',
       fullPath: s.sceneFull ? 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5' : 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',
       showHeroes: !(showScene && s.sceneFull), heroFlex: showScene ? 'none' : '1', heroMax: showScene ? (isPhone ? '42%' : '36%') : 'none',
       heroTitle: isGM ? 'Helden der Gruppe' : 'Meine Helden', heroes,
 
-      showFabs: v === 'home' || v === 'journal' || v === 'entry', showJournalFab: v === 'home',
+      showFabs: v === 'home' || v === 'journal' || v === 'actors' || (v === 'entry' && !entry.bar), showJournalFab: v === 'home', showActorsFab: v === 'home' && isGM,
+      goActors: () => set({ view: 'actors' }), actorGroups: this.actorGroups(set),
       showChatFab: !chatShown, chatFabLabel: unread ? 'Chat, ' + unread + ' ungelesen' : 'Chat', bubbleOn: !!s.bubble && !chatShown, bubble: s.bubble || {},
       unread, hasUnread: unread > 0, journalNew,
       rollModes: [['public', 'Öffentlich'], ['ic', 'Als Held'], ['gm', 'Privat · SL'], ['blind', 'Verdeckt'], ['self', 'Nur ich']].map(([id, label]) => ({ label, on: s.rollMode === id ? 'true' : 'false', onClick: () => set({ rollMode: id }) })),

@@ -5,9 +5,21 @@
 // das CSS zeigt das Menü als Blatt von unten.
 const LONG_MS = 500;
 const MOVE_PX = 10;
+const GUARD_MS = 400;
 const TARGETS = '.message[data-message-id]';
 
 let press = null;
+let openedAt = 0;
+
+// Foundry schließt jedes Kontextmenü beim nächsten Klick irgendwo im Dokument. Manche Eingaben schicken direkt nach
+// dem contextmenu noch einen Klick hinterher (Rechtsklick in der Touch-Emulation der Browser-Entwicklertools,
+// Rückmeldung 2026-10-20: Menü „nur kurz“ sichtbar). Diesen Klick schlucken, Antippen außerhalb schließt weiterhin.
+function onContextMenu() { openedAt = performance.now(); }
+function onClickGuard(e) {
+  if (!ui.context || performance.now() - openedAt > GUARD_MS || e.target.closest?.('#context-menu')) return;
+  e.stopPropagation();
+  e.preventDefault();
+}
 
 function openMenu(target, x, y) {
   target.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 2, buttons: 2, view: window }));
@@ -63,5 +75,7 @@ export function initTouchContext() {
   document.addEventListener('pointermove', onMove, true);
   document.addEventListener('pointerup', onUp, true);
   document.addEventListener('pointercancel', onUp, true);
+  document.addEventListener('contextmenu', onContextMenu, true);
+  document.addEventListener('click', onClickGuard, true);
   Hooks.on('renderChatMessageHTML', addMenuButton);
 }

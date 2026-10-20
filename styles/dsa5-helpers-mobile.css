@@ -109,6 +109,11 @@ body.dsa5h-mobile #ui-right {
 .dsa5h-m-cbt.defeated { opacity: .4; }
 .dsa5h-m-cbt b { position: absolute; right: -3px; bottom: -3px; min-width: 18px; padding: 0 3px; border-radius: 9px; background: #1c1917; font-size: 11px; line-height: 16px; text-align: center; }
 #dsa5h-m-shell .dsa5h-m-combat button { flex: none; width: auto; height: 40px; margin: 0; padding: 0 10px; border: 0; border-radius: 6px; background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); font-size: 13px; font-weight: 700; line-height: 40px; }
+/* Foundrys Pause-Anzeige: lag unter der Heldenkarte (z-index 1). Oben unter den Kopf, über die Szene, nicht klickbar. */
+body.dsa5h-mobile #pause.paused {
+  top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 8px); bottom: auto; height: 140px; z-index: 41; pointer-events: none;
+}
+body.dsa5h-mobile.dsa5h-m-in-combat #pause.paused { top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 64px); }
 body.dsa5h-m-in-combat .dsa5h-m-scenebtns { top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 66px); }
 
 /* 5. Heldenkarte ----------------------------------------------------------- */
@@ -159,6 +164,7 @@ body.dsa5h-m-full .dsa5h-m-heroes { display: none; }
 }
 #dsa5h-m-shell .dsa5h-m-fab.journal { left: 16px; }
 #dsa5h-m-shell .dsa5h-m-fab.chat { right: 16px; }
+#dsa5h-m-shell .dsa5h-m-fab.actors { left: 84px; font-size: 22px; }
 .dsa5h-m-badge {
   position: absolute; top: -4px; right: -4px; min-width: 24px; height: 24px; padding: 0 6px; box-sizing: border-box;
   border: 2px solid var(--dsa5h-m-paper); border-radius: 12px; background: var(--dsa5h-m-danger);
@@ -843,7 +849,7 @@ body.dsa5h-mobile {
   --dsa5h-m-card: linear-gradient(170deg, rgba(255, 250, 238, .85), rgba(236, 226, 210, .45)), var(--dsa5h-m-paper);
 }
 body.dsa5h-mobile[data-dsa5h-panel="chat"] #sidebar,
-body.dsa5h-mobile[data-dsa5h-panel="journal"] #sidebar { background: var(--dsa5h-m-paper); }
+body.dsa5h-mobile:is([data-dsa5h-panel="journal"], [data-dsa5h-panel="actors"]) #sidebar { background: var(--dsa5h-m-paper); }
 body.dsa5h-mobile #chat { background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); font-family: 'GentiumBasic', Georgia, serif; }
 body.dsa5h-mobile #chat .chat-scroll { padding: 10px 10px 6px; scrollbar-width: none; }
 body.dsa5h-mobile #chat .chat-log { display: flex; flex-direction: column; gap: 8px; padding: 0; }
@@ -856,7 +862,7 @@ body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message {
   font-family: 'GentiumBasic', Georgia, serif;
 }
 /* Chat und Journal bleiben auch im dunklen Foundry-Thema hell (wie Kopf und Heldenkarte der Mobilansicht) */
-body.dsa5h-mobile :is(#chat, #chat-notifications, #journal, .dsa5h-m-journal) {
+body.dsa5h-mobile :is(#chat, #chat-notifications, #journal, #actors, .dsa5h-m-journal) {
   --color-text-primary: var(--dsa5h-m-ink); --color-text-secondary: var(--dsa5h-m-ink2); --color-text-emphatic: var(--dsa5h-m-ink);
   --color-text-subtle: var(--dsa5h-m-ink2); --color-form-label: var(--dsa5h-m-ink2);
 }
@@ -901,6 +907,12 @@ body.dsa5h-mobile .chat-message .message-content :is(button, .chat-button) {
   width: auto; min-height: 36px; margin: 2px 4px 2px 0; padding: 0 12px; border: 1px solid var(--dsa5h-m-accent); border-radius: 18px;
   background: var(--dsa5h-m-field); color: var(--dsa5h-m-accenttext); font-family: inherit; font-size: 14px; font-weight: 700; line-height: 34px;
 }
+/* Knöpfe, die selbst das Symbol sind (<button class="fas fa-dice">, z. B. „Probe anfordern“ des Systems): Symbolschrift
+   behalten, sonst bleiben sie leer (Rückmeldung 2026-10-20) */
+body.dsa5h-mobile .chat-message .message-content :is(button, .chat-button):is(.fa, .fas, .fa-solid, .far, .fa-regular) {
+  width: 36px; padding: 0; font-family: var(--font-awesome, 'Font Awesome 6 Pro'); font-weight: 900; text-align: center;
+}
+body.dsa5h-mobile .chat-message .message-content :is(button, .chat-button):is(.far, .fa-regular) { font-weight: 400; }
 /* Foundrys Würfelergebnis (/r …) */
 body.dsa5h-mobile .chat-message .dice-roll :is(.dice-formula, .dice-total) {
   margin: 0 0 4px; border: 1px solid var(--dsa5h-m-line2); border-radius: 6px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); box-shadow: none;
@@ -1015,33 +1027,77 @@ body.dsa5h-mobile #chat .chat-form:has(.dsa5h-m-ci-fmt) > #chat-message .menu-co
 
 /* 13. Journal im Modul-Design -----------------------------------------------
    Verzeichnis: Suche als Pille, Ordner mit Farbkante, Einträge als Zeilen mit ›. Eintrag: Pergamentseite mit Ordnerpfad,
-   Titel in Andalus mit Goldlinie, „Seite x von y ▾“ öffnet die Seitenliste als Blatt, ‹ › unten, Text mit Initiale
-   (scripts/mobile/journal.js). Die Seitenleiste des Journal-Blatts ist mobil ausgeblendet. */
-body.dsa5h-mobile #journal { background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); font-family: 'GentiumBasic', Georgia, serif; }
-body.dsa5h-mobile #journal .directory-header { gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--dsa5h-m-line); }
-body.dsa5h-mobile #journal .directory-header search { gap: 4px; }
-body.dsa5h-mobile #journal .directory-header search input {
+   Titel in Andalus mit Goldlinie, Text mit Initiale (scripts/mobile/journal.js). Seitenwahl (Rückmeldung 2026-10-20):
+   Tablet = Foundrys Inhaltsverzeichnis links im Modul-Design + ‹ › mit Seitentiteln unten; Smartphone = Verzeichnis
+   aus, Steuerleiste unten „‹ · Seite x von y ▾ · ›“, die Mitte öffnet die Seitenliste als Blatt.
+   Das Akteur-Verzeichnis der SL (Panel „Akteure“, Rückmeldung 2026-10-20) nutzt dieselben Verzeichnis-Regeln. */
+body.dsa5h-mobile :is(#journal, #actors) { background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); font-family: 'GentiumBasic', Georgia, serif; }
+body.dsa5h-mobile :is(#journal, #actors) .directory-header { gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--dsa5h-m-line); }
+body.dsa5h-mobile :is(#journal, #actors) .directory-header search { gap: 4px; }
+body.dsa5h-mobile :is(#journal, #actors) .directory-header search input {
   height: 40px; padding: 0 12px; border: 1px solid var(--dsa5h-m-line2); border-radius: 20px; background: var(--dsa5h-m-field);
   color: var(--dsa5h-m-ink); font-size: 16px;
 }
-body.dsa5h-mobile #journal .directory-header :is(search button, .action-buttons button) { color: var(--dsa5h-m-ink); }
-body.dsa5h-mobile #journal .directory-header .action-buttons button {
+body.dsa5h-mobile :is(#journal, #actors) .directory-header :is(search button, .action-buttons button) { color: var(--dsa5h-m-ink); }
+body.dsa5h-mobile :is(#journal, #actors) .directory-header .action-buttons button {
   min-height: 40px; border: 1px solid var(--dsa5h-m-accent); border-radius: 6px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-accenttext); font-weight: 700;
 }
-body.dsa5h-mobile #journal .directory-list { padding: 0; }
-body.dsa5h-mobile #journal .folder > .folder-header {
+body.dsa5h-mobile :is(#journal, #actors) .directory-list { padding: 0; }
+body.dsa5h-mobile :is(#journal, #actors) .folder > .folder-header {
   min-height: 48px; padding: 0 12px 0 16px; gap: 8px; border: 0 !important; border-top: 1px solid var(--dsa5h-m-line) !important; box-shadow: none;
   background-image: linear-gradient(90deg, transparent 4px, #e3d7c3 4px); color: var(--dsa5h-m-ink); font-size: 16px; font-weight: 700; text-shadow: none;
 }
-body.dsa5h-mobile #journal .folder > .subdirectory { margin-left: 4px; border-left-width: 4px; }
-body.dsa5h-mobile #journal .directory-item.entry {
+body.dsa5h-mobile :is(#journal, #actors) .folder > .subdirectory { margin-left: 4px; border-left-width: 4px; }
+body.dsa5h-mobile :is(#journal, #actors) .directory-item.entry {
   min-height: 56px; align-items: center; padding: 0 12px; border-top: 1px solid var(--dsa5h-m-line); background: none;
 }
-body.dsa5h-mobile #journal .directory-item.entry .entry-name { flex: 1; min-width: 0; color: var(--dsa5h-m-ink); font-size: 16px; line-height: 56px; }
-body.dsa5h-mobile #journal .directory-item.entry::after { content: "›"; flex: none; padding-left: 8px; font-size: 20px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile :is(#journal, #actors) .directory-item.entry .entry-name { flex: 1; min-width: 0; color: var(--dsa5h-m-ink); font-size: 16px; line-height: 56px; }
+body.dsa5h-mobile :is(#journal, #actors) .directory-item.entry::after { content: "›"; flex: none; padding-left: 8px; font-size: 20px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile #actors .directory-item.entry { gap: 10px; }
+body.dsa5h-mobile #actors .directory-item.entry img.thumbnail { flex: none; width: 40px; height: 40px; object-fit: cover; border: 1.5px solid var(--dsa5h-m-gold); border-radius: 3px; }
 
 body.dsa5h-mobile .dsa5h-m-journal .window-content { padding: 0; background: var(--dsa5h-m-paper); }
-body.dsa5h-mobile .dsa5h-m-journal .journal-sidebar { display: none !important; }
+body.dsa5h-phone .dsa5h-m-journal .journal-sidebar { display: none !important; }
+/* Tablet: Inhaltsverzeichnis als Pergament-Leiste. Ansichtswechsel (mobil immer Einzelseite), Einklappen und die
+   Blätter-Knöpfe der Leiste (stehen unten am Text) fallen weg; Suche, Sperre und „Seite hinzufügen“ bleiben. */
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar {
+  display: flex !important; flex-direction: column; flex: 0 0 248px; width: 248px; min-width: 0; margin: 8px 0 8px 8px; padding: 0;
+  border: 1px solid rgba(185, 154, 92, .6); border-radius: 6px; background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink);
+  font-family: 'GentiumBasic', Georgia, serif; overflow: hidden;
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar search {
+  display: flex; align-items: center; gap: 4px; margin: 0; padding: 8px; border-bottom: 1px solid var(--dsa5h-m-line); background: var(--dsa5h-m-phead);
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar search :is(.view-mode, .collapse-toggle) { display: none; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar search input {
+  flex: 1; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid var(--dsa5h-m-line2); border-radius: 20px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 16px;
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar search button { width: 40px; height: 40px; flex: none; color: var(--dsa5h-m-ink); font-size: 16px; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc { flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 0; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc ol { margin: 0; padding: 0; list-style: none; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc li { margin: 0; padding: 0; border: 0; background: none; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc li.category {
+  padding: 10px 12px 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--dsa5h-m-ink2);
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc .page-heading {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; margin: 0; padding: 0 10px; border-top: 1px solid var(--dsa5h-m-line);
+  background: none; color: var(--dsa5h-m-ink); font-size: 15px; line-height: 1.2; cursor: pointer;
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc .page-index {
+  flex: none; display: grid; place-items: center; width: 28px; height: 28px; margin: 0; border-radius: 50%;
+  background: var(--dsa5h-m-sub); color: var(--dsa5h-m-ink2); font-size: 13px;
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc .page-title { flex: 1; min-width: 0; white-space: normal; word-break: normal; overflow-wrap: break-word; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc li.active > .page-heading { background: rgba(185, 154, 92, .22); font-weight: 700; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc li.active > .page-heading .page-index { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
+/* Überschriften der aktiven Seite (Foundry blendet sie im Verzeichnis ein): eingerückt, kleiner */
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc ol ol .page-heading,
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc :is(.level2, .level3) .page-heading { min-height: 40px; padding-left: 48px; font-size: 14px; font-weight: normal; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .action-buttons { flex: none; margin: 0; padding: 8px; border-top: 1px solid var(--dsa5h-m-line); }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .action-buttons :is(.previous, .next) { display: none; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .action-buttons .create { min-height: 44px; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .action-buttons:not(:has(.create)) { display: none; }
 body.dsa5h-mobile .dsa5h-m-journal .journal-entry-content {
   flex: 1; width: auto; min-width: 0; margin: 8px; padding: 0; overflow: hidden; color: var(--dsa5h-m-ink);
   border: 1px solid rgba(185, 154, 92, .6); border-radius: 6px;
@@ -1058,12 +1114,6 @@ body.dsa5h-mobile .dsa5h-m-journal .journal-entry-content > .journal-header inpu
   background: linear-gradient(90deg, rgba(185, 154, 92, .85), rgba(185, 154, 92, 0)) bottom left / 100% 1px no-repeat;
   font-family: 'Andalus', serif; font-size: 28px; line-height: 1.15; box-shadow: none;
 }
-body.dsa5h-mobile .dsa5h-m-journal .dsa5h-m-jpick {
-  align-self: flex-start; display: flex; align-items: center; gap: 8px; width: auto; max-width: 100%; height: 40px; margin: 4px 0 0; padding: 0 14px;
-  border: 1px solid rgba(185, 154, 92, .6); border-radius: 20px; background: rgba(255, 255, 255, .6); color: var(--dsa5h-m-ink);
-  font-family: inherit; font-size: 15px; line-height: 1;
-}
-.dsa5h-m-jpick > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.dsa5h-mobile .dsa5h-m-journal .journal-entry-pages { padding: 0 16px 16px; background: none; }
 body.dsa5h-mobile .dsa5h-m-journal .journal-entry-page { margin: 0; padding: 0; border: 0; background: none; }
 body.dsa5h-mobile .dsa5h-m-journal .journal-page-header { margin: 6px 0 0; padding: 0; border: 0; }
@@ -1084,6 +1134,13 @@ body.dsa5h-mobile .dsa5h-m-jnav > button {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 body.dsa5h-mobile .dsa5h-m-jnav > button:disabled { opacity: .4; }
+/* Smartphone: ‹ · Seite x von y ▾ · › */
+body.dsa5h-phone .dsa5h-m-jnav > [data-dir] { flex: 0 0 52px; padding: 0; font-size: 26px; line-height: 1; }
+body.dsa5h-phone .dsa5h-m-jnav > .dsa5h-m-jpick {
+  display: flex; align-items: center; justify-content: center; gap: 8px; border-color: rgba(185, 154, 92, .6); border-radius: 22px;
+  background: rgba(255, 255, 255, .6); font-size: 15px;
+}
+.dsa5h-m-jpick > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Seitenliste als Blatt */
 .dsa5h-m-sheet-title { font-family: 'Andalus', serif; font-weight: normal; font-size: 20px; }
 .dsa5h-m-jpage-list { display: flex; flex-direction: column; max-height: 60vh; overflow-y: auto; margin: 0 -6px; }

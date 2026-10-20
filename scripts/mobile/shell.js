@@ -3,6 +3,8 @@
 // Journal und Chat. Chat und Journal sind Foundrys eigene Seitenleisten-Reiter, die wir als Panel einblenden
 // (Smartphone bildschirmfüllend, Tablet als rechte Spalte). Neue Nachrichten zeigt Foundry selbst als
 // Chat-Benachrichtigung, solange die Seitenleiste eingeklappt ist — das CSS setzt sie als Sprechblase über den Knopf.
+// Nur SL (Rückmeldung 2026-10-20): Pause-Knopf bei den Szenen-Knöpfen (statt Leertaste) und ein dritter schwebender
+// Knopf „Akteure“ = Foundrys Akteur-Verzeichnis als Panel, getrennt von der Heldenkarte (nur Spielerhelden).
 import { centerOn } from './canvas-touch.js';
 
 const MODULE_ID = 'dsa5-helpers';
@@ -125,6 +127,13 @@ function centerMine() {
   centerOn(t.center, HEAD_H, bottom);
 }
 
+function renderPause() {
+  if (!els.pauseBtn) return;
+  els.pauseBtn.setAttribute('aria-pressed', String(game.paused));
+  els.pauseBtn.setAttribute('aria-label', L(game.paused ? 'Resume' : 'Pause'));
+  els.pauseBtn.querySelector('i').className = `fa-solid ${game.paused ? 'fa-play' : 'fa-pause'}`;
+}
+
 function toggleFull() {
   state.full = !state.full;
   document.body.classList.toggle('dsa5h-m-full', state.full);
@@ -199,6 +208,7 @@ function build() {
     <div class="dsa5h-m-scenebtns">
       <button type="button" data-do="center" aria-label="${esc(L(gm ? 'CenterGM' : 'Center'))}"><i class="fa-solid fa-crosshairs" inert></i></button>
       <button type="button" data-do="full" aria-pressed="false" aria-label="${esc(L('Enlarge'))}"><i class="fa-solid fa-expand" inert></i></button>
+      ${gm ? '<button type="button" data-do="pause" aria-pressed="false"><i class="fa-solid fa-pause" inert></i></button>' : ''}
     </div>
     <section class="dsa5h-m-heroes">
       <div class="dsa5h-m-heroes-head"><span>${esc(L(gm ? 'HeroesGM' : 'Heroes'))}</span>
@@ -206,6 +216,7 @@ function build() {
       <div class="dsa5h-m-hero-list"></div>
     </section>
     <button type="button" class="dsa5h-m-fab journal" data-do="journal" aria-label="${esc(L('Panel.journal'))}"><i class="fa-solid fa-book" inert></i></button>
+    ${gm ? `<button type="button" class="dsa5h-m-fab actors" data-do="actors" aria-label="${esc(L('Panel.actors'))}"><i class="fa-solid fa-users" inert></i></button>` : ''}
     <button type="button" class="dsa5h-m-fab chat" data-do="chat"><i class="fa-solid fa-comment" inert></i><span class="dsa5h-m-badge" hidden></span></button>
     <div class="dsa5h-m-panelbar"><span></span><button type="button" data-do="close" aria-label="${esc(L('Close'))}"><i class="fa-solid fa-xmark" inert></i></button></div>`;
   document.body.append(root);
@@ -213,7 +224,7 @@ function build() {
     root, title: root.querySelector('.dsa5h-m-titles strong'), sub: root.querySelector('.dsa5h-m-titles small'),
     account: root.querySelector('.dsa5h-m-account'), heroes: root.querySelector('.dsa5h-m-heroes'), heroList: root.querySelector('.dsa5h-m-hero-list'),
     chatFab: root.querySelector('.dsa5h-m-fab.chat'), badge: root.querySelector('.dsa5h-m-badge'),
-    fullBtn: root.querySelector('[data-do="full"]'), combat: root.querySelector('.dsa5h-m-combat'), panelTitle: root.querySelector('.dsa5h-m-panelbar span'),
+    fullBtn: root.querySelector('[data-do="full"]'), pauseBtn: root.querySelector('[data-do="pause"]'), combat: root.querySelector('.dsa5h-m-combat'), panelTitle: root.querySelector('.dsa5h-m-panelbar span'),
   });
   root.addEventListener('click', ev => {
     const hero = ev.target.closest('.dsa5h-m-hero');
@@ -222,7 +233,8 @@ function build() {
     const act = ev.target.closest('[data-do]')?.dataset.do;
     if (act === 'center') return centerMine();
     if (act === 'full') return toggleFull();
-    if (act === 'journal' || act === 'chat') return openPanel(act);
+    if (act === 'pause') return game.togglePause(!game.paused, { broadcast: true });
+    if (act === 'journal' || act === 'chat' || act === 'actors') return openPanel(act);
     if (act === 'close') return closePanel();
     if (act === 'initiative') {
       const ids = game.combat?.combatants.filter(c => c.isOwner && c.initiative === null).map(c => c.id) ?? [];
@@ -255,6 +267,8 @@ export function initShell(mode, info) {
   renderBadge();
   closePanel();
   renderCombat();
+  renderPause();
+  Hooks.on('pauseGame', renderPause);
   const combatHook = foundry.utils.debounce(renderCombat, 100);
   for (const hook of ['createCombat', 'updateCombat', 'deleteCombat', 'createCombatant', 'updateCombatant', 'deleteCombatant', 'combatTurnChange']) Hooks.on(hook, combatHook);
 

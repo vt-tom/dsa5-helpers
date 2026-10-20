@@ -368,7 +368,8 @@
         "chat": "Chat",
         "journal": "Journal",
         "settings": "Einstellungen",
-        "combat": "Kampf"
+        "combat": "Kampf",
+        "actors": "Akteure"
       },
       "Connected": "{n} von {total} Spielern verbunden",
       "ChatUnread": "Chat, {n} ungelesen",
@@ -387,6 +388,8 @@
       "Center": "Auf meinen Helden zentrieren",
       "CenterGM": "Auf den eigenen Token zentrieren",
       "Enlarge": "Spielfeld vergrößern",
+      "Pause": "Spiel pausieren",
+      "Resume": "Spiel fortsetzen",
       "Heroes": "Meine Helden",
       "HeroesGM": "Helden der Gruppe",
       "NoHeroes": "Kein Held zugewiesen.",

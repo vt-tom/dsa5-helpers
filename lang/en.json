@@ -368,7 +368,8 @@
         "chat": "Chat",
         "journal": "Journal",
         "settings": "Settings",
-        "combat": "Combat"
+        "combat": "Combat",
+        "actors": "Actors"
       },
       "Connected": "{n} of {total} players connected",
       "ChatUnread": "Chat, {n} unread",
@@ -387,6 +388,8 @@
       "Center": "Center on my hero",
       "CenterGM": "Center on own token",
       "Enlarge": "Enlarge scene",
+      "Pause": "Pause game",
+      "Resume": "Resume game",
       "Heroes": "My heroes",
       "HeroesGM": "Party heroes",
       "NoHeroes": "No hero assigned.",
