@@ -1538,6 +1538,32 @@ button {
   padding: 0 3px;
 }
 
+/* Breite des Editors (Rückmeldung 2026-10-20: Felder wurden beim Klick sehr breit — ohne Breite nimmt ein <input> die
+   Browser-Standardbreite an): Zahlen so breit wie der Wert, ohne Pfeile; Text füllt den verfügbaren Platz. */
+.inline-edit-input[type="number"] {
+  width: 3.4em;
+  box-sizing: border-box;
+  text-align: center;
+  appearance: textfield;
+}
+
+.inline-edit-input[type="number"]::-webkit-inner-spin-button,
+.inline-edit-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inline-edit-input[type="text"] {
+  width: 100%;
+  min-width: 8em;
+  box-sizing: border-box;
+}
+
+/* Wohlgefällige Talente: Feld über die ganze Zeile statt so breit wie der Text */
+.happy-talents-expanded > .editable-value {
+  display: block;
+}
+
 /* Mehrzeiliger Freitext-Editor (makeEditable() type "textarea", z.B. Notizen-Tab). */
 .inline-edit-textarea {
   display: block;

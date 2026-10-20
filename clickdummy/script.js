@@ -1860,6 +1860,7 @@ function magicIcon(item) {
 // Zeilen-Lösch-"×" für Tabellenzeilen (magicTable/artifactTable) — analog zu deletableChip(), aber für ganze
 // Grid-Zeilen statt Chips: `list` ist die Original-Array-Referenz, `item` der zu löschende Eintrag.
 // cls "adv-only" für Einträge, deren Entfernen AP erstattet (Zauber, Liturgien — Issue #34: Steigern + Bearbeiten).
+// cls "" für Zustände und Statuseffekte: in allen Modi entfernbar (Issue #34, im Modul per Rechtsklick/Kontextmenü).
 function rowDeleteBtn(list, item, cls = "edit-only") {
   const label = `${item.name || "Eintrag"} löschen`;
   const btn = el("button", { type: "button", class: `row-delete ${cls}`, title: label, "aria-label": label }, "×");
@@ -2392,7 +2393,7 @@ function buildConditionsPanel(limit, withPicker = false) {
         ),
         el("span", { class: "cond-count", "aria-label": `Stufe ${c.filled} von ${c.pips}` }, `${c.filled}/${c.pips}`),
         increaseStep(() => c.filled, (v) => { c.filled = v; }, c.pips, () => renderContent(), c.name),
-        rowDeleteBtn(CONDITIONS, c),
+        rowDeleteBtn(CONDITIONS, c, ""),
       ])
     ),
   ]);
@@ -2453,7 +2454,7 @@ function conditionPicker() {
 function buildActiveEffectsPanel() {
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Aktive Effekte"),
-    ...EFFECTS.map((e) => el("div", { class: "list-row" }, [el("span", { class: "name" }, e.name), el("span", { class: "cost" }, e.dur), rowDeleteBtn(EFFECTS, e)])),
+    ...EFFECTS.map((e) => el("div", { class: "list-row" }, [el("span", { class: "name" }, e.name), el("span", { class: "cost" }, e.dur), rowDeleteBtn(EFFECTS, e, "")])),
   ]);
 }
 
@@ -2470,7 +2471,7 @@ function renderStatus() {
           el("span", { class: "name" }, c.name),
           reduceStep(() => c.stacks, (v) => { c.stacks = v; }, 0, () => renderContent(), c.name),
           el("span", { class: "cost" }, `× ${c.stacks}`),
-          rowDeleteBtn(CUMULATIVE_CONDITIONS, c),
+          rowDeleteBtn(CUMULATIVE_CONDITIONS, c, ""),
         ])),
       ])
     : null;
@@ -2483,7 +2484,7 @@ function renderStatus() {
             el("div", { class: "list-row-main" }, [
               el("span", { class: "name" }, c.name),
               el("span", { class: "cost" }, c.dur),
-              rowDeleteBtn(TRANSFERRED_CONDITIONS, c),
+              rowDeleteBtn(TRANSFERRED_CONDITIONS, c, ""),
             ]),
             el("div", { class: "source-line" }, `von ${c.source}`),
           ])
@@ -2515,7 +2516,7 @@ function renderStatus() {
     : null;
 
   // Jede Tabelle volle Breite, Zeilen abwechselnd links/rechts (Nutzer-Feedback 2026-09-28, wie "row-section wrap"
-  // im Systembogen) — Krankheiten und Aktenkonfiguration bleiben einspaltig (keine Tabellen im engeren Sinn).
+  // im Systembogen) — Krankheiten und „Akteur konfigurieren“ bleiben einspaltig (keine Tabellen im engeren Sinn).
   return el("div", { class: "status-stack" }, [
     ...[conditionsPanel, cumulativePanel, transferredPanel, effectsPanel, modifiersPanel, demonmarkPanel].filter(Boolean).map(twoColPanel),
     renderDiseasePanel(),
@@ -2539,7 +2540,7 @@ function twoColPanel(panel) {
   return panel;
 }
 
-// Regeneration ein-/ausschaltbar (siehe REGEN_DISABLED-Kommentar in data.js) — eigenes "Aktenkonfiguration"-Panel
+// Regeneration ein-/ausschaltbar (siehe REGEN_DISABLED-Kommentar in data.js) — eigenes Panel „Akteur konfigurieren“
 // (status_effects.hbs:401-441 "SHEET.actorConfig"), nur Zeilen für Ressourcen, die die Figur überhaupt hat.
 function regenConfigPanel() {
   const rows = [
@@ -2548,7 +2549,7 @@ function regenConfigPanel() {
     { type: "karmaenergy", label: "Karmaenergie", show: HAS_KAP },
   ].filter((r) => r.show);
   return el("div", { class: "panel" }, [
-    el("div", { class: "panel-title" }, "Aktenkonfiguration"),
+    el("div", { class: "panel-title" }, "Akteur konfigurieren"),
     ...rows.map((r) => {
       const disabled = REGEN_DISABLED[r.type];
       const btn = el(
