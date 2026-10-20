@@ -23,7 +23,9 @@ export function getSheetSettingsApp() {
     static DEFAULT_OPTIONS = {
       id: 'dsa5-helpers-sheet-settings',
       tag: 'form',
-      classes: ['dsa5-helpers-sheet-settings', 'standard-form'],
+      // standard-form nur am Inhalt (contentClasses): am Fenster selbst setzt sie Abstände zwischen Titelleiste und Inhalt,
+      // im DSA5-Design entstand dort eine durchsichtige Lücke (Rückmeldung 2026-10-20).
+      classes: ['dsa5-helpers-sheet-settings'],
       window: { title: 'DSA5HELPERS.Settings.SheetMenu.Title', icon: 'fas fa-id-card', contentClasses: ['standard-form'] },
       position: { width: 560 },
       form: { handler: this._onSubmit, closeOnSubmit: true },
