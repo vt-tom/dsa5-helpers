@@ -213,8 +213,8 @@
   display: none !important;
 }
 
-/* Auswahl Spielen · Steigern · Bearbeiten unter dem Schloss der Titelleiste (Issue #34, _openModeMenu) */
-.dsa5-helpers-sheet .dsa5h-mode-menu {
+/* Auswahlmenü unter einem Knopf (_popupMenu): Modus am Schloss (Issue #34), Bannerbild (Issue #46) */
+.dsa5-helpers-sheet .dsa5h-popup-menu {
   position: absolute;
   z-index: 100;
   min-width: 260px;
@@ -225,7 +225,7 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
 }
 
-.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item {
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
   align-items: center;
@@ -243,33 +243,33 @@
   cursor: pointer;
 }
 
-.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item > span {
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item > span {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
 }
 
-.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item small {
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item small {
   font-size: 12px;
   opacity: .75;
 }
 
-.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item.active {
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item.active {
   background: rgba(224, 192, 128, .22);
 }
 
-.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item:disabled {
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item:disabled {
   opacity: .5;
   cursor: not-allowed;
 }
 
-.dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item:focus-visible {
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item:focus-visible {
   outline: 2px solid rgba(224, 192, 128, .8);
   outline-offset: -2px;
 }
 
 @media (hover: hover) {
-  .dsa5-helpers-sheet .dsa5h-mode-menu .dsa5h-mode-item:not(:disabled):hover {
+  .dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item:not(:disabled):hover {
     background: rgba(224, 192, 128, .15);
   }
 }

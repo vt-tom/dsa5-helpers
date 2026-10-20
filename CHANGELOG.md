@@ -12,6 +12,7 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
   - **Bearbeiten:** zusätzlich alle Werte direkt ändern, ohne die AP zu berühren, und Gegenstände anlegen oder löschen.
   - Neue Welt-Einstellung „Spieler dürfen bearbeiten“ (Standard an): ausgeschaltet können Spieler nur spielen und steigern, die Spielleitung darf immer bearbeiten.
   - Im Spielmodus lässt sich nichts Neues lernen; wer eine Sonderfertigkeit, einen Zauber o. Ä. hineinzieht, bekommt einen Hinweis.
+- Bannerbild ohne Foundry-Dateibrowser ([#46](https://github.com/vt-tom/dsa5-helpers/issues/46)): Die Spielleitung legt in den Moduleinstellungen einen Standardordner für Bannerbilder fest. Spieler wählen dann ein Bild von ihrem eigenen Rechner; es wird verkleinert, über die angemeldete Spielleitung in diesen Ordner hochgeladen und als Bannerbild gesetzt – ganz ohne Rechte auf den Dateibrowser. Fehlt der Ordner oder ist keine Spielleitung angemeldet, gibt es einen Hinweis. Wer den Dateibrowser öffnen darf (Spielleitung, Spieler mit diesem Recht), wählt zwischen „Vom Computer hochladen“ und „Foundry-Dateibrowser“.
 
 ### Geändert
 

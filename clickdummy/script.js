@@ -3056,7 +3056,28 @@ function openHeaderBgPicker() {
 }
 
 function initHeaderBgPicker() {
-  document.getElementById("headerBgBtn").addEventListener("click", openHeaderBgPicker);
+  // Issue #46: Auswahl „Vom Computer hochladen“ (im Modul über die SL in deren Standardordner) / „Foundry-Dateibrowser“
+  // (SL und Spieler mit Recht). Ohne Dateibrowser-Recht startet im Modul direkt das Hochladen.
+  const btn = document.getElementById("headerBgBtn");
+  btn.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    document.querySelector(".banner-menu")?.remove();
+    const entry = (glyph, label, hint, onClick) => {
+      const b = el("button", { type: "button", class: "fwc-mode" }, [el("span", { class: "fwc-mode-glyph", "aria-hidden": "true" }, glyph), el("span", { class: "fwc-mode-text" }, [el("strong", {}, label), el("small", {}, hint)])]);
+      b.addEventListener("click", () => { menu.remove(); onClick(); });
+      return b;
+    };
+    const menu = el("div", { class: "fwc-menu fwc-mode-menu banner-menu", role: "menu" }, [
+      entry("⤒", "Vom Computer hochladen", "Bild auswählen, es wird verkleinert und im Standardordner gespeichert", () => flashNotice("📁 Datei-Dialog des Rechners (im Modul: Upload über die Spielleitung)")),
+      entry("🗁", "Foundry-Dateibrowser", "Vorhandenes Bild auf dem Server wählen", openHeaderBgPicker),
+    ]);
+    const box = document.querySelector(".sheet").getBoundingClientRect();
+    const r = btn.getBoundingClientRect();
+    menu.style.top = `${r.bottom - box.top + 4}px`;
+    menu.style.right = `${box.right - r.right}px`;
+    document.querySelector(".sheet").appendChild(menu);
+    setTimeout(() => document.addEventListener("click", () => menu.remove(), { once: true }));
+  });
 }
 
 // Ersetzt die früher statischen <span class="badge"> in index.html (#headBadges) — dieselbe Optik, aber

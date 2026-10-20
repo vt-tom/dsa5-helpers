@@ -277,7 +277,11 @@ button {
   min-width: 260px;
 }
 
-.fake-window-chrome .fwc-mode-menu .fwc-mode {
+.banner-menu {
+  z-index: 30;
+}
+
+:is(.fake-window-chrome, .banner-menu) .fwc-mode {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
   align-items: center;

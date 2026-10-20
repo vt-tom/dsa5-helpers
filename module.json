@@ -12,6 +12,7 @@
     "minimum": "14.364",
     "verified": "14.369"
   },
+  "socket": true,
   "esmodules": [
     "scripts/dsa5-helpers.js"
   ],

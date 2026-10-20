@@ -19,7 +19,7 @@ Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen f�
 
 - **#34 Drei Modi** in Foundry umgesetzt (2026-10-20, live geprüft: Wechsel über das Schloss, Stepper/Eingabefelder je Modus). Live prüfen: Spieler-Konto mit „Spieler dürfen bearbeiten“ aus; Neues per Drag & Drop im Spielmodus; Tablet-Fensterleiste. Mobil (Smartphone) weiter nur Spielmodus — Steigern/Bearbeiten auf dem Handy siehe Backlog.
 
-- **Bannerbild ohne Foundry-Dateibrowser** ([#46](https://github.com/vt-tom/dsa5-helpers/issues/46), Meilenstein 0.6.1, in Arbeit): Spieler haben oft keine Berechtigung für den Dateibrowser. Vorschlag: SL hinterlegt in den Moduleinstellungen einen Standardpfad für Spielerbilder; Spieler wählen eine Datei vom eigenen Rechner (`<input type=file>`), der Bogen verkleinert sie (z. B. WebP, max. ~1600 px) und schickt sie per Modul-Socket an einen angemeldeten SL-Client, der sie mit `FilePicker.upload` in den Standardpfad lädt und `bannerImg` setzt. Ohne Standardpfad: Hinweis an den Spieler. Ohne SL online: Hinweis. SL (und Spieler mit Dateibrowser-Recht): Auswahl „Vom Computer hochladen“ / „Foundry-Dateibrowser“.
+- **#46 Bannerbild ohne Dateibrowser** umgesetzt (2026-10-20, live geprüft: Player2 ohne Datei-Rechte lädt über die SL hoch, Datei im Standardordner, Flag gesetzt; SL-Menü). Live prüfen: echter Datei-Dialog auf Windows/Tablet/Handy; Forge-Speicher (`forgevtt`) ungetestet.
 
 ### Live prüfen (0.6.1)
 
@@ -51,18 +51,18 @@ Seit 2026-09-30 als GitHub-Issues geführt – siehe unten. Neue Feature-Ideen d
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 09:20 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 12:38 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (12)**
+**Offen (14)**
 
 - **[#34](https://github.com/vt-tom/dsa5-helpers/issues/34) feat: Drei Modi im Heldenbogen – Spielen, Steigern, Bearbeiten (Desktop, Tablet, Smartphone)**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-15
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 1 Kommentar · zuletzt geändert 2026-10-20
 - **[#35](https://github.com/vt-tom/dsa5-helpers/issues/35) Portrait im Dark Mode - Aura oder Spotlight**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.0 · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#36](https://github.com/vt-tom/dsa5-helpers/issues/36) Kampf Tab: Übersicht - Rüstung zentral über dem Portrait**
-  - offen · Bearbeiter: niemand · von @vt-tom · 1 Kommentar · zuletzt geändert 2026-10-19
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.1 · 1 Kommentar · zuletzt geändert 2026-10-20
 - **[#37](https://github.com/vt-tom/dsa5-helpers/issues/37) Status Tab: Suche bei den Zuständen**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.0 · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#38](https://github.com/vt-tom/dsa5-helpers/issues/38) Magie/Glaube Tab: 2 Spalten Ansicht für Sonderfertigkeitenhinzufügen**
@@ -80,7 +80,11 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 09:20 UTC) — ni
 - **[#44](https://github.com/vt-tom/dsa5-helpers/issues/44) feat: Hausregeln auch im Standardbogen des Systems verfügbar machen**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#45](https://github.com/vt-tom/dsa5-helpers/issues/45) feat: Hausregel „Grundmanöver“ von Paladose (Möglichkeiten des Kampfes)**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-20
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 1 Kommentar · zuletzt geändert 2026-10-20
+- **[#46](https://github.com/vt-tom/dsa5-helpers/issues/46) feat: Bannerbild ohne Foundry-Dateibrowser hochladen (Standardpfad der SL)**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 0 Kommentare · zuletzt geändert 2026-10-20
+- **[#47](https://github.com/vt-tom/dsa5-helpers/issues/47) feat: Lebensenergiezonen (Rüstkammer II) im Zonenkreuz des Kampf-Reiters**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 0 Kommentare · zuletzt geändert 2026-10-20
 
 **Kürzlich geschlossen (letzte 14 Tage)**
 

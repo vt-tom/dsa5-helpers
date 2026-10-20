@@ -7,6 +7,7 @@ import { registerHouseRules } from './house-rules/rules.js';
 import { getHouseRulesApp, openHouseRules } from './apps/house-rules.js';
 import { initSheetSwitcher } from './sheet-switcher.js';
 import { initMobile } from './mobile/mobile.js';
+import { registerBannerSettings, initBannerSocket } from './banner-upload.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -28,6 +29,8 @@ Hooks.once('init', async () => {
   // Standard-Bogen für Helden (Issue #13): nur der Foundry-Weg über makeDefault — eine ausdrückliche Wahl am Akteur
   // oder unter „Standard-Bögen konfigurieren“ hat weiter Vorrang (Nutzerentscheidung 2026-09-30).
   game.settings.register('dsa5-helpers', 'defaultSheet', { name: 'DSA5HELPERS.Settings.DefaultSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultSheet.Hint', scope: 'world', config: true, restricted: true, type: Boolean, default: false, requiresReload: true });
+  // Bannerbild ohne Dateibrowser (Issue #46): Standardordner der SL für Bilder der Spieler.
+  registerBannerSettings();
   // Drei Modi (Issue #34): dürfen Spieler den Bearbeiten-Modus nutzen (Werte ohne AP ändern)? Die SL darf immer.
   game.settings.register('dsa5-helpers', 'playersMayEdit', { name: 'DSA5HELPERS.Settings.PlayersMayEdit.Name', hint: 'DSA5HELPERS.Settings.PlayersMayEdit.Hint', scope: 'world', config: true, restricted: true, type: Boolean, default: true });
   // Zuletzt gesehene Version je Nutzer (Issue #11) — auch Spieler und Erstinstallation bekommen den Changelog.
@@ -105,6 +108,7 @@ Hooks.once('init', async () => {
 });
 
 Hooks.once('ready', () => {
+  initBannerSocket();
   showChangelogIfUpdated();
   readyDiceStats();
 });

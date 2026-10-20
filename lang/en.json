@@ -175,6 +175,10 @@
       "PlayersMayEdit": {
         "Name": "Players may edit",
         "Hint": "Allows players to use the edit mode of the hero sheet (change values without AP). When off, players can only play and advance; the GM can always edit."
+      },
+      "BannerPath": {
+        "Name": "Default folder for banner images",
+        "Hint": "The module stores banner images uploaded by players from their computers here. Players do not need file browser permission for this; a GM has to be logged in."
       }
     },
     "Changelog": {
@@ -487,6 +491,19 @@
       "editHint": "Change anything freely, without AP",
       "gmOnly": "Editing is reserved for the GM in this world",
       "dropLocked": "Nothing new can be learned in play mode — switch to “Advance” via the lock."
+    },
+    "Banner": {
+      "FromComputer": "Upload from computer",
+      "FromComputerHint": "Choose an image, it is resized and stored in the default folder",
+      "FromFoundry": "Foundry file browser",
+      "FromFoundryHint": "Pick an existing image on the server",
+      "NoPath": "The GM still has to set a default folder for banner images in the module settings.",
+      "NoPathGM": "Please set a default folder for banner images in the module settings first.",
+      "NoGM": "A GM has to be logged in to upload.",
+      "NotImage": "The chosen file is not an image.",
+      "NoPermission": "No permission for this hero.",
+      "Failed": "The banner image could not be uploaded.",
+      "Timeout": "No answer from the GM — please try again."
     }
   }
 }

@@ -4,6 +4,7 @@ const MODULE_ID = 'dsa5-helpers';
 // Unter dieser Inhaltsbreite (px) zeigt der Desktop-Bogen das Titelblatt einspaltig wie auf dem Smartphone.
 const NARROW_WIDTH = 560;
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
+import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
 import { isRuleActive, woundCheck, findTreatWounds, helpAction } from '../house-rules/rules.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
@@ -775,41 +776,50 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     button.setAttribute('aria-haspopup', 'menu');
   }
 
-  // Auswahl unter dem Schloss: Spielen · Steigern · Bearbeiten (Bearbeiten ausgegraut, wenn die Welt es Spielern
-  // nicht erlaubt). Schließt bei Klick daneben oder Escape.
-  static _openModeMenu(event, target) {
-    event?.preventDefault?.();
-    this.element.querySelector('.dsa5h-mode-menu')?.remove();
-    const current = this._sheetMode();
-    const may = this._mayEdit();
+  // Kleines Auswahlmenü unter einem Knopf der Titelleiste bzw. des Kopfs (Modus #34, Bannerbild #46): Einträge
+  // { icon, label, hint, active, disabled, onClick }. Schließt bei Klick daneben oder Escape.
+  _popupMenu(target, ariaLabel, entries) {
+    this.element.querySelector('.dsa5h-popup-menu')?.remove();
     const menu = document.createElement('div');
-    menu.className = 'dsa5h-mode-menu';
+    menu.className = 'dsa5h-popup-menu';
     menu.setAttribute('role', 'menu');
-    menu.setAttribute('aria-label', game.i18n.localize('DSA5HELPERS.Mode.title'));
-    for (const [mode, info] of Object.entries(this.constructor.MODES)) {
-      const locked = mode === 'edit' && !may;
+    menu.setAttribute('aria-label', ariaLabel);
+    const close = () => { menu.remove(); document.removeEventListener('pointerdown', onDoc, true); document.removeEventListener('keydown', onKey, true); };
+    const onDoc = ev => { if (!menu.contains(ev.target)) close(); };
+    const onKey = ev => { if (ev.key === 'Escape') close(); };
+    for (const entry of entries) {
       const item = document.createElement('button');
       item.type = 'button';
-      item.className = 'dsa5h-mode-item' + (mode === current ? ' active' : '');
-      item.setAttribute('role', 'menuitemradio');
-      item.setAttribute('aria-checked', String(mode === current));
-      item.disabled = locked;
-      item.innerHTML = `<i class="fas ${info.icon}" aria-hidden="true"></i><span><strong></strong><small></small></span>`;
-      item.querySelector('strong').textContent = game.i18n.localize(info.label);
-      item.querySelector('small').textContent = game.i18n.localize(locked ? 'DSA5HELPERS.Mode.gmOnly' : info.hint);
-      item.addEventListener('click', ev => { ev.stopPropagation(); close(); this._setMode(mode); });
+      item.className = 'dsa5h-popup-item' + (entry.active ? ' active' : '');
+      item.setAttribute('role', entry.active === undefined ? 'menuitem' : 'menuitemradio');
+      if (entry.active !== undefined) item.setAttribute('aria-checked', String(!!entry.active));
+      item.disabled = !!entry.disabled;
+      item.innerHTML = `<i class="fas ${entry.icon}" aria-hidden="true"></i><span><strong></strong><small></small></span>`;
+      item.querySelector('strong').textContent = entry.label;
+      item.querySelector('small').textContent = entry.hint ?? '';
+      item.addEventListener('click', ev => { ev.stopPropagation(); close(); entry.onClick(); });
       menu.append(item);
     }
     const box = this.element.getBoundingClientRect();
-    const anchor = (target ?? event?.target)?.getBoundingClientRect?.();
+    const anchor = target?.getBoundingClientRect?.();
     menu.style.top = `${anchor ? anchor.bottom - box.top + 4 : 30}px`;
     menu.style.right = `${anchor ? Math.max(4, box.right - anchor.right - 8) : 8}px`;
     this.element.append(menu);
-    const onDoc = ev => { if (!menu.contains(ev.target)) close(); };
-    const onKey = ev => { if (ev.key === 'Escape') close(); };
-    const close = () => { menu.remove(); document.removeEventListener('pointerdown', onDoc, true); document.removeEventListener('keydown', onKey, true); };
     setTimeout(() => { document.addEventListener('pointerdown', onDoc, true); document.addEventListener('keydown', onKey, true); });
     menu.querySelector('.active, button:not(:disabled)')?.focus();
+  }
+
+  // Auswahl unter dem Schloss: Spielen · Steigern · Bearbeiten (Bearbeiten ausgegraut, wenn die Welt es Spielern
+  // nicht erlaubt).
+  static _openModeMenu(event, target) {
+    event?.preventDefault?.();
+    const current = this._sheetMode();
+    const may = this._mayEdit();
+    const localize = key => game.i18n.localize(key);
+    this._popupMenu(target ?? event?.target, localize('DSA5HELPERS.Mode.title'), Object.entries(this.constructor.MODES).map(([mode, info]) => {
+      const locked = mode === 'edit' && !may;
+      return { icon: info.icon, label: localize(info.label), hint: localize(locked ? 'DSA5HELPERS.Mode.gmOnly' : info.hint), active: mode === current, disabled: locked, onClick: () => this._setMode(mode) };
+    }));
   }
 
   // Modus setzen: Spielen schließt das Schloss des Systems, Steigern/Bearbeiten öffnen es und merken die Wahl am Helden.
@@ -857,10 +867,21 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     await this.actor.setFlag(MODULE_ID, 'bodyFigure', target.dataset.figure === 'portrait' ? 'portrait' : 'placeholder');
   }
 
-  // Bannerbild im Kopf (2026-10-19): Foundrys Dateiauswahl, Pfad als Actor-Flag bannerImg. Kein mitgeliefertes Bild —
-  // ohne eigenes Bild bleibt der dunkle Kopf (Systemgrafiken wie das DSA5-Banner sind © Ulisses und nicht für uns gedacht).
-  static async _pickBanner() {
+  // Bannerbild im Kopf (2026-10-19): Pfad als Actor-Flag bannerImg. Kein mitgeliefertes Bild — ohne eigenes Bild bleibt
+  // der dunkle Kopf (Systemgrafiken wie das DSA5-Banner sind © Ulisses und nicht für uns gedacht). Issue #46: wer den
+  // Foundry-Dateibrowser öffnen darf (SL, Spieler mit Recht), wählt zwischen Hochladen vom Rechner und Dateibrowser;
+  // alle anderen laden direkt vom Rechner hoch (scripts/banner-upload.js, über die SL in deren Standardordner).
+  static async _pickBanner(event, target) {
     if (!this.isEditable) return;
+    if (!canBrowseFiles()) return uploadBannerFromComputer(this.actor);
+    const localize = key => game.i18n.localize(key);
+    this._popupMenu(target ?? event?.target, localize('DSA5HELPERS.BannerPick'), [
+      { icon: 'fa-upload', label: localize('DSA5HELPERS.Banner.FromComputer'), hint: localize(bannerPath() ? 'DSA5HELPERS.Banner.FromComputerHint' : (game.user.isGM ? 'DSA5HELPERS.Banner.NoPathGM' : 'DSA5HELPERS.Banner.NoPath')), onClick: () => uploadBannerFromComputer(this.actor) },
+      { icon: 'fa-folder-open', label: localize('DSA5HELPERS.Banner.FromFoundry'), hint: localize('DSA5HELPERS.Banner.FromFoundryHint'), onClick: () => this._pickBannerFoundry() },
+    ]);
+  }
+
+  async _pickBannerFoundry() {
     const Picker = foundry.applications.apps?.FilePicker?.implementation ?? globalThis.FilePicker;
     await new Picker({
       type: 'image',

@@ -58,7 +58,7 @@ let Sheet;
 const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
 // Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
 function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))));}
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())))));return Sheet;}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
@@ -107,6 +107,30 @@ test('three modes (#34): lock closed = play, open = advance or edit (actor flag)
   sheet.context.prepare.sheetLocked=true;actor.system.sheetLocked.value=true;
   actor.uuid='Actor.hero';await sheet._onDropItem({}, {type:'specialability',parent:null});assert.equal(notified,'DSA5HELPERS.Mode.dropLocked');
  } finally { global.game=saved;delete actor.flags.sheetMode;actor.system.sheetLocked.value=false;sheet.context.prepare.sheetLocked=false; }
+});
+test('banner upload (#46): hints without folder or GM, the GM client uploads for owners only and sets the flag',async()=>{
+ const saved={game:global.game,ui:global.ui,foundry:global.foundry,fetch:global.fetch,File:global.File};
+ const B=await import(dataUrl(read('scripts/banner-upload.js')));
+ const notes=[];let handler=null;const emitted=[];const uploads=[];let flag=null;
+ const actor={id:'a1',name:'Wulf',testUserPermission:(u,l)=>u.id==='owner'&&l==='OWNER',setFlag:async(m,k,v)=>{flag=[m,k,v];}};
+ let path='';const gm={id:'gm',isGM:true};
+ try {
+  global.ui={notifications:{warn:k=>notes.push(k),error:k=>notes.push(k),info:k=>notes.push(k)}};
+  global.game={user:{id:'p',isGM:false,can:()=>false},users:{activeGM:null,get:id=>({id})},actors:{get:()=>actor},settings:{get:()=>path},socket:{on:(n,f)=>{handler=f;},emit:(n,m)=>emitted.push(m)}};
+  assert.equal(B.canBrowseFiles(),false);assert.equal(B.canBrowseFiles(gm),true);assert.equal(B.canBrowseFiles({can:k=>k==='FILES_BROWSE'}),true);
+  await B.uploadBannerFromComputer(actor);assert.equal(notes.pop(),'DSA5HELPERS.Banner.NoPath','no folder: player is told to ask the GM');
+  path='worlds/dsa5/banner/';assert.equal(B.bannerPath(),'worlds/dsa5/banner','trailing slash removed');
+  await B.uploadBannerFromComputer(actor);assert.equal(notes.pop(),'DSA5HELPERS.Banner.NoGM','no GM online');
+  // SL-Client: lädt hoch und setzt das Flag, aber nur für Besitzer
+  B.initBannerSocket();global.game.user=gm;global.game.users.activeGM=gm;
+  global.fetch=async()=>({blob:async()=>({type:'image/webp'})});global.File=class{constructor(parts,name,o){this.name=name;this.type=o.type;}};
+  global.foundry={applications:{apps:{FilePicker:{implementation:{createDirectory:async()=>{},upload:async(src,dir,file)=>{uploads.push([src,dir,file.name]);return {path:dir+'/'+file.name};}}}}}};
+  await handler({type:'bannerUpload',requestId:'r1',userId:'owner',actorId:'a1',fileName:'wulf.webp',dataUrl:'data:'});
+  assert.deepEqual(uploads[0],['data','worlds/dsa5/banner','wulf.webp']);assert.deepEqual(flag,['dsa5-helpers','bannerImg','worlds/dsa5/banner/wulf.webp']);assert.equal(emitted.pop().ok,true);
+  flag=null;await handler({type:'bannerUpload',requestId:'r2',userId:'stranger',actorId:'a1',fileName:'x.webp',dataUrl:'data:'});
+  assert.equal(flag,null);assert.equal(emitted.pop().error,'DSA5HELPERS.Banner.NoPermission');
+  global.game.user={id:'gm2',isGM:true};flag=null;await handler({type:'bannerUpload',requestId:'r3',userId:'owner',actorId:'a1',fileName:'y.webp',dataUrl:'data:'});assert.equal(flag,null,'only the active GM handles requests');
+ } finally { Object.assign(global,saved); }
 });
 test('play mode disables FW correction, preserves rolls',async()=>{const {sheet}=await prepare();sheet.context.prepare.sheetLocked=true;sheet.context.prepare.canAdvance=false;const context=await sheet._prepareContext({});const html=render(context);const values=elements(html,el=>el.attribs?.class==='skill-advances');assert(values.length);assert(values.every(el=>Object.hasOwn(el.attribs,'disabled')));assert(html.includes('data-action="skillSelect"'));assert(!html.includes('data-fct="_advanceItem"'));});
 test('favorites use actor flags, remove missing items and enforce ownership',async()=>{const {sheet,actor,context}=await prepare();assert.equal(context.dsa5h.favorites.missing,undefined);assert.equal(context.dsa5h.favoriteGroups.length,2);await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'skill'}});assert.deepEqual(actor.saved.value,['weapon']);delete actor.saved;sheet.isEditable=false;await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'spell'}});assert.equal(actor.saved,undefined);});

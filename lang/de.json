@@ -175,6 +175,10 @@
       "PlayersMayEdit": {
         "Name": "Spieler dürfen bearbeiten",
         "Hint": "Erlaubt Spielern den Bearbeiten-Modus im Heldenbogen (Werte ohne AP ändern). Ausgeschaltet können Spieler nur spielen und steigern; die Spielleitung darf immer bearbeiten."
+      },
+      "BannerPath": {
+        "Name": "Standardordner für Bannerbilder",
+        "Hint": "Hier speichert das Modul Bannerbilder, die Spieler von ihrem Computer hochladen. Spieler brauchen dafür kein Recht auf den Dateibrowser; eine Spielleitung muss angemeldet sein."
       }
     },
     "Changelog": {
@@ -487,6 +491,19 @@
       "editHint": "Alles frei ändern, ohne AP",
       "gmOnly": "Bearbeiten ist in dieser Welt der Spielleitung vorbehalten",
       "dropLocked": "Im Spielmodus lässt sich nichts Neues lernen — Modus über das Schloss auf „Steigern“ stellen."
+    },
+    "Banner": {
+      "FromComputer": "Vom Computer hochladen",
+      "FromComputerHint": "Bild auswählen, es wird verkleinert und im Standardordner gespeichert",
+      "FromFoundry": "Foundry-Dateibrowser",
+      "FromFoundryHint": "Vorhandenes Bild auf dem Server wählen",
+      "NoPath": "Die Spielleitung muss in den Moduleinstellungen noch einen Standardordner für Bannerbilder festlegen.",
+      "NoPathGM": "Bitte zuerst in den Moduleinstellungen einen Standardordner für Bannerbilder festlegen.",
+      "NoGM": "Zum Hochladen muss eine Spielleitung angemeldet sein.",
+      "NotImage": "Die gewählte Datei ist kein Bild.",
+      "NoPermission": "Keine Berechtigung für diesen Helden.",
+      "Failed": "Das Bannerbild konnte nicht hochgeladen werden.",
+      "Timeout": "Keine Antwort der Spielleitung — bitte erneut versuchen."
     }
   }
 }
