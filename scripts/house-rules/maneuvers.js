@@ -238,6 +238,11 @@ export function sheetData(actor, enabled = enabledManeuvers()) {
   };
 }
 
+/** Trefferzonen-Regel von Kompendium 1 aktiv? */
+function hitzonesActive() {
+  try { return !!game.modules.get('dsa5-compendium')?.active && !!game.settings.get('dsa5-compendium', 'enableHitzones'); } catch { return false; }
+}
+
 /** Hooks: Modifikatoren im Probendialog, Chatnachricht nach dem Wurf, Kampfende, System-Zielen ausblenden. */
 export function initManeuvers(isActive) {
   game.settings.register(MODULE_ID, SETTING, { scope: 'world', config: false, type: Object, default: {} });
@@ -283,6 +288,9 @@ export function initManeuvers(isActive) {
         const hint = document.createElement('p');
         hint.className = 'hint dsa5h-maneuver-hint';
         hint.textContent = loc('CombineHint');
+        // Trefferzonen-Regel aus Kompendium 1: das System bietet dann eine eigene Auswahl „Gezielter Angriff“ (bestimmt
+        // auch die Rüstungszone). Beide bleiben (Nutzer 2026-10-20), der Hinweis verhindert doppelte Mali.
+        if (hitzonesActive() && [...select.options].some(o => maneuverGroup(o.dataset.refId) === 'targeted')) hint.textContent += ` ${loc('targeted.HitzoneHint')}`;
         (widget.closest('.form-group') ?? widget).after(hint);
       }
     }

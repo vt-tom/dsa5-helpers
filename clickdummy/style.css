@@ -5229,6 +5229,92 @@ button.fav-chip-roll {
 }
 
 
+/* --- Grundmanöver (Hausregel Paladose, #45; Modul: Abschnitt „Grundmanöver“ der Bogen-CSS) --- */
+.maneuvers-panel .maneuvers-book {
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, .12);
+  color: inherit;
+  font: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+
+.maneuvers-panel .panel-note {
+  margin: 6px 10px 0;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.maneuver-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 18px;
+  padding: 4px 10px 6px;
+}
+
+.maneuver-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.maneuver-row i {
+  font-style: normal;
+  color: var(--accent);
+  text-align: center;
+}
+
+.maneuver-row small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.maneuver-row strong {
+  white-space: nowrap;
+}
+
+.maneuver-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 10px 10px;
+}
+
+.maneuver-btn {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 15px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.maneuver-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.maneuver-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .maneuver-btn:hover {
+    border-color: var(--accent);
+  }
+}
+
 /* --- Rüstung --- */
 
 /* Leerzustand "Keine Rüstung getragen" (0 Rüstungsteile). */
@@ -7604,6 +7690,51 @@ button.fav-chip-roll {
 .dsa5-helpers-house-rules .dsa5h-hr-note {
   color: var(--muted);
   font-size: var(--fs-small);
+}
+
+/* Grundmanöver (Paladose, #45): Überschrift je Manöver mit eigenem Schalter, Tabellen mit Text in der ersten Spalte. */
+.dsa5-helpers-house-rules .dsa5h-hr-section h4 {
+  margin: 14px 0 4px;
+  font-size: var(--fs-data);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-head h4 {
+  margin: 0;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-switch-small {
+  flex: none;
+  font-size: var(--fs-meta);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-table {
+  width: auto;
+  min-width: 60%;
+  margin: 6px 0 8px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-table td:first-child {
+  width: auto;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table-wrap {
+  overflow-x: auto;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table-wrap .dsa5h-hr-maneuver-table td {
+  vertical-align: top;
 }
 
 .dsa5-helpers-house-rules .dsa5h-hr-pager {

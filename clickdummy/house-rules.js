@@ -24,11 +24,13 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 // Font Awesome gibt es nur in Foundry — hier dieselben Klassen mit einem Zeichen als Ersatz.
-const FA = { "fa-heart-pulse": "♥", "fa-handshake-angle": "🤝", "fa-book": "📖", "fa-book-open": "📖", "fa-list": "☰", "fa-chevron-left": "‹", "fa-chevron-right": "›" };
+const FA = { "fa-khanda": "⚔", "fa-heart-pulse": "♥", "fa-handshake-angle": "🤝", "fa-book": "📖", "fa-book-open": "📖", "fa-list": "☰", "fa-chevron-left": "‹", "fa-chevron-right": "›" };
 const icon = (cls) => el("i", { class: cls, inert: "" }, FA[cls.split(" ").find((c) => FA[c])] ?? "");
 
 // page: 0 = Inhaltsverzeichnis, 1… = Regeln (wie im Modul); turn = Blätterrichtung für die Animation.
-const state = { view: "list", page: 0, turn: 0, gm: true, active: {} };
+const state = { view: "list", page: 0, turn: 0, gm: true, active: {}, maneuvers: {} };
+// Regeltext der Grundmanöver (#45) direkt aus der deutschen Template-Datei des Moduls, damit beide gleich bleiben.
+const MANEUVER_PAGE = await fetch("../templates/house-rules/maneuvers-de.hbs").then((r) => r.text());
 let win = null;
 
 function toggle(rule) {
@@ -57,8 +59,25 @@ function listView() {
   ];
 }
 
+// Schalter eines einzelnen Grundmanövers (templates/house-rules/maneuver-toggle.hbs).
+function maneuverToggle(id) {
+  const on = state.maneuvers[id] !== false;
+  const label = t(H + (on ? "Active" : "Inactive"));
+  if (!state.gm) return el("span", { class: "dsa5h-hr-state" + (on ? " active" : "") }, label);
+  return el("button", {
+    type: "button", class: "dsa5h-hr-switch dsa5h-hr-switch-small", role: "switch", "aria-checked": String(on), "aria-label": t(H + "maneuvers." + id + ".Name"),
+    onclick: () => { state.maneuvers[id] = !on; render(); window.renderContent?.(); },
+  }, [el("span", { class: "dsa5h-hr-switch-track", "aria-hidden": "true" }), el("span", {}, label)]);
+}
+
 // Seiteninhalt je Regel — Gegenstück zu templates/house-rules/<regel>.hbs.
 const PAGES = {
+  maneuvers: () => {
+    const box = document.createElement("div");
+    box.innerHTML = MANEUVER_PAGE.replace(/\{\{!.*?\}\}/gs, "").replace(/\{\{> "[^"]*maneuver-toggle\.hbs" id="(\w+)"\}\}/g, '<span data-toggle="$1"></span>');
+    box.querySelectorAll("[data-toggle]").forEach((slot) => slot.replaceWith(maneuverToggle(slot.dataset.toggle)));
+    return [...box.children];
+  },
   helpAction: () => {
     const P = H + "helpAction.Page.";
     return [

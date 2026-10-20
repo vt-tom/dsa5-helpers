@@ -403,7 +403,8 @@
             "foot": "Foot",
             "neck": "Neck",
             "hand": "Hand"
-          }
+          },
+          "HitzoneHint": "Targeted attack: take the penalty from only one choice – either the basic maneuver or “Targeted attack” of the hit zone rule (which also determines the armor zone)."
         },
         "mighty": {
           "Name": "Mighty attack"

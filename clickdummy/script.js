@@ -1317,6 +1317,42 @@ function renderCombatActions() {
 // Talent (im Modul DialogV2 mit <select> nach Talentgruppen), würfelt über den Probendialog des Systems und nennt die
 // übrig behaltenen QS als Erleichterung im Chat — anrechnen muss der Unterstützte sie selbst (scripts/house-rules/help-action.js).
 let HELP_LAST_SKILL = "";
+// Grundmanöver (Hausregel Paladose, #45) — Gegenstück zum Block in body.hbs (sheetData() in maneuvers.js). Die
+// Manöver selbst wählt man im Probendialog (nur in Foundry); hier Stufen, Verteidigungshaltung und Zielen.
+const MANEUVER_STATE = { stance: false, aim: 0 };
+function maneuverBlock() {
+  const hr = window.dsa5hHouseRules?.state;
+  if (!hr?.active.maneuvers) return null;
+  const attr = (k) => ATTRS.find((a) => a.k === k);
+  const val = (k) => { const a = attr(k); return a.initial + a.adv + a.mod; };
+  const tier = (v) => (v >= 17 ? 3 : v >= 15 ? 2 : v >= 13 ? 1 : 0);
+  const on = (id) => hr.maneuvers[id] !== false;
+  const defs = [
+    ["feint", "🎭", "Angriff antäuschen", "GE", (t) => `−1 … −${[2, 4, 6, 8][t]}`],
+    ["targeted", "⌖", "Gezielter Angriff", "IN", (t) => `+${[0, 1, 2, 3][t]}`],
+    ["mighty", "🔨", "Mächtiger Angriff", "KK", (t) => `−1 … −${[2, 4, 6, 8][t]} / TP +${[2, 4, 6, 8][t]}`],
+    ["advance", "🏃", "Vorstoß", "MU", (t) => ["+2 / −4", "+2 / −2", "+4 / −2", "+4 / 0"][t]],
+    ["stance", "🛡", "Verteidigungshaltung", "IN", (t) => `+${[2, 4, 6, 8][t]}`],
+    ["aim", "◎", "Zielen", "FF", (t) => ["+1 / TP +1 × 2", "+2 / TP +1 × 2", "+2 / TP +2 × 3", "+3 / TP +2 × 3"][t]],
+  ].filter(([id]) => on(id));
+  const rows = defs.map(([id, glyph, name, k, value]) => el("div", { class: "maneuver-row" }, [
+    el("i", {}, glyph), el("span", { class: "maneuver-name" }, name), el("small", {}, `${k} ${val(k)}`), el("strong", {}, value(tier(val(k)))),
+  ]));
+  const aimMax = [2, 2, 3, 3][tier(val("FF"))];
+  const stanceBtn = on("stance") ? el("button", { type: "button", class: "maneuver-btn" + (MANEUVER_STATE.stance ? " active" : ""), "aria-pressed": String(MANEUVER_STATE.stance) }, MANEUVER_STATE.stance ? "🛡 Verteidigungshaltung aktiv" : "🛡 Verteidigungshaltung einnehmen") : null;
+  stanceBtn?.addEventListener("click", () => { MANEUVER_STATE.stance = !MANEUVER_STATE.stance; renderContent(); });
+  const aimBtn = on("aim") ? el("button", { type: "button", class: "maneuver-btn" + (MANEUVER_STATE.aim ? " active" : "") }, `◎ Zielen ${MANEUVER_STATE.aim}/${aimMax}`) : null;
+  aimBtn?.addEventListener("click", () => { MANEUVER_STATE.aim = MANEUVER_STATE.aim >= aimMax ? 0 : MANEUVER_STATE.aim + 1; renderContent(); });
+  const book = el("button", { type: "button", class: "maneuvers-book" }, "📖 Regeln lesen");
+  book.addEventListener("click", () => { hr.view = "book"; hr.page = 3; window.dsa5hHouseRules.openHouseRules(); });
+  return el("div", { class: "panel maneuvers-panel" }, [
+    el("div", { class: "panel-title flex" }, [el("span", {}, "Grundmanöver"), book]),
+    el("p", { class: "panel-note" }, "Stufe je Leiteigenschaft; die Manöver wählst du im Probendialog."),
+    el("div", { class: "maneuver-rows" }, rows),
+    stanceBtn || aimBtn ? el("div", { class: "maneuver-actions" }, [stanceBtn, aimBtn]) : null,
+  ]);
+}
+
 function helpActionButton() {
   if (!window.dsa5hHouseRules?.state.active.helpAction) return null;
   const btn = el("button", { type: "button", class: "house-quick", title: "Hausregel Helfen: Talent wählen und würfeln – die übrig behaltenen QS erleichtern die nächste Probe eines Mitstreiters." }, [el("span", { class: "glyph" }, "🤝"), el("span", {}, "Helfen")]);
@@ -1763,6 +1799,7 @@ function renderBody() {
       ]),
     ]),
     shortList.length ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Weitere Waffen"), el("div", { class: "short-weapons" }, shortList)]) : null,
+    maneuverBlock(),
     // Kampfsonderfertigkeiten auch hier, damit im Kampf alles auf einer Seite steht (Nutzer-Feedback 2026-09-30).
     specialsBlock("Kampfsonderfertigkeiten", COMBAT_SPECIALS),
   ]);

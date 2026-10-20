@@ -17,7 +17,7 @@ Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen f�
 - **Enthalten:** #36 Rüstung mittig über der Figur (Wappenschild, Trefferzonen), Waffenkarte in drei Bändern, Lesbarkeit im Körper-Reiter.
 - **Nächste Issues (Plan 2026-10-20, Reihenfolge #44 → #45 → #39):**
   - **#44** erledigt (live geprüft: Iago, NSC, Kreatur ohne Einstiege; Umschalten aktualisiert sofort). Live prüfen als Spieler.
-  - **#45** Stufe 1 + 2 umgesetzt (live geprüft mit Wulfgrimm/Allacaya: Stufen, Waffenfilter, Antäuschen mit Paradeabzug, Vorstoß-Malus bis Rundenende, Haltung bei PA/AW, Zielen inkl. ausgeblendetem System-Zielen, Kampfende räumt auf, Einzelschalter, Menü im Systembogen). Offen: Rückfrage zum „Gezielten Angriff“ des Systems (Kompendium-1-Trefferzonen) im Fernkampfdialog; Mobil-Ansicht des Blocks; Click-Dummy-Spiegel.
+  - **#45** Stufe 1 + 2 umgesetzt (live geprüft mit Wulfgrimm/Allacaya: Stufen, Waffenfilter, Antäuschen mit Paradeabzug, Vorstoß-Malus bis Rundenende, Haltung bei PA/AW, Zielen inkl. ausgeblendetem System-Zielen, Kampfende räumt auf, Einzelschalter, Menü im Systembogen). Mit Kompendium-1-Trefferzonen bleiben beide „Gezielten Angriffe“, Hinweis im Dialog (Nutzer 2026-10-20). Click-Dummy gespiegelt. Offen: Mobil-Ansicht des Blocks live ansehen.
   - **#39** Reiter „Aufträge“ und „Personen“ (Dramatis Personae · Bestiarium): Liste im Bogen, Details/Notizen im Almanach des Systems; nur wenn Feature + Journale eingerichtet. Erst Click-Dummy.
 - Die Beta 0.6.0 wird damit nicht mehr zum normalen Release erklärt; zum stabilen Release wird später die letzte gute 0.6.x-Beta. Dann die Issues der Meilensteine `0.6.0` und `0.6.1` schließen und nach `main` mergen.
 

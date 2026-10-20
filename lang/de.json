@@ -403,7 +403,8 @@
             "foot": "Fuß",
             "neck": "Hals",
             "hand": "Hand"
-          }
+          },
+          "HitzoneHint": "Gezielter Angriff: Malus nur über eine Auswahl nehmen – entweder das Grundmanöver oder „Gezielter Angriff“ der Trefferzonen-Regel (diese bestimmt auch die Rüstungszone)."
         },
         "mighty": {
           "Name": "Mächtiger Angriff"
