@@ -1,8 +1,13 @@
 // Hausregel „Helfen“ (Nutzerwunsch 2026-10-05): Im Kampf nutzt ein Held seine Aktion für eine passende Talentprobe;
 // die übrig behaltenen QS erleichtern die nächste Probe eines anderen. Beispiel: Einschüchtern, um den Gegner eines
-// Mitstreiters auf sich zu lenken. Auslöser ist der Knopf „Helfen“ in den Schnellaktionen des Kampf-Reiters (nur bei
-// aktiver Regel). Die Probe läuft über den normalen Probendialog des Systems; die Erleichterung trägt der Unterstützte
-// bei seiner nächsten Probe selbst ein — das Modul setzt keinen Modifikator.
+// Mitstreiters auf sich zu lenken. Auslöser: der Schalter „Als Hilfe würfeln“ im Probendialog jeder Talentprobe (beide
+// Bögen, DSA-Leiste; #44, Nutzer 2026-10-21) und der Knopf „Helfen“ in den Schnellaktionen unseres Kampf-Reiters, der
+// erst ein Talent wählen lässt und den Schalter vorbelegt. Technisch ist der Schalter ein unsichtbarer Modifikator ±0
+// (ref dsa5h:help) im Widget des Systems; nach dem Wurf erkennt der Chat-Hook ihn und meldet die QS als Erleichterung.
+// Die Erleichterung trägt der Unterstützte bei seiner nächsten Probe selbst ein — das Modul setzt keinen Modifikator.
+import { hideModifierRows } from './maneuvers.js';
+
+export const HELP_REF = 'dsa5h:help';
 const PREFIX = 'DSA5HELPERS.HouseRules.helpAction.';
 const loc = (key, data) => data ? game.i18n.format(PREFIX + key, data) : game.i18n.localize(PREFIX + key);
 
@@ -62,7 +67,11 @@ export function attachSkillSearch(root) {
   select.selectedOptions[0]?.scrollIntoView({ block: 'nearest' });
 }
 
-/** Talent wählen (Dialog), Probe über den Probendialog des Systems, danach Hinweis im Chat. */
+// Nächster Probendialog kommt aus dem Knopf „Helfen“: Schalter vorbelegen (sonst merkt sich das System die Auswahl
+// je Talent, der Schalter startet aber immer aus).
+let pendingHelp = false;
+
+/** Talent wählen (Dialog), dann der Probendialog des Systems mit vorbelegtem Schalter „Als Hilfe würfeln“. */
 export async function helpAction(actor, tokenId) {
   const groups = skillOptions(actor);
   if (!groups.length) return ui.notifications.warn(loc('NoSkills'));
@@ -85,15 +94,69 @@ export async function helpAction(actor, tokenId) {
   if (!skill) return;
   lastSkill = skill.id;
 
-  const setup = await actor.setupSkill(skill, { subtitle: ` (${loc('Title')})` }, tokenId);
+  pendingHelp = true;
+  const setup = await actor.setupSkill(skill, {}, tokenId);
+  pendingHelp = false;
   if (!setup) return;
   setup.testData.opposable = false;
-  const roll = await actor.basicTest(setup);
-  const result = roll?.result;
-  if (!result) return;
-  const qs = result.successLevel > 0 ? Number(result.qualityStep ?? 0) : 0;
-  await ChatMessage.create({
-    speaker: ChatMessage.getSpeaker({ actor }),
-    content: `<div class="dsa5h-help-action">${helpMessage({ helper: esc(actor.name), skill: esc(skill.name), target: target ? esc(target.name) : null, qs })}</div>`,
+  await actor.basicTest(setup);
+}
+
+/** QS einer Probe aus den Daten der Chatnachricht (0 bei Misslingen). */
+export function helpQS(postData) {
+  return Number(postData?.successLevel) > 0 ? Number(postData.qualityStep ?? 0) : 0;
+}
+
+/** Schalter im Talent-Probendialog, Modifikator ±0 als Merker, Chatnachricht nach dem Wurf. */
+export function initHelpAction(isActive) {
+  Hooks.on('dsa5.prepareRollSituationalModifiers', (actor, modifiers, context) => {
+    if (!isActive() || context?.source?.type !== 'skill' || !['character', 'npc'].includes(actor?.type)) return;
+    modifiers.push({ name: loc('Title'), value: 0, selected: false, ref: { id: HELP_REF } });
+  });
+
+  Hooks.on('renderDSA5SkillDialog', (app, element, _context, options) => {
+    if (!isActive()) return;
+    const root = element instanceof HTMLElement ? element : element?.[0];
+    const instance = root?.querySelector('select[name="situationalModifiers"]')?.parentElement?.__dsa5SituationalModifiersWidget;
+    const help = () => instance?.modifiers.find(m => m.ref?.id === HELP_REF);
+    if (!help() || root.querySelector('.dsa5h-help-toggle')) return;
+    if (options?.isFirstRender !== false) help().selected = pendingHelp;
+    pendingHelp = false;
+
+    const group = document.createElement('div');
+    group.className = 'form-group dsa5h-help-toggle';
+    group.dataset.tooltip = 'DSA5HELPERS.HouseRules.helpAction.ToggleHint';
+    group.innerHTML = '<label><i class="fas fa-handshake-angle" inert></i> <span></span></label><input type="checkbox">';
+    group.querySelector('span').textContent = loc('Toggle');
+    const box = group.querySelector('input');
+    // Hilfe ist nie eine vergleichende Probe: „Vergleichend“ ausblenden, solange der Schalter an ist.
+    const sync = () => {
+      box.checked = !!help()?.selected;
+      const opposed = root.querySelector('[data-action="rollButton"]');
+      if (opposed) opposed.hidden = box.checked;
+    };
+    box.addEventListener('change', () => {
+      const m = help();
+      if (!m) return;
+      m.selected = box.checked;
+      instance.refresh();
+      instance.dispatchChange();
+    });
+    (instance.closest('[data-situational-modifiers-group]') ?? root.querySelector('.form-group'))?.after(group);
+    hideModifierRows(instance, m => m.ref?.id === HELP_REF, sync);
+  });
+
+  // Nach dem Wurf (nur beim Würfelnden): Hinweis mit den QS als Erleichterung, das markierte Token als Unterstützter.
+  Hooks.on('createChatMessage', message => {
+    if (!isActive() || message.author?.id !== game.user.id) return;
+    const data = message.flags?.data;
+    if (!data?.postData || !data.preData?.situationalModifiers?.some?.(m => m.ref?.id === HELP_REF && m.selected !== false)) return;
+    const esc = foundry.utils.escapeHTML;
+    const target = game.user.targets.first();
+    const skill = data.preData.source?.name ?? '';
+    ChatMessage.create({
+      speaker: message.speaker,
+      content: `<div class="dsa5h-help-action">${helpMessage({ helper: esc(message.speaker?.alias ?? ''), skill: esc(skill), target: target ? esc(target.name) : null, qs: helpQS(data.postData) })}</div>`,
+    }).catch(error => console.error('dsa5-helpers | Helfen', error));
   });
 }

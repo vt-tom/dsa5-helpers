@@ -1,8 +1,8 @@
 /**
  * Untermenü „Heldenbogen“ der Moduleinstellungen (Nutzer 2026-10-20: Einstellungen gruppieren, damit die Liste nicht
  * unübersichtlich wird). Bündelt die Welt-Einstellungen des Bogens: Standard-Bogen (#13), Bearbeiten-Modus für Spieler
- * (#34) und Ordner für Bannerbilder (#46). Die Einstellungen selbst sind mit config: false registriert. Neue
- * Bogen-Einstellungen gehören hierher (SETTINGS ergänzen).
+ * (#34), Reiter Aufträge/Personen (#39) und Ordner für Bannerbilder (#46). Die Einstellungen selbst sind mit
+ * config: false registriert. Neue Bogen-Einstellungen gehören hierher (SETTINGS ergänzen).
  */
 const MODULE_ID = 'dsa5-helpers';
 
@@ -10,6 +10,8 @@ const MODULE_ID = 'dsa5-helpers';
 export const SHEET_SETTINGS = [
   { key: 'defaultSheet', kind: 'checkbox' },
   { key: 'playersMayEdit', kind: 'checkbox' },
+  { key: 'questsTab', kind: 'checkbox' },
+  { key: 'personaeTab', kind: 'checkbox' },
   { key: 'bannerPath', kind: 'folder' },
 ];
 

@@ -51,7 +51,9 @@
       "status": "Status",
       "notes": "Notes",
       "companion": "Companions",
-      "steigerungsplaner": "Advancement planner"
+      "steigerungsplaner": "Advancement planner",
+      "quests": "Quests",
+      "personae": "People"
     },
     "Hints": {
       "cover": "",
@@ -64,7 +66,9 @@
       "status": "",
       "notes": "",
       "companion": "",
-      "steigerungsplaner": ""
+      "steigerungsplaner": "",
+      "quests": "",
+      "personae": ""
     },
     "SpecialAbilities": "Special abilities",
     "Consume": "Consume",
@@ -186,6 +190,14 @@
         "Label": "Configure hero sheet",
         "Hint": "Default sheet for heroes, edit mode for players and folder for banner images.",
         "Save": "Save"
+      },
+      "QuestsTab": {
+        "Name": "“Quests” tab",
+        "Hint": "Shows the shared quests from the almanac (quest log) in the hero sheet. Only appears if quest journals are activated in the almanac."
+      },
+      "PersonaeTab": {
+        "Name": "“People” tab",
+        "Hint": "Shows the shared Dramatis Personae and bestiary entries of the almanac in the hero sheet. Only appears if persona journals are activated in the almanac."
       }
     },
     "Changelog": {
@@ -373,17 +385,19 @@
           "Intro": "In combat, not everyone has to strike themselves. A hero can use their action to help an ally with a skill check that fits the situation. The remaining quality levels ease the ally's next check.",
           "Example": "Example: with Intimidation, a hero draws an enemy's attention away from a fighter – the fighter's attack against that enemy is then eased.",
           "Step1": "Optionally target the ally you help (click the token and press T) – they will then be named in the chat.",
-          "Step2": "In the hero sheet (DSA5 Helpers), click “Help” among the quick actions on the Combat tab.",
-          "Step3": "Choose the fitting skill, pick modifiers in the usual check dialog and roll. The GM decides whether the skill fits the situation.",
+          "Step2": "Open any skill check (in any hero sheet or the DSA toolbar) and tick “Roll as help” in the check dialog. In the DSA5 Helpers hero sheet you can also click “Help” among the quick actions on the Combat tab: choose the skill first, the switch is then already on.",
+          "Step3": "Pick modifiers and roll – help is never opposed. The GM decides whether the skill fits the situation.",
           "Step4": "If the check succeeds, a chat message names the bonus equal to the QL.",
           "Note1": "The bonus is not applied automatically: the supported ally enters it as a modifier on their next check.",
           "Note2": "Helping costs the helper's action for this combat round.",
           "Note3": "If the check fails, there is no bonus."
-        }
+        },
+        "Toggle": "Roll as help",
+        "ToggleHint": "House rule help: after the roll the chat reports the QL as a bonus for the targeted ally. Never opposed."
       },
       "maneuvers": {
         "Title": "Basic maneuvers",
-        "Summary": "Options in combat: every hero may use basic maneuvers such as feint attack, advance or defensive stance; their strength depends on a key attribute. Selectable modifiers in the roll dialog.",
+        "Summary": "Options in combat: every hero may use basic maneuvers such as feint attack, advance or defensive stance; their strength depends on a key attribute. Own section below the special abilities in the roll dialog.",
         "CombineHint": "Basic maneuvers: per attack one basic maneuver plus one basic or special maneuver; passive maneuvers freely.",
         "Block": "Basic maneuvers",
         "BlockHint": "Tier per key attribute; pick the maneuvers in the roll dialog.",
@@ -430,7 +444,10 @@
           "NoCombat": "Aiming only counts during a running combat.",
           "OncePerRound": "You already aimed this combat round.",
           "Max": "Your tier does not allow more than {max} rounds of aiming."
-        }
+        },
+        "PanelHint": "House rule basic maneuvers (Paladose): level by key attribute",
+        "RowHint": "Click: next level · right-click: one level back",
+        "RowHintSingle": "Click: on/off"
       }
     },
     "NoConditions": "No conditions.",
@@ -566,6 +583,33 @@
     "DeleteRefund": "Delete (refund AP)",
     "CompanionRemove": "Remove companion",
     "CompanionRemoveConfirm": "Remove {name} from this hero's companions? The actor itself is kept.",
-    "CompanionRemoveFailed": "The companion could not be removed — please use ⋮ → Delete."
+    "CompanionRemoveFailed": "The companion could not be removed — please use ⋮ → Delete.",
+    "Hud": {
+      "Tab": "DSA5 Helpers",
+      "Settings": "Settings",
+      "Rules": "House rules"
+    },
+    "Almanac": {
+      "Open": "Open almanac",
+      "OpenEntry": "Open in the almanac",
+      "QuestsIntro": "Quests shared with the group. Details and notes in the almanac.",
+      "PersonaeIntro": "People and creatures shared with the group. Group notes in the almanac.",
+      "Hidden": "Not shared with players",
+      "Unavailable": "The system almanac is not available."
+    },
+    "Quests": {
+      "Group0": "Main quests",
+      "Group1": "Side quests",
+      "Group2": "Personal quests",
+      "Closed": "Completed ({count})",
+      "Goals": "Objectives {done}/{total}",
+      "Empty": "No shared quests yet."
+    },
+    "Personae": {
+      "Dramatis": "Dramatis Personae",
+      "Bestiary": "Bestiary",
+      "Important": "Important",
+      "Empty": "Nobody shared yet."
+    }
   }
 }

@@ -6452,178 +6452,105 @@ button.fav-chip-roll {
   cursor: pointer;
 }
 
-.quest-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.quest-card {
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  gap: 12px;
-  width: 100%;
-  padding: 10px 12px;
-  border: 0;
-  border-bottom: 1px solid var(--line);
-  background: none;
-  color: var(--ink);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.quest-card.closed {
-  opacity: .7;
-}
-
-.quest-img {
-  width: 64px;
-  height: 64px;
-  border: 1px solid rgba(185, 154, 92, .6);
-  border-radius: 6px;
-  object-fit: cover;
-}
-
-.quest-body {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.quest-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 8px;
-}
-
-.quest-title {
-  font-family: 'Andalus', serif;
-  font-size: 19px;
-  font-weight: normal;
-}
-
-.quest-badge {
-  padding: 1px 8px;
-  border-radius: 10px;
-  background: var(--odd);
-  font-size: var(--fs-meta);
-  color: var(--muted);
-}
-
-.quest-badge.prio-0 {
-  background: var(--accent);
-  color: #fff;
-}
-
-.quest-badge.status-1 {
-  background: rgba(47, 107, 42, .15);
-  color: var(--use);
-}
-
-.quest-badge.status-2 {
-  background: var(--dmg-bg);
-  color: var(--dmg);
-}
-
-.quest-meta,
-.quest-progress {
-  font-size: var(--fs-meta);
-  color: var(--muted);
-}
-
-.quest-summary {
-  font-size: var(--fs-small);
-}
-
-.quest-objectives ul {
-  margin: 2px 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--fs-small);
-}
-
-.quest-objectives li {
-  display: flex;
-  gap: 6px;
-}
-
-.quest-objectives li.done {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-.quest-check {
-  width: 14px;
-  color: var(--accent);
-}
-
-.quest-closed > summary {
-  cursor: pointer;
-}
-
-.persona-grid {
+/* Kacheln immer gleich groß (Nutzer 2026-10-21): feste Höhe, Texte einzeilig mit „…“, voller Name im Tooltip.
+   Nur das Nötigste – Details öffnet der Klick im Almanach. */
+.tile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 8px;
   padding: 10px;
 }
 
-.persona-card {
+.almanac-tile {
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
+  height: 66px;
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--field);
   color: var(--ink);
   font: inherit;
+  line-height: 1.3;
   text-align: left;
   cursor: pointer;
+  overflow: hidden;
 }
 
-.persona-card img {
+.almanac-tile.closed {
+  opacity: .7;
+}
+
+.almanac-tile img {
   width: 52px;
   height: 52px;
-  border-radius: 50%;
   object-fit: cover;
-  object-position: top;
   background: var(--paper);
 }
 
-.persona-text {
+.quest-card img {
+  border-radius: 6px;
+}
+
+.persona-card img {
+  border-radius: 50%;
+  object-position: top;
+}
+
+.tile-text {
   display: flex;
   flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
-.persona-text strong {
+.tile-text > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile-text strong {
   font-size: var(--fs-data);
 }
 
-.persona-text small {
+.tile-text small {
   font-size: var(--fs-meta);
   color: var(--muted);
+}
+
+.quest-status.status-1 {
+  color: var(--use);
+}
+
+.quest-status.status-2 {
+  color: var(--dmg);
+}
+
+.quest-progress {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent) var(--pct), var(--odd) var(--pct));
+}
+
+.quest-closed > summary {
+  cursor: pointer;
 }
 
 .persona-important {
   color: var(--accent);
 }
 
-:is(.quest-card, .persona-card, .almanac-btn):focus-visible {
+:is(.almanac-tile, .almanac-btn):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
 
 @media (hover: hover) {
-  .quest-card:hover {
-    background: var(--odd);
-  }
-
-  :is(.persona-card, .almanac-btn):hover {
+  :is(.almanac-tile, .almanac-btn):hover {
     border-color: var(--accent);
   }
 }

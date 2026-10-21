@@ -1377,7 +1377,7 @@ function helpActionButton() {
     roll.addEventListener("click", () => {
       HELP_LAST_SKILL = select.value;
       closeModal();
-      flashNotice(`🎲 Probendialog ${select.value} (Helfen) → Chat: „Layariel hilft mit ${select.value}: Die nächste Probe von Gerion ist um 2 erleichtert.“`);
+      flashNotice(`🎲 Probendialog ${select.value}, Schalter „Als Hilfe würfeln“ schon an → Chat: „Layariel hilft mit ${select.value}: Die nächste Probe von Gerion ist um 2 erleichtert.“`);
     });
     openModal(el("div", { class: "panel fav-rule-modal help-action-modal" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, "Helfen"), closeBtn]),
@@ -3485,22 +3485,18 @@ function openInAlmanac(kind, name) {
   flashNotice(`📖 Almanach öffnet sich: ${kind} „${name}“`);
 }
 
+// Kachel immer gleich groß (Nutzer 2026-10-21): Titel und Stand der Ziele bzw. Status, sonst nichts; Details im Almanach.
 function questCard(q) {
   const done = q.objectives.filter((o) => o.status === 1).length;
-  const card = el("button", { type: "button", class: "quest-card" + (q.status ? " closed" : ""), title: "Im Almanach öffnen" }, [
-    el("img", { class: "quest-img", src: q.img || A.questPlaceholder, alt: "" }),
-    el("span", { class: "quest-body" }, [
-      el("span", { class: "quest-head" }, [
-        el("strong", { class: "quest-title" }, q.title),
-        el("span", { class: `quest-badge prio-${q.priority}` }, QUEST_PRIORITY[q.priority]),
-        q.status ? el("span", { class: `quest-badge status-${q.status}` }, QUEST_STATUS[q.status]) : null,
-      ]),
-      q.location ? el("small", { class: "quest-meta" }, q.location) : null,
-      q.summary ? el("span", { class: "quest-summary" }, q.summary) : null,
-      q.objectives.length ? el("span", { class: "quest-objectives" }, [
-        el("small", { class: "quest-progress" }, `Ziele ${done}/${q.objectives.length}`),
-        el("ul", {}, q.objectives.map((o) => el("li", { class: o.status === 1 ? "done" : o.status === 2 ? "failed" : "" }, [el("span", { class: "quest-check", "aria-hidden": "true" }, o.status === 1 ? "✓" : o.status === 2 ? "✕" : "○"), o.text]))),
-      ]) : null,
+  const total = q.objectives.length;
+  const info = q.status ? el("small", { class: `quest-status status-${q.status}` }, QUEST_STATUS[q.status])
+    : total ? el("small", {}, `Ziele ${done}/${total}`) : el("small", {}, "Offen");
+  const card = el("button", { type: "button", class: "almanac-tile quest-card" + (q.status ? " closed" : ""), title: q.title }, [
+    el("img", { src: q.img || A.questPlaceholder, alt: "" }),
+    el("span", { class: "tile-text" }, [
+      el("strong", {}, q.title),
+      info,
+      !q.status && total ? el("span", { class: "quest-progress", style: `--pct:${Math.round(done / total * 100)}%` }) : null,
     ]),
   ]);
   card.addEventListener("click", () => openInAlmanac("Auftrag", q.title));
@@ -3510,7 +3506,7 @@ function questCard(q) {
 function renderQuests() {
   const open = QUESTS.filter((q) => !q.status);
   const closed = QUESTS.filter((q) => q.status);
-  const group = (label, list) => list.length ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, label), el("div", { class: "quest-list" }, list.map(questCard))]) : null;
+  const group = (label, list) => list.length ? el("div", { class: "panel" }, [el("div", { class: "panel-title" }, label), el("div", { class: "tile-grid" }, list.map(questCard))]) : null;
   const almanac = el("button", { type: "button", class: "almanac-btn" }, "📖 Almanach öffnen");
   almanac.addEventListener("click", () => openInAlmanac("Reiter", "Aufträge"));
   return el("div", {}, [
@@ -3518,17 +3514,16 @@ function renderQuests() {
     group("Hauptaufträge", open.filter((q) => q.priority === 0)),
     group("Nebenaufträge", open.filter((q) => q.priority === 1)),
     group("Persönliche Aufträge", open.filter((q) => q.priority === 2)),
-    closed.length ? el("details", { class: "panel quest-closed" }, [el("summary", { class: "panel-title" }, `Abgeschlossen (${closed.length})`), el("div", { class: "quest-list" }, closed.map(questCard))]) : null,
+    closed.length ? el("details", { class: "panel quest-closed" }, [el("summary", { class: "panel-title" }, `Abgeschlossen (${closed.length})`), el("div", { class: "tile-grid" }, closed.map(questCard))]) : null,
   ]);
 }
 
 function personaCard(p) {
-  const card = el("button", { type: "button", class: "persona-card", title: "Im Almanach öffnen" }, [
+  const card = el("button", { type: "button", class: "almanac-tile persona-card", title: p.name }, [
     el("img", { src: p.img, alt: "" }),
-    el("span", { class: "persona-text" }, [
+    el("span", { class: "tile-text" }, [
       el("strong", {}, [p.name, p.important ? el("span", { class: "persona-important", title: "Wichtig" }, " ★") : null]),
       p.subtitle ? el("small", {}, p.subtitle) : null,
-      p.faction ? el("small", { class: "persona-faction" }, p.faction) : null,
     ]),
   ]);
   card.addEventListener("click", () => openInAlmanac(p.type ? "Bestiarium" : "Dramatis Personae", p.name));
@@ -3536,7 +3531,7 @@ function personaCard(p) {
 }
 
 function renderPersonae() {
-  const list = (type) => el("div", { class: "persona-grid" }, PERSONAE.filter((p) => p.type === type).map(personaCard));
+  const list = (type) => el("div", { class: "tile-grid" }, PERSONAE.filter((p) => p.type === type).map(personaCard));
   const almanac = el("button", { type: "button", class: "almanac-btn" }, "📖 Almanach öffnen");
   almanac.addEventListener("click", () => openInAlmanac("Reiter", "Dramatis Personae"));
   return el("div", {}, [

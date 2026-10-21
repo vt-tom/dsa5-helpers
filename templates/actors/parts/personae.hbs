@@ -1,0 +1,6 @@
+{{! Reiter „Personen“ (Issue #39): Dramatis Personae und Bestiarium aus dem Almanach des Systems (scripts/sheets/almanac.js), Unterreiter als Sprungmarken. }}
+<div class="dsa5h-tab" data-tab-panel="personae" hidden>
+<div class="dsa5h-almanac-bar"><small class="dsa5h-muted">{{localize 'DSA5HELPERS.Almanac.PersonaeIntro'}}</small><button type="button" class="dsa5h-almanac-btn" data-action="dsa5hOpenAlmanac" data-almanac-tab="personae"><i class="fas fa-book-open" inert></i> {{localize 'DSA5HELPERS.Almanac.Open'}}</button></div>
+<div data-sub-panel="personae:dramatis"><section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Personae.Dramatis'}}</div><div class="dsa5h-tile-grid">{{#each dsa5h.personae.dramatis}}{{> "modules/dsa5-helpers/templates/actors/parts/persona-card.hbs"}}{{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Personae.Empty'}}</p>{{/each}}</div></section></div>
+<div data-sub-panel="personae:bestiary"><section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Personae.Bestiary'}}</div><div class="dsa5h-tile-grid">{{#each dsa5h.personae.bestiary}}{{> "modules/dsa5-helpers/templates/actors/parts/persona-card.hbs"}}{{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Personae.Empty'}}</p>{{/each}}</div></section></div>
+</div>

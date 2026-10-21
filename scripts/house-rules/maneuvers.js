@@ -265,39 +265,111 @@ export function initManeuvers(isActive) {
     }
   });
 
-  // Probendialog: nur ein Stufen-Eintrag je Manöver, Hinweis zur Kombinationsregel, System-Zielen ausblenden.
+  // Probendialog: Grundmanöver als eigener Abschnitt rechts unter den Sonderfertigkeiten (Nutzer 2026-10-21),
+  // System-Zielen ausblenden.
   Hooks.on('renderDSA5CombatDialog', (app, element) => {
     if (!isActive()) return;
     const root = element instanceof HTMLElement ? element : element?.[0];
-    const select = root?.querySelector('select[name="situationalModifiers"]');
-    const widget = select?.parentElement;
+    const widget = root?.querySelector('select[name="situationalModifiers"]')?.parentElement;
     const instance = widget?.__dsa5SituationalModifiersWidget;
-    if (select && instance && !select.dataset.dsa5hManeuvers) {
-      select.dataset.dsa5hManeuvers = '1';
-      select.addEventListener('mousedown', event => {
-        const option = event.target.closest?.('option');
-        const group = maneuverGroup(option?.dataset.refId);
-        if (!group || !instance.modifiers[Number(option.dataset.index)]?.selected) return;
-        let changed = false;
-        instance.modifiers.forEach((m, i) => {
-          if (i !== Number(option.dataset.index) && maneuverGroup(m.ref?.id) === group && m.selected) { m.selected = false; changed = true; }
-        });
-        if (changed) { instance.refresh(); instance.dispatchChange?.(); }
-      });
-      if ([...select.options].some(o => maneuverGroup(o.dataset.refId))) {
-        const hint = document.createElement('p');
-        hint.className = 'hint dsa5h-maneuver-hint';
-        hint.textContent = loc('CombineHint');
-        // Trefferzonen-Regel aus Kompendium 1: das System bietet dann eine eigene Auswahl „Gezielter Angriff“ (bestimmt
-        // auch die Rüstungszone). Beide bleiben (Nutzer 2026-10-20), der Hinweis verhindert doppelte Mali.
-        if (hitzonesActive() && [...select.options].some(o => maneuverGroup(o.dataset.refId) === 'targeted')) hint.textContent += ` ${loc('targeted.HitzoneHint')}`;
-        (widget.closest('.form-group') ?? widget).after(hint);
-      }
-    }
+    if (instance) mountDialogPanel(root, instance);
     if (enabledManeuvers().includes('aim') && rollKind({ source: app.dialogData?.source, mode: app.dialogData?.mode }).kind === 'ranged') {
       const aim = root.querySelector('select[name="aim"]');
       if (aim) { aim.value = '0'; const group = aim.closest('.form-group'); if (group) group.style.display = 'none'; }
       root.querySelector('[data-action="aimButton"]')?.remove();
     }
   });
+}
+
+/** Teilt den Namen eines Manöver-Modifikators in Zeilentitel und Stufentext („Angriff antäuschen (GE 14)“ / „AT −2, …“). */
+export function splitModifierName(modifier) {
+  const name = String(modifier?.name ?? '');
+  const cut = name.indexOf(': ');
+  const title = cut < 0 ? name : name.slice(0, cut);
+  let step = cut < 0 ? '' : name.slice(cut + 2);
+  if (!/\d/.test(step)) step = `${step ? `${step} ` : ''}${signed(Number(modifier?.value) || 0)}`;
+  return { title, step };
+}
+
+/** Nächster Eintrag einer Gruppe: −1 (aus) → 0 → … → letzter → −1; rückwärts bis −1. */
+export function nextStep(current, count, back = false) {
+  if (back) return Math.max(-1, current - 1);
+  return current + 1 >= count ? -1 : current + 1;
+}
+
+/**
+ * Abschnitt „Grundmanöver“ im Probendialog. Die Einträge bleiben Modifikatoren des System-Widgets (das rechnet weiter
+ * und merkt sich die Auswahl), ihre Zeilen in der Modifikatorenliste werden nur ausgeblendet. Bedienung wie die
+ * Sonderfertigkeiten des Systems: Klick = nächste Stufe, Rechtsklick = zurück. Eigene Klasse statt `.specAbs`, weil das
+ * System auf `.specAbs` eigene Klick-Handler legt.
+ */
+function mountDialogPanel(root, instance) {
+  const ours = m => { const g = maneuverGroup(m.ref?.id); return !!MANEUVERS[g] || g === 'advanceMalus'; };
+  const panel = document.createElement('section');
+  panel.className = 'dsa5h-maneuver-panel';
+  (root.querySelector('.specAbsContainer') ?? instance.closest('.form-group'))?.after(panel);
+
+  const draw = () => {
+    const groups = new Map();
+    instance.modifiers.forEach((m, i) => { const g = maneuverGroup(m.ref?.id); if (ours(m)) groups.set(g, [...(groups.get(g) ?? []), i]); });
+    panel.hidden = !groups.size;
+    panel.replaceChildren();
+    if (!groups.size) return;
+    const head = document.createElement('h4');
+    head.textContent = loc('Title');
+    head.dataset.tooltip = 'DSA5HELPERS.HouseRules.maneuvers.PanelHint';
+    panel.append(head);
+    for (const [group, indices] of groups) {
+      const current = indices.findIndex(i => instance.modifiers[i].selected);
+      const shown = instance.modifiers[indices[Math.max(0, current)]];
+      const { title, step } = splitModifierName(shown);
+      const row = document.createElement('div');
+      row.className = `dsa5h-maneuver-row${current >= 0 ? ' active' : ''}`;
+      row.dataset.group = group;
+      row.dataset.tooltip = indices.length > 1 ? 'DSA5HELPERS.HouseRules.maneuvers.RowHint' : 'DSA5HELPERS.HouseRules.maneuvers.RowHintSingle';
+      const icon = MANEUVERS[group]?.icon ?? MANEUVERS.advance.icon;
+      row.innerHTML = `<i class="${icon}" inert></i><span class="dsa5h-maneuver-name"></span><span class="dsa5h-maneuver-step"></span>`;
+      row.querySelector('.dsa5h-maneuver-name').textContent = title;
+      row.querySelector('.dsa5h-maneuver-step').textContent = current >= 0 ? step : '';
+      row.addEventListener('contextmenu', event => event.preventDefault());
+      row.addEventListener('mousedown', event => {
+        if (event.button !== 0 && event.button !== 2) return;
+        event.preventDefault();
+        const target = nextStep(current, indices.length, event.button === 2);
+        indices.forEach((i, n) => { instance.modifiers[i].selected = n === target; });
+        instance.refresh();
+        instance.dispatchChange();
+      });
+      panel.append(row);
+    }
+    const hint = document.createElement('p');
+    hint.className = 'hint dsa5h-maneuver-hint';
+    hint.textContent = loc('CombineHint');
+    // Trefferzonen-Regel aus Kompendium 1: das System bietet dann eine eigene Auswahl „Gezielter Angriff“ (bestimmt
+    // auch die Rüstungszone). Beide bleiben (Nutzer 2026-10-20), der Hinweis verhindert doppelte Mali.
+    if (hitzonesActive() && groups.has('targeted')) hint.textContent += ` ${loc('targeted.HitzoneHint')}`;
+    panel.append(hint);
+  };
+
+  hideModifierRows(instance, ours, draw);
+}
+
+/**
+ * Zeilen eigener Modifikatoren in der Liste des System-Widgets ausblenden (die Auswahl bleibt im Widget und wird
+ * normal verrechnet); die ganze Gruppe verschwindet, wenn nur eigene übrig bleiben. `after` läuft nach jedem Neuzeichnen.
+ */
+export function hideModifierRows(instance, ours, after = () => {}) {
+  const refresh = instance.refresh.bind(instance);
+  const updateVisibility = instance.updateVisibility.bind(instance);
+  instance.updateVisibility = () => {
+    updateVisibility();
+    if (instance.modifiers.length && instance.modifiers.every(ours)) instance.closest('[data-situational-modifiers-group]')?.classList.add('dsahidden');
+  };
+  instance.refresh = () => {
+    refresh();
+    for (const option of instance.select?.options ?? []) option.hidden = ours(instance.modifiers[Number(option.dataset.index)] ?? {});
+    instance.updateVisibility();
+    after();
+  };
+  instance.refresh();
 }

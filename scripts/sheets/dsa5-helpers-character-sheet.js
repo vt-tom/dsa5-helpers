@@ -7,6 +7,7 @@ import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
 import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, maneuverSheetData } from '../house-rules/rules.js';
 import { openHouseRules } from '../apps/house-rules.js';
+import { almanacTabEnabled, loadQuests, loadPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
 
 export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -23,6 +24,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     actions: {
       dsa5hSetTab: this._setTab,
       dsa5hSetSubTab: this._setSubTab,
+      dsa5hOpenAlmanac: this._openAlmanac,
       dsa5hTheme: this._toggleTheme,
       dsa5hToggleCompanionTab: this._toggleCompanionTab,
       dsa5hFavorite: this._toggleFavorite,
@@ -123,13 +125,16 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { id: "status", label: "Status", icon: "systems/dsa5/icons/categories/ability_ceremonial.webp", hint: "Zustände · Effekte · Krankheiten" },
       { id: "notes", label: "Notizen", icon: "systems/dsa5/icons/categories/Ability_Language.webp", hint: "Aussehen · Hintergrund · Verbindungen" },
       { id: "companion", label: "Gefährten", icon: "systems/dsa5/icons/categories/ability_animal.webp", hint: "Reittier · Vertraute · Begleiter" },
+      // Aufträge und Personen aus dem Almanach des Systems (Issue #39), nur wenn eingeschaltet und Journale eingerichtet.
+      { id: QUESTS_TAB, label: "Aufträge", icon: "systems/dsa5/icons/categories/Career.webp", hint: "" },
+      { id: PERSONAE_TAB, label: "Personen", icon: "systems/dsa5/icons/categories/Weltliche.webp", hint: "" },
       // Nur mit aktivem „Lyynix: DSA5 - Steigerungsplaner“ und nur für Owner, wie dessen eigener Reiter (Issue #17).
       { id: PLANNER_TAB_ID, label: "Steigerungsplaner", icon: "systems/dsa5/icons/categories/Career.webp", hint: "" },
     ];
   _currentTab = 'cover';
   // Reiter im Kasten der Titelblatt-Leiste: 'conditions' | 'details' (Variante G, Issues #27/#31).
   _coverSideTab = 'conditions';
-  _subtabs = { skills: 'body', combat: 'body', magic: 'spells', religion: 'spells', notes: 'details' };
+  _subtabs = { skills: 'body', combat: 'body', magic: 'spells', religion: 'spells', notes: 'details', personae: 'dramatis' };
   _search = { talent: '', gear: '', combatskill: '' };
   _favoritePending = false;
   // Wohlgefällige Talente (Religion-Tab) starten eingeklappt im Spielmodus, Klick blendet den vollen Text ein —
@@ -238,7 +243,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const planner = !limited && this.actor.isOwner ? getPlannerTab() : null;
     const tabs = this.constructor.HELPER_TABS
       .filter(tab => (tab.id !== 'magic' || magic.hasSpells) && (tab.id !== 'religion' || magic.hasPrayers) && (tab.id !== PLANNER_TAB_ID || planner)
-        && (tab.id !== 'companion' || !this.actor.getFlag?.(MODULE_ID, 'hideCompanionTab')))
+        && (tab.id !== 'companion' || !this.actor.getFlag?.(MODULE_ID, 'hideCompanionTab'))
+        && ((tab.id !== QUESTS_TAB && tab.id !== PERSONAE_TAB) || (!limited && almanacTabEnabled(tab.id))))
       .map(tab => ({ ...tab, label: localize('DSA5HELPERS.Tabs.' + tab.id), hint: localize('DSA5HELPERS.Hints.' + tab.id) }));
     if (!tabs.some(tab => tab.id === this._currentTab)) this._currentTab = 'cover';
     // DSA5StatusEffects.prepareActiveEffects() hands us CONFIG.statusEffects in its raw config order (roughly by
@@ -313,6 +319,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         : [{ id: 'body', label: localize('DSA5HELPERS.Body') }, { id: 'skills', label: localize('TYPES.Item.combatskill') }] },
       ...['magic', 'religion'].map(tab => ({ tab, items: [{ id: 'spells', label: localize(tab === 'magic' ? 'spells' : 'liturgies') }, { id: 'equipment', label: localize('DSA5HELPERS.Tabs.inventory') }] })),
       { tab: 'notes', items: noteSubtabs },
+      { tab: PERSONAE_TAB, items: [{ id: 'dramatis', label: localize('DSA5HELPERS.Personae.Dramatis') }, { id: 'bestiary', label: localize('DSA5HELPERS.Personae.Bestiary') }] },
     ];
     const status = this.actor.system.status;
     context.dsa5h = {
@@ -387,6 +394,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     };
     // The original sheet prepares this only for its separate companion part.
     if (!limited) await this.prepareCompanionTab(context);
+    // Aufträge/Personen (#39): Listen aus den Almanach-Journalen, nur wenn der Reiter da ist.
+    if (tabs.some(tab => tab.id === QUESTS_TAB)) context.dsa5h.quests = await loadQuests();
+    if (tabs.some(tab => tab.id === PERSONAE_TAB)) context.dsa5h.personae = await loadPersonae();
     // Daten des Planer-Reiters (plannerSections/-TotalCost/-AvailableXP) direkt vom Planer; `tabs` braucht sein
     // Template für die Klasse `active` (parts/planner.hbs).
     if (planner) {
@@ -1173,6 +1183,12 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     if (tab === 'skills') this._resetTalentSearch();
     this._applyCurrentTab();
     this._jumpTo(tab, id);
+  }
+
+  // Aufträge/Personen (#39): Almanach des Systems öffnen, mit Eintrag direkt an dieser Stelle.
+  static _openAlmanac(_event, target) {
+    const { almanacTab, pageUuid, entryKey } = target.dataset;
+    return openAlmanac(almanacTab, pageUuid, entryKey);
   }
 
   // Unterreiter als „Sprungmarken“ (Talente seit der Tester-Rückmeldung 2026-09-30, alle anderen Reiter seit Issue #32):

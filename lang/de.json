@@ -51,7 +51,9 @@
       "status": "Status",
       "notes": "Notizen",
       "companion": "Gefährten",
-      "steigerungsplaner": "Steigerungsplaner"
+      "steigerungsplaner": "Steigerungsplaner",
+      "quests": "Aufträge",
+      "personae": "Personen"
     },
     "Hints": {
       "cover": "",
@@ -64,7 +66,9 @@
       "status": "",
       "notes": "",
       "companion": "",
-      "steigerungsplaner": ""
+      "steigerungsplaner": "",
+      "quests": "",
+      "personae": ""
     },
     "SpecialAbilities": "Sonderfertigkeiten",
     "Consume": "Verbrauchen",
@@ -186,6 +190,14 @@
         "Label": "Heldenbogen einrichten",
         "Hint": "Standard-Bogen für Helden, Bearbeiten-Modus für Spieler und Ordner für Bannerbilder.",
         "Save": "Speichern"
+      },
+      "QuestsTab": {
+        "Name": "Reiter „Aufträge“",
+        "Hint": "Zeigt im Heldenbogen die freigegebenen Aufträge aus dem Almanach (Auftragsbuch). Erscheint nur, wenn im Almanach Auftrags-Journale aktiviert sind."
+      },
+      "PersonaeTab": {
+        "Name": "Reiter „Personen“",
+        "Hint": "Zeigt im Heldenbogen die freigegebenen Einträge aus Dramatis Personae und Bestiarium des Almanachs. Erscheint nur, wenn im Almanach Personen-Journale aktiviert sind."
       }
     },
     "Changelog": {
@@ -373,17 +385,19 @@
           "Intro": "Im Kampf muss nicht jeder selbst zuschlagen. Ein Held kann seine Aktion nutzen, um einem Mitstreiter mit einer Talentprobe zu helfen, die zur Situation passt. Die übrig behaltenen Qualitätsstufen erleichtern dessen nächste Probe.",
           "Example": "Beispiel: Mit Einschüchtern lenkt ein Held den Gegner eines Kämpfenden auf sich – dessen Angriff gegen den Gegner ist dann erleichtert.",
           "Step1": "Optional den Mitstreiter markieren, dem geholfen wird (Token anklicken und T drücken) – er wird dann im Chat genannt.",
-          "Step2": "Im Heldenbogen (DSA5 Helpers) im Reiter Kampf bei den Schnellaktionen auf „Helfen“ klicken.",
-          "Step3": "Das passende Talent wählen und im gewohnten Probendialog Modifikatoren wählen und würfeln. Die Spielleitung entscheidet, ob das Talent zur Situation passt.",
+          "Step2": "Eine beliebige Talentprobe öffnen (in jedem Heldenbogen oder in der DSA-Leiste) und im Probendialog „Als Hilfe würfeln“ anhaken. Im Heldenbogen von DSA5 Helpers geht es auch über „Helfen“ bei den Schnellaktionen im Reiter Kampf: erst das Talent wählen, der Schalter ist dann schon an.",
+          "Step3": "Modifikatoren wählen und würfeln – Hilfe ist nie vergleichend. Die Spielleitung entscheidet, ob das Talent zur Situation passt.",
           "Step4": "Gelingt die Probe, nennt eine Chatnachricht die Erleichterung in Höhe der QS.",
           "Note1": "Die Erleichterung wird nicht automatisch angerechnet: Der Unterstützte trägt sie bei seiner nächsten Probe selbst als Modifikator ein.",
           "Note2": "Helfen kostet die Aktion des Helfenden in dieser Kampfrunde.",
           "Note3": "Misslingt die Probe, gibt es keine Erleichterung."
-        }
+        },
+        "Toggle": "Als Hilfe würfeln",
+        "ToggleHint": "Hausregel Helfen: Nach dem Wurf meldet der Chat die QS als Erleichterung für das markierte Ziel. Nie vergleichend."
       },
       "maneuvers": {
         "Title": "Grundmanöver",
-        "Summary": "Möglichkeiten des Kampfes: Jeder Held darf Grundmanöver wie Angriff antäuschen, Vorstoß oder Verteidigungshaltung einsetzen; ihre Stärke hängt von einer Leiteigenschaft ab. Im Probendialog als auswählbare Modifikatoren.",
+        "Summary": "Möglichkeiten des Kampfes: Jeder Held darf Grundmanöver wie Angriff antäuschen, Vorstoß oder Verteidigungshaltung einsetzen; ihre Stärke hängt von einer Leiteigenschaft ab. Im Probendialog als eigener Abschnitt unter den Sonderfertigkeiten.",
         "CombineHint": "Grundmanöver: pro Attacke ein Grundmanöver plus ein Grund- oder Spezialmanöver; passive Manöver beliebig.",
         "Block": "Grundmanöver",
         "BlockHint": "Stufe je Leiteigenschaft; die Manöver wählst du im Probendialog.",
@@ -430,7 +444,10 @@
           "NoCombat": "Zielen zählt nur in einem laufenden Kampf.",
           "OncePerRound": "In dieser Kampfrunde wurde schon gezielt.",
           "Max": "Mehr als {max} Runden Zielen erlaubt die Stufe nicht."
-        }
+        },
+        "PanelHint": "Hausregel Grundmanöver (Paladose): Stufe je Leiteigenschaft",
+        "RowHint": "Klick: nächste Stufe · Rechtsklick: eine Stufe zurück",
+        "RowHintSingle": "Klick: an/aus"
       }
     },
     "NoConditions": "Keine Zustände.",
@@ -566,6 +583,33 @@
     "DeleteRefund": "Löschen (AP zurückerstatten)",
     "CompanionRemove": "Begleiter entfernen",
     "CompanionRemoveConfirm": "{name} aus den Begleitern dieses Helden entfernen? Der Akteur selbst bleibt erhalten.",
-    "CompanionRemoveFailed": "Der Begleiter konnte nicht entfernt werden — bitte über ⋮ → Löschen."
+    "CompanionRemoveFailed": "Der Begleiter konnte nicht entfernt werden — bitte über ⋮ → Löschen.",
+    "Hud": {
+      "Tab": "DSA5 Helpers",
+      "Settings": "Einstellungen",
+      "Rules": "Hausregeln"
+    },
+    "Almanac": {
+      "Open": "Almanach öffnen",
+      "OpenEntry": "Im Almanach öffnen",
+      "QuestsIntro": "Freigegebene Aufträge der Gruppe. Details und Notizen im Almanach.",
+      "PersonaeIntro": "Freigegebene Personen und Wesen. Notizen der Gruppe im Almanach.",
+      "Hidden": "Für Spieler nicht freigegeben",
+      "Unavailable": "Der Almanach des Systems ist nicht verfügbar."
+    },
+    "Quests": {
+      "Group0": "Hauptaufträge",
+      "Group1": "Nebenaufträge",
+      "Group2": "Persönliche Aufträge",
+      "Closed": "Abgeschlossen ({count})",
+      "Goals": "Ziele {done}/{total}",
+      "Empty": "Noch keine freigegebenen Aufträge."
+    },
+    "Personae": {
+      "Dramatis": "Dramatis Personae",
+      "Bestiary": "Bestiarium",
+      "Important": "Wichtig",
+      "Empty": "Noch niemand freigegeben."
+    }
   }
 }

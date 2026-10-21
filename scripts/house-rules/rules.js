@@ -7,7 +7,7 @@
 // 'header' = Kopfmenü ⋮, 'dialog' = nur über den Probendialog, also in jedem Bogen). Jede neue Regel legt das fest
 // (der Test prüft es).
 import { initWoundCheck, woundCheck, findTreatWounds } from './wound-check.js';
-import { helpAction } from './help-action.js';
+import { helpAction, initHelpAction } from './help-action.js';
 import { initSystemSheetEntries, rerenderSystemSheets } from './system-sheet.js';
 import { initManeuvers, toggleStance, aimRound, MANEUVER_IDS, SETTING as MANEUVER_SETTING, enabledManeuvers, sheetData as maneuverSheetData } from './maneuvers.js';
 
@@ -27,8 +27,9 @@ export const HOUSE_RULES = [
   {
     id: 'helpAction', icon: 'fas fa-handshake-angle', credit: 'VTTom', page: `modules/${MODULE_ID}/templates/house-rules/help-action.hbs`,
     entries: [
+      // Im Systembogen über den Schalter im Talent-Probendialog (#44, Nutzer 2026-10-21: im Kopfmenü ⋮ zu unscheinbar).
       { sheet: 'quick-actions' },
-      { system: 'header', label: 'DSA5HELPERS.HouseRules.helpAction.Button', run: app => helpAction(app.actor, app.getTokenId?.()) },
+      { system: 'dialog' },
     ],
   },
   {
@@ -91,6 +92,7 @@ export function registerHouseRules() {
     },
   });
   initWoundCheck(() => isRuleActive('woundCheck'));
+  initHelpAction(() => isRuleActive('helpAction'));
   initSystemSheetEntries(HOUSE_RULES, isRuleActive);
   initManeuvers(() => isRuleActive('maneuvers'));
   // Einzelschalter der Grundmanöver: Buch und Bögen neu zeichnen wie bei der Haupteinstellung.

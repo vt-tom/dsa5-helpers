@@ -4,6 +4,8 @@ import { initSteigerungsplaner } from './compat/steigerungsplaner.js';
 import { registerDiceStatsSettings, readyDiceStats } from './dice-stats/settings.js';
 import { getDiceStatsApp, openDiceStats, initDiceStatsLiveUpdate } from './apps/dice-stats.js';
 import { registerHouseRules } from './house-rules/rules.js';
+import { initHud } from './hud.js';
+import { registerAlmanacTabs } from './sheets/almanac.js';
 import { getHouseRulesApp, openHouseRules } from './apps/house-rules.js';
 import { initSheetSwitcher } from './sheet-switcher.js';
 import { initMobile } from './mobile/mobile.js';
@@ -38,6 +40,8 @@ Hooks.once('init', async () => {
   // Bannerbild ohne Dateibrowser (Issue #46): Standardordner der SL für Bilder der Spieler.
   registerBannerSettings();
   // Drei Modi (Issue #34): dürfen Spieler den Bearbeiten-Modus nutzen (Werte ohne AP ändern)? Die SL darf immer.
+  // Reiter Aufträge/Personen (Issue #39): einzeln abschaltbar (Untermenü „Heldenbogen“).
+  registerAlmanacTabs();
   game.settings.register('dsa5-helpers', 'playersMayEdit', { name: 'DSA5HELPERS.Settings.PlayersMayEdit.Name', hint: 'DSA5HELPERS.Settings.PlayersMayEdit.Hint', scope: 'world', config: false, restricted: true, type: Boolean, default: true });
   // Zuletzt gesehene Version je Nutzer (Issue #11) — auch Spieler und Erstinstallation bekommen den Changelog.
   game.settings.register('dsa5-helpers', 'lastSeenVersion', { scope: 'client', config: false, type: String, default: '' });
@@ -47,6 +51,8 @@ Hooks.once('init', async () => {
   initDiceStatsLiveUpdate();
   // Hausregelbuch (2026-10-05): optionale Regeln, die SL schaltet sie je Welt ein; lesen dürfen alle.
   registerHouseRules();
+  // Eigenes HUD: Reiter in der DSA-Leiste (Helfen, Wundeinschätzung, Manöver, Würfelstatistik).
+  initHud();
   game.settings.registerMenu('dsa5-helpers', 'houseRules', { name: 'DSA5HELPERS.HouseRules.Title', label: 'DSA5HELPERS.HouseRules.Menu.Label', hint: 'DSA5HELPERS.HouseRules.Menu.Hint', icon: 'fas fa-book', type: getHouseRulesApp(), restricted: false });
   // Für Makros und das spätere HUD des Moduls.
   game.modules.get('dsa5-helpers').api = { ...(game.modules.get('dsa5-helpers').api ?? {}), openDiceStats, openHouseRules };
@@ -82,6 +88,10 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/combat.hbs",
   "modules/dsa5-helpers/templates/actors/parts/combatskill-link.hbs",
   "modules/dsa5-helpers/templates/actors/parts/companion.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/quests.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/quest-card.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/personae.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/persona-card.hbs",
   "modules/dsa5-helpers/templates/actors/parts/cover.hbs",
   "modules/dsa5-helpers/templates/actors/parts/cover-sidebar.hbs",
   "modules/dsa5-helpers/templates/actors/parts/favorite.hbs",

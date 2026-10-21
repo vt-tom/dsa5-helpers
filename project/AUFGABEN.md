@@ -15,10 +15,7 @@ Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen f�
 
 - Der Nutzer arbeitet die Rückmeldungen von Lyynix ein und entscheidet, welche Issues dazukommen.
 - **Enthalten:** #36 Rüstung mittig über der Figur (Wappenschild, Trefferzonen), Waffenkarte in drei Bändern, Lesbarkeit im Körper-Reiter.
-- **Nächste Issues (Plan 2026-10-20, Reihenfolge #44 → #45 → #39):**
-  - **#44** erledigt (live geprüft: Iago, NSC, Kreatur ohne Einstiege; Umschalten aktualisiert sofort). Live prüfen als Spieler.
-  - **#45** Stufe 1 + 2 umgesetzt (live geprüft mit Wulfgrimm/Allacaya: Stufen, Waffenfilter, Antäuschen mit Paradeabzug, Vorstoß-Malus bis Rundenende, Haltung bei PA/AW, Zielen inkl. ausgeblendetem System-Zielen, Kampfende räumt auf, Einzelschalter, Menü im Systembogen). Mit Kompendium-1-Trefferzonen bleiben beide „Gezielten Angriffe“, Hinweis im Dialog (Nutzer 2026-10-20). Click-Dummy gespiegelt. Offen: Mobil-Ansicht des Blocks live ansehen.
-  - **#39** Click-Dummy steht (2026-10-20): Reiter „Aufträge“ (Haupt-/Neben-/Persönlich, Ziele mit Häkchen, Abgeschlossene zugeklappt) und „Personen“ (Unterreiter Dramatis Personae · Bestiarium, Karten mit Bild, Untertitel, Fraktion, ★ wichtig); Klick öffnet den Almanach des Systems. Wartet auf Abnahme, dann Foundry (Daten wie QuestLogFeature/PersonaeDramatis: `dsa5`-Einstellung der aktivierten Journale, Sichtbarkeit `isVisibleToUser` bzw. `visible`).
+- **#44 und #45** vom Nutzer abgenommen (2026-10-21). **#39** Kacheln auf gleiche Größe umgestellt, **HUD** mit Einstellungen/Hausregelbuch als Chips (Rückmeldung 2026-10-21). Ursprünglich: **#44, #45, #39 und eigenes HUD** nach der Rückmeldung vom 2026-10-21 umgesetzt und in der Testinstanz geprüft (Wulfgrimm, SL): Grundmanöver als eigener Abschnitt im Kampf-Probendialog (Klick/Rechtsklick, Wert verrechnet), Helfen als Schalter im Talent-Probendialog (Wurf → Chatnachricht mit QS, „Vergleichend“ ausgeblendet; ⋮-Eintrag entfällt), Reiter Aufträge/Personen mit echten Almanach-Journalen (Klick öffnet den Almanach am Eintrag), HUD-Reiter in der DSA-Leiste mit allen fünf Einträgen (bleibt beim Neuzeichnen offen). Offen siehe „Live prüfen (0.6.1)“.
 - Die Beta 0.6.0 wird damit nicht mehr zum normalen Release erklärt; zum stabilen Release wird später die letzte gute 0.6.x-Beta. Dann die Issues der Meilensteine `0.6.0` und `0.6.1` schließen und nach `main` mergen.
 
 - **#34 Drei Modi** in Foundry umgesetzt und live geprüft (Spieler ohne Bearbeiten vom Nutzer bestätigt). Nachtrag 2026-10-20: Eigenschaften-+/− auch im Steigern-Modus, Lösch-Tooltip „(AP zurückerstatten)“.
@@ -26,6 +23,9 @@ Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen f�
 - **#46 Bannerbild:** Windows-Datei-Dialog vom Nutzer bestätigt; Tablet/Handy und The Forge (`forgevtt`) warten auf Rückmeldungen der Nutzer.
 
 ### Live prüfen (0.6.1)
+
+- **#39 Aufträge/Personen** als Spieler ansehen: in der Testwelt sind Aufträge und Personen im Almanach für Spieler ausgeschaltet (`calendarFeatureVisibility`), dann fehlen die Reiter bewusst. Persönliche Aufträge (Publikum = bestimmte Spieler) prüfen. Mobil-Ansicht der beiden Reiter (Handy/Tablet) noch nicht angesehen; `clickdummy/mobile/` hat sie nicht.
+- **HUD-Reiter** (Chips, Rückmeldung 2026-10-21 eingearbeitet, in der Testinstanz geprüft): als Spieler und mit senkrechter DSA-Leiste (Einstellung Layout) ansehen; kommen weitere Einträge dazu, wird der Abschnitt scrollbar.
 
 - **#36 / Waffenkarte** (in der Testinstanz an Wulfgrimm geprüft: Schild, weitere Teile, Hauptrüstung wählen, Trefferzonen bei 800/720/560 px, hell/dunkel, Hover): Fernkampfhand mit Nachladen/Zielen/Magazin live ansehen; Tablet ansehen; Smartphone behält die Rüstungszeile, die Karte hat dort jetzt die Meta-Zeile — auf dem Gerät prüfen. Mobil-Click-Dummy (`clickdummy/mobile/`) ist noch nicht angepasst.
 
@@ -47,7 +47,7 @@ Mobile Support erscheint mit 0.6.0 als Beta. GitHub-Meilenstein `0.6.0`.
 
 Seit 2026-09-30 als GitHub-Issues geführt – siehe unten. Neue Feature-Ideen dort anlegen oder hier kurz notieren.
 
-- **Eigenes HUD des Moduls** (Idee 2026-10-01): ein Einstieg für mehrere Modulfunktionen, erst, wenn es mehr Funktionen dafür gibt (Nutzer 2026-10-05). Fest eingeplant: Würfelstatistik öffnen (#28), nur wenn sie aktiviert ist. Noch kein Issue.
+- **Eigenes HUD:** seit 2026-10-21 als Reiter in der DSA-Leiste (`scripts/hud.js`). Neue Modulfunktionen mit Knopf dort in `hudEntries()` ergänzen. Ohne neue DSA-Leiste (`dsa5.hotbarv3` aus) gibt es kein HUD.
 - **Mobil, später:** „Neu“-Markierung im Journal, eigene Tablet-Bogenansicht, Steigern/Bearbeiten auf dem Handy (mit #34), Tablet-Fensterknöpfe vergrößern falls am Gerät zu klein (siehe #43).
 
 ---
@@ -55,11 +55,11 @@ Seit 2026-09-30 als GitHub-Issues geführt – siehe unten. Neue Feature-Ideen d
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 14:44 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-21 06:07 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
 
 **Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
 
-**Offen (14)**
+**Offen (15)**
 
 - **[#34](https://github.com/vt-tom/dsa5-helpers/issues/34) feat: Drei Modi im Heldenbogen – Spielen, Steigern, Bearbeiten (Desktop, Tablet, Smartphone)**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 1 Kommentar · zuletzt geändert 2026-10-20
@@ -72,7 +72,7 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 14:44 UTC) — ni
 - **[#38](https://github.com/vt-tom/dsa5-helpers/issues/38) Magie/Glaube Tab: 2 Spalten Ansicht für Sonderfertigkeitenhinzufügen**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.0 · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#39](https://github.com/vt-tom/dsa5-helpers/issues/39) Vorschlag: Dramatis Personae/ Bestiarium und Auftragsbuch mit dem Charakterbogen verbinden**
-  - offen · Bearbeiter: niemand · von @WiCoPala · 0 Kommentare · zuletzt geändert 2026-10-19
+  - offen · Bearbeiter: @vt-tom · von @WiCoPala · Meilenstein: 0.6.1 · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#40](https://github.com/vt-tom/dsa5-helpers/issues/40) feat: Ausgerüstete Waffen im Kampf-Reiter neu gestalten (Foundry, Tablet, Smartphone)**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#41](https://github.com/vt-tom/dsa5-helpers/issues/41) feat: Kopf „Wappenbanner“ mit wählbarem Bannerbild (Foundry & Titelblatt)**
@@ -82,16 +82,13 @@ _Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-20 14:44 UTC) — ni
 - **[#43](https://github.com/vt-tom/dsa5-helpers/issues/43) feat: Mobile Support (Beta) – Tablet und Smartphone, „Hybrides Spiel“**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#44](https://github.com/vt-tom/dsa5-helpers/issues/44) feat: Hausregeln auch im Standardbogen des Systems verfügbar machen**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-20
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#45](https://github.com/vt-tom/dsa5-helpers/issues/45) feat: Hausregel „Grundmanöver“ von Paladose (Möglichkeiten des Kampfes)**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 1 Kommentar · zuletzt geändert 2026-10-20
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 2 Kommentare · zuletzt geändert 2026-10-20
 - **[#46](https://github.com/vt-tom/dsa5-helpers/issues/46) feat: Bannerbild ohne Foundry-Dateibrowser hochladen (Standardpfad der SL)**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 0 Kommentare · zuletzt geändert 2026-10-20
 - **[#47](https://github.com/vt-tom/dsa5-helpers/issues/47) feat: Lebensenergiezonen (Rüstkammer II) im Zonenkreuz des Kampf-Reiters**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 0 Kommentare · zuletzt geändert 2026-10-20
-
-**Kürzlich geschlossen (letzte 14 Tage)**
-
-- **[#33](https://github.com/vt-tom/dsa5-helpers/issues/33) Switch für das schnelle Umschalten zwischen den Bögen**
-  - erledigt · Bearbeiter: @Lyynix, @vt-tom · von @vt-tom · Meilenstein: 0.5.1 · 1 Kommentar · geschlossen 2026-10-07
+- **[#48](https://github.com/vt-tom/dsa5-helpers/issues/48) feat: Grundmanöver (Paladose) Stufe 3 – Schwachpunkte erkennen, Trefferfolgen, Stören/Ablenken, gleichwertige SF ausgrauen**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-20
 <!-- GITHUB-ISSUES:END -->

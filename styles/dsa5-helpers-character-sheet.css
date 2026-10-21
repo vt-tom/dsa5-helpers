@@ -6500,6 +6500,44 @@
   opacity: .8;
 }
 
+/* Grundmanöver als eigener Abschnitt im Kampf-Probendialog (#45, rechts unter .specAbsContainer). Optik wie die
+   System-SF (.specAbs: inaktiv grau, aktiv mit rotem Rand), eigene Klasse wegen der Klick-Handler des Systems. */
+.application .dsa5h-maneuver-panel {
+  margin-left: 20px;
+  padding: 0 10px 10px;
+}
+.application .dsa5h-maneuver-panel h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-color, #736953a6);
+}
+.application .dsa5h-maneuver-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  padding: 3px 5px;
+  border: 1px solid var(--border-color, #736953a6);
+  box-shadow: 0 0 12px rgba(110, 59, 1, .56) inset;
+  border-radius: 2px;
+  line-height: 20px;
+  color: #888;
+  cursor: pointer;
+  user-select: none;
+}
+/* Aktiv in der Farbe der Dialog-Beschriftungen (helle Schrift unter Foundrys dunklem Thema wäre auf Pergament blass). */
+.application .dsa5h-maneuver-row.active {
+  color: var(--color-form-label, inherit);
+  border-color: #cf1e1e;
+}
+body.theme-dark .application .dsa5h-maneuver-row.active { border-color: var(--dsa-danger, #cf1e1e); }
+.application .dsa5h-maneuver-row i { width: 16px; text-align: center; }
+.application .dsa5h-maneuver-name { flex: 1; min-width: 0; }
+/* Wirkung der gewählten Stufe als zweite Zeile unter dem Namen (passt so in die schmale rechte Spalte). */
+.application .dsa5h-maneuver-step { flex-basis: 100%; padding-left: 22px; font-size: 12px; font-weight: bold; line-height: 16px; }
+.application .dsa5h-maneuver-step:empty { display: none; }
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-hint { margin-top: 6px; }
+
 /* Hausregeln im Standardbogen des Systems (Issue #44, scripts/house-rules/system-sheet.js): kleines Symbol hinter dem
    Talentnamen statt Foundrys großem Standardknopf. */
 .application.dsa5 .dsa5h-system-house-hint {
@@ -7580,4 +7618,142 @@
   .dsa5-helpers-house-rules .dsa5h-hr-switch:hover .dsa5h-hr-switch-track {
     border-color: var(--accent);
   }
+}
+
+/* Eigenes HUD (scripts/hud.js): Reiter in der DSA-Leiste. Chips mit Symbol und Namen (Nutzer 2026-10-21) in einem
+   festen Raster, damit alles in die zwei Slot-Reihen der Leiste passt (~330 × 90 px): oben drei kompakte Modul-Chips,
+   nach einer Trennlinie die Hausregeln in zwei Spalten. Aktive Zustände rot umrandet. Spalten höchstens 68 px breit
+   (Modul-Chips ~140 px, Hausregeln ~210 px), linksbündig: in einer breiten Leiste bleibt rechts Platz, statt dass die
+   Chips zu langen Balken werden (Nutzer 2026-10-21). */
+#hotbar .dsa5h-hud-tab i { font-size: 15px; }
+#hotbar .sections .dsa5h-hud:not(.collapsed) {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 68px));
+  justify-content: start;
+  align-content: start;
+  gap: 3px 4px;
+  padding: 0 2px;
+  overflow-y: auto;
+}
+#hotbar .dsa5h-hud .dsa5h-hud-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  width: auto;
+  height: 27px;
+  padding: 0 8px 0 6px;
+  border: 1px solid rgba(185, 154, 92, .55);
+  border-radius: 14px;
+  background: var(--dsa-hotbar-chip-bg, rgba(40, 32, 26, .85));
+  color: var(--dsa-hotbar-chip-text, #f3e9d6);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#hotbar .dsa5h-hud .dsa5h-hud-chip.module { grid-column: span 2; height: 24px; font-size: 11px; }
+#hotbar .dsa5h-hud .dsa5h-hud-chip.rules { grid-column: span 3; }
+/* Name nur so breit wie nötig, damit ein Zustand („0/2“) direkt dahinter steht. */
+#hotbar .dsa5h-hud .dsa5h-hud-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#hotbar .dsa5h-hud .dsa5h-hud-chip i { flex: none; width: 14px; text-align: center; font-size: 13px; color: #d9b45f; }
+#hotbar .dsa5h-hud .dsa5h-hud-chip.rules i { color: #e07a5f; }
+@media (hover: hover) {
+  #hotbar .dsa5h-hud .dsa5h-hud-chip:hover { border-color: #d9b45f; filter: brightness(1.12); }
+}
+#hotbar .dsa5h-hud .dsa5h-hud-chip.active { border-color: #cf1e1e; box-shadow: 0 0 6px rgba(207, 30, 30, .7); }
+#hotbar .dsa5h-hud .dsa5h-hud-badge { flex: none; padding: 0 5px; border-radius: 8px; background: color-mix(in srgb, currentColor 14%, transparent); font-size: 11px; }
+/* Trennlinie zwischen Modul und Hausregeln (Text nur für Screenreader, sichtbar wäre eine eigene Zeile zu viel). */
+#hotbar .dsa5h-hud .dsa5h-hud-group {
+  grid-column: 1 / -1;
+  width: auto;
+  min-width: 0;
+  height: 0;
+  overflow: hidden;
+  border: 0;
+  border-top: 2px solid rgba(217, 180, 95, .8);
+  color: transparent;
+  pointer-events: none;
+}
+
+/* Hausregel Helfen: Schalter „Als Hilfe würfeln“ im Talent-Probendialog (#44). */
+.application .dsa5h-help-toggle label i { margin-right: 2px; opacity: .8; }
+
+/* --- Aufträge und Personen (Issue #39, scripts/sheets/almanac.js): Listen aus dem Almanach des Systems, Optik wie im
+   Click-Dummy (clickdummy/style.css „Aufträge und Personen“). --- */
+.dsa5-helpers-sheet .dsa5h-muted { color: var(--muted); }
+.dsa5-helpers-sheet .dsa5h-almanac-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.dsa5-helpers-sheet .dsa5h-almanac-btn {
+  flex: none;
+  width: auto;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 14px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  line-height: 26px;
+  cursor: pointer;
+}
+/* Kacheln immer gleich groß (Nutzer 2026-10-21): feste Höhe, Texte einzeilig mit „…“, voller Name im Tooltip. */
+.dsa5-helpers-sheet .dsa5h-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+.dsa5-helpers-sheet .dsa5h-tile-grid > .dsa5h-empty { grid-column: 1 / -1; }
+.dsa5-helpers-sheet .dsa5h-almanac-tile {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 66px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  box-shadow: none;
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+.dsa5-helpers-sheet .dsa5h-almanac-tile.closed { opacity: .7; }
+.dsa5-helpers-sheet .dsa5h-almanac-tile img {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  object-fit: cover;
+  background: var(--paper);
+}
+.dsa5-helpers-sheet .dsa5h-quest-card img { border-radius: 6px; }
+.dsa5-helpers-sheet .dsa5h-persona-card img { border-radius: 50%; object-position: top; }
+.dsa5-helpers-sheet .dsa5h-tile-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dsa5-helpers-sheet .dsa5h-tile-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsa5-helpers-sheet .dsa5h-tile-text strong { font-size: var(--fs-data); }
+.dsa5-helpers-sheet .dsa5h-tile-text small { color: var(--muted); font-size: var(--fs-meta); }
+.dsa5-helpers-sheet .dsa5h-quest-status.status-1 { color: var(--use); }
+.dsa5-helpers-sheet .dsa5h-quest-status.status-2 { color: var(--dmg); }
+.dsa5-helpers-sheet .dsa5h-quest-progress {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent) var(--pct), var(--odd) var(--pct));
+}
+.dsa5-helpers-sheet .dsa5h-quest-closed > summary { cursor: pointer; }
+.dsa5-helpers-sheet .dsa5h-persona-important { color: var(--accent); }
+.dsa5-helpers-sheet :is(.dsa5h-almanac-tile, .dsa5h-almanac-btn):focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+@media (hover: hover) {
+  .dsa5-helpers-sheet :is(.dsa5h-almanac-tile, .dsa5h-almanac-btn):hover { border-color: var(--accent); }
 }

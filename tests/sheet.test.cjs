@@ -57,9 +57,11 @@ let Sheet;
 // data:-URLs, weil die Modul-.js hier sonst als CommonJS gälten; der eine relative Import wird mit ersetzt.
 const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
 // Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
-function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))).replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))));}
+// help-action.js importiert maneuvers.js relativ (hideModifierRows).
+function helpActionUrl(){return dataUrl(read('scripts/house-rules/help-action.js').replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))));}
+function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(helpActionUrl())).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))).replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))));}
 function houseRulesAppUrl(){return dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())));}
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'./almanac.js'",JSON.stringify(dataUrl(read('scripts/sheets/almanac.js')))).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
@@ -133,7 +135,7 @@ test('banner upload (#46): hints without folder or GM, the GM client uploads for
   global.game.user={id:'gm2',isGM:true};flag=null;await handler({type:'bannerUpload',requestId:'r3',userId:'owner',actorId:'a1',fileName:'y.webp',dataUrl:'data:'});assert.equal(flag,null,'only the active GM handles requests');
  } finally { Object.assign(global,saved); }
 });
-test('house rules in the system sheet (#44): every rule names its entries, system sheets get the heart and the header entry, ours are left alone',async()=>{
+test('house rules in the system sheet (#44): every rule names its entries, system sheets get the heart and the header entries, ours are left alone',async()=>{
  const {rules}=await houseRuleModules();const S=await import(dataUrl(read('scripts/house-rules/system-sheet.js')));
  for(const rule of rules.HOUSE_RULES){assert(Array.isArray(rule.entries)&&rule.entries.length,rule.id+' names its entries');assert(rule.entries.some(e=>e.sheet),rule.id+': module sheet');assert(rule.entries.some(e=>['skill','header','dialog'].includes(e.system)),rule.id+': system sheet');
   for(const e of rule.entries.filter(e=>['skill','header'].includes(e.system)))assert.equal(typeof e.run,'function',rule.id+' entry runs');}
@@ -141,7 +143,8 @@ test('house rules in the system sheet (#44): every rule names its entries, syste
  assert(S.isSystemSheet(app('character',['dsa5','actor'])));assert(S.isSystemSheet(app('npc',['dsa5','actor'])));
  assert(!S.isSystemSheet(app('creature',['dsa5','actor'])),'no creatures');assert(!S.isSystemSheet(app('character',['dsa5','dsa5-helpers-sheet'])),'not our sheet');
  const on=id=>id==='helpAction';
- assert.deepEqual(S.activeEntries('header',rules.HOUSE_RULES,on).map(x=>x.rule.id),['helpAction']);assert.deepEqual(S.activeEntries('skill',rules.HOUSE_RULES,on),[],'inactive rule: no heart');
+ // Helfen läuft im Systembogen über den Probendialog (Nutzer 2026-10-21), nicht mehr über das Kopfmenü.
+ assert.deepEqual(S.activeEntries('header',rules.HOUSE_RULES,on),[],'help: no header entry');assert(rules.HOUSE_RULES.find(r=>r.id==='helpAction').entries.some(e=>e.system==='dialog'));assert.deepEqual(S.activeEntries('skill',rules.HOUSE_RULES,on),[],'inactive rule: no heart');
  assert.deepEqual(S.activeEntries('skill',rules.HOUSE_RULES,()=>true).map(x=>x.rule.id),['woundCheck']);
 });
 test('play mode disables FW correction, preserves rolls',async()=>{const {sheet}=await prepare();sheet.context.prepare.sheetLocked=true;sheet.context.prepare.canAdvance=false;const context=await sheet._prepareContext({});const html=render(context);const values=elements(html,el=>el.attribs?.class==='skill-advances');assert(values.length);assert(values.every(el=>Object.hasOwn(el.attribs,'disabled')));assert(html.includes('data-action="skillSelect"'));assert(!html.includes('data-fct="_advanceItem"'));});
@@ -650,7 +653,7 @@ test('Würfelstatistik (#28): Tage älter als 12 Monate werden zusammengefasst, 
  assert.deepEqual(s.sumCounts(st).d[6],[2,3,4,5,0,1]);
 });
 // Hausregelbuch (2026-10-05): relative Importe werden wie bei loadSheet() durch data:-URLs ersetzt.
-const houseRuleModules=async()=>{const wound=dataUrl(read('scripts/house-rules/wound-check.js'));const help=dataUrl(read('scripts/house-rules/help-action.js'));const rules=houseRulesUrl();const app=dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(rules)));return {wound:await import(wound),help:await import(help),rules:await import(rules),app:await import(app)};};
+const houseRuleModules=async()=>{const wound=dataUrl(read('scripts/house-rules/wound-check.js'));const help=helpActionUrl();const rules=houseRulesUrl();const app=dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(rules)));return {wound:await import(wound),help:await import(help),rules:await import(rules),app:await import(app)};};
 for(const p of ['templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs','templates/house-rules/help-action.hbs'])H.registerPartial('modules/dsa5-helpers/'+p,read(p));
 test('Hausregel Wundeinschätzung: QS-Staffel und Veralten wie in Knigges World Script',async()=>{
  const {wound}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;const w=(qs,cur,max=40)=>wound.woundText(qs,cur,max,t);
@@ -693,6 +696,11 @@ test('Grundmanöver (#45): Stufen, Waffenfilter, Modifikatoren im Probendialog, 
   const aim=mods.find(m=>M.maneuverGroup(m.ref.id)==='aim');assert.deepEqual([aim.value,aim.damageBonus,aim.selected],[6,6,true],'FF 15: 3 Runden × +2/+2');
   assert.deepEqual(M.enabledManeuvers(()=>({feint:false})),all.filter(i=>i!=='feint'),'ohne Eintrag an');
   assert.equal(M.maneuverGroup('dsa5h:feint:2'),'feint');assert.equal(M.maneuverGroup('abc'),null);
+  // Abschnitt im Probendialog: Zeilentitel/Stufentext aus dem Namen, Klick weiter (am Ende aus), Rechtsklick zurück.
+  assert.deepEqual(M.splitModifierName({name:'Antäuschen (GE 14): AT −2, PA −2',value:-2}),{title:'Antäuschen (GE 14)',step:'AT −2, PA −2'});
+  assert.deepEqual(M.splitModifierName({name:'Vorstoß: Malus aktiv',value:-2}),{title:'Vorstoß',step:'Malus aktiv -2'});
+  assert.deepEqual([M.nextStep(-1,3),M.nextStep(2,3),M.nextStep(0,3,true),M.nextStep(-1,3,true)],[0,-1,-1,-1]);
+  for(const l of ['de','en']){const m=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.HouseRules.maneuvers;for(const k of ['PanelHint','RowHint','RowHintSingle'])assert(m[k],l+' '+k);}
   // Buchseite: beide Sprachen mit je sechs Einzelschaltern, „Stören und Ablenken“ fehlt.
   for(const l of ['de','en']){const page=read(`templates/house-rules/maneuvers-${l}.hbs`);assert.equal((page.match(/maneuver-toggle\.hbs/g)||[]).length,6,l);assert(!/Stören und Ablenken|Disrupt and distract/i.test(page),l);}
   const entry=read('scripts/dsa5-helpers.js');for(const p of ['maneuvers.hbs','maneuvers-de.hbs','maneuvers-en.hbs','maneuver-toggle.hbs'])assert(entry.includes('templates/house-rules/'+p),p+' wird geladen');
@@ -761,7 +769,7 @@ test('Titelblatt-Leiste Variante G (#27/#31): Reiter Zustände | Persönliche Da
  Sheet.DEFAULT_OPTIONS.actions.dsa5hCoverSideTab.call(sheet,{},{dataset:{sideTab:'x'}});assert.equal(sheet._coverSideTab,'conditions');
  for(const k of ['NoConditions','ConditionsToStatus','NoPersonalDetails','EditInNotes'])assert(lookup(own,'DSA5HELPERS.'+k),k);
 });
-test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel, Talentwahl, Probe über das System, QS-Hinweis im Chat',async()=>{
+test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel, Talentwahl, Probe über das System mit Schalter „Als Hilfe würfeln“, QS aus der Chatnachricht',async()=>{
  const {help}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;
  assert.equal(help.helpMessage({helper:'Alrik',skill:'Einschüchtern',target:'Gerion',qs:2},t),'<strong>Title</strong><br>Chat.Success:Alrik,Einschüchtern,Chat.Target:Gerion,2<br><small>Chat.Manual</small>');
  assert.equal(help.helpMessage({helper:'Alrik',skill:'Einschüchtern',target:null,qs:0},t),'<strong>Title</strong><br>Chat.Failure:Alrik,Einschüchtern');
@@ -775,7 +783,7 @@ test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel
  let p=btn(html)[0];while(p&&!p.attribs?.['data-sub-panel'])p=p.parent;assert.equal(p?.attribs['data-sub-panel'],'combat:body','im Kampf-Reiter');
  global.foundry={utils:{escapeHTML:x=>String(x)},applications:{api:{DialogV2:{prompt:async o=>{dialog=o;return 'skill';}}}}};
  global.ChatMessage={getSpeaker:()=>({alias:'x'}),create:async m=>{chat=m;}};global.ui={notifications:{warn(){}}};
- actor.setupSkill=async(s,o)=>{setup={s,o};return {testData:{},cardOptions:{}};};actor.basicTest=async()=>({result:{successLevel:1,qualityStep:3}});actor.name='Alrik';
+ let rolled=null;actor.setupSkill=async(s,o)=>{setup={s,o};return {testData:{},cardOptions:{}};};actor.basicTest=async d=>{rolled=d;};actor.name='Alrik';
  await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hHelpAction.call(sheet,{},{});
  assert(dialog.content.includes('<optgroup')&&dialog.content.includes('Gerion'),'Talentauswahl nach Gruppen, markiertes Ziel genannt');
  assert(dialog.content.includes('name="search"')&&typeof dialog.render==='function','Suchfeld im Dialog');
@@ -789,8 +797,10 @@ test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel
  input.value='einsch';inputL.input();assert.equal(sel.value,'c');assert(g1.hidden&&!g2.hidden,'leere Gruppe ausgeblendet');
  input.value='kr';inputL.input();assert.equal(sel.value,'b');inputL.keydown({key:'ArrowUp',preventDefault(){}});assert.equal(sel.value,'b','nur sichtbare Treffer');
  listeners.dblclick();assert.equal(ok,1,'Doppelklick würfelt');
- assert.equal(setup.s,skill,'Probe über den Probendialog des Systems');assert(chat.content.includes('3')&&chat.content.includes('Gerion'),'QS und Ziel im Chat');
- assert(!chat.whisper,'öffentlich, damit der Unterstützte es sieht');
+ assert.equal(setup.s,skill,'Probe über den Probendialog des Systems');assert.equal(rolled.testData.opposable,false,'nie vergleichend');
+ // Die Chatnachricht entsteht nach dem Wurf aus dem Merker-Modifikator (Hook), QS nur bei Gelingen.
+ assert.equal(help.HELP_REF,'dsa5h:help');assert.deepEqual([help.helpQS({successLevel:1,qualityStep:3}),help.helpQS({successLevel:-1,qualityStep:2}),help.helpQS(null)],[3,0,0]);
+ for(const l of ['de','en']){const h=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.HouseRules.helpAction;for(const k of ['Toggle','ToggleHint'])assert(h[k],l+' '+k);}
 });
 test('Fokus in Eingabefeldern bleibt nach dem Neuzeichnen erhalten (Tab durch Notizen › Persönliche Daten)',async()=>{
  const {sheet}=await prepare();global.CSS??={escape:x=>String(x)};
@@ -842,4 +852,51 @@ test('Waffe aus einem Behälter: Plakette am Gegenstand, Anlegen nimmt sie herau
  const html=H.compile(read('templates/actors/parts/weapon-short.hbs'))({item:{_id:'sw1',name:'Langschwert',img:'s.webp',system:{}},container:{name:'Beutel',img:'bag.webp'}});
  assert(html.includes('class="dsa5h-in-container" src="bag.webp"'),'Plakette mit Behälterbild');
  for(const l of ['de','en'])for(const k of ['InContainer','InContainerSuffix'])assert.equal(typeof JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS[k],'string',`${l}: ${k}`);
+});
+test('Eigenes HUD: Reiter in der DSA-Leiste, oben Einstellungen/Hausregelbuch, darunter aktive Hausregeln mit Zustand',async()=>{
+ // Importe durch Attrappen ersetzen: hudEntries bekommt seine Abhängigkeiten ohnehin als Parameter.
+ const src=read('scripts/hud.js').replace(/^import .*$/gm,'').replace(/^/,'const isRuleActive=()=>false,runWoundCheck=()=>{},findTreatWounds=()=>null,helpAction=()=>{},toggleStance=()=>{},aimRound=()=>{},enabledManeuvers=()=>[],maneuverSheetData=()=>null,openHouseRules=()=>{},openDiceStats=()=>{},diceStatsEnabled=()=>false;\n');
+ const H=await import(dataUrl(src));const hero={type:'character',isOwner:true};
+ const list=(actor,o)=>H.hudEntries(actor,{active:()=>false,maneuvers:()=>[],diceStats:()=>false,treatWounds:()=>null,maneuverState:()=>({stance:{active:true},aim:{count:1,max:3}}),...o});
+ const ids=(actor,o)=>list(actor,o).map(e=>e.id);
+ assert.deepEqual(ids(hero),['settings','houseRules'],'Einstellungen und Hausregelbuch immer, zuerst');
+ const all=list(hero,{active:()=>true,maneuvers:()=>['stance','aim'],diceStats:()=>true,treatWounds:()=>({id:'x'})});
+ assert.deepEqual(all.map(e=>e.id+':'+e.group),['settings:module','houseRules:module','diceStats:module','help:rules','woundCheck:rules','stance:rules','aim:rules']);
+ assert(all.find(e=>e.id==='stance').on,'Haltung aktiv markiert');assert.equal(all.find(e=>e.id==='aim').badge,'1/3','Zielen mit Stand');
+ assert.deepEqual(ids(hero,{active:()=>true,maneuvers:()=>['feint']}),['settings','houseRules','help'],'ohne Heilkunde Wunden, ohne Haltung/Zielen');
+ assert.deepEqual(ids(null,{active:()=>true,diceStats:()=>true}),['settings','houseRules','diceStats'],'ohne Token keine Hausregel-Aktionen');
+ assert.deepEqual(ids({type:'creature'},{active:()=>true}),['settings','houseRules'],'keine Kreaturen');
+ assert(read('scripts/dsa5-helpers.js').includes('initHud()'));for(const l of ['de','en']){const h=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Hud;assert(h.Tab&&h.Settings&&h.Rules,l);}
+});
+test('Aufträge und Personen (#39): Almanach-Journale, Sichtbarkeit wie im System, Reiter abschaltbar, Klick öffnet den Almanach',async()=>{
+ const {sheet}=await prepare();const A=await import(dataUrl(read('scripts/sheets/almanac.js')));const saved={game:global.game,fromUuid:global.fromUuid,fromUuidSync:global.fromUuidSync};
+ try{
+  const player={id:'p1',isGM:false},gm={id:'gm',isGM:true};
+  assert(A.questVisible({visible:true},player)&&!A.questVisible({visible:false},player)&&A.questVisible({visible:false},gm),'freigegeben bzw. SL');
+  assert(!A.questVisible({visible:true,audience:2},player)&&A.questVisible({visible:true,audience:1,playerOwners:['p1']},player)&&!A.questVisible({visible:true,audience:1,playerOwners:['x']},player),'Publikum');
+  const quests={a:{title:'Erbe',priority:0,status:0,visible:true,location:'Gratenfels',objectives:{o2:{text:'Zwei',status:0,visible:true,sort:2},o1:{text:'Eins',status:1,visible:true,sort:1},o3:{text:'Geheim',status:0,visible:false,sort:3}}},
+   b:{title:'Wölfe',priority:1,status:0,visible:true},c:{title:'Brücke',priority:1,status:1,visible:true},d:{title:'SL',priority:0,status:0,visible:false}};
+  const personae={x:{name:'Baron',type:0,visible:true,important:true,actor_uuid:'Actor.b',faction:'Haus'},y:{name:'Wolf',type:1,visible:true,actor_uuid:'Actor.w'},z:{name:'Geheim',type:0,visible:false,actor_uuid:'Actor.g'},n:{name:'Ohne Akteur',type:0,visible:true}};
+  const journals={'JournalEntry.q':{pages:[{type:'dsaquestlog',uuid:'Page.q',system:{quests}}]},'JournalEntry.p':{pages:[{type:'dsapersonaedramatis',uuid:'Page.p',system:{personae}}]}};
+  let settings={};const vis={questlog:true,personae:true};
+  global.game={...saved.game,user:player,i18n:{...saved.game.i18n,lang:'de'},settings:{get:(scope,key)=>scope==='dsa5'?(key==='questlogJournals'?{activated:[{uuid:'JournalEntry.q'}]}:key==='calendarActors'?{activated:[{uuid:'JournalEntry.p'}]}:key==='calendarFeatureVisibility'?vis:'light'):(key in settings?settings[key]:'light')}};
+  global.fromUuid=async u=>journals[u]??null;global.fromUuidSync=u=>({name:u,img:'actor.webp'});
+  const q=await A.loadQuests(player);
+  assert.deepEqual(q.groups.map(g=>[g.priority,g.quests.map(x=>x.title)]),[[0,['Erbe']],[1,['Wölfe']]],'offene nach Priorität, SL-Auftrag fehlt');
+  assert.deepEqual(q.closed.map(x=>x.title),['Brücke']);assert.deepEqual(q.groups[0].quests[0].objectives.map(o=>o.text),['Eins','Zwei'],'Ziele sortiert, verborgene fehlen');
+  assert.equal(q.groups[0].quests[0].img,A.QUEST_PLACEHOLDER);assert.equal((await A.loadQuests(gm)).groups[0].quests.length,2,'SL sieht alles');
+  const p=await A.loadPersonae(player);assert.deepEqual([p.dramatis.map(x=>x.name),p.bestiary.map(x=>x.name)],[['Baron'],['Wolf']],'freigegeben und mit Akteur');assert.equal(p.bestiary[0].img,'actor.webp','Bild vom Akteur');
+  assert(A.almanacTabEnabled('quests',player)&&A.almanacTabEnabled('personae',player));
+  vis.questlog=false;assert(!A.almanacTabEnabled('quests',player)&&A.almanacTabEnabled('quests',gm),'Almanach-Bereich für Spieler aus');vis.questlog=true;
+  settings.personaeTab=false;assert(!A.almanacTabEnabled('personae',gm),'Moduleinstellung aus');settings={};
+  // Bogen: beide Reiter, Karten mit Almanach-Aktion, Personen mit Unterreitern als Sprungmarken.
+  const html=render(await sheet._prepareContext({}));
+  for(const t of ['quests','personae'])assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']===t).length,1,t);
+  const cards=elements(html,el=>el.attribs?.['data-action']==='dsa5hOpenAlmanac'&&el.attribs['data-entry-key']);assert.deepEqual(cards.map(c=>c.attribs['data-entry-key']),['a','b','c','x','y']);
+  assert(cards.every(c=>c.attribs.class.includes('dsa5h-almanac-tile')),'gleich große Kacheln');assert(!html.includes('Gratenfels')&&!html.includes('>Haus<'),'nur das Nötigste: kein Ort, keine Fraktion');
+  assert(html.includes('data-sub-panel="personae:dramatis"')&&html.includes('data-sub-panel="personae:bestiary"'));assert.equal(typeof Sheet.DEFAULT_OPTIONS.actions.dsa5hOpenAlmanac,'function');
+  settings.questsTab=false;const off=render(await sheet._prepareContext({}));assert.equal(elements(off,el=>el.attribs?.['data-tab-panel']==='quests').length,0,'Reiter abgeschaltet');
+  const st=read('scripts/apps/sheet-settings.js');assert(st.includes("'questsTab'")&&st.includes("'personaeTab'"),'im Untermenü Heldenbogen');
+  for(const l of ['de','en']){const d=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;for(const k of ['QuestsTab','PersonaeTab'])assert(d.Settings[k]?.Name&&d.Settings[k]?.Hint,l+k);assert(d.Tabs.quests&&d.Tabs.personae&&d.Quests.Group2&&d.Personae.Bestiary,l);}
+ } finally { Object.assign(global,saved); }
 });
