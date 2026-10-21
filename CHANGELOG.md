@@ -2,7 +2,7 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
-## [0.6.1] — unveröffentlicht
+## [0.6.1] — 2026-10-21
 
 ### Neu
 
