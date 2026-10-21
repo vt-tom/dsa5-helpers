@@ -447,7 +447,65 @@
         },
         "PanelHint": "House rule basic maneuvers (Paladose): level by key attribute",
         "RowHint": "Click: next level · right-click: one level back",
-        "RowHintSingle": "Click: on/off"
+        "RowHintSingle": "Click: on/off",
+        "weakness": {
+          "Name": "Recognize Weak Spots",
+          "Button": "Recognize weak spots",
+          "ButtonHint": "Analyse the targeted opponent: roll, then split the QL between PA and DP against them.",
+          "HudHint": "Recognize the weak spots of the targeted opponent",
+          "Attr": "QL",
+          "Value": "PA / DP",
+          "NoCombat": "Recognize Weak Spots only works in a running combat.",
+          "NoTarget": "Please target the opponent first.",
+          "Self": "You cannot analyse your own hero – please target an opponent.",
+          "NoSkill": "{name} does not have the skill {skill}.",
+          "Share": "Share",
+          "Shared": "Shared",
+          "NotOwner": "Only the hero's player can share this.",
+          "Expired": "These weak spots no longer apply (combat over or round expired).",
+          "Status": "{foe}: PA +{pa} · DP +{tp}",
+          "StatusShared": "{foe}: PA +{pa} · DP +{tp} (shared, until CR {round})",
+          "Dialog": {
+            "Title": "Split weak spots",
+            "Intro": "{qs} QL against {foe}: each QL raises either your PA or your DP against this opponent until the end of combat.",
+            "NoArmor": "{foe} is a demon, ghost or elemental – armour reduction does not work against them. All {qs} QL go to PA.",
+            "MagicArmor": "DP +1 stands for PRO −1. It does not work against magical protection; the GM keeps an eye on that.",
+            "Confirm": "Apply"
+          },
+          "Chat": {
+            "Success": "<b>{actor}</b> recognizes weak spots of <b>{foe}</b>: PA +{pa} against their attacks, DP +{tp} against them, until the end of combat.",
+            "Failure": "{actor} finds no weak spots of {foe}.",
+            "Shared": "<b>{actor}</b> shares the weak spots of <b>{foe}</b>: PA +{pa}, DP +{tp} for all allies. From now on {foe} guards their weak spots – the bonus lasts for everyone only until the end of CR {round}."
+          }
+        },
+        "hits": {
+          "Title": "Targeted hit: {zone} ({sp} sDP)",
+          "Resist": "Resistance: {text}",
+          "Resists": {
+            "composure": "Self-Control (stay capable of acting)",
+            "disturb": "Self-Control (ignore distractions)",
+            "death": "Special rule “Cheating Death”",
+            "firstAid": "First aid, minor healing, healing potions; finally special rule “Cheating Death”"
+          },
+          "Effect": {
+            "head": "{n} level(s) of Stupor",
+            "headNone": "Below 5 sDP: no Stupor.",
+            "torso": "Additional 1D3+1 sDP.",
+            "arm": "Drops whatever is held in that hand (not two-handed weapons or shields).",
+            "leg": "Falls down: Prone.",
+            "eyeFatal": "Fatal (5 sDP or more).",
+            "eye": "Blinded.",
+            "foot": "{n} level(s) of Pain, movement halved.",
+            "footNone": "Movement halved.",
+            "neckFatal": "Fatal (8 sDP or more).",
+            "neck": "Bleeding (1D3+1 sDP per CR).",
+            "hand": "+1 level of Pain, hand unusable.",
+            "handNone": "Below 5 sDP: no effect."
+          },
+          "Roll": "Roll 1D3+1 sDP",
+          "RollFlavor": "Targeted hit ({zone}): additional sDP",
+          "NotOwner": "The condition is set by the GM or whoever controls the target."
+        }
       }
     },
     "NoConditions": "No conditions.",

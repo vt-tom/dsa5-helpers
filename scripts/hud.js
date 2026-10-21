@@ -3,7 +3,7 @@
 // (Aktion `categoryFilter`) arbeitet aber generisch über data-filter/data-category. Wir hängen nach jedem Rendern einen
 // Reiterknopf und einen Abschnitt an. Zwei Zeilen als Chips mit Namen (Nutzer 2026-10-21, Symbole allein gingen unter):
 // oben das Modul (Einstellungen, Hausregelbuch, Würfelstatistik), darunter die aktiven Hausregeln mit ihrem Zustand.
-import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, enabledManeuvers, maneuverSheetData } from './house-rules/rules.js';
+import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, enabledManeuvers, maneuverSheetData } from './house-rules/rules.js';
 import { openHouseRules } from './apps/house-rules.js';
 import { openDiceStats } from './apps/dice-stats.js';
 import { isEnabled as diceStatsEnabled } from './dice-stats/settings.js';
@@ -28,6 +28,7 @@ export function hudEntries(actor, { active = isRuleActive, maneuvers = enabledMa
     const st = maneuverState(actor);
     if (maneuvers().includes('stance')) out.push({ id: 'stance', group: 'rules', icon: 'fas fa-shield-halved', label: 'DSA5HELPERS.HouseRules.maneuvers.stance.Name', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.stance.Toggle', on: !!st?.stance?.active });
     if (maneuvers().includes('aim')) out.push({ id: 'aim', group: 'rules', icon: 'fas fa-bullseye', label: 'DSA5HELPERS.HouseRules.maneuvers.aim.Name', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.aim.Button', on: !!st?.aim?.count, badge: st?.aim ? `${st.aim.count}/${st.aim.max}` : '' });
+    if (maneuvers().includes('weakness')) out.push({ id: 'weakness', group: 'rules', icon: 'fas fa-magnifying-glass', label: 'DSA5HELPERS.HouseRules.maneuvers.weakness.Name', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.weakness.HudHint', on: !!st?.weakness?.entries?.length, badge: st?.weakness?.entries?.length ? String(st.weakness.entries.length) : '' });
   }
   return out;
 }
@@ -52,6 +53,7 @@ function run(id, actor, button) {
     case 'woundCheck': return runWoundCheck(actor, button);
     case 'stance': return toggleStance(actor);
     case 'aim': return aimRound(actor);
+    case 'weakness': return recognizeWeakPoints(actor, tokenId);
   }
 }
 

@@ -5,7 +5,7 @@ const MODULE_ID = 'dsa5-helpers';
 const NARROW_WIDTH = 560;
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
-import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, maneuverSheetData } from '../house-rules/rules.js';
+import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, maneuverSheetData } from '../house-rules/rules.js';
 import { openHouseRules } from '../apps/house-rules.js';
 import { almanacTabEnabled, loadQuests, loadPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
 
@@ -60,6 +60,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hHelpAction: this._helpAction,
       dsa5hStance: this._maneuverStance,
       dsa5hAimRound: this._maneuverAim,
+      dsa5hWeakness: this._maneuverWeakness,
     },
     ownerActions: {
       schipUpdate: this._schipUdate,
@@ -1494,6 +1495,11 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
 
   static async _maneuverAim() {
     await aimRound(this.actor);
+  }
+
+  // Schwachpunkte erkennen (#48): markierten Gegner analysieren, QS auf PA/TP verteilen.
+  static async _maneuverWeakness() {
+    await recognizeWeakPoints(this.actor, this.getTokenId?.());
   }
 
   static _openManeuverRules() {

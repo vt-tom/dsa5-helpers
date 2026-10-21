@@ -76,6 +76,15 @@ const PAGES = {
     const box = document.createElement("div");
     box.innerHTML = MANEUVER_PAGE.replace(/\{\{!.*?\}\}/gs, "").replace(/\{\{> "[^"]*maneuver-toggle\.hbs" id="(\w+)"\}\}/g, '<span data-toggle="$1"></span>');
     box.querySelectorAll("[data-toggle]").forEach((slot) => slot.replaceWith(maneuverToggle(slot.dataset.toggle)));
+    // Sprungleiste (wie jumpToSection in scripts/apps/house-rules.js): zum Abschnitt scrollen, unter der klebenden Leiste.
+    box.querySelectorAll("[data-jump]").forEach((btn) => btn.addEventListener("click", () => {
+      const root = btn.closest(".dsa5-helpers-house-rules") ?? document;
+      const body = root.querySelector(".dsa5h-hr-body");
+      const section = root.querySelector(`[data-jump-target="${btn.dataset.jump}"]`);
+      if (!body || !section) return;
+      const bar = root.querySelector(".dsa5h-hr-jump")?.offsetHeight ?? 0;
+      body.scrollTo({ top: Math.max(0, section.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop - bar - 8), behavior: "smooth" });
+    }));
     return [...box.children];
   },
   helpAction: () => {

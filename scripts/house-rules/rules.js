@@ -9,9 +9,10 @@
 import { initWoundCheck, woundCheck, findTreatWounds } from './wound-check.js';
 import { helpAction, initHelpAction } from './help-action.js';
 import { initSystemSheetEntries, rerenderSystemSheets } from './system-sheet.js';
-import { initManeuvers, toggleStance, aimRound, MANEUVER_IDS, SETTING as MANEUVER_SETTING, enabledManeuvers, sheetData as maneuverSheetData } from './maneuvers.js';
+import { initManeuvers, toggleStance, aimRound, recognizeWeakPoints, MANEUVER_IDS, SETTING as MANEUVER_SETTING, enabledManeuvers, sheetData as maneuverSheetData } from './maneuvers.js';
+import { initHitConsequences } from './hit-consequences.js';
 
-export { woundCheck, findTreatWounds, helpAction, toggleStance, aimRound, MANEUVER_IDS, enabledManeuvers, maneuverSheetData };
+export { woundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, MANEUVER_IDS, enabledManeuvers, maneuverSheetData };
 
 const MODULE_ID = 'dsa5-helpers';
 export const SETTING = 'houseRules';
@@ -34,13 +35,15 @@ export const HOUSE_RULES = [
   },
   {
     // Grundmanöver (Paladose, #45): Modifikatoren über den Probendialog (jeder Bogen); Verteidigungshaltung und Zielen
-    // im Kampf-Reiter bzw. im Kopfmenü des Systembogens. Je Manöver ein Schalter auf der Buchseite.
+    // (#48: und Schwachpunkte erkennen) im Kampf-Reiter bzw. im Kopfmenü des Systembogens. Je Manöver ein Schalter auf
+    // der Buchseite.
     id: 'maneuvers', icon: 'fas fa-khanda', credit: 'Paladose', page: `modules/${MODULE_ID}/templates/house-rules/maneuvers.hbs`,
     entries: [
       { sheet: 'combat (block)' },
       { system: 'dialog' },
       { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.stance.Toggle', when: () => enabledManeuvers().includes('stance'), run: app => toggleStance(app.actor) },
       { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.aim.Button', when: () => enabledManeuvers().includes('aim'), run: app => aimRound(app.actor) },
+      { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.weakness.Button', when: () => enabledManeuvers().includes('weakness'), run: app => recognizeWeakPoints(app.actor, app.token?.id) },
     ],
   },
 ];
@@ -95,6 +98,7 @@ export function registerHouseRules() {
   initHelpAction(() => isRuleActive('helpAction'));
   initSystemSheetEntries(HOUSE_RULES, isRuleActive);
   initManeuvers(() => isRuleActive('maneuvers'));
+  initHitConsequences(() => isRuleActive('maneuvers') && enabledManeuvers().includes('targeted'));
   // Einzelschalter der Grundmanöver: Buch und Bögen neu zeichnen wie bei der Haupteinstellung.
   Hooks.on('updateSetting', setting => {
     if (setting.key !== `${MODULE_ID}.${MANEUVER_SETTING}`) return;

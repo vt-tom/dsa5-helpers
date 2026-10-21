@@ -447,7 +447,65 @@
         },
         "PanelHint": "Hausregel Grundmanöver (Paladose): Stufe je Leiteigenschaft",
         "RowHint": "Klick: nächste Stufe · Rechtsklick: eine Stufe zurück",
-        "RowHintSingle": "Klick: an/aus"
+        "RowHintSingle": "Klick: an/aus",
+        "weakness": {
+          "Name": "Schwachpunkte erkennen",
+          "Button": "Schwachpunkte erkennen",
+          "ButtonHint": "Markierten Gegner analysieren: Probe, dann die QS auf PA und TP gegen ihn verteilen.",
+          "HudHint": "Schwachpunkte des markierten Gegners erkennen",
+          "Attr": "QS",
+          "Value": "PA / TP",
+          "NoCombat": "Schwachpunkte erkennen gilt nur in einem laufenden Kampf.",
+          "NoTarget": "Bitte zuerst den Gegner als Ziel markieren.",
+          "Self": "Der eigene Held lässt sich nicht analysieren – bitte einen Gegner markieren.",
+          "NoSkill": "{name} hat das Talent {skill} nicht.",
+          "Share": "Mitteilen",
+          "Shared": "Mitgeteilt",
+          "NotOwner": "Mitteilen kann nur, wer den Helden führt.",
+          "Expired": "Diese Schwachpunkte gelten nicht mehr (Kampf vorbei oder Runde abgelaufen).",
+          "Status": "{foe}: PA +{pa} · TP +{tp}",
+          "StatusShared": "{foe}: PA +{pa} · TP +{tp} (mitgeteilt, bis KR {round})",
+          "Dialog": {
+            "Title": "Schwachpunkte verteilen",
+            "Intro": "{qs} QS gegen {foe}: Jede QS erhöht entweder deine PA oder deine TP gegen diesen Gegner, bis zum Ende des Kampfes.",
+            "NoArmor": "{foe} ist ein Dämon, Geist oder Elementar – gegen ihn wirkt keine Rüstungsreduktion. Alle {qs} QS gehen auf die PA.",
+            "MagicArmor": "TP +1 steht für RS −1. Gegen magischen Rüstungsschutz wirkt das nicht; darauf achtet die Spielleitung.",
+            "Confirm": "Übernehmen"
+          },
+          "Chat": {
+            "Success": "<b>{actor}</b> erkennt Schwachpunkte von <b>{foe}</b>: PA +{pa} bei dessen Angriffen, TP +{tp} gegen ihn, bis Kampfende.",
+            "Failure": "{actor} erkennt keine Schwachpunkte von {foe}.",
+            "Shared": "<b>{actor}</b> teilt die Schwachpunkte von <b>{foe}</b> mit: PA +{pa}, TP +{tp} für alle Verbündeten. {foe} gibt sich ab jetzt keine Blöße mehr – der Bonus gilt für alle nur noch bis zum Ende von KR {round}."
+          }
+        },
+        "hits": {
+          "Title": "Gezielter Treffer: {zone} ({sp} SP)",
+          "Resist": "Widerstand: {text}",
+          "Resists": {
+            "composure": "Selbstbeherrschung (Handlungsfähigkeit bewahren)",
+            "disturb": "Selbstbeherrschung (Störungen ignorieren)",
+            "death": "Sonderregel „Dem Tod von der Schippe springen“",
+            "firstAid": "Erste Hilfe, kleine Heilungen, Heiltränke; final Sonderregel „Dem Tod von der Schippe springen“"
+          },
+          "Effect": {
+            "head": "{n} Stufe(n) Betäubung",
+            "headNone": "Unter 5 SP: keine Betäubung.",
+            "torso": "Zusätzlich 1W3+1 SP.",
+            "arm": "Lässt in dieser Hand Gehaltenes los (nicht bei Zweihandwaffen und Schilden).",
+            "leg": "Geht zu Boden: Liegend.",
+            "eyeFatal": "Tödlich (ab 5 SP).",
+            "eye": "Geblendet.",
+            "foot": "{n} Stufe(n) Schmerz, GS halbiert.",
+            "footNone": "GS halbiert.",
+            "neckFatal": "Tödlich (ab 8 SP).",
+            "neck": "Blutend (1W3+1 SP je KR).",
+            "hand": "+1 Stufe Schmerz, Hand unbrauchbar.",
+            "handNone": "Unter 5 SP: keine Folge."
+          },
+          "Roll": "1W3+1 SP würfeln",
+          "RollFlavor": "Gezielter Treffer ({zone}): zusätzliche SP",
+          "NotOwner": "Den Zustand setzt die Spielleitung oder wer das Ziel führt."
+        }
       }
     },
     "NoConditions": "Keine Zustände.",

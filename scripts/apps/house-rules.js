@@ -19,7 +19,7 @@ export function getHouseRulesApp() {
       classes: ['dsa5-helpers-house-rules'],
       window: { title: 'DSA5HELPERS.HouseRules.Title', icon: 'fas fa-book', resizable: true },
       position: { width: 640, height: 640 },
-      actions: { setView: this._setView, openPage: this._openPage, turnPage: this._turnPage, toggleRule: this._toggleRule, toggleManeuver: this._toggleManeuver },
+      actions: { setView: this._setView, openPage: this._openPage, turnPage: this._turnPage, toggleRule: this._toggleRule, toggleManeuver: this._toggleManeuver, jumpTo: this._jumpTo },
     };
 
     static PARTS = { main: { template: `modules/${MODULE_ID}/templates/house-rules.hbs`, scrollable: ['.dsa5h-hr-body'] } };
@@ -89,6 +89,10 @@ export function getHouseRulesApp() {
       if (!game.user.isGM) return;
       await setRuleActive(target.dataset.ruleId, !isRuleActive(target.dataset.ruleId));
     }
+    /** Sprungleiste langer Seiten (Grundmanöver): zum Abschnitt scrollen, unter der klebenden Leiste. */
+    static _jumpTo(_event, target) {
+      jumpToSection(this.element, target.dataset.jump);
+    }
     static async _toggleManeuver(_event, target) {
       if (!game.user.isGM) return;
       const id = target.dataset.maneuver;
@@ -96,6 +100,17 @@ export function getHouseRulesApp() {
     }
   };
   return HouseRulesApp;
+}
+
+/** Scrollt den Buchinhalt zum Abschnitt `[data-jump-target=key]`; die Sprungleiste klebt oben und wird abgezogen. */
+export function jumpToSection(root, key) {
+  const body = root?.querySelector('.dsa5h-hr-body');
+  const section = root?.querySelector(`[data-jump-target="${key}"]`);
+  if (!body || !section) return;
+  const bar = root.querySelector('.dsa5h-hr-jump')?.offsetHeight ?? 0;
+  const top = section.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop - bar - 8;
+  const smooth = !globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  body.scrollTo({ top: Math.max(0, top), behavior: smooth ? 'smooth' : 'auto' });
 }
 
 /** Öffnet (oder holt nach vorn) das Hausregelbuch, optional direkt auf der Seite einer Regel. */

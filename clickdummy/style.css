@@ -5309,6 +5309,12 @@ button.fav-chip-roll {
   outline-offset: 1px;
 }
 
+/* Schwachpunkte eines Gegners (#48): Vorteil, darum in der Akzentfarbe. */
+.maneuver-status.maneuver-weakness {
+  font-size: var(--fs-small);
+  color: var(--accent);
+}
+
 @media (hover: hover) {
   .maneuver-btn:hover {
     border-color: var(--accent);
@@ -7814,6 +7820,50 @@ button.fav-chip-roll {
 .dsa5-helpers-house-rules .dsa5h-hr-note {
   color: var(--muted);
   font-size: var(--fs-small);
+}
+
+/* Sprungleiste langer Seiten (Grundmanöver, Nutzer 2026-10-21): klebt beim Scrollen oben auf dem Blatt, Klick springt
+   zum Abschnitt (jumpToSection in scripts/apps/house-rules.js). */
+.dsa5-helpers-house-rules .dsa5h-hr-jump {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 -8px 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  background: var(--page);
+  box-shadow: 0 4px 6px -4px rgba(0,0,0,.25);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-jump button {
+  flex: none;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 18px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-jump button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-house-rules .dsa5h-hr-jump button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 }
 
 /* Grundmanöver (Paladose, #45): Überschrift je Manöver mit eigenem Schalter, Tabellen mit Text in der ersten Spalte. */

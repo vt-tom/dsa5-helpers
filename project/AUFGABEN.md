@@ -15,6 +15,7 @@ Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen f�
 
 - Der Nutzer arbeitet die Rückmeldungen von Lyynix ein und entscheidet, welche Issues dazukommen.
 - **Enthalten:** #36 Rüstung mittig über der Figur (Wappenschild, Trefferzonen), Waffenkarte in drei Bändern, Lesbarkeit im Körper-Reiter.
+- **#48 Grundmanöver Stufe 3** (2026-10-21) umgesetzt und in der Testinstanz geprüft (Wulfgrimm gegen Skelett, Eshila als Verbündete): Schwachpunkte erkennen (Probe, QS-Dialog, Chatkarte, Mitteilen), TP-Bonus im Angriff und PA-Bonus in der Parade angehakt, Trefferfolgen in der Ergebniskarte (Kopf → Betäubung, Bein → Liegend, Knopf setzt den Zustand), Finte/Wuchtschlag/Vorstoß im Probendialog ausgeblendet. Entscheidungen des Nutzers: Boni angehakt; nach „Mitteilen“ für alle nur noch bis Ende der nächsten KR; Trefferfolgen nur Hinweis + Knöpfe; gleichwertige SF nur im Probendialog ausblenden (kein Ausgrauen im Bogen, kein AP-Hinweis). „Stören und Ablenken“ wartet weiter auf den Regeltext. Offen an Paladose: Geister/Elementare würfeln laut Text Tierkunde (nur Dämonen Sphärenkunde) – so umgesetzt. Nebenbei behoben: die Dialog-Stile der Manöverzeilen griffen auch im Block des Bogens (grau, gerahmt).
 - **#44 und #45** vom Nutzer abgenommen (2026-10-21). **#39** Kacheln auf gleiche Größe umgestellt, **HUD** mit Einstellungen/Hausregelbuch als Chips (Rückmeldung 2026-10-21). Ursprünglich: **#44, #45, #39 und eigenes HUD** nach der Rückmeldung vom 2026-10-21 umgesetzt und in der Testinstanz geprüft (Wulfgrimm, SL): Grundmanöver als eigener Abschnitt im Kampf-Probendialog (Klick/Rechtsklick, Wert verrechnet), Helfen als Schalter im Talent-Probendialog (Wurf → Chatnachricht mit QS, „Vergleichend“ ausgeblendet; ⋮-Eintrag entfällt), Reiter Aufträge/Personen mit echten Almanach-Journalen (Klick öffnet den Almanach am Eintrag), HUD-Reiter in der DSA-Leiste mit allen fünf Einträgen (bleibt beim Neuzeichnen offen). Offen siehe „Live prüfen (0.6.1)“.
 - Die Beta 0.6.0 wird damit nicht mehr zum normalen Release erklärt; zum stabilen Release wird später die letzte gute 0.6.x-Beta. Dann die Issues der Meilensteine `0.6.0` und `0.6.1` schließen und nach `main` mergen.
 
@@ -23,6 +24,8 @@ Seit 2026-10-20 in Arbeit, abgezweigt von `release/0.6.0`. Weitere Funktionen f�
 - **#46 Bannerbild:** Windows-Datei-Dialog vom Nutzer bestätigt; Tablet/Handy und The Forge (`forgevtt`) warten auf Rückmeldungen der Nutzer.
 
 ### Live prüfen (0.6.1)
+
+- **#48** als Spieler: Mitteilen-Knopf nur für den eigenen Helden, Zustands-Knöpfe nur mit Besitz am Ziel; Verbündete über die Token-Gesinnung (gleich wie der Erkennende). Englischer Name von Vorstoß (SF) unbekannt, ausgeblendet wird nur „Vorstoß“.
 
 - **#39 Aufträge/Personen** als Spieler ansehen: in der Testwelt sind Aufträge und Personen im Almanach für Spieler ausgeschaltet (`calendarFeatureVisibility`), dann fehlen die Reiter bewusst. Persönliche Aufträge (Publikum = bestimmte Spieler) prüfen. Mobil-Ansicht der beiden Reiter (Handy/Tablet) noch nicht angesehen; `clickdummy/mobile/` hat sie nicht.
 - **HUD-Reiter** (Chips, Rückmeldung 2026-10-21 eingearbeitet, in der Testinstanz geprüft): als Spieler und mit senkrechter DSA-Leiste (Einstellung Layout) ansehen; kommen weitere Einträge dazu, wird der Abschnitt scrollbar.

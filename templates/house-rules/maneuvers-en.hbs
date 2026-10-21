@@ -1,4 +1,5 @@
 {{! "Options in Combat" by Paladose (publication with the module approved, 2026-10-20), English translation. }}
+<nav class="dsa5h-hr-jump" aria-label="Sections"><button type="button" data-action="jumpTo" data-jump="module">In the module</button><button type="button" data-action="jumpTo" data-jump="actions">Actions in combat</button><button type="button" data-action="jumpTo" data-jump="attack">Attack</button><button type="button" data-action="jumpTo" data-jump="feint">Feint attack</button><button type="button" data-action="jumpTo" data-jump="ranged">Ranged attack</button><button type="button" data-action="jumpTo" data-jump="targeted">Targeted attack</button><button type="button" data-action="jumpTo" data-jump="mighty">Mighty attack</button><button type="button" data-action="jumpTo" data-jump="weakness">Weak spots</button><button type="button" data-action="jumpTo" data-jump="stance">Defensive stance</button><button type="button" data-action="jumpTo" data-jump="advance">Advance</button><button type="button" data-action="jumpTo" data-jump="aim">Aim</button></nav>
 <section class="dsa5h-hr-section">
   <h3>Options in Combat</h3>
   <p>In every edition, TDE is a duel simulator when it comes to combat. TDE5 is especially regulated, as it fundamentally denies characters access to even the simplest actions or maneuvers. The following rules make many basic maneuvers available to all characters. They are listed as basic maneuvers and are an option in combat. For completeness, all other possible actions are listed as well.</p>
@@ -6,17 +7,18 @@
 </section>
 
 <section class="dsa5h-hr-section">
-  <h3>How it works in the module</h3>
+  <h3 data-jump-target="module">How it works in the module</h3>
   <ul>
     <li>The basic maneuvers appear in the system's roll dialog for attack, parry and dodge in a separate "Basic maneuvers" section below the special abilities. They work like the special abilities: click for the next level (then off again), right-click for one level back; the row shows the effect (e.g. "Advance (COU 15)" · "AT +4").</li>
     <li>A maneuver only appears if it is allowed with the weapon used (by combat technique, see notes). The module does not check special cases of individual weapons or circumstances – GM and players take care of these themselves.</li>
     <li>The combination rule (see "Using basic maneuvers") is shown, not enforced.</li>
     <li>Defensive stance and aiming are switched in the combat tab of the hero sheet ("Basic maneuvers" block) or in the ⋮ menu of the system sheet. If the basic maneuver Aim is on, the system's own aiming is not used.</li>
+    <li>While a basic maneuver is on, the roll dialog hides the equivalent special ability of the system so nothing counts twice: Feint attack replaces Feint, Mighty attack replaces Forceful Blow, Advance replaces Advance (SA), Defensive stance replaces Defensive Posture (SA).</li>
   </ul>
 </section>
 
 <section class="dsa5h-hr-section">
-  <h3>Actions in combat</h3>
+  <h3 data-jump-target="actions">Actions in combat</h3>
   <h4>Using basic maneuvers</h4>
   <p>Unless stated otherwise, a player may have their character use a basic maneuver and describe it as colorfully as they like. Basic maneuvers are described in detail below. Per attack, one basic maneuver may be combined with one basic maneuver or one special maneuver. Passive maneuvers may be added freely.</p>
   <h4>Using the combat environment</h4>
@@ -33,22 +35,22 @@
 
 <section class="dsa5h-hr-section">
   <h3>Basic maneuvers</h3>
-  <h4>Attack</h4>
+  <h4 data-jump-target="attack">Attack</h4>
   <p><em>Bravely, weapon in hand, the hero steps towards his opponent and strikes at him.</em></p>
   <p><strong>Rule:</strong> The hero attacks his opponent either unarmed or with a melee weapon. The hero rolls equal to or below his attack value. The roll or the attack value can be affected by various factors.</p>
 
-  <div class="dsa5h-hr-maneuver-head"><h4>Feint attack</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="feint"}}</div>
+  <div class="dsa5h-hr-maneuver-head"><h4 data-jump-target="feint">Feint attack</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="feint"}}</div>
   <p><em>The heroine raises her weapon to bring it down on her foe… only to strike from a completely different direction at the last moment with a deft turn of her hands, getting past her opponent's guard.</em></p>
   <p><strong>Rule:</strong> The heroine feints an attack from one direction. She penalizes her attack by up to −2. If the attack succeeds, her opponent is forced to open up: the opponent's parry is penalized by the same amount until the heroine's next attack. If the parry succeeds, the opponent saw through the feint and was quick enough. If it fails, the feint worked and the heroine hit her opponent with a surprising change of direction.</p>
   <p>The higher the heroine's AGI, the better and more effective she becomes at feinting.</p>
   <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>AGI</th><th>AT/PA penalty</th></tr></thead><tbody><tr><td>up to 12</td><td>−2</td></tr><tr><td>13</td><td>−4</td></tr><tr><td>15</td><td>−6</td></tr><tr><td>17</td><td>−8</td></tr></tbody></table>
   <p class="dsa5h-hr-note"><strong>Note:</strong> This maneuver can only be performed with daggers, fencing weapons, impact weapons, swords, polearms and brawling. Exceptions are listed at the respective weapons.</p>
 
-  <h4>Ranged attack</h4>
+  <h4 data-jump-target="ranged">Ranged attack</h4>
   <p><em>Bow, crossbow or throwing knife in hand, a hero attacks distant foes.</em></p>
   <p><strong>Rule:</strong> The hero attacks his opponent with a ranged weapon. The hero rolls equal to or below his attack value. The roll or attack value can be affected by various factors (distance, movement, visibility etc.).</p>
 
-  <div class="dsa5h-hr-maneuver-head"><h4>Targeted attack/shot</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="targeted"}}</div>
+  <div class="dsa5h-hr-maneuver-head"><h4 data-jump-target="targeted">Targeted attack/shot</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="targeted"}}</div>
   <p><em>Sometimes it is necessary to take out specific body parts of an opponent.</em></p>
   <p><strong>Rule:</strong> The heroine attacks a specific zone of her opponent. Depending on the zone, the attack roll is penalized and a hit has a different effect.</p>
   <div class="dsa5h-hr-table-wrap"><table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>Hit zone</th><th>Penalty</th><th>Effects</th><th>Resistance check</th></tr></thead><tbody>
@@ -64,34 +66,34 @@
   <p class="dsa5h-hr-note"><strong>Note:</strong> Targeted attacks are generally possible with all weapons. Exceptions or separate penalties are listed at the respective weapons.</p>
   <p>The SA "Targeted Attack" halves all penalties. The higher a hero's INT, the more the penalty for targeted attacks is reduced. In total it can never be less than −1.</p>
   <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>INT</th><th>Penalty reduction</th></tr></thead><tbody><tr><td>up to 12</td><td>0</td></tr><tr><td>13</td><td>+1</td></tr><tr><td>15</td><td>+2</td></tr><tr><td>17</td><td>+3</td></tr></tbody></table>
-  <p class="dsa5h-hr-note">In the module: the SA halves first, then the INT reduction is applied. At exactly 5 DP (eye, hand) or 8 DP (neck) the fatal effects already apply. The GM handles the effects of a hit (automation will follow later).</p>
+  <p class="dsa5h-hr-note">In the module: the SA halves first, then the INT reduction is applied. At exactly 5 DP (eye, hand) or 8 DP (neck) the fatal effects already apply. If the targeted attack hits, the result card in the chat names the effect matching the DP after armor, plus the resistance check; if that fails, buttons set the condition on the target (GM or whoever controls the target).</p>
 
-  <div class="dsa5h-hr-maneuver-head"><h4>Mighty attack</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="mighty"}}</div>
+  <div class="dsa5h-hr-maneuver-head"><h4 data-jump-target="mighty">Mighty attack</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="mighty"}}</div>
   <p><em>With all his might the hero grips his weapon and smashes it into his opponent.</em></p>
   <p><strong>Rule:</strong> The hero strikes forcefully at the expense of accuracy. He penalizes his attack by up to −2. If the attack succeeds and is not defended, the hero's damage increases by up to +2, depending on the penalty.</p>
   <p>The higher the hero's STR, the higher the penalty and damage he can deal. Mighty attack only works with melee weapons.</p>
   <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>STR</th><th>Max. AT penalty</th><th>Damage bonus</th></tr></thead><tbody><tr><td>up to 12</td><td>−2</td><td>+2</td></tr><tr><td>13</td><td>−4</td><td>+4</td></tr><tr><td>15</td><td>−6</td><td>+6</td></tr><tr><td>17</td><td>−8</td><td>+8</td></tr></tbody></table>
   <p class="dsa5h-hr-note"><strong>Note:</strong> This maneuver can be performed with all weapons except ranged weapons, fans, fencing weapons, lances and whips. Exceptions are listed at the respective weapon.</p>
 
-  <h4>Recognize weak spots</h4>
+  <div class="dsa5h-hr-maneuver-head"><h4 data-jump-target="weakness">Recognize weak spots</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="weakness"}}</div>
   <p><em>The heroine pauses to analyze her own or another opponent on the battlefield, revealing weak spots in fighting style and/or equipment.</em></p>
   <p><strong>Rule:</strong> As an action, the heroine makes a check on Knowledge of Human Nature (for cultured beings), Animal Lore (for animals and monsters) or Sphere Lore (for demons). For each full QL she may either raise her PA or reduce the opponent's PRO. Armor reduction does not work against demons, ghosts, elementals or magical protection. The bonus or penalty applies only against one opponent until the end of combat. Further opponents must be analyzed separately. The bonus can be shared with others. This costs a free action and the bonus is then only active for one round, as the opponent, if a cultured being, no longer shows any weakness and watches out for weak spots from then on.</p>
-  <p class="dsa5h-hr-note">Not automated in the module yet – the GM handles this maneuver manually.</p>
+  <p class="dsa5h-hr-note">In the module: target the opponent, then use "Recognize weak spots" in the combat tab ("Basic maneuvers" block), in the ⋮ menu of the system sheet or in the DSA bar. The module picks the skill by the kind of opponent; after the check you split the QL between PA and DP (DP +1 stands for PRO −1; against demons, ghosts and elementals PA only, the GM keeps an eye on magical protection). The bonuses are then pre-selected in the roll dialog: DP when attacking this opponent, PA when parrying their attacks. "Share" in the chat card gives them to all allies in the combat (same token disposition); from then on they last for everyone only until the end of the next combat round.</p>
 
-  <div class="dsa5h-hr-maneuver-head"><h4>Defensive stance</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="stance"}}</div>
+  <div class="dsa5h-hr-maneuver-head"><h4 data-jump-target="stance">Defensive stance</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="stance"}}</div>
   <p><em>Not every hero wants to join every brawl. If the hero would rather look out for himself, he can limit himself to defending against attacks.</em></p>
   <p><strong>Rule:</strong> The hero forgoes attacks and uses his attention to defend. He may not take offensive actions but may move. He gains +2 on PA and dodge. The bonus lasts until the hero leaves or breaks off the defensive stance. Defensive stance must be announced at the beginning of the combat round.</p>
   <p>The higher the hero's INT, the higher the defense bonus.</p>
   <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>INT</th><th>Bonus</th></tr></thead><tbody><tr><td>up to 12</td><td>+2</td></tr><tr><td>13</td><td>+4</td></tr><tr><td>15</td><td>+6</td></tr><tr><td>17</td><td>+8</td></tr></tbody></table>
   <p class="dsa5h-hr-note"><strong>Note:</strong> Defensive stance cannot be used with ranged weapons, chain weapons, lances or whips.</p>
 
-  <div class="dsa5h-hr-maneuver-head"><h4>Advance</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="advance"}}</div>
+  <div class="dsa5h-hr-maneuver-head"><h4 data-jump-target="advance">Advance</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="advance"}}</div>
   <p><em>A surprising, quick attack can bring a sure hit, but most then open themselves to a devastating counterattack.</em></p>
   <p><strong>Rule:</strong> The hero's attack increases by +2. In return he accepts a −4 penalty on parry and dodge until the end of the combat round. The higher the hero's COU, the more bonuses and penalties change.</p>
   <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>COU</th><th>Bonus/penalty</th></tr></thead><tbody><tr><td>up to 12</td><td>+2/−4</td></tr><tr><td>13</td><td>+2/−2</td></tr><tr><td>15</td><td>+4/−2</td></tr><tr><td>17</td><td>+4/0</td></tr></tbody></table>
   <p class="dsa5h-hr-note"><strong>Note:</strong> This maneuver can only be performed with daggers, fans, fencing weapons, impact weapons, chain weapons, swords, pikes, polearms, two-handed impact weapons and two-handed swords and in brawling.</p>
 
-  <div class="dsa5h-hr-maneuver-head"><h4>Aim (with a ranged weapon)</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="aim"}}</div>
+  <div class="dsa5h-hr-maneuver-head"><h4 data-jump-target="aim">Aim (with a ranged weapon)</h4>{{> "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs" id="aim"}}</div>
   <p><em>Sometimes the hero needs to take his time for a sure and deadly shot or throw.</em></p>
   <p><strong>Rule:</strong> The hero forgoes the ranged attack but fixes his target. Ranged combat and damage with the weapon each increase by +1. A hero can aim for at most two rounds, the bonuses of each round adding up. The higher the hero's DEX, the more the bonuses change.</p>
   <table class="dsa5h-hr-table dsa5h-hr-maneuver-table"><thead><tr><th>DEX</th><th>RC/damage bonus</th><th>Max. rounds of aiming</th></tr></thead><tbody><tr><td>up to 12</td><td>+1/+1</td><td>2</td></tr><tr><td>13</td><td>+2/+1</td><td>2</td></tr><tr><td>15</td><td>+2/+2</td><td>3</td></tr><tr><td>17</td><td>+3/+2</td><td>3</td></tr></tbody></table>

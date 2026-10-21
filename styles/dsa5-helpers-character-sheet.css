@@ -4758,6 +4758,11 @@
   color: var(--dmg);
 }
 
+/* Schwachpunkte eines Gegners sind ein Vorteil, nicht rot wie der Vorstoß-Malus (#48). */
+.dsa5-helpers-sheet .dsa5h-maneuver-status.dsa5h-maneuver-weakness {
+  color: var(--accent);
+}
+
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-maneuver-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
@@ -6511,7 +6516,7 @@
   font-size: 13px;
   border-bottom: 1px solid var(--border-color, #736953a6);
 }
-.application .dsa5h-maneuver-row {
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -6526,17 +6531,44 @@
   user-select: none;
 }
 /* Aktiv in der Farbe der Dialog-Beschriftungen (helle Schrift unter Foundrys dunklem Thema wäre auf Pergament blass). */
-.application .dsa5h-maneuver-row.active {
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active {
   color: var(--color-form-label, inherit);
   border-color: #cf1e1e;
 }
-body.theme-dark .application .dsa5h-maneuver-row.active { border-color: var(--dsa-danger, #cf1e1e); }
-.application .dsa5h-maneuver-row i { width: 16px; text-align: center; }
-.application .dsa5h-maneuver-name { flex: 1; min-width: 0; }
+body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { border-color: var(--dsa-danger, #cf1e1e); }
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-row i { width: 16px; text-align: center; }
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-name { flex: 1; min-width: 0; }
 /* Wirkung der gewählten Stufe als zweite Zeile unter dem Namen (passt so in die schmale rechte Spalte). */
-.application .dsa5h-maneuver-step { flex-basis: 100%; padding-left: 22px; font-size: 12px; font-weight: bold; line-height: 16px; }
-.application .dsa5h-maneuver-step:empty { display: none; }
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-step { flex-basis: 100%; padding-left: 22px; font-size: 12px; font-weight: bold; line-height: 16px; }
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-step:empty { display: none; }
 .application .dsa5h-maneuver-panel .dsa5h-maneuver-hint { margin-top: 6px; }
+
+/* Grundmanöver Stufe 3 (#48): Chatkarten „Schwachpunkte erkannt“ und Trefferfolge in der Ergebniskarte des Systems,
+   Verteil-Dialog der QS. */
+.chat-message .dsa5h-weakness-share,
+.chat-message .dsa5h-hit-buttons button {
+  width: auto;
+  margin: 6px 6px 0 0;
+  padding: 0 8px;
+  line-height: 24px;
+  font-size: var(--font-size-12, 12px);
+}
+.chat-message .dsa5h-hit-consequence {
+  margin-top: 6px;
+  padding: 4px 6px;
+  border-left: 3px solid #b99a5c;
+  background: rgba(185, 154, 92, .12);
+}
+.chat-message .dsa5h-hit-consequence.fatal { border-left-color: #cf1e1e; }
+.chat-message .dsa5h-hit-consequence small { display: block; opacity: .8; }
+.chat-message .dsa5h-hit-buttons { display: flex; flex-wrap: wrap; }
+.application .dsa5h-weakness-split {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.application .dsa5h-weakness-split label { flex: none; white-space: nowrap; }
 
 /* Hausregeln im Standardbogen des Systems (Issue #44, scripts/house-rules/system-sheet.js): kleines Symbol hinter dem
    Talentnamen statt Foundrys großem Standardknopf. */
@@ -7544,6 +7576,50 @@ body.theme-dark .application .dsa5h-maneuver-row.active { border-color: var(--ds
 .dsa5-helpers-house-rules .dsa5h-hr-note {
   color: var(--muted);
   font-size: var(--fs-small);
+}
+
+/* Sprungleiste langer Seiten (Grundmanöver, Nutzer 2026-10-21): klebt beim Scrollen oben auf dem Blatt, Klick springt
+   zum Abschnitt (jumpToSection in scripts/apps/house-rules.js). */
+.dsa5-helpers-house-rules .dsa5h-hr-jump {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 -8px 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  background: var(--page);
+  box-shadow: 0 4px 6px -4px rgba(0,0,0,.25);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-jump button {
+  flex: none;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 18px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-jump button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-house-rules .dsa5h-hr-jump button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 }
 
 /* Grundmanöver (Paladose, #45): Überschrift je Manöver mit eigenem Schalter, Tabellen mit Text in der ersten Spalte. */

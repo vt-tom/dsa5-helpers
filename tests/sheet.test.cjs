@@ -59,7 +59,7 @@ const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('b
 // Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
 // help-action.js importiert maneuvers.js relativ (hideModifierRows).
 function helpActionUrl(){return dataUrl(read('scripts/house-rules/help-action.js').replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))));}
-function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(helpActionUrl())).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))).replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))));}
+function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(helpActionUrl())).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))).replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))).replace("'./hit-consequences.js'",JSON.stringify(dataUrl(read('scripts/house-rules/hit-consequences.js')))));}
 function houseRulesAppUrl(){return dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())));}
 async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'./almanac.js'",JSON.stringify(dataUrl(read('scripts/sheets/almanac.js')))).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
@@ -701,9 +701,69 @@ test('Grundmanöver (#45): Stufen, Waffenfilter, Modifikatoren im Probendialog, 
   assert.deepEqual(M.splitModifierName({name:'Vorstoß: Malus aktiv',value:-2}),{title:'Vorstoß',step:'Malus aktiv -2'});
   assert.deepEqual([M.nextStep(-1,3),M.nextStep(2,3),M.nextStep(0,3,true),M.nextStep(-1,3,true)],[0,-1,-1,-1]);
   for(const l of ['de','en']){const m=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.HouseRules.maneuvers;for(const k of ['PanelHint','RowHint','RowHintSingle'])assert(m[k],l+' '+k);}
-  // Buchseite: beide Sprachen mit je sechs Einzelschaltern, „Stören und Ablenken“ fehlt.
-  for(const l of ['de','en']){const page=read(`templates/house-rules/maneuvers-${l}.hbs`);assert.equal((page.match(/maneuver-toggle\.hbs/g)||[]).length,6,l);assert(!/Stören und Ablenken|Disrupt and distract/i.test(page),l);}
+  // Buchseite: beide Sprachen mit je sieben Einzelschaltern (#48: Schwachpunkte erkennen), „Stören und Ablenken“ fehlt.
+  for(const l of ['de','en']){const page=read(`templates/house-rules/maneuvers-${l}.hbs`);assert.equal((page.match(/maneuver-toggle\.hbs/g)||[]).length,7,l);assert(!/Stören und Ablenken|Disrupt and distract/i.test(page),l);}
+  // Sprungleiste: jeder Knopf hat genau ein Ziel, beide Sprachen gleich (Nutzer 2026-10-21).
+  const jumps=l=>{const page=read(`templates/house-rules/maneuvers-${l}.hbs`);const keys=[...page.matchAll(/data-jump="(\w+)"/g)].map(m=>m[1]);for(const k of keys)assert.equal(page.split(`data-jump-target="${k}"`).length,2,l+' Ziel '+k);return keys;};
+  assert.deepEqual(jumps('de'),jumps('en'));assert(jumps('de').length>=10);
+  assert(read('scripts/apps/house-rules.js').includes('jumpTo: this._jumpTo'),'Aktion jumpTo');
   const entry=read('scripts/dsa5-helpers.js');for(const p of ['maneuvers.hbs','maneuvers-de.hbs','maneuvers-en.hbs','maneuver-toggle.hbs'])assert(entry.includes('templates/house-rules/'+p),p+' wird geladen');
+ } finally { global.game=saved; }
+});
+test('Grundmanöver Stufe 3 (#48): Schwachpunkte erkennen, gleichwertige SF, Folgen gezielter Treffer',async()=>{
+ const saved=global.game;
+ try {
+  const M=await import(dataUrl(read('scripts/house-rules/maneuvers.js')));
+  const loc=k=>({'LocalizedCTs.Schwerter':'Swords','LocalizedCTs.Bögen':'Bows'})[k]??k;
+  global.game={...saved,i18n:{localize:loc,format:(k,d)=>k+JSON.stringify(d)}};
+  const w=(type,ct,mode='attack')=>({mode,source:{type,system:{combatskill:{value:ct}}}});
+  // Gegnerart → Talent; TP-Bonus nicht gegen Dämonen, Geister, Elementare.
+  assert.deepEqual(M.foeKind(['DemonType'],'creature'),{kind:'demon',noArmor:true});
+  assert.deepEqual(M.foeKind([],'npc'),{kind:'culture',noArmor:false},'NSC ohne Typ ist kulturschaffend');
+  assert.deepEqual(M.foeKind(['IntelligentCreatureType'],'creature'),{kind:'culture',noArmor:false});
+  assert.deepEqual(M.foeKind(['AnimalType'],'creature'),{kind:'animal',noArmor:false});
+  assert.equal(M.foeKind(['GhostType'],'creature').noArmor,true);
+  const hero={name:'Alrik',items:[{type:'skill',name:'Menschenkenntnis'},{type:'skill',name:'Sphärenkunde'}]};
+  assert.equal(M.weaknessSkill(hero,'culture').name,'Menschenkenntnis');assert.equal(M.weaknessSkill(hero,'animal'),undefined,'ohne Tierkunde');
+  // Gültigkeit: bis Kampfende; nach dem Mitteilen für alle nur bis Ende der nächsten Runde.
+  const cur={combat:'c1',round:3};
+  assert(M.weakPointValid({combat:'c1',sharedRound:null},{combat:'c1',round:9}));assert(!M.weakPointValid({combat:'c0',sharedRound:null},cur),'anderer Kampf');
+  assert(M.weakPointValid({combat:'c1',sharedRound:2},cur));assert(!M.weakPointValid({combat:'c1',sharedRound:1},cur),'mitgeteilt: abgelaufen');
+  const flag=weakness=>({getFlag:()=>({weakness})});
+  const me=flag({tokA:{combat:'c1',name:'Ork',pa:1,tp:2,sharedRound:null}});
+  assert.deepEqual(M.weakPointBonus(me,'tokA',cur),{name:'Ork',pa:1,tp:2});assert.equal(M.weakPointBonus(me,'tokB',cur),null);
+  const ally={...flag({tokB:{combat:'c1',name:'Wolf',pa:0,tp:3,sharedRound:3}}),name:'Gerling'};const quiet=flag({tokB:{combat:'c1',name:'Wolf',pa:3,tp:0,sharedRound:null}});
+  assert.deepEqual(M.weakPointBonus(me,'tokB',cur,[quiet,ally]),{name:'Wolf',pa:0,tp:3,from:'Gerling'},'nur Mitgeteiltes von Verbündeten');
+  // Modifikatoren: TP angehakt beim Angriff, PA nur bei der Parade, nichts beim Ausweichen oder abgeschaltet.
+  const actor={type:'character',items:[],system:{characteristics:{mu:{value:12},ge:{value:12},kk:{value:12},in:{value:12},ff:{value:12}}}};
+  const none={advanceMalus:0,stance:false,aim:0,weakness:[]};const weak={name:'Ork',pa:1,tp:2};
+  const pick=(ctx,o={})=>M.buildModifiers(actor,ctx,{enabled:['weakness'],st:none,weak,t:k=>k,localize:loc,...o});
+  let mods=pick(w('meleeweapon','Schwerter'));assert.deepEqual(mods.map(m=>[m.ref.id,m.value,m.damageBonus,m.selected]),[['dsa5h:weakness',0,2,true]]);
+  assert.deepEqual(pick(w('rangeweapon','Bögen')).map(m=>m.damageBonus),[2],'auch Fernkampf');
+  assert.deepEqual(pick(w('meleeweapon','Schwerter','parry')).map(m=>[m.value,m.selected]),[[1,true]],'PA bei der Parade');
+  assert.deepEqual(pick({source:{type:'dodge'}}),[],'nicht beim Ausweichen');assert.deepEqual(pick(w('meleeweapon','Schwerter'),{enabled:[]}),[],'abgeschaltet');
+  assert.deepEqual(pick(w('meleeweapon','Schwerter'),{weak:null}),[]);
+  assert.equal(M.maneuverGroup('dsa5h:weakness'),'weakness','eigene Zeile im Abschnitt Grundmanöver');
+  // Gleichwertige SF nur ausblenden, wenn das Grundmanöver an ist.
+  const all=M.MANEUVER_IDS;
+  assert.deepEqual(['Finte','Feint','Wuchtschlag','Forceful Blow','Vorstoß','Verteidigungshaltung','Defensive Posture','Sturmangriff','Finte (Waffenlos)'].map(n=>M.replacedBy(n,all)),['feint','feint','mighty','mighty','advance','stance','stance',null,'feint']);
+  assert.equal(M.replacedBy('Wuchtschlag',['feint']),null,'Mächtiger Angriff aus');assert.equal(M.replacedBy('Vorstoßen',all),null,'nur ganzes Wort');
+  // Folgen gezielter Treffer (Tabelle Paladose; genau 5 bzw. 8 SP sind schon fatal).
+  const H=await import(dataUrl(read('scripts/house-rules/hit-consequences.js')));
+  assert.equal(H.targetedZone([{ref:{id:'dsa5h:feint:1'}},{selected:false,ref:{id:'dsa5h:targeted:eye'}},{ref:{id:'dsa5h:targeted:neck'}}]),'neck','nur angehakt');
+  assert.equal(H.targetedZone([{name:'x'}]),null);
+  assert.equal(H.hitConsequence('head',0),null,'ohne SP keine Folge');
+  assert.deepEqual(H.hitConsequence('head',11).conditions,[{id:'stunned',value:2}]);assert.deepEqual(H.hitConsequence('head',4).conditions,[]);
+  assert.equal(H.hitConsequence('torso',3).roll,'1d3+1');assert.deepEqual(H.hitConsequence('leg',1).conditions,[{id:'prone',value:1}]);
+  assert.deepEqual([4,5].map(sp=>H.hitConsequence('eye',sp).conditions[0].id),['blind','dead']);
+  assert.deepEqual([7,8].map(sp=>H.hitConsequence('neck',sp).conditions[0].id),['bleeding','dead']);
+  assert.deepEqual([4,5].map(sp=>H.hitConsequence('hand',sp).conditions),[[],[{id:'inpain',value:1}]]);
+  assert.deepEqual(H.hitConsequence('foot',10).conditions,[{id:'inpain',value:2}]);
+  assert.deepEqual(['head','torso','arm','leg','eye','foot','neck','hand'].map(z=>H.hitConsequence(z,6).resist),['composure','composure','disturb','disturb','death','composure','firstAid','composure']);
+  // Texte in beiden Sprachen.
+  for(const l of ['de','en']){const m=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.HouseRules.maneuvers;
+   for(const k of ['Name','Button','ButtonHint','HudHint','Attr','Value','NoCombat','NoTarget','Self','NoSkill','Share','Shared','NotOwner','Expired','Status','StatusShared','Dialog.Title','Dialog.Intro','Dialog.NoArmor','Dialog.MagicArmor','Dialog.Confirm','Chat.Success','Chat.Failure','Chat.Shared'])assert(k.split('.').reduce((o,p)=>o?.[p],m.weakness),l+' weakness.'+k);
+   for(const k of ['Title','Resist','Roll','RollFlavor','NotOwner','Resists.composure','Resists.disturb','Resists.death','Resists.firstAid','Effect.head','Effect.headNone','Effect.torso','Effect.arm','Effect.leg','Effect.eye','Effect.eyeFatal','Effect.foot','Effect.footNone','Effect.neck','Effect.neckFatal','Effect.hand','Effect.handNone'])assert(k.split('.').reduce((o,p)=>o?.[p],m.hits),l+' hits.'+k);}
  } finally { global.game=saved; }
 });
 test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, Einstellung je Welt',async()=>{
@@ -855,7 +915,7 @@ test('Waffe aus einem Behälter: Plakette am Gegenstand, Anlegen nimmt sie herau
 });
 test('Eigenes HUD: Reiter in der DSA-Leiste, oben Einstellungen/Hausregelbuch, darunter aktive Hausregeln mit Zustand',async()=>{
  // Importe durch Attrappen ersetzen: hudEntries bekommt seine Abhängigkeiten ohnehin als Parameter.
- const src=read('scripts/hud.js').replace(/^import .*$/gm,'').replace(/^/,'const isRuleActive=()=>false,runWoundCheck=()=>{},findTreatWounds=()=>null,helpAction=()=>{},toggleStance=()=>{},aimRound=()=>{},enabledManeuvers=()=>[],maneuverSheetData=()=>null,openHouseRules=()=>{},openDiceStats=()=>{},diceStatsEnabled=()=>false;\n');
+ const src=read('scripts/hud.js').replace(/^import .*$/gm,'').replace(/^/,'const isRuleActive=()=>false,runWoundCheck=()=>{},findTreatWounds=()=>null,helpAction=()=>{},toggleStance=()=>{},aimRound=()=>{},recognizeWeakPoints=()=>{},enabledManeuvers=()=>[],maneuverSheetData=()=>null,openHouseRules=()=>{},openDiceStats=()=>{},diceStatsEnabled=()=>false;\n');
  const H=await import(dataUrl(src));const hero={type:'character',isOwner:true};
  const list=(actor,o)=>H.hudEntries(actor,{active:()=>false,maneuvers:()=>[],diceStats:()=>false,treatWounds:()=>null,maneuverState:()=>({stance:{active:true},aim:{count:1,max:3}}),...o});
  const ids=(actor,o)=>list(actor,o).map(e=>e.id);

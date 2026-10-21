@@ -1318,9 +1318,10 @@ function renderCombatActions() {
 // Talent (im Modul DialogV2 mit <select> nach Talentgruppen), würfelt über den Probendialog des Systems und nennt die
 // übrig behaltenen QS als Erleichterung im Chat — anrechnen muss der Unterstützte sie selbst (scripts/house-rules/help-action.js).
 let HELP_LAST_SKILL = "";
-// Grundmanöver (Hausregel Paladose, #45) — Gegenstück zum Block in body.hbs (sheetData() in maneuvers.js). Die
-// Manöver selbst wählt man im Probendialog (nur in Foundry); hier Stufen, Verteidigungshaltung und Zielen.
-const MANEUVER_STATE = { stance: false, aim: 0 };
+// Grundmanöver (Hausregel Paladose, #45/#48) — Gegenstück zum Block in body.hbs (sheetData() in maneuvers.js). Die
+// Manöver selbst wählt man im Probendialog (nur in Foundry); hier Stufen, Verteidigungshaltung, Zielen und
+// Schwachpunkte erkennen (Klick durchläuft: keine → erkannt → mitgeteilt → keine; in Foundry Probe + QS-Dialog).
+const MANEUVER_STATE = { stance: false, aim: 0, weakness: 0 };
 function maneuverBlock() {
   const hr = window.dsa5hHouseRules?.state;
   if (!hr?.active.maneuvers) return null;
@@ -1335,22 +1336,26 @@ function maneuverBlock() {
     ["advance", "🏃", "Vorstoß", "MU", (t) => ["+2 / −4", "+2 / −2", "+4 / −2", "+4 / 0"][t]],
     ["stance", "🛡", "Verteidigungshaltung", "IN", (t) => `+${[2, 4, 6, 8][t]}`],
     ["aim", "◎", "Zielen", "FF", (t) => ["+1 / TP +1 × 2", "+2 / TP +1 × 2", "+2 / TP +2 × 3", "+3 / TP +2 × 3"][t]],
+    ["weakness", "🔍", "Schwachpunkte erkennen", null, () => "PA / TP"],
   ].filter(([id]) => on(id));
   const rows = defs.map(([id, glyph, name, k, value]) => el("div", { class: "maneuver-row" }, [
-    el("i", {}, glyph), el("span", { class: "maneuver-name" }, name), el("small", {}, `${k} ${val(k)}`), el("strong", {}, value(tier(val(k)))),
+    el("i", {}, glyph), el("span", { class: "maneuver-name" }, name), el("small", {}, k ? `${k} ${val(k)}` : "QS"), el("strong", {}, value(k ? tier(val(k)) : 0)),
   ]));
   const aimMax = [2, 2, 3, 3][tier(val("FF"))];
   const stanceBtn = on("stance") ? el("button", { type: "button", class: "maneuver-btn" + (MANEUVER_STATE.stance ? " active" : ""), "aria-pressed": String(MANEUVER_STATE.stance) }, MANEUVER_STATE.stance ? "🛡 Verteidigungshaltung aktiv" : "🛡 Verteidigungshaltung einnehmen") : null;
   stanceBtn?.addEventListener("click", () => { MANEUVER_STATE.stance = !MANEUVER_STATE.stance; renderContent(); });
   const aimBtn = on("aim") ? el("button", { type: "button", class: "maneuver-btn" + (MANEUVER_STATE.aim ? " active" : "") }, `◎ Zielen ${MANEUVER_STATE.aim}/${aimMax}`) : null;
   aimBtn?.addEventListener("click", () => { MANEUVER_STATE.aim = MANEUVER_STATE.aim >= aimMax ? 0 : MANEUVER_STATE.aim + 1; renderContent(); });
+  const weakBtn = on("weakness") ? el("button", { type: "button", class: "maneuver-btn" + (MANEUVER_STATE.weakness ? " active" : ""), title: "Markierten Gegner analysieren: Probe, dann die QS auf PA und TP gegen ihn verteilen." }, "🔍 Schwachpunkte erkennen") : null;
+  weakBtn?.addEventListener("click", () => { MANEUVER_STATE.weakness = (MANEUVER_STATE.weakness + 1) % 3; renderContent(); });
+  const weakStatus = on("weakness") && MANEUVER_STATE.weakness ? el("span", { class: "maneuver-status maneuver-weakness" }, MANEUVER_STATE.weakness === 1 ? "🔍 Ork-Plünderer: PA +1 · TP +2" : "🔍 Ork-Plünderer: PA +1 · TP +2 (mitgeteilt, bis KR 4)") : null;
   const book = el("button", { type: "button", class: "maneuvers-book" }, "📖 Regeln lesen");
   book.addEventListener("click", () => { hr.view = "book"; hr.page = 3; window.dsa5hHouseRules.openHouseRules(); });
   return el("div", { class: "panel maneuvers-panel" }, [
     el("div", { class: "panel-title flex" }, [el("span", {}, "Grundmanöver"), book]),
     el("p", { class: "panel-note" }, "Stufe je Leiteigenschaft; die Manöver wählst du im Probendialog."),
     el("div", { class: "maneuver-rows" }, rows),
-    stanceBtn || aimBtn ? el("div", { class: "maneuver-actions" }, [stanceBtn, aimBtn]) : null,
+    stanceBtn || aimBtn || weakBtn ? el("div", { class: "maneuver-actions" }, [stanceBtn, aimBtn, weakBtn, weakStatus]) : null,
   ]);
 }
 
