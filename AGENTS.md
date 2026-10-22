@@ -12,9 +12,9 @@ Dieses Dokument liefert allen Coding Agents (Copilot, etc.) den notwendigen Kont
 
 ## Arbeitsordner
 
-Der Workspace-Root ist der Modul-Ordner selbst:
+Der Workspace-Root ist die Git-Arbeitskopie unter Development:
 ```
-d:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers\
+D:\Development\dsa5-helpers\
 ```
 
 - `clickdummy/` — **Design-Referenz**: funktionsfähiger Click-Dummy des neuen Heldenbogens (reines HTML/CSS/JS, kein Framework, kein Foundry-Datenmodell). Hier findet die laufende Design-Iteration statt.
@@ -24,7 +24,7 @@ d:\FoundryVTT\user-data-paths\v14\Data\modules\dsa5-helpers\
   - `script.js` — Reine Darstellungslogik: baut DOM-Elemente aus `data.js` für die 8 Reiter (main/skills/combat/magic/religion/inventory/status/notes), Tab-Umschaltung, Theme-Toggle.
   - `assets-map.js` — Zentrale Pfad-Zuordnung `A.*` zu bestehenden Assets in `systems/dsa5/icons/...`; bewusst **keine eigenen/neuen Bilder**, sondern Referenzen auf vorhandene Systemgrafiken.
   - `mobile/` — Click-Dummy der Mobilansicht (Foundry-Oberfläche + Heldenbogen für Smartphone/Tablet). Komponenten `Foundry Mobil.dc.html` und `Heldenbogen Mobil.dc.html` laufen über die mitgelieferte Mini-Laufzeit `support.js` (+ React in `vendor/`, keine Build-Schritte). Einstieg `index.html` (Übersicht in Geräterahmen) bzw. `app.html` (Vollbild für echte Geräte). Details: `mobile/README.md`.
-  - `start-server.bat` — Startet `python -m http.server 8877` auf Data-Root-Ebene und öffnet den Bogen im Browser. **Wichtig:** Click-Dummy nicht per Doppelklick/`file://` öffnen — dann lösen die relativen Pfade zu `systems/dsa5` (Fonts, Icons, Rahmenbild) nicht auf. Immer über dieses Skript bzw. einen Server auf Data-Root-Ebene aufrufen.
+  - `start-server.bat` — Startet die Vorschau auf 127.0.0.1:8877: Modul aus Development, Systemressourcen aus Foundry. URL selbst öffnen. **Wichtig:** Click-Dummy nicht per Doppelklick/`file://` öffnen — dann lösen die relativen Pfade zu `systems/dsa5` (Fonts, Icons, Rahmenbild) nicht auf. Immer über dieses Skript aufrufen.
 - `project/` — Sämtliche Planungs-, Entscheidungs- und Rückmeldungs-Dokumente (kein Code). Siehe nächster Abschnitt.
 - Echter Foundry-Modulcode (Stand 2026-09-15, `clickdummy/` bleibt daneben die Design-Referenz):
   - `module.json` — Manifest (Registrierung, Kompatibilität, esmodules/styles/languages).
@@ -70,3 +70,10 @@ Claude Code lädt automatisch `CLAUDE.md` im Projekt-Root, nicht `AGENTS.md`. Da
 5. Foundry- und DSA5-System-Konventionen einhalten (Datenmodelle, Hooks, Sheet-Registrierung) statt eigene Parallelstrukturen zu bauen, wo es vermeidbar ist.
 6. Änderungen am Click-Dummy im Browser über `clickdummy/start-server.bat` prüfen (nicht per `file://` öffnen), da sonst Fonts/Icons/Rahmenbild aus `systems/dsa5` fehlen.
 7. **Mobile Support** lief bis 2026-10-20 auf dem Dauer-Branch `feature/mobile`. Seitdem ist es Teil von Version 0.6.0 (Branch `release/0.6.0`, als Beta); `feature/mobile` gibt es nicht mehr, die Merge-Pflicht dorthin entfällt. Arbeit an der nächsten Version läuft wie üblich auf `release/<version>`.
+
+## Arbeitskopie und Foundry-Kopie
+
+Nur unter `D:\Development\dsa5-helpers` entwickeln. Der bisherige Modulordner ist eine austauschbare Laufzeitkopie.
+`powershell -NoProfile -ExecutionPolicy Bypass -File tools/deploy-foundry.ps1 compare` zeigt Abweichungen; `deploy` sichert und überträgt, `status` prüft den Stand.
+`tools/deploy-foundry.ps1` und `tools/foundry-packs.mjs` sind in dsa5-helpers, melliador-helpers und aventuria-helpers identisch (Zieltabelle im Skript); Änderungen in allen drei Repos gleich nachziehen. Bekommt das Modul Compendien: Quellen als JSON unter `packs/_source/<name>`, Packs in `module.json` mit `path: packs/<name>`, `npm install --save-dev @foundryvtt/foundryvtt-cli`; dann gibt es `deploy-packs` (baut, prüft per Rückexport, überträgt – nur bei gestopptem Foundry, blockiert bei Live-Bearbeitungen) und `export-packs` + `node tools/foundry-packs.mjs adopt <Export> <Pack> <ID>` zum Zurückholen. Ablauf ausführlich in `D:\Development\aventuria-helpers\CLAUDE.md` „Arbeitskopie und Foundry-Kopie“.
+Keine Commits, Pushes oder GitHub-Schreibaktionen ohne Auftrag.
