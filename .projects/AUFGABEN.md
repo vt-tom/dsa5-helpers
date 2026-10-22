@@ -44,7 +44,7 @@ Seit 2026-09-30 als GitHub-Issues geführt – siehe unten. Neue Feature-Ideen d
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Repository: `vt-tom/dsa5-helpers` · Letzter erfolgreicher Abruf: 2026-10-22T11:13:43.529Z · vollständig nachgeladen._
+_Repository: `vt-tom/dsa5-helpers` · Letzter erfolgreicher Abruf: 2026-10-22T15:22:26.269Z · vollständig nachgeladen._
 
 _Automatisch erzeugte Übersicht; nur zur Information. Keine Beauftragung zur Bearbeitung. Nicht von Hand bearbeiten._
 
@@ -53,8 +53,10 @@ _Automatisch erzeugte Übersicht; nur zur Information. Keine Beauftragung zur Be
 - **[#47](https://github.com/vt-tom/dsa5-helpers/issues/47) feat: Lebensenergiezonen (Rüstkammer II) im Zonenkreuz des Kampf-Reiters**
   - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.2 · 0 Kommentare · zuletzt geändert 2026-10-21T07:46:37Z
 
-**Kürzlich geschlossen (letzte 14 Tage: 14)**
+**Kürzlich geschlossen (letzte 14 Tage: 15)**
 
+- **[#49](https://github.com/vt-tom/dsa5-helpers/issues/49) Hier ist eine Test Idee die ich gerne einmal Synchronisiert hätte.**
+  - geschlossen (nicht geplant) · Bearbeiter: niemand · von @vt-tom · 1 Kommentar · geschlossen 2026-10-22T15:22:18Z
 - **[#48](https://github.com/vt-tom/dsa5-helpers/issues/48) feat: Grundmanöver (Paladose) Stufe 3 – Schwachpunkte erkennen, Trefferfolgen, Stören/Ablenken, gleichwertige SF ausgrauen**
   - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 1 Kommentar · geschlossen 2026-10-21T07:47:18Z
 - **[#46](https://github.com/vt-tom/dsa5-helpers/issues/46) feat: Bannerbild ohne Foundry-Dateibrowser hochladen (Standardpfad der SL)**
