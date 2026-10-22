@@ -1,7 +1,7 @@
 /* ==========================================================================
    DSA5 Helpers — Tablet-/Smartphone-Oberfläche („Hybrides Spiel“)
    Alles hängt an body.dsa5h-mobile (gesetzt in scripts/mobile/mobile.js), am Desktop greift nichts davon.
-   Vorbild: clickdummy/mobile (Runde 4), Konzept: project/MOBILE.md Abschnitt 13.
+   Vorbild: clickdummy/mobile (Runde 4), Konzept: docs/MOBILE.md Abschnitt 13.
 
    1. Variablen
    2. Foundry-Oberfläche ausblenden / umordnen

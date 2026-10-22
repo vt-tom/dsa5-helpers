@@ -1,5 +1,5 @@
 // Chat im Modul-Design auf Smartphone und Tablet (Entwurf clickdummy/mobile „Foundry Mobil“, Variante A „Karten“,
-// Nutzer-Entscheidungen 2026-10-19, project/MOBILE.md 13.4). Grundlage bleibt Foundrys Chat-Log:
+// Nutzer-Entscheidungen 2026-10-19, docs/MOBILE.md 13.4). Grundlage bleibt Foundrys Chat-Log:
 // - Nachrichten: nur Kennzeichnungen per renderChatMessageHTML (eigene Nachricht, Initiale ohne Bild, Ergebnisband und
 //   QS-Rauten an DSA5-Probenkarten), die Optik macht das CSS. Inhalt und Knöpfe der Karten bleiben die des Systems.
 // - Eingabe: eigene Leiste um Foundrys Eingabefeld (#chat-message) herum. Sichtbarkeit = Foundrys Einstellung

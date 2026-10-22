@@ -1,6 +1,6 @@
 # BUGS.md — offene Fehler
 
-Gemeldete, noch nicht behobene oder noch nicht vom Nutzer live bestätigte Fehler. Erledigte Punkte werden gelöscht (Begründung/Fix-Details landen im Commit bzw. in [archive/DECISIONS.md](archive/DECISIONS.md)), nicht hier abgehakt stehen gelassen.
+Gemeldete, noch nicht behobene oder noch nicht vom Nutzer live bestätigte Fehler. Erledigte Punkte werden gelöscht (Begründung/Fix-Details landen im Commit bzw. in [archive/DECISIONS.md](DECISIONS.md)), nicht hier abgehakt stehen gelassen.
 
 Format pro Eintrag: kurzer Titel, Tab/Datei falls bekannt, was beobachtet wurde. Reihenfolge = Meldereihenfolge, keine Priorisierung.
 

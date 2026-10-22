@@ -1,5 +1,5 @@
 // Journal-Einträge im Modul-Design auf Smartphone und Tablet (Entwurf clickdummy/mobile „Foundry Mobil“,
-// project/MOBILE.md 13.5). Grundlage bleibt Foundrys Journal-Blatt (bzw. DSAJournalSheet des Systems) im
+// docs/MOBILE.md 13.5). Grundlage bleibt Foundrys Journal-Blatt (bzw. DSAJournalSheet des Systems) im
 // Einzelseiten-Modus. Seitenwahl je Gerät (Rückmeldung 2026-10-20):
 // - Tablet: Foundrys Inhaltsverzeichnis klassisch links, nur im Modul-Design; unten ‹ › mit den Seitentiteln.
 // - Smartphone: Inhaltsverzeichnis ausgeblendet, Steuerleiste unten „‹ · Seite x von y ▾ · ›“, die Mitte öffnet

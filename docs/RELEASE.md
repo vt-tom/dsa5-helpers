@@ -22,7 +22,7 @@ danach bei jedem Release genau diese Schritte.
   1. setzt `version` aus dem Tag (`v0.2.0` → `0.2.0`),
   2. setzt `url`, `manifest` und `download` (Download zeigt fest auf das ZIP dieses Tags),
   3. packt `module.zip` nur aus `module.json`, `LICENSE`, `README.md`, `CHANGELOG.md`, `scripts/`, `styles/`, `templates/`, `lang/`
-     (**nicht** enthalten: `clickdummy/`, `project/`, `tests/`, `tools/`, `.claude/`, `.github/`),
+     (**nicht** enthalten: `clickdummy/`, `docs/`, `tests/`, `tools/`, `.claude/`, `.github/`),
   4. hängt `module.json`, `module.zip` und `module-beta.zip` an das Release und ersetzt das `module.json` des
      Beta-Kanals (siehe „Beta-Kanal“).
 - Das Repo muss **öffentlich** sein — Foundry lädt ohne Anmeldung.
@@ -219,7 +219,7 @@ Dort muss die neue `version` stehen und `download` auf `…/releases/download/v0
 ### 8. In Foundry testen
 
 **Nicht in diesem Data-Ordner!** `modules/dsa5-helpers` ist hier das Git-Arbeitsverzeichnis — eine Installation oder
-ein Update über Foundry würde es mit dem ZIP überschreiben (und `.git`, `clickdummy/`, `project/` … wären weg).
+ein Update über Foundry würde es mit dem ZIP überschreiben (und `.git`, `clickdummy/`, `docs/` … wären weg).
 
 Stattdessen in einer zweiten Foundry-Installation / einem zweiten Data-Ordner:
 **Add-on-Module → Modul installieren → Manifest-URL** einfügen → installieren (bzw. bei bestehender Installation

@@ -1,7 +1,7 @@
 # Clickdummy mobil — Heldenbogen & Foundry-Oberfläche (Smartphone/Tablet)
 
 Ort: `clickdummy/mobile/` (Mobile Support, seit 0.6.0; vorher Branch `feature/mobile`, davor `clickdummy/design_handoff_mobile/` als gepacktes Bundle).
-Gehört zu [project/MOBILE.md](../../project/MOBILE.md), Phase 2 („Click-Dummy mobil“). **Runde 4** (2026-10-15) setzt die Rückmeldung von Lyynix um, siehe Abschnitt „Runde 4“ unten und MOBILE.md Abschnitt 13.
+Gehört zu [docs/MOBILE.md](../../docs/MOBILE.md), Phase 2 („Click-Dummy mobil“). **Runde 4** (2026-10-15) setzt die Rückmeldung von Lyynix um, siehe Abschnitt „Runde 4“ unten und MOBILE.md Abschnitt 13.
 
 ## Was das ist
 

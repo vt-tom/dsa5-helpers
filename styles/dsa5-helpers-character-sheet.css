@@ -4916,7 +4916,7 @@
    Bogen, damit die Leiste wie eine normale Zeile wirkt statt wie ein eigenes UI-Element. Werte zentriert (vorher
    liefen Leiteigenschaft/Tradition trotz zentrierter Kopfzeile links aus) und etwas größer (13px Label/15px Wert
    statt 12px/geerbter 14px-Basisschrift). */
-/* "Wappen-Badge"-Layout (Nutzer-Entscheidung 2026-09-18 nach Click-Dummy-Vergleich, siehe project/STATUS.md):
+/* "Wappen-Badge"-Layout (Nutzer-Entscheidung 2026-09-18 nach Click-Dummy-Vergleich, siehe docs/archive/STATUS.md):
    die bisherige 4-Spalten-Kachel behandelte Tradition/Leiteigenschaft/Merkmal/Faktor gleichrangig, obwohl nur die
    Tradition selbst wirklich herausstechen soll. Tradition jetzt als akzentfarbene Pille mit Icon (siehe
    dsa5hTraditionIcon-Helfer, icons/traditionen bzw. icons/months), die drei Nebenwerte als schmale, gedämpfte

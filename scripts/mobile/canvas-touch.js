@@ -1,4 +1,4 @@
-// Touch-Gesten auf der Szene (project/MOBILE.md 13.3), Vorbild: clickdummy/mobile/Foundry Mobil.dc.html.
+// Touch-Gesten auf der Szene (docs/MOBILE.md 13.3), Vorbild: clickdummy/mobile/Foundry Mobil.dc.html.
 // Foundry v14 kann von sich aus nur Maus: Verschieben = Rechts-Ziehen, Zoom = Mausrad, Pinch wird unterdrückt,
 // Links-Ziehen auf einem Token bewegt ihn sofort. Wir fangen deshalb alle Touch-Zeiger auf dem Canvas ab
 // (Capture-Phase am window, vor PIXI) und setzen die Gesten selbst um:

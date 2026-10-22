@@ -1,8 +1,8 @@
 # Baut beim Veröffentlichen eines GitHub-Releases das installierbare Modul:
 # Version aus dem Tag (v0.1.0 → 0.1.0), manifest-/download-URL in module.json, ZIP nur mit den Moduldateien
-# (ohne clickdummy/, project/, tests/, tools/), alles als Release-Assets.
+# (ohne clickdummy/, docs/, tests/, tools/), alles als Release-Assets.
 #
-# Zwei Kanäle (seit 0.4.0, siehe project/RELEASE.md):
+# Zwei Kanäle (seit 0.4.0, siehe docs/RELEASE.md):
 # - Stabil:  https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json
 #            `latest` zeigt nur auf normale Releases, nie auf Pre-releases.
 # - Beta:    https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json

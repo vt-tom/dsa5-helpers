@@ -41,14 +41,8 @@ wählen.
 
 ## Neue Version veröffentlichen
 
-1. `version` in `module.json` hochzählen, [`CHANGELOG.md`](CHANGELOG.md) abschließen, committen, nach `main` pushen.
-2. Auf GitHub ein Release mit Tag `v<version>` (z. B. `v0.1.0`) veröffentlichen — als **Pre-release** erscheint es
-   nur im Beta-Kanal, als normales Release für alle.
-3. Die Action [`release.yml`](.github/workflows/release.yml) setzt Version und URLs in `module.json`, packt
-   `module.zip` (nur Moduldateien) und hängt beides an das Release. Foundry findet das Update danach über die
-   Manifest-URL.
-
-Ausführlich mit allen Befehlen, Prüfschritten und Fehlerbehebung: [`project/RELEASE.md`](project/RELEASE.md).
+Verbindlicher Ablauf: [`docs/RELEASE.md`](docs/RELEASE.md).
+Interne Projektinformationen: [Projektdokumentation](.projects/PROJEKTDOKU.md), [Aufgaben](.projects/AUFGABEN.md); KI-Arbeitsregeln: [AGENTS.md](AGENTS.md).
 
 ## Projektstruktur
 
@@ -59,7 +53,8 @@ templates/actors/           Handlebars-Templates (ein Hauptbogen + Teil-Template
 styles/                     Stylesheet
 lang/                       Übersetzungen (de, en)
 clickdummy/                 Design-Referenz (HTML/CSS/JS ohne Foundry) – nicht Teil des Releases
-project/                    Planung und Entscheidungen – nicht Teil des Releases
+.projects/                  Zentrale Aufgaben und Projektdokumentation – nicht Teil des Releases
+docs/                    Spezialdokumentation und Historie – nicht Teil des Releases
 tests/                      Test-Harness (`node tests/sheet.test.cjs`, braucht lokales Foundry + DSA5)
 ```
 

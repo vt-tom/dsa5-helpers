@@ -1,6 +1,6 @@
 # Rückmeldung zum Mobil-Click-Dummy
 
-Stand: 14.10.2026 · Von: Lyynix · Gegenstand: `clickdummy/design_handoff_mobile/` (Stand `1d731d5`) und [MOBILE.md](MOBILE.md)
+Stand: 14.10.2026 · Von: Lyynix · Gegenstand: `clickdummy/design_handoff_mobile/` (Stand `1d731d5`) und [MOBILE.md](../MOBILE.md)
 
 ## Gesamteindruck
 

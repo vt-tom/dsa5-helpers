@@ -10,7 +10,7 @@ Seit 2026-09-15 auf mehrere Dateien verteilt (vorher ein einzelnes, stark angewa
 - **[BUGS.md](BUGS.md)** — offene/gemeldete Fehler.
 - **[FEATURES.md](FEATURES.md)** — Feature-Ideen und -Backlog.
 - **PLANNING.md** (diese Datei) — Vision, dauerhafte Architektur-/Design-Entscheidungen und wiederverwendbare Muster. Ändert sich selten.
-- **[archive/DECISIONS.md](archive/DECISIONS.md)** — vollständiger chronologischer Entscheidungs-/Debugging-Log alle bisherigen Sessions. Nicht standardmäßig lesen, nur für Detailfragen zu einer konkreten früheren Entscheidung.
+- **[archive/DECISIONS.md](DECISIONS.md)** — vollständiger chronologischer Entscheidungs-/Debugging-Log alle bisherigen Sessions. Nicht standardmäßig lesen, nur für Detailfragen zu einer konkreten früheren Entscheidung.
 
 ## Vision
 
@@ -19,7 +19,7 @@ Ein Foundry-VTT-Modul für DSA5, das als erstes Feature einen neuen, überarbeit
 ## Design-Muster (wiederverwendbar über alle Tabs)
 
 - **Unter-Tabs neben der Reiter-Überschrift** (eingeführt 2026-09-11 im Talente-Tab): Wenn ein Tab in mehrere gleichwertige Kategorien zerfällt (wie die 5 Talentgruppen + Sammelproben), werden diese als Buttons direkt neben dem Reiter-Titel platziert, nicht als eigener Block im Content-Bereich. Der globale Hinweistext entfällt für solche Tabs, da die Unter-Tabs selbst die Übersicht liefern. Übertragen auf Kampf/Kampftechnik, Magie/Religion je Zauber-Ausrüstung.
-  - Finale Optik (Stand 2026-09-14, nach mehreren verworfenen Varianten): reine Andalus-Textlabel mit Akzent-Unterlinie ("Unterstrichen"), keine farbigen Pillen mehr. Details/Verlauf zu den verworfenen Zwischenständen: [archive/DECISIONS.md](archive/DECISIONS.md).
+  - Finale Optik (Stand 2026-09-14, nach mehreren verworfenen Varianten): reine Andalus-Textlabel mit Akzent-Unterlinie ("Unterstrichen"), keine farbigen Pillen mehr. Details/Verlauf zu den verworfenen Zwischenständen: [archive/DECISIONS.md](DECISIONS.md).
 
 ## Architektur (Entwurf)
 
@@ -34,7 +34,7 @@ Ein Foundry-VTT-Modul für DSA5, das als erstes Feature einen neuen, überarbeit
 
 ## Referenzen
 
-- Click-Dummy: [../clickdummy/](../clickdummy/)
+- Click-Dummy: [../clickdummy/](../../clickdummy/)
 - Prototypen (`prototyp/`, drei `.dc.html`-Dateien) am 2026-09-16 entfernt — enthielten kopierte DSA5-System-Assets und wurden bereits durch den Click-Dummy als Design-Basis abgelöst.
-- Vollständige Entscheidungshistorie: [archive/DECISIONS.md](archive/DECISIONS.md)
-- Abgeschlossene Einzel-Prüfaufträge: [archive/UI-UX-REVIEW.md](archive/UI-UX-REVIEW.md), [archive/DARKMODE-PRUEFUNG.md](archive/DARKMODE-PRUEFUNG.md) (Click-Dummy-Ära, nicht mehr aktiv)
+- Vollständige Entscheidungshistorie: [archive/DECISIONS.md](DECISIONS.md)
+- Abgeschlossene Einzel-Prüfaufträge: [archive/UI-UX-REVIEW.md](UI-UX-REVIEW.md), [archive/DARKMODE-PRUEFUNG.md](DARKMODE-PRUEFUNG.md) (Click-Dummy-Ära, nicht mehr aktiv)

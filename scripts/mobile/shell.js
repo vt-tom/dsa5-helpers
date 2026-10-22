@@ -1,4 +1,4 @@
-// Shell der Tablet-/Smartphone-Oberfläche (project/MOBILE.md 13.1, Vorbild clickdummy/mobile, Runde 4):
+// Shell der Tablet-/Smartphone-Oberfläche (docs/MOBILE.md 13.1, Vorbild clickdummy/mobile, Runde 4):
 // Kopfleiste, darunter Foundrys Szene (Canvas bleibt Vollbild), unten die Heldenkarte, schwebende Knöpfe für
 // Journal und Chat. Chat und Journal sind Foundrys eigene Seitenleisten-Reiter, die wir als Panel einblenden
 // (Smartphone bildschirmfüllend, Tablet als rechte Spalte). Neue Nachrichten zeigt Foundry selbst als

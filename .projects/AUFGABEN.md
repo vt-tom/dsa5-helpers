@@ -1,13 +1,16 @@
 # AUFGABEN.md — Was noch zu tun ist
 
 Eine Liste für alles Offene: neue Notizen, Fehler, Feature-Ideen, offene Entscheidungen.
-Neues einfach oben unter **Neu** eintragen. Erledigtes löschen (Details stehen im Commit).
+Neues einfach oben unter **Neu** eintragen. Nur der Nutzer erklärt manuelle Aufgaben für erledigt. Bis zur Bestätigung bleiben sie erhalten, gegebenenfalls als „umgesetzt – Nutzerbestätigung offen“.
 
 ---
 
+
+Übertragung/Arbeitsordner 21.10.2026: erste Übertragung und SHA-256-Prüfung bestanden; abschließender Vergleich ohne Abweichungen. Sicherungspfad siehe Projektdokumentation. Git vollständig erhalten. Keine Commits oder GitHub-Schreibaktionen.
+
 ## Neu (noch nicht bearbeitet)
 
-_(leer)_
+- **Arbeitsordner/Kopierworkflow (21.10.2026):** Entwicklung nach `D:\Development\dsa5-helpers` verlagert. Git und lokale Dateien erhalten; Kopierskript mit Sicherung und SHA-256-Prüfung. 74 Tests aus Development bestanden; Klickdummy lokal per HTTP geprüft. Keine Bogenänderung, keine Live-Abnahme.
 
 ## Nächste Version 0.6.2
 
@@ -41,43 +44,43 @@ Seit 2026-09-30 als GitHub-Issues geführt – siehe unten. Neue Feature-Ideen d
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Automatisch aus `vt-tom/dsa5-helpers` übernommen (2026-10-21 07:47 UTC) — nicht von Hand bearbeiten, wird bei jedem Session-Start überschrieben. Änderungen direkt im Issue auf GitHub vornehmen._
+_Repository: `vt-tom/dsa5-helpers` · Letzter erfolgreicher Abruf: 2026-10-22T11:13:43.529Z · vollständig nachgeladen._
 
-**Nur zur Information — Agents bearbeiten diese Issues nie von sich aus, sondern nur, wenn der Nutzer ein bestimmtes Issue ausdrücklich beauftragt.**
+_Automatisch erzeugte Übersicht; nur zur Information. Keine Beauftragung zur Bearbeitung. Nicht von Hand bearbeiten._
 
 **Offen (1)**
 
 - **[#47](https://github.com/vt-tom/dsa5-helpers/issues/47) feat: Lebensenergiezonen (Rüstkammer II) im Zonenkreuz des Kampf-Reiters**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.2 · 0 Kommentare · zuletzt geändert 2026-10-21
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.2 · 0 Kommentare · zuletzt geändert 2026-10-21T07:46:37Z
 
-**Kürzlich geschlossen (letzte 14 Tage)**
+**Kürzlich geschlossen (letzte 14 Tage: 14)**
 
 - **[#48](https://github.com/vt-tom/dsa5-helpers/issues/48) feat: Grundmanöver (Paladose) Stufe 3 – Schwachpunkte erkennen, Trefferfolgen, Stören/Ablenken, gleichwertige SF ausgrauen**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 1 Kommentar · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 1 Kommentar · geschlossen 2026-10-21T07:47:18Z
 - **[#46](https://github.com/vt-tom/dsa5-helpers/issues/46) feat: Bannerbild ohne Foundry-Dateibrowser hochladen (Standardpfad der SL)**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 1 Kommentar · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 1 Kommentar · geschlossen 2026-10-21T07:47:16Z
 - **[#45](https://github.com/vt-tom/dsa5-helpers/issues/45) feat: Hausregel „Grundmanöver“ von Paladose (Möglichkeiten des Kampfes)**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 3 Kommentare · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 3 Kommentare · geschlossen 2026-10-21T07:47:14Z
 - **[#44](https://github.com/vt-tom/dsa5-helpers/issues/44) feat: Hausregeln auch im Standardbogen des Systems verfügbar machen**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 1 Kommentar · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 1 Kommentar · geschlossen 2026-10-21T07:47:11Z
 - **[#39](https://github.com/vt-tom/dsa5-helpers/issues/39) Vorschlag: Dramatis Personae/ Bestiarium und Auftragsbuch mit dem Charakterbogen verbinden**
-  - erledigt · Bearbeiter: @vt-tom · von @WiCoPala · Meilenstein: 0.6.1 · 1 Kommentar · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @WiCoPala · Meilenstein: 0.6.1 · 1 Kommentar · geschlossen 2026-10-21T07:47:09Z
 - **[#36](https://github.com/vt-tom/dsa5-helpers/issues/36) Kampf Tab: Übersicht - Rüstung zentral über dem Portrait**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.1 · 2 Kommentare · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.1 · 2 Kommentare · geschlossen 2026-10-21T07:47:06Z
 - **[#34](https://github.com/vt-tom/dsa5-helpers/issues/34) feat: Drei Modi im Heldenbogen – Spielen, Steigern, Bearbeiten (Desktop, Tablet, Smartphone)**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 2 Kommentare · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.1 · 2 Kommentare · geschlossen 2026-10-21T07:47:04Z
 - **[#43](https://github.com/vt-tom/dsa5-helpers/issues/43) feat: Mobile Support (Beta) – Tablet und Smartphone, „Hybrides Spiel“**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21T07:47:02Z
 - **[#42](https://github.com/vt-tom/dsa5-helpers/issues/42) feat: Kopf „Wappenbanner“ auf Smartphone und Tablet (Mobile Support)**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 2 Kommentare · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 2 Kommentare · geschlossen 2026-10-21T07:47:00Z
 - **[#41](https://github.com/vt-tom/dsa5-helpers/issues/41) feat: Kopf „Wappenbanner“ mit wählbarem Bannerbild (Foundry & Titelblatt)**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 2 Kommentare · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 2 Kommentare · geschlossen 2026-10-21T07:46:57Z
 - **[#40](https://github.com/vt-tom/dsa5-helpers/issues/40) feat: Ausgerüstete Waffen im Kampf-Reiter neu gestalten (Foundry, Tablet, Smartphone)**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21T07:46:55Z
 - **[#38](https://github.com/vt-tom/dsa5-helpers/issues/38) Magie/Glaube Tab: 2 Spalten Ansicht für Sonderfertigkeitenhinzufügen**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21T07:46:53Z
 - **[#37](https://github.com/vt-tom/dsa5-helpers/issues/37) Status Tab: Suche bei den Zuständen**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21T07:46:50Z
 - **[#35](https://github.com/vt-tom/dsa5-helpers/issues/35) Portrait im Dark Mode - Aura oder Spotlight**
-  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.0 · 1 Kommentar · geschlossen 2026-10-21T07:46:48Z
 <!-- GITHUB-ISSUES:END -->

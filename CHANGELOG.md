@@ -2,6 +2,8 @@
 
 Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
+Entwicklungsworkflow (21.10.2026): Arbeitskopie unter Development; gesicherte Übertragung per `tools/deploy-foundry.ps1`. Tests und Klickdummy verwenden die separate Foundry-Installation. Keine Änderung des Spielverhaltens.
+
 ## [0.6.1] — 2026-10-21
 
 ### Neu

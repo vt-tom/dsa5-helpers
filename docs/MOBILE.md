@@ -269,7 +269,7 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 
 > **Neu geordnet nach der Rückmeldung von Lyynix:** siehe Abschnitt 13.8. Phase 0 und 2 sind weitgehend erledigt (Click-Dummy Runde 3 + 4).
 
-0. **Entscheidungen** E1–E19 klären. Community-Module recherchieren. Issue #7 (CSS) ist umgesetzt (2026-10-05, `release/0.5.0`): Hover steckt bereits in `@media (hover: hover)`, das Mobil-CSS stellt die Tokens `--hit-sm/md/lg` (24/26/28 px, Ziel ≥ 44 px), `--fs-data`, `--fs-base`, `--fs-panel-title`, `--fs-tab-title` um und folgt der Abschnittsgliederung (PROJEKTDOKU „CSS-Gliederung“).
+0. **Entscheidungen** E1–E19 klären. Community-Module recherchieren. Issue #7 (CSS) ist umgesetzt (2026-10-05, `release/0.5.0`): Hover steckt bereits in `@media (hover: hover)`, das Mobil-CSS stellt die Tokens `--hit-sm/md/lg` (24/26/28 px, Ziel ≥ 44 px), `--fs-data`, `--fs-base`, `--fs-panel-title`, `--fs-tab-title` um und folgt der Abschnittsgliederung ([AGENTS.md](../AGENTS.md) „CSS-Gliederung“).
 1. **Machbarkeit (Spike, Foundry live):** Einstellung „Hybrides Spiel“ + Auswahl-Overlay vor `setupGame` + `noCanvas` + Body-Klasse + Auflösungs-Warnung weg. Ein Smartphone verbindet sich, wählt „Smartphone“, sieht Chat und kann würfeln. Ergebnis: Liste der Stolpersteine (iOS-Tastatur, Tooltips, ContextMenu, Systemdialoge).
 2. **Click-Dummy mobil:** App-Shell + Bogen-Layout Smartphone hoch, 2–3 Varianten für Navigation/Kopf (E8), Entscheidung, Umschalter löschen.
 3. **Shell in Foundry:** Kopf, untere Navigation, Chat/Kampf-Bereiche, Fenster als Vollbild-Blätter, Menü (Held wechseln, Desktop, Abmelden).
@@ -315,7 +315,7 @@ Grundlage bleibt derselbe Bogen (dieselbe Klasse, dieselben Templates). Mobil is
 
 **Was prüfen**
 
-Die Checkliste steht in [AUFGABEN.md](AUFGABEN.md) („Mobil Stufe 1 + 2“). Mindestens ein iPhone/iPad (Safari) **und** ein Android-Gerät (Chrome). Fehler mit Gerät, Browser und Schritt in AUFGABEN.md bzw. als GitHub-Issue festhalten. Fehlersuche am Gerät: Android über `chrome://inspect` am PC (USB-Debugging), iPhone über Safari → Entwickler am Mac.
+Die Checkliste steht in [AUFGABEN.md](../.projects/AUFGABEN.md) („Mobil Stufe 1 + 2“). Mindestens ein iPhone/iPad (Safari) **und** ein Android-Gerät (Chrome). Fehler mit Gerät, Browser und Schritt in AUFGABEN.md bzw. als GitHub-Issue festhalten. Fehlersuche am Gerät: Android über `chrome://inspect` am PC (USB-Debugging), iPhone über Safari → Entwickler am Mac.
 
 ## 12. Risiken
 
@@ -331,7 +331,7 @@ Die Checkliste steht in [AUFGABEN.md](AUFGABEN.md) („Mobil Stufe 1 + 2“). Mi
 
 ## 13. Umsetzungskonzept Foundry (nach Rückmeldung Lyynix, 2026-10-15)
 
-Grundlage: [MOBILE-FEEDBACK-2026-10-14.md](MOBILE-FEEDBACK-2026-10-14.md) und der Click-Dummy `clickdummy/mobile/` (Runde 4, Einstieg `index.html` bzw. `app.html`). Der Grundsatz bleibt: Foundry-DOM und Systemlogik nutzen, nichts parallel nachbauen. Quellen: Foundry v14 (`foundry-nodejs-v14/client`), DSA5 8.1.x (`systems/dsa5/modules`).
+Grundlage: [MOBILE-FEEDBACK-2026-10-14.md](archive/MOBILE-FEEDBACK-2026-10-14.md) und der Click-Dummy `clickdummy/mobile/` (Runde 4, Einstieg `index.html` bzw. `app.html`). Der Grundsatz bleibt: Foundry-DOM und Systemlogik nutzen, nichts parallel nachbauen. Quellen: Foundry v14 (`foundry-nodejs-v14/client`), DSA5 8.1.x (`systems/dsa5/modules`).
 
 | Punkt der Rückmeldung | Click-Dummy (Runde 4) | Foundry-Umsetzung | Abschnitt |
 |---|---|---|---|

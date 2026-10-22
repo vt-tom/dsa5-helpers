@@ -1,4 +1,4 @@
-// Kontextmenüs auf Touch-Geräten (project/MOBILE.md 13.4, E20).
+// Kontextmenüs auf Touch-Geräten (docs/MOBILE.md 13.4, E20).
 // Foundrys ContextMenu öffnet sich nur auf das Ereignis „contextmenu“; iOS Safari sendet das bei Langdruck nicht.
 // Wir lösen es selbst aus: Langdruck auf eine Chat-Nachricht (oder den ⋮-Knopf daran) bzw. einen Eintrag in einem
 // Verzeichnis (Akteure-Panel, Journal) → synthetisches contextmenu.

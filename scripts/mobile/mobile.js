@@ -1,4 +1,4 @@
-// Mobile Support („Hybrides Spiel“, project/MOBILE.md Abschnitt 13).
+// Mobile Support („Hybrides Spiel“, docs/MOBILE.md Abschnitt 13).
 // - Welt-Einstellung hybridPlay (nur SL, Standard aus) ist der Hauptschalter: aus = keine Mobil-Logik.
 // - Die Oberfläche wird beim Start automatisch gewählt (13.2), überschreibbar per Client-Einstellung uiMode
 //   oder Notausgang ?dsa5h-ui=auto|phone|tablet|foundry. Keine Abfrage, kein Umhüllen von setupGame:

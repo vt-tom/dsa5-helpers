@@ -1,6 +1,6 @@
 # PROJEKTDOKU.md — Das Wichtigste zum Projekt
 
-Stand: 2026-10-21. Offene Arbeit steht in [AUFGABEN.md](AUFGABEN.md), die ausführliche Historie in [archive/](archive/).
+Stand: 2026-10-21. Offene Arbeit steht in [AUFGABEN.md](AUFGABEN.md), die ausführliche Historie in [archive/](../docs/archive/).
 
 ## Ziel
 
@@ -11,31 +11,50 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - Echtes Modul läuft: alle 10 Reiter (Titelblatt, Eigenschaften, Talente, Kampf, Magie, Religion, Ausrüstung, Status, Notizen, Gefährten) mit echten Systemdaten.
 - Favoriten (Stern), Spiel-/Bearbeiten-Modus, Magie/Religion nur bei passender Fähigkeit sichtbar.
 - 73 Tests grün (`node tests/sheet.test.cjs`).
-- UI/UX-Review vom 2026-09-25 ([Feedback](UI-UX-FEEDBACK-2026-09-25.md)): Pakete A–D (Trefferflächen/Tastatur, Lesbarkeit, Waffentabellen, Orientierung/Rückmeldung) in Clickdummy **und** Foundry umgesetzt und live bestätigt. Pakete E (Favoritenraster) und G (Detailpunkte je Reiter) sowie die Munitionszeile abgenommen und in Foundry übertragen (live zu prüfen). Aus Paket F sind Porträtformat und schwebende Titelleiste in Foundry; Geld-Panel „Zeile“ seit 2026-09-30 auch in Foundry; Kampf-Unterreiter „Körper“ seit 2026-09-30 in Foundry (live zu prüfen, vorerst neben der Übersicht) — siehe AUFGABEN.md.
+- UI/UX-Review vom 2026-09-25 ([Feedback](../docs/archive/UI-UX-FEEDBACK-2026-09-25.md)): Pakete A–D (Trefferflächen/Tastatur, Lesbarkeit, Waffentabellen, Orientierung/Rückmeldung) in Clickdummy **und** Foundry umgesetzt und live bestätigt. Pakete E (Favoritenraster) und G (Detailpunkte je Reiter) sowie die Munitionszeile abgenommen und in Foundry übertragen (live zu prüfen). Aus Paket F sind Porträtformat und schwebende Titelleiste in Foundry; Geld-Panel „Zeile“ seit 2026-09-30 auch in Foundry; Kampf-Unterreiter „Körper“ seit 2026-09-30 in Foundry (live zu prüfen, vorerst neben der Übersicht) — siehe AUFGABEN.md.
 - Hier gibt es kein laufendes Foundry. Alles ist nur im Code geprüft – bestätigt wird erst live beim Nutzer. Ausnahme (seit 2026-10-15): Für Mobil-Tests kann ein Agent eine eigene, temporäre Foundry-Instanz starten (eigener Datenordner im Scratchpad, Kopie der Welt „DSA5“, `systems/dsa5` und `modules` per Verzeichnis-Verknüpfung, Port 30077, `node foundry-nodejs-v14/main.js --dataPath=… --port=30077`). Die pm2-Instanzen des Nutzers (30000/30001) und ihre Welten nie anfassen.
-- Mobile Support (seit 2026-10-20 Teil von 0.6.0, Beta, Branch `release/0.6.0`, Stand in [Issue #43](https://github.com/vt-tom/dsa5-helpers/issues/43)): Stufe 1 + 2 gebaut und in der Testinstanz geprüft, Chat und Journal im Modul-Design (2026-10-19), Stand in [MOBILE.md](MOBILE.md) 13.10.
+- Mobile Support (seit 2026-10-20 Teil von 0.6.0, Beta, Branch `release/0.6.0`, Stand in [Issue #43](https://github.com/vt-tom/dsa5-helpers/issues/43)): Stufe 1 + 2 gebaut und in der Testinstanz geprüft, Chat und Journal im Modul-Design (2026-10-19), Stand in [MOBILE.md](../docs/MOBILE.md) 13.10.
 
-## Grundsätze
+## Projektübersicht
 
-- **Erben statt neu bauen:** Die Sheet-Klasse erbt von `globalThis.dsa5.sheets.ActorSheetdsa5Character`. Aktionen, Berechnungen und Datenzugriffe kommen aus dem System. Eigene Methoden nur nach Absprache.
-- **Technik:** Handlebars + Vanilla JS, kein React, kein Build-Schritt (direkte ES-Module).
-- **CSS-Gliederung (Issue #7, 2026-10-05):** `styles/dsa5-helpers-character-sheet.css` und `clickdummy/style.css` haben dieselben 21 nummerierten Abschnitte (Inhaltsverzeichnis im Dateikopf; Click-Dummy zusätzlich 22 „Nur Click-Dummy“). Neue Regeln in den passenden Abschnitt, nie ans Dateiende; gemeinsame Bausteine (6) stehen vor den Reitern. Eine Deklaration pro Zeile. `:hover` nur in `@media (hover: hover)` (Block am Ende des Unterabschnitts; prüft ein Test), `:focus-visible` außerhalb. Bedienelemente und feste Schriftgrößen über Tokens (`--hit-sm/md/lg` = 24/26/28 px, `--fs-base`, `--fs-panel-title`, `--fs-tab-title`, `--fs-*`), damit das geplante Mobil-CSS nur Tokens umstellt. Breitenabhängige Regeln in Abschnitt 18.
-- **Mindestversion:** DSA5 8.1.5 / Foundry ≥ 14.364.
-- **Keine eigenen Bilder:** nur vorhandene Assets aus `systems/dsa5/icons/...`. Einzige Ausnahme (Nutzerwunsch, Issue #22): der Fensterrahmen `styles/dsa5-helpers-frame.svg` — Nachbau des System-Rahmens `actor.webp`, erzeugt von `tools/gen-frame.cjs` (nicht von Hand bearbeiten; Modul und Click-Dummy nutzen dieselbe Datei).
-- **System-Sprachdateien nicht ändern:** eigene Texte unter `DSA5HELPERS.*` in `lang/de.json`/`en.json`.
-- **Issues schließen**, sobald ihre Version ausgeliefert ist, auch bei Betas (seit 2026-10-21): als „completed“ mit Kommentar und Link zum Release, Meilenstein ebenfalls schließen. Nicht Fertiges wandert in den nächsten Meilenstein, Beta-Rückmeldungen werden neue Issues.
-- **Release/Installation:** Zuletzt veröffentlicht: v0.6.1 (2026-10-21, Beta/Pre-release; v0.6.0 Beta am 2026-10-20). Letztes normales Release: v0.5.1 (2026-10-07). Manifest-URL `https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json`. Ablauf: `version` in `module.json` hochzählen → GitHub-Release mit Tag `v<version>` → Action `.github/workflows/release.yml` setzt Version/URLs und hängt `module.json` + `module.zip` (nur `scripts/ styles/ templates/ lang/` + Manifest, LICENSE, README) an. Setzt ein öffentliches Repo voraus (Foundry lädt ohne Anmeldung). Schritt für Schritt: [RELEASE.md](RELEASE.md). Arbeit an der nächsten Version läuft auf einem eigenen Branch `release/<version>` (zuletzt `release/0.6.1`; `release/0.6.0` entstand 2026-10-20 durch Umbenennen von `feature/mobile`), nicht auf `main`; Merge nach `main` erst, wenn der Nutzer die Version freigibt. **Mobile Support** (seit 2026-10-01) lief auf dem Dauer-Branch `feature/mobile` und erscheint auf Wunsch des Nutzers (2026-10-20) als Beta mit 0.6.0; der Branch wurde dafür zu `release/0.6.0` umbenannt. Planung: `project/MOBILE.md`. Der eigene **Mobil-Kanal** (Tag `mobile-v<Version>`, seit 2026-10-15, eine Testversion `mobile-v0.6.0`) wird nicht mehr genutzt, Tests laufen über den Beta-Kanal, siehe [RELEASE.md](RELEASE.md). **Beta-Kanal** (seit 0.4.0): Pre-releases erscheinen nur über die Beta-Manifest-URL `…/releases/download/beta/module.json`, später wird dasselbe Release zum normalen erklärt; keine `-beta`-Suffixe (Foundry-Versionsvergleich), siehe [RELEASE.md](RELEASE.md). Issues, die in eine Version kommen, bekommen den GitHub-Meilenstein mit der Versionsnummer (z. B. `0.3.2`) und werden `vt-tom` zugewiesen (seit 2026-10-01).
-- **Lizenz:** MIT. Repo auf GitHub (derzeit privat), später Release über Foundry Package Registry. Keine DSA5-Regeltexte im Modul (Rechte bei Ulisses Spiele).
+- **Modulname:** `dsa5-helpers`
+- **Zielplattform:** [Foundry Virtual Tabletop](https://foundryvtt.com/), Version **v14**
+- **Zielsystem:** Das Schwarze Auge 5 (DSA5) — Foundry-Systempaket `dsa5`
+- **Modultyp:** Foundry VTT Modul (kein eigenständiges Systempaket), erweitert/ergänzt das bestehende DSA5-System
+- **Erstes Ziel:** Ein neuer, alternativer Charakterbogen (Actor Sheet) für DSA5-Charaktere
 
-## Click-Dummy
+## Arbeitsordner
 
-- `clickdummy/` ist die Design-Referenz (HTML/CSS/JS ohne Foundry).
-- Jede Änderung im Modul wird im selben Durchgang auch im Click-Dummy nachgezogen.
-- Nur über `clickdummy/start-server.bat` öffnen, nicht per Doppelklick.
-- Bogen fest 770×740 px wie das Standard-Foundry-Fenster (an die Fensterhöhe angepasster Bogen ausprobiert und verworfen, 2026-09-25).
-- Nach CSS/JS-Änderungen die Cache-Version in `index.html` hochzählen (der Server schickt keine Cache-Header).
-- Design-Varianten: 2–3 Varianten per Umschalter im Click-Dummy zeigen, nach der Entscheidung Umschalter und Verlierer löschen.
-- Mobil: `clickdummy/mobile/` ist eine eigene Design-Referenz aus einem Design-Tool (Komponenten `*.dc.html` + Mini-Laufzeit `support.js` mit lokalem React). Das ist nur der Dummy; das Modul selbst bleibt bei Handlebars/Vanilla JS. Stand: Runde 4 mit der Rückmeldung von Lyynix (2026-10-15), Konzept in [MOBILE.md](MOBILE.md) Abschnitt 13.
+Der Workspace-Root ist die Git-Arbeitskopie unter Development:
+```
+D:\Development\dsa5-helpers\
+```
+
+- `clickdummy/` — **Design-Referenz**: funktionsfähiger Click-Dummy des neuen Heldenbogens (reines HTML/CSS/JS, kein Framework, kein Foundry-Datenmodell). Hier findet die laufende Design-Iteration statt.
+  - `index.html` — Grundgerüst: Toolbar (Theme-Umschalter), Rail-Navigation, Kopf-/Attributbereich, Content-Bereich für Reiter.
+  - `style.css` — Sämtliches Styling; CSS-Custom-Properties in `:root`/`[data-theme='dark']` steuern Light/Dark-Theme. Lädt Fonts direkt aus `../../../systems/dsa5/`, den Fensterrahmen aus `../styles/dsa5-helpers-frame.svg` (wie das Modul).
+  - `data.js` — Statische Demo-/Platzhalterdaten (ein Beispielheld) für alle Reiter; keine echten Actor-Daten.
+  - `script.js` — Reine Darstellungslogik: baut DOM-Elemente aus `data.js` für die 8 Reiter (main/skills/combat/magic/religion/inventory/status/notes), Tab-Umschaltung, Theme-Toggle.
+  - `assets-map.js` — Zentrale Pfad-Zuordnung `A.*` zu bestehenden Assets in `systems/dsa5/icons/...`; bewusst **keine eigenen/neuen Bilder**, sondern Referenzen auf vorhandene Systemgrafiken.
+  - `mobile/` — Click-Dummy der Mobilansicht (Foundry-Oberfläche + Heldenbogen für Smartphone/Tablet). Komponenten `Foundry Mobil.dc.html` und `Heldenbogen Mobil.dc.html` laufen über die mitgelieferte Mini-Laufzeit `support.js` (+ React in `vendor/`, keine Build-Schritte). Einstieg `index.html` (Übersicht in Geräterahmen) bzw. `app.html` (Vollbild für echte Geräte). Details: `mobile/README.md`.
+  - `start-server.bat` — Startet die Vorschau auf 127.0.0.1:8877: Modul aus Development, Systemressourcen aus Foundry. URL selbst öffnen. **Wichtig:** Click-Dummy nicht per Doppelklick/`file://` öffnen — dann lösen die relativen Pfade zu `systems/dsa5` (Fonts, Icons, Rahmenbild) nicht auf. Immer über dieses Skript aufrufen.
+- `.projects/` — zentrale Aufgaben und dauerhaftes Projektwissen.
+- `docs/` — weiterhin benötigte Spezialdokumentation und historische Unterlagen.
+- Echter Foundry-Modulcode (Stand 2026-09-15, `clickdummy/` bleibt daneben die Design-Referenz):
+  - `module.json` — Manifest (Registrierung, Kompatibilität, esmodules/styles/languages).
+  - `scripts/dsa5-helpers.js` — init-Hook, Sheet-Registrierung, Partial-Preload, eigene Handlebars-Helfer.
+  - `scripts/sheets/dsa5-helpers-character-sheet.js` — Sheet-Klasse, erbt von `globalThis.dsa5.sheets.ActorSheetdsa5Character`.
+  - `templates/actors/` — Handlebars-Templates (`dsa5-helpers-character-sheet.hbs` + `parts/*.hbs` je Tab/Baustein).
+  - `styles/dsa5-helpers-character-sheet.css` — sämtliches Styling des Bogens.
+  - `scripts/mobile/` + `styles/dsa5-helpers-mobile.css` — Mobile Support (seit 0.6.0, Beta): `mobile.js` (Einstellungen, Oberfläche wählen, Body-Klasse `dsa5h-mobile`), `shell.js` (Kopf, Heldenkarte, schwebende Knöpfe, Panels), `canvas-touch.js` (Gesten auf der Szene), `touch-context.js` (Langdruck → Kontextmenü). Alles greift nur bei aktivem „Hybrides Spiel“ auf Touch-Geräten.
+  - `styles/dsa5-helpers-frame.svg` — Fensterrahmen, **generiert** von `tools/gen-frame.cjs` (nach Änderungen am Skript `node tools/gen-frame.cjs`).
+  - `lang/de.json`, `lang/en.json` — Lokalisierung.
+  - `tests/sheet.test.cjs` — Node-Test-Harness (`node tests/sheet.test.cjs`): kompiliert die echten Templates gegen ein installiertes `foundry-nodejs-v14` + die echten `systems/dsa5`-Dateien, prüft Struktur/Aktionen/Datenpfade/Lokalisierung statisch (kein jsdom, keine Interaktions-Simulation — echte Klicks/Eingaben nur live in Foundry prüfbar).
+
+
+## Entwicklungsregeln
+
+Verbindliche Arbeitsregeln stehen ausschließlich in [AGENTS.md](../AGENTS.md).
 
 ## Design-Entscheidungen
 
@@ -141,15 +160,45 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 - **Kontextmenü per Langdruck (2026-10-20):** Foundrys `ContextMenu._onActivate` schließt ein offenes Menü, wenn dasselbe Ziel erneut ausgelöst wird. Chrome (Android und Touch-Emulation, unter Windows erst beim Loslassen) schickt bei Langdruck ein eigenes `contextmenu` → nach unserem synthetischen Menü das echte schlucken (`touch-context.js`). Foundry legt `data-action="expandRoll"` über den Würfelbereich jeder Wurfnachricht; ein Filter „kein Langdruck auf `[data-action]`“ schließt sonst fast alle Nachrichten aus. Headless-Chrome erzeugt bei CDP-Touch kein natives `contextmenu`, das lässt sich dort nicht nachstellen.
 - **Listener am Fenster-Element (2026-09-30):** `close()` verwirft das Element, beim nächsten Öffnen baut Foundry ein neues (`isFirstRender` → `_renderFrame`), die Sheet-Instanz bleibt bis F5 dieselbe. Einmal-Listener deshalb an das Element koppeln (`this._listenerElement !== this.element`), nie an ein reines Instanz-Flag.
 
-## Zusammenarbeit mit dem Agent
-
-- Routinefragen (Code, Umsetzung) selbst entscheiden. Bei Design- und Projektentscheidungen vorher fragen, Rückfragen gebündelt stellen.
-- Geklärte Aufgaben komplett selbstständig umsetzen, danach Ergebnis zeigen.
-- Dateien bearbeiten, Befehle ausführen, Pakete installieren: erlaubt. Git-Push und Änderungen an Projektziel/-struktur: nur mit Bestätigung.
-- Ablauf: [AUFGABEN.md](AUFGABEN.md) abarbeiten → erledigte Punkte löschen → dauerhafte Entscheidungen hier ergänzen.
-
 ## Referenzen
 
 - DSA5-System: `systems/dsa5` (Sheets unter `modules/actor/`, Templates unter `templates/actors/`).
 - Vorbild für Foundry-API: Schwesterprojekt `modules/melliador-helpers/`.
-- Historie: [archive/DECISIONS.md](archive/DECISIONS.md) (sehr lang, nur gezielt lesen) und [archive/STATUS.md](archive/STATUS.md) (Runden 1–24).
+- Historie: [archive/DECISIONS.md](../docs/archive/DECISIONS.md) (sehr lang, nur gezielt lesen) und [archive/STATUS.md](../docs/archive/STATUS.md) (Runden 1–24).
+
+## Entwicklung und Übertragung nach Foundry (21.10.2026)
+
+Die maßgebliche Git-Arbeitskopie ist `D:\Development\dsa5-helpers`. Der bisherige Modulpfad ist künftig nur die Foundry-Laufzeitkopie. Git-Historie, Tests und Projektunterlagen liegen in Development.
+
+Aus dem Arbeitsordner:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/deploy-foundry.ps1 compare
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/deploy-foundry.ps1 deploy
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/deploy-foundry.ps1 status
+```
+
+`compare` zeigt inhaltliche Abweichungen; `deploy` kopiert Manifest, scripts, styles, templates, lang, assets und vorhandene README/CHANGELOG/LICENSE-Dateien. Der alte vollständige Modulordner wird unter `D:\FoundryBackups\<Zeitstempel>\dsa5-helpers\previous-module` erhalten und hashgeprüft. Danach wird die neue Kopie ebenfalls per SHA-256 geprüft; bei einem Fehler wird die alte Installation wiederhergestellt. Entfernte Laufzeitdateien verschwinden durch den vollständigen Austausch, Entwicklungsunterlagen bleiben außerhalb Foundry.
+
+Keine automatische Synchronisierung: nach Änderungen bewusst übertragen und Foundry im Browser mit F5 neu laden. Keine Änderungen im installierten Modul bearbeiten oder per Foundry-Update überschreiben lassen, bevor gewollte Änderungen gesichert sind. Das Skript verweigert Packs/Datenbanken und Verzeichnisverknüpfungen. Welt- und Systemdaten bleiben unberührt.
+
+Klickdummy: `clickdummy\start-server.bat` im neuen Arbeitsordner starten; danach `http://127.0.0.1:8877/modules/dsa5-helpers/clickdummy/index.html` öffnen. Die Vorschau liest das Modul direkt aus Development und ausschließlich DSA5-Systemressourcen aus Foundry. Es erfolgt kein Browserstart und keine Übertragung. Tests verwenden `FOUNDRY_DATA_PATH` (Data-Verzeichnis) und `FOUNDRY_APP_PATH` (App-Verzeichnis), standardmäßig die vorhandene v14-Installation. Melliador-Vorschau weiterhin `node projects/klickdummy/serve.cjs`.
+
+Abschlussprüfung 21.10.2026: erste Übertragung erfolgreich, vollständiger Altbestand einschließlich Git in `D:\FoundryBackups\20261021-114423-686\dsa5-helpers\previous-module` gesichert und hashgeprüft. Git-Verzeichnis der Development-Kopie vollständig mit der Sicherung verglichen. Anschließender Laufzeitvergleich: keine Abweichungen. Arbeitskopien auf Nutzerwunsch direkt unter `D:\Development`, ohne Zwischenordner `Foundry`.
+
+- **Mindestversion:** DSA5 8.1.5 / Foundry ≥ 14.364.
+
+- **Release/Installation:** Zuletzt veröffentlicht: v0.6.1 (2026-10-21, Beta/Pre-release; v0.6.0 Beta am 2026-10-20). Letztes normales Release: v0.5.1 (2026-10-07). Manifest-URL `https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json`. Ablauf: `version` in `module.json` hochzählen → GitHub-Release mit Tag `v<version>` → Action `.github/workflows/release.yml` setzt Version/URLs und hängt `module.json` + `module.zip` (nur `scripts/ styles/ templates/ lang/` + Manifest, LICENSE, README) an. Setzt ein öffentliches Repo voraus (Foundry lädt ohne Anmeldung). Schritt für Schritt: [RELEASE.md](../docs/RELEASE.md). Arbeit an der nächsten Version läuft auf einem eigenen Branch `release/<version>` (zuletzt `release/0.6.1`; `release/0.6.0` entstand 2026-10-20 durch Umbenennen von `feature/mobile`), nicht auf `main`; Merge nach `main` erst, wenn der Nutzer die Version freigibt. **Mobile Support** (seit 2026-10-01) lief auf dem Dauer-Branch `feature/mobile` und erscheint auf Wunsch des Nutzers (2026-10-20) als Beta mit 0.6.0; der Branch wurde dafür zu `release/0.6.0` umbenannt. Planung: `docs/MOBILE.md`. Der eigene **Mobil-Kanal** (Tag `mobile-v<Version>`, seit 2026-10-15, eine Testversion `mobile-v0.6.0`) wird nicht mehr genutzt, Tests laufen über den Beta-Kanal, siehe [RELEASE.md](../docs/RELEASE.md). **Beta-Kanal** (seit 0.4.0): Pre-releases erscheinen nur über die Beta-Manifest-URL `…/releases/download/beta/module.json`, später wird dasselbe Release zum normalen erklärt; keine `-beta`-Suffixe (Foundry-Versionsvergleich), siehe [RELEASE.md](../docs/RELEASE.md). Issues, die in eine Version kommen, bekommen den GitHub-Meilenstein mit der Versionsnummer (z. B. `0.3.2`) und werden `vt-tom` zugewiesen (seit 2026-10-01).
+
+- **Lizenz:** MIT. Repo auf GitHub (derzeit privat), später Release über Foundry Package Registry. Keine DSA5-Regeltexte im Modul (Rechte bei Ulisses Spiele).
+
+## GitHub-Issue-Abgleich und Dokumentstruktur
+
+Git-Remote und bestehende Projektkonfiguration bestätigen `vt-tom/dsa5-helpers`.
+`node tools/sync-github-issues.cjs` liest ausschließlich dieses Repository über die vorhandene GitHub-CLI (`gh api`, REST, Seiten zu je 100 Einträgen bis zur letzten Seite). Pull Requests werden ausgefiltert. Benötigt werden Node.js, gh und eine bereits vorhandene passende Anmeldung; keine zusätzlichen Pakete.
+
+Das Skript ersetzt nur den eindeutig markierten Issue-Bereich in `.projects/AUFGABEN.md`. Es zeigt alle offenen und innerhalb von 14 Tagen geschlossene Issues einschließlich Statusgrund und verfügbarer Metadaten. Abrufzeit und Repository stehen im Block. Bei Abruf-, Marker- oder Konkurrenzfehlern bleibt der letzte gültige Inhalt erhalten. Ein exklusiver Werkzeug-Lock verhindert parallele Skriptläufe; vor atomarem Dateiaustausch wird die Zieldatei erneut byteweise geprüft. Externe Editoren verwenden diesen Lock nicht; Änderungen nach der letzten Prüfung lassen sich damit nicht absolut ausschließen.
+
+Claude Code besitzt bereits einen SessionStart-Hook in `.claude/settings.json` für `startup|clear|resume`, mit 60 Sekunden Hook-Timeout und Aufruf über `$CLAUDE_PROJECT_DIR`. Er bleibt unverändert. Andere KI-Werkzeuge werden durch AGENTS.md zum Aufruf verpflichtet; eine technische Startgarantie besteht dort nicht. Der Abgleich beauftragt keine Issue-Arbeit. Prüfung des Werkzeugs: `node --test tests/sync-github-issues.test.cjs`.
+
+Die beiden zentralen Dokumente wurden aus dem früheren Ordner `project` nach `.projects/` verschoben. Die übrige Dokumentation liegt seit 22.10.2026 unter `docs/`: Release-Anleitung und Mobile-Konzept direkt darin, datierte Feedback-Dateien samt Bild und bisherige Historie unter `docs/archive/`; historische Unterlagen nur gezielt konsultieren. Frühere Test- und Betriebsangaben oben sind übernommene, datierte Projektaufzeichnungen, keine erneute Live-Abnahme bei dieser Strukturmigration.
