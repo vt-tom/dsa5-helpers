@@ -1,0 +1,7 @@
+{{#if zone.energy}}
+<button type="button" class="dsa5h-zone-energy{{#if zone.energy.editable}} energyzone-zone-header{{/if}}" data-zone="{{zone.key}}" id="{{@root.dsa5h.sheetId}}-energy-{{zone.key}}" data-tooltip="{{zone.energy.failureTooltip}}" aria-label="{{localize 'DSA5HELPERS.EnergyZones.Summary' name=zone.label value=zone.energy.value max=zone.energy.max}}{{#if zone.energy.failed}}, {{localize 'DSA5HELPERS.EnergyZones.Failed'}}{{/if}}{{#if zone.energy.resistPenalty}}, {{localize 'DSA5HELPERS.EnergyZones.Penalty' value=zone.energy.resistPenalty}}{{/if}}" {{#unless zone.energy.editable}}disabled{{/unless}}>
+<span class="dsa5h-zone-energy-value">{{zone.energy.value}} / {{zone.energy.max}}</span>
+<span class="dsa5h-zone-energy-meter" style="--fill:{{dsa5hPercent zone.energy.value zone.energy.max}}%" aria-hidden="true"><span></span></span>
+<span class="dsa5h-zone-energy-status"><span>{{#if zone.energy.resistPenalty}}−{{zone.energy.resistPenalty}}{{/if}}</span><span title="{{localize 'DSA5HELPERS.EnergyZones.Failed'}}">{{#if zone.energy.failed}}×{{/if}}</span></span>
+</button>
+{{/if}}

@@ -1,5 +1,7 @@
 {
   "DSA5HELPERS": {
+    "RangedAttackShort": "RC",
+    "SelectAmmo": "Select ammunition",
     "SheetLabel": "DSA5 Helpers Character Sheet",
     "Free": "free",
     "AdvantagesDisadvantages": "Advantages & Disadvantages",
@@ -668,6 +670,23 @@
       "Bestiary": "Bestiary",
       "Important": "Important",
       "Empty": "Nobody shared yet."
+    },
+    "PowerSources": {
+      "Title": "Power sources",
+      "Abbr": "PS",
+      "Total": "AE total",
+      "Summary": "Power sources: {value} of {max} AE, {count} sources. Open overview",
+      "Source": "{name}: {value} of {max} AE",
+      "Previous": "Previous sources",
+      "Next": "More sources",
+      "Page": "{page} / {pages} · {count} sources",
+      "SaveFailed": "Power sources could not be saved. Please reopen the dialog and try again.",
+      "OpenFailed": "The power source dialog could not be opened."
+    },
+    "EnergyZones": {
+      "Summary": "{name}: {value} of {max} zone LP",
+      "Failed": "Zone failed",
+      "Penalty": "Resistance penalty {value}"
     }
   }
 }

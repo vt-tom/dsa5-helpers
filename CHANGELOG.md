@@ -4,6 +4,27 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 Entwicklungsworkflow (21.10.2026): Arbeitskopie unter Development; gesicherte Übertragung per `tools/deploy-foundry.ps1`. Tests und Klickdummy verwenden die separate Foundry-Installation. Keine Änderung des Spielverhaltens.
 
+## [0.6.2] — unveröffentlicht
+
+### Neu
+
+- Separate v13-Desktop-Testausgabe (#51) für Foundry 13.351 / DSA5 7.5.1: später Klassenstart, ältere Kontextmenüs und Systemaktionen, native Munitionswahl, Reittier im Kampf-Reiter und magische Traditionsartefakte. Wundeinschätzung verwendet den privaten v13-Würfelmodus. Fehlende DSA8-Funktionen und Mobiloberfläche bleiben aus; „Helfen“/Grundmanöver sind ohne DSA8-Modifikatoren-Hook nicht verfügbar. Lokale generationseigene ZIPs über `tools/package-module.py`, noch keine Veröffentlichung oder interaktive Foundry-Abnahme.
+
+- Kraftspeicher (#50) am AsP-Vorrat: kleine Summenkugel, beim Öffnen radial angeordnete Einzelspeicher ohne Hintergrundfläche. Gewählte Variante „Schwebend“ mit dunkler Fassung und Schatten; fünf Speicher pro Seite, bei mehr Speichern blättern. Werte kommen aus dem DSA5-System; Bearbeiten öffnet dessen gemeinsamen Kraftspeicherdialog. Eigene AsP bleiben getrennt. Anzeige nur mit vorhandener Systemunterstützung und Speichern.
+- Lebensenergiezonen (#47): Zonen-LeP-Balken, Ausfallmarkierung und Widerstands-Malus im Zonenkreuz, auf dem Smartphone als Zonenliste. Getrennte Schaltflächen für Rüstung und Zonenenergie; Bearbeiten über den Dialog von Rüstkammer II. Nur bei aktiver Regel und vorhandenem Modul; Beobachter sehen Werte ohne Bearbeitungszugriff. Schaden, Heilung und Ausfallfolgen verarbeitet weiterhin Rüstkammer II.
+
+### Behoben
+
+- Kraftspeicher (#50): Ladefehler beim Öffnen beseitigt. Der Dialog wird über die bereits initialisierte Systemaktion geöffnet, statt interne Quelldateien neben dem DSA5-Bundle erneut zu importieren.
+
+- Kraftspeicherdialog (#50): Ladungen werden auch bei kopierten Gegenständen mit gleicher Effekt-ID dem richtigen Gegenstand zugeordnet; die Summenanzeige wird nach dem Speichern aktualisiert. Systemvorlage und Effekt-Datenmodell bleiben erhalten.
+
+- Zonen-LeP (#47): Anzeige verwendet denselben Aufbereitungshelfer von Rüstkammer II wie der Systemdialog. Dadurch erscheinen auch vor der ersten Initialisierung die richtigen Werte statt `0 / 0`.
+
+### Click-Dummy
+
+- Designs für #50/#47 abgenommen; zugehörige Test- und Vergleichsschalter sowie verworfene Varianten entfernt. Gewählte Darstellung bleibt mit Demo-Werten bedienbar.
+
 ## [0.6.1] — 2026-10-21
 
 ### Neu

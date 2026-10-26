@@ -385,6 +385,17 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top > .dsa5h-name { padding-bot
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ident input { font-size: 12px; letter-spacing: .08em; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-resource-frame { grid-column: 1 / -1; grid-row: 3; justify-self: stretch; justify-content: center; gap: 18px; margin: 12px 0 2px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head { --dsa5h-orb: 58px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-power-satellite::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-power-pager button,
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-power-close {
+  min-width: 44px;
+  min-height: 44px;
+}
+
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-orb-val input { font-size: 19px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-regen-btn { flex: none; width: 34px; height: 34px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-banner-tools { top: 6px; right: 44px; }

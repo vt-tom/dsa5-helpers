@@ -1,3 +1,4 @@
+import { isFoundry13 } from '../compat/runtime.js';
 // Hausregel „Wundeinschätzung“ (Idee und erste Umsetzung als World Script + Makro: Knigge; ins Modul übernommen
 // 2026-10-05). Ein Held schätzt mit einer verdeckten Probe auf Heilkunde Wunden ein, wie schwer ein markiertes Ziel
 // verletzt ist; je mehr QS, desto genauer. Das Ergebnis merkt sich der Held (Actor-Flag je Ziel), bis sich die LeP des
@@ -73,10 +74,11 @@ export async function woundCheck(viewer) {
 
   // Ohne aktive Effekte des Talents würfeln (wie im Original), sonst gelten z. B. Boni aus Effekten doppelt.
   const rollSkill = skill.clone({ effects: [] }, { keepId: true });
-  const setup = await viewer.setupSkill(rollSkill, { subtitle: ` (${target.name})`, messageMode: MODE }, undefined);
+  const visibility = isFoundry13() ? { rollMode: 'selfroll' } : { messageMode: MODE };
+  const setup = await viewer.setupSkill(rollSkill, { subtitle: ` (${target.name})`, ...visibility }, undefined);
   if (!setup) return;
   setup.testData.opposable = false;
-  setup.cardOptions.messageMode = MODE; // überschreibt eine Änderung im Dialog
+  Object.assign(setup.cardOptions, visibility); // überschreibt eine Änderung im Dialog
 
   const roll = await viewer.basicTest(setup);
   const result = roll?.result;

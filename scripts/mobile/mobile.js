@@ -9,6 +9,7 @@ import { initCanvasTouch } from './canvas-touch.js';
 import { initTouchContext } from './touch-context.js';
 import { initChat } from './chat.js';
 import { initJournal } from './journal.js';
+import { isFoundry13 } from '../compat/runtime.js';
 
 export const MODULE_ID = 'dsa5-helpers';
 const MODES = ['auto', 'phone', 'tablet', 'foundry'];
@@ -235,6 +236,8 @@ function setupTabletSheet(el) {
 
 /** Im init-Hook aufrufen. */
 export function initMobile() {
+  // Die v13-Ausgabe unterstützt ausschließlich den Desktop-Bogen.
+  if (isFoundry13()) return;
   game.settings.register(MODULE_ID, 'hybridPlay', {
     name: 'DSA5HELPERS.Mobile.Settings.Hybrid.Name', hint: 'DSA5HELPERS.Mobile.Settings.Hybrid.Hint',
     scope: 'world', config: true, restricted: true, type: Boolean, default: false, requiresReload: true,

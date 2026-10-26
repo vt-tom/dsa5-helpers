@@ -62,9 +62,12 @@
               <div class="dsa5h-orb-val"><span class="dsa5h-orb-key">{{localize "CHARAbbrev.LeP"}}</span>{{formInput systemFields.status.fields.wounds.fields.value value=document.system.status.wounds.value tooltip="Current"}}<span class="dsa5h-orb-max">/ {{document.system.status.wounds.max}}</span></div>
             </div>
             {{#if prepare.magic.hasSpells}}
+            <div class="dsa5h-power-anchor">
             <div class="dsa5h-orb dsa5h-res-asp" style="--pct:{{dsa5hPercent document.system.status.astralenergy.value document.system.status.astralenergy.max}}%">
               <div class="dsa5h-orb-liquid"></div>
               <div class="dsa5h-orb-val"><span class="dsa5h-orb-key">{{localize "CHARAbbrev.AsP"}}</span>{{formInput systemFields.status.fields.astralenergy.fields.value value=document.system.status.astralenergy.value tooltip="Current"}}<span class="dsa5h-orb-max">/ {{document.system.status.astralenergy.max}}</span></div>
+            </div>
+            {{#if dsa5h.powerSources}}<button type="button" class="dsa5h-power-satellite" data-action="dsa5hPowerSources" data-observer-enabled aria-haspopup="dialog" aria-expanded="false" style="--fill:{{dsa5hPercent dsa5h.powerSources.value dsa5h.powerSources.max}}%" aria-label="{{localize 'DSA5HELPERS.PowerSources.Summary' value=dsa5h.powerSources.value max=dsa5h.powerSources.max count=dsa5h.powerSources.segments.length}}"><small>{{localize 'DSA5HELPERS.PowerSources.Abbr'}}</small><strong>{{dsa5h.powerSources.value}}</strong></button>{{/if}}
             </div>
             {{/if}}
             {{#if prepare.magic.hasPrayers}}

@@ -1,5 +1,27 @@
 /* Demo-Daten für den Click-Dummy (statische Platzhalterwerte, kein Foundry-Datenmodell) */
 
+// #50/#47: frei gewählte Vorschauwerte, keine Regelberechnung.
+const POWER_SOURCE_DEMO = [
+  { name: 'Stab', value: 8, max: 12 },
+  { name: 'Kristall', value: 3, max: 8 },
+  { name: 'Ring', value: 0, max: 4 },
+  { name: 'Amulett mit einem langen Anzeigenamen', value: 6, max: 6 },
+  { name: 'Zweiter Kristallspeicher', value: 2, max: 10 },
+  { name: 'Bergkristall', value: 1, max: 5 },
+  { name: 'Armreif', value: 4, max: 8 },
+  { name: 'Reservekristall', value: 0, max: 6 },
+  { name: 'Zweiter Ring', value: 2, max: 4 },
+  { name: 'Anhänger', value: 3, max: 7 },
+];
+const ENERGY_ZONE_DEMO = {
+  head: { value: 3, max: 4, failed: false, resistPenalty: 0 },
+  value: { value: 11, max: 16, failed: false, resistPenalty: 0 },
+  rightarm: { value: 0, max: 4, failed: true, resistPenalty: 2 },
+  leftarm: { value: 4, max: 4, failed: false, resistPenalty: 0 },
+  rightleg: { value: 4, max: 6, failed: false, resistPenalty: 1 },
+  leftleg: { value: 6, max: 6, failed: false, resistPenalty: 0 },
+};
+
 // Charaktername (Kopfzeile, editierbar nur im Bearbeiten-Modus, siehe BEARBEITEN.md "Kopf"-Abschnitt und
 // makeEditable()/renderHeader() in script.js). "let" statt "const", da ein Primitiv (String) sich nicht wie die
 // übrigen Datenobjekte per Property-Zuweisung in-place mutieren lässt.

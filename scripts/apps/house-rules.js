@@ -3,7 +3,7 @@
 // - Buch: Inhaltsverzeichnis, dann je Regel eine Seite (eigenes Template je Regel) mit dem Schalter oben rechts im
 //   Seitenkopf; Blättern per Pfeilknöpfen neben der Seite, Inhaltsverzeichnis oder Pfeiltasten, mit Umblätter-Animation.
 // Geöffnet über die Moduleinstellungen (registerMenu, für alle lesbar) oder api.openHouseRules().
-import { HOUSE_RULES, isRuleActive, setRuleActive, setManeuverEnabled, MANEUVER_IDS, enabledManeuvers } from '../house-rules/rules.js';
+import { availableHouseRules, isRuleActive, setRuleActive, setManeuverEnabled, MANEUVER_IDS, enabledManeuvers } from '../house-rules/rules.js';
 
 const MODULE_ID = 'dsa5-helpers';
 const APP_ID = 'dsa5-helpers-house-rules';
@@ -29,7 +29,7 @@ export function getHouseRulesApp() {
 
     async _prepareContext(options) {
       const context = await super._prepareContext(options);
-      const rules = HOUSE_RULES.map((rule, index) => ({ ...rule, index, number: index + 1, pageIndex: index + 1, active: isRuleActive(rule.id), key: `DSA5HELPERS.HouseRules.${rule.id}` }));
+      const rules = availableHouseRules().map((rule, index) => ({ ...rule, index, number: index + 1, pageIndex: index + 1, active: isRuleActive(rule.id), key: `DSA5HELPERS.HouseRules.${rule.id}` }));
       const page = Math.min(Math.max(this.state.page, 0), rules.length);
       const enabled = enabledManeuvers();
       return Object.assign(context, {
@@ -74,7 +74,7 @@ export function getHouseRulesApp() {
     }
 
     _goTo(page) {
-      const max = HOUSE_RULES.length;
+      const max = availableHouseRules().length;
       if (page < 0 || page > max || page === this.state.page) return;
       this.state.turn = page > this.state.page ? 1 : -1;
       this.state.page = page;
@@ -117,7 +117,7 @@ export function jumpToSection(root, key) {
 export function openHouseRules(ruleId) {
   const App = getHouseRulesApp();
   const app = foundry.applications.instances.get(APP_ID) ?? new App();
-  const index = HOUSE_RULES.findIndex(rule => rule.id === ruleId);
+  const index = availableHouseRules().findIndex(rule => rule.id === ruleId);
   if (index >= 0) Object.assign(app.state, { view: 'book', page: index + 1 });
   return app.render({ force: true });
 }

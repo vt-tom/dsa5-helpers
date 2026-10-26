@@ -22,13 +22,13 @@
             
             <div class="panel">
               <div class="panel-title">{{localize "DSA5HELPERS.AdvantagesDisadvantages"}}</div>
-              <div class="subhead flex"><span>{{localize "advantages"}}</span><button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp 'advantage'}}" aria-label="{{localize 'advantages'}}">i</button></div>
+              <div class="subhead flex"><span>{{localize "advantages"}}</span>{{#unless @root.dsa5h.legacySystem}}<button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp 'advantage'}}" aria-label="{{localize 'advantages'}}">i</button>{{/unless}}</div>
               <div class="chips dsa5h-chips-fill">
                 {{#each prepare.advantages as |item|}}
                 <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span>{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}<span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.advanceMode}}hidden{{/unless}} data-tooltip="DSA5HELPERS.DeleteRefund" aria-label="{{localize 'DSA5HELPERS.DeleteRefund'}}">×</button></span></span>
                 {{/each}}
               </div>
-              <div class="subhead flex"><span>{{localize "disadvantages"}}</span><button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp 'disadvantage'}}" aria-label="{{localize 'disadvantages'}}">i</button></div>
+              <div class="subhead flex"><span>{{localize "disadvantages"}}</span>{{#unless @root.dsa5h.legacySystem}}<button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp 'disadvantage'}}" aria-label="{{localize 'disadvantages'}}">i</button>{{/unless}}</div>
               <div class="chips dsa5h-chips-fill">
                 {{#each prepare.disadvantages as |item|}}
                 <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span>{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}<span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.advanceMode}}hidden{{/unless}} data-tooltip="DSA5HELPERS.DeleteRefund" aria-label="{{localize 'DSA5HELPERS.DeleteRefund'}}">×</button></span></span>
@@ -42,9 +42,9 @@
                 {{#each dsa5h.specGeneral.groups as |g|}}
                   {{#if ../dsa5h.specGeneral.showSubheads}}
                     {{#if @first}}<div class="panel-title">{{localize "SpecCategory.general"}}</div>{{/if}}
-                    <div class="subhead flex"><span>{{localize (concat "SpecCategory." g.cat)}}</span><button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp g.cat}}" aria-label="{{localize (concat "SpecCategory." g.cat)}}">i</button></div>
+                    <div class="subhead flex"><span>{{localize (concat "SpecCategory." g.cat)}}</span>{{#unless @root.dsa5h.legacySystem}}<button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp g.cat}}" aria-label="{{localize (concat "SpecCategory." g.cat)}}">i</button>{{/unless}}</div>
                   {{else}}
-                    <div class="panel-title flex"><span>{{localize (concat "SpecCategory." g.cat)}}</span><button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp g.cat}}" aria-label="{{localize (concat "SpecCategory." g.cat)}}">i</button></div>
+                    <div class="panel-title flex"><span>{{localize (concat "SpecCategory." g.cat)}}</span>{{#unless @root.dsa5h.legacySystem}}<button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp g.cat}}" aria-label="{{localize (concat "SpecCategory." g.cat)}}">i</button>{{/unless}}</div>
                   {{/if}}
                   <div class="chips dsa5h-chips-fill">
                     {{#each g.items as |item|}}

@@ -4,7 +4,9 @@
 // „Spieler-Sicht“ zeigt nur den Stand. Bei aktiver Wundeinschätzung zeigt der Talente-Reiter
 // den Hinweis an Heilkunde Wunden (woundCheckHint() in script.js), aktives Helfen den Knopf in Kampf › Körper
 // (helpActionButton()); Proben und Chat gibt es nur in Foundry.
-import { HOUSE_RULES } from "../scripts/house-rules/rules.js";
+import { HOUSE_RULES as ALL_HOUSE_RULES, isRuleSupported } from "../scripts/house-rules/rules.js";
+const legacy = new URLSearchParams(location.search).get('foundry') === '13';
+const HOUSE_RULES = ALL_HOUSE_RULES.filter(rule => isRuleSupported(rule.id, legacy));
 
 const lang = await fetch("../lang/de.json").then((r) => r.json());
 const t = (key, data = {}) => {

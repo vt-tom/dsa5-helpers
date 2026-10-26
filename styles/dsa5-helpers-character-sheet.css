@@ -1157,6 +1157,197 @@
   }
 }
 
+.dsa5-helpers-sheet .dsa5h-power-anchor {
+  position: relative;
+  flex: none;
+  z-index: 2;
+}
+.dsa5-helpers-sheet .dsa5h-power-satellite {
+  position: absolute;
+  right: -9px;
+  bottom: -6px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to top, #285c96 var(--fill), #171f2c var(--fill));
+  color: #f4e8d6;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, .3), 0 2px 5px rgba(0, 0, 0, .6);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+  cursor: pointer;
+}
+.dsa5-helpers-sheet .dsa5h-power-satellite small {
+  font-size: inherit;
+}
+.dsa5-helpers-sheet .dsa5h-power-satellite:focus-visible,
+.dsa5-helpers-sheet .dsa5h-power-radial button:focus-visible,
+.dsa5-helpers-sheet .dsa5h-zone-energy:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.dsa5-helpers-sheet .dsa5h-power-open {
+  visibility: hidden;
+}
+.dsa5-helpers-sheet .dsa5h-power-radial {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  overflow: visible;
+  z-index: 1600;
+  width: 300px;
+  height: 300px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: none;
+  max-height: none;
+  box-shadow: none;
+  pointer-events: none;
+  font-family: 'GentiumBasic', serif;
+  font-size: var(--fs-meta);
+}
+.dsa5-helpers-sheet .dsa5h-power-ring {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  pointer-events: auto;
+}
+.dsa5-helpers-sheet .dsa5h-power-center,
+.dsa5-helpers-sheet .dsa5h-power-source {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 68px;
+  height: 68px;
+  padding: 5px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to top, #285c96 var(--fill, 0%), #171f2c var(--fill, 0%));
+  color: #f4e8d6;
+  transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + var(--y, 0px)));
+  font: inherit;
+  line-height: 1.1;
+  text-align: center;
+  cursor: pointer;
+}
+.dsa5-helpers-sheet .dsa5h-power-center {
+  width: 86px;
+  height: 86px;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, .3), 0 3px 9px rgba(0, 0, 0, .6);
+}
+/* Gewählte Variante A: dunkle Fassung und Schlagschatten, freier Hintergrund. */
+.dsa5-helpers-sheet .dsa5h-power-center,
+.dsa5-helpers-sheet .dsa5h-power-source {
+  isolation: isolate;
+  text-shadow: 0 1px 2px #000;
+}
+.dsa5-helpers-sheet .dsa5h-power-center,
+.dsa5-helpers-sheet .dsa5h-power-source {
+  border-color: #e3c784;
+  box-shadow: inset 0 2px 3px rgba(255, 255, 255, .35), inset 0 -3px 5px rgba(0, 0, 0, .55), 0 0 0 3px #252019, 0 10px 12px 3px rgba(0, 0, 0, .8);
+}
+.dsa5-helpers-sheet .dsa5h-power-source span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dsa5-helpers-sheet .dsa5h-power-center small {
+  font-size: inherit;
+}
+.dsa5-helpers-sheet .dsa5h-power-close,
+.dsa5-helpers-sheet .dsa5h-power-pager button {
+  min-width: var(--hit-lg, 28px);
+  min-height: var(--hit-lg, 28px);
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.dsa5-helpers-sheet .dsa5h-power-close {
+  position: absolute;
+  right: 96px;
+  top: 96px;
+  z-index: 1;
+}
+.dsa5-helpers-sheet .dsa5h-power-pager {
+  position: absolute;
+  top: 278px;
+  left: 48px;
+  right: 48px;
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.dsa5-helpers-sheet .dsa5h-power-pager button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+.dsa5-helpers-sheet .dsa5h-power-pager span {
+  padding: 3px 6px;
+  border-radius: 12px;
+  background: var(--head);
+  color: #f4e8d6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dsa5-helpers-sheet .dsa5h-power-source {
+    animation: dsa5h-source-open .2s ease-out both;
+  }
+  .dsa5-helpers-sheet .dsa5h-power-center {
+    animation: dsa5h-center-open .2s ease-out both;
+  }
+}
+@keyframes dsa5h-source-open {
+  from {
+    transform: translate(-50%, -50%) scale(.4);
+    opacity: 0;
+  }
+}
+@keyframes dsa5h-center-open {
+  from {
+    transform: translate(-50%, -50%) scale(.37);
+  }
+}
+.dsa5-helpers-sheet .dsa5h-power-radial::backdrop {
+  background: transparent;
+  pointer-events: none;
+}
+.dsa5-helpers-sheet .dsa5h-power-radial button {
+  min-height: 0;
+  margin: 0;
+  outline-offset: 3px;
+}
+.dsa5-helpers-sheet .dsa5h-power-radial button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-power-satellite:hover,
+  .dsa5-helpers-sheet .dsa5h-power-source:hover {
+    filter: brightness(1.2);
+  }
+}
+
 /* --- Eigenschaftswürfel-Leiste („Wachssiegel“) --- */
 
 /* Compact attribute-die row shown on every tab except Eigenschaften itself (toggled via [data-attr-overlay],
@@ -4904,6 +5095,79 @@
   border: 0;
 }
 
+/* #47: Rüstung und Zonenenergie bleiben getrennte Aktionen. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-energy-zone,
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-energy-zone.dsa5h-zone-value {
+  min-width: 0;
+  height: auto;
+}
+.dsa5-helpers-sheet .dsa5h-energy-zone .dsa5h-armor-zone {
+  width: 100%;
+}
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-energy {
+  display: grid;
+  grid-template-rows: 16px 5px 14px;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  height: 49px;
+  min-height: 49px;
+  margin: 0;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 5px 5px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+  box-shadow: none;
+  cursor: pointer;
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy-value {
+  white-space: nowrap;
+  font-weight: bold;
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy-meter {
+  display: block;
+  width: 100%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--line);
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy-meter > span {
+  display: block;
+  width: var(--fill);
+  height: 100%;
+  background: var(--dmg);
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy-status {
+  display: flex;
+  justify-content: space-between;
+  min-height: 14px;
+  color: var(--dmg);
+  font-weight: bold;
+}
+.dsa5-helpers-sheet .dsa5h-energy-zone.failed .dsa5h-zone-energy {
+  border-color: var(--dmg);
+  background: var(--dmg-bg);
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.dsa5-helpers-sheet .dsa5h-phone-energy-zones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 /* ==========================================================================
    11. Magie & Religion
    ========================================================================== */
@@ -6433,7 +6697,12 @@
     grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
   }
 
-  .dsa5-helpers-sheet .dsa5h-content .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone {
+  .dsa5-helpers-sheet .dsa5h-content .armor-zones:not(.free-left):not(.free-right) .dsa5h-energy-zone {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone {
     grid-column: auto;
     grid-row: auto;
     align-self: stretch;
@@ -6449,7 +6718,7 @@
     text-align: left;
   }
 
-  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone img {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone img {
     position: static;
     grid-area: img;
     width: 28px;
@@ -6458,7 +6727,7 @@
     opacity: 1;
   }
 
-  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone.empty::before {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone.empty::before {
     content: "";
     grid-area: img;
     width: 28px;
@@ -6468,20 +6737,20 @@
     border-radius: 50%;
   }
 
-  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-armor-zone-label {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone .dsa5h-armor-zone-label {
     grid-area: label;
     color: var(--muted);
   }
 
-  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-zl-short {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone .dsa5h-zl-short {
     display: none;
   }
 
-  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-zl-long {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone .dsa5h-zl-long {
     display: inline;
   }
 
-  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone .dsa5h-armor-zone-item {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone .dsa5h-armor-zone-item {
     grid-area: item;
     display: block;
     max-width: 100%;
@@ -6491,7 +6760,7 @@
     font-size: var(--fs-small);
   }
 
-  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross > .dsa5h-armor-zone strong {
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone strong {
     grid-area: rs;
     font-size: 18px;
   }

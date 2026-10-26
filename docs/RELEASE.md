@@ -7,6 +7,40 @@ danach bei jedem Release genau diese Schritte.
 
 ## Wie das Ganze funktioniert (einmal verstehen)
 
+### Neue Versionsstrategie – vor dem nächsten Release umstellen
+
+**Lokale Testpakete sind implementiert (keine Veröffentlichung):**
+
+```powershell
+python tools/package-module.py --foundry 13
+python tools/package-module.py --foundry 14
+python tests/package_module_test.py
+```
+
+Erzeugt getrennte Beta-0.6.2-ZIPs und fertige Modulordner unter `.deploy/packages/`, ohne das Quellmanifest oder
+installierte Module zu ändern. V13: Foundry 13.351 / DSA5 7.5.1, maximale Generation 13, keine Mobil-CSS und noch
+kein `verified`-Versprechen vor der Nutzerprüfung. V14: eigene Kompatibilitätsgrenzen und bisheriger Umfang.
+Manifest-/Downloadadressen sind bereits generationseigen, aber noch nicht öffentlich bereitgestellt; zum lokalen Test
+den ausgegebenen Modulordner manuell installieren. ZIP wird per Rücklesen/CRC und Manifest-Dateireferenzen geprüft.
+`--channel stable --version 7.0.0` (v13) bzw. `8.0.0` (v14) ist vorbereitet; falsche Zuordnung und neue ungeklärte
+Beta-Nummernschemata werden abgelehnt. Der GitHub-Workflow und die öffentliche Kanalumstellung bleiben separate Release-Arbeit.
+
+**Beta-Korrektur:** Aktuelle Entwicklung und nächste Beta bleiben bei 0.6.x / 0.6.2. Erst die stabilen Releases starten bei 7.0.0 (v13) und 8.0.0 (v14). 7.6.2/8.6.2 sind verworfen. Das Nummernschema späterer generationseigener Betas bleibt zu entscheiden; bisherige 0.x-Pre-releases nicht rückwirkend ändern.
+
+Nutzerentscheidung 26.10.2026 für stabile Releases: **7.0.0 für Foundry v13**, **8.0.0 für v14**; künftig `7.X.X` / `8.X.X` / `9.X.X` für v13 / v14 / v15 usw. V13 nur Desktop mit vorhandenen Systemfunktionen, v14 einschließlich Mobil. Die zweite Zahl dient Weiterentwicklung, die dritte Fehlerkorrekturen innerhalb einer Linie. Gleiche Modul-ID `dsa5-helpers`; getrennte Installationspakete und Updatekanäle, gemeinsame Codepflege möglich.
+
+**Der nachstehende bisherige 0.x-Workflow ist dafür noch nicht angepasst. Vor Veröffentlichung der neuen Linien:**
+
+1. Branch-/Quellstrategie und Versionsmanifeste anpassen, lokale Änderungen erhalten. Alte Tags/Releases nicht umbenennen. Bisheriger Arbeitsbranch `release/0.6.2`, Manifest 0.6.1 und kommender CHANGELOG-Abschnitt 0.6.2 bleiben bis zur technischen Umstellung bestehen. Entwicklung nur unter `D:/Development/dsa5-helpers`.
+2. Pro Generation eigenes Manifest/ZIP mit übereinstimmender Versionsnummer, generationseigener Manifest-URL im ZIP und passenden Foundry-Minimum/Maximum-Grenzen sowie DSA-Kompatibilität erzeugen. `verified` nur für geprüfte Stände setzen; Modul-/Bogen-ID erhalten.
+3. Generationseigene stabile und Beta-Kanäle einrichten. Vorschlag für noch nicht angelegte Kanal-Tags: `foundry-v13`, `foundry-v13-beta`, `foundry-v14`, `foundry-v14-beta`. Manifest-URL jeweils `https://github.com/vt-tom/dsa5-helpers/releases/download/<Kanal>/module.json`. URLs erst nach Anlage/Prüfung als Installationslinks auf der Webseite anbieten.
+4. Workflow auf echte Versionstags wie `v7.0.0`/`v8.0.0` ausrichten und Kanal-Aliase vom Build-Trigger ausschließen. Jede Veröffentlichung darf nur ihre Generationskanäle aktualisieren; globale `latest`-/`beta`-Links sind kein Ersatz für getrennte Updatekanäle.
+5. Bestehende 0.x-Installationen kontrolliert auf den v14-Kanal überführen, Einstellungen/Flags/Bogenwahl erhalten. V13 darf bei einem Update nicht auf die v14-Linie wechseln. Generationswechsel nur durch bewusste Wahl des passenden Installationslinks; keine Weltmigration.
+6. Installation und Folgeupdate jeder Linie aus echten ZIPs in separaten Testdatenverzeichnissen prüfen, einschließlich Veröffentlichungsreihenfolge v14 → v13 und umgekehrt. V13-Desktop und v14 einschließlich Mobil separat abnehmen.
+7. Erst nach Auftrag veröffentlichen; GitHub-Meilensteine/Webseitenlinks ebenfalls erst mit entsprechendem Auftrag ändern. Issues schließen, sobald ihre Ausgabe ausgeliefert ist.
+
+Die folgenden Abschnitte beschreiben bis zur Umstellung den bisherigen Betrieb, keine Freigabe, ihn unverändert für 7.X/8.X zu verwenden.
+
 - Spieler installieren das Modul in Foundry über die **Manifest-URL**:
 
   ```text

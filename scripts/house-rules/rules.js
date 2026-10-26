@@ -11,6 +11,7 @@ import { helpAction, initHelpAction } from './help-action.js';
 import { initSystemSheetEntries, rerenderSystemSheets } from './system-sheet.js';
 import { initManeuvers, toggleStance, aimRound, recognizeWeakPoints, MANEUVER_IDS, SETTING as MANEUVER_SETTING, enabledManeuvers, sheetData as maneuverSheetData } from './maneuvers.js';
 import { initHitConsequences } from './hit-consequences.js';
+import { isFoundry13 } from '../compat/runtime.js';
 
 export { woundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, MANEUVER_IDS, enabledManeuvers, maneuverSheetData };
 
@@ -66,8 +67,13 @@ export function activeRules() {
 }
 
 export function isRuleActive(id) {
-  return !!activeRules()[id];
+  return isRuleSupported(id) && !!activeRules()[id];
 }
+
+// Diese beiden Erweiterungen benötigen den erst in DSA8 vorhandenen
+// dsa5.prepareRollSituationalModifiers-Hook samt System-Widget.
+export const isRuleSupported = (id, legacy = isFoundry13()) => !legacy || !['helpAction', 'maneuvers'].includes(id);
+export const availableHouseRules = () => HOUSE_RULES.filter(rule => isRuleSupported(rule.id));
 
 /** Nur SL: ein einzelnes Grundmanöver ein- oder ausschalten (Buchseite, #45). */
 export async function setManeuverEnabled(id, enabled) {
@@ -77,7 +83,7 @@ export async function setManeuverEnabled(id, enabled) {
 
 /** Nur die SL: Regel ein- oder ausschalten. */
 export async function setRuleActive(id, active) {
-  if (!game.user.isGM || !HOUSE_RULES.some(rule => rule.id === id)) return;
+  if (!game.user.isGM || !isRuleSupported(id) || !HOUSE_RULES.some(rule => rule.id === id)) return;
   await game.settings.set(MODULE_ID, SETTING, { ...activeRules(), [id]: !!active });
 }
 

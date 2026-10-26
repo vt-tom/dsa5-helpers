@@ -1,3 +1,5 @@
+// Generationsvorschau ohne Foundry: ?foundry=13
+const DUMMY_V13 = new URLSearchParams(location.search).get("foundry") === "13";
 // Click-Dummy Renderer — reine Darstellungslogik, kein Foundry-Datenmodell.
 
 function el(tag, attrs = {}, children = []) {
@@ -314,7 +316,7 @@ function makeEditable(container, value, onCommit, opts = {}) {
 function renderRail() {
   const rail = document.getElementById("rail");
   rail.innerHTML = "";
-  TABS.filter((t) => !(companionTabHidden && t.id === "companions")).forEach((t) => {
+  TABS.filter((t) => !(companionTabHidden && t.id === "companions") && !(DUMMY_V13 && ["companions", "quests"].includes(t.id))).forEach((t) => {
     const active = t.id === currentTab;
     // Jeder Reiter trägt sein Label; CSS zeigt es beim aktiven Reiter dauerhaft, bei den übrigen zuverlässig bei
     // Hover UND Tastaturfokus (UI/UX-Review 2026-09-25 Punkt 7, Variante b) — kein title mehr, sonst doppelter Tooltip.
@@ -330,6 +332,7 @@ function renderRail() {
 }
 
 function setTab(id) {
+  if (DUMMY_V13 && ["companions", "quests"].includes(id)) id = "cover";
   const prev = currentTab;
   // Issue #1: Lage der gemeinsamen Kopfteile VOR dem Wechsel merken („Gleiten“).
   const flipFirst = prev !== id ? flipMeasure() : null;
@@ -652,6 +655,7 @@ function deletableChip(iconSrc, label, list, item, extra = null) {
 const SPEC_HELP_TEXT = "Sonderfertigkeiten dieser Kategorie. Details im Regelwerk.";
 
 function specHelpBtn() {
+  if (DUMMY_V13) return null;
   return el("button", { type: "button", class: "spec-help-btn", title: SPEC_HELP_TEXT, "aria-label": "Hilfe zu dieser Kategorie" }, "ⓘ");
 }
 
@@ -1324,7 +1328,7 @@ let HELP_LAST_SKILL = "";
 const MANEUVER_STATE = { stance: false, aim: 0, weakness: 0 };
 function maneuverBlock() {
   const hr = window.dsa5hHouseRules?.state;
-  if (!hr?.active.maneuvers) return null;
+  if (DUMMY_V13 || !hr?.active.maneuvers) return null;
   const attr = (k) => ATTRS.find((a) => a.k === k);
   const val = (k) => { const a = attr(k); return a.initial + a.adv + a.mod; };
   const tier = (v) => (v >= 17 ? 3 : v >= 15 ? 2 : v >= 13 ? 1 : 0);
@@ -1360,6 +1364,7 @@ function maneuverBlock() {
 }
 
 function helpActionButton() {
+  if (DUMMY_V13) return null;
   if (!window.dsa5hHouseRules?.state.active.helpAction) return null;
   const btn = el("button", { type: "button", class: "house-quick", title: "Hausregel Helfen: Talent wählen und würfeln – die übrig behaltenen QS erleichtern die nächste Probe eines Mitstreiters." }, [el("span", { class: "glyph" }, "🤝"), el("span", {}, "Helfen")]);
   btn.addEventListener("click", () => {
@@ -1439,7 +1444,7 @@ let BODY_FIGURE = "species";
 // als eigene Zeile darunter — Gesamtschutz im Wappenschild mit dem Bild der Hauptrüstung, weitere Teile nur bei mehr
 // als einem Teil klein darunter. Mit Trefferzonen-Regel ein Zonenkreuz, die Waffenkarten werden dafür kompakter.
 // Testschalter: Trefferzonen-Regel aktiv (im Modul: Einstellung aus Kompendium 1 / Rüstkammer 2) bzw. nur ein Teil.
-let ARMOR_ZONES = false;
+let ARMOR_ZONES = true;
 let ARMOR_ONE = false;
 // Gewählte Hauptrüstung (Name; im Modul ein Actor-Flag). Ohne Wahl gilt das Teil mit dem höchsten RS.
 let MAIN_ARMOR = null;
@@ -1720,7 +1725,7 @@ function renderBody() {
         el("strong", {}, z ? String(z.rs) : "–"),
       ]);
       if (z) cell.addEventListener("click", () => openArmor(z.item));
-      return cell;
+      return previewZone(cell, zone, label);
     };
     armorCenter = el("div", { class: "armor-center armor-center-zones" }, [
       el("div", { class: "armor-zone-cross" }, ARMOR_ZONE_LIST.map(zoneCell)),
@@ -1866,7 +1871,7 @@ function renderCombatSkills() {
 function renderCombat() {
   // "Körper" als Unterreiter (Nutzerwunsch 2026-09-28) — ob er die Übersicht ablöst, entscheidet der Nutzer später.
   // „Körper“ ersetzt die frühere Übersicht (Issue #29, Nutzer-Entscheidung 2026-10-02).
-  return el("div", {}, [section("koerper", renderBody()), section("kampftalente", renderCombatSkills())]);
+  return el("div", {}, [section("koerper", el("div", {}, [renderBody(), DUMMY_V13 && COMPANIONS.mount ? renderMount() : null])), section("kampftalente", renderCombatSkills())]);
 }
 
 // Erweiterungen-Icon (spell-section.hbs: item.extensions → Overlay-Icon mit Tooltip) und Mehrrunden-Auflade-
@@ -2144,6 +2149,7 @@ function renderReligionLiturgies(withHeader = true) {
 // Unter-Tab "Ausrüstung": Traditions-Kopfleiste → Kirchengeräte. Kein Äquivalent zu "Magische Zeichen" bei
 // Religion, daher hier nur ein Panel statt zwei wie bei renderMagicItems.
 function renderReligionItems(withHeader = true) {
+  if (DUMMY_V13) return null;
   return el("div", {}, [withHeader ? traditionHeader(RELIGION_TRADITION, "religion") : null, artifactTable("Kirchengeräte", CEREMONIAL_ITEMS, false)]);
 }
 
@@ -2983,7 +2989,7 @@ function companionSection(title, list, extraHeader) {
   ]);
 }
 
-function renderCompanions() {
+function renderMount() {
   const m = COMPANIONS.mount;
   const row = (label, value) => el("div", { class: "appearance-row" }, [el("span", { class: "k" }, label), el("span", {}, value)]);
 
@@ -3018,6 +3024,11 @@ function renderCompanions() {
         ]),
       ]);
 
+  return mountPanel;
+}
+
+function renderCompanions() {
+  const mountPanel = renderMount();
   const summonHeader = COMPANIONS.canSummon
     ? (() => {
         const btn = el("button", { type: "button", class: "title-icon-btn", title: "Beschwörung starten" }, "🎩");
@@ -3290,8 +3301,10 @@ let ONLY_LEP = false;
 function resourceGroup(colLayout) {
   const orbs = [vitalOrb("orb-lep", "Lebenskraft", "LeP")];
   if (!ONLY_LEP) {
-    orbs.push(vitalOrb("orb-asp", "Astralenergie", "AsP"));
-    orbs.push(vitalOrb("orb-kap", "Karmaenergie", "KaP"));
+    const astral = vitalOrb("orb-asp", "Astralenergie", "AsP");
+    const satellite = previewPower();
+    orbs.push(satellite ? el("div", { class: "preview-astral-cluster" }, [astral, satellite]) : astral);
+    if (PREVIEW_062.faith) orbs.push(vitalOrb("orb-kap", "Karmaenergie", "KaP"));
   }
   return el("div", { class: "resource-frame" + (colLayout ? " resource-frame-cover" : "") }, [
     ...orbs,
@@ -3793,7 +3806,6 @@ function initArmorToggles() {
       renderContent();
     });
   };
-  flag("armorZonesToggle", () => ARMOR_ZONES, (v) => { ARMOR_ZONES = v; });
   flag("armorOneToggle", () => ARMOR_ONE, (v) => { ARMOR_ONE = v; });
 }
 
@@ -3865,3 +3877,4 @@ const START_PARAMS = new URLSearchParams(location.search);
 if (START_PARAMS.get("portrait") === "round") { PORTRAIT_SHAPE = "round"; renderHeader(); }
 if (["advance", "edit"].includes(START_PARAMS.get("mode"))) setMode(START_PARAMS.get("mode"));
 if (TABS.some((t) => t.id === START_PARAMS.get("tab"))) setTab(START_PARAMS.get("tab"));
+initPreview062();

@@ -4,6 +4,7 @@
  * (#34), Reiter Aufträge/Personen (#39) und Ordner für Bannerbilder (#46). Die Einstellungen selbst sind mit
  * config: false registriert. Neue Bogen-Einstellungen gehören hierher (SETTINGS ergänzen).
  */
+import { isFoundry13 } from '../compat/runtime.js';
 const MODULE_ID = 'dsa5-helpers';
 
 /** key → Art des Feldes; Name/Hinweis kommen aus der Registrierung der Einstellung. */
@@ -37,7 +38,7 @@ export function getSheetSettingsApp() {
 
     async _prepareContext(options) {
       const context = await super._prepareContext(options);
-      context.settings = SHEET_SETTINGS.map(({ key, kind }) => {
+      context.settings = SHEET_SETTINGS.filter(({ key }) => key !== 'questsTab' || !isFoundry13()).map(({ key, kind }) => {
         const config = game.settings.settings.get(`${MODULE_ID}.${key}`);
         return { key, kind, name: config?.name ?? key, hint: config?.hint ?? '', value: game.settings.get(MODULE_ID, key), checkbox: kind === 'checkbox', folder: kind === 'folder' };
       });
@@ -49,6 +50,7 @@ export function getSheetSettingsApp() {
       const data = formData.object;
       let reload = false;
       for (const { key, kind } of SHEET_SETTINGS) {
+        if (key === 'questsTab' && isFoundry13()) continue;
         const value = kind === 'checkbox' ? !!data[key] : String(data[key] ?? '').trim();
         if (value === game.settings.get(MODULE_ID, key)) continue;
         await game.settings.set(MODULE_ID, key, value);

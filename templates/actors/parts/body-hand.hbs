@@ -21,7 +21,7 @@
     <img src="{{slot.item.img}}" alt="">{{#if slot.item.structureMax}}<meter min="0" max="{{slot.item.structureMax}}" value="{{slot.item.structureCurrent}}"></meter>{{/if}}
   </div>
   <div class="dsa5h-hand-stats">
-    <button type="button" class="dsa5h-hand-pill" data-action="chRollCombat" data-mode="attack" aria-label="{{#if slot.ranged}}{{localize 'DSA5HELPERS.RollRangedWith' name=slot.item.name}}{{else}}{{localize 'DSA5HELPERS.RollAttackWith' name=slot.item.name}}{{/if}}"><span class="dsa5h-hand-die dsa5h-die-attack">{{slot.item.attack}}</span><b>{{#if slot.ranged}}{{localize 'CHARAbbrev.FK'}}{{else}}{{localize 'CHARAbbrev.AT'}}{{/if}}</b></button>
+    <button type="button" class="dsa5h-hand-pill" data-action="chRollCombat" data-mode="attack" aria-label="{{#if slot.ranged}}{{localize 'DSA5HELPERS.RollRangedWith' name=slot.item.name}}{{else}}{{localize 'DSA5HELPERS.RollAttackWith' name=slot.item.name}}{{/if}}"><span class="dsa5h-hand-die dsa5h-die-attack">{{slot.item.attack}}</span><b>{{#if slot.ranged}}{{localize 'DSA5HELPERS.RangedAttackShort'}}{{else}}{{localize 'CHARAbbrev.AT'}}{{/if}}</b></button>
     {{#unless slot.ranged}}<button type="button" class="dsa5h-hand-pill" data-action="chRollCombat" data-mode="parry" aria-label="{{localize 'DSA5HELPERS.RollParryWith' name=slot.item.name}}"><span class="dsa5h-hand-die dsa5h-die-parry">{{slot.item.parry}}</span><b>{{localize 'CHARAbbrev.PA'}}</b></button>{{/unless}}
     <button type="button" class="dsa5h-damage" data-action="chRollCombat" data-mode="damage" title="{{localize 'CHARAbbrev.damage'}}" aria-label="{{localize 'DSA5HELPERS.RollDamageOf' name=slot.item.name}}"><small>{{localize 'CHARAbbrev.damage'}}</small>{{slot.item.damagedie}}{{slot.item.damageAdd}}</button>
   </div>

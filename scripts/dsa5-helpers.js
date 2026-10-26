@@ -1,4 +1,5 @@
-import { Dsa5HelpersCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
+import { Dsa5HelpersCharacterSheet as ImportedCharacterSheet, createCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
+import { clearCharacterBuilderFlag } from './compat/runtime.js';
 import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
 import { initSteigerungsplaner } from './compat/steigerungsplaner.js';
 import { registerDiceStatsSettings, readyDiceStats } from './dice-stats/settings.js';
@@ -28,6 +29,8 @@ function findTraditionIcon(text, names, folder) {
 }
 
 Hooks.once('init', async () => {
+  // DSA7 veröffentlicht game.dsa5 erst in seinem init-Hook, DSA8 schon beim Import.
+  const Dsa5HelpersCharacterSheet = ImportedCharacterSheet ?? createCharacterSheet();
   // Changelog als erstes Menü — Foundry zeigt Menüs in der Reihenfolge ihrer Registrierung (Nutzer 2026-10-20).
   game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
   game.settings.register('dsa5-helpers', 'theme', { scope: 'client', config: false, type: String, default: 'light', choices: { light: 'Light', dark: 'Dark' } });
@@ -81,6 +84,7 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs",
   "modules/dsa5-helpers/templates/actors/dsa5-helpers-character-sheet.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/energy-zone.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body-hand.hbs",
   "modules/dsa5-helpers/templates/actors/parts/ammo-pick.hbs",
   "modules/dsa5-helpers/templates/actors/parts/cast-list.hbs",
@@ -117,9 +121,11 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/status.hbs",
   "modules/dsa5-helpers/templates/actors/parts/tradition-items.hbs",
   "modules/dsa5-helpers/templates/actors/parts/weapon-short.hbs",
-  "systems/dsa5/templates/actors/companions/actor-companion.hbs",
-  "systems/dsa5/templates/actors/companions/companion-card.hbs",
-  "systems/dsa5/templates/actors/parts/member-card-header.hbs",
+  ...(typeof Dsa5HelpersCharacterSheet.prototype.prepareCompanionTab === 'function' ? [
+    "systems/dsa5/templates/actors/companions/actor-companion.hbs",
+    "systems/dsa5/templates/actors/companions/companion-card.hbs",
+    "systems/dsa5/templates/actors/parts/member-card-header.hbs",
+  ] : []),
   "systems/dsa5/templates/actors/parts/horse.hbs"
 ]);
   foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersCharacterSheet, { types: ['character'], makeDefault: game.settings.get('dsa5-helpers', 'defaultSheet'), label: 'DSA5HELPERS.SheetLabel' });
@@ -144,5 +150,5 @@ Hooks.on('preUpdateActor', (actor, changes) => {
   const next = getProperty(changes, 'flags.core.sheetClass');
   if (next === 'dsa5.DSACharBuilder') return;
   if (next === 'dsa5.ActorSheetdsa5Character' && actor.getFlag('core', 'sheetClass') === 'dsa5.DSACharBuilder') setProperty(changes, 'flags.core.sheetClass', previous);
-  setProperty(changes, 'flags.dsa5-helpers.preChargenSheet', new foundry.data.operators.ForcedDeletion());
+  clearCharacterBuilderFlag(changes);
 });

@@ -1,5 +1,7 @@
 {
   "DSA5HELPERS": {
+    "RangedAttackShort": "FK",
+    "SelectAmmo": "Munition wählen",
     "SheetLabel": "DSA5 Helfer-Heldenbogen",
     "Free": "frei",
     "AdvantagesDisadvantages": "Vor- & Nachteile",
@@ -668,6 +670,23 @@
       "Bestiary": "Bestiarium",
       "Important": "Wichtig",
       "Empty": "Noch niemand freigegeben."
+    },
+    "PowerSources": {
+      "Title": "Kraftspeicher",
+      "Abbr": "KS",
+      "Total": "AsP gesamt",
+      "Summary": "Kraftspeicher: {value} von {max} AsP, {count} Speicher. Übersicht öffnen",
+      "Source": "{name}: {value} von {max} AsP",
+      "Previous": "Vorherige Speicher",
+      "Next": "Weitere Speicher",
+      "Page": "{page} / {pages} · {count} Speicher",
+      "SaveFailed": "Kraftspeicher konnten nicht gespeichert werden. Bitte den Dialog erneut öffnen und noch einmal versuchen.",
+      "OpenFailed": "Der Kraftspeicherdialog konnte nicht geöffnet werden."
+    },
+    "EnergyZones": {
+      "Summary": "{name}: {value} von {max} Zonen-LeP",
+      "Failed": "Zone ausgefallen",
+      "Penalty": "Widerstands-Malus {value}"
     }
   }
 }

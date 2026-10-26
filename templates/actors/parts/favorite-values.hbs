@@ -6,7 +6,7 @@
     OnUse-Würfel; Anzahl als Wert. Sonderfertigkeiten: OnUse-Würfel, kein Wert. }}
 {{#if weapon}}
 {{#if (or (eq item.type 'rangeweapon') (eq item.system.traitType.value 'rangeAttack'))}}
-<span class="dsa5h-fav-card-roll dsa5h-fav-card-weapon"><small>{{localize 'CHARAbbrev.FK'}}</small><button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'CHARAbbrev.FK'}}" aria-label="{{localize 'DSA5HELPERS.RollRangedWith' name=item.name}}">{{item.attack}}</button></span>
+<span class="dsa5h-fav-card-roll dsa5h-fav-card-weapon"><small>{{localize 'DSA5HELPERS.RangedAttackShort'}}</small><button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'DSA5HELPERS.RangedAttackShort'}}" aria-label="{{localize 'DSA5HELPERS.RollRangedWith' name=item.name}}">{{item.attack}}</button></span>
 {{else}}
 <span class="dsa5h-fav-card-roll dsa5h-fav-card-weapon"><small>{{localize 'CHARAbbrev.AT'}}</small><button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'CHARAbbrev.AT'}}" aria-label="{{localize 'DSA5HELPERS.RollAttackWith' name=item.name}}">{{item.attack}}</button></span>
 {{/if}}

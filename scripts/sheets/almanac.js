@@ -2,6 +2,7 @@
 // Einstellungen questlogJournals / calendarActors) und dieselben Sichtbarkeitsregeln wie QuestLogFeature und
 // PersonaeDramatis. Bearbeitet wird nur im Almanach; ein Klick öffnet ihn am Eintrag (CalendarWidget.openCalendarPicker,
 // wie die Almanach-Hinweise des Systems). Die SL schaltet die Reiter im Untermenü „Heldenbogen“ ab.
+import { isFoundry13 } from '../compat/runtime.js';
 const MODULE_ID = 'dsa5-helpers';
 export const QUESTS_TAB = 'quests';
 export const PERSONAE_TAB = 'personae';
@@ -26,6 +27,7 @@ export function questVisible(quest, user = game.user) {
 
 /** Zeigt der Bogen den Reiter? Moduleinstellung an, Almanach-Bereich für Spieler freigegeben, Journale eingerichtet. */
 export function almanacTabEnabled(tab, user = game.user) {
+  if (tab === QUESTS_TAB && isFoundry13()) return false;
   const config = TAB_CONFIG[tab];
   if (!config || setting(MODULE_ID, config.setting, true) === false) return false;
   if (!user?.isGM && setting('dsa5', 'calendarFeatureVisibility', {})?.[config.feature] === false) return false;
@@ -114,6 +116,14 @@ export async function loadPersonae(user = game.user) {
 /** Almanach öffnen, optional am Eintrag (tab: 'questlog' | 'personae'). */
 export async function openAlmanac(tab, pageUuid, entryKey) {
   const widget = game.dsa5?.apps?.CalendarWidget?.constructor;
+  if (isFoundry13() && tab === 'personae') {
+    const picker = game.dsa5?.apps?.CalendarPicker;
+    if (picker) {
+      await picker.render(true);
+      picker.changeTab('personae', 'sheet');
+      return;
+    }
+  }
   if (!widget?.openCalendarPicker) return ui.notifications.warn('DSA5HELPERS.Almanac.Unavailable', { localize: true });
   await widget.openCalendarPicker(tab, pageUuid && entryKey ? { pageUuid, entryKey } : null);
 }

@@ -1063,6 +1063,193 @@ button {
   }
 }
 
+/* --- #50: kleine Speicherkugel an AsP, Einzelwerte im Radialfächer --- */
+.preview-astral-cluster {
+  position: relative;
+  flex: none;
+  z-index: 2;
+}
+.preview-power-satellite {
+  position: absolute;
+  right: -9px;
+  bottom: -6px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to top, #285c96 var(--fill), #171f2c var(--fill));
+  color: #f4e8d6;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, .3), 0 2px 5px rgba(0, 0, 0, .6);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+  cursor: pointer;
+}
+.preview-power-satellite small {
+  font-size: inherit;
+}
+.preview-power-satellite:focus-visible,
+.preview-radial button:focus-visible,
+.preview-zone-energy:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.preview-power-open {
+  visibility: hidden;
+}
+.preview-radial {
+  position: fixed;
+  z-index: 1600;
+  width: 300px;
+  height: 300px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+  font-family: 'GentiumBasic', serif;
+  font-size: var(--fs-meta);
+}
+.preview-radial-ring {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  pointer-events: auto;
+}
+.preview-radial-center,
+.preview-radial-source {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 68px;
+  height: 68px;
+  padding: 5px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to top, #285c96 var(--fill, 0%), #171f2c var(--fill, 0%));
+  color: #f4e8d6;
+  transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + var(--y, 0px)));
+  font: inherit;
+  line-height: 1.1;
+  text-align: center;
+  cursor: pointer;
+}
+.preview-radial-center {
+  width: 86px;
+  height: 86px;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, .3), 0 3px 9px rgba(0, 0, 0, .6);
+}
+/* Gewählte Variante A: dunkle Fassung und Schlagschatten, freier Hintergrund. */
+.preview-radial-center,
+.preview-radial-source {
+  isolation: isolate;
+  text-shadow: 0 1px 2px #000;
+}
+.preview-radial .preview-radial-center,
+.preview-radial .preview-radial-source {
+  border-color: #e3c784;
+  box-shadow: inset 0 2px 3px rgba(255, 255, 255, .35), inset 0 -3px 5px rgba(0, 0, 0, .55), 0 0 0 3px #252019, 0 10px 12px 3px rgba(0, 0, 0, .8);
+}
+.preview-radial-source span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.preview-radial-center small {
+  font-size: inherit;
+}
+.preview-radial-close,
+.preview-radial-pager button {
+  min-width: var(--hit-lg, 28px);
+  min-height: var(--hit-lg, 28px);
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.preview-radial-close {
+  position: absolute;
+  right: 96px;
+  top: 96px;
+  z-index: 1;
+}
+.preview-radial-pager {
+  position: absolute;
+  top: 278px;
+  left: 48px;
+  right: 48px;
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.preview-radial-pager button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+.preview-radial-pager span {
+  padding: 3px 6px;
+  border-radius: 12px;
+  background: var(--head);
+  color: #f4e8d6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .preview-radial-source {
+    animation: preview-source-open .2s ease-out both;
+  }
+  .preview-radial-center {
+    animation: preview-center-open .2s ease-out both;
+  }
+}
+@keyframes preview-source-open {
+  from {
+    transform: translate(-50%, -50%) scale(.4);
+    opacity: 0;
+  }
+}
+@keyframes preview-center-open {
+  from {
+    transform: translate(-50%, -50%) scale(.37);
+  }
+}
+.preview-meter {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--line);
+}
+.preview-meter-fill {
+  display: block;
+  width: var(--fill);
+  height: 100%;
+  background: var(--dmg);
+}
+@media (hover: hover) {
+  .preview-power-satellite:hover,
+  .preview-radial-source:hover {
+    filter: brightness(1.2);
+  }
+}
+
 /* --- Eigenschaftswürfel-Leiste („Wachssiegel“) --- */
 
 /* Eigenschaftenwürfel auf jeder Seite AUSSER dem Eigenschaften-Tab selbst (dort stehen die vollen Kacheln
@@ -5385,6 +5572,73 @@ button.fav-chip-roll {
   border-bottom: 1px solid var(--line);
 }
 
+/* --- #47: Zonen-LeP, getrennt von der Rüstungsaktion --- */
+.preview-zone {
+  min-width: 0;
+}
+.preview-zone.zone-value {
+  height: auto;
+}
+.preview-zone .armor-zone {
+  width: 100%;
+  height: 70px;
+}
+.preview-zone-energy {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: 16px 5px 14px;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  width: 100%;
+  height: 49px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 5px 5px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+.preview-zone-caption {
+  display: none;
+}
+.preview-zone-value {
+  grid-column: 1 / -1;
+  white-space: nowrap;
+  font-weight: bold;
+}
+.zone-meter {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  width: 100%;
+}
+.preview-zone.failed .armor-zone {
+  border-color: var(--dmg);
+}
+.preview-zone.failed .preview-zone-energy {
+  border-color: var(--dmg);
+  background: var(--dmg-bg);
+}
+.preview-zone-penalty,
+.preview-zone-failed {
+  color: var(--dmg);
+  font-weight: bold;
+}
+.preview-zone-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  grid-column: 1 / -1;
+  grid-row: 3;
+  width: 100%;
+  min-height: 14px;
+}
+
 /* ==========================================================================
    11. Magie & Religion
    ========================================================================== */
@@ -7975,6 +8229,36 @@ button.fav-chip-roll {
 }
 
 /* --- Werkzeugleiste & Umschalter --- */
+
+/* Demo-Dialoge der abgenommenen Ressourcenanzeige. */
+.preview-editor input,
+.preview-done {
+  min-height: var(--hit-lg, 28px);
+  padding: 3px 6px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}
+.preview-editor :is(input, button):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.preview-editor-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 70px auto;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+.preview-editor input {
+  width: 100%;
+}
+.preview-done {
+  margin-top: 12px;
+  cursor: pointer;
+}
 
 .toolbar {
   display: flex;

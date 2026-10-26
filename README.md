@@ -27,6 +27,28 @@ wählen.
 
 **Voraussetzungen:** Foundry VTT v14 (≥ 14.364), System DSA5 ≥ 8.1.5.
 
+### Lokale v13-Testausgabe (Beta 0.6.2)
+
+Für Foundry **13.351 mit DSA5 7.5.1** gibt es eine getrennte Desktop-Testausgabe. Paket erzeugen:
+
+```powershell
+python tools/package-module.py --foundry 13
+```
+
+Der Befehl gibt den Pfad zum geprüften ZIP und zum fertigen Ordner `dsa5-helpers` unter `.deploy/packages/` aus.
+Den fertigen Ordner in das `Data/modules/` der **v13-Installation** kopieren (nicht in den Development-Ordner),
+anschließend Foundry neu laden, Modul aktivieren und den Heldenbogen auswählen. Bestehenden Modulordner vorher sichern;
+Weltdaten müssen weder kopiert noch migriert werden. Die entsprechenden v13-Web-/Update-Links sind noch nicht veröffentlicht.
+
+V13 bietet vorhandene DSA7-Funktionen einschließlich Reittier im Kampf-Reiter und magischer Traditionsartefakte.
+Gefährten-/Auftragsverwaltung, neue Zeremonialgegenstände, Kraftspeicher, Lebensenergiezonen und Modul-Mobiloberfläche
+entfallen. Die Erweiterungen „Helfen“ und „Grundmanöver“ benötigen den DSA8-Modifikatoren-Hook und sind ebenfalls ausgeblendet;
+Wundeinschätzung und Würfelstatistik bleiben verfügbar. Optionale Fremdmodule müssen selbst zu v13 passen.
+
+Die Ausgabe ist statisch gegen die v13-Quellen geprüft; die interaktive Foundry-Abnahme erfolgt durch die Tester.
+`python tools/package-module.py --foundry 14` erzeugt separat die v14-Beta. Stabile Linien starten später bei
+7.0.0 (v13) und 8.0.0 (v14); Modul-ID und gespeicherte Bogenzuordnung bleiben erhalten.
+
 ## Funktionen
 
 - Zehn Reiter: Titelblatt, Eigenschaften, Talente, Kampf (Körper, Kampftechniken), Magie, Religion,
@@ -34,6 +56,8 @@ wählen.
 - Würfelstatistik (von der Spielleitung einschaltbar, jeder Spieler stimmt selbst zu).
 - Hausregelbuch: optionale Hausregeln, als Liste oder Buch zu lesen, von der Spielleitung je Welt einschaltbar. Regeln: Wundeinschätzung (Idee: Knigge), Helfen.
 - Spiel- und Bearbeiten-Modus, Favoriten (Stern) auf dem Titelblatt.
+- Kraftspeicher als zusätzliche Kugel am AsP-Vorrat, mit radialer Übersicht und dem Ladedialog des Systems (nur bei vorhandener Systemunterstützung).
+- Zonen-LeP im Kampf-Reiter, wenn die Lebensenergiezonen in Rüstkammer II aktiv sind; Bearbeiten über deren Zonen-Dialog.
 - Magie/Religion nur bei passender Fähigkeit sichtbar.
 - Deutsch und Englisch.
 - Arbeitet mit [„Lyynix: DSA5 - Steigerungsplaner“](https://github.com/Lyynix/dsa5-steigerungsplaner) zusammen:

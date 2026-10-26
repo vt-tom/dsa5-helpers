@@ -1,15 +1,17 @@
 /** Alternative presentation; all rule actions and actor updates are inherited from DSA5. */
-const BaseCharacterSheet = globalThis.dsa5?.sheets?.ActorSheetdsa5Character;
+import { systemApi, isFoundry13, contextMenuEntries } from '../compat/runtime.js';
 const MODULE_ID = 'dsa5-helpers';
 // Unter dieser Inhaltsbreite (px) zeigt der Desktop-Bogen das Titelblatt einspaltig wie auf dem Smartphone.
 const NARROW_WIDTH = 560;
+import { openPowerSourceDialog } from '../compat/powersource-dialog.js';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
 import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, maneuverSheetData } from '../house-rules/rules.js';
 import { openHouseRules } from '../apps/house-rules.js';
 import { almanacTabEnabled, loadQuests, loadPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
 
-export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
+export function createCharacterSheet(BaseCharacterSheet = systemApi()?.sheets?.ActorSheetdsa5Character) {
+const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
     classes: ['dsa5-helpers-sheet'],
     // War 880×780 — spürbar größer als sowohl der echte DSA5-Bogen (784px) als auch der bewusst kompakt gehaltene
@@ -22,6 +24,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // nachjustieren, bevor an der @container-Schwelle gedreht wird.
     position: { width: 770, height: 740 },
     actions: {
+      dsa5hPowerSources: this._showPowerSources,
       dsa5hSetTab: this._setTab,
       dsa5hSetSubTab: this._setSubTab,
       dsa5hOpenAlmanac: this._openAlmanac,
@@ -63,6 +66,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       dsa5hWeakness: this._maneuverWeakness,
     },
     ownerActions: {
+      dsa5hEditPowerSources: this._editPowerSources,
       schipUpdate: this._schipUdate,
       startCharacterBuilder: this._startCharacterBuilder,
       deleteItem: this._deleteItemAction,
@@ -244,7 +248,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const planner = !limited && this.actor.isOwner ? getPlannerTab() : null;
     const tabs = this.constructor.HELPER_TABS
       .filter(tab => (tab.id !== 'magic' || magic.hasSpells) && (tab.id !== 'religion' || magic.hasPrayers) && (tab.id !== PLANNER_TAB_ID || planner)
-        && (tab.id !== 'companion' || !this.actor.getFlag?.(MODULE_ID, 'hideCompanionTab'))
+        && (tab.id !== 'companion' || (typeof this.prepareCompanionTab === 'function' && !this.actor.getFlag?.(MODULE_ID, 'hideCompanionTab')))
+        && (tab.id !== QUESTS_TAB || !isFoundry13())
         && ((tab.id !== QUESTS_TAB && tab.id !== PERSONAE_TAB) || (!limited && almanacTabEnabled(tab.id))))
       .map(tab => ({ ...tab, label: localize('DSA5HELPERS.Tabs.' + tab.id), hint: localize('DSA5HELPERS.Hints.' + tab.id) }));
     if (!tabs.some(tab => tab.id === this._currentTab)) this._currentTab = 'cover';
@@ -276,7 +281,19 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     // Kampftechnik je Waffe (parts/combatskill-link.hbs): wie im System per Name gesucht (actor-dsa5.js
     // combatskills.find(s => s.name === item.system.combatskill.value)), mit Kampftechnikwert für die Anzeige.
     const combatSkillIndex = Object.fromEntries((prepare.combatskills ?? []).map(item => [item.name, { id: item._id, name: item.name, value: item.system.talentValue?.value }]));
-    const body = limited ? null : this._bodyContext(prepare);
+    let energyZones = null;
+    const armory = game.modules?.get('dsa5-armory2');
+    if (!limited && armory?.active && armory.api?.isEnergyZonesActive?.(this.actor)) {
+      try {
+        // Derselbe Anzeigeweg wie Rüstkammer-IIs Bogen UND Bearbeiten-Dialog.
+        // Die gespeicherten Actor-Felder können vor der ersten Initialisierung noch 0/0 sein.
+        const { default: EnergyZones } = await import('/modules/dsa5-armory2/modules/energyzones.js');
+        energyZones = EnergyZones.getZoneDisplayData(this.actor);
+      } catch (error) {
+        console.warn(`${MODULE_ID} | Zonenanzeige von Rüstkammer II nicht verfügbar`, error);
+      }
+    }
+    const body = limited ? null : this._bodyContext(prepare, energyZones);
     // Favoriten-Waffen: alle Waffen wie unter „Weitere Waffen“, nicht nur getragene — das System führt nur Waffen in
     // den Händen als getragen (Issue #30). Ausrüstung samt Inhalt der Behältnisse, ohne Waffen (die stehen oben);
     // Sonderfertigkeiten aus allen Reitern (Issue #30).
@@ -322,9 +339,21 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       { tab: 'notes', items: noteSubtabs },
       { tab: PERSONAE_TAB, items: [{ id: 'dramatis', label: localize('DSA5HELPERS.Personae.Dramatis') }, { id: 'bestiary', label: localize('DSA5HELPERS.Personae.Bestiary') }] },
     ];
+    if (isFoundry13()) {
+      const religion = subnav.find(nav => nav.tab === 'religion');
+      if (religion) religion.items = religion.items.filter(item => item.id !== 'equipment');
+    }
+    // Nur vorbereitete Systemdaten; ältere Systeme ohne Ladedialog erhalten keinen Einstieg.
+    const source = prepare.powersource;
+    const powerSources = !limited && magic.hasSpells && source?.max > 0
+      && typeof this.constructor._powersourceEdit === 'function' && source.segments?.length
+      ? { value: source.value, max: source.max, segments: source.segments } : null;
+    this._powerSources = powerSources;
     const status = this.actor.system.status;
     context.dsa5h = {
-      limited, tabs, subnav, skillGroups, favorites, favoriteGroups, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
+      supportsCompanions: typeof this.prepareCompanionTab === 'function',
+      legacySystem: isFoundry13(),
+      sheetId: this.id, powerSources, limited, tabs, subnav, skillGroups, favorites, favoriteGroups, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
       phone,
       // Status-Kacheln auf dem Smartphone (MOBILE.md 14.3, Dummy 17): Schmerz und Belastung aus den Zuständen des Systems,
       // Traglast wie im Ausrüstungs-Reiter.
@@ -394,7 +423,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
     // The original sheet prepares this only for its separate companion part.
-    if (!limited) await this.prepareCompanionTab(context);
+    if (!limited && typeof this.prepareCompanionTab === 'function') await this.prepareCompanionTab(context);
     // Aufträge/Personen (#39): Listen aus den Almanach-Journalen, nur wenn der Reiter da ist.
     if (tabs.some(tab => tab.id === QUESTS_TAB)) context.dsa5h.quests = await loadQuests();
     if (tabs.some(tab => tab.id === PERSONAE_TAB)) context.dsa5h.personae = await loadPersonae();
@@ -408,11 +437,26 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   }
 
   async _onRender(context, options) {
+    this._closePowerSources();
     await super._onRender(context, options);
     this.element.dataset.mode = context.dsa5h.mode;
     this._updateModeButton(context.dsa5h.mode);
     this.element.dataset.theme = game.settings.get(MODULE_ID, 'theme');
     this._applyCurrentTab();
+    const sourceAnchor = this.element.querySelector('.dsa5h-power-satellite');
+    sourceAnchor?.addEventListener('pointerenter', event => {
+      if (event.pointerType !== 'touch' && matchMedia('(hover: hover)').matches) this._openPowerSources(sourceAnchor);
+    });
+    sourceAnchor?.addEventListener('pointerleave', () => {
+      clearTimeout(this._powerTimer);
+      this._powerTimer = setTimeout(() => {
+        const panel = this._powerPopup?.panel;
+        if (panel && !panel.matches(':hover') && !panel.contains(document.activeElement)) this._closePowerSources();
+      }, 350);
+    });
+    sourceAnchor?.addEventListener('keydown', event => {
+      if (event.key === 'ArrowDown') { event.preventDefault(); this._openPowerSources(sourceAnchor, 0, true); }
+    });
     // Listener des Planer-Reiters (Anwenden/Verwerfen) — jedes Rendern baut den Reiter neu, also jedes Mal.
     const plannerElement = context.dsa5h.planner && this.element.querySelector('.steigerungsplaner-tab');
     if (plannerElement) getPlannerTab()?.attachListeners(this, plannerElement);
@@ -503,7 +547,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     }
     if (context.dsa5h.limited) return;
     const companion = this.element.querySelector('[data-tab-panel="companion"]');
-    if (companion) {
+    if (companion && typeof this.attachCompanionTabListeners === 'function') {
       this.attachCompanionTabListeners(companion);
       this._labelCompanionButtons(companion);
     }
@@ -616,8 +660,8 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // (system.worn.offHand); beidhändig wie im System (weapon_hands.js isTwoHandedWeapon: Nahkampf über RuleChaos,
   // Fernkampf über worn.requiresBothHands). Eine beidhändige Waffe steht auf der per Actor-Flag gewählten Seite, die
   // andere Seite zeigt nur einen Hinweis.
-  _bodyContext(prepare) {
-    const RuleChaos = globalThis.dsa5?.apps?.RuleChaos;
+  _bodyContext(prepare, energyZones = null) {
+    const RuleChaos = systemApi()?.apps?.RuleChaos;
     const twoHanded = item => item.type === 'meleeweapon'
       ? (RuleChaos ? RuleChaos.isWieldedTwohanded(item) : !!item.wieldedTwoHand)
       : item.system?.worn?.requiresBothHands !== false;
@@ -701,7 +745,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       })) : [],
       // Freie bzw. von der beidhändigen Waffe belegte Seite: im schmalen Bogen nimmt sie die Rüstung auf (CSS, Abschnitt 18).
       freeSide: mainTwoHanded ? (twoHandedSide === 'left' ? 'right' : 'left') : !off ? 'right' : !main ? 'left' : null,
-      zones: this._armorZones(armor),
+      zones: this._armorZones(armor, energyZones),
       encumbrance,
       armorTooltip,
       magicArmor,
@@ -724,7 +768,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // eingerechnet) plus system.totalArmor, wie Rüstkammer 2 renderArmorZones. Ohne die Regel null. Die Belastung bleibt
   // die des Wappenschilds (dsa5h.body.encumbrance).
   // Reihenfolge Kopf, Torso, Arme, Beine; im Kreuz steht der rechte Arm links (die Figur schaut einen an).
-  _armorZones(armor) {
+  _armorZones(armor, energyZones = null) {
     const active = id => game.modules?.get(id)?.active;
     const on = (module, key) => { try { return !!game.settings.get(module, key); } catch { return false; } };
     if (this.actor.type !== 'character' || !active('dsa5-compendium') || !active('dsa5-armory2')
@@ -742,6 +786,9 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         key,
         label,
         short: game.i18n.localize(`DSA5HELPERS.ZoneShort.${key}`),
+        energy: energyZones?.[key]
+          ? { ...energyZones[key], editable: this.actor.isOwner,
+              failureTooltip: game.i18n.localize(`LEZ.failure.${key}`) } : null,
         rs,
         names: items.map(item => item.name).join(', '),
         tooltip,
@@ -749,6 +796,150 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         itemId: items[0]?._id ?? '',
       };
     });
+  }
+
+  static async _editPowerSources() {
+    return openPowerSourceDialog(this);
+  }
+
+  static _showPowerSources(event, target) {
+    this._openPowerSources(target, 0, true);
+  }
+
+  _closePowerSources(restoreFocus = false) {
+    clearTimeout(this._powerTimer);
+    const popup = this._powerPopup;
+    if (!popup) return;
+    this._powerPopup = null;
+    popup.events.abort();
+    popup.anchor.classList.remove('dsa5h-power-open');
+    popup.anchor.setAttribute('aria-expanded', 'false');
+    popup.panel.remove();
+    if (restoreFocus && popup.anchor.isConnected) popup.anchor.focus({ preventScroll: true });
+  }
+
+  async close(options) {
+    this._closePowerSources();
+    return super.close(options);
+  }
+
+  _openPowerSources(anchor, page = 0, keyboard = false) {
+    this._closePowerSources();
+    const sources = this._powerSources;
+    if (!sources || !anchor?.isConnected || this.showLimited()) return;
+    const loc = (key, data) => data ? game.i18n.format('DSA5HELPERS.PowerSources.' + key, data)
+      : game.i18n.localize('DSA5HELPERS.PowerSources.' + key);
+    const make = (tag, className, text) => {
+      const node = document.createElement(tag);
+      node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    };
+    const pages = Math.ceil(sources.segments.length / 5);
+    page = Math.max(0, Math.min(pages - 1, page));
+    const panel = make('div', 'dsa5h-power-radial');
+    panel.id = `${this.id}-powersources`;
+    panel.setAttribute('popover', 'manual');
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-label', loc('Title'));
+    const ring = make('div', 'dsa5h-power-ring');
+    panel.append(ring);
+    const bubble = (className, label, value, max) => {
+      const node = make('button', className);
+      node.type = 'button';
+      node.style.setProperty('--fill', `${max ? Math.max(0, Math.min(100, value / max * 100)) : 0}%`);
+      node.append(make('span', '', label), make('strong', '', `${value} / ${max}`));
+      node.setAttribute('aria-label', loc('Source', { name: label, value, max }));
+      node.title = loc('Source', { name: label, value, max });
+      node.disabled = !this.actor.isOwner;
+      if (this.actor.isOwner) node.dataset.action = 'dsa5hEditPowerSources';
+      return node;
+    };
+    const center = bubble('dsa5h-power-center', loc('Title'), sources.value, sources.max);
+    center.append(make('small', '', loc('Total')));
+    ring.append(center);
+    const rect = anchor.getBoundingClientRect();
+    const cx = Math.max(46, Math.min(innerWidth - 46, rect.left + rect.width / 2));
+    const cy = Math.max(46, Math.min(innerHeight - 46, rect.top + rect.height / 2));
+    const visible = sources.segments.slice(page * 5, page * 5 + 5);
+    // An schmalen Rändern als Halbkreis nach innen; der Mittelpunkt bleibt an der Speicherkugel.
+    const candidates = [[-90, 360], [90, 180], [-90, 180], [0, 180], [180, 180]];
+    const angleAt = (arc, index) => (arc[0] + arc[1] * (visible.length === 1 ? 0 : index / (arc[1] === 360 ? visible.length : visible.length - 1))) * Math.PI / 180;
+    const overflow = arc => visible.reduce((score, _, index) => {
+      const angle = angleAt(arc, index);
+      const x = cx + Math.cos(angle) * 99;
+      const y = cy + Math.sin(angle) * 99;
+      return score + Math.max(0, 40 - x, x + 40 - innerWidth) + Math.max(0, 40 - y, y + 40 - innerHeight);
+    }, 0);
+    const arc = candidates.reduce((best, candidate) => overflow(candidate) < overflow(best) ? candidate : best);
+    visible.forEach((source, index) => {
+      const angle = angleAt(arc, index);
+      const node = bubble('dsa5h-power-source', source.label, source.value, source.max);
+      node.style.setProperty('--x', `${Math.cos(angle) * 99}px`);
+      node.style.setProperty('--y', `${Math.sin(angle) * 99}px`);
+      ring.append(node);
+    });
+    const control = (label, text, handler) => {
+      const button = make('button', '', text);
+      button.type = 'button';
+      button.dataset.observerEnabled = '';
+      button.setAttribute('aria-label', label);
+      button.addEventListener('click', handler);
+      return button;
+    };
+    const close = control(game.i18n.localize('DSA5HELPERS.Close'), '×', () => this._closePowerSources(true));
+    close.className = 'dsa5h-power-close';
+    if (cx > innerWidth - 90) close.style.right = '176px';
+    if (cy < 90) close.style.top = '150px';
+    ring.append(close);
+    if (pages > 1) {
+      const pager = make('div', 'dsa5h-power-pager');
+      const prev = control(loc('Previous'), '‹', () => this._openPowerSources(anchor, page - 1, true));
+      const next = control(loc('Next'), '›', () => this._openPowerSources(anchor, page + 1, true));
+      prev.disabled = page === 0;
+      next.disabled = page === pages - 1;
+      pager.append(prev, make('span', '', loc('Page', { page: page + 1, pages, count: sources.segments.length })), next);
+      const pagerX = Math.max(8, Math.min(innerWidth - 212, cx - 102));
+      const pagerY = cy > innerHeight - 180 ? cy - 154 : cy + 128;
+      pager.style.left = `${pagerX - (cx - 150)}px`;
+      pager.style.right = 'auto';
+      pager.style.width = '204px';
+      pager.style.top = `${Math.max(8, Math.min(innerHeight - 48, pagerY)) - (cy - 150)}px`;
+      panel.append(pager);
+    }
+    this.element.append(panel);
+    panel.showPopover();
+    panel.style.left = `${cx - 150}px`;
+    panel.style.top = `${cy - 150}px`;
+    anchor.classList.add('dsa5h-power-open');
+    anchor.setAttribute('aria-controls', panel.id);
+    anchor.setAttribute('aria-expanded', 'true');
+    const events = new AbortController();
+    const signal = events.signal;
+    this._powerPopup = { anchor, panel, events };
+    panel.addEventListener('pointerenter', () => clearTimeout(this._powerTimer));
+    panel.addEventListener('pointerleave', () => {
+      clearTimeout(this._powerTimer);
+      this._powerTimer = setTimeout(() => { if (!panel.contains(document.activeElement)) this._closePowerSources(); }, 350);
+    });
+    panel.addEventListener('click', event => {
+      if (event.target.closest('[data-action="dsa5hEditPowerSources"]')) {
+        // Erst nach dem geerbten Action-Dispatch entfernen, sonst verliert Foundry das Ziel.
+        queueMicrotask(() => this._closePowerSources(true));
+      }
+    });
+    panel.addEventListener('focusout', () => queueMicrotask(() => {
+      if (this._powerPopup?.panel === panel && !panel.contains(document.activeElement)) this._closePowerSources();
+    }));
+    document.addEventListener('pointerdown', event => {
+      if (!panel.contains(event.target) && !anchor.contains(event.target)) this._closePowerSources();
+    }, { capture: true, signal });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); this._closePowerSources(true); }
+    }, { capture: true, signal });
+    window.addEventListener('resize', () => this._closePowerSources(), { signal });
+    document.addEventListener('scroll', () => this._closePowerSources(), { capture: true, signal });
+    if (keyboard) (this.actor.isOwner ? center : close).focus({ preventScroll: true });
   }
 
   // Behälter, in dem ein Gegenstand liegt (system.parent_id), sonst null — wie das System nur, wenn es den Behälter gibt.
@@ -884,6 +1075,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   // auch wenn der Reiter weg ist). Foundry baut das Menü bei jedem Öffnen neu, die Beschriftung folgt dem Flag.
   _getHeaderControls() {
     const controls = super._getHeaderControls();
+    if (typeof this.prepareCompanionTab !== 'function') return controls;
     const hidden = !!this.actor.getFlag?.(MODULE_ID, 'hideCompanionTab');
     controls.push({
       action: 'dsa5hToggleCompanionTab',
@@ -984,7 +1176,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const item = this.actor.items.get(this._getItemId(target));
     if (!this.actor.isOwner || item?.type !== 'meleeweapon') return;
     await item.system.swapNumberWeaponHands();
-    if (item.system.worn.value && globalThis.dsa5.apps.RuleChaos.isWieldedTwohanded(item)) await this.actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
+    if (item.system.worn.value && systemApi().apps.RuleChaos.isWieldedTwohanded(item)) await this.actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
   }
 
   // Charakterbauer (#10): wie im System, merkt sich aber die bisherige Bogenwahl ('' = Standard), die der
@@ -1043,7 +1235,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     const actor = this.actor;
     const worn = !!item.system.worn.value;
     const melee = item.type === 'meleeweapon';
-    const twoHanded = melee ? globalThis.dsa5.apps.RuleChaos.isWieldedTwohanded(item) : item.system.worn.requiresBothHands !== false;
+    const twoHanded = melee ? systemApi().apps.RuleChaos.isWieldedTwohanded(item) : item.system.worn.requiresBothHands !== false;
     const gripSwitchable = melee && !item.system.constructor.NOT_TWO_HANDED_WEAPON_TYPES?.has(game.i18n.localize('LocalizedCTs.' + item.system.combatskill.value));
     const oneHandPossible = !twoHanded || gripSwitchable;
     const toHand = async hand => {
@@ -1053,7 +1245,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
       else await actor.equipWeaponToHand(item.id, { hand, equip: true });
     };
     const icon = (active, fallback) => `<i class="fas fa-${active ? 'check' : fallback} fa-fw"></i>`;
-    const menu = new foundry.applications.ux.ContextMenu(this.element, '', [
+    const menu = new foundry.applications.ux.ContextMenu(this.element, '', contextMenuEntries([
       { label: 'mainHand', icon: icon(worn && !twoHanded && !item.system.worn.offHand, 'hand'), visible: oneHandPossible, onClick: () => toHand('main') },
       { label: 'offHand', icon: icon(worn && !twoHanded && !!item.system.worn.offHand, 'shield-halved'), visible: oneHandPossible, onClick: () => toHand('offhand') },
       {
@@ -1065,7 +1257,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
         },
       },
       { label: 'SHEET.UnEquipItem', icon: '<i class="fas fa-xmark fa-fw"></i>', visible: worn, onClick: () => actor.equipWeaponToHand(item.id, { equip: false }) },
-    ], { jQuery: false, fixed: true, eventName: 'none' });
+    ]), { jQuery: false, fixed: true, eventName: 'none' });
     ui.context?.close();
     await menu.render(target, { animate: true });
     ui.context = menu;
@@ -1280,6 +1472,7 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
   }
 
   _applyCurrentTab() {
+    this._closePowerSources();
     const root = this.element;
     if (!root) return;
     // Drives the cover tab's full-height sidebar grid (CSS: .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main).
@@ -1523,3 +1716,15 @@ export const Dsa5HelpersCharacterSheet = BaseCharacterSheet ? class extends Base
     } finally { this._favoritePending = false; }
   }
 } : null;
+  if (Sheet && isFoundry13()) {
+    Sheet.DEFAULT_OPTIONS.ownerActions = {
+      ...Sheet.DEFAULT_OPTIONS.ownerRollActions,
+      ...Sheet.DEFAULT_OPTIONS.ownerActions,
+      selectTraditionItem: Sheet._selectTraditionArtifact,
+      traditionItemDelete: Sheet._deleteTraditionArtifact,
+    };
+  }
+  return Sheet;
+}
+// Anonyme Klasse beibehalten: bestehende Akteure speichern die Bogen-ID dsa5-helpers.
+export const Dsa5HelpersCharacterSheet = createCharacterSheet();
