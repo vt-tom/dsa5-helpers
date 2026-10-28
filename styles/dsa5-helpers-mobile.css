@@ -114,6 +114,10 @@ body.dsa5h-mobile #pause.paused {
   top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 8px); bottom: auto; height: 140px; z-index: 41; pointer-events: none;
 }
 body.dsa5h-mobile.dsa5h-m-in-combat #pause.paused { top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 64px); }
+/* Offenes Panel: Die Anzeige lag sonst über der Panel-Leiste (Shell, Ebene 40). Smartphone: Panel verdeckt die Szene,
+   Anzeige aus; Tablet: nur über dem sichtbaren Teil der Szene links neben dem Panel. */
+body.dsa5h-phone.dsa5h-m-panel-open #pause.paused { display: none; }
+body.dsa5h-tablet.dsa5h-m-panel-open #pause.paused { left: 0; right: var(--dsa5h-m-panel-w); width: auto; }
 body.dsa5h-m-in-combat .dsa5h-m-scenebtns { top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 66px); }
 
 /* 5. Heldenkarte ----------------------------------------------------------- */

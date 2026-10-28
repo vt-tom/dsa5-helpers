@@ -14,6 +14,10 @@ Kennzeichnung: **[v13/v14]** gilt für Foundry v13 und v14, **[nur v14]** bzw. *
 - **[nur v14]** Smartphone und Tablet: Im Kampf-Probendialog sind die Grundmanöver fingergroße Zeilen; auf dem Smartphone nutzen sie die volle Breite, und das Platzhalterbild ohne Kampf-Sonderfertigkeiten nimmt weniger Platz ein. Im Kampftracker sind „Zug beenden“ und die Pfeile für den vorigen/nächsten Zug größer.
 - **[nur v14]** Smartphone: Ein Tipp auf die Kraftspeicher-Kugel an den AsP öffnet ein Blatt mit allen Kraftspeichern; jeder Speicher hat −/+ und einen Balken, jede Änderung wird sofort gespeichert. Das Rundmenü bleibt auf Tablet und Desktop.
 
+### Behoben
+
+- **[nur v14]** Smartphone und Tablet: Die Pause-Anzeige („Spiel pausiert“) lag über der Kopfleiste offener Panels (Journal, Chat, Kampf). Auf dem Smartphone ist sie bei offenem Panel ausgeblendet, auf dem Tablet steht sie über der Szene links neben dem Panel.
+
 ## [0.6.2] — 2026-10-28
 
 ### Neu
