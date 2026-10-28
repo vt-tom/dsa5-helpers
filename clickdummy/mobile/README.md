@@ -17,6 +17,7 @@ Fidelity: **High-Fidelity** für Layout, Abstände, Farben, Schrift und Bedienun
 | `app.html` | Nur die Foundry-Oberfläche, bildschirmfüllend. Zum Testen **auf einem echten Gerät**. Wählt Smartphone/Tablet anhand der Bildschirmgröße, erzwingen mit `app.html?device=phone` bzw. `?device=tablet` oder im Konto-Menü unter „Oberfläche“. |
 | `Foundry Mobil.dc.html` | **Quelltext** der Foundry-Oberfläche (Vorlage mit `sc-if`/`sc-for` + Klasse `Component` mit der Logik). Hier wird iteriert. |
 | `Heldenbogen Mobil.dc.html` | **Quelltext** des Heldenbogens (unverändert aus Runde 3). |
+| `kraftspeicher.html` | Kraftspeicher auf dem Smartphone (MOBILE.md 15, F2): KS-Kugel → Blatt mit −/+ je Speicher, speichert sofort (Nutzerentscheidung 2026-10-28, Variante B). Eigenständige Seite im heutigen Kugel-Kopf. |
 | `support.js`, `vendor/` | Mini-Laufzeit des Design-Tools („dc-runtime“, generiert, nicht bearbeiten) und React 18.3.1 lokal, damit nichts aus dem Netz geladen wird. |
 | `dsa5-helpers-mobile.tokens.css` | Design-Tokens der Mobilansicht, auf die Token-Namen der Desktop-CSS abgebildet. Startpunkt für `styles/dsa5-helpers-mobile.css`. |
 | `screenshots/smartphone/` | 25 Ansichten, 390 × 844 px. |

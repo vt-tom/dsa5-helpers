@@ -10,7 +10,7 @@
    5. Heldenkarte
    6. Schwebende Knöpfe + Sprechblase (Foundrys Chat-Benachrichtigung)
    7. Panels (Chat, Journal, Einstellungen = Foundrys Seitenleiste)
-   8. Fenster bildschirmfüllend, Kontextmenü als Blatt
+   8. Fenster: Mobil-Kopf, Vollbild oder Blatt, Kontextmenü als Blatt
    9. Konto-Menü
   10. Szene: Token ziehen, Namen
   11. Heldenbogen auf Smartphone und Tablet
@@ -205,6 +205,10 @@ body.dsa5h-mobile.dsa5h-m-panel-open #sidebar-content .tab { width: 100%; }
 }
 body.dsa5h-m-panel-open .dsa5h-m-panelbar { display: flex; }
 #dsa5h-m-shell .dsa5h-m-panelbar button { width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--dsa5h-m-ink); font-size: 20px; line-height: 44px; }
+/* Kampftracker im Panel (F11, MOBILE.md 15): Zug-Knöpfe 44 px, „Zug beenden“ 48 px, Knöpfe je Teilnehmer 36 px */
+body.dsa5h-mobile #combat button.combat-control { min-width: 44px; height: 44px; min-height: 44px; font-size: 18px; }
+body.dsa5h-mobile #combat button.combat-control-lg { height: 48px; min-height: 48px; font-size: 16px; }
+body.dsa5h-mobile #combat :is(.combatant-control, .aggroButton) { width: 36px; height: 36px; min-height: 36px; font-size: 16px; }
 body.dsa5h-tablet.dsa5h-m-panel-open .dsa5h-m-scenebtns { right: calc(var(--dsa5h-m-panel-w) + 10px); }
 /* Touch: größere Zeilen und Eingaben (iOS zoomt bei Schrift < 16 px in Eingabefelder) */
 body.dsa5h-mobile #sidebar .directory-item { min-height: 44px; }
@@ -216,7 +220,7 @@ body.dsa5h-mobile .chat-message .message-header .dsa5h-m-msgmenu {
   border: 0; background: none; color: inherit; font-size: 16px; order: 99;
 }
 
-/* 8. Fenster bildschirmfüllend, Kontextmenü als Blatt ------------------------- */
+/* 8. Fenster: Mobil-Kopf, Vollbild oder Blatt, Kontextmenü als Blatt ---------- */
 body.dsa5h-mobile .dsa5h-m-window {
   position: fixed !important;
   inset: calc(env(safe-area-inset-top, 0px) + 6px) 0 0 0 !important;
@@ -229,10 +233,39 @@ body.dsa5h-tablet .dsa5h-m-window.dialog-dsa5 { inset: auto 0 0 0 !important; ma
    Chat-Spalte; Dialoge bleiben Blätter von unten. Unter 1000 px (Tablet hoch) wäre der Bogen zu schmal, dort liegt der
    Chat wie bisher darüber. */
 @media (min-width: 1000px) {
-  body.dsa5h-tablet[data-dsa5h-panel="chat"] .dsa5h-m-window:not(.dialog, .dialog-dsa5) { right: var(--dsa5h-m-panel-w) !important; border-radius: 10px 0 0 0; }
+  body.dsa5h-tablet[data-dsa5h-panel="chat"] .dsa5h-m-window:not(.dialog, .dialog-dsa5, .dsa5h-m-sheetwin) { right: var(--dsa5h-m-panel-w) !important; border-radius: 10px 0 0 0; }
 }
-body.dsa5h-mobile .dsa5h-m-window .window-header { min-height: 44px; }
-body.dsa5h-mobile .dsa5h-m-window .window-header button.header-control { width: 40px; height: 40px; font-size: 18px; }
+/* Mobil-Fensterkopf (MOBILE.md 15.3, Schritt 2) statt Kopfgrafik und Buch-Ornament des Systems: 48 px, Knöpfe 44 px.
+   Vollbild wie der eingeklappte Bogenkopf (dunkel, „‹“ links schließt), Blätter wie die Panel-Leiste (Titel, „✕“ rechts).
+   Unser Bogen hat einen eigenen Kopf (Abschnitt 11). */
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet)::after { content: none !important; display: none !important; }
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet) > .window-header {
+  flex: 0 0 48px; height: 48px; min-height: 48px; top: 0 !important; gap: 4px; padding: 0 4px 0 14px;
+  border: 0 !important; border-radius: inherit; border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+  background: var(--dsa5h-m-hdr) !important; color: #f4e8d6;
+}
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet) > .window-header .window-title {
+  overflow: hidden; margin: 0; color: inherit; font-family: 'Andalus', serif; font-size: 19px; line-height: 48px;
+  text-align: left; text-overflow: ellipsis; text-shadow: none; white-space: nowrap;
+}
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet) > .window-header :is(button.header-control, a.header-button) {
+  flex: none; width: 44px; height: 44px; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 6px;
+  background: none; box-shadow: none; color: inherit; font-size: 20px;
+}
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-noctrl > .window-header [data-action="toggleControls"] { display: none; }
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet, .dsa5h-m-sheetwin) > .window-header { padding-left: 0; }
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet, .dsa5h-m-sheetwin) > .window-header [data-action="close"] { order: -1; }
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet, .dsa5h-m-sheetwin) > .window-header [data-action="close"]::before { content: "\f053"; }
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-sheetwin > .window-header { background: var(--dsa5h-m-phead), var(--dsa5h-m-paper) !important; color: var(--dsa5h-m-ink); }
+/* Kleine Fenster als Blatt von unten, Höhe nach Inhalt; Eingaben 44 px und 16 px (iOS zoomt sonst), Knöpfe 48 px */
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-sheetwin {
+  inset: auto 0 0 0 !important; max-height: 92vh !important; border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, .5);
+}
+body.dsa5h-tablet .dsa5h-m-window.dsa5h-m-sheetwin { margin: 0 auto; width: min(640px, 100vw) !important; max-height: 90vh !important; }
+body.dsa5h-mobile .dsa5h-m-sheetwin > .window-content { flex: 0 1 auto; min-height: 0; padding-bottom: calc(12px + var(--dsa5h-m-safe-b)); }
+body.dsa5h-mobile .dsa5h-m-sheetwin > .window-content :is(input[type="text"], input[type="number"], input:not([type]), select) { min-height: 44px; font-size: 16px; }
+body.dsa5h-mobile .dsa5h-m-sheetwin > .window-content input[type="checkbox"] { flex: none; width: 26px; height: 26px; }
+body.dsa5h-mobile .dsa5h-m-sheetwin > .window-content :is(.form-footer, .dialog-buttons, footer) button { min-height: 48px; font-size: 16px; }
 body.dsa5h-mobile .dsa5h-m-window .window-content { overflow: auto; }
 body.dsa5h-mobile .dsa5h-m-window .window-resize-handle,
 body.dsa5h-mobile .dsa5h-m-window .window-resizable-handle { display: none; }
@@ -278,6 +311,18 @@ body.dsa5h-phone dialog.application .dialog-form .form-footer > button:first-chi
   grid-column: 1 / -1; height: 52px; font-size: 18px; font-weight: 700;
   background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); border-color: var(--dsa5h-m-accent);
 }
+
+/* Kampfdialog (F4, MOBILE.md 15): auf dem Handy ohne den inneren Seitenrand des Dialoginhalts,
+   Grundmanöver über die volle Breite; Zeilen auf Smartphone und Tablet 44 px. Der leere SF-Bereich des Systems
+   (.specImg, nur das Waffenbild, Höhe als Inline-Stil) wird niedriger, „Ziel hinzufügen“ wird ein 44-px-Ziel. */
+body.dsa5h-phone dialog.application .dialog-form > .dialog-content { padding-left: 0; padding-right: 0; }
+body.dsa5h-phone .application .dsa5h-maneuver-panel { margin-left: 0; padding: 0 0 10px; }
+body.dsa5h-phone dialog.application .dialog-form .specAbsContainer .specImg:not(:has(*)) { height: 56px !important; min-height: 0; background-size: contain; }
+body.dsa5h-phone dialog.application .dialog-form .targets .addTarget { display: inline-grid; place-items: center; width: 44px; height: 44px; }
+body.dsa5h-mobile .application .dsa5h-maneuver-panel h4 { font-size: 15px; }
+body.dsa5h-mobile .application .dsa5h-maneuver-panel .dsa5h-maneuver-row { min-height: 44px; margin-bottom: 4px; padding: 6px 10px; font-size: 15px; }
+body.dsa5h-mobile .application .dsa5h-maneuver-panel .dsa5h-maneuver-step { font-size: 14px; }
+body.dsa5h-mobile .application .dsa5h-maneuver-hint { font-size: 14px; }
 
 /* 9. Konto-Menü ------------------------------------------------------------ */
 .dsa5h-m-sheet-backdrop {
@@ -508,6 +553,19 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-dup { display: none; }
 .dsa5h-m-more-list { display: flex; flex-direction: column; border-top: 1px solid var(--dsa5h-m-line); }
 .dsa5h-m-more-sheet .dsa5h-m-more-list button { height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 6px; border: 0; border-bottom: 1px solid var(--dsa5h-m-line); border-radius: 0; background: none; text-align: left; justify-content: flex-start; font-weight: normal; }
 .dsa5h-m-more-actions button { height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; }
+/* Kraftspeicher-Blatt (F2 Variante B, mobile.js openPowerSheet): je Speicher Name, −/+ (44 px) und Balken */
+.dsa5h-m-power-head { display: flex; align-items: center; gap: 8px; min-height: 44px; font-family: 'Andalus', serif; font-size: 21px; }
+.dsa5h-m-power-head small { flex: 1; font-family: 'GentiumBasic', Georgia, serif; font-size: 15px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-more-sheet .dsa5h-m-power-head button { width: 44px; height: 44px; padding: 0; border: 0; background: none; font-size: 20px; }
+.dsa5h-m-power-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid var(--dsa5h-m-line); }
+.dsa5h-m-power-name { min-width: 0; font-size: 17px; overflow-wrap: break-word; }
+.dsa5h-m-power-name small { display: block; font-size: 14px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-power-row .dsa5h-m-stepper { gap: 6px; }
+.dsa5h-m-power-row .dsa5h-m-stepper output { min-width: 64px; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
+.dsa5h-m-more-sheet .dsa5h-m-power-row .dsa5h-m-stepper button { width: 44px; height: 44px; padding: 0; border-radius: 22px; font-size: 22px; }
+.dsa5h-m-power-meter { grid-column: 1 / -1; height: 8px; overflow: hidden; border-radius: 4px; background: rgba(43, 39, 33, .12); }
+.dsa5h-m-power-meter > span { display: block; height: 100%; background: linear-gradient(90deg, #1c6f9e, #3558c4); }
+.dsa5h-m-power-hint { margin: 0; font-size: 14px; color: var(--dsa5h-m-ink2); }
 
 /* Favoriten: feste Wertespalten schmaler, damit der Name Platz hat */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fav-grid { grid-template-columns: minmax(0, 1fr); padding: 8px; }
@@ -765,6 +823,20 @@ body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] :is([data-tab-panel="magi
 /* Titelblatt: Favoriten-Karten mit größerem Namen; die ganze Karte würfelt (mobile.js, Talente/Zauber/Liturgien) */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-card { min-height: 52px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-card .withContext a { font-size: 16px; }
+/* Talent-Vorschläge (F1, MOBILE.md 15): eine Spalte wie im Mobil-Dummy, Name | FW, darunter Grund | Probe; Klappkopf
+   und Anzahl −/+ als 44-px-Ziele. Die ganze Karte würfelt wie bei den Favoriten. */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-head { min-height: 48px; padding-top: 0; padding-bottom: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-toggle { align-self: stretch; min-height: 44px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count { gap: 2px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count button { width: 44px; height: 44px; font-size: 20px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-suggest-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 8px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-card.dsa5h-suggest-card {
+  grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name value" "reason roll";
+  gap: 4px 8px; min-height: 64px; padding: 8px 10px 8px 12px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-card .dsa5h-fav-name { font-size: 17px; overflow-wrap: normal; text-align: left; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-card .dsa5h-fav-card-value { font-size: 17px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-reason { align-self: center; font-size: 14px; }
 
 /* Ausrüstung: Kategorie-Chips (mobile.js addInventoryChips), Zeilen mit Gewicht als Unterzeile, Taschen als Liste */
 .dsa5h-m-chips {

@@ -742,7 +742,8 @@
       "Next": "More sources",
       "Page": "{page} / {pages} · {count} sources",
       "SaveFailed": "Power sources could not be saved. Please reopen the dialog and try again.",
-      "OpenFailed": "The power source dialog could not be opened."
+      "OpenFailed": "The power source dialog could not be opened.",
+      "SavedAtOnce": "Changes are saved immediately."
     },
     "EnergyZones": {
       "Summary": "{name}: {value} of {max} zone LP",

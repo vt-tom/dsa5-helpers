@@ -31,9 +31,13 @@ Inhalt: #47 Lebensenergiezonen, #50 Kraftspeicher, #51 v13-Desktop, #56 Passive 
 
 0.6.0 und 0.6.1 sind Betas. Zum stabilen Release wird später die letzte freigegebene Beta; Merge nach `main` erst nach Nutzerfreigabe. Issues und Meilenstein werden bei Auslieferung geschlossen, auch bei Betas.
 
-## Mobil: Fenster ohne Mobil-Design (Plan 2026-10-28)
+## Version 0.6.3 (Branch `release/0.6.3`, Meilenstein 0.6.3)
 
-Bestandsaufnahme und Umsetzungsplan in [MOBILE.md](../docs/MOBILE.md#15-fenster-ohne-mobil-design-bestandsaufnahme-2026-10-28) Abschnitt 15 (F1–F11, Phasen P1–P3). Entschieden 28.10.2026: P1 in 0.6.3, Systemfenster nur „gut bedienbar“, Changelog auf Mobilgeräten nur als Hinweis. Offen: E-F2 Almanach (Nutzer hat Rückfrage gestellt, Erklärung gegeben). Nächster Schritt nach #56: Live-Bestandsaufnahme, dann P1.
+Angelegt 28.10.2026 vom Stand `release/0.6.2`. Inhalt bisher: [#59](https://github.com/vt-tom/dsa5-helpers/issues/59) Mobil P1. CHANGELOG-Abschnitt „0.6.3 — unveröffentlicht“ angelegt; `module.json` wird erst beim Release hochgezählt (RELEASE.md).
+
+## Mobil: Fenster ohne Mobil-Design (Plan 2026-10-28, Issue #59)
+
+Bestandsaufnahme und Umsetzungsplan in [MOBILE.md](../docs/MOBILE.md#15-fenster-ohne-mobil-design-bestandsaufnahme-2026-10-28) Abschnitt 15 (F1–F11, Phasen P1–P3). Entschieden 28.10.2026: P1 in 0.6.3, Systemfenster nur „gut bedienbar“, Changelog auf Mobilgeräten nur als Hinweis. Offen: E-F2 Almanach (Nutzer hat Rückfrage gestellt, Erklärung gegeben). P1 läuft als [#59](https://github.com/vt-tom/dsa5-helpers/issues/59) in 0.6.3. Live-Bestandsaufnahme erledigt (MOBILE.md 15.5, 28.10.2026). F1 Vorschläge auf dem Handy einspaltig umgesetzt und in der Testinstanz gemessen (hell/dunkel) – Nutzerbestätigung offen. Schritt 2 (Mobil-Fensterkopf, kleine Fenster als Blatt) umgesetzt und gemessen (Handy hell, Tablet hell, Desktop unverändert) – Nutzerbestätigung offen. Mobil-Fenster immer hell (Nutzerentscheidung 28.10.2026): im dunklen Foundry-Thema war Text auf dem DSA5-Pergament kaum lesbar (Systemverhalten, am Desktop gleich); umgesetzt über die Body-Klasse in `mobile.js` (`lightApps`), gemessen – Nutzerbestätigung offen. F3/F4/F11 Feinschliff umgesetzt und gemessen – Nutzerbestätigung offen. F2 Kraftspeicher: Variante B (Blatt mit −/+ je Speicher, speichert sofort; Nutzerentscheidung 28.10.2026) auf dem Smartphone umgesetzt und in der Testinstanz geprüft – Nutzerbestätigung offen. Damit ist P1 (#59) vollständig umgesetzt; offen sind die Live-Prüfung am Gerät und die Nutzerbestätigung.
 
 ## Live prüfen (Betas 0.6.0 / 0.6.1)
 
@@ -47,6 +51,8 @@ Bestandsaufnahme und Umsetzungsplan in [MOBILE.md](../docs/MOBILE.md#15-fenster-
 
 ## Features / Backlog
 
+- **Dunkles Thema mobil überarbeiten (Nutzerwunsch 28.10.2026):** Mobil sind Fenster vorerst immer hell (0.6.3). Später ein echtes dunkles Thema für Mobil-Fenster (Systemfenster, Dialoge, Panels) erarbeiten; Ausgangspunkt: DSA5 hängt seine dunklen Farben an `body.theme-dark` und unterstützt Pergament nur hell (MOBILE.md 15.5).
+
 Seit 2026-09-30 als GitHub-Issues geführt – siehe unten. Neue Feature-Ideen dort anlegen oder hier kurz notieren.
 
 - **Eigenes HUD:** seit 2026-10-21 als Reiter in der DSA-Leiste (`scripts/hud.js`). Neue Modulfunktionen mit Knopf dort in `hudEntries()` ergänzen. Ohne neue DSA-Leiste (`dsa5.hotbarv3` aus) gibt es kein HUD.
@@ -57,18 +63,12 @@ Seit 2026-09-30 als GitHub-Issues geführt – siehe unten. Neue Feature-Ideen d
 <!-- GITHUB-ISSUES:START -->
 ## GitHub-Issues
 
-_Repository: `vt-tom/dsa5-helpers` · Letzter erfolgreicher Abruf: 2026-10-28T05:33:27.830Z · vollständig nachgeladen._
+_Repository: `vt-tom/dsa5-helpers` · Letzter erfolgreicher Abruf: 2026-10-28T10:42:53.087Z · vollständig nachgeladen._
 
 _Automatisch erzeugte Übersicht; nur zur Information. Keine Beauftragung zur Bearbeitung. Nicht von Hand bearbeiten._
 
-**Offen (9)**
+**Offen (6)**
 
-- **[#47](https://github.com/vt-tom/dsa5-helpers/issues/47) feat: Lebensenergiezonen (Rüstkammer II) im Zonenkreuz des Kampf-Reiters**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.2 · 0 Kommentare · zuletzt geändert 2026-10-21T07:46:37Z
-- **[#50](https://github.com/vt-tom/dsa5-helpers/issues/50) Magieleiste/bubble für Kraftspeicher**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.2 · 1 Kommentar · zuletzt geändert 2026-10-26T13:41:27Z
-- **[#51](https://github.com/vt-tom/dsa5-helpers/issues/51) V13 Support prüfen**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.2 · 0 Kommentare · zuletzt geändert 2026-10-26T13:41:27Z
 - **[#52](https://github.com/vt-tom/dsa5-helpers/issues/52) feat: Tooltips**
   - offen · Bearbeiter: niemand · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-22T19:13:40Z
 - **[#53](https://github.com/vt-tom/dsa5-helpers/issues/53) feat: NSC Sheet im DSA Helpers Design**
@@ -77,13 +77,23 @@ _Automatisch erzeugte Übersicht; nur zur Information. Keine Beauftragung zur Be
   - offen · Bearbeiter: niemand · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-23T18:11:20Z
 - **[#55](https://github.com/vt-tom/dsa5-helpers/issues/55) feat: Gruppen Sheet im DSA Helpers Design**
   - offen · Bearbeiter: niemand · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-23T18:11:48Z
-- **[#56](https://github.com/vt-tom/dsa5-helpers/issues/56) feat: Hausregel Passive Verteidigung – ein Angriffswurf ohne aktive Parade**
-  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · 0 Kommentare · zuletzt geändert 2026-10-26T09:56:36Z
 - **[#57](https://github.com/vt-tom/dsa5-helpers/issues/57) feat: Geldbörse erweitern**
   - offen · Bearbeiter: niemand · von @vt-tom · 0 Kommentare · zuletzt geändert 2026-10-27T09:31:10Z
+- **[#59](https://github.com/vt-tom/dsa5-helpers/issues/59) feat: Mobil P1 – Fenster am Spieltisch im Mobil-Design (Vorschläge, Kraftspeicher, Zonen, Kampfdialog, Kampftracker)**
+  - offen · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.3 · 0 Kommentare · zuletzt geändert 2026-10-28T10:42:42Z
 
-**Kürzlich geschlossen (letzte 14 Tage: 15)**
+**Kürzlich geschlossen (letzte 14 Tage: 20)**
 
+- **[#51](https://github.com/vt-tom/dsa5-helpers/issues/51) V13 Support prüfen**
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Meilenstein: 0.6.2 · 1 Kommentar · geschlossen 2026-10-28T09:41:56Z
+- **[#56](https://github.com/vt-tom/dsa5-helpers/issues/56) feat: Hausregel Passive Verteidigung – ein Angriffswurf ohne aktive Parade**
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.2 · 1 Kommentar · geschlossen 2026-10-28T09:41:53Z
+- **[#58](https://github.com/vt-tom/dsa5-helpers/issues/58) feat: Talent-Vorschläge auf dem Titelblatt**
+  - erledigt · Bearbeiter: @Lyynix · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.2 · 1 Kommentar · geschlossen 2026-10-28T09:41:51Z
+- **[#50](https://github.com/vt-tom/dsa5-helpers/issues/50) Magieleiste/bubble für Kraftspeicher**
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.2 · 2 Kommentare · geschlossen 2026-10-28T09:41:48Z
+- **[#47](https://github.com/vt-tom/dsa5-helpers/issues/47) feat: Lebensenergiezonen (Rüstkammer II) im Zonenkreuz des Kampf-Reiters**
+  - erledigt · Bearbeiter: @vt-tom · von @vt-tom · Labels: enhancement · Meilenstein: 0.6.2 · 1 Kommentar · geschlossen 2026-10-28T09:41:46Z
 - **[#49](https://github.com/vt-tom/dsa5-helpers/issues/49) Hier ist eine Test Idee die ich gerne einmal Synchronisiert hätte.**
   - geschlossen (nicht geplant) · Bearbeiter: niemand · von @vt-tom · 1 Kommentar · geschlossen 2026-10-22T15:22:18Z
 - **[#48](https://github.com/vt-tom/dsa5-helpers/issues/48) feat: Grundmanöver (Paladose) Stufe 3 – Schwachpunkte erkennen, Trefferfolgen, Stören/Ablenken, gleichwertige SF ausgrauen**

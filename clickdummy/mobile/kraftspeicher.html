@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kraftspeicher mobil</title>
+<!-- Kraftspeicher auf dem Smartphone (F2, MOBILE.md 15, Issue #59): Variante B „Regler im Blatt“ (Nutzerentscheidung
+     2026-10-28; A Liste + Systemdialog und C großes Rundmenü verworfen). Eigenständige Seite, weil der Mobil-Dummy noch
+     den alten Kopf zeigt. Modul: scripts/mobile/mobile.js openPowerSheet. Öffnen über clickdummy/start-server.bat →
+     …/clickdummy/mobile/kraftspeicher.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --onaccent: #fff8ec;
+  --gold: #c2a267;
+  --hdr: linear-gradient(180deg, #3a322b, #272320);
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+  --asp: linear-gradient(180deg, #3d6fd0, #1c3f8f);
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+.phone { position: relative; width: 390px; max-width: 100%; height: 844px; margin: 0 auto; overflow: hidden; border-radius: 28px; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+
+/* Kopf wie im Modul (Wappenbanner, Kugeln) */
+.head { padding: 14px 40px 12px; background: var(--hdr); color: #f4e8d6; }
+.head .top { display: flex; align-items: center; gap: 12px; }
+.portrait { width: 64px; height: 64px; flex: none; border: 2px solid var(--gold); border-radius: 8px; background: #d9c7a3; }
+.name { font-family: 'Andalus', serif; font-size: 26px; }
+.ident { font-size: 12px; letter-spacing: .1em; color: #d6bd8a; }
+.orbs { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 14px; }
+.orb { position: relative; width: 58px; height: 58px; flex: none; overflow: hidden; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2c2622, #141110); box-shadow: 0 0 0 2px #2b2721, 0 0 0 4px var(--gold); }
+.orb i { position: absolute; inset: auto 0 0; height: var(--p); background: var(--liq); }
+.orb b { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; font-size: 19px; line-height: 1; color: #fff; }
+.orb b small { display: block; font-size: 9px; letter-spacing: .08em; opacity: .85; }
+.orb.lep { --liq: linear-gradient(180deg, #d33a2c, #7d1510); --p: 100%; }
+.orb.asp { --liq: var(--asp); --p: 100%; }
+.anchor { position: relative; }
+.ks { position: absolute; right: -14px; bottom: -10px; width: 34px; height: 34px; padding: 0; overflow: hidden; border: 0; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2c2622, #141110); box-shadow: 0 0 0 2px #2b2721, 0 0 0 3px var(--gold); color: #fff; font: inherit; cursor: pointer; }
+.ks::before { content: ""; position: absolute; inset: auto 0 0; height: var(--fill); background: var(--asp); }
+.ks::after { content: ""; position: absolute; inset: -6px; }
+.ks span { position: relative; display: grid; place-content: center; height: 100%; font-size: 13px; font-weight: 700; line-height: .95; }
+.ks small { font-size: 9px; font-weight: 400; }
+.body { padding: 10px; }
+.tabtitle { font-family: 'Andalus', serif; font-size: 24px; margin: 6px 4px 10px; }
+.panel { border: 1px solid var(--line2); border-radius: 4px; background: var(--card); }
+.panel h3 { margin: 0; padding: 8px 12px; background: var(--phead); font: 19px 'Andalus', serif; }
+.panel p { margin: 0; padding: 12px; color: var(--ink2); font-size: 15px; }
+
+/* Blätter von unten */
+.backdrop { position: absolute; inset: 0; z-index: 10; display: flex; align-items: flex-end; background: rgba(0, 0, 0, .5); }
+.backdrop[hidden] { display: none; }
+.sheet { width: 100%; max-height: 92%; overflow-y: auto; border-radius: 14px 14px 0 0; background: var(--paper); box-shadow: 0 -8px 30px rgba(0, 0, 0, .5); }
+.sheet .bar { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 4px 0 14px; background: var(--phead), var(--paper); font: 19px 'Andalus', serif; }
+.sheet .bar small { margin-left: 8px; font: 15px 'GentiumBasic', serif; color: var(--ink2); }
+.icon { width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--ink); font-size: 22px; cursor: pointer; }
+.sheet .content { padding: 10px 14px 18px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; min-height: 60px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.row .nm { font-size: 17px; }
+.row .val { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.meter { grid-column: 1 / -1; height: 8px; overflow: hidden; border-radius: 4px; background: rgba(43, 39, 33, .12); }
+.meter i { display: block; height: 100%; width: var(--p); background: var(--asp); }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper button { width: 44px; height: 44px; border: 1px solid var(--line2); border-radius: 22px; background: var(--field); color: var(--ink); font: inherit; font-size: 22px; cursor: pointer; }
+.stepper button:disabled { opacity: .35; }
+.stepper output { min-width: 64px; text-align: center; font-size: 17px; font-weight: 700; }
+.total { display: flex; justify-content: space-between; padding: 12px 0 4px; font-size: 15px; color: var(--ink2); }
+.hint { margin: 10px 0 0; font-size: 14px; color: var(--ink2); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <header class="head">
+    <div class="top"><div class="portrait"></div><div><div class="name">Allacaya</div><div class="ident">ELF · AUELFEN · WILDNISLÄUFERIN</div></div></div>
+    <div class="orbs">
+      <div class="orb lep"><i></i><b><small>LeP</small>28</b></div>
+      <div class="anchor">
+        <div class="orb asp"><i></i><b><small>AsP</small>35</b></div>
+        <button type="button" class="ks" data-open aria-haspopup="dialog" aria-label="Kraftspeicher"><span><small>KS</small><b data-total></b></span></button>
+      </div>
+    </div>
+  </header>
+  <main class="body">
+    <div class="tabtitle">Titelblatt</div>
+    <section class="panel"><h3>Favoriten</h3><p>KS-Kugel rechts unten an den AsP antippen.</p></section>
+  </main>
+
+  <!-- Blatt mit Speicherliste und Reglern -->
+  <div class="backdrop" data-list hidden>
+    <div class="sheet" role="dialog" aria-label="Kraftspeicher">
+      <div class="bar"><span>Kraftspeicher<small data-sum></small></span><button type="button" class="icon" data-close aria-label="Schließen">✕</button></div>
+      <div class="content">
+        <div data-rows></div>
+        <p class="hint">Änderungen werden sofort gespeichert.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const sources = [{ name: 'Kraftspeicher', item: 'Ring der Ahnen', value: 3, max: 10 }, { name: 'Kraftspeicher 2', item: 'Stab', value: 8, max: 10 }];
+const $ = s => document.querySelector(s);
+const total = () => sources.reduce((a, s) => a + s.value, 0) + ' / ' + sources.reduce((a, s) => a + s.max, 0);
+const pct = s => (s.value / s.max * 100) + '%';
+
+function render() {
+  $('[data-total]').textContent = sources.reduce((a, s) => a + s.value, 0);
+  $('.ks').style.setProperty('--fill', (sources.reduce((a, s) => a + s.value, 0) / sources.reduce((a, s) => a + s.max, 0) * 100) + '%');
+  $('[data-sum]').textContent = total() + ' AsP';
+  $('[data-rows]').innerHTML = sources.map((s, i) => `<div class="row"><span class="nm">${s.name}<br><small style="color:var(--ink2);font-size:14px">${s.item}</small></span>
+      <span class="stepper"><button type="button" data-step="-1" data-i="${i}" aria-label="${s.name} −1"${s.value <= 0 ? ' disabled' : ''}>−</button><output>${s.value} / ${s.max}</output><button type="button" data-step="1" data-i="${i}" aria-label="${s.name} +1"${s.value >= s.max ? ' disabled' : ''}>+</button></span>
+      <span class="meter"><i style="--p:${pct(s)}"></i></span></div>`).join('');
+}
+document.addEventListener('click', ev => {
+  const t = ev.target.closest('button') ?? ev.target;
+  if (t.matches('[data-open]')) { $('[data-list]').hidden = false; return; }
+  if (t.dataset.step) { const s = sources[t.dataset.i]; s.value = Math.max(0, Math.min(s.max, s.value + Number(t.dataset.step))); render(); return; }
+  if (t.matches('[data-close]') || t.matches('.backdrop')) $('[data-list]').hidden = true;
+});
+render();
+</script>
+</body>
+</html>

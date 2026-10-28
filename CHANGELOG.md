@@ -4,6 +4,16 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 Kennzeichnung: **[v13/v14]** gilt für Foundry v13 und v14, **[nur v14]** bzw. **[nur v13]** nur für diese Generation. Versionen bis 0.6.1 gab es nur für v14; ihre mit v13 gekennzeichneten Funktionen kommen dort erst mit der v13-Ausgabe an.
 
+## [0.6.3] — unveröffentlicht
+
+### Geändert
+
+- **[nur v14]** Smartphone: Die Talent-Vorschläge auf dem Titelblatt stehen jetzt untereinander wie die Favoriten – Namen werden nicht mehr mitten im Wort umgebrochen, Grund und Probe stehen in einer Zeile darunter. Die Knöpfe zum Ein-/Ausklappen und für mehr/weniger Vorschläge sind groß genug zum Antippen.
+- **[nur v14]** Smartphone und Tablet: Fenster des Systems und der Module haben einen einheitlichen, fingergerechten Kopf statt der Desktop-Leiste. Große Fenster (Gegenstandsblätter, Journal, Changelog …) füllen den Bildschirm und schließen über „‹“ links; kleine Fenster wie der Kraftspeicher-Ladedialog oder „Zone bearbeiten“ erscheinen als Blatt von unten, nur so hoch wie nötig, mit „✕“ rechts. Eingabefelder darin sind größer, das Menü „⋮“ entfällt, wenn es nur „Fenster lösen“ enthielte.
+- **[nur v14]** Smartphone und Tablet: Fenster werden immer hell dargestellt, auch wenn Foundry auf dunkel steht – das Pergament des DSA5-Systems ist nur hell lesbar. Das Thema des Heldenbogens bleibt wie eingestellt.
+- **[nur v14]** Smartphone und Tablet: Im Kampf-Probendialog sind die Grundmanöver fingergroße Zeilen; auf dem Smartphone nutzen sie die volle Breite, und das Platzhalterbild ohne Kampf-Sonderfertigkeiten nimmt weniger Platz ein. Im Kampftracker sind „Zug beenden“ und die Pfeile für den vorigen/nächsten Zug größer.
+- **[nur v14]** Smartphone: Ein Tipp auf die Kraftspeicher-Kugel an den AsP öffnet ein Blatt mit allen Kraftspeichern; jeder Speicher hat −/+ und einen Balken, jede Änderung wird sofort gespeichert. Das Rundmenü bleibt auf Tablet und Desktop.
+
 ## [0.6.2] — 2026-10-28
 
 ### Neu

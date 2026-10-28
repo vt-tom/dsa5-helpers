@@ -40,6 +40,17 @@ export async function savePowerCharges(event) {
   }
 }
 
+// Ladung eines einzelnen Speichers setzen (Kraftspeicher-Blatt auf dem Smartphone, MOBILE.md 15): gleicher Schreibweg
+// wie savePowerCharges, aber ohne den Systemdialog. source ist ein Segment aus actor.powersource.segments.
+export async function setPowerCharge(actor, source, value) {
+  const item = actor.items.get(source.itemId);
+  if (!item?.effects.get(source.effectId)) throw new Error('Power source no longer exists');
+  const next = Math.max(0, Math.min(source.max, Number(value) || 0));
+  await item.updateEmbeddedDocuments('ActiveEffect', [{ _id: source.effectId, 'system.powersource.value': next }]);
+  actor.reset();
+  actor.render(false);
+}
+
 export async function openPowerSourceDialog(sheet) {
   const actor = sheet.actor;
   if (!actor?.isOwner && !game.user.isGM) return;

@@ -742,7 +742,8 @@
       "Next": "Weitere Speicher",
       "Page": "{page} / {pages} · {count} Speicher",
       "SaveFailed": "Kraftspeicher konnten nicht gespeichert werden. Bitte den Dialog erneut öffnen und noch einmal versuchen.",
-      "OpenFailed": "Der Kraftspeicherdialog konnte nicht geöffnet werden."
+      "OpenFailed": "Der Kraftspeicherdialog konnte nicht geöffnet werden.",
+      "SavedAtOnce": "Änderungen werden sofort gespeichert."
     },
     "EnergyZones": {
       "Summary": "{name}: {value} von {max} Zonen-LeP",

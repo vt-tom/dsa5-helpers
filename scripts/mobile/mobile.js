@@ -10,6 +10,7 @@ import { initTouchContext } from './touch-context.js';
 import { initChat } from './chat.js';
 import { initJournal } from './journal.js';
 import { isFoundry13 } from '../compat/runtime.js';
+import { setPowerCharge } from '../compat/powersource-dialog.js';
 
 export const MODULE_ID = 'dsa5-helpers';
 const MODES = ['auto', 'phone', 'tablet', 'foundry'];
@@ -65,6 +66,57 @@ function openMenuSheet(el, app) {
     if (b.dataset.do === 'theme') theme?.click();
     else if (b.dataset.do === 'playerview') playerView?.click();
   });
+  el.append(wrap);
+}
+
+/**
+ * Kraftspeicher auf dem Smartphone (F2 Variante B, Nutzerentscheidung 2026-10-28, Dummy mobile/kraftspeicher.html):
+ * statt des Rundmenüs ein Blatt von unten mit allen Speichern, je Zeile −/+ wie die LeP-Regler; jeder Tipp speichert
+ * sofort (setPowerCharge). Die Anzeige folgt dem lokalen Stand, die Schreibvorgänge laufen nacheinander.
+ */
+function openPowerSheet(el, app) {
+  const actor = app.actor;
+  const segments = actor.powersource?.segments ?? [];
+  if (!segments.length || !actor.isOwner) return;
+  el.querySelector('.dsa5h-m-power-backdrop')?.remove();
+  const loc = key => game.i18n.localize(`DSA5HELPERS.PowerSources.${key}`);
+  const esc = foundry.utils.escapeHTML;
+  const values = segments.map(s => s.value);
+  let queue = Promise.resolve();
+  const wrap = document.createElement('div');
+  wrap.className = 'dsa5h-m-more-backdrop dsa5h-m-power-backdrop';
+  const render = () => {
+    const sum = `${values.reduce((a, v) => a + v, 0)} / ${segments.reduce((a, s) => a + s.max, 0)} ${game.i18n.localize('CHARAbbrev.AsP')}`;
+    wrap.innerHTML = `<div class="dsa5h-m-more-sheet dsa5h-m-power-sheet" role="dialog" aria-label="${esc(loc('Title'))}">
+      <div class="dsa5h-m-grip"></div>
+      <div class="dsa5h-m-power-head"><span>${esc(loc('Title'))}</span><small>${esc(sum)}</small><button type="button" data-do="close" aria-label="${esc(game.i18n.localize('DSA5HELPERS.Close'))}"><i class="fa-solid fa-xmark" inert></i></button></div>
+      <div class="dsa5h-m-power-list">${segments.map((s, i) => {
+        const name = s.itemName ?? s.label, sub = s.name && s.name !== name ? s.name : '';
+        return `<div class="dsa5h-m-power-row">
+          <span class="dsa5h-m-power-name">${esc(name)}${sub ? `<small>${esc(sub)}</small>` : ''}</span>
+          <span class="dsa5h-m-stepper"><button type="button" data-i="${i}" data-step="-1" aria-label="${esc(game.i18n.format('DSA5HELPERS.Mobile.Decrease', { name }))}"${values[i] <= 0 ? ' disabled' : ''}>−</button><output>${values[i]} / ${s.max}</output><button type="button" data-i="${i}" data-step="1" aria-label="${esc(game.i18n.format('DSA5HELPERS.Mobile.Increase', { name }))}"${values[i] >= s.max ? ' disabled' : ''}>+</button></span>
+          <span class="dsa5h-m-power-meter" aria-hidden="true"><span style="width:${s.max ? values[i] / s.max * 100 : 0}%"></span></span>
+        </div>`;
+      }).join('')}</div>
+      <p class="dsa5h-m-power-hint">${esc(loc('SavedAtOnce'))}</p>
+    </div>`;
+  };
+  wrap.addEventListener('click', ev => {
+    const b = ev.target.closest('button');
+    if (ev.target === wrap || b?.dataset.do === 'close') return wrap.remove();
+    if (!b?.dataset.step) return;
+    const i = Number(b.dataset.i), source = segments[i];
+    const next = Math.max(0, Math.min(source.max, values[i] + Number(b.dataset.step)));
+    if (next === values[i]) return;
+    values[i] = next;
+    render();
+    wrap.querySelector(`button[data-i="${i}"][data-step="${b.dataset.step}"]:not(:disabled)`)?.focus();
+    queue = queue.then(() => setPowerCharge(actor, source, next)).catch(error => {
+      console.error('dsa5-helpers | Kraftspeicher konnten nicht gespeichert werden', error);
+      ui.notifications.error(loc('SaveFailed'));
+    });
+  });
+  render();
   el.append(wrap);
 }
 
@@ -185,8 +237,15 @@ function setupPhoneSheet(el, app) {
   addInventoryChips(el, app);
   if (el.dataset.dsa5hPhone) return;
   el.dataset.dsa5hPhone = '1';
+  // Kugel „KS“ an den AsP: Blatt statt Rundmenü (vor dem Aktions-Handler des Bogens)
   el.addEventListener('click', ev => {
-    const button = ev.target.closest('.dsa5h-m-stepper button[data-step]');
+    if (!ev.target.closest('.dsa5h-power-satellite')) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    openPowerSheet(el, app);
+  }, true);
+  el.addEventListener('click', ev => {
+    const button = ev.target.closest('.dsa5h-m-stepper[data-res] button[data-step]');
     if (!button) return;
     const res = button.closest('.dsa5h-m-stepper').dataset.res;
     const status = app.actor.system.status[res];
@@ -234,6 +293,25 @@ function setupTabletSheet(el) {
   refreshBadges();
 }
 
+/**
+ * Klein = Probendialog des Systems, sonst ohne eigenes Dokument und am Desktop schmaler als 600 px und nicht fest
+ * 500 px oder höher (Ladedialog, Statuswert …). Lesefenster wie das Changelog bleiben so Vollbild.
+ */
+function isSmallWindow(app, el) {
+  if (el.querySelector('.dialog-form') || el.matches('.dialog, .dialog-dsa5')) return true;
+  if (app.document || app.object instanceof foundry.abstract.Document) return false;
+  const ImagePopout = foundry.applications.apps?.ImagePopout;
+  if (ImagePopout && app instanceof ImagePopout) return false;
+  const { width, height } = app.options?.position ?? app.options ?? {};
+  return !(typeof width === 'number' && width >= 600) && !(typeof height === 'number' && height >= 500);
+}
+
+function hasMenuControls(app) {
+  if (typeof app._getHeaderControls !== 'function') return true;
+  const visible = c => (typeof c.visible === 'function' ? c.visible.call(app) : c.visible ?? true);
+  return app.document ? true : app._getHeaderControls().some(c => c.action !== 'detach' && visible(c));
+}
+
 /** Im init-Hook aufrufen. */
 export function initMobile() {
   // Die v13-Ausgabe unterstützt ausschließlich den Desktop-Bogen.
@@ -273,6 +351,12 @@ export function initMobile() {
   initTouchContext();
   initChat();
   initJournal();
+  // Anwendungen immer hell (Nutzerentscheidung 2026-10-28): DSA5 hängt seine dunklen Farben an body.theme-dark, auf
+  // dem Pergament ist der Text dann kaum lesbar (auch am Desktop). Foundry setzt die Klasse bei jeder Änderung von
+  // core.uiConfig neu, daher danach erneut. Die Oberfläche (Seitenleiste, Panels) hat ein eigenes Thema.
+  const lightApps = () => document.body.classList.replace('theme-dark', 'theme-light');
+  Hooks.once('ready', lightApps);
+  Hooks.on('clientSettingChanged', key => { if (key === 'core.uiConfig') setTimeout(lightApps, 0); });
   Hooks.once('ready', () => {
     initShell(mode, { chosen, detected: detectMode() });
     // „Desktop-Website“ (Chrome/Android u. a.): Der Browser ignoriert die Viewport-Angabe und baut die Seite ~980 px
@@ -281,10 +365,20 @@ export function initMobile() {
   });
 
   // Fenster (Bögen, Probendialoge, Journal …) bildschirmfüllend; die Kennzeichnung übernimmt das CSS.
+  // Kleine Fenster ohne Dokument werden Blätter von unten (MOBILE.md 15.3, Schritt 2); „⋮“ entfällt, wenn sein Menü
+  // nur „Fenster lösen“ enthielte (mobil ohne Sinn).
   const markWindow = (app, element) => {
     const el = element instanceof HTMLElement ? element : element?.[0];
     if (!el || !(el.classList.contains('window-app') || app.hasFrame)) return;
     el.classList.add('dsa5h-m-window');
+    el.classList.toggle('dsa5h-m-sheetwin', isSmallWindow(app, el));
+    el.classList.toggle('dsa5h-m-noctrl', !hasMenuControls(app));
+    // Systemfenster immer hell, auch bei dunklem Blatt-Thema je Dokument (siehe lightApps unten). Unser Bogen hat ein
+    // eigenes Thema. Dunkles Thema mobil später überarbeiten (AUFGABEN.md).
+    if (!el.classList.contains('dsa5-helpers-sheet')) {
+      el.classList.remove('theme-dark');
+      el.classList.add('themed', 'theme-light');
+    }
     if (mode === 'phone' && el.classList.contains('dsa5-helpers-sheet')) setupPhoneSheet(el, app);
     if (mode === 'tablet' && el.classList.contains('dsa5-helpers-sheet')) setupTabletSheet(el);
   };
