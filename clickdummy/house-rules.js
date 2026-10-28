@@ -26,7 +26,7 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 // Font Awesome gibt es nur in Foundry — hier dieselben Klassen mit einem Zeichen als Ersatz.
-const FA = { "fa-khanda": "⚔", "fa-heart-pulse": "♥", "fa-handshake-angle": "🤝", "fa-book": "📖", "fa-book-open": "📖", "fa-list": "☰", "fa-chevron-left": "‹", "fa-chevron-right": "›" };
+const FA = { "fa-khanda": "⚔", "fa-shield-halved": "🛡", "fa-heart-pulse": "♥", "fa-handshake-angle": "🤝", "fa-book": "📖", "fa-book-open": "📖", "fa-list": "☰", "fa-chevron-left": "‹", "fa-chevron-right": "›" };
 const icon = (cls) => el("i", { class: cls, inert: "" }, FA[cls.split(" ").find((c) => FA[c])] ?? "");
 
 // page: 0 = Inhaltsverzeichnis, 1… = Regeln (wie im Modul); turn = Blätterrichtung für die Animation.
@@ -74,6 +74,15 @@ function maneuverToggle(id) {
 
 // Seiteninhalt je Regel — Gegenstück zu templates/house-rules/<regel>.hbs.
 const PAGES = {
+  passiveDefense: () => {
+    const P = H + "passiveDefense.Page.";
+    return [
+      el("section", { class: "dsa5h-hr-section" }, [el("p", {}, t(P + "Intro")), el("p", { class: "dsa5h-hr-note" }, t(P + "Formula"))]),
+      el("section", { class: "dsa5h-hr-section" }, [el("h3", {}, t(P + "ScopeTitle")), el("p", {}, t(P + "Scope"))]),
+      el("section", { class: "dsa5h-hr-section" }, [el("h3", {}, t(H + "HowTo")), el("ol", {}, [1, 2, 3, 4].map((n) => el("li", {}, t(P + "Step" + n))))]),
+      el("section", { class: "dsa5h-hr-section" }, [el("h3", {}, t(H + "Notes")), el("ul", {}, [1, 2, 3, 4].map((n) => el("li", {}, t(P + "Note" + n))))]),
+    ];
+  },
   maneuvers: () => {
     const box = document.createElement("div");
     box.innerHTML = MANEUVER_PAGE.replace(/\{\{!.*?\}\}/gs, "").replace(/\{\{> "[^"]*maneuver-toggle\.hbs" id="(\w+)"\}\}/g, '<span data-toggle="$1"></span>');

@@ -1,14 +1,15 @@
 /** Alternative presentation; all rule actions and actor updates are inherited from DSA5. */
 import { systemApi, isFoundry13, contextMenuEntries } from '../compat/runtime.js';
-const MODULE_ID = 'dsa5-helpers';
-// Unter dieser Inhaltsbreite (px) zeigt der Desktop-Bogen das Titelblatt einspaltig wie auf dem Smartphone.
-const NARROW_WIDTH = 560;
 import { openPowerSourceDialog } from '../compat/powersource-dialog.js';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
-import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, maneuverSheetData } from '../house-rules/rules.js';
+import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, maneuverSheetData, defenseChoices, setDefenseMode } from '../house-rules/rules.js';
 import { openHouseRules } from '../apps/house-rules.js';
 import { almanacTabEnabled, loadQuests, loadPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
+import { buildSuggestions, suggestionCount, suggestionsCollapsed, COLLAPSED_SETTING, COUNT_FLAG, COUNT_MIN, COUNT_MAX } from '../skill-suggestions/context.js';
+const MODULE_ID = 'dsa5-helpers';
+// Unter dieser Inhaltsbreite (px) zeigt der Desktop-Bogen das Titelblatt einspaltig wie auf dem Smartphone.
+const NARROW_WIDTH = 560;
 
 export function createCharacterSheet(BaseCharacterSheet = systemApi()?.sheets?.ActorSheetdsa5Character) {
 const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
@@ -32,6 +33,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       dsa5hToggleCompanionTab: this._toggleCompanionTab,
       dsa5hFavorite: this._toggleFavorite,
       dsa5hToggleHappyTalents: this._toggleHappyTalents,
+      dsa5hToggleSuggestions: this._toggleSuggestions,
+      dsa5hSuggestionCount: this._changeSuggestionCount,
       dsa5hOnlyLearned: this._toggleOnlyLearned,
       dsa5hClearTalentSearch: this._clearTalentSearch,
       postItem: this._postItem,
@@ -51,6 +54,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     // anything about the inheritance chain changes upstream; found live 2026-09-16: attribute-die clicks
     // (chValue, main.hbs) silently did nothing before this.
     ownerRollActions: {
+      dsa5hAnswerRequest: this._answerRequest,
       chValue: this._chValue,
       chStatus: this._chStatus,
       chRegenerate: this._chRegenerate,
@@ -80,6 +84,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       dsa5hConditionDown: this._dsa5hConditionDown,
       itemToggle: this._itemToggle,
       dsa5hEquip: { handler: this._dsa5hEquip, buttons: [0, 2] },
+      dsa5hTakeInHand: this._takeInHand,
       quantityClick: { handler: this._quantityClick, buttons: [0, 2] },
       onUseItem: { handler: this._onMacroUseItem, buttons: [0, 2] },
       chargeSpell: { handler: this._chargeSpell, buttons: [0, 2] },
@@ -242,6 +247,10 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const prepare = context.prepare ?? {};
     const localize = key => game.i18n.localize(key);
     const magic = prepare.magic ?? {};
+    // DSA7 liefert spell/ritual, DSA8 spellList/ritualList. Dieselben vorbereiteten
+    // Systemlisten für Magie-Reiter, Favoriten und Kampf-Zauberdialog verwenden.
+    magic.spellList ??= magic.spell ?? [];
+    magic.ritualList ??= magic.ritual ?? [];
     // Same flags the inherited header partial already uses to hide the AsP/KaP resource cards (SHEET.hasSpells/hasPrayers ==
     // actor.system.isMage/isPriest) — reused here so Magie/Religion only appear in the rail for characters that can use them,
     // exactly like the real system's own ActorSheetDsa5#_prepareTabs.
@@ -287,7 +296,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       try {
         // Derselbe Anzeigeweg wie Rüstkammer-IIs Bogen UND Bearbeiten-Dialog.
         // Die gespeicherten Actor-Felder können vor der ersten Initialisierung noch 0/0 sein.
-        const { default: EnergyZones } = await import('/modules/dsa5-armory2/modules/energyzones.js');
+        const { default: EnergyZones } = await import(foundry.utils.getRoute('modules/dsa5-armory2/modules/energyzones.js'));
         energyZones = EnergyZones.getZoneDisplayData(this.actor);
       } catch (error) {
         console.warn(`${MODULE_ID} | Zonenanzeige von Rüstkammer II nicht verfügbar`, error);
@@ -310,6 +319,16 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       { label: 'DSA5HELPERS.Tabs.inventory', equipment: true, items: equipment },
       { label: 'DSA5HELPERS.SpecialAbilities', special: true, items: Object.values(specs).flatMap(groups => groups.flatMap(group => group.items)) },
     ].map(group => ({ ...group, items: unique(group.items.filter(item => favorites[item._id])) })).filter(group => group.items.length);
+    // Talent-Vorschläge (Titelblatt, parts/suggestions.hbs): nur für Owner, die letzte Liste wirkt als leichter Bonus,
+    // damit Karten nicht bei jedem Neuzeichnen springen.
+    // Anzahl je Benutzer in den Moduleinstellungen, 0 = Panel aus (dann wird auch nichts berechnet).
+    const count = !limited && context.owner ? suggestionCount(this.actor) : 0;
+    const suggestions = count ? buildSuggestions(this.actor, skillGroups.flatMap(group => group.items), favorites, this._suggestionIds, count) : [];
+    this._suggestionIds = suggestions.filter(entry => !entry.messageId).map(entry => entry.id);
+    for (const entry of suggestions) {
+      const modifier = entry.modifier ? ` · ${entry.modifier > 0 ? '+' : '−'}${Math.abs(entry.modifier)}` : '';
+      entry.reasonLabel = localize('DSA5HELPERS.Suggestions.Reason.' + entry.reason) + modifier;
+    }
     // Hintergrundgeschichte/Notizen/Private Notizen/GM-Notizen als Unter-Tabs statt vier gestapelter Volltext-Panels
     // (Nutzer-Feedback 2026-09-19) — Sichtbarkeit der letzten beiden Reiter folgt denselben Bedingungen wie bisher
     // die Panels selbst ({{#if owner}}/{{#if isGM}} in notes.hbs).
@@ -353,6 +372,12 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     context.dsa5h = {
       supportsCompanions: typeof this.prepareCompanionTab === 'function',
       legacySystem: isFoundry13(),
+      suggestions,
+      suggestionsCollapsed: count ? suggestionsCollapsed() : false,
+      suggestionsCount: count,
+      suggestionsFewer: count > COUNT_MIN,
+      suggestionsMore: count < COUNT_MAX,
+      suggestionsRequested: suggestions.filter(entry => entry.messageId).length,
       sheetId: this.id, powerSources, limited, tabs, subnav, skillGroups, favorites, favoriteGroups, weaponGroups, combatSkillGroups, combatSkillIndex, specs,
       phone,
       // Status-Kacheln auf dem Smartphone (MOBILE.md 14.3, Dummy 17): Schmerz und Belastung aus den Zuständen des Systems,
@@ -419,6 +444,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       helpAction: !limited && isRuleActive('helpAction'),
       // Grundmanöver (Paladose, #45): Stufen und Knöpfe im Kampf-Reiter.
       maneuvers: !limited && isRuleActive('maneuvers') ? maneuverSheetData(this.actor) : null,
+      // Passive Verteidigung (#56): Auswahl je Held im Kampf-Reiter, nur für Besitzer.
+      autoDefense: !limited && this.actor.isOwner && isRuleActive('passiveDefense') ? { choices: defenseChoices(this.actor) } : null,
       body,
       happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
@@ -434,6 +461,17 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       context.dsa5h.planner = { tabs: { [PLANNER_TAB_ID]: { cssClass: 'active', group: 'sheet' } } };
     }
     return context;
+  }
+
+  // DSA5 7.5.1 (v13) mit „Reiter außerhalb des Bogens“ (tabsOutsideSheet) hängt beim ersten Rendern ein leeres
+  // .sheet-body samt .main-content ins Fenster und setzt vertical-tabs; unser Bogen hat keine .tab-Bereiche dafür, der
+  // leere Kasten nahm per flex die halbe Höhe (Rückmeldung 2026-10-28: Inhalt nur im oberen Drittel). Wieder entfernen.
+  async _onFirstRender(context, options) {
+    await super._onFirstRender(context, options);
+    for (const body of this.element.querySelectorAll(':scope > .window-content > .sheet-body')) {
+      if (!body.querySelector('.dsa5h-main, .dsa5h-tab')) body.remove();
+    }
+    this.element.classList.remove('vertical-tabs');
   }
 
   async _onRender(context, options) {
@@ -458,6 +496,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       if (event.key === 'ArrowDown') { event.preventDefault(); this._openPowerSources(sourceAnchor, 0, true); }
     });
     // Listener des Planer-Reiters (Anwenden/Verwerfen) — jedes Rendern baut den Reiter neu, also jedes Mal.
+    this.element.querySelector('.dsa5h-auto-defense-select')?.addEventListener('change', event => setDefenseMode(this.actor, event.target.value));
     const plannerElement = context.dsa5h.planner && this.element.querySelector('.steigerungsplaner-tab');
     if (plannerElement) getPlannerTab()?.attachListeners(this, plannerElement);
     if (this._pendingScrollTop) this.element.querySelector('.dsa5h-content')?.scrollTo({ top: this._pendingScrollTop });
@@ -723,8 +762,11 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
         return [];
       }
     });
+    // Mehr als zwei angelegte Waffen ohne Handzuordnung (ältere Daten, Ziehen in den Kampf-Reiter des Systembogens; v13-Welt
+    // 2026-10-28): das System liest wie wir nur Haupt- und Nebenhand, die übrigen bleiben angelegt. Eigener Abschnitt
+    // „Ebenfalls angelegt“ statt unauffällig unter „Weitere Waffen“ (Nutzer-Entscheidung 2026-10-28), Daten unverändert.
+    const alsoWorn = worn.filter(w => w !== main && w !== off).map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true, takeInHand: true }));
     const others = [
-      ...worn.filter(w => w !== main && w !== off).map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true })),
       ...unworn.map(item => ({ item, ranged: item.type === 'rangeweapon', equip: true, container: this._containerInfo(item) })),
       ...(prepare.traits?.meleeAttack ?? []).map(item => ({ item, ranged: false })),
       ...(prepare.traits?.rangeAttack ?? []).map(item => ({ item, ranged: true })),
@@ -744,6 +786,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
         tooltip: `${esc(item.name)}: ${esc(game.i18n.localize('CHARAbbrev.RS'))} ${item.system?.protection?.value ?? 0}, ${esc(game.i18n.localize('DSA5HELPERS.EncumbranceAbbr'))} ${item.system?.calculatedEncumbrance ?? 0}`,
       })) : [],
       // Freie bzw. von der beidhändigen Waffe belegte Seite: im schmalen Bogen nimmt sie die Rüstung auf (CSS, Abschnitt 18).
+      alsoWorn,
       freeSide: mainTwoHanded ? (twoHandedSide === 'left' ? 'right' : 'left') : !off ? 'right' : !main ? 'left' : null,
       zones: this._armorZones(armor, energyZones),
       encumbrance,
@@ -1223,6 +1266,11 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // Griffwahl Haupthand / Nebenhand / Beidhändig (Nutzer-Feedback 2026-09-24). Die Menüeinträge rufen nur die
   // Hand-Logik des Systems auf (actor-dsa5.js equipWeaponToHand/swapWeaponHandSlot, meleeweapon.js
   // swapNumberWeaponHands); Menü-Aufbau wie im System (creature-sheet.js _traitCompanionContextMenu).
+  // „In die Hand“ an ebenfalls angelegten Waffen: dieselbe Handauswahl wie der Rechtsklick auf das Schild.
+  static _takeInHand(_event, target) {
+    return this.constructor._dsa5hEquip.call(this, { button: 2, preventDefault() {} }, target);
+  }
+
   static async _dsa5hEquip(event, target) {
     if (event.button !== 2) {
       const toggled = this.actor.items.get(this._getItemId(target));
@@ -1466,6 +1514,28 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     if (input) input.value = '';
   }
 
+  // Vorschläge ein-/ausklappen (Rückmeldung 2026-10-07): Zustand je Benutzer als Client-Setting, Umschalten direkt im DOM
+  // ohne Neuzeichnen — die übrigen offenen Bögen übernehmen ihn beim nächsten Neuzeichnen.
+  static async _toggleSuggestions(_event, target) {
+    const panel = target.closest('.dsa5h-suggest');
+    const collapsed = target.getAttribute('aria-expanded') === 'true';
+    target.setAttribute('aria-expanded', String(!collapsed));
+    panel?.classList.toggle('is-collapsed', collapsed);
+    const grid = panel?.querySelector('.dsa5h-suggest-grid');
+    if (grid) grid.hidden = collapsed;
+    const caret = target.querySelector('.dsa5h-suggest-caret');
+    if (caret) caret.textContent = collapsed ? '▸' : '▾';
+    await game.settings.set(MODULE_ID, COLLAPSED_SETTING, collapsed);
+  }
+
+  // Anzahl der Vorschläge im Bogen ändern (− / +, Zweierschritte 2–12): je Benutzer und Held als User-Flag, danach
+  // neu zeichnen — ein User-Flag zeichnet den Bogen nicht von selbst neu.
+  static async _changeSuggestionCount(_event, target) {
+    const next = Math.min(COUNT_MAX, Math.max(COUNT_MIN, suggestionCount(this.actor) + Number(target.dataset.step || 0)));
+    await game.user.setFlag(MODULE_ID, COUNT_FLAG, { [this.actor.id]: next });
+    this.render();
+  }
+
   static _toggleHappyTalents() {
     this._happyTalentsExpanded = !this._happyTalentsExpanded;
     this._applyCurrentTab();
@@ -1673,6 +1743,15 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static async _consume(_event, target) {
     const item = this.actor.items.get(this._getItemId(target));
     if (item) await this.consumeItem(item);
+  }
+
+  // Offene Probenanfrage aus den Talent-Vorschlägen beantworten: über den RollRequestService des Systems (nur DSA8),
+  // damit die Chatkarte der SL das Ergebnis bekommt.
+  static async _answerRequest(_event, target) {
+    if (!this.actor.isOwner) return;
+    const service = systemApi()?.queries?.RollRequestService;
+    if (!service || !target.dataset.which) return;
+    await service.triggerRollFromCard(target.dataset.which, this.actor.id);
   }
 
   // Hausregel Wundeinschätzung (Knigge): ohne markiertes Ziel nur ein Hinweis direkt am Knopf, sonst der normale

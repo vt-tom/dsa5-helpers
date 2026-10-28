@@ -200,6 +200,11 @@
       "PersonaeTab": {
         "Name": "“People” tab",
         "Hint": "Shows the shared Dramatis Personae and bestiary entries of the almanac in the hero sheet. Only appears if persona journals are activated in the almanac."
+      },
+      "SkillSuggestions": {
+        "Name": "Skill suggestions on the cover page",
+        "Hint": "How many skills the character sheet suggests above the favorites (requested checks, frequently rolled skills, good odds, etc.). Applies to characters where you have not changed the number on the sheet (− / + in the \"Suggestions\" title). \"Off\" hides the suggestions everywhere. Applies to you only.",
+        "Off": "Off"
       }
     },
     "Changelog": {
@@ -508,6 +513,54 @@
           "RollFlavor": "Targeted hit ({zone}): additional sDP",
           "NotOwner": "The condition is set by the GM or whoever controls the target."
         }
+      },
+      "passiveDefense": {
+        "Title": "Passive defense",
+        "Summary": "Actors can defend automatically: if the attack succeeds, the module openly rolls a d20 against the chosen or best defense – no reaction dialog.",
+        "OtherScene": "Passive defense: the target is not on the scene you are viewing – please let it defend as usual.",
+        "Block": "Defense against attacks",
+        "BlockHint": "Applies to attacks on this hero while the house rule is active.",
+        "Mode": {
+          "manual": "Roll yourself (normal rule)",
+          "best": "Automatic: best defense",
+          "option": "Automatic: {name} ({value})",
+          "missing": "Automatic: chosen weapon not equipped – best defense",
+          "Menu": "Passive defense …",
+          "Hint": "How does {name} defend when attacked?",
+          "Save": "Apply",
+          "Short": {
+            "manual": "manual",
+            "best": "best",
+            "dodge": "dodge",
+            "parryWeaponless": "unarmed"
+          },
+          "HudHint": "How does the selected token defend when attacked? Click to change."
+        },
+        "Chat": {
+          "hit": "{attacker} hits {defender}.",
+          "defended": "{defender} fends off the attack of {attacker}.",
+          "miss": "The attack of {attacker} on {defender} fails.",
+          "Roll": "Defense (d20): {roll}",
+          "GMTitle": "Passive defense (GM only)",
+          "GMLine": "AT {at} succeeded (d20 {d20}). Defense with {option}: D {defense}, rolled {roll} – fended off at {defense} or less.",
+          "Option": "Defense",
+          "Base": "Base",
+          "Mods": "Mod."
+        },
+        "Page": {
+          "Intro": "Fights run faster when not every attack needs a reaction dialog. With this house rule actors can defend automatically: the attacker targets and rolls the attack as usual. If it succeeds, the module immediately and openly rolls a d20 against the target's defense.",
+          "Formula": "Fended off on d20 ≤ D – like a normal parry or dodge. Every successful attack is fended off just as often as with the reaction dialog. Example AT 13 vs. D 6: the attack succeeds 65 % of the time, 30 % of those are fended off.",
+          "ScopeTitle": "For whom?",
+          "Scope": "Set per actor: in the hero sheet under Combat › Body (“Defense against attacks”), for NPCs and creatures in the ⋮ menu of the system sheet. Choose “Roll yourself” (normal rule), “Automatic: best defense” or a specific weapon or dodge. Without a choice player characters roll themselves, NPCs and creatures defend automatically with their best option.",
+          "Step1": "Target and attack as usual (melee or ranged).",
+          "Step2": "The chosen option counts as defense, otherwise the highest of dodge, unarmed parry, worn weapons and shields or a creature's parry – against ranged attacks only dodge and shields. Conditions, further defenses in the round, feint and similar penalties are included; after a 1 on the attack the defense is halved (rounded).",
+          "Step3": "If the attack roll fails, the attack is over. If it succeeds, the module rolls the d20 for the defense.",
+          "Step4": "On a hit, damage follows as for an undefended attack, otherwise the chat reports the defense. The GM can expand the calculation on the chat card.",
+          "Note1": "A defense counts as used when the attack roll succeeded.",
+          "Note2": "A fate point on the attack also rerolls the defense; an old hit card disappears if the attack is now fended off. Damage already applied must then be corrected by hand.",
+          "Note3": "Critical parries, parry botches and abilities requiring a critical parry do not apply to the automatic defense.",
+          "Note4": "The GM must be logged in and view the target's scene. Without a target and for attacks of opportunity the normal flow applies."
+        }
       }
     },
     "NoConditions": "No conditions.",
@@ -647,7 +700,15 @@
     "Hud": {
       "Tab": "DSA5 Helpers",
       "Settings": "Settings",
-      "Rules": "House rules"
+      "Rules": "House rules",
+      "Short": {
+        "help": "Help",
+        "woundCheck": "Wounds",
+        "stance": "Stance",
+        "aim": "Aim",
+        "weakness": "Weakness",
+        "passiveDefense": "Defense"
+      }
     },
     "Almanac": {
       "Open": "Open almanac",
@@ -687,6 +748,31 @@
       "Summary": "{name}: {value} of {max} zone LP",
       "Failed": "Zone failed",
       "Penalty": "Resistance penalty {value}"
-    }
+    },
+    "Suggestions": {
+      "Title": "Suggestions",
+      "Reason": {
+        "requested": "Requested",
+        "mention": "Mentioned in chat",
+        "usage": "Rolled often",
+        "specialist": "Best in the group",
+        "combat": "Useful in combat",
+        "advanced": "Recently improved",
+        "chance": "Good odds",
+        "classic": "Common check"
+      },
+      "RequestedCount": "{count} requested",
+      "Count": "Number of suggestions",
+      "Fewer": "Fewer suggestions",
+      "More": "More suggestions",
+      "SkillNames": {
+        "intimidation": "Intimidation",
+        "empathy": "Empathy",
+        "stealth": "Stealth"
+      }
+    },
+    "AlsoWorn": "Also equipped",
+    "AlsoWornHint": "These weapons are equipped but not assigned to a hand. You can still roll; “Take in hand” assigns them via the system's hand selection.",
+    "TakeInHand": "Take in hand"
   }
 }

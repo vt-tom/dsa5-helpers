@@ -27,18 +27,26 @@ wählen.
 
 **Voraussetzungen:** Foundry VTT v14 (≥ 14.364), System DSA5 ≥ 8.1.5.
 
-### Lokale v13-Testausgabe (Beta 0.6.2)
+### Beta für Foundry v13 (seit 0.6.2)
 
-Für Foundry **13.351 mit DSA5 7.5.1** gibt es eine getrennte Desktop-Testausgabe. Paket erzeugen:
+Für Foundry **13.351 mit DSA5 7.5.1** gibt es eine getrennte Desktop-Beta mit eigenem Kanal. In der v13-Installation
+diese Manifest-URL eintragen:
 
-```powershell
-python tools/package-module.py --foundry 13
+```text
+https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13-beta/module.json
 ```
 
-Der Befehl gibt den Pfad zum geprüften ZIP und zum fertigen Ordner `dsa5-helpers` unter `.deploy/packages/` aus.
-Den fertigen Ordner in das `Data/modules/` der **v13-Installation** kopieren (nicht in den Development-Ordner),
-anschließend Foundry neu laden, Modul aktivieren und den Heldenbogen auswählen. Bestehenden Modulordner vorher sichern;
-Weltdaten müssen weder kopiert noch migriert werden. Die entsprechenden v13-Web-/Update-Links sind noch nicht veröffentlicht.
+Updates kommen dann nur aus diesem Kanal, die v14-Ausgabe wird nie angeboten. Weltdaten müssen weder kopiert noch
+migriert werden. Gebaut wird die Ausgabe vom Branch `v13` (Ablauf in [docs/RELEASE.md](docs/RELEASE.md)).
+
+Lokal bauen und einspielen (Entwicklung), mit Sicherung des alten Modulordners unter
+`D:\FoundryBackups\<Zeit>\dsa5-helpers-v13\previous-module` und SHA-256-Prüfung:
+
+```powershell
+python tools/package-module.py --foundry 13 --install D:/FoundryVTT/user-data-paths/v13/Data
+```
+
+Danach im Browser F5; Foundry selbst muss nicht neu starten.
 
 V13 bietet vorhandene DSA7-Funktionen einschließlich Reittier im Kampf-Reiter und magischer Traditionsartefakte.
 Gefährten-/Auftragsverwaltung, neue Zeremonialgegenstände, Kraftspeicher, Lebensenergiezonen und Modul-Mobiloberfläche

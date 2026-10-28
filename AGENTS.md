@@ -52,7 +52,7 @@
 - Generierte Dateien niemals von Hand bearbeiten (Kopfkommentare beachten); Fensterrahmen über `node tools/gen-frame.cjs` erzeugen.
 - Nutzerseitig sichtbare Änderungen im selben Zug im kommenden unveröffentlichten CHANGELOG-Abschnitt dokumentieren.
 - Tests: `node tests/sheet.test.cjs` prüft echte Templates statisch gegen Foundry v14 und DSA5, keine Interaktionssimulation. Echte Klicks/Eingaben brauchen eine Live-Prüfung; keine unbelegten Abnahmen behaupten.
-- Nutzerinstanzen (pm2, Ports 30000/30001) und ihre Welten niemals anfassen. Für Mobil-Tests ist nur eine eigene temporäre Foundry-Instanz im Scratchpad mit kopierter Welt DSA5, Verzeichnis-Verknüpfungen für System/Module und Port 30077 erlaubt.
+- Nutzerinstanzen (pm2, Ports 30000/30001/30002) und ihre Welten niemals anfassen. Für Tests ist nur eine eigene temporäre Foundry-Instanz im Scratchpad auf Port 30077 erlaubt: v14 mit kopierter Welt DSA5 (`user-data-paths/v14`), v13 (Nutzerfreigabe 2026-10-28) mit kopierter Welt `dsa` aus `user-data-paths/v13`; System/Module per Verzeichnis-Verknüpfung, `dsa5-helpers` unter v13 auf ein mit `tools/package-module.py --foundry 13` gebautes Paket (das Quellmanifest verlangt v14). Ausnahme zum Anfassen: `package-module.py --install` in die v13-Testwelt bzw. `deploy-foundry.ps1 deploy` nur auf Nutzerauftrag.
 - Mobile Support ist seit 0.6.0 Beta integriert; `feature/mobile` existiert nicht mehr. Arbeit auf `release/<version>`, Merge nach `main` erst nach Nutzerfreigabe.
 
 ## Arbeitskopie und Foundry-Kopie

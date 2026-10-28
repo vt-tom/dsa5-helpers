@@ -4,4 +4,7 @@ Thumbs.db
 node_modules/
 .deploy/
 __pycache__/
+# Lokale Testablagen (Logs, Screenshots, Unterlagen), nie ins Repo
+tmp/
+.playwright-mcp/
 *.pyc

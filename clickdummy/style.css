@@ -3162,6 +3162,156 @@ button.fav-chip-roll {
   }
 }
 
+/* --- Vorschläge --- */
+
+/* Talent-Vorschläge über den Favoriten (suggestionsPanel() in script.js, Nutzerwunsch 2026-10-06): genau zwei Spalten,
+   zweizeilig: Name | FW, darunter Grund | Probe, der Favoritenstern direkt hinter dem Namen — ohne Bild. Anfragen mit Akzentkante. */
+.suggest-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  padding: 10px 11px;
+}
+
+/* Titel als Klappknopf (Rückmeldung 2026-10-07), eingeklappt mit Hinweis auf offene Anfragen. */
+.suggest-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.suggest-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Pfeil links, nur der Titel mittig (Rückmeldung 2026-10-07). */
+.suggest-title {
+  flex: 1;
+  text-align: center;
+}
+
+/* Anzahl − n + rechts im Titel, eingeklappt ausgeblendet. */
+.suggest-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'GentiumBasic',Georgia,serif;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.suggest-count[hidden] {
+  display: none;
+}
+
+.suggest-count > span {
+  min-width: 1.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.suggest-count button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1;
+}
+
+.suggest-count button:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.suggest-caret {
+  display: inline-block;
+  width: 1em;
+  font-size: var(--fs-small);
+}
+
+.suggest-badge {
+  margin-left: auto;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font-family: 'GentiumBasic',Georgia,serif;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.suggest-badge[hidden] {
+  display: none;
+}
+
+.fav-card.suggest-card {
+  /* Name reicht über die Würfelspalte bis zum FW; nur der Grund teilt sich die Zeile mit den Würfeln. */
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "name name value" "reason roll roll";
+  gap: 2px 6px;
+  padding: 4px 6px 4px 8px;
+}
+
+.suggest-card .suggest-name {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.suggest-card .fav-star {
+  flex: none;
+}
+
+.suggest-card .fav-card-value {
+  grid-area: value;
+  justify-self: end;
+}
+
+.suggest-card .suggest-reason {
+  grid-area: reason;
+}
+
+.suggest-card .fav-card-roll {
+  grid-area: roll;
+  justify-content: end;
+}
+
+.suggest-card.suggest-requested {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.suggest-reason {
+  font-size: var(--fs-meta);
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.suggest-requested .suggest-reason {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 /* ==========================================================================
    8. Eigenschaften
    ========================================================================== */
@@ -4519,6 +4669,17 @@ button.fav-chip-roll {
   padding-top: 2px;
 }
 
+/* „In die Hand“ an ebenfalls angelegten Waffen (2026-10-28), gleiche Trefferfläche wie der Ausrüsten-Knopf. */
+.take-in-hand {
+  width: var(--hit-md);
+  height: var(--hit-md);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+}
+
+
 /* Kurzübersicht der übrigen Waffen (statt der Waffentabellen): Bild | Name + Technik | Würfel | TP | Stern */
 /* Zweispaltig erst ab genug Breite (wie im Modul, Rückmeldung 2026-10-05). */
 .short-weapons {
@@ -5413,6 +5574,14 @@ button.fav-chip-roll {
 
 .armor-zones .hand-card .hand-stats .damage-roll {
   height: 30px;
+}
+
+
+/* Passive Verteidigung (#56): Auswahl, womit der Held automatisch verteidigt (Gegenstück zu body.hbs). */
+.auto-defense-panel select {
+  width: 100%;
+  min-height: var(--hit-lg);
+  font-size: var(--fs-base);
 }
 
 
@@ -8145,6 +8314,21 @@ button.fav-chip-roll {
   font-size: var(--fs-meta);
 }
 
+/* Passive Verteidigung (#56): Schalter je Geltungsbereich (Spielercharaktere / alle anderen). */
+.dsa5-helpers-house-rules .dsa5h-hr-scope {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-scope li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+}
+
 .dsa5-helpers-house-rules .dsa5h-hr-maneuver-table {
   width: auto;
   min-width: 60%;
@@ -8544,5 +8728,181 @@ button.fav-chip-roll {
 @media (hover: hover) {
   .sheet-resize:hover {
     filter: brightness(1.3);
+  }
+}
+
+
+/* --- DSA-Leiste (hud-preview.js): Modul-Reiter, Variante B (Nutzer-Entscheidung 2026-10-28) --- */
+/* Nachbau des Modul-Reiters in der Systemleiste als Design-Referenz für scripts/hud.js. */
+.hudp {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(720px, calc(100vw - 24px));
+  transform: translateX(-50%);
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+
+.hudp-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(20, 16, 12, .92);
+  color: #f0e4cc;
+  font-size: 13px;
+}
+
+.hudp-controls button {
+  min-height: var(--hit-sm);
+  padding: 0 8px;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hudp-title {
+  margin-right: auto;
+}
+
+.hudp-controls button[aria-pressed="true"] {
+  border-color: #e0c48c;
+  background: rgba(224, 192, 128, .25);
+}
+
+.hudp-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.hudp-tab {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  border-radius: 6px 6px 0 0;
+  background: rgba(255, 255, 255, .06);
+  font-size: 15px;
+}
+
+.hudp-tab img {
+  width: 24px;
+  height: 24px;
+}
+
+.hudp-tab.active {
+  background: rgba(120, 160, 220, .35);
+  box-shadow: inset 0 -2px 0 #9cc0f0;
+}
+
+.hudp-section {
+  min-height: 52px;
+}
+
+.hudp-glyph {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.hudp-badge {
+  padding: 0 5px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .35);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.hudp-tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .07);
+  color: #f0e4cc;
+  cursor: pointer;
+}
+
+.hudp-tile.active {
+  border-color: #e0c48c;
+  background: radial-gradient(circle at 50% 40%, rgba(224, 192, 128, .55), rgba(224, 192, 128, .15));
+  box-shadow: 0 0 8px rgba(224, 192, 128, .7);
+}
+
+.hudp-tile .hudp-badge {
+  position: absolute;
+  right: -4px;
+  bottom: -5px;
+  background: #b3241a;
+  color: #fff;
+}
+
+.hudp-tile.named {
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 2px;
+  width: 64px;
+  height: 40px;
+}
+
+.hudp-short {
+  overflow: hidden;
+  max-width: 64px;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hudp-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(224, 192, 128, .35);
+}
+
+.hudp-mini {
+  width: var(--hit-md);
+  height: var(--hit-md);
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .06);
+  color: #f0e4cc;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hudp-note {
+  min-height: 1.2em;
+  margin: 0;
+  color: #f0e4cc;
+  font-size: 13px;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+
+.hudp button:focus-visible {
+  outline: 2px solid #e0c48c;
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .hudp-tile:hover,
+  .hudp-mini:hover {
+    background: rgba(224, 192, 128, .3);
   }
 }

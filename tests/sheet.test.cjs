@@ -61,11 +61,12 @@ const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code.replace(/['"
 // Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
 // help-action.js importiert maneuvers.js relativ (hideModifierRows).
 function helpActionUrl(){return dataUrl(read('scripts/house-rules/help-action.js').replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))));}
-function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(helpActionUrl())).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))).replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))).replace("'./hit-consequences.js'",JSON.stringify(dataUrl(read('scripts/house-rules/hit-consequences.js')))));}
+function suggestionsUrl(){return dataUrl(read('scripts/skill-suggestions/context.js').replace("'./score.js'",JSON.stringify(dataUrl(read('scripts/skill-suggestions/score.js')))));}
+function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(helpActionUrl())).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))).replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))).replace("'./hit-consequences.js'",JSON.stringify(dataUrl(read('scripts/house-rules/hit-consequences.js')))).replace("'./passive-defense.js'",JSON.stringify(dataUrl(read('scripts/house-rules/passive-defense.js')))));}
 function houseRulesAppUrl(){return dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())));}
 // Echter Anzeigehelfer aus der installierten Rüstkammer II, keine nachgebaute Berechnung.
 function energyZonesUrl(){const dir=path.join(dataRoot,'modules/dsa5-armory2/modules');if(!fs.existsSync(path.join(dir,'energyzones.js')))return 'file:///unavailable-armory-test-module.js';return dataUrl(fs.readFileSync(path.join(dir,'energyzones.js'),'utf8').replace(/['"]\.\/hitlocation\.js['"]/,JSON.stringify(dataUrl(fs.readFileSync(path.join(dir,'hitlocation.js'),'utf8')))));}
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={release:{generation:targetGeneration},i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};if(targetGeneration===13)delete global.dsa5.sheets.ActorSheetdsa5Character.prototype.prepareCompanionTab;({Dsa5HelpersCharacterSheet:Sheet,createCharacterSheet:createSheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/powersource-dialog.js'",JSON.stringify(dataUrl(read('scripts/compat/powersource-dialog.js')))).replace("'/modules/dsa5-armory2/modules/energyzones.js'",JSON.stringify(energyZonesUrl())).replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'./almanac.js'",JSON.stringify(dataUrl(read('scripts/sheets/almanac.js')))).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={release:{generation:targetGeneration},i18n:{localize,has:key=>(lookup(own,key)??lookup(de,key))!==undefined},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};if(targetGeneration===13)delete global.dsa5.sheets.ActorSheetdsa5Character.prototype.prepareCompanionTab;({Dsa5HelpersCharacterSheet:Sheet,createCharacterSheet:createSheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/powersource-dialog.js'",JSON.stringify(dataUrl(read('scripts/compat/powersource-dialog.js')))).replace("foundry.utils.getRoute('modules/dsa5-armory2/modules/energyzones.js')",JSON.stringify(energyZonesUrl())).replace("'../skill-suggestions/context.js'",JSON.stringify(suggestionsUrl())).replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'./almanac.js'",JSON.stringify(dataUrl(read('scripts/sheets/almanac.js')))).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
@@ -287,7 +288,7 @@ test('favorites for equipment and special abilities (#30): stars on inventory ro
  for(const row of rows)assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',row.children).length,1);
  assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-chip-fav')).length,2);
  const consume=elements(html,el=>el.attribs?.['data-action']==='dsa5hConsume');assert.equal(consume.length,1);
- const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name'));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
+ const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name')&&!(function inSuggest(n){return !!n&&(String(n.attribs?.class??'').includes('dsa5h-suggest-card')||inSuggest(n.parent));})(el));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
  let consumed;sheet.consumeItem=async i=>{consumed=i;};sheet._getItemId=()=>'potion';await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hConsume.call(sheet,{},{});assert.equal(consumed,potion);
 });
 test('aggregated tests can be added in play mode',async()=>{
@@ -658,7 +659,7 @@ test('Würfelstatistik (#28): Tage älter als 12 Monate werden zusammengefasst, 
 });
 // Hausregelbuch (2026-10-05): relative Importe werden wie bei loadSheet() durch data:-URLs ersetzt.
 const houseRuleModules=async()=>{const wound=dataUrl(read('scripts/house-rules/wound-check.js'));const help=helpActionUrl();const rules=houseRulesUrl();const app=dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(rules)));return {wound:await import(wound),help:await import(help),rules:await import(rules),app:await import(app)};};
-for(const p of ['templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs','templates/house-rules/help-action.hbs'])H.registerPartial('modules/dsa5-helpers/'+p,read(p));
+for(const p of ['templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs','templates/house-rules/help-action.hbs','templates/house-rules/passive-defense.hbs'])H.registerPartial('modules/dsa5-helpers/'+p,read(p));
 test('Hausregel Wundeinschätzung: QS-Staffel und Veralten wie in Knigges World Script',async()=>{
  const {wound}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;const w=(qs,cur,max=40)=>wound.woundText(qs,cur,max,t);
  assert.equal(w(0,10),'Text.none');assert.equal(w(1,40),'Text.unhurt');assert.equal(w(1,39),'Text.hurt');
@@ -775,12 +776,12 @@ test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, 
  global.game={i18n:{localize},settings:{get:(_m,k)=>settings[k],async set(_m,k,v){settings[k]=v;}},get user(){return {isGM};}};
  global.foundry={applications:{api:{ApplicationV2:class{async _prepareContext(){return {};}_onRender(){}render(){this.rendered=(this.rendered??0)+1;}},HandlebarsApplicationMixin:B=>B},instances:new Map()}};
  const {rules,app}=await houseRuleModules();const App=app.getHouseRulesApp();const tpl=H.compile(read('templates/house-rules.hbs'));
- assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','VTTom'],['maneuvers','Paladose']]);
+ assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','VTTom'],['maneuvers','Paladose'],['passiveDefense','VTTom']]);
  const sheet=new App();missing.clear();let html=tpl(await sheet._prepareContext({}));
- assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,3);
+ assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,4);
  assert(html.includes('Idee: Knigge')&&html.includes('Idee: VTTom')&&html.includes('Idee: Paladose'),'Urheber je Regel');
- assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,3);
- assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,3);
+ assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,4);
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,4);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true});assert(rules.isRuleActive('woundCheck'));
  App.DEFAULT_OPTIONS.actions.setView.call(sheet,{},{dataset:{view:'book'}});html=tpl(await sheet._prepareContext({}));
  assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-toc')).length,1,'Buch beginnt mit dem Inhaltsverzeichnis');
@@ -789,7 +790,11 @@ test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, 
  App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'1'}});html=tpl(await sheet._prepareContext({}));
  const top=elements(html,el=>el.attribs?.class==='dsa5h-hr-page-top')[0];assert(top&&dom.findAll(el=>el.attribs?.role==='switch',top.children).length===1,'Schalter oben rechts im Seitenkopf');
  assert(html.includes('Knigge'),'Urheber auf der Buchseite');assert.equal(elements(html,el=>el.name==='tr').length,7,'Kopf + 6 QS-Zeilen');
- assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 4'));
+ assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 5'));
+ // Passive Verteidigung (#56): Buchseite erklärt die Wahl je Akteur, ohne eigene Schalter (Nutzer 2026-10-28).
+ App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'4'}});html=tpl(await sheet._prepareContext({}));
+ assert(html.includes(own.DSA5HELPERS.HouseRules.passiveDefense.Page.Scope.slice(0,40)));assert.equal(elements(html,el=>el.attribs?.role==='switch').length,1,'nur der Regelschalter');
+ App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'1'}});
  isGM=false;html=tpl(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.role==='switch').length,0);assert.equal(elements(html,el=>el.attribs?.class==='dsa5h-hr-state active').length,1);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true},'Spieler schalten nichts um');
  assert.deepEqual([...missing].filter(k=>k.startsWith('DSA5HELPERS')),[]);
@@ -919,17 +924,19 @@ test('Waffe aus einem Behälter: Plakette am Gegenstand, Anlegen nimmt sie herau
 });
 test('Eigenes HUD: Reiter in der DSA-Leiste, oben Einstellungen/Hausregelbuch, darunter aktive Hausregeln mit Zustand',async()=>{
  // Importe durch Attrappen ersetzen: hudEntries bekommt seine Abhängigkeiten ohnehin als Parameter.
- const src=read('scripts/hud.js').replace(/^import .*$/gm,'').replace(/^/,'const isRuleActive=()=>false,runWoundCheck=()=>{},findTreatWounds=()=>null,helpAction=()=>{},toggleStance=()=>{},aimRound=()=>{},recognizeWeakPoints=()=>{},enabledManeuvers=()=>[],maneuverSheetData=()=>null,openHouseRules=()=>{},openDiceStats=()=>{},diceStatsEnabled=()=>false;\n');
+ const src=read('scripts/hud.js').replace(/^import .*$/gm,'').replace(/^/,'const isRuleActive=()=>false,runWoundCheck=()=>{},findTreatWounds=()=>null,helpAction=()=>{},toggleStance=()=>{},aimRound=()=>{},recognizeWeakPoints=()=>{},enabledManeuvers=()=>[],maneuverSheetData=()=>null,defenseMode=()=>"manual",openDefenseDialog=()=>{},openHouseRules=()=>{},openDiceStats=()=>{},diceStatsEnabled=()=>false;\n');
  const H=await import(dataUrl(src));const hero={type:'character',isOwner:true};
- const list=(actor,o)=>H.hudEntries(actor,{active:()=>false,maneuvers:()=>[],diceStats:()=>false,treatWounds:()=>null,maneuverState:()=>({stance:{active:true},aim:{count:1,max:3}}),...o});
+ const list=(actor,o)=>H.hudEntries(actor,{active:()=>false,maneuvers:()=>[],diceStats:()=>false,treatWounds:()=>null,maneuverState:()=>({stance:{active:true},aim:{count:1,max:3}}),defense:()=>'best',...o});
  const ids=(actor,o)=>list(actor,o).map(e=>e.id);
  assert.deepEqual(ids(hero),['settings','houseRules'],'Einstellungen und Hausregelbuch immer, zuerst');
  const all=list(hero,{active:()=>true,maneuvers:()=>['stance','aim'],diceStats:()=>true,treatWounds:()=>({id:'x'})});
- assert.deepEqual(all.map(e=>e.id+':'+e.group),['settings:module','houseRules:module','diceStats:module','help:rules','woundCheck:rules','stance:rules','aim:rules']);
+ assert.deepEqual(all.map(e=>e.id+':'+e.group),['settings:module','houseRules:module','diceStats:module','help:rules','woundCheck:rules','stance:rules','aim:rules','passiveDefense:rules']);
+ assert(all.find(e=>e.id==='passiveDefense').on,'passive Verteidigung: automatische Wahl markiert');
  assert(all.find(e=>e.id==='stance').on,'Haltung aktiv markiert');assert.equal(all.find(e=>e.id==='aim').badge,'1/3','Zielen mit Stand');
- assert.deepEqual(ids(hero,{active:()=>true,maneuvers:()=>['feint']}),['settings','houseRules','help'],'ohne Heilkunde Wunden, ohne Haltung/Zielen');
+ assert.deepEqual(ids(hero,{active:()=>true,maneuvers:()=>['feint']}),['settings','houseRules','help','passiveDefense'],'ohne Heilkunde Wunden, ohne Haltung/Zielen');
  assert.deepEqual(ids(null,{active:()=>true,diceStats:()=>true}),['settings','houseRules','diceStats'],'ohne Token keine Hausregel-Aktionen');
- assert.deepEqual(ids({type:'creature'},{active:()=>true}),['settings','houseRules'],'keine Kreaturen');
+ assert.deepEqual(ids({type:'creature'},{active:()=>true}),['settings','houseRules','passiveDefense'],'Kreaturen nur mit der passiven Verteidigung (#56)');
+ assert.equal(list(hero,{active:id=>id==='passiveDefense',defense:()=>'manual'})[2].on,false,'selbst würfeln = nicht markiert');
  assert(read('scripts/dsa5-helpers.js').includes('initHud()'));for(const l of ['de','en']){const h=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Hud;assert(h.Tab&&h.Settings&&h.Rules,l);}
 });
 test('Aufträge und Personen (#39): Almanach-Journale, Sichtbarkeit wie im System, Reiter abschaltbar, Klick öffnet den Almanach',async()=>{
@@ -1150,4 +1157,162 @@ test('v13: unsupported modifier integrations stay inactive even with existing wo
   global.game.release.generation=14;
   assert(isRuleActive('helpAction'));assert(isRuleActive('maneuvers'));
  } finally {global.game=saved;}
+});
+
+
+test('legacy spell and ritual lists reach magic tab, favorites and combat dialog',async()=>{
+ const {sheet,actor}=await prepare();
+ const magic=sheet.context.prepare.magic;
+ const spell=item('legacy-spell','spell'),ritual=item('legacy-ritual','ritual');
+ delete magic.spellList;delete magic.ritualList;
+ magic.spell=[spell];magic.ritual=[ritual];
+ actor.items.set(spell._id,spell);actor.items.set(ritual._id,ritual);
+ actor.flags.favorites=[spell._id,ritual._id];
+ const context=await sheet._prepareContext({});
+ assert.equal(context.prepare.magic.spellList,magic.spell);
+ assert.equal(context.prepare.magic.ritualList,magic.ritual);
+ assert.deepEqual(context.dsa5h.favoriteGroups.find(g=>g.label==='spells').items.map(i=>i._id),[spell._id,ritual._id]);
+ const html=render(context);
+ for(const id of [spell._id,ritual._id])assert(elements(html,el=>el.attribs?.['data-item-id']===id).length>=3,id+' missing from magic, favorites or cast dialog');
+ magic.spellList=[];magic.ritualList=[];
+ await sheet._prepareContext({});
+ assert.deepEqual(magic.spellList,[],'existing modern list must take precedence');
+ assert.deepEqual(magic.ritualList,[]);
+ const systemSpells=fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/actors/parts/spells.hbs'),'utf8');
+ assert(systemSpells.includes(targetGeneration===13?'prepare.magic.spell ':'prepare.magic.spellList'),'fixture contract matches installed system');
+});
+
+
+test('priest-only hero renders liturgies, ceremonies and blessings using installed system paths',async()=>{
+ const {sheet,actor}=await prepare();
+ const magic=sheet.context.prepare.magic;
+ magic.hasSpells=false;magic.hasPrayers=true;
+ magic.spellList=[];magic.ritualList=[];
+ const liturgy=item('priest-liturgy','liturgy'),ceremony=item('priest-ceremony','ceremony'),blessing=item('priest-blessing','blessing');
+ magic.liturgy=[liturgy];magic.ceremony=[ceremony];magic.blessing=[blessing];
+ for(const entry of [liturgy,ceremony,blessing])actor.items.set(entry._id,entry);
+ actor.flags.favorites=[liturgy._id,ceremony._id];
+ sheet._currentTab='religion';
+ const context=await sheet._prepareContext({});
+ assert(context.dsa5h.tabs.some(t=>t.id==='religion'));
+ assert(!context.dsa5h.tabs.some(t=>t.id==='magic'));
+ const html=render(context);
+ const panel=elements(html,el=>el.attribs?.['data-tab-panel']==='religion')[0];
+ for(const entry of [liturgy,ceremony,blessing])assert(dom.findAll(el=>el.attribs?.['data-item-id']===entry._id,[panel]).length,entry.type+' missing in religion');
+ for(const entry of [liturgy,ceremony])assert(elements(html,el=>el.attribs?.['data-item-id']===entry._id).length>=3,entry.type+' missing in favorites or cast dialog');
+ const refs=fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/actors/parts/liturgies.hbs'),'utf8');
+ for(const key of ['liturgy','ceremony'])assert(refs.includes('prepare.magic.'+key),'installed system path '+key);
+});
+
+// Talent-Vorschläge (2026-10-06): Bewertung ohne Foundry, Anfragen aus dem Chat, Karten auf dem Titelblatt.
+const suggestionModules=async()=>{const score=await import(dataUrl(read('scripts/skill-suggestions/score.js')));const context=await import(suggestionsUrl());return {score,context};};
+test('Vorschläge: Erfolgschance der 3W20-Probe exakt, inkl. Doppel-1 und Doppel-20',async()=>{
+ const {score}=await suggestionModules();
+ assert.equal(score.successChance([20,20,20],0),1-(1+3*19)/8000,'nur zwei/drei Zwanzigen misslingen');
+ const low=score.successChance([1,1,1],0);assert.equal(low,(1+3*19)/8000,'nur zwei/drei Einsen gelingen');
+ assert(score.successChance([14,14,14],10)>score.successChance([11,11,11],10));
+ assert(score.successChance([12,12,12],5,2)>score.successChance([12,12,12],5),'Erleichterung hebt die Chance');
+ const now=Date.now(),day=86400000;assert.equal(score.decay(4,now-14*day,now,14),2);
+ const bumped=score.bumpUsage({s:2,t:now-14*day},now);assert.equal(bumped.s,2);assert.equal(bumped.t,now);
+});
+test('Vorschläge: Anfragen vorn, Favoriten raus, Nutzung/Spezialist/Kampf/Steigerung zählen, FW 0 nur bei Bedarf',async()=>{
+ const {score}=await suggestionModules();const now=Date.now();
+ const sk=(id,fw,a=12)=>({id,name:id,fw,attributes:[a,a,a]});
+ const skills=[sk('Klettern',6),sk('Sinnesschärfe',8),sk('Zechen',3),sk('Reiten',4),sk('Tanzen',0,16),sk('Schwimmen',2),sk('Kraftakt',5),sk('Fliegen',0),sk('Lesen',10),sk('Malen',1)];
+ const ranked=score.rankSuggestions({skills,now,requests:{Fliegen:{messageId:'m1',modifier:-2}},usage:{Zechen:{s:6,t:now}},advanced:{Malen:now},othersBest:{Reiten:2},inCombat:true,combatSkills:new Set(['Kraftakt']),classicSkills:new Set(['Sinnesschärfe']),favorites:new Set(['Lesen'])});
+ assert.equal(ranked[0].id,'Fliegen');assert.equal(ranked[0].reason,'requested');assert.equal(ranked[0].messageId,'m1');assert.equal(ranked[0].modifier,-2);
+ assert.equal(ranked.length,6);assert(!ranked.some(r=>r.id==='Lesen'),'Favoriten fallen heraus');assert(!ranked.some(r=>r.id==='Tanzen'),'FW 0 ohne Nutzung fällt heraus');
+ const reason=id=>ranked.find(r=>r.id===id)?.reason;
+ assert.equal(reason('Zechen'),'usage');assert.equal(reason('Reiten'),'specialist');assert.equal(reason('Kraftakt'),'combat');assert.equal(reason('Malen'),'advanced');
+});
+test('Vorschläge: offene Anfragen und @Rq-Links aus dem Chat',async()=>{
+ const {context}=await suggestionModules();const now=Date.now();
+ const previousQueries=global.dsa5.queries;global.dsa5.queries={RollRequestService:{triggerRollFromCard(){}}};
+ assert.deepEqual(context.parseRequestLink('Klettern -1'),{name:'Klettern',modifier:-1});assert.deepEqual(context.parseRequestLink('Bekehren & Überzeugen'),{name:'Bekehren & Überzeugen',modifier:0});assert.deepEqual(context.parseRequestLink('Fliegen 2'),{name:'Fliegen',modifier:2});assert.deepEqual(context.parseRequestLink('Klettern -1 options={"attrs":"MU,GE,KK"}'),{name:'Klettern',modifier:-1});
+ const req=(id,status,extra={})=>({id,timestamp:now,flags:{dsa5:{rollRequest:{category:'skill',name:'Klettern',modifier:1,finalized:false,recipients:[{actorId:'a1',status}],...extra}}}});
+ const {requests,mentions}=context.chatRequests({id:'a1'},[req('m0','unowned',{name:'Fliegen'}),req('m1','pending'),{id:'m6',timestamp:now,content:'<p>@RQ[Bekehren &amp; Überzeugen&nbsp;-1]</p>'},{id:'m7',timestamp:now,content:'<p><a class="roll-button request-roll" data-type="skill" data-modifier="2" data-name="Fliegen">Fliegen +2</a></p>'},req('m2','success',{name:'Reiten'}),req('m3','pending',{name:'Zechen',finalized:true}),{id:'m4',timestamp:now,content:'Bitte @Rq[Schwimmen +2] würfeln'},{id:'m5',timestamp:now-20*60000,content:'@Rq[Tanzen]'}],now);
+ assert.deepEqual(requests,{Fliegen:{messageId:'m0',modifier:1},Klettern:{messageId:'m1',modifier:1}},'auch ohne Spieler online (unowned)');global.dsa5.queries=previousQueries;assert.deepEqual(mentions,{'Bekehren & Überzeugen':{modifier:-1},Fliegen:{modifier:2},Schwimmen:{modifier:2}});
+});
+test('Vorschläge: sechs Karten im Titelblatt, würfelbar wie Favoriten, offene Anfrage über den RollRequestService',async()=>{
+ await loadSheet();global.game={i18n:{localize},settings:{get:()=> 'light'},user:{targets:{first:()=>undefined}}};
+ const {sheet,actor}=await prepare();
+ assert.equal((await sheet._prepareContext({})).dsa5h.suggestions.length,0,'einziges Talent ist Favorit');
+ actor.flags.favorites=['weapon'];const context=await sheet._prepareContext({});const list=context.dsa5h.suggestions;assert(context.owner);
+ assert(list.length>0&&list.length<=6);for(const e of list)assert(e.reasonLabel&&!e.reasonLabel.startsWith('DSA5HELPERS'),e.reasonLabel);
+ const html=render(context);const cover=elements(html,el=>el.attribs?.['data-tab-panel']==='cover')[0];
+ const cards=dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-suggest-card'),cover.children);assert.equal(cards.length,list.length);
+ assert(dom.findAll(el=>el.attribs?.['data-action']==='skillSelect',cards).length===list.length);
+ const stars=dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',cards);assert.equal(stars.length,list.length,'Favoritenstern je Vorschlag');for(const st of stars)assert.equal(st.attribs['aria-pressed'],'false');
+ const calls=[];const previousQueries=global.dsa5.queries;global.dsa5.queries={RollRequestService:{triggerRollFromCard:(m,a)=>calls.push([m,a])}};sheet.actor.isOwner=true;
+ await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hAnswerRequest.call(sheet,{}, {dataset:{which:'msg1'}});assert.deepEqual(calls,[['msg1',sheet.actor.id]]);global.dsa5.queries=previousQueries;
+});
+test('Vorschläge: Anzahl aus der Benutzer-Einstellung (0 = aus, 2–12), Anfragen bleiben bei kleiner Anzahl vorn',async()=>{
+ const {score}=await suggestionModules();const skills=['A','B','C','D','E'].map(n=>({id:n,name:n,fw:8,attributes:[12,12,12]}));
+ assert.equal(score.rankSuggestions({skills,count:2}).length,2);
+ const r=score.rankSuggestions({skills,count:2,requests:{E:{messageId:'m',modifier:0}}});assert.equal(r[0].id,'E');assert.equal(r.length,2);
+ await loadSheet();const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+ const withSetting=async value=>{global.game={i18n:{localize},settings:{get:(_m,key)=>key==='skillSuggestions'?value:'light'},user:{targets:{first:()=>undefined}}};return (await sheet._prepareContext({})).dsa5h.suggestions;};
+ assert.equal((await withSetting(0)).length,0,'aus');
+ const ctx=await sheet._prepareContext({});assert(!render(ctx).includes('dsa5h-suggest-grid'));
+ assert((await withSetting(2)).length<=2);assert((await withSetting(12)).length>=1);
+});
+test('Vorschläge: Titel klappt ein/aus, Zustand aus der Benutzer-Einstellung, eingeklappt mit Hinweis auf offene Anfragen',async()=>{
+ await loadSheet();const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+ const ctxWith=async collapsed=>{global.game={i18n:{localize:(k,d)=>k==='DSA5HELPERS.Suggestions.RequestedCount'?`${d?.count} angefragt`:localize(k,d)},settings:{get:(_m,key)=>key==='skillSuggestionsCollapsed'?collapsed:'light'},user:{targets:{first:()=>undefined}}};return sheet._prepareContext({});};
+ const open=await ctxWith(false);const html=render(open);
+ const toggle=elements(html,el=>el.attribs?.['data-action']==='dsa5hToggleSuggestions')[0];assert(toggle,'Klappknopf');assert.equal(toggle.attribs['aria-expanded'],'true');
+ const grid=elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-grid'))[0];assert(!('hidden' in grid.attribs));
+ const closed=await ctxWith(true);closed.dsa5h.suggestionsRequested=1;const html2=render(closed);
+ assert.equal(elements(html2,el=>el.attribs?.['data-action']==='dsa5hToggleSuggestions')[0].attribs['aria-expanded'],'false');
+ assert('hidden' in elements(html2,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-grid'))[0].attribs);
+ assert(elements(html2,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-badge')).length===1);
+});
+test('Vorschläge: Anzahl im Bogen per − / + je Benutzer und Held (User-Flag), Einstellung als Standard, „Aus“ schlägt alles',async()=>{
+ await loadSheet();const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+ const user={flags:{},targets:{first:()=>undefined},getFlag(_m,k){return this.flags[k];},async setFlag(_m,k,v){this.flags[k]={...(this.flags[k]??{}),...v};}};
+ let setting=6;global.game={i18n:{localize},settings:{get:(_m,key)=>key==='skillSuggestions'?setting:'light'},user};
+ let ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestionsCount,6);
+ const html=render(ctx);const steps=elements(html,el=>el.attribs?.['data-action']==='dsa5hSuggestionCount');assert.deepEqual(steps.map(b=>b.attribs['data-step']),['-2','2']);
+ let rendered=0;sheet.render=()=>{rendered++;};
+ const handler=Sheet.DEFAULT_OPTIONS.actions.dsa5hSuggestionCount;
+ await handler.call(sheet,{},{dataset:{step:'2'}});assert.deepEqual(user.flags.suggestionCounts,{[actor.id]:8});assert.equal(rendered,1);
+ for(let i=0;i<5;i++)await handler.call(sheet,{},{dataset:{step:'2'}});assert.equal(user.flags.suggestionCounts[actor.id],12,'höchstens 12');
+ ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestionsCount,12);assert.equal(ctx.dsa5h.suggestionsMore,false);
+ for(let i=0;i<8;i++)await handler.call(sheet,{},{dataset:{step:'-2'}});assert.equal(user.flags.suggestionCounts[actor.id],2,'mindestens 2');
+ setting=0;ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestions.length,0,'Aus in der Einstellung schlägt die Wahl im Bogen');
+});
+
+
+test('Vorschläge: ohne System-Anfragedienst nur normale Talentwürfe, keine unbeantwortbaren Karten',async()=>{
+ const {context}=await suggestionModules();const previous=global.dsa5.queries;const previousLegacy=global.game.dsa5;const previousSettings=global.game.settings;
+ global.game.settings={get:(_m,k)=>k==='skillSuggestions'?6:'light'};
+ try {
+  delete global.dsa5.queries;delete global.game.dsa5;
+  const requests=context.chatRequests({id:'hero'},[{id:'request',flags:{dsa5:{rollRequest:{category:'skill',name:'Klettern',recipients:[{actorId:'hero',status:'pending'}]}}}}]).requests;
+  assert.deepEqual(requests,{});
+  const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+  let ctx=await sheet._prepareContext({});assert(ctx.dsa5h.suggestions.length);
+  const html=render(ctx);assert(!html.includes('data-action="dsa5hAnswerRequest"'));
+  sheet.limited=true;ctx=await sheet._prepareContext({});assert.deepEqual(ctx.dsa5h.suggestions,[]);
+  sheet.limited=false;sheet.context.owner=false;ctx=await sheet._prepareContext({});assert.deepEqual(ctx.dsa5h.suggestions,[]);
+ }finally{global.dsa5.queries=previous;global.game.dsa5=previousLegacy;global.game.settings=previousSettings;}
+});
+
+// Passive Verteidigung (#56, Variante B 2026-10-28): gelungene AT, dann W20 gegen V; Wahl je Akteur.
+test('passive defense (#56): d20 against chosen or best defense, per-actor mode with type defaults',async()=>{
+ const pd=await import(dataUrl(read('scripts/house-rules/passive-defense.js')));
+ assert.deepEqual(pd.resolveDefense({successLevel:-1,roll:3,defense:6}),{outcome:'miss'});
+ assert.equal(pd.resolveDefense({successLevel:1,roll:6,defense:6}).outcome,'defended','W20 ≤ V wehrt ab');
+ assert.equal(pd.resolveDefense({successLevel:1,roll:7,defense:6}).outcome,'hit');
+ assert.equal(pd.resolveDefense({successLevel:3,roll:1,defense:0}).outcome,'hit','ohne Verteidigung trifft jede gelungene AT');
+ // Jede gelungene AT wird mit V/20 abgewehrt, unabhängig vom AT-Wurf (Rückmeldung zum W100-Entwurf).
+ assert.equal(Array.from({length:20},(_,i)=>pd.resolveDefense({successLevel:1,roll:i+1,defense:6}).outcome).filter(o=>o==='defended').length,6);
+ const opts=[{id:'sword',value:12},{id:'shield',value:14},{id:'dodge',value:8}];
+ assert.deepEqual(pd.bestDefense(opts),{id:'shield',value:14},'highest, no sum or average');assert.equal(pd.bestDefense([]),null);
+ assert.equal(pd.chooseDefense(opts,'dodge').id,'dodge','chosen option');assert.equal(pd.chooseDefense(opts,'best').id,'shield');
+ assert.equal(pd.chooseDefense(opts,'gone').id,'shield','abgelegte Waffe: beste erlaubte');
+ const actor=(type,flag)=>({type,getFlag:(_m,k)=>k==='autoDefense'?flag:undefined});
+ assert.deepEqual(['character','npc','creature'].map(t=>pd.defenseMode(actor(t))),['manual','best','best'],'Vorbelegung je Typ');
+ assert.equal(pd.defenseMode(actor('character','best')),'best');assert.equal(pd.defenseMode(actor('npc','manual')),'manual');
+ assert.deepEqual([actor('character'),actor('npc'),actor('creature','dodge'),actor('vehicle')].map(pd.appliesTo),[false,true,true,false]);
 });

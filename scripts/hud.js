@@ -1,9 +1,10 @@
 // Eigenes HUD des Moduls (Nutzer 2026-10-21): ein eigener Reiter in der DSA-Leiste des Systems (unten Mitte, ersetzt
 // dort die Makroleiste, Einstellung `dsa5.hotbarv3`). Die Leiste bietet dafür keine Schnittstelle; ihr Reiterwechsel
 // (Aktion `categoryFilter`) arbeitet aber generisch über data-filter/data-category. Wir hängen nach jedem Rendern einen
-// Reiterknopf und einen Abschnitt an. Zwei Zeilen als Chips mit Namen (Nutzer 2026-10-21, Symbole allein gingen unter):
-// oben das Modul (Einstellungen, Hausregelbuch, Würfelstatistik), darunter die aktiven Hausregeln mit ihrem Zustand.
-import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, enabledManeuvers, maneuverSheetData } from './house-rules/rules.js';
+// Reiterknopf und einen Abschnitt an. Aufbau Variante B (Nutzer-Entscheidung 2026-10-28, Vergleich im Click-Dummy):
+// links die Hausregel-Aktionen des Tokens als Kacheln mit Symbol und Kurznamen, Zustand als Leuchten bzw. Abzeichen;
+// rechts eine schmale Spalte mit Symbolknöpfen für Einstellungen, Hausregelbuch und Würfelstatistik.
+import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, enabledManeuvers, maneuverSheetData, defenseMode, openDefenseDialog } from './house-rules/rules.js';
 import { openHouseRules } from './apps/house-rules.js';
 import { openDiceStats } from './apps/dice-stats.js';
 import { isEnabled as diceStatsEnabled } from './dice-stats/settings.js';
@@ -15,20 +16,27 @@ const MODULE_ID = 'dsa5-helpers';
  * Einträge des Reiters, je mit Gruppe ('module' | 'rules'). `actor` ist der gewählte Token-Akteur (fehlt im SL-Modus
  * ohne Token). Abhängigkeiten als Parameter für den Test-Harness. Einstellungen und Hausregelbuch gibt es immer.
  */
-export function hudEntries(actor, { active = isRuleActive, maneuvers = enabledManeuvers, diceStats = diceStatsEnabled, treatWounds = findTreatWounds, maneuverState = maneuverSheetData } = {}) {
+export function hudEntries(actor, { active = isRuleActive, maneuvers = enabledManeuvers, diceStats = diceStatsEnabled, treatWounds = findTreatWounds, maneuverState = maneuverSheetData, defense = defenseMode } = {}) {
   const out = [
     { id: 'settings', group: 'module', icon: 'fas fa-gears', label: 'DSA5HELPERS.Hud.Settings' },
     { id: 'houseRules', group: 'module', icon: 'fas fa-book', label: 'DSA5HELPERS.HouseRules.Title' },
   ];
   if (diceStats()) out.push({ id: 'diceStats', group: 'module', icon: 'fas fa-dice-d20', label: 'DSA5HELPERS.DiceStats.Title' });
   const hero = ['character', 'npc'].includes(actor?.type) && actor.isOwner !== false;
-  if (hero && active('helpAction')) out.push({ id: 'help', group: 'rules', icon: 'fas fa-handshake-angle', label: 'DSA5HELPERS.HouseRules.helpAction.Button' });
-  if (hero && active('woundCheck') && treatWounds(actor)) out.push({ id: 'woundCheck', group: 'rules', icon: 'fas fa-heart-pulse', label: 'DSA5HELPERS.HouseRules.woundCheck.Title' });
+  if (hero && active('helpAction')) out.push({ id: 'help', group: 'rules', icon: 'fas fa-handshake-angle', label: 'DSA5HELPERS.HouseRules.helpAction.Button', short: 'DSA5HELPERS.Hud.Short.help' });
+  if (hero && active('woundCheck') && treatWounds(actor)) out.push({ id: 'woundCheck', group: 'rules', icon: 'fas fa-heart-pulse', label: 'DSA5HELPERS.HouseRules.woundCheck.Title', short: 'DSA5HELPERS.Hud.Short.woundCheck' });
   if (hero && active('maneuvers')) {
     const st = maneuverState(actor);
-    if (maneuvers().includes('stance')) out.push({ id: 'stance', group: 'rules', icon: 'fas fa-shield-halved', label: 'DSA5HELPERS.HouseRules.maneuvers.stance.Name', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.stance.Toggle', on: !!st?.stance?.active });
-    if (maneuvers().includes('aim')) out.push({ id: 'aim', group: 'rules', icon: 'fas fa-bullseye', label: 'DSA5HELPERS.HouseRules.maneuvers.aim.Name', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.aim.Button', on: !!st?.aim?.count, badge: st?.aim ? `${st.aim.count}/${st.aim.max}` : '' });
-    if (maneuvers().includes('weakness')) out.push({ id: 'weakness', group: 'rules', icon: 'fas fa-magnifying-glass', label: 'DSA5HELPERS.HouseRules.maneuvers.weakness.Name', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.weakness.HudHint', on: !!st?.weakness?.entries?.length, badge: st?.weakness?.entries?.length ? String(st.weakness.entries.length) : '' });
+    if (maneuvers().includes('stance')) out.push({ id: 'stance', group: 'rules', icon: 'fas fa-shield-halved', label: 'DSA5HELPERS.HouseRules.maneuvers.stance.Name', short: 'DSA5HELPERS.Hud.Short.stance', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.stance.Toggle', on: !!st?.stance?.active });
+    if (maneuvers().includes('aim')) out.push({ id: 'aim', group: 'rules', icon: 'fas fa-bullseye', label: 'DSA5HELPERS.HouseRules.maneuvers.aim.Name', short: 'DSA5HELPERS.Hud.Short.aim', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.aim.Button', on: !!st?.aim?.count, badge: st?.aim ? `${st.aim.count}/${st.aim.max}` : '' });
+    if (maneuvers().includes('weakness')) out.push({ id: 'weakness', group: 'rules', icon: 'fas fa-magnifying-glass', label: 'DSA5HELPERS.HouseRules.maneuvers.weakness.Name', short: 'DSA5HELPERS.Hud.Short.weakness', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.weakness.HudHint', on: !!st?.weakness?.entries?.length, badge: st?.weakness?.entries?.length ? String(st.weakness.entries.length) : '' });
+  }
+  // Passive Verteidigung (#56, Nutzer 2026-10-28): Wahl für den gewählten Token, auch für Kreaturen; Abzeichen = aktuelle Wahl.
+  if (actor && actor.type !== 'vehicle' && actor.isOwner !== false && active('passiveDefense')) {
+    const mode = defense(actor);
+    const P = 'DSA5HELPERS.HouseRules.passiveDefense.Mode.';
+    const badge = ['manual', 'best', 'dodge', 'parryWeaponless'].includes(mode) ? game.i18n.localize(P + 'Short.' + mode) : actor.items?.get?.(mode)?.name ?? game.i18n.localize(P + 'Short.best');
+    out.push({ id: 'passiveDefense', group: 'rules', icon: 'fas fa-shield', label: 'DSA5HELPERS.HouseRules.passiveDefense.Title', short: 'DSA5HELPERS.Hud.Short.passiveDefense', tooltip: P + 'HudHint', on: mode !== 'manual', badge });
   }
   return out;
 }
@@ -54,6 +62,7 @@ function run(id, actor, button) {
     case 'stance': return toggleStance(actor);
     case 'aim': return aimRound(actor);
     case 'weakness': return recognizeWeakPoints(actor, tokenId);
+    case 'passiveDefense': return openDefenseDialog(actor);
   }
 }
 
@@ -64,21 +73,30 @@ function showSection(root) {
   root.querySelectorAll('.categoryFilter').forEach(el => el.classList.toggle('active', el.dataset.filter === KEY));
 }
 
-function chip(entry, onClick) {
-  const li = document.createElement('li');
-  li.className = `dsa5h-hud-chip ${entry.group}${entry.on ? ' active' : ''}`;
-  li.dataset.tooltip = entry.tooltip ?? entry.label;
-  li.dataset.skipfilter = 'true';
-  li.innerHTML = `<i class="${entry.icon}" inert></i><span class="dsa5h-hud-name"></span>`;
-  li.querySelector('.dsa5h-hud-name').textContent = game.i18n.localize(entry.label);
+// Hausregel: Kachel mit Symbol und Kurznamen; Modul: kleiner Symbolknopf. Voller Name als Tooltip und für Screenreader.
+function button(entry, onClick) {
+  const tile = entry.group === 'rules';
+  const node = document.createElement('button');
+  node.type = 'button';
+  node.className = tile ? `dsa5h-hud-tile${entry.on ? ' active' : ''}` : 'dsa5h-hud-mini';
+  node.dataset.tooltip = entry.tooltip ?? entry.label;
+  node.setAttribute('aria-label', game.i18n.localize(entry.label));
+  if (tile && entry.on !== undefined) node.setAttribute('aria-pressed', String(!!entry.on));
+  node.innerHTML = `<i class="${entry.icon}" inert></i>`;
+  if (tile) {
+    const name = document.createElement('span');
+    name.className = 'dsa5h-hud-name';
+    name.textContent = game.i18n.localize(entry.short ?? entry.label);
+    node.append(name);
+  }
   if (entry.badge) {
     const badge = document.createElement('span');
     badge.className = 'dsa5h-hud-badge';
     badge.textContent = entry.badge;
-    li.append(badge);
+    node.append(badge);
   }
-  li.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); onClick(li); });
-  return li;
+  node.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); onClick(node); });
+  return node;
 }
 
 export function initHud() {
@@ -102,16 +120,20 @@ export function initHud() {
     const list = document.createElement('ul');
     list.className = 'skillItems hSection thinscroll collapsed dsa5h-hud';
     list.dataset.category = KEY;
-    for (const entry of entries) {
-      // Neue Zeile für die Hausregeln, mit kleiner Überschrift davor.
-      if (entry.group === 'rules' && !list.querySelector('.dsa5h-hud-group')) {
-        const head = document.createElement('li');
-        head.className = 'dsa5h-hud-group';
-        head.textContent = game.i18n.localize('DSA5HELPERS.Hud.Rules');
-        list.append(head);
-      }
-      list.append(chip(entry, li => run(entry.id, app.actor, li)));
-    }
+    // Zwei Bereiche als Listeneinträge der Leiste: Aktionen links (nur mit Hausregeln), Modul-Spalte rechts.
+    const area = (className, label) => {
+      const li = document.createElement('li');
+      li.className = className;
+      li.dataset.skipfilter = 'true';
+      li.setAttribute('role', 'group');
+      li.setAttribute('aria-label', game.i18n.localize(label));
+      return li;
+    };
+    const actions = area('dsa5h-hud-actions', 'DSA5HELPERS.Hud.Rules');
+    const side = area('dsa5h-hud-side', 'DSA5HELPERS.Hud.Tab');
+    for (const entry of entries) (entry.group === 'rules' ? actions : side).append(button(entry, node => run(entry.id, app.actor, node)));
+    if (actions.children.length) list.append(actions);
+    list.append(side);
     sections.append(list);
 
     // Die Leiste kennt unseren Reiter nicht und springt beim Neuzeichnen (Token-Wechsel, Wertänderung) auf ihren
@@ -126,7 +148,7 @@ export function initHud() {
   // Einträge hängen an Welt-Einstellungen: Leiste neu zeichnen, wenn eine davon umgeschaltet wird.
   const keys = ['houseRules', 'maneuvers', 'diceStatsEnabled'].map(k => `${MODULE_ID}.${k}`);
   Hooks.on('updateSetting', setting => { if (keys.includes(setting.key)) rerenderHud(); });
-  // Verteidigungshaltung/Zielen (Actor-Flag) umgeschaltet: Zustand der Chips nachziehen.
+  // Verteidigungshaltung/Zielen/passive Verteidigung (Actor-Flag) umgeschaltet: Zustand der Chips nachziehen.
   Hooks.on('updateActor', (actor, changes) => {
     if (changes.flags?.[MODULE_ID] !== undefined && ui.hotbar?.actor === actor) rerenderHud();
   });

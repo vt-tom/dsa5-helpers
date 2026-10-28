@@ -11,9 +11,10 @@ import { helpAction, initHelpAction } from './help-action.js';
 import { initSystemSheetEntries, rerenderSystemSheets } from './system-sheet.js';
 import { initManeuvers, toggleStance, aimRound, recognizeWeakPoints, MANEUVER_IDS, SETTING as MANEUVER_SETTING, enabledManeuvers, sheetData as maneuverSheetData } from './maneuvers.js';
 import { initHitConsequences } from './hit-consequences.js';
+import { initPassiveDefense, defenseChoices, setDefenseMode, openDefenseDialog, defenseMode } from './passive-defense.js';
 import { isFoundry13 } from '../compat/runtime.js';
 
-export { woundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, MANEUVER_IDS, enabledManeuvers, maneuverSheetData };
+export { woundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, MANEUVER_IDS, enabledManeuvers, maneuverSheetData, defenseChoices, setDefenseMode, openDefenseDialog, defenseMode };
 
 const MODULE_ID = 'dsa5-helpers';
 export const SETTING = 'houseRules';
@@ -47,6 +48,15 @@ export const HOUSE_RULES = [
       { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.weakness.Button', when: () => enabledManeuvers().includes('weakness'), run: app => recognizeWeakPoints(app.actor, app.token?.id) },
     ],
   },
+  {
+    // Passive Verteidigung (#56): wirkt bei jedem Angriff auf ein markiertes Ziel, unabhängig vom Bogen. Je Akteur
+    // wählbar (Nutzer 2026-10-28): im Kampf-Reiter unseres Bogens, im Menü ⋮ der Systembögen — auch für Kreaturen.
+    id: 'passiveDefense', icon: 'fas fa-shield-halved', credit: 'VTTom', page: `modules/${MODULE_ID}/templates/house-rules/passive-defense.hbs`,
+    entries: [
+      { sheet: 'combat (block)' },
+      { system: 'header', label: 'DSA5HELPERS.HouseRules.passiveDefense.Mode.Menu', actorTypes: ['character', 'npc', 'creature'], run: app => openDefenseDialog(app.actor) },
+    ],
+  },
 ];
 
 /** Wundeinschätzung starten; ohne markiertes Ziel nur ein Hinweis am Knopf (beide Bögen). */
@@ -72,7 +82,8 @@ export function isRuleActive(id) {
 
 // Diese beiden Erweiterungen benötigen den erst in DSA8 vorhandenen
 // dsa5.prepareRollSituationalModifiers-Hook samt System-Widget.
-export const isRuleSupported = (id, legacy = isFoundry13()) => !legacy || !['helpAction', 'maneuvers'].includes(id);
+// Passive Verteidigung: unter DSA7 nicht geprüft (Auflösung über OpposeDSA des Systems).
+export const isRuleSupported = (id, legacy = isFoundry13()) => !legacy || !['helpAction', 'maneuvers', 'passiveDefense'].includes(id);
 export const availableHouseRules = () => HOUSE_RULES.filter(rule => isRuleSupported(rule.id));
 
 /** Nur SL: ein einzelnes Grundmanöver ein- oder ausschalten (Buchseite, #45). */
@@ -105,6 +116,7 @@ export function registerHouseRules() {
   initSystemSheetEntries(HOUSE_RULES, isRuleActive);
   initManeuvers(() => isRuleActive('maneuvers'));
   initHitConsequences(() => isRuleActive('maneuvers') && enabledManeuvers().includes('targeted'));
+  initPassiveDefense(() => isRuleActive('passiveDefense'));
   // Einzelschalter der Grundmanöver: Buch und Bögen neu zeichnen wie bei der Haupteinstellung.
   Hooks.on('updateSetting', setting => {
     if (setting.key !== `${MODULE_ID}.${MANEUVER_SETTING}`) return;

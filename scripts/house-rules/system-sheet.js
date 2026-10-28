@@ -5,11 +5,11 @@
 // Regeln und Aktiv-Prüfung kommen aus rules.js (initSystemSheetEntries), ohne Rück-Import.
 let RULES = [];
 let isActive = () => false;
-const ACTOR_TYPES = new Set(['character', 'npc']);
+const ACTOR_TYPES = ['character', 'npc'];
 
-/** Gehört der Bogen zum System (Held/NSC) und nicht zu diesem Modul? */
-export function isSystemSheet(app) {
-  if (!ACTOR_TYPES.has(app?.actor?.type)) return false;
+/** Gehört der Bogen zum System (Held/NSC; ein Eintrag kann mit actorTypes weitere Typen zulassen) und nicht zu diesem Modul? */
+export function isSystemSheet(app, types = ACTOR_TYPES) {
+  if (!types.includes(app?.actor?.type)) return false;
   if (app.options?.classes?.includes('dsa5-helpers-sheet')) return false;
   return !!app.options?.classes?.includes('dsa5');
 }
@@ -48,8 +48,8 @@ export function initSystemSheetEntries(rules, active) {
 
   // Eintrag im Kopfmenü ⋮ (z. B. „Helfen“).
   Hooks.on('getHeaderControlsActorSheetV2', (app, controls) => {
-    if (!isSystemSheet(app)) return;
     for (const { rule, entry } of activeEntries('header')) {
+      if (!isSystemSheet(app, entry.actorTypes)) continue;
       const action = `dsa5hRule-${rule.id}-${entry.label}`;
       if (controls.some(c => c.action === action)) continue;
       controls.push({

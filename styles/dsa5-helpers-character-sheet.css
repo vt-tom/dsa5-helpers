@@ -2772,6 +2772,163 @@
   }
 }
 
+/* --- Vorschläge --- */
+
+/* Talent-Vorschläge über den Favoriten (parts/suggestions.hbs, Nutzerwunsch 2026-10-06): genau zwei Spalten, Karten
+   zweizeilig: Name | FW, darunter Grund | Probe, der Favoritenstern direkt hinter dem Namen — ohne Bild, sonst bliebe dem Namen bei zwei Spalten kaum
+   Platz. Angefragte Proben mit Akzentkante. */
+.dsa5-helpers-sheet .dsa5h-suggest-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  padding: 10px 11px;
+}
+
+/* Titel als Klappknopf (Rückmeldung 2026-10-07): sieht aus wie jeder Panel-Titel, ▾/▸ davor, eingeklappt mit Hinweis auf
+   offene Anfragen. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Anzahl − n + rechts im Titel (Rückmeldung 2026-10-07), eingeklappt ausgeblendet. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest.is-collapsed .dsa5h-suggest-count {
+  display: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count > span {
+  min-width: 1.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--hit-sm);
+  height: var(--hit-sm);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count button:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-caret {
+  display: inline-block;
+  width: 1em;
+  font-size: var(--fs-small);
+}
+
+/* Pfeil bleibt am linken Rand, nur der Titel steht mittig (Rückmeldung 2026-10-07; Foundry zentriert sonst den ganzen
+   Knopfinhalt). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-title {
+  flex: 1;
+  text-align: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-badge {
+  margin-left: auto;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-fav-card.dsa5h-suggest-card {
+  /* Name reicht über die Würfelspalte bis zum FW; nur der Grund teilt sich die Zeile mit den Würfeln. */
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "name name value" "reason roll roll";
+  gap: 2px 6px;
+  padding: 4px 6px 4px 8px;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-suggest-name {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-favorite {
+  flex: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-fav-card-value {
+  grid-area: value;
+  justify-self: end;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-suggest-reason {
+  grid-area: reason;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-fav-card-roll {
+  grid-area: roll;
+  justify-content: end;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card.dsa5h-suggest-requested {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-reason {
+  font-size: var(--fs-meta);
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-requested .dsa5h-suggest-reason {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 /* ==========================================================================
    8. Eigenschaften
    ========================================================================== */
@@ -4866,6 +5023,14 @@
 
 /* --- Grundmanöver (Hausregel Paladose, #45) ---
 
+/* Passive Verteidigung (#56): Auswahl, womit der Held automatisch verteidigt. */
+.dsa5-helpers-sheet .dsa5h-auto-defense-select {
+  width: 100%;
+  min-height: var(--hit-lg);
+  font-size: var(--fs-base);
+}
+
+
    Block im Kampf-Reiter: Stufe je Leiteigenschaft als Zeilen Symbol | Name | Eigenschaft | Wirkung, darunter
    Verteidigungshaltung (Schalter), Zielen (Rundenzähler) und der Vorstoß-Malus dieser Runde. */
 .dsa5-helpers-sheet .dsa5h-maneuvers .panel-title .dsa5h-maneuvers-book {
@@ -4966,6 +5131,17 @@
 }
 
 /* --- Weitere Waffen --- */
+
+/* „In die Hand“ an ebenfalls angelegten Waffen (2026-10-28), gleiche Trefferfläche wie der Ausrüsten-Knopf. */
+.dsa5-helpers-sheet .dsa5h-take-in-hand {
+  width: var(--hit-md);
+  height: var(--hit-md);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+}
+
 
 /* Kurzübersicht „Weitere Waffen“: Bild | Name + Technik | Würfel | TP | Ausrüsten | Stern; zweispaltig erst ab
    genug Breite, sonst blieb für Name und Technik kaum Platz (Rückmeldung 2026-10-05). */
@@ -6839,6 +7015,44 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
 }
 .application .dsa5h-weakness-split label { flex: none; white-space: nowrap; }
 
+/* Passive Verteidigung (#56): Ergebniskarte im Chat, Rechnung der SL als kleine Tabelle. */
+.chat-message .dsa5h-pd-card p {
+  margin: 4px 0;
+}
+.chat-message .dsa5h-pd-card.dsa5h-pd-hit,
+.chat-message .dsa5h-pd-card.dsa5h-pd-defended {
+  padding-left: 6px;
+  border-left: 3px solid #b99a5c;
+}
+.chat-message .dsa5h-pd-card.dsa5h-pd-hit { border-left-color: #cf1e1e; }
+.chat-message .dsa5h-pd-roll {
+  font-weight: bold;
+}
+.chat-message .dsa5h-pd-table {
+  width: 100%;
+  margin: 4px 0 0;
+  font-size: var(--font-size-12, 12px);
+}
+.chat-message .dsa5h-pd-table .dsa5h-pd-chosen {
+  font-weight: bold;
+}
+.chat-message .dsa5h-pd-table th,
+.chat-message .dsa5h-pd-table td:not(:first-child) {
+  white-space: nowrap;
+}
+.chat-message .dsa5h-pd-bands {
+  margin: 2px 0 4px;
+  padding-left: 16px;
+}
+.chat-message .dsa5h-pd-band-hit {
+  color: #8e1d15;
+  font-weight: bold;
+}
+.chat-message .dsa5h-pd-gm summary {
+  cursor: pointer;
+  font-size: var(--font-size-12, 12px);
+}
+
 /* Hausregeln im Standardbogen des Systems (Issue #44, scripts/house-rules/system-sheet.js): kleines Symbol hinter dem
    Talentnamen statt Foundrys großem Standardknopf. */
 .application.dsa5 .dsa5h-system-house-hint {
@@ -7916,6 +8130,21 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   font-size: var(--fs-meta);
 }
 
+/* Passive Verteidigung (#56): Schalter je Geltungsbereich (Spielercharaktere / alle anderen). */
+.dsa5-helpers-house-rules .dsa5h-hr-scope {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-scope li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+}
+
 .dsa5-helpers-house-rules .dsa5h-hr-maneuver-table {
   width: auto;
   min-width: 60%;
@@ -7965,59 +8194,110 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   }
 }
 
-/* Eigenes HUD (scripts/hud.js): Reiter in der DSA-Leiste. Chips mit Symbol und Namen (Nutzer 2026-10-21) in einem
-   festen Raster, damit alles in die zwei Slot-Reihen der Leiste passt (~330 × 90 px): oben drei kompakte Modul-Chips,
-   nach einer Trennlinie die Hausregeln in zwei Spalten. Aktive Zustände rot umrandet. Spalten höchstens 68 px breit
-   (Modul-Chips ~140 px, Hausregeln ~210 px), linksbündig: in einer breiten Leiste bleibt rechts Platz, statt dass die
-   Chips zu langen Balken werden (Nutzer 2026-10-21). */
-#hotbar .dsa5h-hud-tab i { font-size: 15px; }
+/* Eigenes HUD (scripts/hud.js): Reiter in der DSA-Leiste, Variante B (Nutzer-Entscheidung 2026-10-28). Links die
+   Hausregel-Aktionen als Kacheln (Symbol + Kurzname, aktiv golden mit Leuchten, Zähler als Abzeichen), rechts eine schmale
+   Spalte mit den Modul-Knöpfen. Passt in die zwei Slot-Reihen der Leiste (~90 px hoch: 2 × 40 px Kacheln); mehr als zwei Reihen scrollen. */
+#hotbar .dsa5h-hud-tab i {
+  font-size: 15px;
+}
 #hotbar .sections .dsa5h-hud:not(.collapsed) {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 68px));
-  justify-content: start;
-  align-content: start;
-  gap: 3px 4px;
-  padding: 0 2px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+  padding: 2px 2px 0;
   overflow-y: auto;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-chip {
+#hotbar .dsa5h-hud .dsa5h-hud-actions {
   display: flex;
-  align-items: center;
-  gap: 5px;
+  flex-wrap: wrap;
+  gap: 3px 4px;
   min-width: 0;
   width: auto;
-  height: 27px;
-  padding: 0 8px 0 6px;
-  border: 1px solid rgba(185, 154, 92, .55);
-  border-radius: 14px;
-  background: var(--dsa-hotbar-chip-bg, rgba(40, 32, 26, .85));
+  height: auto;
+  border: 0;
+}
+#hotbar .dsa5h-hud .dsa5h-hud-side {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  grid-column: 2;
+  width: auto;
+  height: auto;
+  padding-left: 6px;
+  border: 0;
+  border-left: 1px solid rgba(217, 180, 95, .45);
+}
+#hotbar .dsa5h-hud .dsa5h-hud-tile {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  width: 64px;
+  height: 40px;
+  margin: 0;
+  padding: 0 2px;
+  border: 1px solid rgba(217, 180, 95, .45);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .07);
   color: var(--dsa-hotbar-chip-text, #f3e9d6);
-  font-size: 12px;
-  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-chip.module { grid-column: span 2; height: 24px; font-size: 11px; }
-#hotbar .dsa5h-hud .dsa5h-hud-chip.rules { grid-column: span 3; }
-/* Name nur so breit wie nötig, damit ein Zustand („0/2“) direkt dahinter steht. */
-#hotbar .dsa5h-hud .dsa5h-hud-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#hotbar .dsa5h-hud .dsa5h-hud-chip i { flex: none; width: 14px; text-align: center; font-size: 13px; color: #d9b45f; }
-#hotbar .dsa5h-hud .dsa5h-hud-chip.rules i { color: #e07a5f; }
-@media (hover: hover) {
-  #hotbar .dsa5h-hud .dsa5h-hud-chip:hover { border-color: #d9b45f; filter: brightness(1.12); }
+#hotbar .dsa5h-hud .dsa5h-hud-tile i {
+  font-size: 15px;
+  color: #d9b45f;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-chip.active { border-color: #cf1e1e; box-shadow: 0 0 6px rgba(207, 30, 30, .7); }
-#hotbar .dsa5h-hud .dsa5h-hud-badge { flex: none; padding: 0 5px; border-radius: 8px; background: color-mix(in srgb, currentColor 14%, transparent); font-size: 11px; }
-/* Trennlinie zwischen Modul und Hausregeln (Text nur für Screenreader, sichtbar wäre eine eigene Zeile zu viel). */
-#hotbar .dsa5h-hud .dsa5h-hud-group {
-  grid-column: 1 / -1;
-  width: auto;
-  min-width: 0;
-  height: 0;
+#hotbar .dsa5h-hud .dsa5h-hud-name {
+  max-width: 60px;
   overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#hotbar .dsa5h-hud .dsa5h-hud-tile.active {
+  border-color: #e0c48c;
+  background: radial-gradient(circle at 50% 40%, rgba(224, 192, 128, .55), rgba(224, 192, 128, .15));
+  box-shadow: 0 0 8px rgba(224, 192, 128, .7);
+}
+#hotbar .dsa5h-hud .dsa5h-hud-tile.active i {
+  color: #fff6dc;
+}
+#hotbar .dsa5h-hud .dsa5h-hud-badge {
+  position: absolute;
+  right: -4px;
+  bottom: -5px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: #b3241a;
+  color: #fff;
+  font-size: 10px;
+  line-height: 15px;
+}
+#hotbar .dsa5h-hud .dsa5h-hud-mini {
+  display: grid;
+  place-items: center;
+  width: var(--hit-md, 26px);
+  height: var(--hit-md, 26px);
+  margin: 0;
+  padding: 0;
   border: 0;
-  border-top: 2px solid rgba(217, 180, 95, .8);
-  color: transparent;
-  pointer-events: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .06);
+  color: #d9b45f;
+  font-size: 13px;
+  cursor: pointer;
+}
+#hotbar .dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini):focus-visible {
+  outline: 2px solid #e0c48c;
+  outline-offset: 1px;
+}
+@media (hover: hover) {
+  #hotbar .dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini):hover {
+    background: rgba(224, 192, 128, .3);
+  }
 }
 
 /* Hausregel Helfen: Schalter „Als Hilfe würfeln“ im Talent-Probendialog (#44). */

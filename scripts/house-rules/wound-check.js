@@ -1,9 +1,9 @@
-import { isFoundry13 } from '../compat/runtime.js';
 // Hausregel „Wundeinschätzung“ (Idee und erste Umsetzung als World Script + Makro: Knigge; ins Modul übernommen
 // 2026-10-05). Ein Held schätzt mit einer verdeckten Probe auf Heilkunde Wunden ein, wie schwer ein markiertes Ziel
 // verletzt ist; je mehr QS, desto genauer. Das Ergebnis merkt sich der Held (Actor-Flag je Ziel), bis sich die LeP des
 // Ziels um mindestens ein Viertel geändert haben. Logik, Staffel und Texte wie im Original, nur lokalisiert und mit
 // Modul-Flags statt „world“.
+import { isFoundry13 } from '../compat/runtime.js';
 const MODULE_ID = 'dsa5-helpers';
 const PREFIX = 'DSA5HELPERS.HouseRules.woundCheck.';
 // Ab dieser LeP-Änderung (Anteil an max) gilt eine Einschätzung als veraltet.

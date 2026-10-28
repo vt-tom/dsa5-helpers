@@ -200,6 +200,11 @@
       "PersonaeTab": {
         "Name": "Reiter „Personen“",
         "Hint": "Zeigt im Heldenbogen die freigegebenen Einträge aus Dramatis Personae und Bestiarium des Almanachs. Erscheint nur, wenn im Almanach Personen-Journale aktiviert sind."
+      },
+      "SkillSuggestions": {
+        "Name": "Talent-Vorschläge auf dem Titelblatt",
+        "Hint": "Wie viele Talente der Heldenbogen über den Favoriten vorschlägt (angefragte Proben, oft gewürfelte Talente, gute Erfolgschance usw.). Gilt für Helden, bei denen du die Anzahl nicht im Bogen (− / + im Titel „Vorschläge“) geändert hast. „Aus“ blendet die Vorschläge überall aus. Gilt nur für dich.",
+        "Off": "Aus"
       }
     },
     "Changelog": {
@@ -508,6 +513,54 @@
           "RollFlavor": "Gezielter Treffer ({zone}): zusätzliche SP",
           "NotOwner": "Den Zustand setzt die Spielleitung oder wer das Ziel führt."
         }
+      },
+      "passiveDefense": {
+        "Title": "Passive Verteidigung",
+        "Summary": "Akteure verteidigen auf Wunsch automatisch: Gelingt die Attacke, würfelt das Modul offen einen W20 gegen die gewählte oder beste Verteidigung – ohne Reaktionsdialog.",
+        "OtherScene": "Passive Verteidigung: Das Ziel steht nicht in der Szene, die du gerade ansiehst – bitte wie gewohnt verteidigen lassen.",
+        "Block": "Verteidigung bei Angriffen",
+        "BlockHint": "Gilt für Angriffe auf diesen Helden, solange die Hausregel aktiv ist.",
+        "Mode": {
+          "manual": "Selbst würfeln (normale Regel)",
+          "best": "Automatisch: beste Verteidigung",
+          "option": "Automatisch: {name} ({value})",
+          "missing": "Automatisch: gewählte Waffe nicht angelegt – beste Verteidigung",
+          "Menu": "Passive Verteidigung …",
+          "Hint": "Womit verteidigt {name}, wenn er angegriffen wird?",
+          "Save": "Übernehmen",
+          "Short": {
+            "manual": "selbst",
+            "best": "beste",
+            "dodge": "Ausweichen",
+            "parryWeaponless": "waffenlos"
+          },
+          "HudHint": "Womit verteidigt der gewählte Token, wenn er angegriffen wird? Anklicken zum Ändern."
+        },
+        "Chat": {
+          "hit": "{attacker} trifft {defender}.",
+          "defended": "{defender} wehrt den Angriff von {attacker} ab.",
+          "miss": "Der Angriff von {attacker} auf {defender} misslingt.",
+          "Roll": "Verteidigung (W20): {roll}",
+          "GMTitle": "Passive Verteidigung (nur SL)",
+          "GMLine": "AT {at} gelungen (W20 {d20}). Verteidigung mit {option}: V {defense}, gewürfelt {roll} – abgewehrt bei {defense} oder weniger.",
+          "Option": "Verteidigung",
+          "Base": "Basis",
+          "Mods": "Mod."
+        },
+        "Page": {
+          "Intro": "Kämpfe gehen schneller, wenn nicht jeder Angriff einen Reaktionsdialog braucht. Mit dieser Hausregel verteidigen Akteure auf Wunsch automatisch: Der Angreifer markiert sein Ziel und würfelt die Attacke wie gewohnt. Gelingt sie, würfelt das Modul sofort und offen einen W20 gegen die Verteidigung des Ziels.",
+          "Formula": "Abgewehrt bei W20 ≤ V – wie eine normale Parade oder ein normales Ausweichen. Jede gelungene Attacke wird also genauso oft abgewehrt wie mit dem Reaktionsdialog. Beispiel AT 13 gegen V 6: Die Attacke gelingt in 65 % der Fälle, davon werden 30 % abgewehrt.",
+          "ScopeTitle": "Für wen?",
+          "Scope": "Je Akteur einstellbar: im Heldenbogen unter Kampf › Körper („Verteidigung bei Angriffen“), bei NSC und Kreaturen im Menü ⋮ des Systembogens. Zur Wahl stehen „Selbst würfeln“ (normale Regel), „Automatisch: beste Verteidigung“ oder eine bestimmte Waffe bzw. Ausweichen. Ohne Wahl würfeln Spielercharaktere selbst, NSC und Kreaturen verteidigen automatisch mit ihrer besten Option.",
+          "Step1": "Ziel markieren und wie gewohnt angreifen (Nah- oder Fernkampf).",
+          "Step2": "Als Verteidigung zählt die gewählte Option, sonst die höchste aus Ausweichen, waffenloser Parade, getragenen Waffen und Schilden bzw. den Paradewerten einer Kreatur – gegen Fernkampf nur Ausweichen und Schilde. Zustände, weitere Verteidigungen in der Runde, Finte und ähnliche Abzüge sind eingerechnet; nach einer 1 im Angriff zählt die halbe Verteidigung (gerundet).",
+          "Step3": "Misslingt die Attacke, ist der Angriff vorbei. Gelingt sie, würfelt das Modul den W20 für die Verteidigung.",
+          "Step4": "Bei einem Treffer folgt der Schaden wie bei einem unverteidigten Angriff, sonst meldet der Chat die Abwehr. Die Spielleitung kann die Rechnung an der Chatkarte aufklappen.",
+          "Note1": "Eine Verteidigung zählt als verbraucht, wenn die Attacke gelungen ist.",
+          "Note2": "Ein Schip auf die Attacke würfelt auch die Verteidigung neu; eine alte Trefferkarte verschwindet, wenn der Angriff jetzt abgewehrt wird. Bereits angewendeter Schaden muss dann von Hand korrigiert werden.",
+          "Note3": "Kritische Paraden, Paradepatzer und Fähigkeiten, die eine kritische Parade voraussetzen, entfallen bei der automatischen Verteidigung.",
+          "Note4": "Die Spielleitung muss angemeldet sein und die Szene des Ziels ansehen. Ohne markiertes Ziel und bei Gelegenheitsangriffen gilt der normale Ablauf."
+        }
       }
     },
     "NoConditions": "Keine Zustände.",
@@ -647,7 +700,15 @@
     "Hud": {
       "Tab": "DSA5 Helpers",
       "Settings": "Einstellungen",
-      "Rules": "Hausregeln"
+      "Rules": "Hausregeln",
+      "Short": {
+        "help": "Helfen",
+        "woundCheck": "Wunden",
+        "stance": "Haltung",
+        "aim": "Zielen",
+        "weakness": "Schwachp.",
+        "passiveDefense": "Abwehr"
+      }
     },
     "Almanac": {
       "Open": "Almanach öffnen",
@@ -687,6 +748,31 @@
       "Summary": "{name}: {value} von {max} Zonen-LeP",
       "Failed": "Zone ausgefallen",
       "Penalty": "Widerstands-Malus {value}"
-    }
+    },
+    "Suggestions": {
+      "Title": "Vorschläge",
+      "Reason": {
+        "requested": "Angefragt",
+        "mention": "Im Chat genannt",
+        "usage": "Oft gewürfelt",
+        "specialist": "Bester der Gruppe",
+        "combat": "Im Kampf nützlich",
+        "advanced": "Kürzlich gesteigert",
+        "chance": "Gute Erfolgschance",
+        "classic": "Häufige Probe"
+      },
+      "RequestedCount": "{count} angefragt",
+      "Count": "Anzahl der Vorschläge",
+      "Fewer": "Weniger Vorschläge",
+      "More": "Mehr Vorschläge",
+      "SkillNames": {
+        "intimidation": "Einschüchtern",
+        "empathy": "Menschenkenntnis",
+        "stealth": "Verbergen"
+      }
+    },
+    "AlsoWorn": "Ebenfalls angelegt",
+    "AlsoWornHint": "Diese Waffen sind angelegt, aber keiner Hand zugeordnet. Würfeln geht trotzdem; „In die Hand“ ordnet sie über die Handwahl des Systems zu.",
+    "TakeInHand": "In die Hand nehmen"
   }
 }

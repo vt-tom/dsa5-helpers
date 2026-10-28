@@ -13,6 +13,11 @@
 # Ein Pre-release (prereleased) zeigt mit seinem module.json auf den Beta-Kanal; wird es später zum normalen Release
 # erklärt (released), baut die Action dasselbe Release neu und das module.json zeigt auf den stabilen Kanal.
 #
+# v13-Beta (seit 0.6.2, Branch v13), eigener Job „v13“ unten:
+# - v13-Beta: https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13-beta/module.json
+#            Tag v13-<Version> (z. B. v13-0.6.2), nur als Pre-release. Paket aus tools/package-module.py (Foundry 13.351,
+#            DSA5 7.5.1, ohne Mobil-CSS). Die Kanäle der v14-Ausgabe bleiben unberührt.
+#
 # Dritter Kanal „mobile“ (Testversionen von Branch feature/mobile, seit 2026-10-15), eigener Job unten:
 # - Mobil:   https://github.com/vt-tom/dsa5-helpers/releases/download/mobile/module.json
 #            Tag mobile-v<Version> (z. B. mobile-v0.6.0), nur als Pre-release. Stabil- und Beta-Kanal bleiben unberührt.
@@ -27,8 +32,11 @@ permissions:
 
 jobs:
   build:
-    # Der Beta-Kanal selbst ist auch ein Pre-release — dafür nichts bauen. Mobil-Tags baut der Job „mobile“.
-    if: github.event.release.tag_name != 'beta' && github.event.release.tag_name != 'mobile' && !startsWith(github.event.release.tag_name, 'mobile-v')
+    # Die Kanäle selbst sind auch Pre-releases — dafür nichts bauen. Mobil- und v13-Tags bauen eigene Jobs.
+    if: >-
+      github.event.release.tag_name != 'beta' && github.event.release.tag_name != 'mobile' &&
+      github.event.release.tag_name != 'foundry-v13-beta' &&
+      !startsWith(github.event.release.tag_name, 'mobile-v') && !startsWith(github.event.release.tag_name, 'v13-')
     runs-on: ubuntu-latest
     env:
       TAG: ${{ github.event.release.tag_name }}
@@ -82,6 +90,44 @@ jobs:
               --notes "Nicht über diese Seite installieren: in Foundry die Beta-Manifest-URL eintragen – https://github.com/$REPO/releases/download/beta/module.json"
           fi
           gh release upload beta beta/module.json --clobber
+
+  v13:
+    # Beta-Ausgabe für Foundry v13 vom Branch v13: module-v13-beta.zip mit v13-Manifest, fester Pre-release
+    # „foundry-v13-beta“ als Kanal. Foundry übernimmt die Kanal-URL aus dem module.json im ZIP.
+    if: startsWith(github.event.release.tag_name, 'v13-')
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name }}
+      REPO: ${{ github.repository }}
+      PRERELEASE: ${{ github.event.release.prerelease }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Nur als Pre-release
+        if: env.PRERELEASE != 'true'
+        run: |
+          echo "::error::$TAG ist eine v13-Beta und darf nur als Pre-release veröffentlicht werden."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Paket bauen
+        run: |
+          python3 tools/package-module.py --foundry 13 --version "${TAG#v13-}" --output out
+          dir=$(ls -d out/*/ | head -n 1)
+          cp "${dir}dsa5-helpers/module.json" module.json
+          cp "${dir}module-v13-beta.zip" module-v13-beta.zip
+          unzip -p module-v13-beta.zip module.json | grep -E '"(version|manifest|download|maximum)"'
+
+      - name: Assets an das Release hängen
+        run: gh release upload "$TAG" module.json module-v13-beta.zip --clobber
+
+      - name: v13-Beta-Kanal aktualisieren
+        run: |
+          if ! gh release view foundry-v13-beta >/dev/null 2>&1; then
+            gh release create foundry-v13-beta --prerelease --target "$GITHUB_SHA" --title "Beta-Kanal Foundry v13" \
+              --notes "Nicht über diese Seite installieren: in Foundry v13 die Manifest-URL eintragen – https://github.com/$REPO/releases/download/foundry-v13-beta/module.json"
+          fi
+          gh release upload foundry-v13-beta module.json --clobber
 
   mobile:
     # Testversionen von feature/mobile: nur module.zip mit Mobil-Manifest, fester Pre-release „mobile“ als Kanal.

@@ -591,3 +591,50 @@ Jeder Schritt: Testinstanz, Mess-Skript, Screenshots. Den Click-Dummy nur dort n
 - **Zweite Rückmeldung (2026-10-19):** Reiterleiste unten als **ganze Leiste wischbar** statt „Mehr“ (Entscheidung des Nutzers aus drei Varianten; gut fünf Reiter im Bild, der aktive wird mittig gescrollt). Die Fensteraktionen (Bogen-Thema, Spieleransicht, Einträge des Menüs „⋮“) liegen jetzt hinter einem **„⋮“ oben rechts im Kopf** (`openMenuSheet()`); „Bogen wechseln“ entfällt mobil (das System hat keinen Handy-Bogen). „Sozialstatus“ u. a. im Kasten Persönliche Daten lesbar (Bezeichnung normal, 14 px).
 - **P3 umgesetzt (2026-10-19):** Favoriten-Karten mit größerem Namen, die ganze Karte würfelt. Ausrüstung: Kategorie-Chips aus den Abschnitten des Systems (`addInventoryChips()`, Wahl merkt sich der Bogen, Suche zeigt wieder alle), Zeilen mit Gewicht als Unterzeile und Anzahl „× n“, Taschen als Liste, leere Abschnitte im Spielmodus aus. Notizen: Persönliche Daten einspaltig „Bezeichnung über Wert“, leere Angaben im Spielmodus weggelassen, Textfelder kleiner. Gefährten: Name 22 px zweizeilig, Knöpfe 44 px. Steigerungsplaner bricht um. Ü9: Gegenstandsblätter des Systems sind bildschirmfüllend und bedienbar (Reiter wischbar), nichts geändert. Ü10: dunkles Bogen-Thema geprüft, nur aktive Unterreiter/Chips angepasst. Ü8: leere Abschnitte im Spielmodus in Magie, Religion, Kampf und Ausrüstung aus (das Kampf-Panel mit den Händen ausgenommen). Ü7 ruht (#34). Tablet in der Testinstanz ohne Überlauf.
 - **Offen:** Gerätetest; Tablet-Fensterknöpfe (siehe AUFGABEN.md).
+
+## 15. Fenster ohne Mobil-Design (Bestandsaufnahme 2026-10-28)
+
+Auftrag: Welche Fenster lassen sich mit dem aktuellen Funktionsumfang (0.6.2, nur v14) in der Mobil-Oberfläche öffnen, sind aber noch nicht im Mobil-Design? Grundlage ist eine **Code-Analyse** (Modul, DSA5 8.1.11, Foundry 14), noch keine Bildschirmprüfung – Schritt 1 des Plans holt das in der Testinstanz nach.
+
+### 15.1 Was es heute gibt
+
+- **Im Mobil-Design:** Heldenbogen (Smartphone komplett, Tablet Desktop-Aufbau), Chat, Journal-Verzeichnis und -Blatt, Kontextmenü als Blatt, „Zustand hinzufügen“ als Blatt, „⋮“-Menü des Bogens.
+- **Probendialoge:** Alle Dialoge auf Basis von Foundrys `DialogV2` haben `.dialog-form` und erscheinen auf dem Smartphone als Blatt von unten (14.6, Ü1); auf dem Tablet nur als 640 px breites Blatt ohne eigene Gestaltung. Dazu gehören neben Talent/Zauber/Liturgie/Angriff/Parade auch Regeneration, Schip-Dialoge, Fallschaden und Waffenlos-Start (DSA5 `DSA5Dialog` → `DialogV2`).
+- **Alle übrigen Fenster** bekommen nur `dsa5h-m-window` (`markWindow` in `mobile.js`): bildschirmfüllend, 44-px-Kopfleiste, sonst Desktop-Aussehen. Das betrifft vor allem die Systemfenster auf Basis `DefaultAppv2` (kein `.dialog-form`).
+
+### 15.2 Fenster, die angepasst werden müssen
+
+| # | Fenster | Erreichbar über | Heute | Vorschlag | Aufwand |
+|---|---|---|---|---|---|
+| F1 | **Talent-Vorschläge** (neu in 0.6.2, Teil des Titelblatts) | Titelblatt | keine Mobil-Regeln, zwei Spalten auf 360 px | einspaltige Karten wie die Favoriten auf dem Handy, ganze Karte würfelt, Anzahl −/+ 44 px; Mobil-Dummy zeigt „Vorschläge“ bereits | S |
+| F2 | **Kraftspeicher** (neu in 0.6.2): Radialmenü + Ladedialog des Systems (`PowersourceChargeDialog`, `DefaultAppv2`) | Kugel an den AsP | Radialmenü ist auf Maus/Hover ausgelegt, Dialog nur Vollbild | Handy: Antippen öffnet ein Blatt mit Liste „Speicher · Wert/Max“, darunter „Laden“ → Systemdialog als Blatt mit 44-px-Eingaben; Tablet: Radialmenü behalten, Dialog als Blatt | M |
+| F3 | **Lebensenergiezonen-Dialog** von Rüstkammer II (neu in 0.6.2, Fremdmodul) | Zonenliste im Kampf-Reiter | Vollbild, Desktop-Aussehen | nur CSS: Blatt von unten, Zonen untereinander, Eingaben 44 px | S |
+| F4 | **Kampfdialog mit Modul-Zusätzen** (Grundmanöver-Abschnitt, „Als Hilfe würfeln“, Schwachpunkte-QS-Verteilung, Wundeinschätzung) | Waffen, Talente, Chat | Grundgerüst als Blatt, eigene Abschnitte nicht geprüft | Grundmanöver-Zeilen 44 px, Abschnitt einklappbar; QS-Verteilung als −/+-Regler; auf dem Tablet dieselbe Gestaltung wie auf dem Handy, nur breiter | M |
+| F5 | **Gegenstandsblätter** des Systems (Waffe, Rüstung, Zauber, Talent …) | Name antippen bzw. Langdruck → Bearbeiten | bedienbar, aber Desktop-Aussehen (14.6, Ü9) | im Spielmodus Lese-Ansicht: Kopf mit Bild/Name, Reiter als wischbare Chips (wie Ü5), Beschreibung in Lesegröße, Eingaben 16 px; nur CSS auf die Item-Sheet-Klassen | M |
+| F6 | **Almanach** (CalendarPicker) für Personen/Aufträge | Reiter Personen/Aufträge | großes Desktop-Fenster mit Kalender | Variante A: Eintrag direkt als Blatt (Bild, Name, Text) ohne Almanach; Variante B: Almanach per CSS einspaltig. Entscheidung nötig | M–L |
+| F7 | **Modul-Fenster**: Changelog (öffnet sich nach Updates von selbst!), Hausregelbuch, Würfelstatistik, „Heldenbogen einrichten“ | automatisch bzw. Einstellungen | Vollbild, Desktop-Aussehen | eigene Fenster → Templates/CSS frei: Kopf mit „‹“, Lesespalte, Inhaltsverzeichnis als Chips; Changelog auf Mobilgeräten nur als Hinweis „Neu in x.y – anzeigen“ | M |
+| F8 | **Foundry-Einstellungen** (`SettingsConfig`) und Moduleinstellungen | Konto-Menü → Foundry-Einstellungen | Vollbild, Desktop-Formular | CSS: Kategorien als Chips, Einstellung = Zeile mit Schalter rechts, Hinweis darunter | S–M |
+| F9 | **Kleine Systemfenster** (`DefaultAppv2`): Statuseffekt-Wert (`ActorActiveEffectValueDialog`), Ausrüstungsschaden, Bildanzeige („Den Spielern zeigen“, `ImagePopout`) | Status-Reiter, Chat, SL | Vollbild statt kleinem Dialog | allgemeine Regel: kleine Fenster als Blatt von unten (Höhe nach Inhalt), Bildanzeige schwarz mit Zoom-Gesten | S |
+| F10 | **SL-Fenster**: „Probe anfordern“ (Systemdialog), Akteur-Verzeichnis → NSC-/Kreaturbögen des Systems | SL-Knöpfe der Shell | Probe anfordern als Blatt; NSC-/Kreaturbögen in Desktop-Ansicht | „Probe anfordern“ prüfen und polieren; NSC/Kreatur erst mit #53/#54 (eigene Bögen im Modul-Design), bis dahin nichts | S (+ #53/#54) |
+| F11 | **Kampftracker-Panel** | schwebender Knopf Kampf | Foundry-Tracker im Panel | prüfen: Zeilen 44 px, eigener Zug hervorgehoben (5.1), Initiative würfeln | S |
+
+**Bewusst nicht** (Hinweis „am Desktop“ statt Umbau): Charakterbauer/Assistent (`WizardDSA5`), Spielermenü/Beschwörung (`PlayerMenu`), Token-Konfiguration, Dateibrowser, Händler/Handel, System-Changelog (`PatchViewer`), Fallen-/Regionswerkzeuge, alle Fenster des Bearbeiten-/Steigern-Modus (auf dem Handy nur Spielmodus, 14.5). Tooltips (Formeln) gehören zu #52.
+
+### 15.3 Vorgehen
+
+1. **Bestandsaufnahme live (S):** Testinstanz auf Port 30077 (Regeln siehe AGENTS.md), 390 × 844 und 820 × 1180, hell/dunkel; jedes Fenster aus 15.2 öffnen, Screenshot + Mess-Skript (waagerechter Überlauf, Tippziele < 44 px, Schrift < 14 px). Ergebnis ergänzt die Tabelle; Fenster ohne Befund fallen heraus.
+2. **Gemeinsame Bausteine (S–M):** eine Regel für „Fenster als Blatt“ (kleine `DefaultAppv2`/`DialogV2` nach Inhaltshöhe, große Fenster Vollbild) und einen einheitlichen Mobil-Fensterkopf („‹“ + Titel, wie im Bogen) für alle `dsa5h-m-window`. Danach sehen alle Fenster aus F9 schon passend aus.
+3. **P1 – am Tisch und neu in 0.6.2:** F1 Vorschläge, F2 Kraftspeicher, F3 Zonen, F4 Kampfdialog-Zusätze, F11 Kampftracker. Kommt am besten noch in die 0.6.2-Beta, damit die neuen Funktionen nicht ohne Mobil-Fassung erscheinen.
+4. **P2 – Lesen:** F5 Gegenstandsblätter, F6 Almanach (nach Entscheidung), F7 Modul-Fenster.
+5. **P3 – Rest:** F8 Einstellungen, F10 SL-Fenster, Desktop-Hinweis für die bewusst ausgelassenen Fenster.
+
+Je Schritt: Entwurf im Mobil-Click-Dummy (`clickdummy/mobile/`, 2–3 Varianten bei neuen Mustern wie F2/F5/F6), Nutzerentscheidung, dann CSS in `styles/dsa5-helpers-mobile.css` (nur Systemklassen ansprechen, keine Systemvorlagen ersetzen), bei eigenen Fenstern Templates; Prüfung in der Testinstanz mit Mess-Skript, Desktop-Regression mit `node tests/sheet.test.cjs`, CHANGELOG. Grober Rahmen: P1 2–3 Tage, P2 2–4 Tage (je nach F6), P3 1–2 Tage.
+
+### 15.4 Entscheidungen
+
+Nutzer 2026-10-28: E-F1 P1 kommt in 0.6.3 (zunächst „noch in 0.6.2“, am selben Tag geändert: 0.6.2 wird die Beta mit dem bisherigen Stand); E-F3 Systemfenster nur gut bedienbar (kein Pergament-Design); E-F4 Changelog auf Mobilgeräten nur als Hinweis. E-F2 noch offen.
+
+- **E-F1 Reihenfolge:** P1 noch in 0.6.2 oder alles in 0.6.3?
+- **E-F2 Almanach (F6):** Eintrag direkt als Blatt (A) oder Almanach mobil anpassen (B)?
+- **E-F3 Systemfenster im Modul-Design?** Gegenstandsblätter und Einstellungen nur „gut bedienbar“ (größere Ziele, eine Spalte, Foundry-Look) oder auch optisch wie der Bogen (Pergament, Goldlinien)? Letzteres ist mehr CSS und bricht eher bei System-Updates.
+- **E-F4 Changelog nach Updates:** auf dem Handy automatisch öffnen oder nur Hinweis?

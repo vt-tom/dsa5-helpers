@@ -1,3 +1,4 @@
+import { initSkillSuggestions } from './skill-suggestions/tracking.js';
 import { Dsa5HelpersCharacterSheet as ImportedCharacterSheet, createCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
 import { clearCharacterBuilderFlag } from './compat/runtime.js';
 import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
@@ -63,6 +64,7 @@ Hooks.once('init', async () => {
   initMobile();
   // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
   initSheetSwitcher();
+  initSkillSuggestions();
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
   Handlebars.registerHelper('dsa5hFormatNum', value => String(value ?? 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' '));
@@ -82,6 +84,7 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/house-rules/maneuvers-de.hbs",
   "modules/dsa5-helpers/templates/house-rules/maneuvers-en.hbs",
   "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs",
+  "modules/dsa5-helpers/templates/house-rules/passive-defense.hbs",
   "modules/dsa5-helpers/templates/actors/dsa5-helpers-character-sheet.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body.hbs",
   "modules/dsa5-helpers/templates/actors/parts/energy-zone.hbs",
@@ -119,6 +122,7 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/specs.hbs",
   "modules/dsa5-helpers/templates/actors/parts/spell-list.hbs",
   "modules/dsa5-helpers/templates/actors/parts/status.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/suggestions.hbs",
   "modules/dsa5-helpers/templates/actors/parts/tradition-items.hbs",
   "modules/dsa5-helpers/templates/actors/parts/weapon-short.hbs",
   ...(typeof Dsa5HelpersCharacterSheet.prototype.prepareCompanionTab === 'function' ? [

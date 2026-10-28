@@ -57,5 +57,27 @@ class PackageTests(unittest.TestCase):
                 builder.manifest_for(source, generation, version, channel)
 
 
+
+class InstallTest(unittest.TestCase):
+    def test_install_backs_up_and_replaces_module(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            built = builder.package(13, output=tmp / 'out')
+            data = tmp / 'Data'
+            old = data / 'modules' / 'dsa5-helpers'
+            old.mkdir(parents=True)
+            (old / 'module.json').write_text('{"old": true}', encoding='utf-8')
+            result = builder.install(built['folder'], data, backup_root=tmp / 'backups')
+            self.assertEqual(builder._hashes(old), builder._hashes(built['folder']))
+            self.assertEqual(json.loads((Path(result['backup']) / 'module.json').read_text(encoding='utf-8')), {'old': True})
+            self.assertIn('dsa5-helpers-v13', result['backup'])
+            self.assertFalse((data / 'modules' / '.dsa5-helpers-new').exists())
+
+    def test_install_refuses_missing_modules_folder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            built = builder.package(13, output=Path(tmp) / 'out')
+            with self.assertRaises(ValueError):
+                builder.install(built['folder'], Path(tmp) / 'nothing', backup_root=Path(tmp) / 'backups')
+
 if __name__ == '__main__':
     unittest.main()

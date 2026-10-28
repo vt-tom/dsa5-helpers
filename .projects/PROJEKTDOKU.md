@@ -1,16 +1,16 @@
 # PROJEKTDOKU.md — Das Wichtigste zum Projekt
 
-Stand: 2026-10-26. Offene Arbeit steht in [AUFGABEN.md](AUFGABEN.md), die ausführliche Historie in [archive/](../docs/archive/).
+Stand: 2026-10-28. Offene Arbeit steht in [AUFGABEN.md](AUFGABEN.md), die ausführliche Historie in [archive/](../docs/archive/).
 
 ## Ziel
 
-Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer Heldenbogen, den Spieler zusätzlich zum Systembogen auswählen können. Nur für Spielercharaktere; Datenzugriffe aber so allgemein halten, dass eine Erweiterung später möglich bleibt.
+Foundry-VTT-Modul für DSA5 (v14 mit Mobil; seit 0.6.2 zusätzlich eine v13-Desktop-Ausgabe, siehe unten). Erstes Feature: ein neuer, übersichtlicherer Heldenbogen, den Spieler zusätzlich zum Systembogen auswählen können. Nur für Spielercharaktere; Datenzugriffe aber so allgemein halten, dass eine Erweiterung später möglich bleibt.
 
 ## Aktueller Stand
 
 - Echtes Modul läuft: alle 10 Reiter (Titelblatt, Eigenschaften, Talente, Kampf, Magie, Religion, Ausrüstung, Status, Notizen, Gefährten) mit echten Systemdaten.
 - Favoriten (Stern), Spiel-/Bearbeiten-Modus, Magie/Religion nur bei passender Fähigkeit sichtbar.
-- Statischer Prüfstand: v14 83 Tests bestanden, v13 81 bestanden und 2 wegen fehlender Systemfunktionen übersprungen; 2 Pakettests bestanden. Live-Abnahme durch Nutzer offen.
+- Statischer Prüfstand (2026-10-28): v14 93 Tests bestanden, v13 91 bestanden und 2 wegen fehlender Systemfunktionen übersprungen; 2 Pakettests bestanden. v13-Lauf: `FOUNDRY_DATA_PATH=D:/FoundryVTT/user-data-paths/v13/Data FOUNDRY_APP_PATH=D:/FoundryVTT/foundry-nodejs-v13 node tests/sheet.test.cjs`. Live-Abnahme von 0.6.2 durch Nutzer offen.
 - UI/UX-Review vom 2026-09-25 ([Feedback](../docs/archive/UI-UX-FEEDBACK-2026-09-25.md)): Pakete A–D (Trefferflächen/Tastatur, Lesbarkeit, Waffentabellen, Orientierung/Rückmeldung) in Clickdummy **und** Foundry umgesetzt und live bestätigt. Pakete E (Favoritenraster) und G (Detailpunkte je Reiter) sowie die Munitionszeile abgenommen und in Foundry übertragen (live zu prüfen). Aus Paket F sind Porträtformat und schwebende Titelleiste in Foundry; Geld-Panel „Zeile“ seit 2026-09-30 auch in Foundry; Kampf-Unterreiter „Körper“ seit 2026-09-30 in Foundry (live zu prüfen, vorerst neben der Übersicht) — siehe AUFGABEN.md.
 - Hier gibt es kein laufendes Foundry. Alles ist nur im Code geprüft – bestätigt wird erst live beim Nutzer. Ausnahme (seit 2026-10-15): Für Mobil-Tests kann ein Agent eine eigene, temporäre Foundry-Instanz starten (eigener Datenordner im Scratchpad, Kopie der Welt „DSA5“, `systems/dsa5` und `modules` per Verzeichnis-Verknüpfung, Port 30077, `node foundry-nodejs-v14/main.js --dataPath=… --port=30077`). Die pm2-Instanzen des Nutzers (30000/30001) und ihre Welten nie anfassen.
 - Mobile Support (seit 2026-10-20 Teil von 0.6.0, Beta, Branch `release/0.6.0`, Stand in [Issue #43](https://github.com/vt-tom/dsa5-helpers/issues/43)): Stufe 1 + 2 gebaut und in der Testinstanz geprüft, Chat und Journal im Modul-Design (2026-10-19), Stand in [MOBILE.md](../docs/MOBILE.md) 13.10.
@@ -18,7 +18,7 @@ Foundry-VTT-Modul (v14) für DSA5. Erstes Feature: ein neuer, übersichtlicherer
 ## Projektübersicht
 
 - **Modulname:** `dsa5-helpers`
-- **Zielplattform:** [Foundry Virtual Tabletop](https://foundryvtt.com/), Version **v14**
+- **Zielplattform:** [Foundry Virtual Tabletop](https://foundryvtt.com/), Version **v14** (Desktop + Mobil) und **v13** (nur Desktop, eigene Ausgabe ab 0.6.2)
 - **Zielsystem:** Das Schwarze Auge 5 (DSA5) — Foundry-Systempaket `dsa5`
 - **Modultyp:** Foundry VTT Modul (kein eigenständiges Systempaket), erweitert/ergänzt das bestehende DSA5-System
 - **Erstes Ziel:** Ein neuer, alternativer Charakterbogen (Actor Sheet) für DSA5-Charaktere
@@ -158,6 +158,9 @@ Verbindliche Arbeitsregeln stehen ausschließlich in [AGENTS.md](../AGENTS.md).
 - **Foundry-Grundregel `dl dt`** setzt einen schwarzen `text-shadow` — in eigenen `<dl>` ausdrücklich `text-shadow: none` (2026-10-20, „Sozialstatus“ unlesbar).
 - **Container-Abfragen stellen den Container nie selbst um:** `.dsa5h-main` ist der Container, Regeln für sein eigenes Raster in `@container` greifen nie (zwei tote Titelblatt-Regeln bis 2026-10-20). Breitenabhängige Umbauten von `.dsa5h-main` deshalb per Klasse aus JS (`dsa5h-narrow`).
 - **Kontextmenü per Langdruck (2026-10-20):** Foundrys `ContextMenu._onActivate` schließt ein offenes Menü, wenn dasselbe Ziel erneut ausgelöst wird. Chrome (Android und Touch-Emulation, unter Windows erst beim Loslassen) schickt bei Langdruck ein eigenes `contextmenu` → nach unserem synthetischen Menü das echte schlucken (`touch-context.js`). Foundry legt `data-action="expandRoll"` über den Würfelbereich jeder Wurfnachricht; ein Filter „kein Langdruck auf `[data-action]`“ schließt sonst fast alle Nachrichten aus. Headless-Chrome erzeugt bei CDP-Touch kein natives `contextmenu`, das lässt sich dort nicht nachstellen.
+- **v13: `tabsOutsideSheet` (2026-10-28):** DSA5 7.5.1 hängt im geerbten `_onFirstRender` (`#verticalSheetDomSetup`) ein `.sheet-body` mit `.main-content` in `.window-content` und setzt `vertical-tabs`. Unser Bogen hat keine `.tab`-Bereiche, der leere Kasten nahm per `flex: 1` die halbe Höhe. `_onFirstRender` entfernt ihn wieder. DSA5 8.x macht das nicht mehr.
+- **HUD-Reiter Variante B (2026-10-28):** aus Click-Dummy-Vergleich Heute/A (Kacheln + ⚙-Menü)/B/C (nach Kampflage gefiltert) gewählt. `hud.js`: zwei `li`-Bereiche `.dsa5h-hud-actions` (Kacheln 64 × 40, Kurzname `DSA5HELPERS.Hud.Short.*`, voller Name als Tooltip/aria-label) und `.dsa5h-hud-side` (Symbolknöpfe). Leistenabschnitt ist ~328 × 90 px: höchstens zwei Kachelreihen ohne Bildlauf. Verworfen: weiße Pillen (passten nicht zur Systemleiste, Bildlauf ab vier Regeln), A, C.
+- **Mehr als zwei angelegte Waffen (2026-10-28):** Ältere Helden bzw. Ziehen in den Kampf-Reiter des Systembogens setzen nur `worn.value`, ohne Hand (v13-Welt: sieben Helden). System und wir lesen Haupthand = erste ohne `offHand`, Nebenhand = erste mit `offHand`; der Rest steht unter „Ebenfalls angelegt“ (`body.alsoWorn`, Knopf `dsa5hTakeInHand` → Handmenü wie Rechtsklick aufs Schild). Daten werden nicht automatisch bereinigt (Nutzer-Entscheidung). Click-Dummy: Demo mit `?alsoWorn`.
 - **Listener am Fenster-Element (2026-09-30):** `close()` verwirft das Element, beim nächsten Öffnen baut Foundry ein neues (`isFirstRender` → `_renderFrame`), die Sheet-Instanz bleibt bis F5 dieselbe. Einmal-Listener deshalb an das Element koppeln (`this._listenerElement !== this.element`), nie an ein reines Instanz-Flag.
 
 ## Referenzen
@@ -192,23 +195,33 @@ Abschlussprüfung 21.10.2026: erste Übertragung erfolgreich, vollständiger Alt
 
 - **Lizenz:** MIT. Repo auf GitHub (derzeit privat), später Release über Foundry Package Registry. Keine DSA5-Regeltexte im Modul (Rechte bei Ulisses Spiele).
 
-## Prüfung v13/v14-Kompatibilität (Issue #51, 26.10.2026)
+## Versionslinien und v13-Support (Issue #51)
 
-**Beta-/Release-Abgrenzung:** Laufende Beta weiterhin 0.6.x, zunächst 0.6.2. Erste stabile Releases heißen 7.0.0 (v13) und 8.0.0 (v14); die zwischenzeitlich vorgeschlagenen 7.6.2/8.6.2 sind verworfen. Spätere Beta-Nummerierung je Generationslinie ist noch offen.
+**Nutzerentscheidungen (26.10.2026, ersetzen frühere Empfehlungen wie „ein gemeinsames Paket“):**
+- Gemeinsamer Quellstand, aber getrennte installierbare Linien: `7.X.X` für Foundry v13, `8.X.X` für v14, `9.X.X` für v15 usw. Erste stabile Ausgaben **7.0.0** (v13, nur Desktop) und **8.0.0** (v14 einschließlich Mobil). Eigene Manifest-/Update-Links je Generation auf der Nutzerwebseite, Modul-ID `dsa5-helpers` bleibt.
+- Bis dahin laufen Betas im 0.6.x-Schema (aktuell 0.6.2). 7.6.2/8.6.2 verworfen; ein Beta-Schema je Linie ist noch nicht festgelegt.
+- v13: nur Desktop und nur die in DSA5 7.5.1 vorhandenen Systemfunktionen; nichts aus DSA8 nachbauen, kein Mobil-Backport. Zielkombinationen: Foundry 13.351 + DSA5 7.5.1 sowie Foundry v14 + DSA5 ab 8.1.5.
+- Kanal-/Workflow-Umstellung und Umnummerierung sind Release-Arbeit (siehe [RELEASE.md](../docs/RELEASE.md)); bisher nichts veröffentlicht.
 
-**Spätere Nutzerentscheidung mit Vorrang vor der ursprünglichen Paketempfehlung:** separate installierbare Versionslinien: `7.X.X` für Foundry v13, `8.X.X` für v14, `9.X.X` für v15 und entsprechend weiter. Erste stabile Ausgaben **7.0.0** (v13, nur Desktop und vorhandene DSA7-Systemfunktionen) sowie **8.0.0** (v14 einschließlich Mobil). Eigene Manifest-/Update-Links je Generation auf der Nutzerwebseite, gemeinsame Modul-ID `dsa5-helpers` und gemeinsame Codepflege soweit sinnvoll. Installation derselben ID jeweils in getrennten Foundry-Datenverzeichnissen. Technische Kanal-/Workflowumstellung und Umnummerierung noch offen; aktuelle 0.x-Arbeitsstände unverändert. Keine Freigabe zum Veröffentlichen, Pushen oder Ändern bestehender Releases allein durch diese Strategieentscheidung.
+**Umsetzung (release/0.6.2):**
+- `scripts/compat/runtime.js` bündelt Systemzugriff (`globalThis.dsa5` bzw. `game.dsa5`), Generationserkennung, ContextMenuEntry-Übersetzung (v14 `label/onClick/visible` → v13 `name/callback/condition`) und Flag-Löschung (`ForcedDeletion` fehlt in v13). Keine DSA-Regeln darin. Wo möglich Fähigkeiten prüfen (`typeof this.prepareCompanionTab === 'function'`, `game.i18n.has`), die Generation nur bei echten Schnittstellenunterschieden.
+- DSA7 setzt `game.dsa5` erst in seinem init-Hook: Die Sheet-Datei exportiert `createCharacterSheet()`, der Moduleinstieg erzeugt die Klasse bei Bedarf in seinem init-Hook. Die Klasse bleibt anonym, damit die gespeicherte Bogen-ID `dsa5-helpers.` erhalten bleibt.
+- v13: `ownerRollActions` werden in `ownerActions` gemischt (DSA7 kennt nur letzteres), Traditionsartefakte über `_selectTraditionArtifact`/`_deleteTraditionArtifact`, Munitionswahl über den alten `.ammo-selector` des Systems, Reittier als native `horse`-Teilvorlage im Kampf-Reiter. DSA7 liefert Zauber als `magic.spell`/`ritual` statt `spellList`/`ritualList`; `_prepareContext` ordnet sie zu (neue Listen haben Vorrang).
+- Unter v13 ausgeblendet: Gefährten-Reiter (Templates/Listener nur bei vorhandener Fähigkeit), Aufträge, Zeremonialgegenstände, Kraftspeicher, Energiezonen, Mobil (`initMobile` kehrt vor jeder Registrierung zurück), Helfen und Grundmanöver (`isRuleSupported`, DSA7 fehlt `dsa5.prepareRollSituationalModifiers`; alte Weltflags wirken nicht). Personen öffnen über den alten `CalendarPicker`. Wundeinschätzung setzt `rollMode: selfroll` statt `messageMode: self`.
+- `tools/package-module.py --foundry 13|14` erzeugt generationseigene Manifeste, ZIPs und fertige Modulordner unter `.deploy/packages/`, ohne Quellmanifest oder Laufzeitkopie zu ändern (v13: Foundry 13.351…13, DSA5 7.5.1, ohne Mobil-CSS). Prüfung: `python tests/package_module_test.py`.
+- Click-Dummy `?foundry=13` zeigt die reduzierte Desktop-Referenz.
 
-**Ergebnis:** Ein gemeinsamer Quellstand und ein gemeinsames installierbares Paket sind nach der statischen Prüfung sinnvoll. Gleicher Funktionsumfang ist nicht automatisch möglich: DSA5 7.5.1 enthält mehrere von uns genutzte DSA8-Funktionen überhaupt nicht. Zwei Releases würden diese fehlende Systemlogik ebenfalls nicht bereitstellen. **Anschließende Nutzerentscheidung (26.10.2026): Umsetzung in 0.6.2, ein gemeinsames Paket, v13 ausschließlich Desktop mit den dort vorhandenen Systemfunktionen; fehlende Funktionen entfallen, kein Mobil-Backport.** V14 behält Mobil. #50 (Kraftspeicher) kommt ebenfalls in die Planung für 0.6.2, neben #47. Keine Umsetzung, keine Live-Abnahme; Plan in AUFGABEN.md.
+### Systemvergleich DSA5 7.5.1 / 8.1.x und Foundry 13.351 / 14.369 (statische Analyse 26.10.2026)
 
-### Grundlage und Grenzen
+#### Grundlage und Grenzen
 
 - Untersucht: aktueller Modulstand 0.6.1, lokale Foundry-Quellen **13.351** und **14.369**, DSA5-Tags **7.5.1**, **8.1.5** (bisheriges Minimum) und **8.1.11** (lokal installierter Stand). Die offiziellen Tag-Archive wurden direkt geladen; sämtliche darin enthaltenen Dateien unter `modules/` und `templates/` stimmen für 7.5.1 bzw. 8.1.11 mit den lokalen Installationen überein (Zeilenenden normalisiert). 8.1.5 wurde separat als historische Basis geprüft, nicht mit der lokalen 8.1.11-Installation gleichgesetzt.
 - Breiter Vergleich der hinzugekommenen/entfernten Systemmodule, Actor-Templates und Datenmodelle; vertiefter Abgleich der von unserem Modul tatsächlich genutzten Klassen, Handler, Kontextdaten, Sprachschlüssel, Core-APIs und Hooks. Kein Anspruch auf eine vollständige semantische Prüfung sämtlicher DSA-Berechnungen oder unbenutzter Core-APIs.
 - Relevante offizielle Quellen: [DSA5 7.5.1](https://github.com/Plushtoast/dsa5-foundryVTT/tree/7.5.1), [8.1.5](https://github.com/Plushtoast/dsa5-foundryVTT/tree/8.1.5), [8.1.11](https://github.com/Plushtoast/dsa5-foundryVTT/tree/8.1.11), [Systemneuerungen 8.0](https://github.com/Plushtoast/dsa5-foundryVTT/blob/8.1.11/lazy/patchhtml/changelog_de_8.0.0.html), [Systemneuerungen 8.1](https://github.com/Plushtoast/dsa5-foundryVTT/blob/8.1.11/lazy/patchhtml/changelog_de_8.1.0.html), [Foundry-v13-API](https://foundryvtt.com/api/v13/), [Foundry-v14-API](https://foundryvtt.com/api/v14/).
-- Bestehende statische Tests gegen v14: **74 bestanden**, dabei Warnungen aus vereinfachten Test-Items ohne `prepareEmbeddedItemSheet`. Die Basisklasse im Harness ist ein Stub; das belegt keine realen Klicks und keine echte Vererbungskompatibilität. Gegen v13 über `FOUNDRY_DATA_PATH`/`FOUNDRY_APP_PATH`: Abbruch beim Laden der fehlenden Datei `templates/actors/companions/actor-companion.hbs`, noch vor dem eigentlichen Testlauf. Keine v13-Tests als bestanden ausweisen.
+- Damaliger Teststand (vor der Umsetzung): v14 74 bestanden, v13 brach beim Laden fehlender Gefährten-Templates ab. Aktuelle Zahlen unter „Aktueller Stand“.
 - Keine Nutzerinstanz, Welt, Systemdatei, Laufzeitkopie oder GitHub-Daten verändert. Keine Dienste gestartet. Optionale Module und Premium-Charakterbauer sind durch diesen Systemvergleich nicht abschließend geprüft.
 
-### DSA5 7.5.1 gegenüber 8.1.x
+#### DSA5 7.5.1 gegenüber 8.1.x
 
 | Bereich | Befund und Konsequenz für DSA5 Helpers |
 |---|---|
@@ -230,7 +243,7 @@ Abschlussprüfung 21.10.2026: erste Übertragung erfolgreich, vollständiger Alt
 
 8.1.5 und 8.1.11 sind nicht identisch: Nach dem Minimum kamen z. B. eigene Gefährten-Loyalitätsverwaltung und erweiterte Sammelproben hinzu, außerdem Änderungen an Patron-Darstellung, Beobachterbedienung, Traditionsgegenständen und Item-Aufbereitung. Auch der v14-Pfad braucht daher Fähigkeitsprüfung und Tests am Minimum; bloß `generation >= 14` genügt nicht für jedes neuere Feature.
 
-### Foundry 13.351 gegenüber 14.369
+#### Foundry 13.351 gegenüber 14.369
 
 | Schnittstelle | Befund / nötige Behandlung |
 |---|---|
@@ -243,28 +256,9 @@ Abschlussprüfung 21.10.2026: erste Übertragung erfolgreich, vollständiger Alt
 | Würfelstatistik | `foundry.dice.terms.Die` und der von uns umhüllte `DiceTerm._evaluateAsync` sind in beiden vorhanden. Kein statisch belegter Blocker; reale DSA-Proben, Wiederholungen und libWrapper-Zusammenspiel prüfen, weil ein privater Auswertungspfad umhüllt wird. |
 | Mobile Szene / Core-UI | Canvas-Koordinatenumrechnung, Snapping, TokenDocument.move, Kollisionsprüfung, Pings und `core.uiConfig` existieren bereits in v13. Die Existenz allein beweist weder gleiche Bewegungssemantik noch Touch-Funktion: Token ziehen, Türen, Zielwahl, Wände, Zoom und Sidebar-Layout separat live prüfen. V14-Erweiterungen wie Fenster-Auslagerung und neue Szenen-/Region-Funktionen nicht nachbauen. |
 
-### Architekturfolgerung und nächste Entscheidung
+## Kraftspeicher (#50) und Lebensenergiezonen (#47), 0.6.2
 
-1. **Gewählte Architektur:** gemeinsamer Kern (Heldenbogen, Templates/CSS, Einstellungen, Statistik, Hausregeln) und kleine klar abgegrenzte Adapter für Start, Aktionen/Rechte, Kontextmenüs, Löschoperator und alte Systemwege. Keine v13-Komponente für mobile Chateingabe: Mobil bleibt dort deaktiviert. Vorhandene Funktionen über Fähigkeiten erkennen, die Generation nur dort verwenden, wo die Schnittstelle tatsächlich generationsabhängig ist.
-2. **Freigegebener v13-Funktionsumfang:** DSA7-Funktionen erhalten und nutzbar machen; DSA8-spezifische Gefährten/Questlog/Zeremonialverwaltung entfallen. Alte magische Artefakte, Reittiere und Personenlisten sind ausdrücklich nicht pauschal zu streichen. Keine fehlenden Systemfunktionen nachbauen.
-3. **Kein technischer Zwang zu zwei Releases erkennbar.** Gemeinsamer Kern mit getrennten Komponenten erfüllt die belegten Unterschiede. Zwei dauerhaft getrennte Versionslinien wären eine Wartungs-/Produktentscheidung, etwa falls v13 bewusst eingefroren werden soll. Sie verdoppeln gemeinsame Fixes und beseitigen keine fehlenden Systemfunktionen. Volle DSA8-Funktionsgleichheit unter v13 würde einen eigenen umfangreichen Backport verlangen und widerspricht dem bisherigen Vererbungsansatz.
-4. **Für die spätere Live-Prüfung noch festzulegen:** ausdrücklich freigegebene isolierte v13-Testumgebung und geeignete Testhelden; vorhandene Nutzerwelten/pm2 bleiben unberührt. Falls Steigerungsplaner oder Premium-Charakterbauer zugesagt werden sollen, passende v13-Versionen dieser Module zur separaten Integrationsprüfung festlegen. Keine Zugangsdaten erforderlich. Für #50/#47 sind Designwahl und Implementierung inzwischen abgeschlossen; aktueller Stand im Abschnitt „Implementierung #50/#47“ unten.
-
-## GitHub-Issue-Abgleich und Dokumentstruktur
-
-Git-Remote und bestehende Projektkonfiguration bestätigen `vt-tom/dsa5-helpers`.
-`node tools/sync-github-issues.cjs` liest ausschließlich dieses Repository über die vorhandene GitHub-CLI (`gh api`, REST, Seiten zu je 100 Einträgen bis zur letzten Seite). Pull Requests werden ausgefiltert. Benötigt werden Node.js, gh und eine bereits vorhandene passende Anmeldung; keine zusätzlichen Pakete.
-
-Das Skript ersetzt nur den eindeutig markierten Issue-Bereich in `.projects/AUFGABEN.md`. Es zeigt alle offenen und innerhalb von 14 Tagen geschlossene Issues einschließlich Statusgrund und verfügbarer Metadaten. Abrufzeit und Repository stehen im Block. Bei Abruf-, Marker- oder Konkurrenzfehlern bleibt der letzte gültige Inhalt erhalten. Ein exklusiver Werkzeug-Lock verhindert parallele Skriptläufe; vor atomarem Dateiaustausch wird die Zieldatei erneut byteweise geprüft. Externe Editoren verwenden diesen Lock nicht; Änderungen nach der letzten Prüfung lassen sich damit nicht absolut ausschließen.
-
-Claude Code besitzt bereits einen SessionStart-Hook in `.claude/settings.json` für `startup|clear|resume`, mit 60 Sekunden Hook-Timeout und Aufruf über `$CLAUDE_PROJECT_DIR`. Er bleibt unverändert. Andere KI-Werkzeuge werden durch AGENTS.md zum Aufruf verpflichtet; eine technische Startgarantie besteht dort nicht. Der Abgleich beauftragt keine Issue-Arbeit. Prüfung des Werkzeugs: `node --test tests/sync-github-issues.test.cjs`.
-
-Die beiden zentralen Dokumente wurden aus dem früheren Ordner `project` nach `.projects/` verschoben. Die übrige Dokumentation liegt seit 22.10.2026 unter `docs/`: Release-Anleitung und Mobile-Konzept direkt darin, datierte Feedback-Dateien samt Bild und bisherige Historie unter `docs/archive/`; historische Unterlagen nur gezielt konsultieren. Frühere Test- und Betriebsangaben oben sind übernommene, datierte Projektaufzeichnungen, keine erneute Live-Abnahme bei dieser Strukturmigration.
-
-
-## Implementierung #50/#47 auf release/0.6.2 (26.10.2026)
-
-**Status:** Im Foundry-Modul und Click-Dummy umgesetzt, Designauswahl durch Nutzer abgeschlossen. #50 verwendet A „Schwebend“, #47 LeP-Balken mit gleich hohen Zonenkacheln. Zugehörige Vergleichs-/Testschalter entfernt. Noch unveröffentlicht für 0.6.2; Manifestversion und Mindestversionen unverändert. #51 (v13-Desktop) ist separat geplant und noch nicht implementiert. Offene Live-Prüfungen stehen ausschließlich in AUFGABEN.md.
+Designs vom Nutzer gewählt (#50 „Schwebend“, #47 LeP-Balken mit gleich hohen Zonenkacheln), Vergleichsschalter entfernt. Nur v14.
 
 ### #50 – Kraftspeicher
 
@@ -277,34 +271,47 @@ Die beiden zentralen Dokumente wurden aus dem früheren Ordner `project` nach `.
 ### #47 – Lebensenergiezonen
 
 - Gleich hohe Zonenkacheln mit festen Plätzen für LeP-Balken, Widerstands-Malus und Ausfallmarkierung; Rüstungs- und Energieaktion getrennt. Desktop/Tablet mit Zonenkreuz, Smartphone mit Zonenliste. Kein Nachbau der Schadens-/Heilungs-/Ausfallregeln.
-- Voraussetzung: aktive öffentliche `isEnergyZonesActive(actor)`-API von `dsa5-armory2`. `_prepareContext()` nutzt dessen `EnergyZones.getZoneDisplayData(actor)` und reicht die Anzeigedaten an `_bodyContext()`/`_armorZones()` weiter. Wichtig: gespeicherte Actor-Zonen können noch 0/0 sein, obwohl der Systemdialog bereits sinnvolle Anzeigewerte liefert; deshalb nicht ausschließlich rohe Actor-Felder verwenden. Keine eigene Initialisierung oder Änderung der Actor-Felder.
+- Voraussetzung: aktive öffentliche `isEnergyZonesActive(actor)`-API von `dsa5-armory2`. `_prepareContext()` importiert dazu die interne Datei `modules/dsa5-armory2/modules/energyzones.js` (über `foundry.utils.getRoute`, sonst bricht ein `routePrefix`) und nutzt `EnergyZones.getZoneDisplayData(actor)` – kein öffentlicher API-Weg, bei Updates von Rüstkammer II prüfen – und reicht die Anzeigedaten an `_bodyContext()`/`_armorZones()` weiter. Wichtig: gespeicherte Actor-Zonen können noch 0/0 sein, obwohl der Systemdialog bereits sinnvolle Anzeigewerte liefert; deshalb nicht ausschließlich rohe Actor-Felder verwenden. Keine eigene Initialisierung oder Änderung der Actor-Felder.
 - `templates/actors/parts/energy-zone.hbs` nutzt für Besitzer den Dialog-Hook `.energyzone-zone-header[data-zone]` von Rüstkammer II. Keine eigenen benannten Formulareingaben, um doppelte `actor.update`-Aufrufe zu vermeiden. Beobachter nur lesend. Ausfallfolge stammt aus dem aktiven Premium-Modul; eigene Beschriftungen DE/EN unter `DSA5HELPERS.EnergyZones`, Kraftspeichertexte unter `.PowerSources`. Keine Regeltexte übernommen.
 
-### Nachweise und Übertragung
+### Nachweise
 
-- Product-Design-Audit der Entwürfe im In-App-Browser: Titelblatt/Kampf, Light/Dark, drei/zehn Speicher, Seitenwahl, Escape/Fokusrückkehr sowie Summen nach Änderung geprüft. Im Dummy zuletzt aktives Feld vor Schließen übernehmen und Fokus an das sichtbare, neu gerenderte Gegenstück zurückgeben. Anschließende Nutzerwahl ersetzte die Vergleichsvarianten; keine erneute Designauswahl offen.
-- Historische Screenshots: `C:/Users/tomsa/.codex/visualizations/2026/10/26/01a1783b-572c-73b3-bd33-361cb8370819/` (u. a. 03 Seitenwahl, 05 Zonen-Vergleich, 06 dunkel, 08 Wertänderung, 09 freier Hintergrund, 11–13 Tiefenvarianten). Sie zeigen zum Teil verworfene Entwürfe, nicht ausschließlich den finalen Stand.
-- Zuletzt dokumentiert: **78 statische Tests bestanden**, einschließlich Fähigkeits-/Leer-/Limited-Fällen, Beobachteranzeige, getrennten Aktionen, eindeutigen Zonen-IDs und fehlenden verschachtelten Buttons. Zonenregression mit echtem installiertem Premium-Helfer: Actor-Zonen 0/0 und Gesamt-LeP 20/32 ergeben dessen Kopf-Anzeige 2/3; gespeicherter Schaden bleibt erhalten. Kraftspeichertests behandeln gleiche effectId auf verschiedenen Items und verhindern ungebündelte Dialogimporte; Handler-Vertrag gegen installierte Foundry-Quelle geprüft. Keine erneute Testausführung bei der Dokumentbereinigung.
-- Diese statischen Tests ersetzen keine echten Dialog-/Mehrspieler-/Gerätetests. Insbesondere die letzte Korrektur des Dialogöffnens ist laut bisheriger Aufzeichnung noch nach F5 live zu prüfen. Keine vollständige Foundry-Live-Abnahme dokumentiert.
-- Dokumentierte Übertragung vom 26.10.2026: 85 Laufzeitdateien per SHA-256 geprüft, damaliger Vergleich ohne Abweichungen; Sicherung `D:/FoundryBackups/20261026-141506-257/dsa5-helpers/previous-module`. Keine Aussage, dass spätere Korrekturen bereits erneut übertragen wurden. Kein Serverneustart und keine Welt-/Systemdatenänderung durch diesen dokumentierten Deploy.
+- Designs im Click-Dummy geprüft (Titelblatt/Kampf, hell/dunkel, 3/10 Speicher, Seitenwahl, Escape/Fokusrückkehr). Screenshots der Entwurfsphase (teils verworfene Varianten): `C:/Users/tomsa/.codex/visualizations/2026/10/26/01a1783b-572c-73b3-bd33-361cb8370819/`.
+- Statische Tests decken Fähigkeits-/Leer-/Limited-Fälle, Beobachter, gleiche effectId auf verschiedenen Items, ungebündelte Dialogimporte und die Zonenanzeige mit dem echten installierten Rüstkammer-II-Helfer ab (Actor-Zonen 0/0 + LeP 20/32 → Anzeige 2/3). Echte Dialog-, Mehrspieler- und Gerätetests stehen aus (AUFGABEN.md).
+- Übertragung in die v14-Laufzeitkopie: 26.10.2026 und erneut 28.10.2026 mit dem gesamten 0.6.2-Stand einschließlich #56 und Talent-Vorschlägen (93 Dateien SHA-256-geprüft, danach 0 Abweichungen; Sicherung `D:/FoundryBackups/20261028-073351-262/dsa5-helpers/previous-module`).
 
-## v13-Desktop: erste Kompatibilitätsstufe (#51, 26.10.2026)
+## Talent-Vorschläge (Lyynix), 0.6.2
 
-Noch keine vollständige v13-Freigabe oder installierbare Ausgabe. Implementierung auf `release/0.6.2`, ohne Änderung des v14-Manifests/der Mindestversionen. Separates Packaging und isolierte Live-Abnahme folgen vor der vorgesehenen v13-Auslieferung.
+Entstanden auf `feature/skill-suggestions` (Lyynix, `084d64f`…`18fadb8`), am 27.10.2026 auf Nutzerauftrag in release/0.6.2 portiert. Ohne eigenes Issue.
+- `scripts/skill-suggestions/`: `score.js` (reine Bewertung, testbar: Nutzung mit Abklingen, exakte 3W20-Erfolgschance, Spezialist der Gruppe, Kampf, kürzliche Steigerung, Chat-Erwähnung, „Klassiker“; letzte Liste als leichter Bonus gegen Springen), `context.js` (sammelt Eingaben aus Actor, Chat, Kampf), `tracking.js` (Hooks: zählt eigene Talentwürfe/Steigerungen, zeichnet Bögen bei Anfragen neu). Template `parts/suggestions.hbs` über den Favoriten.
+- Speicher: Actor-Flags `skillUsage` `{Talent: {s, t}}` und `skillAdvanced` `{Talent: Zeitpunkt}` (keine einzelnen Würfe), User-Flag `suggestionCounts` `{actorId: n}` (2–12), Client-Settings `skillSuggestions` (Grundanzahl, 0 = aus) und `skillSuggestionsCollapsed`.
+- Offene Anfragen über `RollRequestService.triggerRollFromCard` (nur DSA8); ohne Dienst normale Talentwürfe. DSA7 kennt `LocalizedIDs.intimidation/empathy/stealth` nicht → eigene Namen unter `DSA5HELPERS.Suggestions.SkillNames` (per `game.i18n.has`).
+- Nicht übernommen: die Würfel-Hover-Experimente desselben Branches.
 
-- `scripts/compat/runtime.js` bündelt Systemzugriff (`globalThis.dsa5` bzw. `game.dsa5`), Generationserkennung, ContextMenuEntry-Übersetzung und Flag-Löschung. Keine DSA-Regeln darin.
-- Die Sheet-Datei exportiert zusätzlich `createCharacterSheet()`. DSA7 setzt `game.dsa5` erst in seinem init-Hook; der Moduleinstieg erzeugt deshalb die Klasse bei Bedarf erst in seinem eigenen init-Hook. Die zurückgegebene Klasse bleibt anonym, sodass die gespeicherte Bogen-ID `dsa5-helpers.` erhalten bleibt. Kein Alias auf `globalThis.dsa5` gesetzt und keine Systemdatei verändert.
-- Unter v13 werden zusätzliche ownerRollActions in die vorhandene ownerActions-Verarbeitung aufgenommen. Die alten `_selectTraditionArtifact`/`_deleteTraditionArtifact` werden direkt verwendet. Munitionswahl rendert den alten `.ammo-selector` mit den vom System vorbereiteten Optionen und dessen change-Listener; kein zusätzliches Formularfeld für denselben Updatepfad.
-- Neue Gefährten-Vorlagen/-Listener nur bei vorhandener `prepareCompanionTab`-Fähigkeit laden/rendern. DSA7-Reittier bleibt als native horse-Teilvorlage im Kampf-Reiter. Kein Questlog oder Zeremonialgegenstandsbereich unter v13. Fehlende Kategorienhilfe wird nicht aufgerufen; Fernkampfkurzlabel aus eigener Lokalisierung. Personen öffnen unter v13 über den vorhandenen CalendarPicker, ohne die neue DSA8-Eintragsnavigation zu versprechen.
-- v13 verlässt `initMobile` vor Registrierung von Einstellungen/Hooks oder DOM-Eingriffen. Wundeinschätzung setzt unter v13 `rollMode: selfroll`, unter v14 weiterhin `messageMode: self`; Vertraulichkeit später mit echten Clients prüfen.
-- Click-Dummy: `?foundry=13` zeigt die reduzierte Desktop-Referenz; kein Nachweis der Foundry-Laufzeit. Syntaxprüfung und **82 statische Tests bestanden** (v14-Harness plus gezielte v13-Vertragsprüfungen mit älteren Core-/Systemquellen). Klassen-/Renderingtests verwenden weiterhin Fixtures, keine echten interaktiven Actors. Keine Nutzerinstanz berührt, kein Deploy/Commit/Push.
+## Hausregel Passive Verteidigung (#56), 0.6.2
 
-## v13-Desktop-Testausgabe fertiggestellt (26.10.2026)
+`scripts/house-rules/passive-defense.js`, Buchseite `templates/house-rules/passive-defense.hbs`, Regelschalter `houseRules.passiveDefense`, Wahl je Akteur als Actor-Flag `autoDefense` (`manual` | `best` | Options-ID). Nur v14 (`isRuleSupported`).
 
-Die Implementierung der v13-Desktop-Anpassung samt separatem lokalen Beta-0.6.2-Paket ist zur Nutzerprüfung bereit. Keine vollständige interaktive Abnahme oder Veröffentlichung behaupten. Die vorstehende erste Stufe ist damit um folgende Punkte ergänzt:
+**Regelentscheidungen (Nutzer 2026-10-28):**
+- Variante B: Gelingt die AT (System-W20 samt Krit/Patzer/Bestätigung/Schips), würfelt das Modul offen einen W20 gegen V; W20 ≤ V = abgewehrt. Verworfen am selben Tag: ein W100 aus AT-W20 + W5 (Gesamtchancen richtig, aber die Parade hing an der Höhe des AT-Wurfs — W20 1–9 trafen immer, knapp gelungene wurden immer pariert; Nutzer: „Angriff zweimal angewendet“).
+- Wahl je Akteur statt Schalter je Akteurtyp: Kampf › Körper im Modul-Bogen (Block „Verteidigung bei Angriffen“, `<select>` ohne `name`, Speichern im `_onRender`), Menü ⋮ der Systembögen inkl. Kreaturen (HOUSE_RULES-Eintrag mit `actorTypes`; `isSystemSheet(app, types)`), Chip im HUD-Reiter der DSA-Leiste für den gewählten Token (`hudEntries`, auch Kreaturen; Abzeichen = aktuelle Wahl, Klick öffnet `openDefenseDialog`). Ohne Wahl: Spielercharaktere `manual`, alle anderen `best`. Gewählte, aber nicht zulässige/abgelegte Option → beste zulässige.
+- Eine 1 im Angriff halbiert V, normal gerundet (System setzt `postData.halfDefense` bei successLevel 2 und 3). Nah- und Fernkampf (Fernkampf nur Ausweichen und Schilde). Verbraucht, wenn die AT gelungen ist. Kritische Paraden/Paradepatzer entfallen. Ohne Ziel, bei Gelegenheitsangriffen und reinen Schadenswürfen gilt der Systemablauf.
 
-- Standardsuite lädt nun generationseigene Foundry-Abhängigkeiten, Systemvorlagen und Sprachdateien. Erwarteter Umfang wird pro Generation geprüft; fehlende Companion-Templates werden nicht künstlich registriert. V13: 81 Tests bestanden, 2 bewusst übersprungen (Gefährten-/Premium-Energiezonenintegration fehlt). V14: 83 bestanden. Zusätzliche Prüfung: alte Weltflags können Helfen/Grundmanöver nicht aktivieren, denn DSA7 hat den dafür nötigen Hook nicht. Pure Regeltests bleiben für v14 erhalten; der v13-Bogen bietet diese Erweiterungen nicht an.
-- Hausregelbuch, Einstiege und Dummy filtern nicht unterstützte Erweiterungen. Wundeinschätzung bleibt verfügbar. Der Planer benötigt tatsächlich prepareContext/attachListeners; nicht passende Varianten werden abgefangen. Native DSA7-Personenansicht, magische Artefakte, Munitionsauswahl und Reittier bleiben erhalten.
-- `tools/package-module.py` erzeugt generationseigene Manifeste/ZIPs und fertige Modulordner unter `.deploy/packages/`, ohne Source-Manifest, Runtime-Kopien oder Welten zu ändern. Paketversion beta 0.6.2; gleiche Modul-/Bogen-ID, getrennte zukünftige Kanaladressen und Core-Kompatibilitätsgrenzen. V13 enthält keine Mobil-CSS und kein noch unbelegtes verified-Feld. Stabile Versionszuordnung 7.x/8.x wird validiert, künftige unentschiedene Beta-Schemata nicht erfunden. Zwei Pakettests prüfen echte ZIPs per Rücklesen, CRC, Manifest, Dateien und Unverändertheit des Quellmanifests.
-- Neue Paketlinks sind reservierte Zieladressen für eine spätere Veröffentlichung. Lokale Prüfung durch manuelles Kopieren des fertigen Modulordners in die v13-Installation. README und RELEASE.md enthalten Befehle/Anleitung. Der bisherige öffentliche GitHub-Workflow ist noch nicht auf die neuen Kanäle umgestellt; ohne weiteren Release-Auftrag nichts veröffentlichen.
-- Dummy mit v13-Parameter im Browser geprüft: richtige Reiter, Reittier im Kampf, keine Speicher-/Energiezonen, nur unterstützte Hausregel; feste 770×740. Konsolenmeldungen betreffen die bekannten fehlenden dsa5-core-Vorschaubilder/Favicon, keine neu festgestellten Scriptfehler. Nutzer übernimmt die Foundry-Klickprüfung; keine Nutzerinstanz berührt.
+**Technik:**
+- V-Optionen wie im `ReactToAttackDialog` (`baseOptions`: Ausweichen `status.dodge.max`, waffenlose Parade, getragene Nahkampfwaffen über `Actordsa5._prepareMeleeWeapon(...).parry`, Merkmale mit `pa`) plus Zustände (`DSA5StatusEffects.getRollModifiers`), Mehrfachverteidigung (`RuleChaos.multipleDefenseValue` × `combat.getDefenseCount`) und Abzüge des Angreifers (`dmmalus`/`defenseMalus` wie `CombatSystem.getDefenseMalus`). Situative Dialogeingaben des Verteidigers (Sicht, Enge …) entfallen mangels Dialog.
+- Auslöser: `createChatMessage` der Startnachricht (`flags.unopposeData`) **nur bei der aktiven SL**; kurz auf `flags.opposes[startId]` am Ziel warten (bei Spielerangriffen auf nicht verknüpfte Tokens kommt das Socket-Update des Systems bei der SL nicht an → trotzdem auswerten, spätes Flag nach 3 s löschen). Treffer → `dsa5.apps.OpposeDSA.resolveUndefended`; sonst `clearOpposed` + `hideReactionButton` + eigene Karte. Flag `passiveDefense {outcome, cardId}` an der Startnachricht.
+- Schip: Hülle um `OpposeDSA.handleOpposedTarget` leitet passiv aufgelöste Ketten an die SL (Modul-Socket `passiveReevaluate`) und wertet neu aus (neuer Verteidigungswurf). Wird aus einem Treffer „abgewehrt“, löscht sie die Ergebniskarte des Systems; schon angewendeter Schaden bleibt.
+- **Stolperstein Datenschutz:** Flüsternachrichten und Flags erreichen in Foundry alle Clients (live belegt: Spieler-Client hatte den Inhalt einer SL-Flüsterkarte). Die Rechnung liegt nur im Speicher des SL-Clients und hängt per `renderChatMessageHTML` an der öffentlichen Karte (nach F5 weg).
+
+**Prüfung 2026-10-28:** statische Tests (Abwehr W20 ≤ V, genau V/20 je gelungener AT, beste/gewählte Option, Vorbelegung je Typ, Buchseite). Live in eigener Testinstanz (Port 30077, Welt-Kopie), erste Fassung: SL- und Spielerangriff, Nah-/Fernkampf, Kreatur mit nicht verknüpftem Token, Mehrfachverteidigung (0 → 1 → 2, −3 auf V, misslungene AT zählt nicht), Schip Treffer → abgewehrt, keine Gegnerwerte im Spieler-Client. Variante B: Kreatur ohne Wahl automatisch, Held ohne Wahl mit Reaktionsknopf, Held mit „Ausweichen“, Auswahl im Kampf-Reiter speichert, Menüeintrag im Kreaturbogen. Nicht live geprüft: Krit mit Bestätigung, mehrere Ziele gleichzeitig, Ziel auf anderer Szene als der der SL (dann Hinweis, Systemablauf).
+
+## GitHub-Issue-Abgleich und Dokumentstruktur
+
+Git-Remote und bestehende Projektkonfiguration bestätigen `vt-tom/dsa5-helpers`.
+`node tools/sync-github-issues.cjs` liest ausschließlich dieses Repository über die vorhandene GitHub-CLI (`gh api`, REST, Seiten zu je 100 Einträgen bis zur letzten Seite). Pull Requests werden ausgefiltert. Benötigt werden Node.js, gh und eine bereits vorhandene passende Anmeldung; keine zusätzlichen Pakete.
+
+Das Skript ersetzt nur den eindeutig markierten Issue-Bereich in `.projects/AUFGABEN.md`. Es zeigt alle offenen und innerhalb von 14 Tagen geschlossene Issues einschließlich Statusgrund und verfügbarer Metadaten. Abrufzeit und Repository stehen im Block. Bei Abruf-, Marker- oder Konkurrenzfehlern bleibt der letzte gültige Inhalt erhalten. Ein exklusiver Werkzeug-Lock verhindert parallele Skriptläufe; vor atomarem Dateiaustausch wird die Zieldatei erneut byteweise geprüft. Externe Editoren verwenden diesen Lock nicht; Änderungen nach der letzten Prüfung lassen sich damit nicht absolut ausschließen.
+
+Claude Code besitzt bereits einen SessionStart-Hook in `.claude/settings.json` für `startup|clear|resume`, mit 60 Sekunden Hook-Timeout und Aufruf über `$CLAUDE_PROJECT_DIR`. Er bleibt unverändert. Andere KI-Werkzeuge werden durch AGENTS.md zum Aufruf verpflichtet; eine technische Startgarantie besteht dort nicht. Der Abgleich beauftragt keine Issue-Arbeit. Prüfung des Werkzeugs: `node --test tests/sync-github-issues.test.cjs`.
+
+Die beiden zentralen Dokumente wurden aus dem früheren Ordner `project` nach `.projects/` verschoben. Die übrige Dokumentation liegt seit 22.10.2026 unter `docs/`: Release-Anleitung und Mobile-Konzept direkt darin, datierte Feedback-Dateien samt Bild und bisherige Historie unter `docs/archive/`; historische Unterlagen nur gezielt konsultieren. Frühere Test- und Betriebsangaben oben sind übernommene, datierte Projektaufzeichnungen, keine erneute Live-Abnahme bei dieser Strukturmigration.
