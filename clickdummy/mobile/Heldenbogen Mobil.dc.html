@@ -44,13 +44,15 @@ input::placeholder,textarea::placeholder{color:var(--ink3)}
 </style>
 </helmet>
 <div data-theme="{{ theme }}" data-ts="{{ ts }}" style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;background:var(--paper);color:var(--ink);font-family:GentiumBasic,Georgia,serif;-webkit-font-smoothing:antialiased;user-select:none">
+  <!-- Schließen überall mit ✕ oben rechts (Nutzerentscheidung 2026-10-28, vorher „‹“ links bzw. „‹ Übersicht“) -->
+  <sc-if value="{{ hasBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ onBack }}" aria-label="Schließen" style="position:absolute;top:6px;right:6px;z-index:5;width:44px;height:44px;padding:0;border:0;border-radius:22px;background:rgba(39,35,32,.85);color:#f4e8d6;font-size:20px;line-height:1;cursor:pointer">✕</button></sc-if>
 
   <sc-if value="{{ isPhone }}" hint-placeholder-val="{{ true }}">
     <div style="flex:none;position:relative;z-index:2;background:var(--hdr);color:#f4e8d6;box-shadow:0 2px 10px rgba(0,0,0,.35)">
       <sc-if value="{{ headerExpanded }}" hint-placeholder-val="{{ true }}">
-        <div style="padding:12px 14px 10px;display:flex;flex-direction:column;gap:10px">
+        <div style="padding:12px 54px 10px 14px;display:flex;flex-direction:column;gap:10px">
           <div style="display:flex;gap:12px;align-items:flex-start">
-            <sc-if value="{{ hasBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ onBack }}" aria-label="Zurück zur Übersicht" style="flex:none;width:30px;height:44px;margin:0 -6px 0 -8px;padding:0;border:0;background:none;color:#f4e8d6;font-size:34px;line-height:1;cursor:pointer">‹</button></sc-if><div style="flex:none;width:68px;height:84px;background:#ece2d2;border:2px solid #b99a5c;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);display:grid;place-items:end center;padding-bottom:6px;font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:.1em;color:rgba(43,39,33,.5)">PORTRÄT</div>
+            <div style="flex:none;width:68px;height:84px;background:#ece2d2;border:2px solid #b99a5c;clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);display:grid;place-items:end center;padding-bottom:6px;font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:.1em;color:rgba(43,39,33,.5)">PORTRÄT</div>
             <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
               <div style="display:flex;align-items:flex-start;gap:8px">
                 <div style="flex:1;min-width:0;font-family:Andalus,serif;font-size:25px;line-height:1.05;text-wrap:pretty">{{ name }}</div>
@@ -87,8 +89,8 @@ input::placeholder,textarea::placeholder{color:var(--ink3)}
         </div>
       </sc-if>
       <sc-if value="{{ collapsed }}" hint-placeholder-val="{{ false }}">
-        <div style="height:54px;padding:0 12px;display:flex;align-items:center;gap:10px">
-          <sc-if value="{{ hasBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ onBack }}" aria-label="Zurück zur Übersicht" style="flex:none;width:30px;height:44px;margin:0 -6px 0 -6px;padding:0;border:0;background:none;color:#f4e8d6;font-size:30px;line-height:1;cursor:pointer">‹</button></sc-if><div style="flex:none;width:30px;height:36px;background:#ece2d2;border:1.5px solid #b99a5c;clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px)"></div>
+        <div style="height:54px;padding:0 54px 0 12px;display:flex;align-items:center;gap:10px">
+          <div style="flex:none;width:30px;height:36px;background:#ece2d2;border:1.5px solid #b99a5c;clip-path:polygon(5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px),0 5px)"></div>
           <div style="flex:1;min-width:0;font-family:Andalus,serif;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ name }}</div>
           <div style="flex:none;display:flex;gap:6px">
             <sc-for list="{{ bars }}" as="b" hint-placeholder-count="3">
@@ -112,7 +114,7 @@ input::placeholder,textarea::placeholder{color:var(--ink3)}
 
     <sc-if value="{{ isTablet }}" hint-placeholder-val="{{ false }}">
       <aside style="flex:none;width:292px;display:flex;flex-direction:column;gap:12px;padding:16px 14px;background:var(--hdr);color:#f4e8d6;overflow-y:auto">
-        <sc-if value="{{ hasBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ onBack }}" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 12px 0 6px;margin:-4px 0 0 -4px;align-self:flex-start;border:1px solid rgba(244,232,214,.3);border-radius:22px;background:rgba(255,255,255,.06);color:#f4e8d6;font:inherit;font-size:14px;font-weight:700;cursor:pointer"><span style="font-size:24px;line-height:1">‹</span>Übersicht</button></sc-if><div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="display:flex;gap:12px;align-items:flex-start">
           <div style="flex:none;width:96px;height:118px;background:#ece2d2;border:2px solid #b99a5c;clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px);display:grid;place-items:end center;padding-bottom:8px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:.1em;color:rgba(43,39,33,.5)">PORTRÄT</div>
           <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
             <div style="font-family:Andalus,serif;font-size:26px;line-height:1.05">{{ name }}</div>

@@ -236,8 +236,8 @@ body.dsa5h-tablet .dsa5h-m-window.dialog-dsa5 { inset: auto 0 0 0 !important; ma
   body.dsa5h-tablet[data-dsa5h-panel="chat"] .dsa5h-m-window:not(.dialog, .dialog-dsa5, .dsa5h-m-sheetwin) { right: var(--dsa5h-m-panel-w) !important; border-radius: 10px 0 0 0; }
 }
 /* Mobil-Fensterkopf (MOBILE.md 15.3, Schritt 2) statt Kopfgrafik und Buch-Ornament des Systems: 48 px, Knöpfe 44 px.
-   Vollbild wie der eingeklappte Bogenkopf (dunkel, „‹“ links schließt), Blätter wie die Panel-Leiste (Titel, „✕“ rechts).
-   Unser Bogen hat einen eigenen Kopf (Abschnitt 11). */
+   Vollbild dunkel wie der eingeklappte Bogenkopf, Blätter wie die Panel-Leiste; geschlossen wird überall mit „✕“ oben
+   rechts (Nutzerentscheidung 2026-10-28). Unser Bogen hat einen eigenen Kopf (Abschnitt 11). */
 body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet)::after { content: none !important; display: none !important; }
 body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet) > .window-header {
   flex: 0 0 48px; height: 48px; min-height: 48px; top: 0 !important; gap: 4px; padding: 0 4px 0 14px;
@@ -253,9 +253,6 @@ body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet) > .window-header :is(
   background: none; box-shadow: none; color: inherit; font-size: 20px;
 }
 body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-noctrl > .window-header [data-action="toggleControls"] { display: none; }
-body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet, .dsa5h-m-sheetwin) > .window-header { padding-left: 0; }
-body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet, .dsa5h-m-sheetwin) > .window-header [data-action="close"] { order: -1; }
-body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet, .dsa5h-m-sheetwin) > .window-header [data-action="close"]::before { content: "\f053"; }
 body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-sheetwin > .window-header { background: var(--dsa5h-m-phead), var(--dsa5h-m-paper) !important; color: var(--dsa5h-m-ink); }
 /* Kleine Fenster als Blatt von unten, Höhe nach Inhalt; Eingaben 44 px und 16 px (iOS zoomt sonst), Knöpfe 48 px */
 body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-sheetwin {
@@ -411,7 +408,7 @@ body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label {
    volle Breite, dann die Würfel. .dsa5h-head-main und das Band lösen sich auf (display: contents) und werden Rasterzellen. */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head {
   --dsa5h-banner-h: 64px;
-  position: relative; padding-left: 40px !important;
+  position: relative; padding-left: 28px !important;
   display: grid !important; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 4px 10px;
   padding: 10px 12px 8px; cursor: default;
 }
@@ -443,19 +440,17 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-power-close {
 
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-orb-val input { font-size: 19px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-regen-btn { flex: none; width: 34px; height: 34px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-banner-tools { top: 6px; right: 44px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-banner-tools { top: 6px; right: 88px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content { padding: 0 10px 16px; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-back {
-  position: absolute; left: 0; top: 0; width: 40px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0;
+/* „⋮“ (Bogen-Menü: Thema, Spieleransicht, Einträge der Fensterleiste) und „✕“ oben rechts */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head { padding-right: 84px !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head :is(.dsa5h-m-menu, .dsa5h-m-close) {
+  position: absolute; top: 0; width: 44px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0;
   background: none; box-shadow: none; color: #f4e8d6; font-size: 20px;
 }
-body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-m-back, .dsa5h-m-menu) { height: 52px; }
-/* „⋮“ oben rechts: Bogen-Menü (Thema, Spieleransicht, Einträge der Fensterleiste) */
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head { padding-right: 40px !important; }
-body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-menu {
-  position: absolute; right: 0; top: 0; width: 40px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0;
-  background: none; box-shadow: none; color: #f4e8d6; font-size: 20px;
-}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-menu { right: 40px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-close { right: 0; font-size: 22px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-m-menu, .dsa5h-m-close) { height: 52px; }
 /* Beim Scrollen eingeklappt: eine Zeile mit kleinem Porträt, Name und kleinen Kugeln (Banner füllt die Zeile) */
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { --dsa5h-banner-h: 52px; grid-template-columns: 34px minmax(0, 1fr) auto; padding: 6px 10px; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait-medal { grid-row: 1; width: 34px; }

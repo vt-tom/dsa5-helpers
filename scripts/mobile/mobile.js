@@ -197,19 +197,10 @@ function addInventoryChips(el, app) {
  * Knöpfe des Bogens (data-action dsa5hSetTab).
  */
 function setupPhoneSheet(el, app) {
-  // Zurück-Pfeil links im Kopf (Ü3): ersetzt das × der ausgeblendeten Fensterleiste. Der Kopf wird bei jedem Rendern
-  // neu gebaut, deshalb hier jedes Mal prüfen.
+  // Fenster-Menü „⋮“ und „✕“ rechts im Kopf: ersetzen die ausgeblendete Fensterleiste (Ü3; „⋮“ seit 2026-10-19 statt
+  // des „Mehr“-Blatts). Schließen überall mit „✕“ oben rechts (Nutzerentscheidung 2026-10-28, vorher „‹“ links).
+  // Der Kopf wird bei jedem Rendern neu gebaut, deshalb hier jedes Mal prüfen.
   const head = el.querySelector('.dsa5h-head');
-  if (head && !head.querySelector('.dsa5h-m-back')) {
-    const back = document.createElement('button');
-    back.type = 'button';
-    back.className = 'dsa5h-m-back';
-    back.setAttribute('aria-label', game.i18n.localize('DSA5HELPERS.Mobile.Close'));
-    back.innerHTML = '<i class="fa-solid fa-chevron-left" inert></i>';
-    back.addEventListener('click', () => app?.close());
-    head.prepend(back);
-  }
-  // Fenster-Menü „⋮“ rechts im Kopf (Rückmeldung 2026-10-19: ersetzt das „Mehr“-Blatt der Reiterleiste)
   if (head && !head.querySelector('.dsa5h-m-menu')) {
     const menu = document.createElement('button');
     menu.type = 'button';
@@ -218,6 +209,15 @@ function setupPhoneSheet(el, app) {
     menu.innerHTML = '<i class="fa-solid fa-ellipsis-vertical" inert></i>';
     menu.addEventListener('click', () => openMenuSheet(el, app));
     head.append(menu);
+  }
+  if (head && !head.querySelector('.dsa5h-m-close')) {
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'dsa5h-m-close';
+    close.setAttribute('aria-label', game.i18n.localize('DSA5HELPERS.Mobile.Close'));
+    close.innerHTML = '<i class="fa-solid fa-xmark" inert></i>';
+    close.addEventListener('click', () => app?.close());
+    head.append(close);
   }
   // Reiterleiste: alle Reiter in einer waagerecht wischbaren Leiste (Nutzer-Entscheidung 2026-10-19), der aktive steht
   // immer im Bild.
