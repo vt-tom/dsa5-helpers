@@ -25,7 +25,7 @@ den ausgegebenen Modulordner manuell installieren. ZIP wird per Rücklesen/CRC u
 `--channel stable --version 7.0.0` (v13) bzw. `8.0.0` (v14) ist vorbereitet; falsche Zuordnung und neue ungeklärte
 Beta-Nummernschemata werden abgelehnt. Der GitHub-Workflow und die öffentliche Kanalumstellung bleiben separate Release-Arbeit.
 
-**Beta-Korrektur:** Aktuelle Entwicklung und nächste Beta bleiben bei 0.6.x / 0.6.2. Erst die stabilen Releases starten bei 7.0.0 (v13) und 8.0.0 (v14). 7.6.2/8.6.2 sind verworfen. Das Nummernschema späterer generationseigener Betas bleibt zu entscheiden; bisherige 0.x-Pre-releases nicht rückwirkend ändern.
+**Beta-Korrektur:** Betas bleiben im 0.6.x-Schema (zuletzt 0.6.3, 02.11.2026). Erst die stabilen Releases starten bei 7.0.0 (v13) und 8.0.0 (v14). 7.6.2/8.6.2 sind verworfen. Das Nummernschema späterer generationseigener Betas bleibt zu entscheiden; bisherige 0.x-Pre-releases nicht rückwirkend ändern.
 
 Nutzerentscheidung 26.10.2026 für stabile Releases: **7.0.0 für Foundry v13**, **8.0.0 für v14**; künftig `7.X.X` / `8.X.X` / `9.X.X` für v13 / v14 / v15 usw. V13 nur Desktop mit vorhandenen Systemfunktionen, v14 einschließlich Mobil. Die zweite Zahl dient Weiterentwicklung, die dritte Fehlerkorrekturen innerhalb einer Linie. Gleiche Modul-ID `dsa5-helpers`; getrennte Installationspakete und Updatekanäle, gemeinsame Codepflege möglich.
 

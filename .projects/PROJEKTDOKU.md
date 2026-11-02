@@ -10,11 +10,11 @@ Einen übersichtlichen DSA5-Heldenbogen für Foundry anbieten und Desktop, Smart
 
 ## Projektstand kompakt
 
-Version 0.6.3 befindet sich laut Aufgabenstand in der Test- und Entscheidungsphase. Teile der mobilen Bedienung sind bestätigt; Kraftspeicher, Almanach und weitere Geräteprüfungen sind noch offen.
+Beta 0.6.3 ist am 02.11.2026 veröffentlicht (v14: Tag `v0.6.3`, Beta-Kanal; v13: Tag `v13-0.6.3`, Kanal `foundry-v13-beta`), alle Punkte vom Nutzer bestätigt, Meilenstein 0.6.3 und seine Issues geschlossen. Stabil bleibt 0.5.1.
 
 ## Offene Grenze
 
-Eine abgeschlossene Mobilabnahme oder Veröffentlichung von 0.6.3 ist nicht belegt. Die Versionsaufteilung nach Foundry-Generation ist noch zu entscheiden.
+Die Versionsaufteilung nach Foundry-Generation (#68) ist noch zu entscheiden (auf die nächste Version verschoben). `main` enthält 0.6.3 erst, wenn die Beta zum normalen Release erklärt wird.
 
 ## Quellenstand der Zusammenfassung
 
@@ -232,7 +232,7 @@ Abschlussprüfung 21.10.2026: erste Übertragung erfolgreich, vollständiger Alt
 
 **Nutzerentscheidungen (26.10.2026, ersetzen frühere Empfehlungen wie „ein gemeinsames Paket“):**
 - Gemeinsamer Quellstand, aber getrennte installierbare Linien: `7.X.X` für Foundry v13, `8.X.X` für v14, `9.X.X` für v15 usw. Erste stabile Ausgaben **7.0.0** (v13, nur Desktop) und **8.0.0** (v14 einschließlich Mobil). Eigene Manifest-/Update-Links je Generation auf der Nutzerwebseite, Modul-ID `dsa5-helpers` bleibt.
-- Bis dahin laufen Betas im 0.6.x-Schema (aktuell 0.6.2). 7.6.2/8.6.2 verworfen; ein Beta-Schema je Linie ist noch nicht festgelegt.
+- Bis dahin laufen Betas im 0.6.x-Schema (zuletzt 0.6.3, 02.11.2026). 7.6.2/8.6.2 verworfen; ein Beta-Schema je Linie ist noch nicht festgelegt.
 - v13: nur Desktop und nur die in DSA5 7.5.1 vorhandenen Systemfunktionen; nichts aus DSA8 nachbauen, kein Mobil-Backport. Zielkombinationen: Foundry 13.351 + DSA5 7.5.1 sowie Foundry v14 + DSA5 ab 8.1.5.
 - Kanal-/Workflow-Umstellung und Umnummerierung sind Release-Arbeit (siehe [RELEASE.md](../docs/RELEASE.md)); bisher nichts veröffentlicht.
 
