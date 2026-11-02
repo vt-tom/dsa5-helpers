@@ -12,7 +12,8 @@ const H=req('handlebars').create();
 const postcss=req('postcss');
 const {parseDocument}=req('htmlparser2');
 const dom=req('domutils');
-const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+// Zeilenenden vereinheitlichen: mit core.autocrlf checkt Git unter Windows CRLF aus, die Muster unten erwarten LF
+const read=p=>fs.readFileSync(path.join(root,p),'utf8').replace(/\r\n/g,'\n');
 const lookup=(o,p)=>p.split('.').reduce((v,k)=>v?.[k],o);
 const de=JSON.parse(fs.readFileSync(path.join(dataRoot,'systems/dsa5/lang/de.json')));
 const own=JSON.parse(read('lang/de.json'));
