@@ -230,7 +230,15 @@ function render() {
       "Digitale und echte Würfel werden getrennt ausgewertet. Bei vielen Spielern und Würfeltypen sind einzelne Ausreißer reiner Zufall – „auffällig“ heißt nur, dass sich ein genauerer Blick lohnt.",
     ]),
     hidden.length ? el("p", { class: "ds-note muted" }, `Nicht ausgewertet (keine Zustimmung): ${hidden.map((p) => p.name).join(", ")}.`) : null,
-    state.gm ? el("div", { class: "ds-footer" }, [el("button", { type: "button", class: "ds-btn danger", onclick: () => confirmReset(null) }, "🗑 Alle Statistiken löschen")]) : null,
+    // Einstellungen der Statistik unten im Fenster statt in den Moduleinstellungen (Nutzer 2026-11-02): Zustimmung für
+    // alle, an/aus und Löschen nur für die SL.
+    el("div", { class: "ds-footer" }, [
+      el("label", { class: "ds-setting", title: "Ob deine Würfe in die Würfelstatistik eingehen." }, [el("span", {}, "Meine Würfe auswerten"),
+        el("select", { onchange: (e) => { (state.gm ? PLAYERS[0] : PLAYERS.find((p) => p.id === OWN_ID)).consent = e.target.value; render(); } },
+          [["undecided", "Noch nicht entschieden"], ["yes", "Ja"], ["no", "Nein"]].map(([v, t]) => el("option", { value: v, selected: v === (state.gm ? PLAYERS[0] : PLAYERS.find((p) => p.id === OWN_ID)).consent }, t)))]),
+      state.gm ? el("label", { class: "ds-setting", title: "Würfelstatistik für diese Welt an- oder ausschalten." }, [el("input", { type: "checkbox", checked: state.enabled !== false, onchange: (e) => { state.enabled = e.target.checked; } }), el("span", {}, "Statistik in dieser Welt")]) : null,
+      state.gm ? el("button", { type: "button", class: "ds-btn danger", onclick: () => confirmReset(null) }, "🗑 Alle Statistiken löschen") : null,
+    ].filter(Boolean)),
   ].filter(Boolean));
 }
 

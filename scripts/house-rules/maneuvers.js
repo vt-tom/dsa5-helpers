@@ -32,6 +32,8 @@ export const MANEUVERS = {
   aim: { attr: 'ff', icon: 'fas fa-bullseye', table: [[1, 1, 2], [2, 1, 2], [2, 2, 3], [3, 2, 3]] },
   // Keine Leiteigenschaft: die QS einer Probe entscheiden (#48).
   weakness: { attr: null, icon: 'fas fa-magnifying-glass' },
+  // Stören und Ablenken (#66): Probe auf Wurfwaffen oder Einschüchtern, keine Leiteigenschaft.
+  distract: { attr: null, icon: 'fas fa-face-dizzy' },
 };
 export const MANEUVER_IDS = Object.keys(MANEUVERS);
 
@@ -134,6 +136,7 @@ export function maneuverState(actor, current = combatKey()) {
     aim: sameCombat(s.aim) ? Number(s.aim.count) || 0 : 0,
     aimRound: sameCombat(s.aim) ? s.aim.round : null,
     weakness: Object.entries(s.weakness ?? {}).filter(([, e]) => weakPointValid(e, current)).map(([token, e]) => ({ token, ...e })),
+    distract: Object.entries(s.distract ?? {}).filter(([, e]) => sameCombat(e) && e.round === current.round).map(([token, e]) => ({ token, ...e })),
   };
 }
 
@@ -172,6 +175,23 @@ function foeTokenId(actor, context) {
   return game.user.targets.first()?.id ?? null;
 }
 
+/**
+ * Wurde dieser Akteur in der laufenden Kampfrunde gestört und abgelenkt (#66)? Gespeichert beim Ablenkenden je Ziel-Token
+ * (Flag maneuvers.distract), weil Spieler am Gegner nichts speichern dürfen. `others`: Akteure, die abgelenkt haben könnten.
+ */
+export function distractedBy(tokenIds, others, current = combatKey()) {
+  if (!current || !tokenIds?.length) return null;
+  for (const other of others) {
+    const map = state(other).distract ?? {};
+    const hit = tokenIds.map(id => map[id]).find(e => e && e.combat === current.combat && e.round === current.round);
+    if (hit) return { by: other.name };
+  }
+  return null;
+}
+
+const tokenIdsOf = actor => (actor?.isToken ? [actor.token.id] : (actor?.getActiveTokens?.() ?? []).map(t => t.id));
+const combatActors = () => (game.combat?.started ? game.combat.combatants.map(c => c.actor).filter(Boolean) : []);
+
 const hasTargetedSF = actor => (actor?.items ?? []).some?.(i => i.type === 'specialability' && /^(gezielter angriff|targeted attack)/i.test(i.name ?? ''));
 
 /**
@@ -179,7 +199,7 @@ const hasTargetedSF = actor => (actor?.items ?? []).some?.(i => i.type === 'spec
  * Stufen-Einträge eines Manövers haben dieselbe ref-Gruppe (dsa5h:<id>:…), nur einer davon ist anhakbar.
  * `weak` ist der Bonus aus „Schwachpunkte erkennen“ gegen den Gegner dieser Probe (weakPointBonus) oder null.
  */
-export function buildModifiers(actor, context, { enabled = enabledManeuvers(), st = maneuverState(actor), weak = null, t = loc, localize } = {}) {
+export function buildModifiers(actor, context, { enabled = enabledManeuvers(), st = maneuverState(actor), weak = null, distracted = null, t = loc, localize } = {}) {
   const out = [];
   const tierOf = id => paladoseTier(attrValue(actor, MANEUVERS[id].attr));
   const label = (id, extra) => `${t(`${id}.Name`)} (${attrAbbr(MANEUVERS[id].attr)} ${attrValue(actor, MANEUVERS[id].attr)})${extra ? `: ${extra}` : ''}`;
@@ -225,6 +245,14 @@ export function buildModifiers(actor, context, { enabled = enabledManeuvers(), s
     const title = `${t('weakness.Name')} (${weak.name})`;
     if (!defense && weak.tp > 0) out.push({ name: `${title}: ${dmgAbbr()} +${weak.tp}`, value: 0, damageBonus: weak.tp, selected: true, ref: { id: `${REF}weakness` } });
     if (defense && rollKind(context).kind === 'melee' && weak.pa > 0) out.push({ name: `${title}: ${game.i18n.localize('CHARAbbrev.PA')} +${weak.pa}`, value: weak.pa, selected: true, ref: { id: `${REF}weakness` } });
+  }
+  // Gestört und abgelenkt (#66): −1 auf AT, PA, AW und Schaden bis Rundenende, angehakt. FK nennt der Regeltext nicht,
+  // gilt nach Nutzerentscheidung (2026-10-30) aber ebenso.
+  const kind = rollKind(context).kind;
+  if (enabled.includes('distract') && distracted && kind) {
+    const title = t('distract.Modifier', { by: distracted.by });
+    if (defense) out.push({ name: `${title}: ${game.i18n.localize(kind === 'dodge' ? 'CHARAbbrev.AW' : 'CHARAbbrev.PA')} −1`, value: -1, selected: true, ref: { id: `${REF}distracted` } });
+    else out.push({ name: `${title}: ${at} −1, ${dmgAbbr()} −1`, value: -1, damageBonus: -1, selected: true, ref: { id: `${REF}distracted` } });
   }
   return out;
 }
@@ -387,6 +415,56 @@ export async function recognizeWeakPoints(actor, tokenId) {
   });
 }
 
+const intimidationSkill = actor => {
+  const names = new Set(['einschüchtern', game.i18n.localize('LocalizedIDs.intimidation').toLowerCase()]);
+  return actor?.items?.find(i => i.type === 'skill' && names.has(i.name.trim().toLowerCase()));
+};
+const throwingSkill = actor => actor?.items?.find(i => i.type === 'combatskill' && techniqueKey({ system: { combatskill: { value: i.name } } }) === 'Throwing Weapons');
+
+/**
+ * Stören und Ablenken (#66): markierten Gegner mit einer Probe auf Wurfwaffen (etwas werfen) oder Einschüchtern ablenken.
+ * Gelingt sie, gilt für ihn −1 auf AT, PA, AW und Schaden bis zum Ende der Kampfrunde. Untote und Geister nur, wenn sie
+ * intelligent genug sind: Das entscheidet die SL (Nutzer 2026-10-30), die Chatkarte nennt es.
+ */
+export async function distractFoe(actor, tokenId) {
+  const current = combatKey();
+  if (!current) return ui.notifications.info(loc('distract.NoCombat'));
+  const target = game.user.targets.first();
+  if (!target?.actor) return ui.notifications.warn(loc('distract.NoTarget'));
+  if (target.actor.uuid === actor.uuid) return ui.notifications.warn(loc('distract.Self'));
+  const throwing = throwingSkill(actor);
+  const intimidate = intimidationSkill(actor);
+  if (!throwing && !intimidate) return ui.notifications.warn(loc('distract.NoSkill', { name: actor.name }));
+  const esc = foundry.utils.escapeHTML;
+  let method = throwing && intimidate ? null : throwing ? 'throw' : 'intimidate';
+  method ??= await foundry.applications.api.DialogV2.wait({
+    window: { title: loc('distract.Dialog.Title'), icon: MANEUVERS.distract.icon },
+    content: `<p>${loc('distract.Dialog.Intro', { actor: esc(actor.name), foe: esc(target.name) })}</p>`,
+    buttons: [
+      { action: 'throw', label: loc('distract.Dialog.Throw', { skill: throwing.name }), icon: 'fas fa-hand-back-fist' },
+      { action: 'intimidate', label: loc('distract.Dialog.Intimidate'), icon: 'fas fa-face-angry' },
+    ],
+    rejectClose: false,
+  });
+  if (method !== 'throw' && method !== 'intimidate') return;
+  const options = { subtitle: ` (${target.name})` };
+  const setup = method === 'throw' ? await actor.setupWeapon(throwing, 'attack', options, tokenId) : await actor.setupSkill(intimidate, options, tokenId);
+  if (!setup) return;
+  // Keine Vergleichsprobe: der Gegner wehrt nichts ab, Geworfenes macht keinen Schaden.
+  setup.testData.opposable = false;
+  const result = (await actor.basicTest(setup))?.result;
+  if (!result) return;
+  const types = creatureTypes(target.actor);
+  const undead = types.includes('UndeadType') || types.includes('GhostType');
+  const note = undead ? `<p class="dsa5h-distract-note">${loc('distract.Chat.Undead')}</p>` : '';
+  const success = result.successLevel > 0;
+  if (success) await actor.setFlag(MODULE_ID, 'maneuvers', { ...state(actor), distract: { [target.id]: { ...current, name: target.name } } });
+  await ChatMessage.create({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    content: `<div class="dsa5h-weakness"><strong>${loc('distract.Name')}</strong><br>${loc(success ? 'distract.Chat.Success' : 'distract.Chat.Failure', { actor: esc(actor.name), foe: esc(target.name) })}${note}</div>`,
+  });
+}
+
 /** Mitteilen (freie Aktion): ab jetzt gilt die Erkenntnis für alle Verbündeten, für alle aber nur noch eine Runde. */
 export async function shareWeakPoints(actor, token) {
   if (!actor?.isOwner) return ui.notifications.warn(loc('weakness.NotOwner'));
@@ -429,6 +507,10 @@ export function sheetData(actor, enabled = enabledManeuvers()) {
       inCombat,
       entries: st.weakness.map(e => ({ text: loc(e.sharedRound == null ? 'weakness.Status' : 'weakness.StatusShared', { foe: e.name, pa: e.pa, tp: e.tp, round: e.sharedRound + 1 }) })),
     } : null,
+    distract: enabled.includes('distract') ? {
+      inCombat,
+      entries: st.distract.map(e => ({ text: loc('distract.Status', { foe: e.name, round: e.round }) })),
+    } : null,
   };
 }
 
@@ -442,10 +524,17 @@ export function initManeuvers(isActive) {
   game.settings.register(MODULE_ID, SETTING, { scope: 'world', config: false, type: Object, default: {} });
 
   Hooks.on('dsa5.prepareRollSituationalModifiers', (actor, modifiers, context) => {
-    if (!isActive() || !isActor(actor)) return;
+    if (!isActive() || !actor) return;
     try {
-      const weak = enabledManeuvers().includes('weakness') ? weakPointBonus(actor, foeTokenId(actor, context), combatKey(), allyActors(actor)) : null;
-      modifiers.push(...buildModifiers(actor, context, { weak }));
+      const enabled = enabledManeuvers();
+      const distracted = enabled.includes('distract') ? distractedBy(tokenIdsOf(actor), combatActors()) : null;
+      // Abgelenkt werden auch Kreaturen (#66); alle übrigen Manöver gibt es nur für Helden und NSC.
+      if (!isActor(actor)) {
+        if (actor.type === 'creature' && distracted) modifiers.push(...buildModifiers(actor, context, { enabled: ['distract'], distracted }));
+        return;
+      }
+      const weak = enabled.includes('weakness') ? weakPointBonus(actor, foeTokenId(actor, context), combatKey(), allyActors(actor)) : null;
+      modifiers.push(...buildModifiers(actor, context, { enabled, weak, distracted }));
     } catch (error) { console.error(`${MODULE_ID} | Grundmanöver`, error); }
   });
 
@@ -477,7 +566,7 @@ export function initManeuvers(isActive) {
     for (const c of combat.combatants) {
       const actor = c.actor;
       const s = state(actor);
-      if (!actor || (!s.stance && !s.aim && !s.advance && !s.weakness)) continue;
+      if (!actor || (!s.stance && !s.aim && !s.advance && !s.weakness && !s.distract)) continue;
       await actor.unsetFlag(MODULE_ID, 'maneuvers');
     }
   });
@@ -499,7 +588,9 @@ export function initManeuvers(isActive) {
     if (enabled.includes('aim') && rollKind({ source: app.dialogData?.source, mode: app.dialogData?.mode }).kind === 'ranged') {
       const aim = root.querySelector('select[name="aim"]');
       if (aim) { aim.value = '0'; const group = aim.closest('.form-group'); if (group) group.style.display = 'none'; }
-      root.querySelector('[data-action="aimButton"]')?.remove();
+      // Nur ausblenden: DialogV2._onSubmit sucht jeden Knopf aus options.buttons im Fenster, ein entfernter wirft.
+      const aimButton = root.querySelector('[data-action="aimButton"]');
+      if (aimButton) aimButton.style.display = 'none';
     }
   });
 }
@@ -532,6 +623,9 @@ function mountDialogPanel(root, instance) {
   panel.className = 'dsa5h-maneuver-panel';
   (root.querySelector('.specAbsContainer') ?? instance.closest('.form-group'))?.after(panel);
 
+  // Neue Probendialoge am Desktop (Issue #63, Nutzerentscheidung 2026-11-02): Manöver als kleine Chips, die Probe
+  // („GE 14“) und der Kombinationshinweis wandern in Tooltips
+  const compact = document.body.classList.contains('dsa5h-rd-desktop');
   const draw = () => {
     const groups = new Map();
     instance.modifiers.forEach((m, i) => { const g = maneuverGroup(m.ref?.id); if (ours(m)) groups.set(g, [...(groups.get(g) ?? []), i]); });
@@ -545,11 +639,14 @@ function mountDialogPanel(root, instance) {
     for (const [group, indices] of groups) {
       const current = indices.findIndex(i => instance.modifiers[i].selected);
       const shown = instance.modifiers[indices[Math.max(0, current)]];
-      const { title, step } = splitModifierName(shown);
+      const { title: fullTitle, step } = splitModifierName(shown);
+      const rowHint = indices.length > 1 ? 'DSA5HELPERS.HouseRules.maneuvers.RowHint' : 'DSA5HELPERS.HouseRules.maneuvers.RowHintSingle';
+      const probe = compact ? fullTitle.match(/^(.*?)\s*\(([^)]*)\)$/) : null;
+      const title = probe ? probe[1] : fullTitle;
       const row = document.createElement('div');
       row.className = `dsa5h-maneuver-row${current >= 0 ? ' active' : ''}`;
       row.dataset.group = group;
-      row.dataset.tooltip = indices.length > 1 ? 'DSA5HELPERS.HouseRules.maneuvers.RowHint' : 'DSA5HELPERS.HouseRules.maneuvers.RowHintSingle';
+      row.dataset.tooltip = probe ? `${probe[2]} · ${game.i18n.localize(rowHint)}` : rowHint;
       const icon = MANEUVERS[group]?.icon ?? MANEUVERS.advance.icon;
       row.innerHTML = `<i class="${icon}" inert></i><span class="dsa5h-maneuver-name"></span><span class="dsa5h-maneuver-step"></span>`;
       row.querySelector('.dsa5h-maneuver-name').textContent = title;
@@ -571,6 +668,13 @@ function mountDialogPanel(root, instance) {
     // Trefferzonen-Regel aus Kompendium 1: das System bietet dann eine eigene Auswahl „Gezielter Angriff“ (bestimmt
     // auch die Rüstungszone). Beide bleiben (Nutzer 2026-10-20), der Hinweis verhindert doppelte Mali.
     if (hitzonesActive() && groups.has('targeted')) hint.textContent += ` ${loc('targeted.HitzoneHint')}`;
+    if (compact) {
+      const info = document.createElement('i');
+      info.className = 'fa-solid fa-circle-info dsa5h-maneuver-info';
+      info.dataset.tooltip = hint.textContent;
+      head.append(info);
+      return;
+    }
     panel.append(hint);
   };
 

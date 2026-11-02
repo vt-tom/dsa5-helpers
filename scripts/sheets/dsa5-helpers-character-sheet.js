@@ -3,7 +3,7 @@ import { systemApi, isFoundry13, contextMenuEntries } from '../compat/runtime.js
 import { openPowerSourceDialog } from '../compat/powersource-dialog.js';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
-import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, maneuverSheetData, defenseChoices, setDefenseMode } from '../house-rules/rules.js';
+import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, distractFoe, maneuverSheetData, defenseChoices, setDefenseMode } from '../house-rules/rules.js';
 import { openHouseRules } from '../apps/house-rules.js';
 import { almanacTabEnabled, loadQuests, loadPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
 import { buildSuggestions, suggestionCount, suggestionsCollapsed, COLLAPSED_SETTING, COUNT_FLAG, COUNT_MIN, COUNT_MAX } from '../skill-suggestions/context.js';
@@ -68,6 +68,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       dsa5hStance: this._maneuverStance,
       dsa5hAimRound: this._maneuverAim,
       dsa5hWeakness: this._maneuverWeakness,
+      dsa5hDistract: this._maneuverDistract,
     },
     ownerActions: {
       dsa5hEditPowerSources: this._editPowerSources,
@@ -1772,6 +1773,11 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // Schwachpunkte erkennen (#48): markierten Gegner analysieren, QS auf PA/TP verteilen.
   static async _maneuverWeakness() {
     await recognizeWeakPoints(this.actor, this.getTokenId?.());
+  }
+
+  // Stören und Ablenken (#66): markierten Gegner ablenken (Wurfwaffen oder Einschüchtern).
+  static async _maneuverDistract() {
+    await distractFoe(this.actor, this.getTokenId?.());
   }
 
   static _openManeuverRules() {

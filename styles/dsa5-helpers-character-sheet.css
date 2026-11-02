@@ -1363,7 +1363,7 @@
   z-index: 5;
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 16px;
   margin: -13px 16px 2px;
 }
 
@@ -1390,10 +1390,12 @@
    lassen und den Würfel gestaucht/den Zahlen-Mittelpunkt verschoben (Nutzer-Feedback 2026-09-16) — jetzt wieder
    exakt die ursprüngliche, bewährte Box, nur mit echtem Klick-Handler statt cursor:default. */
 /* Kopf-Würfel sind jetzt echte <button> (Tastatur) — Foundry-Button-Optik zurücksetzen, Fokus zoomt wie Hover. */
+/* 34 px mit Kürzel im Würfel über dem Wert (Issue #71, Variante B, Nutzerentscheidung 2026-10-31); Lücke 16 px,
+   weil der Goldrahmen 7 px übersteht. */
 .dsa5-helpers-sheet .dsa5h-attr-die-mini {
   position: relative;
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
   cursor: pointer;
   transition: transform .15s ease;
   transform-origin: center;
@@ -1412,19 +1414,29 @@
 }
 
 .dsa5-helpers-sheet .dsa5h-attr-die-mini-face {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  line-height: 26px;
+  line-height: 1;
   text-align: center;
   font-family: 'GentiumBasic',serif;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 14px;
   color: #fff;
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
   border-radius: 50%;
+}
+
+.dsa5-helpers-sheet .dsa5h-attr-mini-key {
+  font-size: 8px;
+  letter-spacing: .04em;
+  color: rgba(255,255,255,.85);
+  pointer-events: none;
 }
 
 .dsa5-helpers-sheet .dsa5h-attr-die-mini::after {
@@ -7015,18 +7027,45 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
 }
 .application .dsa5h-weakness-split label { flex: none; white-space: nowrap; }
 
-/* Passive Verteidigung (#56): Ergebniskarte im Chat, Rechnung der SL als kleine Tabelle. */
+/* Passive Verteidigung (#56): Ergebniskarte im Chat als „Symbol und Wort“ (#62, Variante B), Rechnung der SL als
+   kleine Tabelle. Farbe je Ergebnis über --pd. */
+.chat-message .dsa5h-pd-card {
+  --pd: #6b6157;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+}
+.chat-message .dsa5h-pd-card.dsa5h-pd-hit { --pd: #a3221a; }
+.chat-message .dsa5h-pd-card.dsa5h-pd-defended { --pd: #2f6b2a; }
+.chat-message .dsa5h-pd-icon {
+  grid-row: span 3;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--pd);
+  color: #fff;
+  font-size: 20px;
+}
+.chat-message .dsa5h-pd-title {
+  font-size: var(--font-size-12, 12px);
+  opacity: .8;
+}
+.chat-message .dsa5h-pd-word {
+  color: var(--pd);
+  font-family: 'Andalus', serif;
+  font-size: 22px;
+  line-height: 1.05;
+}
 .chat-message .dsa5h-pd-card p {
-  margin: 4px 0;
+  margin: 2px 0 0;
+  font-size: var(--font-size-13, 13px);
 }
-.chat-message .dsa5h-pd-card.dsa5h-pd-hit,
-.chat-message .dsa5h-pd-card.dsa5h-pd-defended {
-  padding-left: 6px;
-  border-left: 3px solid #b99a5c;
-}
-.chat-message .dsa5h-pd-card.dsa5h-pd-hit { border-left-color: #cf1e1e; }
 .chat-message .dsa5h-pd-roll {
   font-weight: bold;
+  white-space: nowrap;
 }
 .chat-message .dsa5h-pd-table {
   width: 100%;
@@ -7047,6 +7086,10 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
 .chat-message .dsa5h-pd-band-hit {
   color: #8e1d15;
   font-weight: bold;
+}
+.chat-message .dsa5h-pd-gm {
+  grid-column: 1 / -1;
+  margin-top: 6px;
 }
 .chat-message .dsa5h-pd-gm summary {
   cursor: pointer;
@@ -7084,27 +7127,71 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   }
 }
 
-/* Untermenü „Heldenbogen“ der Moduleinstellungen (scripts/apps/sheet-settings.js): lange Beschriftungen normal umbrechen. */
-#dsa5-helpers-sheet-settings .form-group > label {
-  flex: 2;
+/* Untermenüs „Heldenbogen“ und „Darstellung und Geräte“ der Moduleinstellungen (scripts/apps/sheet-settings.js):
+   Bezeichnung links, Feld rechts, Hinweis klein darunter, Zwischenüberschriften je Gruppe (Rückmeldung 2026-11-02: im
+   neuen Untermenü griffen die Regeln nicht, weil sie an der ID des Heldenbogen-Menüs hingen). */
+.dsa5-helpers-sheet-settings .dsa5h-settings-group {
+  margin: 14px 0 4px;
+  padding: 0 0 3px;
+  border-bottom: 1px solid var(--color-border-light-2, rgba(0, 0, 0, .25));
+  font-size: var(--font-size-16, 16px);
+}
+
+.dsa5-helpers-sheet-settings .dsa5h-settings-group:first-child {
+  margin-top: 0;
+}
+
+.dsa5-helpers-sheet-settings .form-group {
+  align-items: center;
+  column-gap: 12px;
+}
+
+.dsa5-helpers-sheet-settings .form-group > label {
+  flex: 1 1 0;
+  min-width: 0;
   line-height: 1.3;
 }
 
-#dsa5-helpers-sheet-settings .form-group > .form-fields {
-  flex: 1;
+/* Auswahllisten und Häkchen stehen im Systemstil auf voller Breite und schöben die Bezeichnung in eine eigene Zeile */
+.dsa5-helpers-sheet-settings .form-group > .form-fields {
+  flex: 0 0 auto;
+  width: auto;
   justify-content: flex-end;
 }
 
-#dsa5-helpers-sheet-settings .form-group:has(file-picker) > .form-fields {
+.dsa5-helpers-sheet-settings .form-group > .form-fields:has(> select) {
+  flex-basis: 210px;
+  width: 210px;
+}
+
+.dsa5-helpers-sheet-settings .form-group > .form-fields > select {
+  width: 100%;
+}
+
+.dsa5-helpers-sheet-settings .form-group > .form-fields > input[type="checkbox"] {
+  flex: none;
+  width: auto;
+  margin: 0;
+}
+
+.dsa5-helpers-sheet-settings .form-group:has(file-picker) > .form-fields {
   flex: 2;
 }
 
-#dsa5-helpers-sheet-settings .form-group + .form-group {
-  margin-top: 12px;
+.dsa5-helpers-sheet-settings .form-group > .hint {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  font-size: var(--font-size-12, 12px);
+  line-height: 1.35;
+  opacity: .8;
+}
+
+.dsa5-helpers-sheet-settings .form-group + .form-group {
+  margin-top: 10px;
 }
 
 /* Abstand zum Zierrahmen unten (DSA5-Design „Immersive“): der Knopf klebte sonst am Rahmen (Rückmeldung 2026-10-20). */
-#dsa5-helpers-sheet-settings .dsa5h-sheet-settings > .form-footer {
+.dsa5-helpers-sheet-settings .dsa5h-sheet-settings > .form-footer {
   margin: 16px 0 18px;
 }
 
@@ -7584,11 +7671,42 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   color: var(--muted);
 }
 
+/* Fußleiste: Einstellungen der Statistik links (seit 2026-11-02 hier statt in den Moduleinstellungen), Löschen rechts */
 .dsa5-helpers-dice-stats .dsa5h-ds-footer {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
   padding: 8px 12px;
   border-top: 1px solid var(--line);
+}
+
+.dsa5-helpers-dice-stats .dsa5h-ds-setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-dice-stats .dsa5h-ds-setting input[type="checkbox"] {
+  margin: 0;
+}
+
+.dsa5-helpers-dice-stats .dsa5h-ds-setting select {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  padding: 2px 6px;
+  background: var(--field);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font: inherit;
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-dice-stats .dsa5h-ds-footer .dsa5h-ds-reset-all {
+  margin-left: auto;
 }
 
 .dsa5-helpers-dice-stats .dsa5h-ds-range {
@@ -8200,7 +8318,10 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
 #hotbar .dsa5h-hud-tab i {
   font-size: 15px;
 }
-#hotbar .sections .dsa5h-hud:not(.collapsed) {
+/* Die Leiste (#hotbar.hotbarV4) gibt jedem Listeneintrag 45 × 45 px mit Rahmen, Hintergrund und overflow: hidden und
+   jedem Font-Awesome-Symbol 30 px bei 45 px Zeilenhöhe (Spezifität bis 1,4,1). Darum hier durchgehend
+   `#hotbar .sections .skillItems.dsa5h-hud` als Präfix und die Vorgaben der Leiste für unsere zwei Bereiche zurückgesetzt. */
+#hotbar .sections .skillItems.dsa5h-hud:not(.collapsed) {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
@@ -8208,27 +8329,41 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   padding: 2px 2px 0;
   overflow-y: auto;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-actions {
+#hotbar .sections .skillItems.dsa5h-hud > li:is(.dsa5h-hud-actions, .dsa5h-hud-side) {
+  position: static;
+  flex: none;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  filter: none;
+  transform: none;
+  transition: none;
+  text-align: center;
+  cursor: default;
+}
+#hotbar .sections .skillItems.dsa5h-hud > li.dsa5h-hud-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: flex-start;
   gap: 3px 4px;
-  min-width: 0;
-  width: auto;
-  height: auto;
-  border: 0;
+  padding: 0;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-side {
+#hotbar .sections .skillItems.dsa5h-hud > li.dsa5h-hud-side {
   display: flex;
   flex-direction: column;
   gap: 3px;
   grid-column: 2;
-  width: auto;
-  height: auto;
-  padding-left: 6px;
-  border: 0;
+  padding: 0 0 0 6px;
   border-left: 1px solid rgba(217, 180, 95, .45);
 }
-#hotbar .dsa5h-hud .dsa5h-hud-tile {
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-tile {
   position: relative;
   display: grid;
   grid-template-rows: auto auto;
@@ -8242,30 +8377,35 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   border: 1px solid rgba(217, 180, 95, .45);
   border-radius: 7px;
   background: rgba(255, 255, 255, .07);
-  color: var(--dsa-hotbar-chip-text, #f3e9d6);
+  color: #f3e9d6;
   line-height: 1;
   cursor: pointer;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-tile i {
+#hotbar .sections .skillItems.dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini) i {
+  width: auto;
   font-size: 15px;
+  line-height: 1;
   color: #d9b45f;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-name {
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-mini i {
+  font-size: 13px;
+}
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-name {
   max-width: 60px;
   overflow: hidden;
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-tile.active {
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-tile.active {
   border-color: #e0c48c;
   background: radial-gradient(circle at 50% 40%, rgba(224, 192, 128, .55), rgba(224, 192, 128, .15));
   box-shadow: 0 0 8px rgba(224, 192, 128, .7);
 }
-#hotbar .dsa5h-hud .dsa5h-hud-tile.active i {
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-tile.active i {
   color: #fff6dc;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-badge {
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-badge {
   position: absolute;
   right: -4px;
   bottom: -5px;
@@ -8276,26 +8416,40 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   font-size: 10px;
   line-height: 15px;
 }
-#hotbar .dsa5h-hud .dsa5h-hud-mini {
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-mini {
   display: grid;
   place-items: center;
+  flex: none;
   width: var(--hit-md, 26px);
+  min-width: 0;
   height: var(--hit-md, 26px);
+  min-height: 0;
   margin: 0;
   padding: 0;
   border: 0;
   border-radius: 6px;
   background: rgba(255, 255, 255, .06);
   color: #d9b45f;
-  font-size: 13px;
+  line-height: 1;
   cursor: pointer;
 }
-#hotbar .dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini):focus-visible {
+#hotbar .sections .skillItems.dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini):focus-visible {
   outline: 2px solid #e0c48c;
   outline-offset: 1px;
 }
 @media (hover: hover) {
-  #hotbar .dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini):hover {
+  /* Rot-Rahmen und Anheben der Leiste für Listeneinträge (#hotbar .skillItems li:hover, .hSection > li:hover) aus. */
+  #hotbar .sections .skillItems.dsa5h-hud > li:is(.dsa5h-hud-actions, .dsa5h-hud-side):hover {
+    border-color: transparent;
+    background: none;
+    box-shadow: none;
+    filter: none;
+    transform: none;
+  }
+  #hotbar .sections .skillItems.dsa5h-hud > li.dsa5h-hud-side:hover {
+    border-left-color: rgba(217, 180, 95, .45);
+  }
+  #hotbar .sections .skillItems.dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini):hover {
     background: rgba(224, 192, 128, .3);
   }
 }

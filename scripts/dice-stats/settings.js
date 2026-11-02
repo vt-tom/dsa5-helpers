@@ -41,12 +41,12 @@ async function mirrorConsent(value) {
 export function registerDiceStatsSettings() {
   game.settings.register(MODULE_ID, 'diceStatsEnabled', {
     name: 'DSA5HELPERS.DiceStats.Settings.Enabled.Name', hint: 'DSA5HELPERS.DiceStats.Settings.Enabled.Hint',
-    scope: 'world', config: true, restricted: true, type: Boolean, default: false,
+    scope: 'world', config: false, restricted: true, type: Boolean, default: false,
     onChange: value => { if (value) askConsent(); Hooks.callAll('dsa5hDiceStatsChanged'); },
   });
   game.settings.register(MODULE_ID, 'diceStatsConsent', {
     name: 'DSA5HELPERS.DiceStats.Settings.Consent.Name', hint: 'DSA5HELPERS.DiceStats.Settings.Consent.Hint',
-    scope: 'user', config: true, type: String, default: 'undecided',
+    scope: 'user', config: false, type: String, default: 'undecided',
     choices: { undecided: 'DSA5HELPERS.DiceStats.Settings.Consent.Undecided', yes: 'DSA5HELPERS.DiceStats.Settings.Consent.Yes', no: 'DSA5HELPERS.DiceStats.Settings.Consent.No' },
     onChange: async (value, _options, userId) => {
       if (userId && userId !== game.userId) return;

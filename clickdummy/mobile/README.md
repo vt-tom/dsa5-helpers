@@ -13,10 +13,17 @@ Fidelity: **High-Fidelity** für Layout, Abstände, Farben, Schrift und Bedienun
 
 | Datei / Ordner | Zweck |
 |---|---|
-| `index.html` | Übersicht: alle Varianten nebeneinander in Geräterahmen (4a Runde 4 mit Szene: Smartphone Spieler/SL, Tablet hoch Spieler, Tablet quer SL; 3a Foundry-Oberfläche; 2a Dunkel / große Schrift / Leerzustände; 1a Bogen hell auf Smartphone und Tablet). Voll klickbar. |
+| `index.html` | Übersicht in Geräterahmen (4a Runde 4 mit Szene: Smartphone Spieler/SL, Tablet hoch Spieler, Tablet quer SL; 3a Foundry-Oberfläche aus Runde 3). Voll klickbar. Die Abschnitte 2a/1a mit dem alten Bogen sind seit 2026-11-02 entfernt. |
 | `app.html` | Nur die Foundry-Oberfläche, bildschirmfüllend. Zum Testen **auf einem echten Gerät**. Wählt Smartphone/Tablet anhand der Bildschirmgröße, erzwingen mit `app.html?device=phone` bzw. `?device=tablet` oder im Konto-Menü unter „Oberfläche“. |
 | `Foundry Mobil.dc.html` | **Quelltext** der Foundry-Oberfläche (Vorlage mit `sc-if`/`sc-for` + Klasse `Component` mit der Logik). Hier wird iteriert. |
-| `Heldenbogen Mobil.dc.html` | **Quelltext** des Heldenbogens (unverändert aus Runde 3). |
+| `heldenbogen.html` | Heldenbogen im heutigen Mobil-Kopf (Nutzerentscheidung 2026-11-02, ersetzt den veralteten `Heldenbogen Mobil.dc.html` aus Runde 3): Stand 0.6.3 mit allen Reitern (auch Aufträge/Personen), Kugeln mit Kraftspeicher, Würfeln mit Kürzel, Kopf klappt beim Scrollen ein, Tippen würfelt, langes Drücken öffnet. Smartphone und Tablet. Mit `?embedded=1&device=phone|tablet` eingebettet in „Foundry Mobil“ (✕ und Würfe per `postMessage`). |
+| `kraftspeicher.html` | Kraftspeicher auf Smartphone und Tablet (MOBILE.md 15, F2): KS-Kugel → Blatt mit −/+ je Speicher, speichert sofort (Nutzerentscheidung 2026-10-28, Variante B; Tablet seit 2026-10-29). Eigenständige Seite im heutigen Kugel-Kopf. |
+| `nsc-kreatur.html` | NSC- und Kreaturbogen (Issues #53/#54, 2026-10-30): Heldenbogen-Gerüst im heutigen Mobil-Kopf, NSC und Kreatur umschaltbar, Smartphone und Tablet. Nur die Reiter des jeweiligen Systembogens; Titelseite mit RS/INI/GS/SK/ZK, Angriffen der ausgerüsteten Waffen, Talenten mit Wert (Anzahl wählbar, Sinnesschärfe und Willenskraft immer) und Favoriten (2026-10-31). Desktop: `../index.html?actor=nsc` bzw. `?actor=kreatur`. |
+| `probe.html` | Probendialog neu gestaltet (Issue #59, Nutzerentscheidung 2026-10-28: Variante B „Wichtiges zuerst“, für alle Probendialoge): Zielwert und Ziel, Modifikator-Regler, Manöver, Sicht oben; Umstände, Feinheiten und Würfelmodus eingeklappt. Angriff und Talent, Smartphone und Tablet umschaltbar. Bei Talentproben stehen die drei Eigenschaften als Würfel neben dem FW (2026-10-30). Modul: `scripts/mobile/roll-dialog.js`. |
+| `ressourcen.html` | LeP/AsP/KaP im Kopf leichter ändern (Issue #59): Variante B „Feld an der Kugel“ gewählt (Nutzer 2026-10-30) – Tipp auf die Kugel öffnet darunter −/+, Eingabe, −5/0/voll/+5. Smartphone und Tablet. Modul: `scripts/mobile/mobile.js` (`openResourcePop`). |
+| `kampftracker.html` | Kampftracker (Issue #59): Variante C „Am Zug“ gewählt (Nutzer 2026-10-30) – Karte oben im Panel „Kampf“ mit „Zug beenden“, für die SL ‹ ›, darunter wer danach dran ist. Smartphone/Tablet, Spieler/SL. |
+| `ausruestung.html` | Ausrüstung (Issue #65): Variante B gewählt (Nutzer 2026-10-30) – Tipp auf die Anzahl öffnet das Zahlenfeld wie an den Kugeln (−/+, Eingabe, −10/+10), „⋮“ mit 44 px Trefferfläche. |
+| `wurfergebnis.html` | Wurfergebnis nach dem Würfeln (Issue #64): Variante A gewählt (Nutzer 2026-10-30) – Chatkarte des eigenen Wurfs als Blatt von unten, ‹ › blättert, am Tablet abschaltbar. Modul: `scripts/mobile/roll-result.js`. |
 | `support.js`, `vendor/` | Mini-Laufzeit des Design-Tools („dc-runtime“, generiert, nicht bearbeiten) und React 18.3.1 lokal, damit nichts aus dem Netz geladen wird. |
 | `dsa5-helpers-mobile.tokens.css` | Design-Tokens der Mobilansicht, auf die Token-Namen der Desktop-CSS abgebildet. Startpunkt für `styles/dsa5-helpers-mobile.css`. |
 | `screenshots/smartphone/` | 25 Ansichten, 390 × 844 px. |
@@ -77,7 +84,7 @@ Technik-Hinweis: Die Laufzeit ruft `componentDidUpdate` nur mit den vorherigen P
 | `24-dunkel-uebersicht` | Dunkles Thema | |
 | `tablet/01`, `tablet/02` | Tablet | Links Helden + Journal (bzw. geöffneter Eintrag), rechts Chat 400 px mit eigener Titelzeile. |
 
-### Heldenbogen
+### Heldenbogen (Runde 1–3, alter Bogen; Screenshots als Archiv, heute `heldenbogen.html`)
 
 | Screenshot | Reiter | Mobil-Besonderheiten |
 |---|---|---|
@@ -95,7 +102,7 @@ Technik-Hinweis: Die Laufzeit ruft `componentDidUpdate` nur mit den vorherigen P
 | `25-dunkel-bogen` | Dunkles Thema | |
 | `tablet/03–05` | Tablet | Linke Spalte: Zurück, Porträt, Name, LeP/AsP/KaP mit −/+, Schicksalspunkte, Eigenschaftswürfel 4 × 2, unten Darstellung/Schrift/Modus. Inhalt max. 1000 px, Rail 84 px rechts. |
 
-Leerzustände (in `index.html`, Abschnitt 2a rechts): Talente ohne Treffer, leere Behälter, keine Effekte, kein Tagebuch, keine Gefährten (Hinweis auf Hinzufügen am Desktop), Journal ohne geteilte Einträge.
+Leerzustände (früher `index.html`, Abschnitt 2a; mit dem alten Bogen entfernt): Talente ohne Treffer, leere Behälter, keine Effekte, kein Tagebuch, keine Gefährten, Journal ohne geteilte Einträge.
 
 ## Bedienregeln (gelten überall)
 

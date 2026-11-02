@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Probendialog mobil</title>
+<!-- Probendialog auf Smartphone und Tablet neu gestaltet (Issue #59, Nutzerwunsch 2026-10-28: kein verzerrtes Pergament,
+     schönere Darstellung). Variante B „Wichtiges zuerst“ (Nutzerentscheidung 2026-10-28; A „Aufgeräumt“ und C „Reiter“
+     verworfen), für alle Probendialoge, Smartphone und Tablet. Modul: scripts/mobile/roll-dialog.js.
+     Inhalt entspricht den Feldern der Systemdialoge (combatskill-enhanced-dialog.hbs, skill-dialog.hbs); im Modul werden
+     die Eingaben des Systems nur umgehängt, gewürfelt wird weiter vom System. Werte sind Platzhalter.
+     Desktop (Issue #63, Nutzerentscheidung 2026-11-02 nach Versuchen mit zwei Spalten und einem Seitenfeld rechts):
+     dieselben Dialoge als Foundry-Fenster 480 px in Mausgröße mit schlichter dunkler Kopfleiste, höchstens 70 % hoch,
+     Gruppen klappen im Fenster auf und es scrollt. Manöver und Umstände als kleine Chips (Probe im Tooltip),
+     Auswahlfelder der Umstände zweispaltig; im Modul zusätzlich bedingte Modifikatoren als Chips und Zauberkosten als
+     eine Zeile. Umschalter „Gerät: Desktop“. Modul: styles/dsa5-helpers-roll-dialog.css.
+     Öffnen über clickdummy/start-server.bat → …/clickdummy/mobile/probe.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --onaccent: #fff8ec;
+  --accenttext: #6d5326;
+  --select: #2b2721;
+  --onselect: #f4e8d6;
+  --gold: #c2a267;
+  --danger: #8e1d15;
+  --good: #2f6b2a;
+  --hdr: linear-gradient(180deg, #3a322b, #272320);
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font: 14px 'GentiumBasic', serif; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.about { max-width: 720px; margin: 0 auto 14px; font-size: 14px; line-height: 1.4; color: #d9cbb4; text-align: center; }
+
+/* Geräte */
+.device { position: relative; margin: 0 auto; overflow: hidden; background: #6d6256; color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.device.phone { width: 390px; max-width: 100%; height: 844px; border-radius: 28px; }
+.device.tablet { width: 820px; max-width: 100%; height: 1000px; border-radius: 22px; }
+.scene { position: absolute; inset: 0; background: radial-gradient(circle at 30% 30%, #8a7c66, #4c443a); }
+.scrim { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .5); }
+
+/* Blatt von unten: schlichtes Papier, keine Pergament-Grafik */
+.sheet { display: flex; flex-direction: column; width: 100%; max-height: 92%; border-radius: 14px 14px 0 0; background: var(--paper); box-shadow: 0 -8px 30px rgba(0, 0, 0, .5); }
+.tablet .sheet { width: 640px; max-height: 90%; }
+.bar { flex: none; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 6px 4px 6px 14px; border-radius: 14px 14px 0 0; background: var(--phead), var(--paper); }
+.bar .ttl { flex: 1; min-width: 0; }
+.bar .ttl b { display: block; font: 20px/1.1 'Andalus', serif; font-weight: 400; }
+.bar .ttl small { display: block; margin-top: 2px; font-size: 14px; color: var(--ink2); }
+.icon { flex: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--ink); font-size: 22px; cursor: pointer; }
+.body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 6px 14px 14px; }
+.foot { flex: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 14px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--paper); }
+.foot button { flex: 1; min-width: 0; height: 52px; border: 1px solid var(--line2); border-radius: 10px; background: var(--field); color: var(--ink); font: 16px 'GentiumBasic', serif; cursor: pointer; }
+.foot button.sec2 { height: 44px; font-size: 15px; }
+.foot button.primary { flex-basis: 100%; order: -1; }
+.foot button.primary { flex: 2; border-color: var(--accent); background: var(--accent); color: var(--onaccent); font-size: 18px; font-weight: 700; }
+.foot button.primary .die { display: inline-grid; place-items: center; min-width: 30px; height: 30px; margin-right: 8px; padding: 0 4px; border-radius: 6px; background: rgba(255, 255, 255, .2); font-size: 16px; }
+
+/* Bausteine */
+.sec { margin-top: 14px; }
+.sec > h4 { display: flex; align-items: baseline; gap: 8px; margin: 0 0 6px; font: 17px 'Andalus', serif; font-weight: 400; color: var(--accenttext); }
+.sec > h4 small { font: 13px 'GentiumBasic', serif; color: var(--ink2); }
+.card { border: 1px solid var(--line2); border-radius: 10px; background: var(--card); }
+.field { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); align-items: center; gap: 10px; min-height: 52px; padding: 4px 12px; border-top: 1px solid var(--line); }
+.field:first-child { border-top: 0; }
+.field > label { font-size: 15px; line-height: 1.2; }
+.field.stack { grid-template-columns: 1fr; gap: 4px; padding: 8px 12px; }
+select { width: 100%; height: 44px; padding: 0 10px; border: 1px solid var(--line2); border-radius: 8px; background: var(--field); color: var(--ink); font: 16px 'GentiumBasic', serif; }
+.stepper { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.stepper button { flex: none; width: 44px; height: 44px; border: 1px solid var(--line2); border-radius: 22px; background: var(--field); color: var(--ink); font: 22px 'GentiumBasic', serif; cursor: pointer; }
+.stepper input { width: 64px; height: 44px; border: 1px solid var(--line2); border-radius: 8px; background: var(--field); color: var(--ink); text-align: center; font: 700 18px 'GentiumBasic', serif; }
+.stepper input.wide { width: 96px; font-weight: 400; }
+.mods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.mods .lbl { display: block; margin-bottom: 4px; font-size: 13px; color: var(--ink2); }
+.mods .stepper { justify-content: flex-start; }
+.mods .stepper input { flex: 1; min-width: 0; width: auto; }
+.seg { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--line2); border-radius: 10px; background: var(--field); }
+.seg button { flex: 1; min-width: 0; height: 40px; padding: 0 2px; border: 0; border-radius: 8px; background: none; color: var(--ink); font: 13px/1.05 'GentiumBasic', serif; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--select); color: var(--onselect); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line2); border-radius: 22px; background: var(--field); color: var(--ink); font: 15px 'GentiumBasic', serif; cursor: pointer; }
+.chip .m { font-variant-numeric: tabular-nums; color: var(--ink2); }
+.chip[aria-pressed="true"] { border-color: var(--select); background: var(--select); color: var(--onselect); }
+.chip[aria-pressed="true"] .m { color: var(--gold); }
+.chip:disabled { opacity: .4; }
+.target { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 4px 4px 4px 12px; }
+.target .t { flex: 1; font-size: 15px; }
+.target .t.none { color: var(--danger); white-space: nowrap; }
+.target .tok { width: 36px; height: 36px; border: 2px solid var(--gold); border-radius: 50%; background: #9c8b6e; }
+.target .add { width: 44px; height: 44px; border: 1px dashed var(--line2); border-radius: 22px; background: none; color: var(--ink); font-size: 22px; cursor: pointer; }
+.man { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.tablet .man { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.mv { position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 60px; padding: 6px 10px; border: 1px solid var(--line2); border-radius: 10px; background: var(--field); color: var(--ink); text-align: left; font: 15px/1.15 'GentiumBasic', serif; cursor: pointer; }
+.mv small { color: var(--ink2); font-size: 13px; }
+.mv .st { position: absolute; top: 6px; right: 8px; font-size: 13px; font-weight: 700; }
+.mv[aria-pressed="true"] { border-color: var(--select); background: var(--select); color: var(--onselect); }
+.mv[aria-pressed="true"] small { color: var(--gold); }
+.hint { margin: 8px 2px 0; font-size: 13px; line-height: 1.35; color: var(--ink2); }
+.summary { display: flex; align-items: center; gap: 12px; padding: 10px 12px; }
+.summary .val { display: grid; place-items: center; width: 60px; height: 60px; flex: none; border-radius: 12px; background: var(--hdr); color: #f4e8d6; text-align: center; line-height: 1; }
+.summary .val b { font-size: 26px; }
+.summary .val small { display: block; font-size: 11px; letter-spacing: .08em; color: #d6bd8a; }
+/* Eigenschaftswürfel der Probe (Nutzerwunsch 2026-10-30, wie die Talentproben im Bogen), Kürzel darunter */
+.summary .dice { display: flex; flex: none; gap: 4px; }
+.summary .die { display: grid; justify-items: center; gap: 2px; width: 36px; line-height: 1; }
+.summary .die b { display: grid; place-items: center; width: 36px; height: 38px; background: center/contain no-repeat; color: #fff; font-size: 16px; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b, 1px 1px 1px #140f0b, -1px -1px 1px #140f0b; }
+.summary .die small { font-size: 11px; letter-spacing: .06em; color: var(--ink); }
+.summary .txt { flex: 1; min-width: 0; font-size: 15px; line-height: 1.3; }
+.summary .txt .act { color: var(--accenttext); }
+details.fold { margin-top: 10px; border: 1px solid var(--line2); border-radius: 10px; background: var(--card); }
+details.fold > summary { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 12px; list-style: none; font: 17px 'Andalus', serif; cursor: pointer; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::after { content: "▾"; margin-left: auto; font-size: 16px; transition: transform .15s; }
+details.fold[open] > summary::after { transform: rotate(180deg); }
+details.fold > summary .badge { padding: 1px 8px; border-radius: 10px; background: var(--select); color: var(--onselect); font: 13px 'GentiumBasic', serif; }
+details.fold > summary .badge:empty { display: none; }
+details.fold > .in { padding: 0 12px 12px; }
+details.fold > .in .card { border: 0; background: none; }
+details.fold > .in .field { padding-left: 0; padding-right: 0; }
+
+/* Desktop (Issue #63, Layout A einspaltig, Nutzerentscheidung 2026-11-02): Foundry-Fenster mittig über der Szene statt
+   Blatt von unten, Bedienelemente in Mausgröße (28 px wie --hit-lg im Bogen). */
+.device.desktop { width: 1100px; height: 760px; border-radius: 4px; box-shadow: 0 0 0 1px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.desktop .scrim { align-items: center; background: none; }
+.desktop .sheet { width: 480px; max-height: 70%; border: 1px solid #000; border-radius: 6px; box-shadow: 0 0 20px rgba(0, 0, 0, .8); }
+.desktop .bar { min-height: 0; padding: 4px 4px 4px 12px; border-radius: 6px 6px 0 0; background: var(--hdr); color: #f4e8d6; }
+.desktop .bar .ttl b { font-size: 17px; }
+.desktop .bar .ttl small { font-size: 13px; color: #d6bd8a; }
+.desktop .icon { width: 28px; height: 28px; color: #f4e8d6; font-size: 16px; }
+.desktop .body { padding: 4px 12px 12px; }
+.desktop .sec { margin-top: 10px; }
+.desktop .sec > h4 { margin-bottom: 4px; font-size: 16px; }
+.desktop .field { min-height: 36px; padding: 2px 10px; }
+.desktop .field > label { font-size: 14px; }
+.desktop select { height: 28px; padding: 0 6px; border-radius: 4px; font-size: 14px; }
+.desktop .stepper button { width: 28px; height: 28px; border-radius: 14px; font-size: 17px; }
+.desktop .stepper input { width: 52px; height: 28px; border-radius: 4px; font-size: 15px; }
+.desktop .stepper input.wide { width: 80px; }
+.desktop .seg button { height: 28px; font-size: 13px; }
+.desktop .chips { gap: 6px; }
+.desktop .chip { min-height: 24px; padding: 2px 8px; border-radius: 12px; font-size: 13px; }
+.desktop .target { min-height: 40px; }
+.desktop .target .tok { width: 28px; height: 28px; }
+.desktop .target .add { width: 28px; height: 28px; font-size: 16px; }
+/* Manöver als Chips, die Probe steht im Tooltip */
+.desktop .man { display: flex; flex-wrap: wrap; gap: 6px; }
+.desktop .mv { flex-direction: row; align-items: center; gap: 4px; min-height: 24px; padding: 2px 8px; border-radius: 12px; font-size: 13px; }
+.desktop .mv small { display: none; }
+.desktop .mv .st { position: static; font-size: 12px; }
+.desktop .summary { padding: 8px 10px; }
+.desktop .summary .val { width: 52px; height: 52px; }
+.desktop .summary .val b { font-size: 22px; }
+.desktop details.fold { margin-top: 8px; }
+.desktop details.fold > summary { min-height: 34px; padding: 0 10px; font-size: 16px; }
+/* Zwei Spalten unter dem Kopf (mobil lösen sie sich auf); Umstände rechts immer offen (Rückmeldung #63, 2026-11-02) */
+/* Auswahlfelder der Umstände zweispaltig, Bezeichnung über dem Feld (Rückmeldung #63, 2026-11-02) */
+.col { display: contents; }
+.desktop details.fold > .in .card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+.desktop details.fold > .in .field { grid-template-columns: minmax(0, 1fr); gap: 2px; min-height: 0; padding: 0; border-top: 0; }
+.desktop details.fold > .in .field > label { font-size: 13px; color: var(--ink2); }
+.desktop .foot { padding: 8px 12px; }
+.desktop .foot button { height: 32px; border-radius: 6px; font-size: 15px; }
+.desktop .foot button.sec2 { height: 32px; font-size: 14px; }
+.desktop .foot button.primary { font-size: 16px; }
+.desktop .foot button.primary .die { min-width: 24px; height: 24px; font-size: 14px; }
+@media (hover: hover) {
+  .desktop .stepper button:hover, .desktop .chip:hover, .desktop .mv:hover, .desktop .foot button:hover { border-color: var(--accent); }
+}
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="roll"><legend>Probe</legend><button data-v="attack" aria-pressed="true">Angriff (Dolch)</button><button data-v="skill">Talent (Klettern)</button></fieldset>
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button><button data-v="desktop">Desktop (#63)</button></fieldset>
+</div>
+<p class="about">Oben das Wichtigste: Zielwert und Ziel, Modifikator als großer Regler, Manöver und Sicht. Seltenes steht in eingeklappten Gruppen; die Zahl zeigt, wie viel darin gewählt ist.</p>
+<div class="device phone" data-device>
+  <div class="scene"></div>
+  <div class="scrim"><div class="sheet" role="dialog" data-sheet></div></div>
+</div>
+
+<script>
+// Inhalt wie in den Systemdialogen; Werte sind Platzhalter
+const ROLLS = {
+  attack: {
+    title: 'Dolch · Angriffsprobe', sub: 'Dolche · AT 14 · TP 1W6+1', value: 14, abbr: 'AT',
+    mods: [{ k: 'at', label: 'AT', v: 0 }, { k: 'tp', label: 'TP', v: '0', text: true }],
+    toggles: [
+      { k: 'narrow', label: 'Beengte Umgebung', m: '0' }, { k: 'hand', label: 'Falsche Hand', m: '−4' },
+      { k: 'pos', label: 'Vorteilhafte Position', m: '+2' }, { k: 'opp', label: 'Passierschlag', m: '−4' },
+      { k: 'dual', label: 'Beidhändiger Kampf', m: '−2' }],
+    selects: [
+      { k: 'vision', label: 'Sichtverhältnisse', opts: ['Klare Sicht [0]', 'Gestört [−1]', 'Schemen [−2]', 'Kaum sichtbar [−3]'], main: true },
+      { k: 'size', label: 'Größenkategorie', opts: ['Winzig', 'Klein', 'Mittel [0]', 'Groß', 'Riesig'], sel: 2, foe: true },
+      { k: 'wsize', label: 'Waffengröße Gegner', opts: ['Kurz [0]', 'Mittel', 'Lang'], foe: true },
+      { k: 'aim', label: 'Gezielter Angriff', opts: ['– [0]', 'Kopf', 'Torso', 'Arme', 'Beine'], foe: true },
+      { k: 'assassin', label: 'Meucheln', opts: ['–', 'Meucheln', 'Betäuben'] },
+      { k: 'water', label: 'Wasserkampf', opts: ['Keine Einschränkung [0]', 'Hüfthoch', 'Schultertief', 'Unter Wasser'] }],
+    maneuvers: [
+      { k: 'feint', label: 'Angriff antäuschen', req: 'GE 15', icon: '🎭', max: 3 },
+      { k: 'power', label: 'Mächtiger Angriff', req: 'KK 9', icon: '🔨', max: 3 },
+      { k: 'lunge', label: 'Vorstoß', req: 'MU 10', icon: '🏃', max: 1 },
+      { k: 'aimed', label: 'Gezielter Angriff', req: 'IN 15', icon: '⌖', max: 1 }],
+    buttons: [],
+  },
+  skill: {
+    title: 'Klettern · Talentprobe', sub: 'MU 12 · GE 14 · KK 13 · FW 7', value: 7, abbr: 'FW', chars: [['mu', 'MU', 12], ['ge', 'GE', 14], ['kk', 'KK', 13]],
+    mods: [{ k: 'mod', label: 'Modifikator', v: 0 }],
+    fine: [{ k: 'mu', label: 'MU' }, { k: 'ge', label: 'GE' }, { k: 'kk', label: 'KK' }, { k: 'fw', label: 'FW' }, { k: 'qs', label: 'QS' }],
+    toggles: [],
+    selects: [
+      { k: 'diff', label: 'Schwierigkeit', opts: ['Sehr leicht [+3]', 'Leicht [+1]', 'Normal [0]', 'Schwer [−1]', 'Sehr schwer [−3]'], sel: 2, main: true },
+      { k: 'vision', label: 'Sichtverhältnisse', opts: ['Klare Sicht [0]', 'Gestört [−1]', 'Schemen [−2]', 'Kaum sichtbar [−3]'], main: true }],
+    maneuvers: [],
+    buttons: ['Routineprobe', 'Vergleichend'],
+  },
+};
+const MODES = ['Öffentlich', 'Als Held', 'Privat · SL', 'Verdeckt', 'Nur ich'];
+const state = { roll: 'attack', device: 'phone', mode: 0, on: new Set(), steps: {}, mods: {}, sel: {}, open: new Set() };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const roll = () => ROLLS[state.roll];
+const roman = n => ['', 'I', 'II', 'III'][n];
+
+const stepper = (k, v, text) => `<span class="stepper">${text ? '' : `<button type="button" data-mod="${k}" data-d="-1" aria-label="weniger">−</button>`}<input ${text ? 'class="wide" type="text"' : 'type="number" inputmode="numeric"'} data-modin="${k}" value="${esc(state.mods[k] ?? v)}">${text ? '' : `<button type="button" data-mod="${k}" data-d="1" aria-label="mehr">+</button>`}</span>`;
+const selectField = s => `<div class="field"><label>${s.label}</label><select data-sel="${s.k}">${s.opts.map((o, i) => `<option${(state.sel[s.k] ?? s.sel ?? 0) === i ? ' selected' : ''}>${o}</option>`).join('')}</select></div>`;
+const modeSeg = () => `<div class="seg" role="group" aria-label="Würfelmodus">${MODES.map((m, i) => `<button type="button" data-mode="${i}" aria-pressed="${state.mode === i}">${m}</button>`).join('')}</div>`;
+const toggleChips = list => `<div class="chips">${list.map(t => `<button type="button" class="chip" data-tog="${t.k}" aria-pressed="${state.on.has(t.k)}">${t.label} <span class="m">${t.m}</span></button>`).join('')}</div>`;
+const maneuvers = () => `<div class="man">${roll().maneuvers.map(m => { const s = state.steps[m.k] ?? 0; return `<button type="button" class="mv" data-man="${m.k}" title="${m.req}" aria-pressed="${s > 0}"><span>${m.icon} ${m.label}</span><small>${m.req}</small>${s && m.max > 1 ? `<span class="st">${roman(s)}</span>` : ''}</button>`; }).join('')}</div>`;
+const target = () => state.hasTarget
+  ? `<div class="target"><span class="tok"></span><span class="t">Ork-Krieger</span><button type="button" class="add" data-target aria-label="Ziel ändern">✎</button></div>`
+  : `<div class="target"><span class="t none">● Kein Ziel</span><button type="button" class="add" data-target aria-label="Ziel hinzufügen">+</button></div>`;
+// Feinheiten selten gebraucht: nur Zahlenfelder in einer Reihe (Tastatur statt −/+)
+const fine = () => roll().fine ? `<div class="mods" style="grid-template-columns:repeat(${roll().fine.length},minmax(0,1fr))">${roll().fine.map(f => `<div style="text-align:center"><span class="lbl">${f.label}</span><span class="stepper"><input type="number" inputmode="numeric" data-modin="${f.k}" value="${esc(state.mods[f.k] ?? 0)}"></span></div>`).join('')}</div>` : '';
+// Würfel folgen den Feinheiten (Modifikator je Eigenschaft); Bild = Würfel des Systems
+const dice = () => roll().chars ? `<span class="dice">${roll().chars.map(([k, abbr, v], i) => `<span class="die"><b style="background-image:url('../../../../systems/dsa5/icons/dice/d20${k}.svg')">${v + (Number(state.mods[k]) || 0)}</b><small>${abbr}</small></span>`).join('')}</span>` : '';
+const modGrid = () => `<div class="mods" ${roll().mods.length === 1 ? 'style="grid-template-columns:1fr"' : ''}>${roll().mods.map(m => `<div>${roll().mods.length > 1 ? `<span class="lbl">${m.label}</span>` : ''}${stepper(m.k, m.v, m.text)}</div>`).join('')}</div>`;
+const count = keys => keys.filter(Boolean).length || '';
+const changed = s => (state.sel[s.k] ?? s.sel ?? 0) !== (s.sel ?? 0);
+const togCount = () => count([...roll().toggles.map(t => state.on.has(t.k)), ...roll().selects.filter(s => !s.main).map(changed)]);
+
+// Häufiges oben, Seltenes eingeklappt; die Zahl an einer Gruppe zeigt, wie viel darin gewählt ist
+function body() {
+  const r = roll();
+  const fold = (id, title, n, inner) => `<details class="fold" data-fold="${id}"${state.open.has(id) ? ' open' : ''}><summary>${title} <span class="badge">${n}</span></summary><div class="in">${inner}</div></details>`;
+  return `<div class="col"><div class="card summary"><span class="val"><span><small>${r.abbr}</small><b>${r.value}</b></span></span>${dice()}<span class="txt">${target()}</span></div>
+    <section class="sec"><h4>Modifikator</h4>${modGrid()}</section>
+    ${r.maneuvers.length ? `<section class="sec"><h4>Grundmanöver</h4>${maneuvers()}</section>` : ''}
+    ${r.selects.filter(s => s.main).length ? `<section class="sec"><div class="card">${r.selects.filter(s => s.main).map(selectField).join('')}</div></section>` : ''}
+    ${r.toggles.length || r.selects.some(s => !s.main) ? fold('ums', 'Umstände und Gegner', togCount(), `${r.toggles.length ? toggleChips(r.toggles) : ''}<div class="card" style="margin-top:8px">${r.selects.filter(s => !s.main).map(selectField).join('')}</div>`) : ''}
+    ${r.fine ? fold('fine', 'Feinheiten', '', `<p class="hint" style="margin:0 0 8px">Einzelne Eigenschaften, FW oder QS verändern.</p>${fine()}`) : ''}
+    ${fold('mode', `Würfelmodus: ${MODES[state.mode]}`, '', modeSeg())}</div>`;
+}
+
+function render() {
+  const r = roll();
+  const keepScroll = $('[data-sheet] .body')?.scrollTop ?? 0;
+  $('[data-device]').className = `device ${state.device}`;
+  $('[data-sheet]').innerHTML = `
+    <div class="bar"><span class="ttl"><b>${r.title}</b><small>${r.sub}</small></span><button type="button" class="icon" aria-label="Schließen">✕</button></div>
+    <div class="body">${body()}</div>
+    <div class="foot">${r.buttons.map(b => `<button type="button" class="sec2">${b}</button>`).join('')}<button type="button" class="primary"><span class="die">${r.value}</span>Würfeln</button></div>`;
+  $('[data-sheet] .body').scrollTop = keepScroll;
+}
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('button, summary');
+  if (!b || b.closest('.dummy-pages')) return; // Seitenmenü (pages.js) nicht abfangen
+  const grp = b.closest('[data-group]');
+  if (grp) {
+    grp.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    state[grp.dataset.group] = b.dataset.v;
+    if (grp.dataset.group === 'roll') { state.on.clear(); state.steps = {}; state.mods = {}; state.sel = {}; }
+    return render();
+  }
+  if (b.matches('summary')) {
+    ev.preventDefault();
+    const id = b.parentElement.dataset.fold;
+    state.open.has(id) ? state.open.delete(id) : state.open.add(id);
+    return render();
+  }
+  if (b.dataset.mode) state.mode = Number(b.dataset.mode);
+  else if (b.dataset.tog) state.on.has(b.dataset.tog) ? state.on.delete(b.dataset.tog) : state.on.add(b.dataset.tog);
+  else if (b.dataset.man) { const m = roll().maneuvers.find(x => x.k === b.dataset.man); state.steps[m.k] = ((state.steps[m.k] ?? 0) + 1) % (m.max + 1); }
+  else if (b.dataset.mod) state.mods[b.dataset.mod] = (Number(state.mods[b.dataset.mod]) || 0) + Number(b.dataset.d);
+  else if (b.matches('[data-target]')) state.hasTarget = !state.hasTarget;
+  else return;
+  render();
+});
+document.addEventListener('change', ev => {
+  if (ev.target.dataset.sel) { state.sel[ev.target.dataset.sel] = ev.target.selectedIndex; render(); }
+  if (ev.target.dataset.modin) state.mods[ev.target.dataset.modin] = ev.target.value;
+  if (roll().chars?.some(([k]) => k === ev.target.dataset.modin)) render();
+});
+render();
+</script>
+<script src="../pages.js?v=7"></script>
+</body>
+</html>

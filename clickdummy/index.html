@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=239">
+<link rel="stylesheet" href="style.css?v=247">
 </head>
 <body>
 
@@ -15,6 +15,17 @@
     <button type="button" data-mode="play" class="active" aria-pressed="true">Spielen</button>
     <button type="button" data-mode="advance" aria-pressed="false">Steigern</button>
     <button type="button" data-mode="edit" aria-pressed="false">Bearbeiten</button>
+  </div>
+  <!-- Bogenart und Foundry-Generation (Rückmeldung 2026-11-02: im Seitenmenü nur Hauptseiten); lädt die Seite mit
+       ?actor=nsc|kreatur bzw. ?foundry=13 neu, siehe initPageSwitches(). -->
+  <div class="mode-switch" id="actorSwitch" role="group" aria-label="Bogen">
+    <button type="button" data-param="actor" data-value="">Held</button>
+    <button type="button" data-param="actor" data-value="nsc">NSC</button>
+    <button type="button" data-param="actor" data-value="kreatur">Kreatur</button>
+  </div>
+  <div class="mode-switch" id="foundrySwitch" role="group" aria-label="Foundry-Version">
+    <button type="button" data-param="foundry" data-value="">v14</button>
+    <button type="button" data-param="foundry" data-value="13">v13</button>
   </div>
   <!-- Issue #34: als Spieler ansehen + Welt-Einstellung „Spieler dürfen bearbeiten“ (aus = nur die SL bearbeitet). -->
   <button type="button" id="asPlayerToggle" aria-pressed="false">Als Spieler (Test)</button>
@@ -134,10 +145,12 @@
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
 <script src="assets-map.js?v=19"></script>
 <script src="data.js?v=42"></script>
+<script src="actor-types.js?v=2"></script>
+<script src="pages.js?v=7"></script>
 <script src="preview-062.js?v=12"></script>
 <script src="hud-preview.js?v=2" defer></script>
-<script src="script.js?v=170"></script>
-<script type="module" src="dice-stats.js?v=6"></script>
-<script type="module" src="house-rules.js?v=7"></script>
+<script src="script.js?v=175"></script>
+<script type="module" src="dice-stats.js?v=7"></script>
+<script type="module" src="house-rules.js?v=8"></script>
 </body>
 </html>

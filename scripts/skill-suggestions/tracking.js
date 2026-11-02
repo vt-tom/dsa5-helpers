@@ -57,7 +57,7 @@ export function initSkillSuggestions() {
     name: 'DSA5HELPERS.Settings.SkillSuggestions.Name',
     hint: 'DSA5HELPERS.Settings.SkillSuggestions.Hint',
     scope: 'client',
-    config: true,
+    config: false,
     type: Number,
     default: 6,
     choices: Object.fromEntries(COUNT_CHOICES.map(n => [n, n ? String(n) : 'DSA5HELPERS.Settings.SkillSuggestions.Off'])),

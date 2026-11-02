@@ -1,0 +1,341 @@
+/* ==========================================================================
+   DSA5 Helpers — Probendialoge (Talent, Eigenschaft, Angriff, Parade, Ausweichen, Fernkampf, Zauber, Liturgie)
+   scripts/mobile/roll-dialog.js hängt die Eingaben des Systems in .dsa5h-rd um, das Fenster bekommt .dsa5h-m-roll.
+   Alles hängt an body.dsa5h-rd-on: mobil immer (Variante B „Wichtiges zuerst“, Nutzerentscheidung 2026-10-28), am
+   Desktop zusätzlich body.dsa5h-rd-desktop, abschaltbar per Welt-Einstellung (Issue #63, einspaltig 480 px,
+   Nutzerentscheidung 2026-11-02). Dummy: clickdummy/mobile/probe.html. Ohne die Klasse bleibt der Systemdialog.
+
+   1. Variablen am Desktop (mobil kommen sie aus styles/dsa5-helpers-mobile.css)
+   2. Grundaufbau (Maße für Smartphone und Tablet)
+   3. Desktop: Fenster 480 px, Bedienelemente in Mausgröße
+   ========================================================================== */
+
+/* 1. Variablen am Desktop ---------------------------------------------------- */
+body.dsa5h-rd-desktop .dsa5h-m-roll {
+  --dsa5h-m-paper: #ece2d2;
+  --dsa5h-m-ink: #2b2721;
+  --dsa5h-m-ink2: rgba(43, 39, 33, .72);
+  --dsa5h-m-line: rgba(43, 39, 33, .14);
+  --dsa5h-m-line2: rgba(43, 39, 33, .28);
+  --dsa5h-m-field: rgba(255, 255, 255, .64);
+  --dsa5h-m-accent: #8b6f3f;
+  --dsa5h-m-onaccent: #fff8ec;
+  --dsa5h-m-gold: #b99a5c;
+  --dsa5h-m-accenttext: #6d5326;
+  --dsa5h-m-dangertext: #8e1d15;
+  --dsa5h-m-hdr: linear-gradient(180deg, #3a322b, #272320);
+  --dsa5h-m-card: linear-gradient(170deg, rgba(255, 250, 238, .85), rgba(236, 226, 210, .45)), var(--dsa5h-m-paper);
+  --dsa5h-m-safe-b: 0px;
+}
+
+/* 2. Grundaufbau --------------------------------------------------------------
+   Schlichtes Papier statt der gestreckten Pergament-Grafik; Smartphone und Tablet gleich, das Tablet nur breiter. */
+body.dsa5h-rd-on .dsa5h-m-roll,
+body.dsa5h-rd-on .dsa5h-m-roll > .window-content,
+body.dsa5h-rd-on .dsa5h-m-roll .dialog-form,
+body.dsa5h-rd-on .dsa5h-m-roll .dialog-content { background: var(--dsa5h-m-paper) !important; border-image: none !important; }
+body.dsa5h-rd-on .dsa5h-m-roll > .window-content::before,
+body.dsa5h-rd-on .dsa5h-m-roll .dialog-form::before,
+body.dsa5h-rd-on .dsa5h-m-roll .dialog-form::after { content: none !important; }
+body.dsa5h-rd-on .dsa5h-m-roll > .window-content { padding: 0 14px; }
+body.dsa5h-rd-on .dsa5h-m-roll .dialog-form { font-size: 15px; color: var(--dsa5h-m-ink); }
+body.dsa5h-rd-on .dsa5h-m-roll .dialog-form > .dialog-content { padding: 4px 0 0; }
+body.dsa5h-rd-on .dsa5h-m-roll .skill-test { display: block; height: auto; }
+body.dsa5h-rd-on .dsa5h-m-roll :is(.dsa5h-rd-emptied, .dsa5h-rd .dsahidden) { display: none !important; }
+body.dsa5h-rd-on .dsa5h-rd { display: flex; flex-direction: column; gap: 14px; padding-bottom: 6px; }
+/* Die Spalte gibt es nur am Desktop */
+body.dsa5h-rd-on .dsa5h-rd-col { display: contents; }
+body.dsa5h-rd-on .dsa5h-rd :is(input[type="text"], input[type="number"], input:not([type]), select) {
+  height: 44px; min-height: 44px; padding: 0 10px; border: 1px solid var(--dsa5h-m-line2); border-radius: 8px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 16px; box-shadow: none;
+}
+body.dsa5h-rd-on .dsa5h-rd h4,
+body.dsa5h-rd-on .dsa5h-rd .dsa5h-maneuver-panel h4 {
+  margin: 0 0 6px; padding: 0; border: 0; background: none; color: var(--dsa5h-m-accenttext);
+  font-family: 'Andalus', serif; font-size: 17px; font-weight: 400;
+}
+/* Kopf: Zielwert + Ziele */
+body.dsa5h-rd-on .dsa5h-rd-head {
+  display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 12px;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 10px; background: var(--dsa5h-m-card);
+}
+body.dsa5h-rd-on .dsa5h-rd-value {
+  display: grid; place-content: center; flex: none; width: 56px; height: 56px; border-radius: 12px;
+  background: var(--dsa5h-m-hdr); color: #f4e8d6; text-align: center; line-height: 1;
+}
+body.dsa5h-rd-on .dsa5h-rd-value small { display: block; font-size: 11px; letter-spacing: .08em; color: #d6bd8a; }
+body.dsa5h-rd-on .dsa5h-rd-value b { font-size: 24px; }
+/* Eigenschaftswürfel der Probe (wie die Talentproben im Bogen), Kürzel darunter */
+body.dsa5h-rd-on .dsa5h-rd-dice { display: flex; flex: none; gap: 4px; }
+body.dsa5h-rd-on .dsa5h-rd-die { display: grid; justify-items: center; gap: 2px; width: 36px; line-height: 1; }
+body.dsa5h-rd-on .dsa5h-rd-die b {
+  display: grid; place-items: center; width: 36px; height: 38px; background: center/contain no-repeat;
+  color: #fff; font-size: 16px;
+  text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b, 1px 1px 1px #140f0b, -1px -1px 1px #140f0b;
+}
+body.dsa5h-rd-on .dsa5h-rd-die small { font-size: 11px; letter-spacing: .06em; color: var(--dsa5h-m-ink); }
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dsa5h-rd-head .targets.row-section { flex: 1; flex-direction: row; flex-wrap: nowrap; justify-content: flex-start; min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0; }
+body.dsa5h-rd-on .dsa5h-rd-head .targets > div:not(.rollTarget) { flex: 1 1 auto; width: auto; color: var(--dsa5h-m-dangertext); text-align: left; }
+body.dsa5h-rd-on .dsa5h-rd-head .targets .rollTarget { width: 40px; height: 40px; border: 2px solid var(--dsa5h-m-gold); border-radius: 50%; background-size: cover; }
+body.dsa5h-rd-on .dsa5h-rd-head .targets .addTarget {
+  display: inline-grid; place-items: center; width: 44px; height: 44px; margin-left: auto;
+  border: 1px dashed var(--dsa5h-m-line2); border-radius: 22px; color: var(--dsa5h-m-ink);
+}
+body.dsa5h-rd-on .dsa5h-rd-head .targets .addTarget i { font-size: 18px; }
+/* Modifikator mit −/+ */
+body.dsa5h-rd-on .dsa5h-rd-modgrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+body.dsa5h-rd-on .dsa5h-rd-modgrid:has(> :nth-child(2)) { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+body.dsa5h-rd-on .dsa5h-rd-mod { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+body.dsa5h-rd-on .dsa5h-rd-lbl { font-size: 13px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-rd-on .dsa5h-rd-stepper { display: flex; align-items: center; gap: 6px; flex: 1; }
+body.dsa5h-rd-on .dsa5h-rd-stepper > input { flex: 1; min-width: 0; width: auto !important; max-width: none !important; text-align: center; font-weight: 700; }
+body.dsa5h-rd-on .dsa5h-rd-stepper > button {
+  flex: none; width: 44px; height: 44px; min-height: 44px; margin: 0; padding: 0; border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 22px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 22px; line-height: 1;
+}
+/* Häufige Felder und Listen: Bezeichnung links, Feld rechts */
+body.dsa5h-rd-on .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) {
+  display: flex; flex-direction: column; border: 1px solid var(--dsa5h-m-line2); border-radius: 10px; background: var(--dsa5h-m-card);
+}
+body.dsa5h-rd-on .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list):empty { display: none; }
+body.dsa5h-rd-on .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) > :is(.form-group, .waterblock, .row-section) {
+  margin: 0; padding: 4px 12px; border-top: 1px solid var(--dsa5h-m-line);
+}
+body.dsa5h-rd-on .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) > :first-child { border-top: 0; }
+/* Zeile: Bezeichnung links, Feld rechts (Raster, weil das System Breiten wie „col seventy“ vorgibt) */
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) > .form-group,
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) > .waterblock > .form-group {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); align-items: center; gap: 10px; min-height: 52px; margin: 0;
+}
+body.dsa5h-rd-on .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) .form-group > label { width: auto !important; min-width: 0; max-width: none !important; margin: 0; font-size: 15px; font-weight: 400; line-height: 1.2; }
+body.dsa5h-rd-on .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) .form-group > :not(label) { width: auto !important; min-width: 0; max-width: none !important; margin: 0; }
+body.dsa5h-rd-on .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) .form-fields > select { width: 100%; }
+body.dsa5h-rd-on .dsa5h-rd select[multiple] { height: auto; min-height: 88px; padding: 4px; }
+/* Umstände zum Ankreuzen als Chips (das Kästchen bleibt das des Systems) */
+body.dsa5h-rd-on .dsa5h-rd-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+body.dsa5h-rd-on .dsa5h-rd-chips:empty { display: none; }
+/* „Maximale Modifikatorenanzahl“ als Hinweiszeile über den Chips; das System hebt die Zahl kurz hervor, wenn es ein Häkchen zurücknimmt */
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dsa5h-rd .row-section.dsa5h-rd-maxmods { display: flex; flex-direction: row; align-items: baseline; gap: 6px; margin: 0 0 8px !important; color: var(--dsa5h-m-ink2); font-size: 14px; }
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dsa5h-rd .row-section.dsa5h-rd-maxmods > .col { flex: none; width: auto !important; }
+body.dsa5h-rd-on .dsa5h-rd .dsa5h-rd-maxmods > .maxMods { color: var(--dsa5h-m-ink); font-weight: 700; }
+body.dsa5h-rd-on .dsa5h-rd-chips > .canChangeCastingTime { display: contents; }
+body.dsa5h-rd-on .dsa5h-rd-chips .form-group {
+  position: relative; display: inline-flex; align-items: center; max-width: 100%; min-height: 44px; margin: 0; padding: 0 14px;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 22px; background: var(--dsa5h-m-field); cursor: pointer;
+}
+/* Lange Bezeichnungen brechen im Chip um, statt aus dem Fenster zu laufen (Rückmeldung #63, 2026-11-02) */
+body.dsa5h-rd-on .dsa5h-rd-chips .form-group > label { flex: 0 1 auto; min-width: 0; margin: 0; font-size: 15px; font-weight: 400; line-height: 1.15; overflow-wrap: anywhere; pointer-events: none; }
+body.dsa5h-rd-on .dsa5h-m-roll .dsa5h-rd-chips .form-group > input[type="checkbox"] { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+body.dsa5h-rd-on .dsa5h-rd-chips .form-group:has(input:checked) { border-color: var(--dsa5h-m-ink); background: var(--dsa5h-m-ink); color: #f4e8d6; }
+/* Das System färbt Labels selbst (auch den Kostenhinweis im Label), deshalb die helle Schrift bis ins Label */
+body.dsa5h-rd-on .dsa5h-rd-chips .form-group:has(input:checked) :is(label, label *) { color: inherit; }
+body.dsa5h-rd-on .dsa5h-rd-chips .form-group:has(input:disabled) { opacity: .45; }
+body.dsa5h-rd-on .dsa5h-rd-chips .form-group:has(input:focus-visible) { outline: 2px solid var(--dsa5h-m-accent); outline-offset: 2px; }
+/* Eingeklappte Gruppen; die Zahl zeigt, wie viel darin von der Vorgabe abweicht */
+body.dsa5h-rd-on .dsa5h-rd-fold { border: 1px solid var(--dsa5h-m-line2); border-radius: 10px; background: var(--dsa5h-m-card); }
+body.dsa5h-rd-on .dsa5h-rd-fold > summary {
+  display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 12px; list-style: none; cursor: pointer;
+  font-family: 'Andalus', serif; font-size: 17px;
+}
+body.dsa5h-rd-on .dsa5h-rd-fold > summary::-webkit-details-marker { display: none; }
+body.dsa5h-rd-on .dsa5h-rd-fold > summary::after { content: "▾"; margin-left: auto; font-size: 16px; }
+body.dsa5h-rd-on .dsa5h-rd-fold[open] > summary::after { content: "▴"; }
+body.dsa5h-rd-on .dsa5h-rd-badge { padding: 1px 8px; border-radius: 10px; background: var(--dsa5h-m-ink); color: #f4e8d6; font-family: 'GentiumBasic', serif; font-size: 13px; }
+body.dsa5h-rd-on .dsa5h-rd-badge:empty { display: none; }
+body.dsa5h-rd-on .dsa5h-rd-fold-body { padding: 0 12px 12px; }
+body.dsa5h-rd-on .dsa5h-rd-fold-body .dsa5h-rd-list { border: 0; border-radius: 0; background: none; }
+body.dsa5h-rd-on .dsa5h-rd-fold-body .dsa5h-rd-list > * { padding-left: 0; padding-right: 0; }
+body.dsa5h-rd-on .dsa5h-rd-fold-body .dsa5h-rd-list > :first-child { border-top: 1px solid var(--dsa5h-m-line); }
+body.dsa5h-rd-on .dsa5h-rd-chips:empty + .dsa5h-rd-list > :first-child { border-top: 0; }
+/* Feinheiten: Eigenschaften der Probe über den Feldern für Eigenschaften, FW, QS (gleich breite Spalten) */
+body.dsa5h-rd-on .dsa5h-rd-fine .form-group { display: block; min-height: 0; margin: 0 0 6px; }
+body.dsa5h-rd-on .dsa5h-rd-fine .form-group > label { display: none; }
+body.dsa5h-rd-on .dsa5h-rd-fine .form-fields.gap0px { display: flex; gap: 6px; }
+body.dsa5h-rd-on .dsa5h-rd-fine .form-fields.gap0px > * { flex: 1 1 0; min-width: 0; max-width: none !important; width: auto; text-align: center; }
+body.dsa5h-rd-on .dsa5h-rd-fine .form-fields.gap0px > div:first-child:not(:has(*)) { display: none; }
+body.dsa5h-rd-on .dsa5h-rd-fine select.noAppearance { height: 36px; min-height: 36px; padding: 0; border: 0; background: none; text-align: center; font-size: 14px; font-weight: 700; }
+/* Würfelmodus: fünf Knöpfe über die volle Breite */
+body.dsa5h-rd-on .dsa5h-rd-mode .form-group { display: block; min-height: 0; margin: 0; }
+body.dsa5h-rd-on .dsa5h-rd-mode .form-group > label { display: none; }
+body.dsa5h-rd-on .dsa5h-rd-mode .dsaMessageMode { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--dsa5h-m-line2); border-radius: 10px; background: var(--dsa5h-m-field); }
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dsa5h-rd-mode .dsaMessageMode > label { position: relative; display: grid; flex: 1; place-items: center; height: 44px; min-height: 44px; margin: 0; border-radius: 8px; }
+body.dsa5h-rd-on .dsa5h-rd-mode .dsaMessageMode > label > input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; }
+body.dsa5h-rd-on .dsa5h-rd-mode .dsaMessageMode > label > i { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 8px; font-size: 18px; line-height: 1; }
+body.dsa5h-rd-on .dsa5h-rd-mode .dsaMessageMode > label:has(input:checked) { background: var(--dsa5h-m-ink); color: #f4e8d6; }
+/* Manöver, Sonderfertigkeiten, Zaubererweiterungen: Kacheln (Smartphone zweispaltig, Tablet vierspaltig) */
+body.dsa5h-rd-on .dsa5h-rd-specs { display: flex; flex-direction: column; gap: 10px; }
+body.dsa5h-rd-on .dsa5h-rd-specs .dsa5h-maneuver-panel {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0;
+}
+body.dsa5h-rd-on .dsa5h-rd-specs .dsa5h-maneuver-panel[hidden] { display: none; }
+body.dsa5h-tablet .dsa5h-rd-specs .dsa5h-maneuver-panel { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+body.dsa5h-rd-on .dsa5h-rd-specs .dsa5h-maneuver-panel > :is(h4, .hint) { grid-column: 1 / -1; margin: 0; }
+body.dsa5h-rd-on .dsa5h-rd-specs .dsa5h-maneuver-panel > .hint { font-size: 13px; line-height: 1.35; color: var(--dsa5h-m-ink2); }
+body.dsa5h-rd-on .dsa5h-rd-specs .dsa5h-maneuver-panel .dsa5h-maneuver-row {
+  display: flex; flex-wrap: wrap; align-content: center; gap: 2px 6px; min-height: 60px; margin: 0; padding: 6px 10px;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 10px; background: var(--dsa5h-m-field); box-shadow: none; font-size: 15px; line-height: 1.15;
+}
+body.dsa5h-rd-on .dsa5h-rd-specs .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { border-color: var(--dsa5h-m-ink); background: var(--dsa5h-m-ink); color: #f4e8d6; }
+body.dsa5h-rd-on .dsa5h-rd-specs .dsa5h-maneuver-step { flex-basis: 100%; font-size: 13px; }
+/* Sonderfertigkeiten wie die Manöver-Kacheln: ohne Einzug, Innenschatten und gestauchtes Symbol des Systems (Rückmeldung #63, 2026-11-02) */
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbsContainer { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; }
+body.dsa5h-tablet .dsa5h-rd-specs .specAbsContainer { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbsContainer:not(:has(.specAbs:not([style*="none"]))) { display: none; }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbsContainer > .row-section:not(.specAbs) { display: none; }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs {
+  position: relative; display: flex; flex-direction: row; align-items: center; gap: 6px; min-height: 52px; margin: 0; padding: 6px 10px;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 10px; background: var(--dsa5h-m-field); box-shadow: none;
+}
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs > .col { width: auto !important; flex: none; }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs > .col.ninety { flex: 1; min-width: 0; font-size: 15px; line-height: 1.15; }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs :is(.specImg, .extImg) { width: 24px !important; height: 24px; padding: 0; background-size: contain; }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs a { color: inherit; }
+/* „Im Chat posten“ blendet das System beim Darüberfahren rechts oben in der Sonderfertigkeit ein (.hovermenu,
+   dialog-combat-dsa5.js); Platz dafür freihalten, sonst liegt das Symbol über dem Namen (Rückmeldung #63, 2026-11-02) */
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs { padding-right: 28px; }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs .hovermenu { top: 50%; right: 4px; transform: translateY(-50%); line-height: 1; }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs .hovermenu i { color: var(--dsa5h-m-ink2); }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs.active .hovermenu i { color: inherit; }
+body.dsa5h-rd-on .dsa5h-rd-specs .specAbs.active { border-color: var(--dsa5h-m-ink); background: var(--dsa5h-m-ink); color: #f4e8d6; }
+/* Zauber: Dauer, Kosten, Reichweite als kleine Tabelle */
+body.dsa5h-rd-on .dsa5h-rd-costs > .row-section { display: block; margin: 0 !important; border: 1px solid var(--dsa5h-m-line2); border-radius: 10px; background: var(--dsa5h-m-card); }
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dsa5h-rd-costs .row-section .row-section { display: flex; flex-direction: row; gap: 0; background: none; }
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dsa5h-rd-costs .row-section > .col.four { flex: 1 1 0 !important; width: auto !important; padding: 6px 4px; text-align: center; }
+body.dsa5h-rd-on .dsa5h-rd-costs .table-title .col { font-size: 13px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-rd-on .dsa5h-rd-costs .lineheight .col { font-size: 17px; font-weight: 700; }
+/* Fußleiste: „Würfeln“ breit oben, weitere Knöpfe (Routine, Vergleichsprobe, SL-Willkür, Erweiterungen) darunter */
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dialog-form .form-footer {
+  position: sticky; bottom: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 8px; margin: 8px -14px 0;
+  padding: 10px 14px calc(12px + var(--dsa5h-m-safe-b)); border-top: 1px solid var(--dsa5h-m-line); background: var(--dsa5h-m-paper);
+}
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dialog-form .form-footer > button {
+  flex: 1 1 auto; min-width: 0; height: 44px; min-height: 44px; margin: 0; padding: 0 12px; border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 10px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 15px; line-height: 1.1;
+}
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dialog-form .form-footer > button:first-child {
+  flex-basis: 100%; height: 52px; border-color: var(--dsa5h-m-accent); background: var(--dsa5h-m-accent);
+  color: var(--dsa5h-m-onaccent); font-size: 18px; font-weight: 700;
+}
+body.dsa5h-rd-on dialog.dsa5h-m-roll .dialog-form .form-footer > button:not(:first-child):last-child:not([data-action]) { flex: 0 0 44px; }
+/* 3. Desktop -------------------------------------------------------------------
+   Foundry-Fenster 480 px (roll-dialog.js), Bedienelemente 28 px wie --hit-lg im Bogen, Zeilen 36 px, Chips 24 px.
+   Breite fest, Höhe höchstens 70 % des Bildschirms, der Inhalt scrollt (Rückmeldung #63, 2026-11-02): Foundry hält
+   sich bei jedem setPosition an min-/max-width, und ein fast bildschirmhohes Fenster ließe sich kaum verschieben.
+   Gruppen klappen im Fenster auf; Manöver, Umstände und bedingte Modifikatoren als kleine Chips, Zauberkosten als
+   eine Zeile (Nutzerentscheidung 2026-11-02 nach Versuchen mit zwei Spalten und einem Seitenfeld rechts). */
+body.dsa5h-rd-desktop .dsa5h-m-roll { min-width: 480px; max-width: 480px; max-height: 70vh; }
+/* Schlichte dunkle Kopfleiste statt Band (blackhat.webp) und Buch (blackbook.webp, ::after) des Systems: die Ornamente
+   wirkten auf dem durchgehenden Papier aufgeklebt (Nutzerentscheidung 2026-11-02, wie Click-Dummy und mobil) */
+body.dsa5h-rd-desktop .dsa5h-m-roll { border: 1px solid #000; border-radius: 6px; box-shadow: 0 0 20px rgba(0, 0, 0, .8); }
+body.dsa5h-rd-desktop .dsa5h-m-roll::after { content: none !important; }
+body.dsa5h-rd-desktop .dsa5h-m-roll > .window-header {
+  top: 0; height: 36px; min-height: 36px; padding: 0 4px 0 12px; border: 0; border-radius: 5px 5px 0 0;
+  background: var(--dsa5h-m-hdr) !important; color: #f4e8d6;
+}
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll > .window-header .window-title { margin: 0; color: #f4e8d6; font-family: 'Andalus', serif; font-size: 17px; text-align: left; text-shadow: none; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll > .window-header :is(button, a).header-control {
+  width: 28px; height: 28px; min-height: 28px; padding: 0; border: 0; border-radius: 14px; background: none; color: #f4e8d6; box-shadow: none;
+}
+body.dsa5h-rd-desktop .dsa5h-m-roll > .window-header :is(button, a).header-control:focus-visible { outline: 2px solid var(--dsa5h-m-gold); outline-offset: 0; }
+body.dsa5h-rd-desktop .dsa5h-m-roll > .window-content { padding: 0 12px; }
+body.dsa5h-rd-desktop .dsa5h-m-roll .dialog-form { padding-bottom: 0; font-size: 14px; }
+/* Ohne Innenabstand unten klebt die Fußleiste am Fensterrand (sonst scheint darunter Inhalt durch); die Höhe stellt
+   sich selbst ein, der Griff zum Größenändern lag über den Knöpfen */
+body.dsa5h-rd-desktop .dsa5h-m-roll > .window-resize-handle { display: none; }
+body.dsa5h-rd-desktop .dsa5h-rd { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+body.dsa5h-rd-desktop .dsa5h-rd-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+/* Umstände: Auswahlfelder zweispaltig, Bezeichnung über dem Feld; die bedingten Modifikatoren voll breit */
+body.dsa5h-rd-desktop .dsa5h-rd-fold-body .dsa5h-rd-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+body.dsa5h-rd-desktop .dsa5h-rd-fold-body .dsa5h-rd-list > :nth-child(n) { padding: 0; border-top: 0; }
+body.dsa5h-rd-desktop .dsa5h-rd-fold-body .dsa5h-rd-list > .modifiers { grid-column: 1 / -1; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd .dsa5h-rd-fold-body .dsa5h-rd-list > .form-group,
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd .dsa5h-rd-fold-body .dsa5h-rd-list > .waterblock > .form-group { grid-template-columns: minmax(0, 1fr); gap: 2px; min-height: 0; }
+body.dsa5h-rd-desktop .dsa5h-rd-fold-body .dsa5h-rd-list .form-group > label { font-size: 13px; color: var(--dsa5h-m-ink2); }
+/* Bedingte Modifikatoren: Bezeichnung über den Chips (roll-dialog.js ersetzt die Mehrfachauswahl) */
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd .dsa5h-rd-list > .form-group.modifiers { grid-template-columns: minmax(0, 1fr); gap: 4px; padding-top: 6px; padding-bottom: 6px; }
+body.dsa5h-rd-desktop .dsa5h-rd select.dsa5h-rd-replaced { display: none; }
+body.dsa5h-rd-desktop .dsa5h-rd-modchips { display: flex; flex-wrap: wrap; gap: 6px; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd-modchip {
+  flex: none; width: auto; max-width: 100%; min-height: 24px; height: auto; margin: 0; padding: 2px 8px; border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 12px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 13px; line-height: 1.15;
+  text-align: left; white-space: normal; overflow-wrap: anywhere;
+}
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd-modchip[aria-pressed="true"] { border-color: var(--dsa5h-m-ink); background: var(--dsa5h-m-ink); color: #f4e8d6; }
+body.dsa5h-rd-desktop .dsa5h-rd-modchip:focus-visible { outline: 2px solid var(--dsa5h-m-accent); outline-offset: 1px; }
+/* Zauberkosten als eine Zeile „Aktionsdauer 2 · Kosten 4 · …“: Tabelle aufgelöst, Bezeichnung und Wert per order paarweise */
+body.dsa5h-rd-desktop .dsa5h-rd-costs > .row-section { display: flex !important; flex-wrap: wrap; align-items: baseline; row-gap: 2px; padding: 6px 10px; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs > .row-section > .col,
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd-costs .row-section .row-section:not(.col) { display: contents; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd-costs .row-section .col.four { flex: none !important; width: auto !important; padding: 0; line-height: 1.4; text-align: left; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .table-title > .col.four { margin-right: 4px; font-size: 13px; font-weight: 400; color: var(--dsa5h-m-ink2); }
+body.dsa5h-rd-desktop .dsa5h-rd-costs > .row-section > .col:last-child .col.four { margin-right: 14px; font-size: 14px; font-weight: 700; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .table-title > .col:nth-child(1) { order: 1; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .table-title > .col:nth-child(2) { order: 3; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .table-title > .col:nth-child(3) { order: 5; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .table-title > .col:nth-child(4) { order: 7; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .table-title > .col:nth-child(5) { order: 9; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .table-title > .col:nth-child(6) { order: 11; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .row-section:not(.table-title) > .col.four:nth-child(1) { order: 2; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .row-section:not(.table-title) > .col.four:nth-child(2) { order: 4; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .row-section:not(.table-title) > .col.four:nth-child(3) { order: 6; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .row-section:not(.table-title) > .col.four:nth-child(4) { order: 8; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .row-section:not(.table-title) > .col.four:nth-child(5) { order: 10; }
+body.dsa5h-rd-desktop .dsa5h-rd-costs .row-section:not(.table-title) > .col.four:nth-child(6) { order: 12; }
+body.dsa5h-rd-desktop .dsa5h-rd :is(input[type="text"], input[type="number"], input:not([type]), select) {
+  height: 28px; min-height: 28px; padding: 0 6px; border-radius: 4px; font-size: 14px;
+}
+body.dsa5h-rd-desktop .dsa5h-rd h4,
+body.dsa5h-rd-desktop .dsa5h-rd .dsa5h-maneuver-panel h4 { margin-bottom: 4px; font-size: 16px; }
+body.dsa5h-rd-desktop .dsa5h-rd-head { gap: 10px; min-height: 0; padding: 8px 10px; }
+body.dsa5h-rd-desktop .dsa5h-rd-value { width: 52px; height: 52px; }
+body.dsa5h-rd-desktop .dsa5h-rd-value b { font-size: 22px; }
+body.dsa5h-rd-desktop .dsa5h-rd-head .targets .rollTarget { width: 32px; height: 32px; }
+body.dsa5h-rd-desktop .dsa5h-rd-head .targets .addTarget { width: 28px; height: 28px; border-radius: 14px; }
+body.dsa5h-rd-desktop .dsa5h-rd-head .targets .addTarget i { font-size: 14px; }
+body.dsa5h-rd-desktop .dsa5h-rd-modgrid { gap: 8px; }
+body.dsa5h-rd-desktop .dsa5h-rd-stepper { gap: 4px; }
+body.dsa5h-rd-desktop .dsa5h-rd-stepper > button { width: 28px; height: 28px; min-height: 28px; border-radius: 14px; font-size: 17px; }
+body.dsa5h-rd-desktop .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) > :is(.form-group, .waterblock, .row-section) { padding: 2px 10px; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) > .form-group,
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) > .waterblock > .form-group { gap: 8px; min-height: 36px; }
+body.dsa5h-rd-desktop .dsa5h-rd :is(.dsa5h-rd-main, .dsa5h-rd-list) .form-group > label { font-size: 14px; }
+body.dsa5h-rd-desktop .dsa5h-rd select[multiple] { min-height: 64px; }
+body.dsa5h-rd-desktop .dsa5h-rd-chips { gap: 6px; margin-bottom: 8px; }
+body.dsa5h-rd-desktop .dsa5h-rd-chips .form-group { min-height: 24px; padding: 2px 8px; border-radius: 12px; }
+body.dsa5h-rd-desktop .dsa5h-rd-chips .form-group > label { font-size: 13px; }
+body.dsa5h-rd-desktop .dsa5h-rd-fold > summary { min-height: 34px; padding: 0 10px; font-size: 16px; }
+body.dsa5h-rd-desktop .dsa5h-rd-fold-body { padding: 0 10px 10px; }
+body.dsa5h-rd-desktop .dsa5h-rd-fine select.noAppearance { height: 28px; min-height: 28px; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd-mode .dsaMessageMode > label { height: 28px; min-height: 28px; }
+body.dsa5h-rd-desktop .dsa5h-rd-mode .dsaMessageMode > label > i { font-size: 14px; }
+/* Manöver und Sonderfertigkeiten als Chips; Probe und Kombinationshinweis stehen im Tooltip (house-rules/maneuvers.js) */
+body.dsa5h-rd-desktop .dsa5h-rd-specs { gap: 6px; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .dsa5h-maneuver-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .dsa5h-maneuver-panel > h4 { display: flex; flex-basis: 100%; align-items: center; gap: 6px; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .dsa5h-maneuver-info { color: var(--dsa5h-m-ink2); font-size: 13px; cursor: help; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .dsa5h-maneuver-panel .dsa5h-maneuver-row {
+  flex-wrap: nowrap; align-items: center; gap: 4px; max-width: 100%; min-height: 24px; padding: 2px 8px; border-radius: 12px; color: var(--dsa5h-m-ink); font-size: 13px;
+}
+body.dsa5h-rd-desktop .dsa5h-rd-specs .dsa5h-maneuver-name { min-width: 0; overflow-wrap: anywhere; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .dsa5h-maneuver-row > i { font-size: 12px; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .dsa5h-maneuver-step { flex-basis: auto; font-size: 12px; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .dsa5h-maneuver-step:empty { display: none; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .specAbsContainer { display: flex; flex-wrap: wrap; gap: 6px; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .specAbs { gap: 4px; max-width: 100%; min-height: 24px; padding: 2px 24px 2px 8px; border-radius: 12px; color: var(--dsa5h-m-ink); }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .specAbs :is(.specImg, .extImg) { width: 16px !important; height: 16px; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .specAbs > .col.ninety { flex: 0 1 auto; min-width: 0; font-size: 13px; overflow-wrap: anywhere; }
+body.dsa5h-rd-desktop .dsa5h-rd-specs .specAbs .hovermenu i { padding: 0; font-size: 11px; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dialog-form .form-footer { gap: 6px; margin: 8px -12px 0; padding: 8px 12px; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dialog-form .form-footer > button { height: 32px; min-height: 32px; border-radius: 6px; font-size: 14px; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dialog-form .form-footer > button:first-child { height: 32px; font-size: 16px; }
+body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dialog-form .form-footer > button:not(:first-child):last-child:not([data-action]) { flex: 0 0 32px; }
+body.dsa5h-rd-desktop .dsa5h-rd-stepper > button:focus-visible { outline: 2px solid var(--dsa5h-m-accent); outline-offset: 1px; }
+@media (hover: hover) {
+  body.dsa5h-rd-desktop .dsa5h-rd-stepper > button:hover,
+  body.dsa5h-rd-desktop .dsa5h-rd-chips .form-group:hover,
+  body.dsa5h-rd-desktop .dsa5h-rd-specs .dsa5h-maneuver-panel .dsa5h-maneuver-row:hover,
+  body.dsa5h-rd-desktop .dsa5h-rd-specs .specAbs:hover,
+  body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dsa5h-rd-modchip:hover,
+  body.dsa5h-rd-desktop .dsa5h-m-roll > .window-header :is(button, a).header-control:hover,
+  body.dsa5h-rd-desktop dialog.dsa5h-m-roll .dialog-form .form-footer > button:not(:first-child):hover { border-color: var(--dsa5h-m-accent); }
+}

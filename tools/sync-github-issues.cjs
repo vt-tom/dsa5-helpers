@@ -56,28 +56,86 @@ function statusOf(i) {
   if (i.state_reason === 'completed') return 'erledigt';
   return 'geschlossen (Grund nicht angegeben)';
 }
-function entry(i) {
-  const details = [statusOf(i),
-    'Bearbeiter: ' + (i.assignees.map(u => '@' + u.login).join(', ') || 'niemand'),
-    i.user?.login && 'von @' + i.user.login,
-    i.labels.length && 'Labels: ' + i.labels.map(l => typeof l === 'string' ? l : l.name).join(', '),
-    i.milestone && 'Meilenstein: ' + i.milestone.title,
-    Number.isInteger(i.comments) && `${i.comments} ${i.comments === 1 ? 'Kommentar' : 'Kommentare'}`,
-    (i.state === 'open' ? 'zuletzt geändert ' + i.updated_at : 'geschlossen ' + i.closed_at),
-  ].filter(Boolean).map(cell).join(' · ');
-  return [`- **[#${i.number}](${i.html_url}) ${cell(i.title)}**`, `  - ${details}`];
+const date = iso => iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.';
+const link = i => `[#${i.number}](${i.html_url})`;
+const CLOSED_SHOWN = 8;
+
+/**
+ * Reads the manual part: the version from the title, and for each section where issues are
+ * mentioned and how many entries start with Du/KI. Numbered "## N. …" sections are phases of
+ * the current version; the last phase ("Fertig …") may still hold closed issues.
+ */
+function scan(manual) {
+  const version = /^#\s.*?(\d+\.\d+\.\d+)/m.exec(manual)?.[1] || null;
+  const where = new Map();
+  const sections = [];
+  let h2;
+  let current;
+  for (const line of manual.split(/\r?\n/)) {
+    const h = /^(#{2,3})\s+(.+?)\s*$/.exec(line);
+    if (h) {
+      const phase = h[1] === '##' ? /^\d+\.\s/.test(h[2]) : h2?.phase;
+      const title = h[2].replace(/^\d+\.\s*/, '');
+      current = { name: h[1] === '##' ? title : `${h2?.name} – ${title}`, phase,
+        done: phase && /fertig/i.test(title), user: 0, agent: 0, total: 0 };
+      if (h[1] === '##') h2 = current;
+      sections.push(current);
+      continue;
+    }
+    if (!current) continue;
+    const item = /^- (?:\[[ xX]\] )?(\S*)/.exec(line);
+    if (item) {
+      current.total++;
+      if (item[1].startsWith('Du:')) current.user++;
+      if (item[1].startsWith('KI:')) current.agent++;
+    }
+    for (const m of line.matchAll(/(?:(?<![\w/.])#|\/issues\/)(\d+)\b(?!-)/g)) {
+      const n = Number(m[1]);
+      if (!where.has(n)) where.set(n, []);
+      if (!where.get(n).includes(current)) where.get(n).push(current);
+    }
+  }
+  return { version, where, sections: sections.filter(x => x.total || x.phase) };
 }
-function render(issues, now = new Date()) {
+/** Where the issue stands in the list, with a Achtung: note for each mismatch against GitHub. */
+function inList(i, { version, where }) {
+  const places = where.get(i.number) || [];
+  const notes = [];
+  if (i.state === 'open' && !places.length) notes.push('fehlt in der Liste');
+  const notDone = places.filter(p => !p.done);
+  if (i.state === 'closed' && notDone.length) notes.push('geschlossen, steht noch hier');
+  if (version && i.state === 'open') {
+    const inPhase = places.some(p => p.phase);
+    if (inPhase && i.milestone?.title !== version) notes.push(`Meilenstein ${version} fehlt`);
+    if (!inPhase && places.length && i.milestone?.title === version) notes.push(`Meilenstein ${version}, aber nicht in Phase 1–4`);
+  }
+  return [cell(places.map(p => p.name).join(', ')), ...notes.map(n => 'Achtung: ' + n)].filter(Boolean).join(' · ');
+}
+function row(i, list) {
+  const labels = i.labels.map(l => typeof l === 'string' ? l : l.name).join(', ');
+  return `| ${link(i)} | ${cell(i.title)} | ${cell(i.milestone?.title || '–')} | ${cell(labels || '–')} | ${inList(i, list)} |`;
+}
+function render(issues, now = new Date(), manual = '') {
   const cutoff = now.getTime() - CLOSED_DAYS * 864e5;
+  const list = scan(manual);
   const open = issues.filter(i => i.state === 'open').sort((a, b) => a.number - b.number);
   const closed = issues.filter(i => i.state === 'closed' && Date.parse(i.closed_at) >= cutoff)
     .sort((a, b) => b.closed_at.localeCompare(a.closed_at) || a.number - b.number);
-  return [START, '## GitHub-Issues', '',
-    `_Repository: \`${REPO}\` · Letzter erfolgreicher Abruf: ${now.toISOString()} · vollständig nachgeladen._`, '',
-    '_Automatisch erzeugte Übersicht; nur zur Information. Keine Beauftragung zur Bearbeitung. Nicht von Hand bearbeiten._', '',
-    `**Offen (${open.length})**`, '', ...(open.length ? open.flatMap(entry) : ['_Keine offenen Issues._']), '',
-    `**Kürzlich geschlossen (letzte ${CLOSED_DAYS} Tage: ${closed.length})**`, '',
-    ...(closed.length ? closed.flatMap(entry) : ['_Keine kürzlich geschlossenen Issues._']), END].join('\n');
+  // Closed issues still listed outside "Fertig …" are shown regardless of age.
+  const stale = issues.filter(i => i.state === 'closed' && inList(i, list).includes('Achtung:'))
+    .sort((a, b) => a.number - b.number);
+  const head = '| # | Titel | Meilenstein | Labels | In der Liste |\n|---|---|---|---|---|';
+  const shown = closed.slice(0, CLOSED_SHOWN).map(i => `${link(i)} ${cell(i.title)} (${statusOf(i)}, ${date(i.closed_at)})`);
+  if (closed.length > CLOSED_SHOWN) shown.push(`… und ${closed.length - CLOSED_SHOWN} weitere`);
+  return [START, '## Überblick (erzeugt)', '',
+    `_Automatisch erzeugt aus GitHub (\`${REPO}\`, Abruf ${now.toISOString()}) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._`, '',
+    ...(list.sections.length ? ['| Abschnitt | Du | KI | Einträge |', '|---|---|---|---|',
+      ...list.sections.map(x => `| ${cell(x.name)} | ${x.user || '–'} | ${x.agent || '–'} | ${x.total} |`), ''] : []),
+    `**Offene Issues (${open.length})**`, '',
+    ...(open.length ? [head, ...open.map(i => row(i, list))] : ['_Keine offenen Issues._']), '',
+    ...(stale.length ? ['**Geschlossen, aber noch in der Liste**', '', head, ...stale.map(i => row(i, list)), ''] : []),
+    `**Kürzlich geschlossen (${CLOSED_DAYS} Tage: ${closed.length})**`, '',
+    shown.length ? shown.join(' · ') : '_Keine kürzlich geschlossenen Issues._', END].join('\n');
 }
 function sync({ file = FILE, fetch = fetchIssues, now = () => new Date() } = {}) {
   const lock = file + '.sync.lock';
@@ -90,7 +148,7 @@ function sync({ file = FILE, fetch = fetchIssues, now = () => new Date() } = {})
     const { s, e } = markers(md);
     const issues = fetch(); // all network operations must succeed before any write
     const eol = md.includes('\r\n') ? '\r\n' : '\n';
-    const next = md.slice(0, s) + render(issues, now()).replace(/\n/g, eol) + md.slice(e + END.length);
+    const next = md.slice(0, s) + render(issues, now(), md.slice(0, s)).replace(/\n/g, eol) + md.slice(e + END.length);
     temp = path.join(path.dirname(file), `.${path.basename(file)}.${crypto.randomUUID()}.tmp`);
     fs.writeFileSync(temp, next, { flag: 'wx', mode: fs.statSync(file).mode });
     const current = fs.readFileSync(file);
@@ -121,5 +179,5 @@ function main() {
     process.exitCode = 1;
   }
 }
-module.exports = { sync, fetchIssues, render, markers, statusOf, REPO, START, END };
+module.exports = { sync, fetchIssues, render, scan, markers, statusOf, REPO, START, END };
 if (require.main === module) main();

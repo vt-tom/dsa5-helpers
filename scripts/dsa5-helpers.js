@@ -10,9 +10,11 @@ import { initHud } from './hud.js';
 import { registerAlmanacTabs } from './sheets/almanac.js';
 import { getHouseRulesApp, openHouseRules } from './apps/house-rules.js';
 import { initSheetSwitcher } from './sheet-switcher.js';
-import { initMobile } from './mobile/mobile.js';
+import { initBagDrag } from './compat/bag-drag.js';
+import { initMobile, mobileMode } from './mobile/mobile.js';
+import { initRollDialogs } from './mobile/roll-dialog.js';
 import { registerBannerSettings, initBannerSocket } from './banner-upload.js';
-import { getSheetSettingsApp } from './apps/sheet-settings.js';
+import { getSheetSettingsApp, getDisplaySettingsApp } from './apps/sheet-settings.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -58,12 +60,18 @@ Hooks.once('init', async () => {
   // Eigenes HUD: Reiter in der DSA-Leiste (Helfen, Wundeinschätzung, Manöver, Würfelstatistik).
   initHud();
   game.settings.registerMenu('dsa5-helpers', 'houseRules', { name: 'DSA5HELPERS.HouseRules.Title', label: 'DSA5HELPERS.HouseRules.Menu.Label', hint: 'DSA5HELPERS.HouseRules.Menu.Hint', icon: 'fas fa-book', type: getHouseRulesApp(), restricted: false });
+  // Untermenü „Darstellung und Geräte“ (Nutzer 2026-11-02: nur noch Knöpfe in der Liste): Probendialoge am Desktop,
+  // Talent-Vorschläge, hybrides Spiel; für alle offen, Welt-Einstellungen darin sieht nur die SL.
+  game.settings.registerMenu('dsa5-helpers', 'displaySettings', { name: 'DSA5HELPERS.Settings.DisplayMenu.Title', label: 'DSA5HELPERS.Settings.DisplayMenu.Label', hint: 'DSA5HELPERS.Settings.DisplayMenu.Hint', icon: 'fas fa-display', type: getDisplaySettingsApp(), restricted: false });
   // Für Makros und das spätere HUD des Moduls.
   game.modules.get('dsa5-helpers').api = { ...(game.modules.get('dsa5-helpers').api ?? {}), openDiceStats, openHouseRules };
   // Mobile Support (docs/MOBILE.md 13): Welt-Einstellung „Hybrides Spiel“, Oberfläche je Gerät.
   initMobile();
+  // Probendialoge im Modul-Design (mobil und Desktop, Issue #63)
+  initRollDialogs(mobileMode);
   // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
   initSheetSwitcher();
+  initBagDrag();
   initSkillSuggestions();
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);

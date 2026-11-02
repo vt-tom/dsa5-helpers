@@ -8,7 +8,7 @@
 // selbst, NSC und Kreaturen verteidigen automatisch mit der besten Option.
 //
 // Ablauf (nur auf dem Client der aktiven SL): Das System legt je Ziel eine Startnachricht an und merkt am Ziel, dass es
-// auf eine Verteidigung wartet (flags.opposes; greift ein Spieler ein nicht verknüpftes Token an, kommt das Flag bei der
+// auf eine Verteidigung wartet (DSA8 flags.opposes, DSA7 flags.oppose; greift ein Spieler ein nicht verknüpftes Token an, kommt das Flag bei der
 // SL nicht immer an — dann nach kurzer Wartezeit trotzdem auswerten und ein spätes Flag wieder löschen). Dann:
 // Treffer → OpposeDSA.resolveUndefended (Schaden wie bisher), abgewehrt → Wartezustand lösen, Reaktionsknopf weg.
 // Schip auf den Angriff: Das System zeichnet die Angriffskarte neu und ruft handleOpposedTarget; wir werten dann neu aus.
@@ -16,7 +16,7 @@
 // Weitere Nutzer-Entscheidungen 2026-10-28: Nah- und Fernkampf (Fernkampf nur Ausweichen und Schild); eine Verteidigung
 // zählt als verbraucht, wenn die AT gelungen ist; eine 1 im Angriff (Krit, auch unbestätigt) halbiert V, normal gerundet
 // — das setzt das System als postData.halfDefense.
-import { systemApi } from '../compat/runtime.js';
+import { systemApi, isOpposePending, clearOpposedFor } from '../compat/runtime.js';
 
 const MODULE_ID = 'dsa5-helpers';
 const SOCKET = `module.${MODULE_ID}`;
@@ -29,11 +29,14 @@ const gmDetails = new Map();
 
 /**
  * Ergebnis der Attacke gegen die automatische Verteidigung: misslungene AT = miss, sonst W20 ≤ V abgewehrt.
+ * Eine 1 wehrt immer ab, eine 20 nie (Nutzer 2026-10-29), unabhängig von V.
  * @returns {{outcome: 'hit'|'defended'|'miss', roll?: number}}
  */
 export function resolveDefense({ successLevel, roll, defense }) {
   if (!(successLevel > 0)) return { outcome: 'miss' };
-  return { outcome: Number(roll) <= Number(defense) ? 'defended' : 'hit', roll };
+  const d20 = Number(roll);
+  const defended = d20 === 1 || (d20 !== 20 && d20 <= Number(defense));
+  return { outcome: defended ? 'defended' : 'hit', roll };
 }
 
 /** Höchste Verteidigung (keine Summe, kein Durchschnitt); ohne Option null. */
@@ -127,10 +130,15 @@ function targetOf(startMessage) {
 
 const escape = text => foundry.utils.escapeHTML(String(text ?? ''));
 
+// Ergebnis auf einen Blick (Issue #62, Variante B „Symbol und Wort“, Nutzerwahl 2026-10-30; Dummy passive-verteidigung.html):
+// rundes Symbol, darüber klein der Titel, das Ergebnis als großes Wort, darunter Satz und Verteidigungswurf.
+const OUTCOME_ICONS = { hit: 'fa-sword', defended: 'fa-shield', miss: 'fa-xmark' };
 function publicContent(outcome, attacker, defender, result) {
   const text = game.i18n.format(P + 'Chat.' + outcome, { attacker: escape(attacker), defender: escape(defender) });
-  const roll = result.roll ? `<span class="dsa5h-pd-roll">${game.i18n.format(P + 'Chat.Roll', { roll: result.roll })}</span>` : '';
-  return `<div class="dsa5h-pd-card dsa5h-pd-${outcome}"><b>${game.i18n.localize(P + 'Title')}</b><p>${text}</p>${roll}</div>`;
+  const roll = result.roll ? ` <span class="dsa5h-pd-roll">${game.i18n.format(P + 'Chat.Roll', { roll: result.roll })}</span>` : '';
+  return `<div class="dsa5h-pd-card dsa5h-pd-${outcome}"><span class="dsa5h-pd-icon"><i class="fa-solid ${OUTCOME_ICONS[outcome]}" inert></i></span>
+    <small class="dsa5h-pd-title">${game.i18n.localize(P + 'Title')}</small><span class="dsa5h-pd-word">${game.i18n.localize(P + 'Chat.Word.' + outcome)}</span>
+    <p>${text}${roll}</p></div>`;
 }
 
 function gmContent(result, options, chosen, at, d20) {
@@ -164,16 +172,24 @@ export async function evaluate(startMessage, { reroll = false } = {}) {
     // Verbraucht, wenn die AT gelungen ist (Nutzer 2026-10-28) — wie im System, wo man nur gelungene Angriffe abwehrt.
     if (!reroll && game.combat) await game.combat.updateDefenseCount(speaker);
   }
-  // Schip vorher Treffer, jetzt nicht mehr: die Ergebniskarte des Systems entfernen.
-  if (previous?.outcome === 'hit' && result.outcome !== 'hit') {
-    await OpposeDSA.findOpposedResultMessage({ attackerMessageId: attackMessage.id, startMessageId: startMessage.id })?.delete();
+  // Ergebniskarte des Systems: DSA8 verknüpft sie mit der Startnachricht und zeichnet sie beim Schip neu; DSA7 legt bei
+  // jedem resolveUndefended eine neue an, dort merken wir uns ihre ID selbst (resultId).
+  const linked = typeof OpposeDSA.findOpposedResultMessage === 'function';
+  // Schip vorher Treffer, jetzt nicht mehr (unter DSA7 auch bei erneutem Treffer): die alte Ergebniskarte entfernen.
+  if (previous?.outcome === 'hit' && (result.outcome !== 'hit' || !linked)) {
+    const old = linked
+      ? OpposeDSA.findOpposedResultMessage({ attackerMessageId: attackMessage.id, startMessageId: startMessage.id })
+      : game.messages.get(previous.resultId);
+    await old?.delete();
   }
   const attacker = attackMessage.speaker?.alias ?? attackMessage.alias;
   const defender = startMessage.flags.unopposeData.targetSpeaker?.alias ?? actor.name;
+  let resultId = null;
   if (result.outcome === 'hit') {
     await OpposeDSA.resolveUndefended(startMessage, game.i18n.format(P + 'Chat.Roll', { roll: result.roll }));
+    if (!linked) resultId = game.messages.contents.findLast(message => message.flags?.opposeData?.speakerDefend?.token === speaker.token)?.id ?? null;
   } else {
-    await OpposeDSA.clearOpposed(actor, { startMessageId: startMessage.id });
+    await clearOpposedFor(OpposeDSA, actor, startMessage.id);
     await OpposeDSA.hideReactionButton(startMessage.id);
   }
   // Karten-ID vorab, damit die Rechnung der SL schon beim ersten Zeichnen bereitliegt.
@@ -184,10 +200,10 @@ export async function evaluate(startMessage, { reroll = false } = {}) {
   const content = publicContent(result.outcome, attacker, defender, result);
   if (card) await card.update({ content });
   else await ChatMessage.create({ _id: cardId, content, speaker: attackMessage.speaker }, { keepId: true });
-  await startMessage.setFlag(MODULE_ID, FLAG, { outcome: result.outcome, cardId });
+  await startMessage.setFlag(MODULE_ID, FLAG, { outcome: result.outcome, cardId, resultId });
   // Spät eintreffender Wartezustand (Spielerangriff über den Socket des Systems): wieder lösen.
   if (result.outcome !== 'hit') setTimeout(() => {
-    if (targetOf(startMessage).actor?.flags?.opposes?.[startMessage.id]) OpposeDSA.clearOpposed(actor, { startMessageId: startMessage.id });
+    if (isOpposePending(targetOf(startMessage).actor, startMessage.id)) clearOpposedFor(OpposeDSA, actor, startMessage.id);
   }, 3000);
 }
 
@@ -205,7 +221,14 @@ function decorateCard(message, html) {
 
 /** Startnachrichten eines Angriffs, die schon passiv ausgewertet wurden. */
 function passiveStarts(attackMessage) {
-  return (attackMessage?.flags?.data?.startMessagesList ?? []).map(id => game.messages.get(id)).filter(message => message?.getFlag(MODULE_ID, FLAG));
+  if (!attackMessage) return [];
+  const ids = new Set(attackMessage.flags?.data?.startMessagesList ?? []);
+  // DSA7 schreibt den Schip-Neuwurf in dieselbe Nachricht und baut flags.data dabei ohne die Liste neu auf: zusätzlich
+  // über die Verknüpfung der Startnachrichten suchen (nur die jüngsten Nachrichten, sie entstehen direkt nach dem Angriff).
+  for (const message of game.messages.contents.slice(-200)) {
+    if (message.flags?.unopposeData?.attackMessageId === attackMessage.id) ids.add(message.id);
+  }
+  return [...ids].map(id => game.messages.get(id)).filter(message => message?.getFlag(MODULE_ID, FLAG));
 }
 
 async function reevaluate(attackMessageId) {
@@ -216,7 +239,7 @@ async function reevaluate(attackMessageId) {
 async function waitForOppose(startMessage) {
   for (let i = 0; i < 15; i++) {
     if (startMessage.getFlag(MODULE_ID, FLAG)) return false;
-    if (targetOf(startMessage).actor?.flags?.opposes?.[startMessage.id]) return true;
+    if (isOpposePending(targetOf(startMessage).actor, startMessage.id)) return true;
     await new Promise(resolve => setTimeout(resolve, 100));
   }
   return !startMessage.getFlag(MODULE_ID, FLAG);

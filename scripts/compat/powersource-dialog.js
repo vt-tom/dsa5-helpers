@@ -40,10 +40,28 @@ export async function savePowerCharges(event) {
   }
 }
 
+// Ladung eines einzelnen Speichers setzen (Kraftspeicher-Blatt auf dem Smartphone, MOBILE.md 15): gleicher Schreibweg
+// wie savePowerCharges, aber ohne den Systemdialog. source ist ein Segment aus actor.powersource.segments.
+export async function setPowerCharge(actor, source, value) {
+  const item = actor.items.get(source.itemId);
+  if (!item?.effects.get(source.effectId)) throw new Error('Power source no longer exists');
+  const next = Math.max(0, Math.min(source.max, Number(value) || 0));
+  await item.updateEmbeddedDocuments('ActiveEffect', [{ _id: source.effectId, 'system.powersource.value': next }]);
+  actor.reset();
+  actor.render(false);
+}
+
 export async function openPowerSourceDialog(sheet) {
   const actor = sheet.actor;
   if (!actor?.isOwner && !game.user.isGM) return;
   const id = `powersource-charge-${actor.id}`;
+  // Schon offen: selbst nach vorn holen. Das System ruft dafür bringToTop() auf, das es in ApplicationV2 nicht gibt
+  // (dort bringToFront) – der zweite Aufruf endete mit einer Fehlermeldung (Rückmeldung 2026-10-29).
+  const open = foundry.applications.instances.get(id);
+  if (open?.rendered) {
+    open.bringToFront();
+    return open;
+  }
   // Foundry registriert neue Applications erst während render(). Den Handler deshalb
   // spätestens beim generischen Render-Hook an die echte Systeminstanz hängen.
   return new Promise(resolve => {

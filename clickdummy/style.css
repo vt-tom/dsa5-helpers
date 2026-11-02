@@ -861,6 +861,11 @@ button {
   color: rgba(224,192,128,.5);
 }
 
+/* Kreaturbogen (#54): Größe und Anzahl als reiner Text neben der Kreaturklasse */
+.ident-text {
+  white-space: nowrap;
+}
+
 @media (hover: hover) {
   .ident-link:hover {
     color: #f4e8d6;
@@ -1355,6 +1360,28 @@ button {
   background: var(--accent);
   clip-path: polygon(50% 0%,93% 28%,93% 72%,50% 100%,7% 72%,7% 28%);
   filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
+}
+
+/* Kürzel im Würfel über dem Wert (Issue #71, Variante B, Nutzerentscheidung 2026-10-31). */
+.attr-overlay .attr-die-mini {
+  width: 34px;
+  height: 34px;
+}
+
+.attr-overlay .attr-die-mini-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-size: 14px;
+}
+
+.attr-mini-key {
+  font-size: 8px;
+  letter-spacing: .04em;
+  color: rgba(255,255,255,.85);
+  pointer-events: none;
 }
 
 @media (hover: hover) {
@@ -3312,6 +3339,15 @@ button.fav-chip-roll {
   font-weight: 700;
 }
 
+/* --- NSC/Kreatur (#53/#54): Titelseite --- */
+
+.type-cover-empty {
+  margin: 0;
+  padding: 16px 12px;
+  font-size: var(--fs-data);
+  line-height: 1.4;
+}
+
 /* ==========================================================================
    8. Eigenschaften
    ========================================================================== */
@@ -3495,6 +3531,29 @@ button.fav-chip-roll {
   font-family: 'GentiumBasic',Georgia,serif;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Kreatur (#54): Schalter Ausweichen/Verteidigung unter den Werten --- */
+
+.panel-foot {
+  padding: 8px 10px;
+  border-top: 1px solid var(--line);
+}
+
+.defense-toggle {
+  min-height: var(--hit-md);
+  padding: 2px 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.defense-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ==========================================================================
@@ -5808,6 +5867,35 @@ button.fav-chip-roll {
   min-height: 14px;
 }
 
+/* --- Kreatur (#54): Kampfwerte als Reihe --- */
+
+.creature-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.creature-stat {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+}
+
+.creature-stat b {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  font-size: var(--fs-big);
+}
+
+.creature-stat small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  text-align: center;
+}
+
 /* ==========================================================================
    11. Magie & Religion
    ========================================================================== */
@@ -7733,9 +7821,23 @@ button.fav-chip-roll {
   cursor: pointer;
 }
 
+/* Fußleiste: Einstellungen der Statistik links (seit 2026-11-02 hier statt in den Moduleinstellungen), Löschen rechts */
 .ds-footer {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.ds-setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-small);
+}
+
+.ds-footer .ds-btn.danger {
+  margin-left: auto;
 }
 
 .ds-btn {
