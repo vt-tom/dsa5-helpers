@@ -9,12 +9,12 @@
 import { initWoundCheck, woundCheck, findTreatWounds } from './wound-check.js';
 import { helpAction, initHelpAction } from './help-action.js';
 import { initSystemSheetEntries, rerenderSystemSheets } from './system-sheet.js';
-import { initManeuvers, toggleStance, aimRound, recognizeWeakPoints, MANEUVER_IDS, SETTING as MANEUVER_SETTING, enabledManeuvers, sheetData as maneuverSheetData } from './maneuvers.js';
+import { initManeuvers, toggleStance, aimRound, recognizeWeakPoints, distractFoe, MANEUVER_IDS, SETTING as MANEUVER_SETTING, enabledManeuvers, sheetData as maneuverSheetData } from './maneuvers.js';
 import { initHitConsequences } from './hit-consequences.js';
 import { initPassiveDefense, defenseChoices, setDefenseMode, openDefenseDialog, defenseMode } from './passive-defense.js';
 import { isFoundry13 } from '../compat/runtime.js';
 
-export { woundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, MANEUVER_IDS, enabledManeuvers, maneuverSheetData, defenseChoices, setDefenseMode, openDefenseDialog, defenseMode };
+export { woundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, distractFoe, MANEUVER_IDS, enabledManeuvers, maneuverSheetData, defenseChoices, setDefenseMode, openDefenseDialog, defenseMode };
 
 const MODULE_ID = 'dsa5-helpers';
 export const SETTING = 'houseRules';
@@ -46,6 +46,7 @@ export const HOUSE_RULES = [
       { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.stance.Toggle', when: () => enabledManeuvers().includes('stance'), run: app => toggleStance(app.actor) },
       { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.aim.Button', when: () => enabledManeuvers().includes('aim'), run: app => aimRound(app.actor) },
       { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.weakness.Button', when: () => enabledManeuvers().includes('weakness'), run: app => recognizeWeakPoints(app.actor, app.token?.id) },
+      { system: 'header', label: 'DSA5HELPERS.HouseRules.maneuvers.distract.Button', when: () => enabledManeuvers().includes('distract'), run: app => distractFoe(app.actor, app.token?.id) },
     ],
   },
   {
@@ -81,9 +82,9 @@ export function isRuleActive(id) {
 }
 
 // Diese beiden Erweiterungen benötigen den erst in DSA8 vorhandenen
-// dsa5.prepareRollSituationalModifiers-Hook samt System-Widget.
-// Passive Verteidigung: unter DSA7 nicht geprüft (Auflösung über OpposeDSA des Systems).
-export const isRuleSupported = (id, legacy = isFoundry13()) => !legacy || !['helpAction', 'maneuvers', 'passiveDefense'].includes(id);
+// dsa5.prepareRollSituationalModifiers-Hook samt System-Widget. Passive Verteidigung läuft seit 0.6.3 auch unter
+// DSA7 (Wartezustand und Ergebniskarte über compat/runtime.js bzw. passive-defense.js).
+export const isRuleSupported = (id, legacy = isFoundry13()) => !legacy || !['helpAction', 'maneuvers'].includes(id);
 export const availableHouseRules = () => HOUSE_RULES.filter(rule => isRuleSupported(rule.id));
 
 /** Nur SL: ein einzelnes Grundmanöver ein- oder ausschalten (Buchseite, #45). */

@@ -4,7 +4,7 @@
 // Reiterknopf und einen Abschnitt an. Aufbau Variante B (Nutzer-Entscheidung 2026-10-28, Vergleich im Click-Dummy):
 // links die Hausregel-Aktionen des Tokens als Kacheln mit Symbol und Kurznamen, Zustand als Leuchten bzw. Abzeichen;
 // rechts eine schmale Spalte mit Symbolknöpfen für Einstellungen, Hausregelbuch und Würfelstatistik.
-import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, enabledManeuvers, maneuverSheetData, defenseMode, openDefenseDialog } from './house-rules/rules.js';
+import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, distractFoe, enabledManeuvers, maneuverSheetData, defenseMode, openDefenseDialog } from './house-rules/rules.js';
 import { openHouseRules } from './apps/house-rules.js';
 import { openDiceStats } from './apps/dice-stats.js';
 import { isEnabled as diceStatsEnabled } from './dice-stats/settings.js';
@@ -29,6 +29,7 @@ export function hudEntries(actor, { active = isRuleActive, maneuvers = enabledMa
     const st = maneuverState(actor);
     if (maneuvers().includes('stance')) out.push({ id: 'stance', group: 'rules', icon: 'fas fa-shield-halved', label: 'DSA5HELPERS.HouseRules.maneuvers.stance.Name', short: 'DSA5HELPERS.Hud.Short.stance', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.stance.Toggle', on: !!st?.stance?.active });
     if (maneuvers().includes('aim')) out.push({ id: 'aim', group: 'rules', icon: 'fas fa-bullseye', label: 'DSA5HELPERS.HouseRules.maneuvers.aim.Name', short: 'DSA5HELPERS.Hud.Short.aim', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.aim.Button', on: !!st?.aim?.count, badge: st?.aim ? `${st.aim.count}/${st.aim.max}` : '' });
+    if (maneuvers().includes('distract')) out.push({ id: 'distract', group: 'rules', icon: 'fas fa-face-dizzy', label: 'DSA5HELPERS.HouseRules.maneuvers.distract.Name', short: 'DSA5HELPERS.Hud.Short.distract', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.distract.HudHint', on: !!st?.distract?.entries?.length });
     if (maneuvers().includes('weakness')) out.push({ id: 'weakness', group: 'rules', icon: 'fas fa-magnifying-glass', label: 'DSA5HELPERS.HouseRules.maneuvers.weakness.Name', short: 'DSA5HELPERS.Hud.Short.weakness', tooltip: 'DSA5HELPERS.HouseRules.maneuvers.weakness.HudHint', on: !!st?.weakness?.entries?.length, badge: st?.weakness?.entries?.length ? String(st.weakness.entries.length) : '' });
   }
   // Passive Verteidigung (#56, Nutzer 2026-10-28): Wahl für den gewählten Token, auch für Kreaturen; Abzeichen = aktuelle Wahl.
@@ -62,6 +63,7 @@ function run(id, actor, button) {
     case 'stance': return toggleStance(actor);
     case 'aim': return aimRound(actor);
     case 'weakness': return recognizeWeakPoints(actor, tokenId);
+    case 'distract': return distractFoe(actor, tokenId);
     case 'passiveDefense': return openDefenseDialog(actor);
   }
 }

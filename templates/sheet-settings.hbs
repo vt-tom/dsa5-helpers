@@ -1,11 +1,13 @@
-{{!-- Untermenü „Heldenbogen“ der Moduleinstellungen (scripts/apps/sheet-settings.js). --}}
+{{!-- Untermenüs „Heldenbogen“ und „Darstellung und Geräte“ der Moduleinstellungen (scripts/apps/sheet-settings.js). --}}
 <div class="dsa5h-sheet-settings">
 <div class="dsa5h-sheet-settings-fields">
   {{#each settings as |s|}}
+  {{#if s.groupTitle}}<h3 class="dsa5h-settings-group">{{localize s.groupTitle}}</h3>{{/if}}
   <div class="form-group">
     <label for="dsa5h-setting-{{s.key}}">{{localize s.name}}</label>
     <div class="form-fields">
       {{#if s.checkbox}}<input type="checkbox" id="dsa5h-setting-{{s.key}}" name="{{s.key}}" {{checked s.value}}>{{/if}}
+      {{#if s.select}}<select id="dsa5h-setting-{{s.key}}" name="{{s.key}}">{{#each s.options as |o|}}<option value="{{o.value}}"{{#if o.selected}} selected{{/if}}>{{localize o.label}}</option>{{/each}}</select>{{/if}}
       {{#if s.folder}}<file-picker id="dsa5h-setting-{{s.key}}" name="{{s.key}}" type="folder" value="{{s.value}}"></file-picker>{{/if}}
     </div>
     <p class="hint">{{localize s.hint}}</p>

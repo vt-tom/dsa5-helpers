@@ -175,6 +175,12 @@
     },
     "Close": "Close",
     "Settings": {
+      "RollDialogDesktop": {
+        "Name": "Roll dialogs on desktop",
+        "Hint": "The module's tidy roll dialogs or those of the DSA5 system, e.g. when another module extends them. Applies to everyone; tablet and phone always use the module.",
+        "Module": "Module (new layout)",
+        "System": "DSA5 system"
+      },
       "DefaultSheet": {
         "Name": "Default sheet for heroes",
         "Hint": "Makes the DSA5 Helpers sheet the default for all heroes. Heroes with an explicitly chosen sheet keep it. Foundry reloads after changing this."
@@ -186,6 +192,13 @@
       "BannerPath": {
         "Name": "Default folder for banner images",
         "Hint": "The module stores banner images uploaded by players from their computers here. Players do not need file browser permission for this; a GM has to be logged in."
+      },
+      "DisplayMenu": {
+        "Title": "Display and devices",
+        "Label": "Configure display",
+        "GroupSheet": "Roll dialogs and hero sheet",
+        "GroupMobile": "Tablet and smartphone",
+        "Hint": "Roll dialogs on desktop, skill suggestions on the cover page and hybrid play on tablet and phone (interface and roll result per device)."
       },
       "SheetMenu": {
         "Title": "Hero sheet",
@@ -203,7 +216,7 @@
       },
       "SkillSuggestions": {
         "Name": "Skill suggestions on the cover page",
-        "Hint": "How many skills the character sheet suggests above the favorites (requested checks, frequently rolled skills, good odds, etc.). Applies to characters where you have not changed the number on the sheet (− / + in the \"Suggestions\" title). \"Off\" hides the suggestions everywhere. Applies to you only.",
+        "Hint": "How many skills are suggested above the favorites; adjustable per hero on the sheet with − / +. Applies to you only.",
         "Off": "Off"
       }
     },
@@ -222,17 +235,19 @@
       "Consent": {
         "Question": "May your rolls be included in the dice statistics?",
         "Info": "Only how often each face comes up per day is counted – no individual rolls. You see your own statistics, the GM sees everyone’s.",
-        "Change": "You can change this at any time in the module settings. If you withdraw consent, nothing is counted any more and your statistics are hidden.",
+        "Change": "You can change this at any time at the bottom of the dice statistics window. If you withdraw consent, nothing is counted any more and your statistics are hidden.",
         "Yes": "Yes, include them",
         "No": "No"
       },
       "Settings": {
         "Enabled": {
           "Name": "Dice statistics",
+          "Short": "Statistics in this world",
           "Hint": "Counts per player and die type how often each face comes up and shows whether the distribution is statistically unusual. Every player is asked for consent first and only sees their own statistics; the GM sees everyone’s. Only counters per day are stored; days older than 12 months are merged."
         },
         "Consent": {
           "Name": "Dice statistics: include my rolls",
+          "Short": "Evaluate my rolls",
           "Hint": "Whether your rolls are included in the dice statistics. Without consent nothing is counted; existing data is kept but hidden.",
           "Undecided": "Not decided yet",
           "Yes": "Yes",
@@ -243,7 +258,7 @@
         "Label": "Open dice statistics",
         "Hint": "Shows how often each face came up and whether that is statistically unusual – players see their own statistics, the GM sees everyone’s."
       },
-      "Disabled": "Dice statistics are switched off. The GM can switch them on in the module settings; existing data stays visible.",
+      "Disabled": "Dice statistics are switched off. The GM can switch them on at the bottom of this window; existing data stays visible.",
       "DieType": "Die type",
       "Die": "d{faces}",
       "MethodLabel": "Dice",
@@ -292,7 +307,7 @@
         "From": "from",
         "To": "to"
       },
-      "NoConsent": "You have not agreed to your rolls being evaluated. You can change this in the module settings."
+      "NoConsent": "You have not agreed to your rolls being evaluated. You can change this at the bottom of this window."
     },
     "OtherWeapons": "Other weapons",
     "HouseRules": {
@@ -485,6 +500,31 @@
             "Shared": "<b>{actor}</b> shares the weak spots of <b>{foe}</b>: PA +{pa}, DP +{tp} for all allies. From now on {foe} guards their weak spots – the bonus lasts for everyone only until the end of CR {round}."
           }
         },
+        "distract": {
+          "Name": "Disrupt and Distract",
+          "Button": "Disrupt and distract",
+          "ButtonHint": "Distract the targeted opponent: check on Throwing Weapons or Intimidation; on a success they suffer −1 to AT, RA, PA, Dodge and damage until the end of the combat round.",
+          "HudHint": "Disrupt and distract the targeted opponent",
+          "Attr": "Check",
+          "Value": "−1 AT/RA/PA/DO/DP",
+          "NoCombat": "Disrupt and Distract only works in a running combat.",
+          "NoTarget": "Please target the opponent first.",
+          "Self": "You cannot distract your own hero – please target an opponent.",
+          "NoSkill": "{name} has neither the combat technique Throwing Weapons nor the skill Intimidation.",
+          "Status": "{foe} distracted (until end of CR {round})",
+          "Modifier": "Disrupted and distracted ({by})",
+          "Dialog": {
+            "Title": "Disrupt and Distract",
+            "Intro": "How does {actor} distract {foe}?",
+            "Throw": "Throw something ({skill})",
+            "Intimidate": "Intimidation"
+          },
+          "Chat": {
+            "Success": "<b>{actor}</b> distracts <b>{foe}</b>: −1 to AT, RA, PA, Dodge and damage until the end of the combat round. Thrown objects deal no damage.",
+            "Failure": "{actor} fails to distract {foe}.",
+            "Undead": "Undead and ghosts can only be distracted if they are intelligent enough – the GM decides."
+          }
+        },
         "hits": {
           "Title": "Targeted hit: {zone} ({sp} sDP)",
           "Resist": "Resistance: {text}",
@@ -541,15 +581,20 @@
           "defended": "{defender} fends off the attack of {attacker}.",
           "miss": "The attack of {attacker} on {defender} fails.",
           "Roll": "Defense (d20): {roll}",
+          "Word": {
+            "hit": "Hit",
+            "defended": "Fended off",
+            "miss": "Missed"
+          },
           "GMTitle": "Passive defense (GM only)",
-          "GMLine": "AT {at} succeeded (d20 {d20}). Defense with {option}: D {defense}, rolled {roll} – fended off at {defense} or less.",
+          "GMLine": "AT {at} succeeded (d20 {d20}). Defense with {option}: D {defense}, rolled {roll} – fended off at {defense} or less (always on 1, never on 20).",
           "Option": "Defense",
           "Base": "Base",
           "Mods": "Mod."
         },
         "Page": {
           "Intro": "Fights run faster when not every attack needs a reaction dialog. With this house rule actors can defend automatically: the attacker targets and rolls the attack as usual. If it succeeds, the module immediately and openly rolls a d20 against the target's defense.",
-          "Formula": "Fended off on d20 ≤ D – like a normal parry or dodge. Every successful attack is fended off just as often as with the reaction dialog. Example AT 13 vs. D 6: the attack succeeds 65 % of the time, 30 % of those are fended off.",
+          "Formula": "Fended off on d20 ≤ D – like a normal parry or dodge. A 1 always fends off, a 20 never does. Every successful attack is fended off just as often as with the reaction dialog. Example AT 13 vs. D 6: the attack succeeds 65 % of the time, 30 % of those are fended off.",
           "ScopeTitle": "For whom?",
           "Scope": "Set per actor: in the hero sheet under Combat › Body (“Defense against attacks”), for NPCs and creatures in the ⋮ menu of the system sheet. Choose “Roll yourself” (normal rule), “Automatic: best defense” or a specific weapon or dodge. Without a choice player characters roll themselves, NPCs and creatures defend automatically with their best option.",
           "Step1": "Target and attack as usual (melee or ranged).",
@@ -568,14 +613,31 @@
     "NoPersonalDetails": "No personal details yet.",
     "EditInNotes": "Edit → Notes",
     "Mobile": {
+      "RollResult": {
+        "Title": "Roll result",
+        "Older": "Older roll",
+        "Newer": "Newer roll"
+      },
+      "Roll": {
+        "Less": "Less",
+        "More": "More",
+        "Circumstances": "Circumstances and opponent",
+        "Situation": "Circumstances",
+        "SpellOptions": "Modifications",
+        "Fine": "Fine-tuning (attributes, SR, QL)"
+      },
       "Settings": {
         "Hybrid": {
           "Name": "Hybrid play (tablet/smartphone)",
-          "Hint": "Players and GM can join on a tablet or smartphone: scene with touch gestures, heroes, chat and journal in a dedicated interface. The interface is chosen automatically per device. Experimental."
+          "Hint": "Players and GM can join on a tablet or smartphone with a dedicated interface. Experimental."
         },
         "Mode": {
           "Name": "Interface on this device",
-          "Hint": "Automatic: smartphone below 600 px short screen side, tablet on larger touch devices, otherwise the regular Foundry interface. Escape hatch: append ?dsa5h-ui=foundry to the address."
+          "Hint": "Automatic detects smartphone and tablet. Escape hatch: append ?dsa5h-ui=foundry to the address."
+        },
+        "RollResult": {
+          "Name": "Show roll result (tablet)",
+          "Hint": "Chat card of your own rolls as a sheet above the character sheet while the chat is closed. Always on smartphones."
         }
       },
       "Mode": {
@@ -627,11 +689,17 @@
       "Level": "Level {value} of {max}",
       "Decrease": "Decrease {name}",
       "Increase": "Increase {name}",
+      "Full": "full",
+      "MaxValue": "max. {max}",
+      "SaveFailed": "The value could not be saved. Please try again.",
       "AllItems": "All",
       "Menu": "Sheet menu",
       "Round": "Round {n}",
       "CombatNotStarted": "Combat prepared",
       "YourTurn": "Your turn!",
+      "OnTurn": "Current turn",
+      "OnTurnYou": "Current turn – you",
+      "NextUp": "Next: {name}",
       "RollInitiative": "Roll initiative",
       "Target": "Target",
       "Untarget": "Untarget",
@@ -707,6 +775,7 @@
         "stance": "Stance",
         "aim": "Aim",
         "weakness": "Weakness",
+        "distract": "Distract",
         "passiveDefense": "Defense"
       }
     },
@@ -716,7 +785,8 @@
       "QuestsIntro": "Quests shared with the group. Details and notes in the almanac.",
       "PersonaeIntro": "People and creatures shared with the group. Group notes in the almanac.",
       "Hidden": "Not shared with players",
-      "Unavailable": "The system almanac is not available."
+      "Unavailable": "The system almanac is not available.",
+      "NoText": "No text yet."
     },
     "Quests": {
       "Group0": "Main quests",

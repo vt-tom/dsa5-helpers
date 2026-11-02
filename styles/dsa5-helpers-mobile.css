@@ -213,6 +213,53 @@ body.dsa5h-m-panel-open .dsa5h-m-panelbar { display: flex; }
 body.dsa5h-mobile #combat button.combat-control { min-width: 44px; height: 44px; min-height: 44px; font-size: 18px; }
 body.dsa5h-mobile #combat button.combat-control-lg { height: 48px; min-height: 48px; font-size: 16px; }
 body.dsa5h-mobile #combat :is(.combatant-control, .aggroButton) { width: 36px; height: 36px; min-height: 36px; font-size: 16px; }
+/* Mobil liegt der Tracker auf dem hellen Pergament des Systems, Foundry färbt die Seitenleiste aber für sein dunkles
+   Oberflächen-Thema (helle Schrift, Befund 2026-10-30): Textfarben auf die Tinte der übrigen Panels. */
+body.dsa5h-mobile #combat {
+  --color-text-primary: var(--dsa5h-m-ink);
+  --color-text-emphatic: var(--dsa5h-m-ink);
+  --color-text-secondary: var(--dsa5h-m-ink2);
+  --color-text-subtle: var(--dsa5h-m-ink2);
+}
+body.dsa5h-mobile #combat :is(.combat-tracker-header, .combat-controls) button.inline-control { color: var(--dsa5h-m-ink2); }
+/* Karte „Am Zug“ oben im Tracker (Variante C, shell.js addTurnCard); die Zug-Knöpfe der Fußleiste stehen dann dort.
+   Die SL behält unten Runde zurück/vor und „Kampf beenden“. */
+body.dsa5h-mobile #combat:has(.dsa5h-m-turncard) .combat-controls [data-action="previousTurn"],
+body.dsa5h-mobile #combat:has(.dsa5h-m-turncard) .combat-controls [data-action="nextTurn"] { display: none; }
+body.dsa5h-mobile #combat:has(.dsa5h-m-turncard) .combat-controls:not(:has(button:not([data-action="previousTurn"], [data-action="nextTurn"]))) { display: none; }
+.dsa5h-m-turncard {
+  flex: none;
+  margin: 10px 12px 4px;
+  padding: 12px;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 12px;
+  background: #f7f1e6;
+  color: var(--dsa5h-m-ink);
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+.dsa5h-m-turn-who { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.dsa5h-m-turn-who img { flex: none; width: 48px; height: 48px; border: 0; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px var(--dsa5h-m-gold); }
+.dsa5h-m-turn-who span { min-width: 0; }
+.dsa5h-m-turn-who small { display: block; font-size: 14px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-turn-who b { display: block; overflow: hidden; font-family: 'Andalus', serif; font-size: 21px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.dsa5h-m-turn-acts { display: flex; gap: 8px; }
+body.dsa5h-mobile #combat .dsa5h-m-turncard button.combat-control {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 10px;
+  background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink);
+  font: inherit;
+  font-size: 20px;
+  box-shadow: none;
+}
+body.dsa5h-mobile #combat .dsa5h-m-turncard button.dsa5h-m-turn-end { flex: 1; width: auto; border-color: var(--dsa5h-m-accent); background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); font-size: 16px; font-weight: 700; }
+body.dsa5h-mobile #combat .dsa5h-m-turncard button.combat-control:disabled { opacity: .4; }
+.dsa5h-m-turn-next { margin-top: 8px; font-size: 14px; color: var(--dsa5h-m-ink2); }
 body.dsa5h-tablet.dsa5h-m-panel-open .dsa5h-m-scenebtns { right: calc(var(--dsa5h-m-panel-w) + 10px); }
 /* Touch: größere Zeilen und Eingaben (iOS zoomt bei Schrift < 16 px in Eingabefelder) */
 body.dsa5h-mobile #sidebar .directory-item { min-height: 44px; }
@@ -324,6 +371,8 @@ body.dsa5h-mobile .application .dsa5h-maneuver-panel h4 { font-size: 15px; }
 body.dsa5h-mobile .application .dsa5h-maneuver-panel .dsa5h-maneuver-row { min-height: 44px; margin-bottom: 4px; padding: 6px 10px; font-size: 15px; }
 body.dsa5h-mobile .application .dsa5h-maneuver-panel .dsa5h-maneuver-step { font-size: 14px; }
 body.dsa5h-mobile .application .dsa5h-maneuver-hint { font-size: 14px; }
+
+/* Probendialog: steht seit 0.6.3 in styles/dsa5-helpers-roll-dialog.css (auch am Desktop, Issue #63). */
 
 /* 9. Konto-Menü ------------------------------------------------------------ */
 .dsa5h-m-sheet-backdrop {
@@ -467,6 +516,11 @@ body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-attr-overlay { displ
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-resource-frame { grid-column: 3; grid-row: 1; gap: 8px; margin: 0; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { --dsa5h-orb: 34px; }
 body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-orb-val input { font-size: 13px; margin: 0; }
+/* Kraftspeicher neben der kleinen AsP-Kugel statt darüber (Nutzerwunsch 2026-10-31): nur der Wert; Tippfläche bleibt über ::after */
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-power-anchor { display: flex; align-items: center; gap: 5px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-power-satellite { position: relative; right: auto; bottom: auto; flex: none; width: 24px; height: 24px; min-height: 24px; padding: 0; border-width: 1px; font-size: 11px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-power-satellite small { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-power-satellite::after { inset: -12px; }
 
 /* Titelblatt einspaltig: Kopf wie auf den anderen Reitern; der Kasten Statuseffekte/Persönliche Daten steht unter den
    Favoriten (mobile.js verschiebt ihn in den Titelblatt-Reiter), die Seitenleiste selbst entfällt. */
@@ -565,6 +619,104 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-dup { display: none; }
 .dsa5h-m-power-meter { grid-column: 1 / -1; height: 8px; overflow: hidden; border-radius: 4px; background: rgba(43, 39, 33, .12); }
 .dsa5h-m-power-meter > span { display: block; height: 100%; background: linear-gradient(90deg, #1c6f9e, #3558c4); }
 .dsa5h-m-power-hint { margin: 0; font-size: 14px; color: var(--dsa5h-m-ink2); }
+/* Tablet: Blatt mittig und 640 px breit wie die übrigen Blätter */
+body.dsa5h-tablet .dsa5h-m-power-backdrop { justify-content: center; }
+body.dsa5h-tablet .dsa5h-m-power-backdrop > :is(.dsa5h-m-power-sheet, .dsa5h-m-alm-sheet) { width: min(640px, 100vw); }
+/* Almanach-Eintrag als Blatt (F6 Variante A, mobile.js openAlmanacSheet): Kopf mit Bild und Name, Abschnitte wie die
+   Detailansicht des Almanachs, Text des Systems (angereichertes HTML) in Lesegröße. */
+.dsa5h-m-alm-head { display: flex; align-items: center; gap: 12px; }
+.dsa5h-m-alm-head img { flex: none; width: 64px; height: 64px; border: 0; border-radius: 8px; object-fit: cover; box-shadow: 0 0 0 2px var(--dsa5h-m-gold); }
+.dsa5h-m-alm-head span { flex: 1; min-width: 0; }
+.dsa5h-m-alm-head b { display: block; font-family: 'Andalus', serif; font-size: 22px; font-weight: normal; line-height: 1.15; overflow-wrap: break-word; }
+.dsa5h-m-alm-head small { display: block; margin-top: 2px; font-size: 15px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-more-sheet .dsa5h-m-alm-head button { flex: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; font-size: 20px; }
+.dsa5h-m-alm-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.dsa5h-m-alm-tags span { padding: 2px 10px; border: 1px solid var(--dsa5h-m-line2); border-radius: 12px; font-size: 14px; }
+.dsa5h-m-alm-section h3 { margin: 0 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--dsa5h-m-line); font-family: 'Andalus', serif; font-size: 18px; font-weight: normal; }
+.dsa5h-m-alm-section p, .dsa5h-m-alm-text { margin: 0; font-size: 16px; line-height: 1.45; overflow-wrap: break-word; }
+.dsa5h-m-alm-text img { max-width: 100%; height: auto; }
+.dsa5h-m-alm-goals { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 16px; }
+.dsa5h-m-alm-goals li { display: flex; align-items: baseline; gap: 8px; }
+.dsa5h-m-alm-goals li.done { color: var(--dsa5h-m-ok); }
+.dsa5h-m-alm-goals li.failed { color: var(--dsa5h-m-danger); text-decoration: line-through; }
+.dsa5h-m-more-sheet .dsa5h-m-alm-open { height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+/* LeP/AsP/KaP und Anzahl in der Ausrüstung: Feld am Anker (Variante B, mobile.js openNumberPop). Die Kugel öffnet es, ihr eigenes Feld nimmt
+   mobil keine Tipps mehr an (sonst käme die Tastatur statt des Felds). */
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-resource-frame .dsa5h-orb { cursor: pointer; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-resource-frame .dsa5h-orb-val input { pointer-events: none; }
+.dsa5h-m-res-pop {
+  position: fixed;
+  z-index: 215;
+  width: 250px;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 12px;
+  background: #f7f1e6;
+  color: var(--dsa5h-m-ink);
+  font-family: 'GentiumBasic', Georgia, serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+}
+.dsa5h-m-res-pop::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: calc(var(--tip, 30px) - 7px);
+  width: 14px;
+  height: 14px;
+  transform: rotate(45deg);
+  border-left: 1px solid var(--dsa5h-m-line2);
+  border-top: 1px solid var(--dsa5h-m-line2);
+  background: #f7f1e6;
+}
+.dsa5h-m-res-pop-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font-family: 'Andalus', serif; font-size: 17px; }
+.dsa5h-m-res-pop-head small { font-family: 'GentiumBasic', Georgia, serif; font-size: 14px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-res-pop .dsa5h-m-stepper { gap: 6px; }
+.dsa5h-m-res-pop button {
+  flex: 1;
+  min-width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 22px;
+  background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink);
+  font: inherit;
+  font-size: 15px;
+  box-shadow: none;
+}
+.dsa5h-m-res-pop .dsa5h-m-stepper > button { flex: none; font-size: 20px; }
+.dsa5h-m-res-pop button:disabled { opacity: .4; }
+.dsa5h-m-res-pop input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 8px;
+  background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+.dsa5h-m-res-quick { display: flex; gap: 6px; margin-top: 8px; }
+/* Steht das Feld über dem Anker (Anzahl weiter unten in der Ausrüstung), zeigt die Spitze nach unten. */
+.dsa5h-m-res-pop.dsa5h-m-res-pop-above::before {
+  top: auto;
+  bottom: -8px;
+  border: 0;
+  border-right: 1px solid var(--dsa5h-m-line2);
+  border-bottom: 1px solid var(--dsa5h-m-line2);
+}
+/* Ausrüstung (#65): Anzahl öffnet das Feld (mobile.js quantityPopOnTap), Menü „⋮“ mit 44 px Tippfläche. */
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row [data-action="itemContextMenu"] {
+  min-width: 44px;
+  height: 40px;
+  font-size: 22px;
+}
 
 /* Favoriten: feste Wertespalten schmaler, damit der Name Platz hat */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fav-grid { grid-template-columns: minmax(0, 1fr); padding: 8px; }
@@ -942,24 +1094,24 @@ body.dsa5h-mobile #chat .chat-scroll { padding: 10px 10px 6px; scrollbar-width: 
 body.dsa5h-mobile #chat .chat-log { display: flex; flex-direction: column; gap: 8px; padding: 0; }
 
 /* Karte */
-body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message {
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message {
   position: relative; margin: 0; padding: 0; overflow: hidden;
   border: 1px solid rgba(185, 154, 92, .55) !important; border-image: none; border-radius: 6px;
   background: var(--dsa5h-m-card); color: var(--dsa5h-m-ink); box-shadow: none;
   font-family: 'GentiumBasic', Georgia, serif;
 }
 /* Chat und Journal bleiben auch im dunklen Foundry-Thema hell (wie Kopf und Heldenkarte der Mobilansicht) */
-body.dsa5h-mobile :is(#chat, #chat-notifications, #journal, #actors, .dsa5h-m-journal) {
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card, #journal, #actors, .dsa5h-m-journal) {
   --color-text-primary: var(--dsa5h-m-ink); --color-text-secondary: var(--dsa5h-m-ink2); --color-text-emphatic: var(--dsa5h-m-ink);
   --color-text-subtle: var(--dsa5h-m-ink2); --color-form-label: var(--dsa5h-m-ink2);
 }
-body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message .message-content :is(b, strong, p, li, .card-content) { color: inherit; }
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message .message-content :is(b, strong, p, li, .card-content) { color: inherit; }
 body.dsa5h-mobile #chat .chat-message.dsa5h-m-mine { box-shadow: inset 3px 0 0 var(--dsa5h-m-accent); }
-body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message.whisper {
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message.whisper {
   border-color: var(--dsa5h-m-whisperline) !important;
   background: linear-gradient(170deg, var(--dsa5h-m-whisper), transparent 70%), var(--dsa5h-m-paper);
 }
-body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message .message-header {
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message .message-header {
   display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; min-height: 34px; margin: 0; padding: 0 2px 0 8px;
   background: var(--dsa5h-m-phead); border: 0; border-bottom: 1px solid rgba(185, 154, 92, .35); line-height: 1.2;
 }
@@ -987,7 +1139,7 @@ body.dsa5h-mobile .chat-message.blind .message-header::before {
   content: "\f070"; order: 45; font-family: var(--font-awesome, 'Font Awesome 6 Pro'); font-weight: 900; font-size: 12px; color: var(--dsa5h-m-ink2);
 }
 body.dsa5h-mobile .chat-message .message-header .flavor-text { order: 80; flex-basis: 100%; margin: 2px 0 4px; font-size: 13px; color: var(--dsa5h-m-ink2); }
-body.dsa5h-mobile :is(#chat, #chat-notifications) .chat-message .message-content {
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message .message-content {
   padding: 6px 10px 10px; color: var(--dsa5h-m-ink); font-size: 16px; line-height: 1.45; overflow-wrap: anywhere;
 }
 body.dsa5h-mobile .chat-message .message-content :is(button, .chat-button) {
@@ -1111,6 +1263,11 @@ body.dsa5h-mobile #chat .chat-form:has(.dsa5h-m-ci-fmt) > #chat-message .menu-co
   flex: 1; min-width: 0; width: auto; height: 40px; border: 0; border-radius: 6px; background: var(--dsa5h-m-accent);
   color: var(--dsa5h-m-onaccent); font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+/* Wurfergebnis als Blatt von unten (#64 Variante A, roll-result.js): echte Chatkarte, Kopf mit ‹ n/m › und ✕ */
+.dsa5h-m-roll-head > span { flex: 1; }
+.dsa5h-m-roll-head > small { flex: none; min-width: 32px; text-align: center; font-variant-numeric: tabular-nums; }
+.dsa5h-m-more-sheet .dsa5h-m-roll-head button:disabled { opacity: .3; }
+.dsa5h-m-roll-card { margin: 0; padding: 0; list-style: none; }
 
 /* 13. Journal im Modul-Design -----------------------------------------------
    Verzeichnis: Suche als Pille, Ordner mit Farbkante, Einträge als Zeilen mit ›. Eintrag: Pergamentseite mit Ordnerpfad,

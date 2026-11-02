@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wurfergebnis mobil</title>
+<!-- Wurfergebnis nach dem Würfeln im Bogen (Issue #64, Rückmeldung Testliste 0.6.3, 2026-10-29): auf dem Smartphone
+     liegt der Chat hinter dem Bogen. Die Chatkarte des eigenen Wurfs erscheint über dem Bogen und bleibt, bis man sie
+     wegtippt. Tablet: abschaltbar (Nutzerentscheidung 2026-10-30, Client-Einstellung). Gewählt: Variante A Blatt von
+     unten (Nutzer 2026-10-30) – ganze Karte, der neueste Wurf steht vorn, ‹ › blättert zu älteren; Folgewürfe des
+     eigenen Helden (Schip, Schaden) erscheinen ebenso. Bei offenem Chat-Panel kein Blatt. Im Modul ist es die echte
+     Chatkarte des Systems (scripts/mobile/roll-result.js); Schip usw. über ⋮ im Kartenkopf (Kontextmenü der Nachricht).
+     Werte sind Platzhalter. Öffnen über clickdummy/start-server.bat → …/clickdummy/mobile/wurfergebnis.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --onaccent: #fff8ec;
+  --gold: #c2a267;
+  --ok: #2f6b2a;
+  --bad: #a3221a;
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 980px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font: 14px 'GentiumBasic', serif; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.about { max-width: 760px; margin: 0 auto 14px; font-size: 14px; line-height: 1.4; color: #d9cbb4; text-align: center; }
+
+/* Gerät mit vereinfachtem Bogen (Kopf, Talentliste) */
+.device { position: relative; margin: 0 auto; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.device.phone { width: 390px; max-width: 100%; height: 760px; border-radius: 28px; }
+.device.tablet { width: 820px; max-width: 100%; height: 760px; border-radius: 22px; }
+.tablet .sheetwin { width: 470px; height: 100%; }
+.head { display: flex; align-items: center; gap: 12px; height: 64px; padding: 0 14px; background: linear-gradient(180deg, #3a322b, #272320); color: #f4e8d6; font: 24px 'Andalus', serif; }
+.head .pt { width: 40px; height: 40px; border-radius: 6px; background: linear-gradient(160deg, #b9a27c, #6d5a40); box-shadow: 0 0 0 2px var(--gold); }
+.list { padding: 8px 10px; }
+.list h3 { margin: 6px 4px; font: 20px 'Andalus', serif; font-weight: 400; }
+.sk { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 6px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 17px; }
+.sk span { flex: 1; }
+.sk .die { width: 36px; height: 36px; border-radius: 6px; background: #7a2a22; color: #fff; display: grid; place-items: center; font-size: 15px; }
+.chatcol { display: none; }
+.tablet .chatcol { position: absolute; top: 0; right: 0; bottom: 0; display: flex; flex-direction: column; width: 350px; border-left: 1px solid var(--line2); background: var(--paper); }
+.tablet .chatcol.hidden { display: none; }
+.chatcol h4 { margin: 0; padding: 12px; background: var(--phead); font: 19px 'Andalus', serif; font-weight: 400; }
+.chatcol .log { flex: 1; padding: 8px; overflow-y: auto; }
+
+/* Chatkarte (vereinfacht wie die Karte des Systems) */
+.cc { padding: 8px 10px 10px; border: 1px solid #8b6f3f; border-radius: 6px; background: var(--card); color: var(--ink); font-size: 15px; }
+.cc header { display: flex; align-items: center; gap: 8px; padding-bottom: 6px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
+.cc header .pt { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(160deg, #b9a27c, #6d5a40); }
+.cc header b { flex: 1; font: 17px 'Andalus', serif; font-weight: 400; }
+.cc header small { color: var(--ink2); font-size: 12px; }
+.cc .t { font: 19px 'Andalus', serif; }
+.cc .dice { display: flex; gap: 6px; margin: 6px 0; }
+.cc .dice span { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 6px; background: #5b4a37; color: #fff; font-weight: 700; }
+.cc .res { font-weight: 700; }
+.cc .res.ok { color: var(--ok); }
+.cc .res.bad { color: var(--bad); }
+.cc .btns { display: flex; gap: 6px; margin-top: 8px; }
+.cc .btns button { flex: 1; height: 40px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); font: 15px 'GentiumBasic', serif; color: var(--ink); cursor: pointer; }
+
+/* A: Blatt von unten */
+.scrim { position: absolute; inset: 0; z-index: 5; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .45); }
+.sheet { width: 100%; padding: 6px 14px 18px; border-radius: 14px 14px 0 0; background: var(--paper); box-shadow: 0 -8px 30px rgba(0, 0, 0, .5); }
+.tablet .sheet { width: 470px; margin-right: auto; }
+.grip { width: 40px; height: 4px; margin: 0 auto 6px; border-radius: 2px; background: var(--line2); }
+.sbar { display: flex; align-items: center; gap: 6px; min-height: 44px; }
+.sbar b { flex: 1; font: 19px 'Andalus', serif; font-weight: 400; }
+.icon { width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--ink); font-size: 20px; cursor: pointer; }
+.icon:disabled { opacity: .3; }
+
+
+
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+  <fieldset data-group="burst"><legend>Würfe</legend><button data-v="1" aria-pressed="true">einzeln</button><button data-v="2">zwei kurz hintereinander</button></fieldset>
+  <fieldset data-group="setting"><legend>Tablet: Einstellung</legend><button data-v="on" aria-pressed="true">an</button><button data-v="off">aus</button></fieldset>
+  <fieldset data-group="chat"><legend>Tablet: Chat</legend><button data-v="closed" aria-pressed="true">zu</button><button data-v="open">offen</button></fieldset>
+</div>
+<p class="about" id="about"></p>
+<div id="app"></div>
+<script>
+const ABOUT = 'Die ganze Chatkarte erscheint als Blatt von unten. Wegtippen über ✕ oder daneben. Kommt ein weiterer Wurf, steht der neueste vorn; mit ‹ › blättert man zu älteren. Schip, Neuwurf usw. über ⋮ im Kartenkopf.';
+const ROLLS = [
+  { name: 'Sinnesschärfe', dice: [8, 12, 4], ok: true, qs: 2, rest: 5, btns: ['Schip'] },
+  { name: 'Angriff · Säbel', dice: [6], ok: true, qs: 0, rest: null, btns: ['Schaden', 'Schip'] },
+];
+const state = { device: 'phone', burst: '1', setting: 'on', chat: 'closed', shown: [], idx: 0 };
+
+function card(r) {
+  return `<div class="cc"><header><span class="pt"></span><b>Allacaya</b><small>gerade eben</small></header>
+    <div class="t">${r.name}</div><div class="dice">${r.dice.map(d => `<span>${d}</span>`).join('')}</div>
+    <div class="res ${r.ok ? 'ok' : 'bad'}">${r.ok ? 'Gelungen' : 'Misslungen'}${r.qs ? ` · QS ${r.qs}` : ''}${r.rest !== null ? ` <small style="font-weight:400;color:var(--ink2)">(FW übrig ${r.rest})</small>` : ''}</div>
+    <div class="btns">${r.btns.map(b => `<button type="button">${b}</button>`).join('')}</div></div>`;
+}
+function overlay() {
+  const list = state.shown;
+  if (!list.length) return '';
+  const r = list[state.idx];
+  return `<div class="scrim" data-close><div class="sheet" role="dialog" aria-label="Wurfergebnis"><div class="grip"></div>
+    <div class="sbar"><b>Wurfergebnis</b>${list.length > 1 ? `<button type="button" class="icon" data-nav="1" aria-label="Älterer Wurf"${state.idx >= list.length - 1 ? ' disabled' : ''}>‹</button><small>${state.idx + 1}/${list.length}</small><button type="button" class="icon" data-nav="-1" aria-label="Neuerer Wurf"${state.idx <= 0 ? ' disabled' : ''}>›</button>` : ''}<button type="button" class="icon" data-close aria-label="Schließen">✕</button></div>
+    ${card(r)}</div></div>`;
+}
+function render() {
+  const tablet = state.device === 'tablet';
+  document.getElementById('about').textContent = ABOUT + (tablet ? ' Tablet: nur wenn die Einstellung „Wurfergebnis einblenden“ an ist und der Chat zu ist (Umschalter oben).' : ' Smartphone: immer, außer bei offenem Chat-Panel.');
+  const on = (!tablet || state.setting === 'on') && !(tablet && state.chat === 'open');
+  document.getElementById('app').innerHTML = `<div class="device ${state.device}"><div class="sheetwin">
+    <div class="head"><span class="pt"></span>Allacaya</div>
+    <div class="list"><h3>Talente</h3>${['Sinnesschärfe', 'Klettern', 'Verbergen'].map(n => `<div class="sk" data-roll><span>${n}</span><span class="die">W20</span></div>`).join('')}
+    <h3>Kampf</h3><div class="sk" data-roll><span>Säbel</span><span class="die">AT</span></div></div></div>
+    ${tablet ? `<div class="chatcol${state.chat === 'open' ? '' : ' hidden'}"><h4>Chat</h4><div class="log">${state.shown.map(card).join('<br>')}</div></div>` : ''}
+    ${on ? overlay() : ''}</div>`;
+}
+document.querySelector('.switch').addEventListener('click', ev => {
+  const b = ev.target.closest('button[data-v]'); if (!b) return;
+  const g = b.closest('fieldset');
+  g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  state[g.dataset.group] = b.dataset.v; state.shown = []; state.idx = 0; render();
+});
+const app = document.getElementById('app');
+app.addEventListener('click', ev => {
+  const t = ev.target;
+  if (t.closest('[data-roll]')) {
+    const add = state.burst === '2' ? [ROLLS[1], ROLLS[0]] : [ROLLS[0]];
+    // neuester Wurf vorn
+    state.shown = [...add, ...state.shown];
+    state.idx = 0;
+    return render();
+  }
+  const nav = t.closest('[data-nav]');
+  if (nav) { state.idx = Math.max(0, Math.min(state.shown.length - 1, state.idx + Number(nav.dataset.nav))); return render(); }
+  if (t.matches('[data-close]') || t.closest('button[data-close]')) { state.shown = []; state.idx = 0; return render(); }
+});
+render();
+</script>
+<script src="../pages.js?v=7"></script>
+</body>
+</html>

@@ -29,6 +29,7 @@
 - Bogen fest 770×740 px wie das Standard-Foundry-Fenster (an die Fensterhöhe angepasster Bogen ausprobiert und verworfen, 2026-09-25).
 - Nach CSS/JS-Änderungen die Cache-Version in `index.html` hochzählen (der Server schickt keine Cache-Header).
 - Design-Varianten: 2–3 Varianten per Umschalter im Click-Dummy zeigen, nach der Entscheidung Umschalter und Verlierer löschen.
+- Seitenmenü `clickdummy/pages.js` (Nutzerwunsch 2026-10-31): jede Dummy-Seite bindet es ein und steht dort als Hauptseite (nur Hauptseiten, Varianten wählt man auf der Seite; Knopf überall unten links, 2026-10-31). Wer eine Dummy-Seite anlegt, zieht das Menü im selben Zug nach. Ein Test prüft Einbindung und Eintrag.
 - Mobil: `clickdummy/mobile/` ist eine eigene Design-Referenz aus einem Design-Tool (Komponenten `*.dc.html` + Mini-Laufzeit `support.js` mit lokalem React). Das ist nur der Dummy; das Modul selbst bleibt bei Handlebars/Vanilla JS. Stand: Runde 4 mit der Rückmeldung von Lyynix (2026-10-15), Konzept in [MOBILE.md](docs/MOBILE.md) Abschnitt 13.
 
 ## Zusammenarbeit mit dem Agent
@@ -37,6 +38,7 @@
 - Geklärte Aufgaben komplett selbstständig umsetzen, danach Ergebnis zeigen.
 - Dateien bearbeiten, Befehle ausführen, Pakete installieren: erlaubt. Git-Push und Änderungen an Projektziel/-struktur: nur mit Bestätigung.
 - Manuelle Aufgaben nur nach Nutzerbestätigung entfernen; Implementierung oder Test allein genügt nicht. Offenes in `.projects/AUFGABEN.md`, dauerhaftes Wissen in `.projects/PROJEKTDOKU.md` pflegen.
+- Aufbau von `AUFGABEN.md` (seit 31.10.2026): Phasen der aktuellen Version `## 1. Ausdefinieren` → `## 2. Bereit zur Umsetzung` → `## 3. Umgesetzt – testen` → `## 4. Fertig für Release`, alles andere unter `## Später`; jeder offene Eintrag beginnt mit `Du:` (Nutzer dran) oder `KI:` (KI dran), höchstens zwei Zeilen, Testeinträge als Kästchen mit „Handlung → Ergebnis“. Pflege nach `vttom-aufgaben-pflegen`, Umsetzung der `KI:`-Einträge nach `vttom-todo-abarbeiten`; Fertiges wandert nach „Umgesetzt – testen“, nie selbst nach „Fertig“.
 
 
 ## Technischer Kontext DSA5/Foundry
@@ -52,7 +54,7 @@
 - Generierte Dateien niemals von Hand bearbeiten (Kopfkommentare beachten); Fensterrahmen über `node tools/gen-frame.cjs` erzeugen.
 - Nutzerseitig sichtbare Änderungen im selben Zug im kommenden unveröffentlichten CHANGELOG-Abschnitt dokumentieren.
 - Tests: `node tests/sheet.test.cjs` prüft echte Templates statisch gegen Foundry v14 und DSA5, keine Interaktionssimulation. Echte Klicks/Eingaben brauchen eine Live-Prüfung; keine unbelegten Abnahmen behaupten.
-- Nutzerinstanzen (pm2, Ports 30000/30001/30002) und ihre Welten niemals anfassen. Für Tests ist nur eine eigene temporäre Foundry-Instanz im Scratchpad auf Port 30077 erlaubt: v14 mit kopierter Welt DSA5 (`user-data-paths/v14`), v13 (Nutzerfreigabe 2026-10-28) mit kopierter Welt `dsa` aus `user-data-paths/v13`; System/Module per Verzeichnis-Verknüpfung, `dsa5-helpers` unter v13 auf ein mit `tools/package-module.py --foundry 13` gebautes Paket (das Quellmanifest verlangt v14). Ausnahme zum Anfassen: `package-module.py --install` in die v13-Testwelt bzw. `deploy-foundry.ps1 deploy` nur auf Nutzerauftrag.
+- Nutzerinstanzen (pm2, Ports 30000/30001/30002) und ihre Welten niemals anfassen. Für Tests ist nur eine eigene temporäre Foundry-Instanz im Scratchpad auf Port 30077 erlaubt: v14 mit kopierter Welt DSA5 (`user-data-paths/v14`), v13 (Nutzerfreigabe 2026-10-28) mit kopierter Welt `dsa` aus `user-data-paths/v13`; System und benötigte Module als **Kopie** in den Testordner, nur `dsa5-helpers` per Verzeichnis-Verknüpfung auf die Arbeitskopie – nie System- oder Modulordner einer Nutzerinstanz verknüpfen (Foundry öffnet beim Weltstart alle Kompendien; liegen sie bei einer laufenden Nutzerinstanz, „repariert“ es sie, Vorfall 2026-10-30), `dsa5-helpers` unter v13 auf ein mit `tools/package-module.py --foundry 13` gebautes Paket (das Quellmanifest verlangt v14). Ausnahme zum Anfassen: `package-module.py --install` in die v13-Testwelt bzw. `deploy-foundry.ps1 deploy` nur auf Nutzerauftrag.
 - Mobile Support ist seit 0.6.0 Beta integriert; `feature/mobile` existiert nicht mehr. Arbeit auf `release/<version>`, Merge nach `main` erst nach Nutzerfreigabe.
 
 ## Arbeitskopie und Foundry-Kopie

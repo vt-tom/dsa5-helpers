@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { sync, fetchIssues, render, markers, statusOf, REPO, START, END } = require('../tools/sync-github-issues.cjs');
+const { sync, fetchIssues, render, scan, markers, statusOf, REPO, START, END } = require('../tools/sync-github-issues.cjs');
 const now = () => new Date('2026-10-22T09:00:00Z');
 function issue(number, extra = {}) {
   return { number, title: `Issue ${number}`, state: 'open', state_reason: null,
@@ -90,7 +90,33 @@ test('Status reasons, cutoff, metadata and escaping',()=>{
     issue(4,{state:'closed',closed_at:'2026-10-08T08:59:59Z'})],now());
   assert.ok(text.includes('geschlossen (nicht geplant)')); assert.ok(text.includes('erledigt'));
   assert.ok(text.includes('[#3]')); assert.ok(!text.includes('[#4]'));
-  for(const value of [REPO,now().toISOString(),'bug','@dev','0.6.2','2 Kommentare']) assert.ok(text.includes(value));
+  for(const value of [REPO,now().toISOString(),'bug','0.6.2']) assert.ok(text.includes(value));
   assert.ok(!text.includes('<!-- hi -->')); markers(text);
   assert.equal(statusOf(issue(5,{state:'closed'})),'geschlossen (Grund nicht angegeben)');
+});
+test('Phases, owner counts and mismatch notes from the manual part',()=>{
+  const manual=['# Aufgaben — 0.6.3','','## 1. Ausdefinieren','- KI: **A** · #1 — x','  dann entscheidest du (zählt nicht)',
+    '## 3. Umgesetzt – testen','- [ ] Du: **B** · #2 · [#3](https://github.com/x/y/issues/3) — siehe MOBILE.md#15-abschnitt',
+    '## 4. Fertig für Release','- **C** · #4','## Später','### Ideen','- **D** · #5 · #6'].join('\n');
+  const {version,sections}=scan(manual);
+  assert.equal(version,'0.6.3');
+  assert.deepEqual(sections.map(x=>[x.name,x.user,x.agent,x.total]),
+    [['Ausdefinieren',0,1,1],['Umgesetzt – testen',1,0,1],['Fertig für Release',0,0,1],['Später – Ideen',0,0,1]]);
+  const m={title:'0.6.3'};
+  const text=render([issue(1,{milestone:null}),issue(2,{milestone:m}),issue(3,{state:'closed',closed_at:'2026-01-01T00:00:00Z'}),
+    issue(4,{state:'closed',closed_at:'2026-10-21T09:00:00Z'}),issue(5,{milestone:m}),issue(6),issue(7),issue(15)],now(),manual);
+  const line=n=>text.split('\n').find(l=>l.startsWith(`| [#${n}]`))||'';
+  assert.ok(line(1).includes('Ausdefinieren · Achtung: Meilenstein 0.6.3 fehlt'));
+  assert.ok(!line(2).includes('Achtung:'));
+  assert.ok(line(3).includes('Achtung: geschlossen, steht noch hier'));   // old, but still listed outside "Fertig"
+  assert.equal(line(4),'');                                          // closed and in "Fertig": no warning row
+  assert.ok(line(5).includes('Achtung: Meilenstein 0.6.3, aber nicht in Phase 1–4'));
+  assert.ok(!line(6).includes('Achtung:'));                                 // other milestone outside phases is fine
+  assert.ok(line(7).includes('Achtung: fehlt in der Liste'));
+  assert.ok(line(15).includes('Achtung: fehlt in der Liste'));              // anchors like MOBILE.md#15-… are no issue refs
+  assert.ok(text.includes('| Ausdefinieren | – | 1 | 1 |')); markers(text);
+});
+test('Closed list is capped',()=>{
+  const text=render(Array.from({length:10},(_,k)=>issue(k+1,{state:'closed',state_reason:'completed',closed_at:'2026-10-20T09:00:00Z'})),now());
+  assert.ok(text.includes('… und 2 weitere'));
 });

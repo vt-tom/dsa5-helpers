@@ -141,35 +141,13 @@ curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13-be
 
 ---
 
-## Mobil-Kanal (Testversionen von `feature/mobile`, 2026-10-15 bis 2026-10-20, ruht)
+## Mobil-Kanal (eingestellt 2026-10-29)
 
-**Nicht mehr nutzen.** Mobile Support erscheint mit 0.6.0 als Beta über den Beta-Kanal; `feature/mobile` wurde zu
-`release/0.6.0`. Wer `mobile-v0.6.0` installiert hat, deinstalliert das Modul einmal und installiert es über die
-Beta-URL neu (gleiche Versionsnummer, daher kein Update-Angebot). Der Job `mobile` in `release.yml` bleibt vorerst
-stehen. Ablauf zur Erinnerung:
-
-Eigene Manifest-URL, nur für Tester von Mobile Support:
-
-```text
-https://github.com/vt-tom/dsa5-helpers/releases/download/mobile/module.json
-```
-
-- Tag `mobile-v<Version>` (z. B. `mobile-v0.6.0`) auf einem Commit von `feature/mobile`, Release **immer als
-  Pre-release** (sonst bricht der Job ab). Die Action (Job `mobile`) baut nur `module.zip` mit dem Mobil-Manifest
-  und ersetzt das `module.json` des festen Pre-release `mobile`. Stabil- und Beta-Kanal bleiben unberührt.
-- Weitere Testversion: neue, höhere Nummer (gleiche Regeln wie oben, keine Suffixe).
-- Wer über diese URL installiert, bleibt im Mobil-Kanal, bis er das Modul mit einer anderen Manifest-URL neu
-  installiert.
-
-```sh
-git checkout feature/mobile && git status && node tests/sheet.test.cjs
-git push origin feature/mobile
-git tag -a mobile-v0.6.0 -m "mobile-v0.6.0" && git push origin mobile-v0.6.0
-gh release create mobile-v0.6.0 --verify-tag --prerelease --title "v0.6.0 (Mobil-Test)" --notes-file notes.md
-gh run list --workflow release.yml --limit 1
-curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/mobile/module.json   # neue Version, download → mobile-v…/module.zip
-curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json     # unverändert
-```
+Von 2026-10-15 bis 2026-10-20 gab es Testversionen von `feature/mobile` über einen eigenen Kanal (Tag `mobile-v…`,
+fester Pre-release `mobile`). Seit 0.6.0 ist Mobile Support Teil der Beta. Am 2026-10-29 wurden der Job `mobile` in
+`release.yml` und die Pre-releases „Mobil-Kanal (Test)“ und „v0.6.0 (Mobil-Test)“ entfernt (Nutzerentscheidung); die
+Tags bleiben als Historie. Wer noch über `…/releases/download/mobile/module.json` installiert hat, deinstalliert das
+Modul einmal und installiert es über die Beta-URL neu.
 
 ---
 

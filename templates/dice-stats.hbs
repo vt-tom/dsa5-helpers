@@ -49,5 +49,13 @@
     <p class="dsa5h-ds-note">{{localize 'DSA5HELPERS.DiceStats.Note'}}</p>
     {{#if hidden}}<p class="dsa5h-ds-note">{{localize 'DSA5HELPERS.DiceStats.Hidden' names=hidden}}</p>{{/if}}
   </div>
-  {{#if isGM}}<footer class="dsa5h-ds-footer"><button type="button" class="dsa5h-ds-reset-all" data-action="reset"><i class="fas fa-trash-can" aria-hidden="true"></i> {{localize 'DSA5HELPERS.DiceStats.Reset.AllLabel'}}</button></footer>{{/if}}
+  {{!-- Einstellungen der Statistik stehen hier statt in den Moduleinstellungen (Nutzer 2026-11-02): Zustimmung je Spieler,
+       an/aus und Löschen nur für die SL. --}}
+  <footer class="dsa5h-ds-footer">
+    <label class="dsa5h-ds-setting" data-tooltip="DSA5HELPERS.DiceStats.Settings.Consent.Hint"><span>{{localize 'DSA5HELPERS.DiceStats.Settings.Consent.Short'}}</span><select name="diceStatsConsent">{{#each consentOptions}}<option value="{{value}}"{{#if selected}} selected{{/if}}>{{localize label}}</option>{{/each}}</select></label>
+    {{#if isGM}}
+    <label class="dsa5h-ds-setting" data-tooltip="DSA5HELPERS.DiceStats.Settings.Enabled.Hint"><input type="checkbox" name="diceStatsEnabled"{{#if enabled}} checked{{/if}}><span>{{localize 'DSA5HELPERS.DiceStats.Settings.Enabled.Short'}}</span></label>
+    <button type="button" class="dsa5h-ds-reset-all" data-action="reset"><i class="fas fa-trash-can" aria-hidden="true"></i> {{localize 'DSA5HELPERS.DiceStats.Reset.AllLabel'}}</button>
+    {{/if}}
+  </footer>
 </div>

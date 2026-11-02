@@ -55,6 +55,13 @@ export async function openPowerSourceDialog(sheet) {
   const actor = sheet.actor;
   if (!actor?.isOwner && !game.user.isGM) return;
   const id = `powersource-charge-${actor.id}`;
+  // Schon offen: selbst nach vorn holen. Das System ruft dafür bringToTop() auf, das es in ApplicationV2 nicht gibt
+  // (dort bringToFront) – der zweite Aufruf endete mit einer Fehlermeldung (Rückmeldung 2026-10-29).
+  const open = foundry.applications.instances.get(id);
+  if (open?.rendered) {
+    open.bringToFront();
+    return open;
+  }
   // Foundry registriert neue Applications erst während render(). Den Handler deshalb
   // spätestens beim generischen Render-Hook an die echte Systeminstanz hängen.
   return new Promise(resolve => {

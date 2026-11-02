@@ -51,7 +51,7 @@ Danach im Browser F5; Foundry selbst muss nicht neu starten.
 V13 bietet vorhandene DSA7-Funktionen einschließlich Reittier im Kampf-Reiter und magischer Traditionsartefakte.
 Gefährten-/Auftragsverwaltung, neue Zeremonialgegenstände, Kraftspeicher, Lebensenergiezonen und Modul-Mobiloberfläche
 entfallen. Die Erweiterungen „Helfen“ und „Grundmanöver“ benötigen den DSA8-Modifikatoren-Hook und sind ebenfalls ausgeblendet;
-Wundeinschätzung und Würfelstatistik bleiben verfügbar. Optionale Fremdmodule müssen selbst zu v13 passen.
+Wundeinschätzung, Passive Verteidigung (seit 0.6.3) und Würfelstatistik bleiben verfügbar. Optionale Fremdmodule müssen selbst zu v13 passen.
 
 Die Ausgabe ist statisch gegen die v13-Quellen geprüft; die interaktive Foundry-Abnahme erfolgt durch die Tester.
 `python tools/package-module.py --foundry 14` erzeugt separat die v14-Beta. Stabile Linien starten später bei

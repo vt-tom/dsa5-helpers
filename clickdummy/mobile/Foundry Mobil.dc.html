@@ -133,7 +133,8 @@ input::placeholder{color:var(--ink3)}
          der runde Knopf unten rechts (neben der Reiterleiste) blendet ihn ein; im Modul: scripts/mobile/shell.js + Abschnitt 8 der Mobil-CSS. -->
     <div style="flex:1;min-width:0;min-height:0;overflow:hidden;position:relative">
       <sc-if value="{{ sheetChatFab }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openChat }}" aria-label="{{ chatFabLabel }}" style="position:absolute;right:104px;bottom:16px;z-index:5;width:56px;height:56px;border-radius:28px;border:2px solid rgba(39,35,32,.25);background:radial-gradient(circle at 35% 30%,#dcc189,#a3824a);box-shadow:0 4px 14px rgba(0,0,0,.35);display:grid;place-items:center;cursor:pointer;padding:0"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" fill="#272320"></path></svg><sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-4px;right:-4px;min-width:24px;height:24px;padding:0 6px;box-sizing:border-box;border:2px solid var(--paper);border-radius:12px;background:var(--danger);color:#fff;font-size:12px;font-weight:700;line-height:20px">{{ unread }}</span></sc-if></button></sc-if>
-      <dc-import name="Heldenbogen Mobil" device="{{ device }}" theme="{{ sheetTheme }}" on-back="{{ goHome }}" on-chat="{{ onSheetRoll }}" hint-size="100%,100%" style="width:100%;height:100%"></dc-import>
+      <!-- Heldenbogen im heutigen Mobil-Kopf (heldenbogen.html, 2026-11-02); ✕ und Würfe kommen per postMessage zurück -->
+      <iframe src="{{ sheetSrc }}" title="Heldenbogen" style="display:block;width:100%;height:100%;border:0"></iframe>
     </div>
   </sc-if>
 
@@ -648,7 +649,7 @@ class Component extends DCLogic {
   constructor(p) {
     super(p);
     const r = (k, cur, max) => ({ key: k, cur, max });
-    // Layariels Werte wie im Heldenbogen (Heldenbogen Mobil.dc.html, ATTRS/Talente)
+    // Layariels Werte wie im Heldenbogen (heldenbogen.html, ATTRS/Talente)
     this.ATTRS = { MU: 13, KL: 12, IN: 14, CH: 13, FF: 15, GE: 14, KO: 12, KK: 11 };
     this.HEROES = [
       { id: 'lay', name: 'Layariel Wipfelglanz', short: 'Layariel', sub: 'Elf · Waldläuferin', owner: 'Anna', online: true, mine: true, bars: [r('LeP', 28, 32), r('AsP', 24, 34), r('KaP', 12, 18)], tok: [8, 4], bg: 'radial-gradient(circle at 40% 35%,#6f8f3a,#33461a)' },
@@ -746,8 +747,20 @@ class Component extends DCLogic {
     ];
     this.scrollChat();
     this.initCam();
+    // Eingebetteter Heldenbogen (heldenbogen.html): ✕ führt zurück, Würfe landen im Chat
+    this._onSheetMsg = e => {
+      const d = e.data;
+      if (d?.dsa5h === 'back') this.setState({ view: 'home', cam: null });
+      if (d?.dsa5h === 'roll') this.sheetRoll(d);
+    };
+    addEventListener('message', this._onSheetMsg);
   }
-  componentWillUnmount() { (this._timers || []).forEach(clearTimeout); clearTimeout(this._tt); clearTimeout(this._bt); clearTimeout(this._lp); }
+  componentWillUnmount() { removeEventListener('message', this._onSheetMsg); (this._timers || []).forEach(clearTimeout); clearTimeout(this._tt); clearTimeout(this._bt); clearTimeout(this._lp); }
+  sheetRoll(r) {
+    const m = (r.sub || '').match(/Probe (\w\w\/\w\w\/\w\w) · FW (\d+)(?: · Mod ([+−])(\d+))?/);
+    if (m && r.dice && r.dice.length === 3) this.push(this.skillMsg({ who: 'Layariel Wipfelglanz', owner: 'Anna', title: r.title, probe: m[1], fw: +m[2], mod: m[3] ? (m[3] === '+' ? 1 : -1) * m[4] : 0, dice: r.dice }));
+    else this.push({ type: 'roll', who: 'Layariel Wipfelglanz', owner: 'Anna', ...r });
+  }
   componentDidUpdate() {
     // Die DC-Laufzeit reicht keinen prevState durch, daher selbst vergleichen
     const key = this.state.msgs.length + '|' + this.state.view + '|' + this.state.chatOpen;
@@ -1191,15 +1204,10 @@ class Component extends DCLogic {
     return {
       rootRef: this.rootRef, sceneRef: this.sceneRef,
       rootPos: standalone ? 'fixed' : 'relative',
-      theme, sheetTheme: theme === 'dark' ? 'dunkel' : 'hell', device, isTablet, isGM, stop, prevent: e => e.preventDefault(),
+      theme, sheetSrc: 'heldenbogen.html?embedded=1&device=' + device, device, isTablet, isGM, stop, prevent: e => e.preventDefault(),
       inSheet: v === 'sheet', notSheet: v !== 'sheet',
       goHome: () => set({ view: 'home', cam: null }), goJournal: () => set({ view: 'journal' }),
       openChat: () => set(isTablet ? { chatOpen: true, bubble: null } : { view: 'chat', bubble: null }), closeChat: () => set({ chatOpen: false }),
-      onSheetRoll: r => {
-        const m = (r.sub || '').match(/Probe (\w\w\/\w\w\/\w\w) · FW (\d+)(?: · Mod ([+−])(\d+))?/);
-        if (m && r.dice && r.dice.length === 3) this.push(this.skillMsg({ who: 'Layariel Wipfelglanz', owner: 'Anna', title: r.title, probe: m[1], fw: +m[2], mod: m[3] ? (m[3] === '+' ? 1 : -1) * m[4] : 0, dice: r.dice }));
-        else this.push({ type: 'roll', who: 'Layariel Wipfelglanz', owner: 'Anna', ...r });
-      },
       showBack: v !== 'home', showLogo: v === 'home', onBackBtn: () => set({ view: v === 'entry' ? 'journal' : 'home', cam: null }),
       barTitle: (titles[v] || titles.home)[0], barSub: (titles[v] || titles.home)[1],
       meInitial: me.initial, meName: me.name, meRole: me.role,

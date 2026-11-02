@@ -70,19 +70,57 @@ async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{o
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
+// #63 Layout A: Probendialoge des Moduls auch am Desktop (480 px), abschaltbar je Gerät; CSS in eigener Datei, auch für v13.
+test('roll dialogs (#63): desktop uses the mobile layout, own CSS file scoped to body.dsa5h-rd-*, client setting',()=>{
+ assert(JSON.parse(read('module.json')).styles.includes('styles/dsa5-helpers-roll-dialog.css'));
+ const loose=[];postcss.parse(read('styles/dsa5-helpers-roll-dialog.css')).walkRules(r=>{for(const s of r.selectors)if(!/^body\.dsa5h-(rd-on|rd-desktop|tablet)\b/.test(s.trim()))loose.push(s);});
+ assert.deepEqual(loose,[],'Probendialog-Regeln nur hinter body.dsa5h-rd-on/-desktop');
+ assert(!read('styles/dsa5-helpers-mobile.css').includes('.dsa5h-rd-head'),'Regeln nicht doppelt im Mobil-CSS');
+ const src=read('scripts/mobile/roll-dialog.js'),main=read('scripts/dsa5-helpers.js');
+ assert(/register\(MODULE_ID, 'rollDialogDesktopStyle', \{[^}]*scope: 'world', config: false, restricted: true, type: String, default: 'module'/.test(src),'Welt-Einstellung der SL (2026-11-02)');
+ assert(src.includes("get(MODULE_ID, 'rollDialogDesktopStyle') !== 'module') return;"));
+ assert(src.includes("document.body.classList.add('dsa5h-rd-on', 'dsa5h-rd-desktop')")&&src.includes("document.body.classList.add('dsa5h-rd-on');"));
+ assert(/initMobile\(\);\n[^\n]*\n\s*initRollDialogs\(mobileMode\);/.test(main),'nach initMobile, damit mobileMode feststeht');
+ assert(src.includes('const DESKTOP_WIDTH = 480;'));
+ for(const l of [own,JSON.parse(read('lang/en.json'))])for(const k of ['Name','Hint','Module','System'])assert.equal(typeof l.DSA5HELPERS.Settings.RollDialogDesktop[k],'string');
+});
 test('mobile: CSS loaded and scoped, all texts localized',()=>{
  assert(JSON.parse(read('module.json')).styles.includes('styles/dsa5-helpers-mobile.css'));
  const loose=[];postcss.parse(read('styles/dsa5-helpers-mobile.css')).walkRules(r=>{if(r.parent.type==='atrule'&&r.parent.name==='keyframes')return;for(const s of r.selectors)if(!/body\.dsa5h-|^#dsa5h-m-shell|^\.dsa5h-m-/.test(s.trim()))loose.push(s);});
  assert.deepEqual(loose,[],'mobile selectors must stay behind body.dsa5h-mobile / own classes');
  const en=JSON.parse(read('lang/en.json'));const get=(o,k)=>k.split('.').reduce((a,x)=>a?.[x],o);
- const src=['mobile','shell','canvas-touch','touch-context'].map(f=>read(`scripts/mobile/${f}.js`)).join('\n');
+ const src=['mobile','shell','canvas-touch','touch-context','roll-dialog','roll-result'].map(f=>read(`scripts/mobile/${f}.js`)).join('\n');
  const used=new Set([...src.matchAll(/DSA5HELPERS\.Mobile\.([A-Za-z.]*[A-Za-z])/g)].map(m=>m[1]));for(const m of src.matchAll(/L\('([A-Za-z.]+)'\)/g))used.add(m[1]);
  for(const k of ['auto','phone','tablet','foundry'])used.add(`Mode.${k}`);for(const k of ['chat','journal','settings','combat'])used.add(`Panel.${k}`);
  used.delete('Mode');used.delete('Panel'); // nur als Präfix `…Mode.${m}`, Einzelwerte oben ergänzt
  for(const k of used){assert.equal(typeof get(own.DSA5HELPERS.Mobile,k),'string','de: Mobile.'+k);assert.equal(typeof get(en.DSA5HELPERS.Mobile,k),'string','en: Mobile.'+k);}
 });
+// #65 Variante B: Anzahl in der Ausrüstung öffnet mobil das Zahlenfeld der LeP-Kugeln (Untergrenze 0 wie das System), „⋮“ 44 px.
+test('mobile (#65): quantity opens the number field, ⋮ has a 44 px hit area',()=>{
+ const src=read('scripts/mobile/mobile.js');
+ assert.equal((src.match(/quantityPopOnTap\(el, app\);/g)||[]).length,2,'Smartphone und Tablet');
+ assert(src.includes(`'.dsa5h-content [data-action="quantityClick"]'`));
+ assert(read('templates/actors/parts/inventory-row.hbs').includes('data-action="quantityClick"'));
+ assert(/write: next => item\.update\(\{ 'system\.quantity\.value': next \}\)/.test(src));
+ assert(/save\(Math\.max\(0, Math\.min\(max\(\)/.test(src),'nie unter 0');
+ const css=read('styles/dsa5-helpers-mobile.css');assert(/\.dsa5h-inventory-row \[data-action="itemContextMenu"\] \{[^}]*min-width: 44px/.test(css));
+});
+// #64 Variante A: eigene Würfe als Blatt von unten, Smartphone immer, Tablet per Client-Einstellung.
+test('mobile (#64): own rolls as a bottom sheet, tablet setting, card buttons forwarded to the chat log',()=>{
+ const src=read('scripts/mobile/roll-result.js'),mob=read('scripts/mobile/mobile.js');
+ assert(mob.includes("initRollResult(mode);"));
+ assert(/register\(MODULE_ID, 'rollResultTablet', \{[^}]*scope: 'client'[^}]*type: Boolean, default: true/.test(mob));
+ assert(src.includes('message.isAuthor && message.visible'),'nur eigene, sichtbare Würfe');
+ assert(src.includes("mobile === 'phone' || game.settings.get(MODULE_ID, 'rollResultTablet')"));
+ assert(src.includes("document.body.dataset.dsa5hPanel === 'chat'"),'bei offenem Chat nicht');
+ assert(src.includes('message.renderHTML()'),'echte Chatkarte');
+ assert(src.includes('target.dispatchEvent(new MouseEvent'),'Knöpfe an die Karte im Chat-Log weiterreichen');
+ for(const l of ['de','en']){const m=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Mobile;assert(m.Settings.RollResult.Name&&m.Settings.RollResult.Hint&&m.RollResult.Title,l);}
+ assert(read('styles/dsa5-helpers-mobile.css').includes(':is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message {'),'Kartenstil wie im Chat');
+});
 // Issue #7: Hover-Effekte nur in @media (hover: hover), damit sie auf Touch-Geräten nicht hängen bleiben (Modul und Click-Dummy).
-test('every :hover rule sits inside @media (hover: hover)',()=>{for(const file of ['styles/dsa5-helpers-character-sheet.css','clickdummy/style.css']){const bad=[];postcss.parse(read(file)).walkRules(rule=>{if(!/:hover\b/.test(rule.selector))return;let ok=false;for(let p=rule.parent;p&&p.type==='atrule';p=p.parent)if(p.name==='media'&&/\(\s*hover\s*:\s*hover\s*\)/.test(p.params))ok=true;if(!ok)bad.push(rule.selector.replace(/\s+/g,' '));});assert.deepEqual(bad,[],file+': :hover outside @media (hover: hover)');}});
+test('click dummy: every page loads the page menu and is listed there, with every link pointing at an existing page',()=>{const dir=path.join(root,'clickdummy');const pages=fs.readdirSync(dir,{recursive:true}).map(p=>p.split(path.sep).join('/')).filter(p=>p.endsWith('.html')&&!p.endsWith('.dc.html')&&!p.includes('vendor/'));const menu=read('clickdummy/pages.js');const listed=new Set([...menu.matchAll(/\["([\w/.-]+\.html)[?#"]/g)].map(m=>m[1]));for(const p of pages){assert.match(read('clickdummy/'+p),/<script src="(\.\.\/)?pages\.js(\?v=\d+)?"><\/script>/,p+' does not load pages.js');assert(listed.has(p),p+' missing in pages.js');}for(const p of listed)assert(pages.includes(p),'pages.js lists missing page '+p);});
+test('every :hover rule sits inside @media (hover: hover)',()=>{for(const file of ['styles/dsa5-helpers-character-sheet.css','styles/dsa5-helpers-roll-dialog.css','clickdummy/style.css']){const bad=[];postcss.parse(read(file)).walkRules(rule=>{if(!/:hover\b/.test(rule.selector))return;let ok=false;for(let p=rule.parent;p&&p.type==='atrule';p=p.parent)if(p.name==='media'&&/\(\s*hover\s*:\s*hover\s*\)/.test(p.params))ok=true;if(!ok)bad.push(rule.selector.replace(/\s+/g,' '));});assert.deepEqual(bad,[],file+': :hover outside @media (hover: hover)');}});
 test('full hero renders all ten tabs, real item bindings and no duplicate form names',async()=>{const {context}=await prepare();const html=render(context);const panels=elements(html,el=>el.attribs?.['data-tab-panel']);assert.equal(panels.length,targetGeneration===13?9:10);assert(html.includes('data-action="rollAggregatedProbe"'));assert(html.includes('data-which="3"'));assert(!html.includes('data-item-id="bag-child"'),'bag contents belong to the DSA5 item sheet, not a sheet-side dialog');assert(html.includes('OWNER_SECRET'));assert(html.includes('GM_SECRET'));const names=elements(html,el=>el.attribs?.name).map(el=>el.attribs.name);assert.equal(names.length,new Set(names).size,'duplicate form field names');assert(!html.includes('TabInProgress'));});
 test('limited rendering excludes private actor data',async()=>{const {sheet}=await prepare();sheet.limited=true;const context=await sheet._prepareContext({});const html=render(context);assert(!html.includes('OWNER_SECRET'));assert(!html.includes('GM_SECRET'));assert(!html.includes('data-tab-panel'));assert(html.includes('Public biography'));assert.equal(Sheet.LIMITEDPARTS,Sheet.PARTS);});
 test('observer and player views exclude GM and owner notes appropriately',async()=>{const {context}=await prepare();context.isGM=false;let html=render(context);assert(!html.includes('GM_SECRET'));assert(html.includes('OWNER_SECRET'));context.owner=false;context.editable=false;context.dsa5h.editMode=false;html=render(context);assert(!html.includes('OWNER_SECRET'));assert(!html.includes('GM_SECRET'));assert(!html.includes('data-action="dsa5hFavorite"'));});
@@ -706,13 +744,51 @@ test('Grundmanöver (#45): Stufen, Waffenfilter, Modifikatoren im Probendialog, 
   assert.deepEqual(M.splitModifierName({name:'Vorstoß: Malus aktiv',value:-2}),{title:'Vorstoß',step:'Malus aktiv -2'});
   assert.deepEqual([M.nextStep(-1,3),M.nextStep(2,3),M.nextStep(0,3,true),M.nextStep(-1,3,true)],[0,-1,-1,-1]);
   for(const l of ['de','en']){const m=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.HouseRules.maneuvers;for(const k of ['PanelHint','RowHint','RowHintSingle'])assert(m[k],l+' '+k);}
-  // Buchseite: beide Sprachen mit je sieben Einzelschaltern (#48: Schwachpunkte erkennen), „Stören und Ablenken“ fehlt.
-  for(const l of ['de','en']){const page=read(`templates/house-rules/maneuvers-${l}.hbs`);assert.equal((page.match(/maneuver-toggle\.hbs/g)||[]).length,7,l);assert(!/Stören und Ablenken|Disrupt and distract/i.test(page),l);}
+  // Buchseite: beide Sprachen mit je acht Einzelschaltern (#48: Schwachpunkte erkennen, #66: Stören und Ablenken).
+  for(const l of ['de','en']){const page=read(`templates/house-rules/maneuvers-${l}.hbs`);assert.equal((page.match(/maneuver-toggle\.hbs/g)||[]).length,8,l);assert(/id="distract"/.test(page),l);}
   // Sprungleiste: jeder Knopf hat genau ein Ziel, beide Sprachen gleich (Nutzer 2026-10-21).
   const jumps=l=>{const page=read(`templates/house-rules/maneuvers-${l}.hbs`);const keys=[...page.matchAll(/data-jump="(\w+)"/g)].map(m=>m[1]);for(const k of keys)assert.equal(page.split(`data-jump-target="${k}"`).length,2,l+' Ziel '+k);return keys;};
   assert.deepEqual(jumps('de'),jumps('en'));assert(jumps('de').length>=10);
   assert(read('scripts/apps/house-rules.js').includes('jumpTo: this._jumpTo'),'Aktion jumpTo');
   const entry=read('scripts/dsa5-helpers.js');for(const p of ['maneuvers.hbs','maneuvers-de.hbs','maneuvers-en.hbs','maneuver-toggle.hbs'])assert(entry.includes('templates/house-rules/'+p),p+' wird geladen');
+ } finally { global.game=saved; }
+});
+test('Stören und Ablenken (#66): Malus des Gegners bis Rundenende, Einstiege, Texte',async()=>{
+ const saved=global.game;
+ try {
+  const M=await import(dataUrl(read('scripts/house-rules/maneuvers.js')));
+  const loc=k=>({'LocalizedCTs.Schwerter':'Swords','LocalizedCTs.Bögen':'Bows','CHARAbbrev.AT':'AT','CHARAbbrev.PA':'PA','CHARAbbrev.AW':'AW','CHARAbbrev.damage':'TP'})[k]??k;
+  global.game={...saved,i18n:{localize:loc,format:(k,d)=>k+JSON.stringify(d)}};
+  assert(M.MANEUVER_IDS.includes('distract'));assert.equal(M.MANEUVERS.distract.attr,null,'keine Leiteigenschaft');
+  // Gespeichert beim Ablenkenden je Ziel-Token, gilt nur in derselben Kampfrunde.
+  const cur={combat:'c1',round:3};
+  const by=(name,distract)=>({name,getFlag:()=>({distract})});
+  const others=[by('Alrik',{tokX:{combat:'c1',round:3,name:'Ork'}}),by('Gerling',{tokY:{combat:'c1',round:2,name:'Wolf'}})];
+  assert.deepEqual(M.distractedBy(['tokX'],others,cur),{by:'Alrik'});
+  assert.equal(M.distractedBy(['tokY'],others,cur),null,'Vorrunde abgelaufen');
+  assert.equal(M.distractedBy(['tokX'],others,{combat:'c2',round:3}),null,'anderer Kampf');
+  assert.equal(M.distractedBy(['tokX'],others,null),null,'ohne Kampf');
+  // Modifikatoren beim Gestörten, angehakt: Nahkampf AT −1 und TP −1, Fernkampf nur TP −1, PA und AW −1.
+  const actor={type:'character',items:[],system:{characteristics:{mu:{value:12},ge:{value:12},kk:{value:12},in:{value:12},ff:{value:12}}}};
+  const none={advanceMalus:0,stance:false,aim:0,weakness:[],distract:[]};
+  const w=(type,ct,mode='attack')=>({mode,source:{type,system:{combatskill:{value:ct}}}});
+  const pick=(ctx,o={})=>M.buildModifiers(actor,ctx,{enabled:['distract'],st:none,distracted:{by:'Alrik'},t:k=>k,localize:loc,...o}).map(m=>[m.ref.id,m.value,m.damageBonus??0,m.selected]);
+  assert.deepEqual(pick(w('meleeweapon','Schwerter')),[['dsa5h:distracted',-1,-1,true]]);
+  assert.deepEqual(pick(w('rangeweapon','Bögen')),[['dsa5h:distracted',-1,-1,true]],'FK −1 nach Nutzerentscheidung');
+  assert.deepEqual(pick(w('meleeweapon','Schwerter','parry')),[['dsa5h:distracted',-1,0,true]]);
+  assert.deepEqual(pick({source:{type:'dodge'}}),[['dsa5h:distracted',-1,0,true]]);
+  assert.deepEqual(pick(w('meleeweapon','Schwerter'),{distracted:null}),[],'nicht abgelenkt');
+  assert.deepEqual(pick(w('meleeweapon','Schwerter'),{enabled:[]}),[],'abgeschaltet');
+  assert.deepEqual(pick({source:{type:'skill'}}),[],'Talentproben unberührt');
+  // Einstiege: Kampf-Reiter, Menü ⋮ des Systembogens, DSA-Leiste.
+  assert(read('templates/actors/parts/body.hbs').includes('data-action="dsa5hDistract"'));
+  assert(read('scripts/sheets/dsa5-helpers-character-sheet.js').includes('dsa5hDistract: this._maneuverDistract'));
+  assert(read('scripts/house-rules/rules.js').includes('maneuvers.distract.Button'));
+  assert(read('scripts/hud.js').includes("case 'distract'"));
+  for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;const d=j.HouseRules.maneuvers.distract;
+   for(const k of ['Name','Button','ButtonHint','HudHint','Attr','Value','NoCombat','NoTarget','Self','NoSkill','Status','Modifier'])assert(d[k],l+' '+k);
+   for(const k of ['Title','Intro','Throw','Intimidate'])assert(d.Dialog[k],l+' Dialog.'+k);for(const k of ['Success','Failure','Undead'])assert(d.Chat[k],l+' Chat.'+k);
+   assert(j.Hud.Short.distract,l+' Kurzname');}
  } finally { global.game=saved; }
 });
 test('Grundmanöver Stufe 3 (#48): Schwachpunkte erkennen, gleichwertige SF, Folgen gezielter Treffer',async()=>{
@@ -1143,13 +1219,40 @@ test('v13: wound check forces selfroll in setup and final card options', async (
  } finally {global.game=saved;}
 });
 
+test('v13: passive Verteidigung – Wartezustand DSA7 (flags.oppose) und DSA8 (flags.opposes)', async () => {
+ const {isOpposePending,clearOpposedFor}=await import(runtimeUrl);
+ const saved=global.game;
+ try {
+  assert(isOpposePending({flags:{opposes:{s1:{}}}},'s1'),'DSA8 je Startnachricht');
+  assert(isOpposePending({flags:{oppose:{startMessageId:'s1'}}},'s1'),'DSA7 ein offener Angriff');
+  assert(!isOpposePending({flags:{oppose:{startMessageId:'s2'}}},'s1'),'fremder Angriff zählt nicht');
+  assert(!isOpposePending({flags:{}},'s1'));
+  const calls=[];const Oppose={clearOpposed:(...args)=>calls.push(args)};
+  global.game={release:{generation:13}};
+  await clearOpposedFor(Oppose,{id:'a',flags:{oppose:{startMessageId:'s2'}}},'s1');
+  assert.equal(calls.length,0,'DSA7: späteren Angriff eines anderen nicht löschen');
+  const target={id:'a',flags:{oppose:{startMessageId:'s1'}}};
+  await clearOpposedFor(Oppose,target,'s1');
+  assert.deepEqual(calls.pop(),[target],'DSA7: clearOpposed(actor) ohne Optionen');
+  global.game={release:{generation:14}};
+  await clearOpposedFor(Oppose,target,'s1');
+  assert.deepEqual(calls.pop(),[target,{startMessageId:'s1'}],'DSA8: je Startnachricht');
+  const src=read('scripts/house-rules/passive-defense.js');
+  assert(!/flags\?\.opposes/.test(src),'Wartezustand nur über isOpposePending');
+  assert(!/OpposeDSA\.clearOpposed\(/.test(src),'Lösen nur über clearOpposedFor');
+  const sys='D:/FoundryVTT/user-data-paths/v13/Data/systems/dsa5/modules/system/rolls/opposed-dsa5.js';
+  if(fs.existsSync(sys)){const code=fs.readFileSync(sys,'utf8');for(const fn of ['resolveUndefended','handleOpposedTarget','clearOpposed','hideReactionButton'])assert(code.includes(`static async ${fn}(`),fn);}
+ } finally {global.game=saved;}
+});
+
 test('v13: unsupported modifier integrations stay inactive even with existing world flags', async () => {
  const {availableHouseRules,isRuleActive,isRuleSupported}=await import(houseRulesUrl());
  const saved=global.game;
  try {
-  global.game={release:{generation:13},settings:{get:()=>({woundCheck:true,helpAction:true,maneuvers:true})}};
-  assert.deepEqual(availableHouseRules().map(rule=>rule.id),['woundCheck']);
+  global.game={release:{generation:13},settings:{get:()=>({woundCheck:true,helpAction:true,maneuvers:true,passiveDefense:true})}};
+  assert.deepEqual(availableHouseRules().map(rule=>rule.id),['woundCheck','passiveDefense']);
   assert(isRuleActive('woundCheck'));assert(!isRuleActive('helpAction'));assert(!isRuleActive('maneuvers'));
+  assert(isRuleActive('passiveDefense'),'passive Verteidigung läuft seit 0.6.3 auch unter DSA7');
   assert(!isRuleSupported('maneuvers'));
   const systemRoot='D:/FoundryVTT/user-data-paths/v13/Data/systems/dsa5/modules';
   const collect=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?collect(path.join(dir,e.name)):e.name.endsWith('.js')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);
@@ -1304,7 +1407,10 @@ test('passive defense (#56): d20 against chosen or best defense, per-actor mode 
  assert.deepEqual(pd.resolveDefense({successLevel:-1,roll:3,defense:6}),{outcome:'miss'});
  assert.equal(pd.resolveDefense({successLevel:1,roll:6,defense:6}).outcome,'defended','W20 ≤ V wehrt ab');
  assert.equal(pd.resolveDefense({successLevel:1,roll:7,defense:6}).outcome,'hit');
- assert.equal(pd.resolveDefense({successLevel:3,roll:1,defense:0}).outcome,'hit','ohne Verteidigung trifft jede gelungene AT');
+ assert.equal(pd.resolveDefense({successLevel:3,roll:2,defense:0}).outcome,'hit','ohne Verteidigung trifft jede gelungene AT außer bei einer 1');
+ // 1 wehrt immer ab, 20 nie (Nutzer 2026-10-29).
+ assert.equal(pd.resolveDefense({successLevel:1,roll:1,defense:0}).outcome,'defended','1 wehrt immer ab');
+ assert.equal(pd.resolveDefense({successLevel:1,roll:20,defense:25}).outcome,'hit','20 wehrt nie ab');
  // Jede gelungene AT wird mit V/20 abgewehrt, unabhängig vom AT-Wurf (Rückmeldung zum W100-Entwurf).
  assert.equal(Array.from({length:20},(_,i)=>pd.resolveDefense({successLevel:1,roll:i+1,defense:6}).outcome).filter(o=>o==='defended').length,6);
  const opts=[{id:'sword',value:12},{id:'shield',value:14},{id:'dodge',value:8}];
@@ -1315,4 +1421,34 @@ test('passive defense (#56): d20 against chosen or best defense, per-actor mode 
  assert.deepEqual(['character','npc','creature'].map(t=>pd.defenseMode(actor(t))),['manual','best','best'],'Vorbelegung je Typ');
  assert.equal(pd.defenseMode(actor('character','best')),'best');assert.equal(pd.defenseMode(actor('npc','manual')),'manual');
  assert.deepEqual([actor('character'),actor('npc'),actor('creature','dodge'),actor('vehicle')].map(pd.appliesTo),[false,true,true,false]);
+});
+test('bag window (#72): slots become draggable with system drag data, left click opens on click',async()=>{
+ const template=fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/items/item-containercontent.hbs'),'utf8');
+ assert.match(template,/class='slot[^']*'\s+data-item-id=/,'System renders bag contents as .slot[data-item-id]');
+ let hook;const prevHooks=global.Hooks;global.Hooks={on:(name,fn)=>{if(name==='renderItemSheetV2')hook=fn;}};
+ try{
+  (await import(dataUrl(read('scripts/compat/bag-drag.js')))).initBagDrag();
+  assert.equal(typeof hook,'function');
+  const el=()=>{const l={};return {l,dataset:{},addEventListener:(t,f,c)=>{(l[t]??=[]).push({f,c});}};};
+  const slot=Object.assign(el(),{dataset:{itemId:'i1'},draggable:false,closest:sel=>sel.startsWith('.slot')?slot:null});
+  const root=Object.assign(el(),{querySelectorAll:()=>[slot]});
+  global.HTMLElement??=class{};
+  let opened=0;const item={toDragData:()=>({type:'Item',uuid:'Actor.a.Item.i1'}),sheet:{render:()=>opened++}};
+  const ours=class{static DEFAULT_OPTIONS={classes:['dsa5-helpers-sheet']}};
+  const actor={isOwner:true,_getSheetClass:()=>ours,items:{get:id=>id==='i1'?item:null}};
+  const prevDoc=global.document;global.document={querySelectorAll:()=>[]};
+  hook({item:{actor,system:{isBagWithContents:true}}},[root]);
+  assert.equal(slot.draggable,true);
+  const data={};slot.l.dragstart[0].f({dataTransfer:{setData:(k,v)=>data[k]=v}});
+  assert.deepEqual(JSON.parse(data['text/plain']),{type:'Item',uuid:'Actor.a.Item.i1'});
+  let stopped=false;root.l.mousedown[0].f({button:0,target:slot,stopPropagation:()=>stopped=true});
+  assert.equal(stopped,true,'system mousedown (opens at once) must not catch the drag');assert.equal(root.l.mousedown[0].c,true);
+  stopped=false;root.l.mousedown[0].f({button:2,target:slot,stopPropagation:()=>stopped=true});
+  assert.equal(stopped,false,'right click keeps the system take-out');
+  root.l.click[0].f({target:slot});assert.equal(opened,1);
+  const other=Object.assign(el(),{dataset:{itemId:'i1'},draggable:false});const root2=Object.assign(el(),{querySelectorAll:()=>[other]});
+  hook({item:{actor:{...actor,_getSheetClass:()=>class{static DEFAULT_OPTIONS={classes:['dsa5']}}},system:{isBagWithContents:true}}},[root2]);
+  assert.equal(other.draggable,false,'system sheet users keep the system behaviour');
+  global.document=prevDoc;
+ }finally{global.Hooks=prevHooks;}
 });

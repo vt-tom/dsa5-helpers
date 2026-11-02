@@ -1368,7 +1368,7 @@ function maneuverBlock() {
 let AUTO_DEFENSE = "manual";
 const ALSO_WORN_DEMO = new URLSearchParams(location.search).has("alsoWorn");
 function autoDefenseBlock() {
-  if (DUMMY_V13 || !window.dsa5hHouseRules?.state.active.passiveDefense) return null;
+  if (!window.dsa5hHouseRules?.state.active.passiveDefense) return null;
   const choices = [["manual", "Selbst würfeln (normale Regel)"], ["best", "Automatisch: beste Verteidigung"], ["dodge", "Automatisch: Ausweichen (7)"], ["sword", "Automatisch: Langschwert (8)"], ["shield", "Automatisch: Holzschild (10)"]];
   const select = el("select", { "aria-label": "Verteidigung bei Angriffen" }, choices.map(([value, label]) => el("option", { value, selected: value === AUTO_DEFENSE ? "" : null }, label)));
   select.addEventListener("change", () => { AUTO_DEFENSE = select.value; });
@@ -2731,7 +2731,7 @@ function coverResourcesCompact() {
 }
 
 function coverSideTabs() {
-  const tabs = [["conditions", "Statuseffekte"], ["details", "Persönliche Daten"]];
+  const tabs = ACTOR_TYPE?.coverTabs || [["conditions", "Statuseffekte"], ["details", "Persönliche Daten"]];
   const bar = el("div", { class: "side-tabs", role: "tablist", "aria-label": "Titelblatt" }, tabs.map(([id, label]) => {
     const on = COVER_SIDE_TAB === id;
     const b = el("button", { type: "button", role: "tab", class: "side-tab" + (on ? " active" : ""), "aria-selected": String(on) }, label);
@@ -2797,7 +2797,7 @@ function renderNotesSection(section) {
   };
   return el("div", { class: "panel notes-text" }, [
     el("div", { class: "panel-title" }, section.label),
-    el("div", { class: "notes-visibility" }, ["👁 ", VISIBILITY[section.id] || ""]),
+    el("div", { class: "notes-visibility" }, ["👁 ", section.visibility || VISIBILITY[section.id] || ""]),
     el("div", { class: "notes-text-wrap" }, [textEl, editBtn]),
   ]);
 }
@@ -3175,6 +3175,7 @@ function chargenButton() {
 // vorher gerahmte Badges), jeder Name bleibt ein Knopf.
 function initHeadBadges() {
   const wrap = document.getElementById("headBadges");
+  if (ACTOR_TYPE?.headBadges) return ACTOR_TYPE.headBadges(wrap);
   const sep = () => el("span", { class: "ident-sep", "aria-hidden": "true" }, "·");
   wrap.append(SHOW_CHARGEN ? chargenButton() : identityBadge(IDENTITY.species), sep(), identityBadge(IDENTITY.culture), sep(), identityBadge(IDENTITY.career));
 }
@@ -3377,18 +3378,18 @@ function renderPortrait() {
     });
     return btn;
   }));
-  wrap.replaceChildren(
+  wrap.replaceChildren(...[
     el("div", { class: "portrait-frame" }, el("div", { class: "portrait" }, el("div", {
       class: "portrait-img",
       role: "img",
       "aria-label": `Porträt von ${CHARACTER_NAME}`,
       style: `background-image:url('${portrait.img}');background-size:${portrait.size};background-position:${portrait.pos}`,
     }))),
-    el("div", { class: "ap-ribbon", title: `Abenteuerpunkte: ${formatNum(EXPERIENCE.total)} gesamt, ${formatNum(experienceAvailable())} frei` }, [
+    ACTOR_TYPE?.noAP ? null : el("div", { class: "ap-ribbon", title: `Abenteuerpunkte: ${formatNum(EXPERIENCE.total)} gesamt, ${formatNum(experienceAvailable())} frei` }, [
       el("span", { class: "ap-ribbon-total" }, `${formatNum(EXPERIENCE.total)} AP`),
       el("span", { class: "ap-ribbon-free" }, `${formatNum(experienceAvailable())} frei`),
     ]),
-  );
+  ].filter(Boolean));
   if (mode === "edit") wrap.append(shapeBtn);
 }
 
@@ -3425,6 +3426,8 @@ function renderHeader() {
   const fp = document.getElementById("fatePoints");
   fp.innerHTML = "";
   fp.appendChild(fatePointsRow());
+  // Ohne Schicksalspunkte (z. B. Kreaturen, actor-types.js) keine leere Plakette.
+  fp.closest(".head-plaque").style.display = resourceByLabel("Schicksalspunkte").max ? "" : "none";
 
   restoreFocus();
 }
@@ -3712,15 +3715,14 @@ function renderAttrOverlay() {
   if (!show) return;
   ATTRS.forEach((a) => {
     const value = a.initial + a.adv + a.mod;
+    // Kürzel im Würfel über dem Wert (Issue #71, Variante B, Nutzerentscheidung 2026-10-31).
+    const key = el("span", { class: "attr-mini-key", "aria-hidden": "true" }, a.k);
     // Würfel-Icon als echtes Kind-Element (.attr-die-mini-face), nicht als eigener Hintergrund von
     // .attr-die-mini — siehe Kommentar bei .attr-die-mini in style.css (Hover-Zoom-Bug mit der Wachssiegel-
     // Fassung, Nutzer-Feedback 2026-09-15 dritte Runde).
-    host.appendChild(
-      makeRollable(
-        el("span", { class: "attr-die-mini" }, [el("span", { class: "attr-die-mini-face", style: dieBg(a.die) }, String(value))]),
-        `Probe auf ${ATTR_LABELS[a.k]} (${value}) würfeln`
-      )
-    );
+    const face = el("span", { class: "attr-die-mini-face", style: dieBg(a.die) }, [key, el("span", {}, String(value))]);
+    const die = makeRollable(el("span", { class: "attr-die-mini" }, [face]), `Probe auf ${ATTR_LABELS[a.k]} (${value}) würfeln`);
+    host.appendChild(die);
   });
 }
 
@@ -3928,11 +3930,30 @@ function initModalEscape() {
   });
 }
 
+// Umschalter Bogenart und Foundry-Generation in der Werkzeugleiste: setzen den URL-Parameter und laden neu, weil
+// actor-types.js bzw. DUMMY_V13 beim Laden ausgewertet werden.
+function initPageSwitches() {
+  const params = new URLSearchParams(location.search);
+  document.querySelectorAll("#actorSwitch button, #foundrySwitch button").forEach((b) => {
+    const on = (params.get(b.dataset.param) ?? "") === b.dataset.value;
+    b.classList.toggle("active", on);
+    b.setAttribute("aria-pressed", String(on));
+    b.addEventListener("click", () => {
+      if (b.dataset.value) params.set(b.dataset.param, b.dataset.value);
+      else params.delete(b.dataset.param);
+      location.search = params.toString();
+    });
+  });
+}
+
+// NSC-/Kreaturbogen (?actor=nsc|kreatur, actor-types.js): abweichende Reiter einhängen, bevor zum ersten Mal gerendert wird.
+ACTOR_TYPE?.setup();
 setTab(currentTab);
 initHeadBadges();
 renderHeader();
 initThemeToggle();
 initModeSwitch();
+initPageSwitches();
 initOnlyLepToggle();
 initArmorToggles();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));

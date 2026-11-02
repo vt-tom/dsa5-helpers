@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ausrüstung mobil</title>
+<!-- Ausrüstung auf Smartphone und Tablet (Issue #65, Rückmeldung Testliste 0.6.3, 2026-10-29): Anzahl lässt sich nur
+     erhöhen, das Menü „⋮“ ist zu klein. Ursache (geprüft 2026-10-30): Das System zählt mit Linksklick hoch und mit
+     Rechtsklick herunter (Strg ×10, quantityClick) – auf Touch-Geräten gibt es keinen Rechtsklick. Gewählt: Variante B
+     (Nutzer 2026-10-30) – Antippen der Anzahl öffnet das Feld wie an den LeP-Kugeln (mobile.js quantityPopOnTap); „⋮“
+     hat 44 px Trefferfläche. Geschrieben wird nur system.quantity.value (nie unter 0 wie im System, Löschen bleibt im
+     Menü). Werte sind Platzhalter. Öffnen über clickdummy/start-server.bat → …/clickdummy/mobile/ausruestung.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --onaccent: #fff8ec;
+  --gold: #c2a267;
+  --danger: #8e1d15;
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font: 14px 'GentiumBasic', serif; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.about { max-width: 720px; margin: 0 auto 14px; font-size: 14px; line-height: 1.4; color: #d9cbb4; text-align: center; }
+
+/* Gerät, Abschnitt „Nahkampfwaffen“ wie im Modul */
+.device { position: relative; margin: 0 auto; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.device.phone { width: 390px; max-width: 100%; height: 700px; border-radius: 28px; }
+.device.tablet { width: 820px; max-width: 100%; height: 700px; border-radius: 22px; }
+.panel { margin: 16px 10px; border: 1px solid var(--line2); background: var(--card); }
+.panel h2 { margin: 0; padding: 8px 12px; background: var(--phead); font: 21px 'Andalus', serif; font-weight: 400; }
+.rows { padding: 6px 10px; }
+.row { display: flex; align-items: center; gap: 6px; min-height: 56px; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.img { flex: none; width: 40px; height: 40px; border-radius: 4px; background: linear-gradient(160deg, #c9b58f, #7d6a4d); }
+.nm { flex: 1; min-width: 0; font-size: 17px; }
+.nm small { display: block; font-size: 14px; color: var(--ink2); }
+.pill { flex: none; height: 40px; min-width: 40px; padding: 0 8px; border: 1px solid var(--line2); border-radius: 8px; background: var(--field); color: var(--ink); font: 16px 'GentiumBasic', serif; cursor: pointer; }
+.equip { width: 40px; padding: 0; font-size: 18px; }
+.more { width: 44px; min-width: 44px; padding: 0; font-size: 22px; }
+.star { flex: none; width: 28px; border: 0; background: none; color: var(--ink2); font-size: 20px; cursor: pointer; }
+.qty b { font-weight: 700; }
+button:disabled { opacity: .4; cursor: default; }
+
+
+/* B: Feld an der Anzahl (wie das Feld an den LeP-Kugeln) */
+.pop { position: absolute; z-index: 5; width: 250px; padding: 10px; border: 1px solid var(--line2); border-radius: 12px; background: var(--card); box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
+.pop::before { content: ''; position: absolute; top: -8px; left: calc(var(--tip, 30px) - 7px); width: 14px; height: 14px; transform: rotate(45deg); border-left: 1px solid var(--line2); border-top: 1px solid var(--line2); background: var(--card); }
+.pop .ttl { display: flex; justify-content: space-between; margin-bottom: 8px; font: 17px 'Andalus', serif; }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper button, .quick button { flex: none; min-width: 44px; height: 44px; padding: 0 8px; border: 1px solid var(--line2); border-radius: 22px; background: var(--field); color: var(--ink); font: 20px 'GentiumBasic', serif; cursor: pointer; }
+.stepper input { flex: 1; min-width: 0; height: 44px; border: 1px solid var(--line2); border-radius: 8px; background: var(--field); color: var(--ink); font: 700 18px 'GentiumBasic', serif; text-align: center; }
+.quick { display: flex; gap: 6px; margin-top: 8px; }
+.quick button { flex: 1; font-size: 15px; }
+
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+</div>
+<p class="about" id="about"></p>
+<div id="app"></div>
+<script>
+const ABOUT = 'Antippen der Anzahl öffnet darunter (oder darüber, wenn unten kein Platz ist) ein kleines Feld mit −/+, Eingabe und −10/+10, wie an den LeP-Kugeln. Jede Änderung speichert sofort; Tipp daneben oder Scrollen schließt es. „⋮“ ist 44 px breit.';
+const ITEMS = [
+  { n: 'Dolch', w: '0,5 Stein', q: 1, equip: true },
+  { n: 'Heiltrank', w: '0,1 Stein', q: 3 },
+  { n: 'Pfeile', w: '0,05 Stein', q: 18 },
+  { n: 'Fackel', w: '0,5 Stein', q: 2 },
+];
+const state = { device: 'phone', open: null };
+const clamp = v => Math.max(0, v);
+
+function qty(it, i) {
+  return `<button type="button" class="pill qty" data-pop="${i}" aria-expanded="${state.open === i}">× <b>${it.q}</b></button>`;
+}
+function row(it, i) {
+  return `<div class="row"><span class="img"></span><span class="nm">${it.n}<small>${it.w}</small></span>
+    <button type="button" class="pill equip" aria-label="Ausrüsten">${it.equip ? '🛡' : '◇'}</button>${qty(it, i)}
+    <button type="button" class="pill more" data-menu="${i}" aria-label="Menü">⋮</button><button type="button" class="star" aria-label="Favorit">☆</button></div>`;
+}
+function stepper(it, i) {
+  return `<span class="stepper"><button type="button" data-step="-1" data-i="${i}" aria-label="${it.n} verringern"${it.q <= 0 ? ' disabled' : ''}>−</button><input type="number" inputmode="numeric" min="0" data-in="${i}" value="${it.q}" aria-label="Anzahl ${it.n}"><button type="button" data-step="1" data-i="${i}" aria-label="${it.n} erhöhen">+</button></span>`;
+}
+function popB(i) {
+  const it = ITEMS[i];
+  return `<div class="pop" role="dialog" aria-label="Anzahl ${it.n}" data-anchor="${i}"><div class="ttl">${it.n}<small>Anzahl</small></div>${stepper(it, i)}
+    <div class="quick"><button type="button" data-step="-10" data-i="${i}">−10</button><button type="button" data-step="10" data-i="${i}">+10</button></div></div>`;
+}
+function render() {
+  document.getElementById('about').textContent = ABOUT;
+  const overlay = state.open !== null ? popB(state.open) : '';
+  document.getElementById('app').innerHTML = `<div class="device ${state.device}"><div class="panel"><h2>Ausrüstung</h2><div class="rows">${ITEMS.map(row).join('')}</div></div>${overlay}</div>`;
+  const pop = document.querySelector('.pop');
+  if (pop) {
+    const dev = document.querySelector('.device').getBoundingClientRect();
+    const btn = document.querySelector(`[data-pop="${pop.dataset.anchor}"]`).getBoundingClientRect();
+    const center = btn.left + btn.width / 2 - dev.left;
+    const left = Math.max(8, Math.min(dev.width - 258, center - 125));
+    pop.style.left = left + 'px';
+    pop.style.top = (btn.bottom - dev.top + 10) + 'px';
+    pop.style.setProperty('--tip', (center - left) + 'px');
+  }
+}
+document.querySelector('.switch').addEventListener('click', ev => {
+  const b = ev.target.closest('button[data-v]'); if (!b) return;
+  const g = b.closest('fieldset');
+  g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  state[g.dataset.group] = b.dataset.v; state.open = null; render();
+});
+const app = document.getElementById('app');
+app.addEventListener('click', ev => {
+  const t = ev.target;
+  const step = t.closest('[data-step]');
+  if (step) { const it = ITEMS[step.dataset.i]; it.q = clamp(it.q + Number(step.dataset.step)); return render(); }
+  const pop = t.closest('[data-pop]');
+  if (pop) { const i = Number(pop.dataset.pop); state.open = state.open === i ? null : i; return render(); }
+  // Tipp neben das Feld schließt es
+  if (state.open !== null && !t.closest('.pop')) { state.open = null; render(); }
+});
+app.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.dataset.in) { ITEMS[t.dataset.in].q = clamp(Math.round(Number(t.value) || 0)); render(); }
+});
+render();
+</script>
+<script src="../pages.js?v=7"></script>
+</body>
+</html>

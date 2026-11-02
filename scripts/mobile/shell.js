@@ -84,6 +84,36 @@ function renderCombat() {
   els.combat.querySelector('.dsa5h-m-cbt.current')?.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 
+// ----- Kampftracker im Panel: Karte „Am Zug“ (Variante C, Nutzerwahl 2026-10-30; Dummy mobile/kampftracker.html).
+// Oben im Tracker Bild und Name des Kämpfers am Zug, „Zug beenden“ (SL und Besitzer) und für die SL die Pfeile, darunter
+// „Danach: …“. Name und Bild kommen aus Foundrys Zeile (beachtet Verstecktes). Die Knöpfe sind Foundrys eigene
+// Aktionen previousTurn/nextTurn (Klasse combat-control, sonst übergeht CombatTracker#_onClickAction sie), die
+// Zug-Knöpfe der Fußleiste blendet das CSS mobil aus.
+function addTurnCard(app, element) {
+  const el = element instanceof HTMLElement ? element : element?.[0];
+  const combat = app.viewed ?? game.combat;
+  const list = el?.querySelector('ol.combat-tracker');
+  el?.querySelector('.dsa5h-m-turncard')?.remove();
+  if (!list || !combat?.started || !combat.combatant) return;
+  const rows = [...list.querySelectorAll('li.combatant')];
+  const index = rows.findIndex(row => row.dataset.combatantId === combat.combatant.id);
+  const row = rows[index];
+  if (!row) return;
+  const after = rows.slice(index + 1).concat(rows.slice(0, index)).find(r => !r.classList.contains('defeated'));
+  const name = r => r?.querySelector('.token-name .name')?.textContent.trim() ?? '';
+  const mine = combat.combatant.isOwner && !game.user.isGM;
+  const canEnd = game.user.isGM || combat.combatant.isOwner;
+  const arrow = (action, icon, label) => (game.user.isGM
+    ? `<button type="button" class="dsa5h-m-turn-arrow combat-control" data-action="${action}" aria-label="${esc(game.i18n.localize(label))}"><i class="fa-solid ${icon}" inert></i></button>` : '');
+  const card = document.createElement('section');
+  card.className = 'dsa5h-m-turncard';
+  card.innerHTML = `<div class="dsa5h-m-turn-who"><img src="${esc(row.querySelector('img.token-image')?.getAttribute('src'))}" alt="">
+      <span><small>${esc(mine ? L('OnTurnYou') : L('OnTurn'))}</small><b>${esc(name(row))}</b></span></div>
+    <div class="dsa5h-m-turn-acts">${arrow('previousTurn', 'fa-arrow-left', 'COMBAT.TurnPrev')}<button type="button" class="dsa5h-m-turn-end combat-control" data-action="nextTurn"${canEnd ? '' : ' disabled'}><i class="fa-solid fa-check" inert></i> ${esc(game.i18n.localize('COMBAT.TurnEnd'))}</button>${arrow('nextTurn', 'fa-arrow-right', 'COMBAT.TurnNext')}</div>
+    ${after && after !== row ? `<div class="dsa5h-m-turn-next">${esc(game.i18n.format('DSA5HELPERS.Mobile.NextUp', { name: name(after) }))}</div>` : ''}`;
+  list.before(card);
+}
+
 // ----- Panels (Seitenleisten-Reiter von Foundry)
 function openPanel(tab) {
   if (state.panel === tab) return closePanel();
@@ -271,6 +301,8 @@ export function initShell(mode, info) {
   Hooks.on('pauseGame', renderPause);
   const combatHook = foundry.utils.debounce(renderCombat, 100);
   for (const hook of ['createCombat', 'updateCombat', 'deleteCombat', 'createCombatant', 'updateCombatant', 'deleteCombatant', 'combatTurnChange']) Hooks.on(hook, combatHook);
+  Hooks.on('renderCombatTracker', addTurnCard);
+  if (ui.combat?.rendered) addTurnCard(ui.combat, ui.combat.element);
 
   const rerender = foundry.utils.debounce(() => { renderHeroes(); renderHead(); }, 150);
   for (const hook of ['createActor', 'deleteActor', 'updateActor', 'userConnected', 'updateUser', 'canvasReady']) Hooks.on(hook, rerender);

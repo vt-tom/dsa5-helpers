@@ -18,9 +18,7 @@
 #            Tag v13-<Version> (z. B. v13-0.6.2), nur als Pre-release. Paket aus tools/package-module.py (Foundry 13.351,
 #            DSA5 7.5.1, ohne Mobil-CSS). Die Kanäle der v14-Ausgabe bleiben unberührt.
 #
-# Dritter Kanal „mobile“ (Testversionen von Branch feature/mobile, seit 2026-10-15), eigener Job unten:
-# - Mobil:   https://github.com/vt-tom/dsa5-helpers/releases/download/mobile/module.json
-#            Tag mobile-v<Version> (z. B. mobile-v0.6.0), nur als Pre-release. Stabil- und Beta-Kanal bleiben unberührt.
+# Der frühere Mobil-Kanal (Tag mobile-v…, Branch feature/mobile) ist seit 2026-10-29 eingestellt; Mobil ist seit 0.6.0 Teil der Beta.
 name: Release
 
 on:
@@ -32,11 +30,10 @@ permissions:
 
 jobs:
   build:
-    # Die Kanäle selbst sind auch Pre-releases — dafür nichts bauen. Mobil- und v13-Tags bauen eigene Jobs.
+    # Die Kanäle selbst sind auch Pre-releases — dafür nichts bauen. v13-Tags bauen einen eigenen Job.
     if: >-
-      github.event.release.tag_name != 'beta' && github.event.release.tag_name != 'mobile' &&
-      github.event.release.tag_name != 'foundry-v13-beta' &&
-      !startsWith(github.event.release.tag_name, 'mobile-v') && !startsWith(github.event.release.tag_name, 'v13-')
+      github.event.release.tag_name != 'beta' && github.event.release.tag_name != 'foundry-v13-beta' &&
+      !startsWith(github.event.release.tag_name, 'v13-')
     runs-on: ubuntu-latest
     env:
       TAG: ${{ github.event.release.tag_name }}
@@ -128,53 +125,3 @@ jobs:
               --notes "Nicht über diese Seite installieren: in Foundry v13 die Manifest-URL eintragen – https://github.com/$REPO/releases/download/foundry-v13-beta/module.json"
           fi
           gh release upload foundry-v13-beta module.json --clobber
-
-  mobile:
-    # Testversionen von feature/mobile: nur module.zip mit Mobil-Manifest, fester Pre-release „mobile“ als Kanal.
-    if: startsWith(github.event.release.tag_name, 'mobile-v')
-    runs-on: ubuntu-latest
-    env:
-      TAG: ${{ github.event.release.tag_name }}
-      REPO: ${{ github.repository }}
-      PRERELEASE: ${{ github.event.release.prerelease }}
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - name: Nur als Pre-release
-        if: env.PRERELEASE != 'true'
-        run: |
-          echo "::error::$TAG ist eine Mobil-Testversion und darf nur als Pre-release veröffentlicht werden."
-          exit 1
-
-      - uses: actions/checkout@v4
-
-      - name: module.json erzeugen
-        run: |
-          node -e '
-            const fs = require("fs");
-            const { TAG: tag, REPO: repo } = process.env;
-            const base = `https://github.com/${repo}/releases`;
-            const m = JSON.parse(fs.readFileSync("module.json", "utf8"));
-            m.version = tag.replace(/^mobile-v/, "");
-            m.url = `https://github.com/${repo}`;
-            m.manifest = `${base}/download/mobile/module.json`;
-            m.download = `${base}/download/${tag}/module.zip`;
-            fs.writeFileSync("module.json", JSON.stringify(m, null, 2) + "\n");
-          '
-          cat module.json
-
-      - name: ZIP packen
-        run: |
-          mkdir pkg && cp -r LICENSE README.md CHANGELOG.md module.json scripts styles templates lang pkg/
-          (cd pkg && zip -qr ../module.zip .)
-          unzip -p module.zip module.json | grep -E '"(version|manifest|download)"'
-
-      - name: Assets an das Release hängen
-        run: gh release upload "$TAG" module.json module.zip --clobber
-
-      - name: Mobil-Kanal aktualisieren
-        run: |
-          if ! gh release view mobile >/dev/null 2>&1; then
-            gh release create mobile --prerelease --target "$GITHUB_SHA" --title "Mobil-Kanal (Test)" \
-              --notes "Testversionen von Mobile Support. Nicht über diese Seite installieren: in Foundry die Manifest-URL eintragen – https://github.com/$REPO/releases/download/mobile/module.json"
-          fi
-          gh release upload mobile module.json --clobber
