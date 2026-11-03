@@ -7,39 +7,83 @@ danach bei jedem Release genau diese Schritte.
 
 ## Wie das Ganze funktioniert (einmal verstehen)
 
-### Neue Versionsstrategie – vor dem nächsten Release umstellen
+### Stabile Linien 7.x (Foundry v13) und 8.x (Foundry v14) — ab 7.0.0/8.0.0
 
-**Lokale Testpakete sind implementiert (keine Veröffentlichung):**
+Nutzerentscheidung 26.10.2026: **7.X.X für Foundry v13**, **8.X.X für v14**, künftig 9.X.X für v15. V13 nur Desktop mit
+vorhandenen Systemfunktionen, v14 einschließlich Mobil. Zweite Zahl: Weiterentwicklung, dritte: Fehlerkorrektur innerhalb
+der Linie. Gleiche Modul-ID `dsa5-helpers`, gemeinsamer Quellstand, getrennte Pakete und Updatekanäle. Vorbereitet am
+03.11.2026 (Branch `release/8.0.0`), noch nichts davon veröffentlicht.
 
-```powershell
-python tools/package-module.py --foundry 13
-python tools/package-module.py --foundry 14
-python tests/package_module_test.py
+| Linie | Tag | Quelle | ZIPs am Release | Kanäle (feste Pre-releases) |
+|---|---|---|---|---|
+| v14 | `v8.x.y` | `release/8.x.y` | `module-v14.zip`, `module-v14-beta.zip` | `foundry-v14`, `foundry-v14-beta`; Übergang: `latest`, `beta` |
+| v13 | `v7.x.y` | `v13` | `module-v13.zip`, `module-v13-beta.zip` | `foundry-v13`, `foundry-v13-beta` |
+
+Manifest-URL je Kanal: `https://github.com/vt-tom/dsa5-helpers/releases/download/<Kanal>/module.json`.
+
+- Job `line` in [`release.yml`](../.github/workflows/release.yml) baut beide ZIPs mit `tools/package-module.py --channel stable|beta`.
+  Das Beta-ZIP zeigt auf den Beta-Kanal der Linie, das stabile auf den stabilen; Foundry übernimmt die URL aus dem ZIP.
+- Jedes Release einer Linie aktualisiert `foundry-v<gen>-beta`; ein normales Release zusätzlich `foundry-v<gen>`. Ein
+  Pre-release mit `v8.…`/`v7.…`-Tag erreicht also nur die Tester; „Beta zum normalen Release machen“ (unten) gilt weiter.
+- Fehlende Kanal-Releases legt der Job beim ersten Lauf selbst an (`--prerelease --latest=false`).
+- Das Paket enthält eine gefilterte `CHANGELOG.md` ohne die Abschnitte der anderen Linie (`changelog_for`), damit das
+  Changelog-Fenster einem v14-Nutzer keine 7.x-Abschnitte zeigt und umgekehrt. Im Repo bleibt ein gemeinsames CHANGELOG.
+- Betas einer Linie (Nutzerentscheidung 03.11.2026): Pre-release mit normaler Nummer der Linie (z. B. `v8.1.0`), später
+  dasselbe Release zum normalen erklären. Tags mit Suffix (`v8.0.0-beta`, so noch in #68 notiert) lehnt der Job ab:
+  `foundry.utils.isNewerVersion` hält `8.1.0` nicht für neuer als `8.1.0-beta` (geprüft 03.11.2026 am v14-Quelltext).
+
+**Überführung der 0.x-Installationen** (alle v14, das alte Manifest verlangte Foundry ≥ 14.364):
+
+- Stabil (`…/releases/latest/download/module.json`, zuletzt 0.5.1): 8.0.0 wird „Latest“, sein `module.json` zeigt auf
+  `module-v14.zip`, darin das Manifest `foundry-v14`. Nach dem Update hängt die Installation am neuen Kanal.
+- Beta (`…/releases/download/beta/module.json`): Der Job ersetzt das `module.json` des alten Pre-release `beta` bei jedem
+  8.x-Release durch das v14-Beta-Manifest → Tester landen in `foundry-v14-beta`.
+- v13-Beta (`foundry-v13-beta`): Kanal bleibt, 7.0.0 kommt dort als Update an (Beta-ZIP, Kanal bleibt `foundry-v13-beta`).
+- **7.x nie als „Latest“:** sonst bekämen v14-Installationen mit der alten URL ein v13-Paket angeboten. Immer
+  `gh release create v7.… --latest=false`. Der Job bricht ab, wenn ein 7.x-Release „Latest“ ist; dann
+  `gh release edit v8.<letzte> --latest` und den Lauf wiederholen.
+- Einstellungen, Flags und Bogenwahl hängen an der Modul-ID und bleiben erhalten; keine Weltmigration.
+
+#### 8.0.0 und 7.0.0 veröffentlichen (erst nach Auftrag)
+
+Reihenfolge: zuerst 8.0.0 (damit `latest` sofort auf die v14-Linie zeigt), dann 7.0.0.
+
+```sh
+# 1. Stand prüfen (Korrekturen aus der Beta-Rückmeldung sind auf release/8.0.0)
+git checkout release/8.0.0 && git status && node tests/sheet.test.cjs && python tests/package_module_test.py
+# module.json: "version": "8.0.0"; CHANGELOG.md: Datum bei [8.0.0] und [7.0.0], Vergleichslinks
+#   [8.0.0]: …/compare/v0.6.3...v8.0.0   [7.0.0]: …/compare/v13-0.6.3...v7.0.0
+git push origin release/8.0.0
+
+# 2. v14 – 8.0.0 als normales Release (wird Latest)
+git tag -a v8.0.0 -m "v8.0.0" && git push origin v8.0.0
+gh release create v8.0.0 --verify-tag --latest --title "v8.0.0 für Foundry v14" --notes-file notes-8.md
+gh run list --workflow release.yml --limit 1
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v14/module.json        # 8.0.0, download → v8.0.0/module-v14.zip
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v14-beta/module.json   # 8.0.0, download → module-v14-beta.zip
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json            # wie foundry-v14
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json              # wie foundry-v14-beta
+
+# 3. v13 – Branch nachziehen, 7.0.0 nie als Latest
+git checkout v13 && git merge --no-ff release/8.0.0
+FOUNDRY_DATA_PATH=D:/FoundryVTT/user-data-paths/v13/Data FOUNDRY_APP_PATH=D:/FoundryVTT/foundry-nodejs-v13 node tests/sheet.test.cjs
+git push origin v13
+git tag -a v7.0.0 -m "v7.0.0" && git push origin v7.0.0
+gh release create v7.0.0 --verify-tag --latest=false --title "v7.0.0 für Foundry v13" --notes-file notes-7.md
+gh run list --workflow release.yml --limit 1
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13/module.json        # 7.0.0, download → v7.0.0/module-v13.zip
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13-beta/module.json   # 7.0.0, download → module-v13-beta.zip
+curl -sL https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json            # weiterhin 8.0.0!
+
+# 4. main nachziehen (README mit den neuen URLs wird erst damit auf GitHub sichtbar)
+git checkout main && git merge --no-ff release/8.0.0 && git push origin main
 ```
 
-Erzeugt getrennte Beta-0.6.2-ZIPs und fertige Modulordner unter `.deploy/packages/`, ohne das Quellmanifest oder
-installierte Module zu ändern. V13: Foundry 13.351 / DSA5 7.5.1, maximale Generation 13, keine Mobil-CSS und noch
-kein `verified`-Versprechen vor der Nutzerprüfung. V14: eigene Kompatibilitätsgrenzen und bisheriger Umfang.
-Manifest-/Downloadadressen sind bereits generationseigen, aber noch nicht öffentlich bereitgestellt; zum lokalen Test
-den ausgegebenen Modulordner manuell installieren. ZIP wird per Rücklesen/CRC und Manifest-Dateireferenzen geprüft.
-`--channel stable --version 7.0.0` (v13) bzw. `8.0.0` (v14) ist vorbereitet; falsche Zuordnung und neue ungeklärte
-Beta-Nummernschemata werden abgelehnt. Der GitHub-Workflow und die öffentliche Kanalumstellung bleiben separate Release-Arbeit.
+Danach: Installationslinks auf der Webseite umstellen, Meilensteine/Issues schließen (#68), Update aus jeder alten URL in
+einer Testinstanz nachprüfen (0.5.1 stabil → 8.0.0, 0.6.3 Beta → 8.0.0, v13-0.6.3 → 7.0.0).
 
-**Beta-Korrektur:** Betas bleiben im 0.6.x-Schema (zuletzt 0.6.3, 02.11.2026). Erst die stabilen Releases starten bei 7.0.0 (v13) und 8.0.0 (v14). 7.6.2/8.6.2 sind verworfen. Das Nummernschema späterer generationseigener Betas bleibt zu entscheiden; bisherige 0.x-Pre-releases nicht rückwirkend ändern.
-
-Nutzerentscheidung 26.10.2026 für stabile Releases: **7.0.0 für Foundry v13**, **8.0.0 für v14**; künftig `7.X.X` / `8.X.X` / `9.X.X` für v13 / v14 / v15 usw. V13 nur Desktop mit vorhandenen Systemfunktionen, v14 einschließlich Mobil. Die zweite Zahl dient Weiterentwicklung, die dritte Fehlerkorrekturen innerhalb einer Linie. Gleiche Modul-ID `dsa5-helpers`; getrennte Installationspakete und Updatekanäle, gemeinsame Codepflege möglich.
-
-**Der nachstehende bisherige 0.x-Workflow ist dafür noch nicht angepasst. Vor Veröffentlichung der neuen Linien:**
-
-1. Branch-/Quellstrategie und Versionsmanifeste anpassen, lokale Änderungen erhalten. Alte Tags/Releases nicht umbenennen. Bisheriger Arbeitsbranch `release/0.6.2`, Manifest 0.6.2 (seit 28.10.2026) und kommender CHANGELOG-Abschnitt 0.6.2 bleiben bis zur technischen Umstellung bestehen. Entwicklung nur unter `D:/Development/dsa5-helpers`.
-2. Pro Generation eigenes Manifest/ZIP mit übereinstimmender Versionsnummer, generationseigener Manifest-URL im ZIP und passenden Foundry-Minimum/Maximum-Grenzen sowie DSA-Kompatibilität erzeugen. `verified` nur für geprüfte Stände setzen; Modul-/Bogen-ID erhalten.
-3. Generationseigene stabile und Beta-Kanäle einrichten. Vorschlag für noch nicht angelegte Kanal-Tags: `foundry-v13`, `foundry-v13-beta`, `foundry-v14`, `foundry-v14-beta`. Manifest-URL jeweils `https://github.com/vt-tom/dsa5-helpers/releases/download/<Kanal>/module.json`. URLs erst nach Anlage/Prüfung als Installationslinks auf der Webseite anbieten.
-4. Workflow auf echte Versionstags wie `v7.0.0`/`v8.0.0` ausrichten und Kanal-Aliase vom Build-Trigger ausschließen. Jede Veröffentlichung darf nur ihre Generationskanäle aktualisieren; globale `latest`-/`beta`-Links sind kein Ersatz für getrennte Updatekanäle.
-5. Bestehende 0.x-Installationen kontrolliert auf den v14-Kanal überführen, Einstellungen/Flags/Bogenwahl erhalten. V13 darf bei einem Update nicht auf die v14-Linie wechseln. Generationswechsel nur durch bewusste Wahl des passenden Installationslinks; keine Weltmigration.
-6. Installation und Folgeupdate jeder Linie aus echten ZIPs in separaten Testdatenverzeichnissen prüfen, einschließlich Veröffentlichungsreihenfolge v14 → v13 und umgekehrt. V13-Desktop und v14 einschließlich Mobil separat abnehmen.
-7. Erst nach Auftrag veröffentlichen; GitHub-Meilensteine/Webseitenlinks ebenfalls erst mit entsprechendem Auftrag ändern. Issues schließen, sobald ihre Ausgabe ausgeliefert ist.
-
-Die folgenden Abschnitte beschreiben bis zur Umstellung den bisherigen Betrieb, keine Freigabe, ihn unverändert für 7.X/8.X zu verwenden.
+Die folgenden Abschnitte beschreiben den bisherigen 0.x-Betrieb (Jobs `build` für `v0.…`-Tags und `v13` für
+`v13-0.…`-Tags). Sie bleiben für Korrektur-Betas im alten Schema nutzbar, solange 8.0.0 nicht veröffentlicht ist.
 
 - Spieler installieren das Modul in Foundry über die **Manifest-URL**:
 
@@ -126,7 +170,7 @@ https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13-beta/module
 - Tag **`v13-<Version>`** (z. B. `v13-0.6.2`) auf einem Commit von `v13`, Release **immer als Pre-release** (sonst bricht
   der Job ab). Die Versionsnummer ist dieselbe wie die der v14-Beta; der Präfix hält Tags und Releases getrennt.
 - Der Job `v13` in `release.yml` baut mit `tools/package-module.py --foundry 13` (v13-Manifest, ohne Mobil-CSS, kein
-  `verified`), hängt `module.json` und `module-v13-beta.zip` an und ersetzt das `module.json` des festen Pre-release
+  seit 03.11.2026 `verified` 13.351 / DSA5 7.5.1), hängt `module.json` und `module-v13-beta.zip` an und ersetzt das `module.json` des festen Pre-release
   `foundry-v13-beta`. Stabil- und Beta-Kanal der v14-Ausgabe bleiben unberührt.
 - Gilt bis zur Umstellung auf die stabilen Linien 7.x/8.x (oben); dann kommen die Kanäle `foundry-v13`/`foundry-v14` dazu.
 

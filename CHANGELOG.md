@@ -4,6 +4,27 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 Kennzeichnung: **[v13/v14]** gilt für Foundry v13 und v14, **[nur v14]** bzw. **[nur v13]** nur für diese Generation. Versionen bis 0.6.1 gab es nur für v14; ihre mit v13 gekennzeichneten Funktionen kommen dort erst mit der v13-Ausgabe an.
 
+Ab 7.0.0/8.0.0 gibt es getrennte Linien: **8.x für Foundry v14**, **7.x für Foundry v13**. Das installierte Modul zeigt
+nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
+
+## [8.0.0] — unveröffentlicht
+
+Erste stabile Version für **Foundry v14** (Desktop, Tablet und Smartphone). Sie enthält alles aus den Betas 0.6.0 bis 0.6.3;
+wer von 0.5.1 kommt, findet die Einzelheiten in deren Abschnitten unten.
+
+### Geändert
+
+- **[nur v14]** Eigene Versionslinie für Foundry v14: Versionsnummern 8.x.x, Updates über den Kanal `foundry-v14` (Beta-Tester: `foundry-v14-beta`). Bestehende Installationen über die bisherige Manifest-URL oder den alten Beta-Kanal werden mit diesem Update automatisch umgestellt; Einstellungen, Bogenwahl und Weltdaten bleiben unverändert. Manifest-URLs im README.
+
+## [7.0.0] — unveröffentlicht
+
+Erste stabile Version für **Foundry v13** (DSA5 7.5.1, nur Desktop). Sie entspricht der Beta 0.6.3 für Foundry v13.
+
+### Geändert
+
+- **[nur v13]** Eigene Versionslinie für Foundry v13: Versionsnummern 7.x.x, Updates über den Kanal `foundry-v13`. Wer die v13-Beta installiert hat, bekommt 7.0.0 automatisch und bleibt im Beta-Kanal `foundry-v13-beta`; für die stabile Fassung einmal mit der Manifest-URL aus dem README neu installieren.
+- **[nur v13]** Foundry 13.351 und DSA5 7.5.1 gelten jetzt als geprüft; Foundry zeigt das Modul in der Modulverwaltung nicht mehr als ungeprüft an.
+
 ## [0.6.3] — 2026-11-02
 
 ### Neu
@@ -261,6 +282,8 @@ Erste Version, installierbar über die Manifest-URL.
 - **[v13/v14]** Magie/Religion nur bei passender Fähigkeit sichtbar.
 - **[v13/v14]** Deutsch und Englisch.
 
+[8.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.3...main
+[7.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v13-0.6.3...v13
 [0.6.3]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.0...v0.6.1

@@ -14,7 +14,7 @@ Beta 0.6.3 ist am 02.11.2026 veröffentlicht (v14: Tag `v0.6.3`, Beta-Kanal; v13
 
 ## Offene Grenze
 
-Die Versionsaufteilung nach Foundry-Generation (#68) ist noch zu entscheiden (auf die nächste Version verschoben). `main` enthält 0.6.3 erst, wenn die Beta zum normalen Release erklärt wird.
+Erste stabile Versionen 8.0.0 (v14) und 7.0.0 (v13) sind auf dem lokalen Branch `release/8.0.0` vorbereitet (03.11.2026, #68: Workflow-Job `line`, Kanäle `foundry-v13`/`foundry-v14` samt Beta, Überführung der 0.x-Installationen), committet, nicht gepusht und nicht veröffentlicht. Veröffentlichung nach etwa einer Woche Beta-Rückmeldung mit deren Korrekturen. `main` bekommt den Stand erst mit 8.0.0.
 
 ## Quellenstand der Zusammenfassung
 
@@ -232,9 +232,9 @@ Abschlussprüfung 21.10.2026: erste Übertragung erfolgreich, vollständiger Alt
 
 **Nutzerentscheidungen (26.10.2026, ersetzen frühere Empfehlungen wie „ein gemeinsames Paket“):**
 - Gemeinsamer Quellstand, aber getrennte installierbare Linien: `7.X.X` für Foundry v13, `8.X.X` für v14, `9.X.X` für v15 usw. Erste stabile Ausgaben **7.0.0** (v13, nur Desktop) und **8.0.0** (v14 einschließlich Mobil). Eigene Manifest-/Update-Links je Generation auf der Nutzerwebseite, Modul-ID `dsa5-helpers` bleibt.
-- Bis dahin laufen Betas im 0.6.x-Schema (zuletzt 0.6.3, 02.11.2026). 7.6.2/8.6.2 verworfen; ein Beta-Schema je Linie ist noch nicht festgelegt.
+- Bis dahin laufen Betas im 0.6.x-Schema (zuletzt 0.6.3, 02.11.2026). 7.6.2/8.6.2 verworfen; Betas je Linie ab 8.0.0 (Nutzerentscheidung 03.11.2026): Pre-release mit normaler Nummer (`v8.1.0`), kein `-beta`-Suffix (`isNewerVersion` hält `8.1.0` nicht für neuer als `8.1.0-beta`); vorerst ist keine Beta geplant. v13-Pakete tragen `verified` 13.351 / DSA5 7.5.1 (Nutzerentscheidung 03.11.2026).
+- Vorbereitet (03.11.2026, Branch `release/8.0.0`): Tags `v8.x.y` (v14) und `v7.x.y` (v13, Branch `v13`) baut der Job `line` mit `package-module.py --channel stable|beta`; je Linie `module-v<gen>.zip` → Kanal `foundry-v<gen>` und `module-v<gen>-beta.zip` → `foundry-v<gen>-beta`. 8.x überführt die 0.x-Installationen (wird „Latest“, ersetzt das `module.json` im alten Kanal `beta`); 7.x darf nie „Latest“ sein (Job bricht ab). Das Paket enthält ein CHANGELOG ohne Abschnitte der anderen Linie (`changelog_for`), weil das Changelog-Fenster alle Abschnitte bis zur installierten Version zeigt. Ablauf in [RELEASE.md](../docs/RELEASE.md).
 - v13: nur Desktop und nur die in DSA5 7.5.1 vorhandenen Systemfunktionen; nichts aus DSA8 nachbauen, kein Mobil-Backport. Zielkombinationen: Foundry 13.351 + DSA5 7.5.1 sowie Foundry v14 + DSA5 ab 8.1.5.
-- Kanal-/Workflow-Umstellung und Umnummerierung sind Release-Arbeit (siehe [RELEASE.md](../docs/RELEASE.md)); bisher nichts veröffentlicht.
 
 **Umsetzung (release/0.6.2):**
 - `scripts/compat/runtime.js` bündelt Systemzugriff (`globalThis.dsa5` bzw. `game.dsa5`), Generationserkennung, ContextMenuEntry-Übersetzung (v14 `label/onClick/visible` → v13 `name/callback/condition`) und Flag-Löschung (`ForcedDeletion` fehlt in v13). Keine DSA-Regeln darin. Wo möglich Fähigkeiten prüfen (`typeof this.prepareCompanionTab === 'function'`, `game.i18n.has`), die Generation nur bei echten Schnittstellenunterschieden.

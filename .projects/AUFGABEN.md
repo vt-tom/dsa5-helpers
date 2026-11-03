@@ -1,4 +1,4 @@
-# Aufgaben — 0.6.3
+# Aufgaben — 8.0.0 (v14) / 7.0.0 (v13)
 
 <!-- PROJECT-COORDINATION:START -->
 
@@ -6,15 +6,15 @@ Redaktioneller Kurzstand für die Projektübersicht. Bestehende Aufgaben, Entsch
 
 ## Nächster Einstieg
 
-Vorschlag: Die offene Almanach-Rückfrage zu den fehlenden Personen-/Auftragsreitern anhand der tatsächlich sichtbaren Einstellungen klären; danach den betreffenden Spielerablauf erneut prüfen.
+Stabile Versionen 8.0.0/7.0.0 sind auf `release/8.0.0` vorbereitet und committet (nicht gepusht). Beta-Rückmeldungen bis ca. 10.11.2026 sammeln, Korrekturen auf `release/8.0.0`, dann Veröffentlichung nach Auftrag.
 
 ## Bei dir offen
 
-Du: Versionslinien und Zeitpunkt der Umstellung entscheiden. Offene Smartphone-/Tablet-Prüfungen in Phase 3 durchführen; vorhandene Antworten zu Desktop-Dialog und altem Dummy gelten weiter.
+Du: Beta-Rückmeldungen 0.6.3 sammeln, danach Auftrag zur Veröffentlichung von 8.0.0 und 7.0.0.
 
 ## Wartet auf
 
-Rückmeldungen zum Bannerbild auf Tablet, Handy und The Forge; siehe „Wartet auf Dritte“.
+Rückmeldungen zur Beta 0.6.3 (ca. eine Woche, bis etwa 10.11.2026) und zum Bannerbild auf Tablet, Handy und The Forge.
 
 Quellengrundlage: AUFGABEN.md: 1. Ausdefinieren, 3. Umgesetzt – testen, Später. PROJEKTDOKU.md: Ziel, Aktueller Stand.
 
@@ -22,7 +22,7 @@ Quellengrundlage: AUFGABEN.md: 1. Ausdefinieren, 3. Umgesetzt – testen, Späte
 
 <!-- PROJECT-COORDINATION:END -->
 
-Branch `release/0.6.3`, Meilenstein 0.6.3, Kern #59 Mobil P1 ([MOBILE.md](../docs/MOBILE.md#15-fenster-ohne-mobil-design-bestandsaufnahme-2026-10-28) Abschnitt 15). Veröffentlicht: Beta 0.6.3 am 02.11.2026 ([v14](https://github.com/vt-tom/dsa5-helpers/releases/tag/v0.6.3), [v13](https://github.com/vt-tom/dsa5-helpers/releases/tag/v13-0.6.3)); Umfang der nächsten Version noch offen. Stand: 02.11.2026
+Branch `release/8.0.0` (aus `release/0.6.3`, noch nicht gepusht), Kern #68 Versionslinien. Ziel: erste stabile Versionen 8.0.0 (Foundry v14) und 7.0.0 (Foundry v13) = Beta 0.6.3 plus Korrekturen aus der Beta-Rückmeldung, Veröffentlichung in etwa einer Woche. Zuletzt veröffentlicht: Beta 0.6.3 am 02.11.2026 ([v14](https://github.com/vt-tom/dsa5-helpers/releases/tag/v0.6.3), [v13](https://github.com/vt-tom/dsa5-helpers/releases/tag/v13-0.6.3)). Stand: 03.11.2026
 
 **So funktioniert die Liste** (gepflegt mit `/vttom-aufgaben-pflegen`, umgesetzt mit `/vttom-todo-abarbeiten`):
 
@@ -33,20 +33,24 @@ Branch `release/0.6.3`, Meilenstein 0.6.3, Kern #59 Mobil P1 ([MOBILE.md](../doc
 
 ## 1. Ausdefinieren
 
+- Du: **Beta-Rückmeldungen 0.6.3** sammeln (bis etwa 10.11.2026); Fehler als Issues (Meilenstein 8.0.0 gibt es noch nicht).
+  Danach KI: Korrekturen auf `release/8.0.0`, im CHANGELOG unter 8.0.0 bzw. 7.0.0 (Behoben).
+
 ## 2. Bereit zur Umsetzung
 
 ## 3. Umgesetzt – testen
 
+- [ ] Du: **Versionslinien 8.0.0/7.0.0** · #68 — nach der Veröffentlichung: Update aus alter stabiler URL, altem Beta-Kanal
+  und v13-Beta → landet auf 8.0.0 bzw. 7.0.0, Modulverwaltung zeigt den neuen Kanal, v13 als geprüft.
+
 ## 4. Fertig für Release
 
-Alles Bestätigte ist mit Beta 0.6.3 ausgeliefert (02.11.2026), Einzelheiten im CHANGELOG.
+Veröffentlichung nur nach Auftrag: erst 8.0.0, dann 7.0.0 (`--latest=false`), Ablauf in [RELEASE.md](../docs/RELEASE.md#stabile-linien-7x-foundry-v13-und-8x-foundry-v14--ab-700800).
 
 ## Später
 
 ### Nächste Version
 
-- Du: **Getrennte Versionslinien** · #68 — Schema steht: 7.x v13, 8.x v14, 9.x v15, Betas `-beta`. Zu entscheiden: wann stabile Kanäle (0.6.3 geht noch im alten Schema raus).
-  Danach KI: Manifeste/ZIPs je Linie, Update-Pfade trennen, 0.x-Installationen überführen, Workflow/README/RELEASE.md.
 - Du: **NSC- und Kreaturbogen** · #53 #54 — Titelseite nach Rückmeldung (31.10.) im Dummy: `clickdummy/index.html?actor=nsc` bzw. `=kreatur`, `clickdummy/mobile/nsc-kreatur.html`. Ansehen und rückmelden.
   Danach KI: zweites Kreatur-Beispiel (Ork, humanoid mit Waffen); offen bleibt die linke Leiste ja/nein.
 - Du: **Hausregel „Gebundene AP“** · #69 — Antworten der Runde da (Spielzeit, Antrag + SL-Freigabe, alle Gegenstände). Entscheiden: an Gegenstände
@@ -74,7 +78,7 @@ Alles Bestätigte ist mit Beta 0.6.3 ausgeliefert (02.11.2026), Einzelheiten im 
 <!-- GITHUB-ISSUES:START -->
 ## Überblick (erzeugt)
 
-_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-02T16:14:12.212Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
+_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-03T05:33:11.293Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
 
 | Abschnitt | Du | KI | Einträge |
 |---|---|---|---|
