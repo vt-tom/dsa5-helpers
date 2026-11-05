@@ -14,7 +14,7 @@ Beta 0.6.3 ist am 02.11.2026 veröffentlicht (v14: Tag `v0.6.3`, Beta-Kanal; v13
 
 ## Offene Grenze
 
-Erste stabile Versionen 8.0.0 (v14) und 7.0.0 (v13) sind auf dem lokalen Branch `release/8.0.0` vorbereitet (03.11.2026, #68: Workflow-Job `line`, Kanäle `foundry-v13`/`foundry-v14` samt Beta, Überführung der 0.x-Installationen), committet, nicht gepusht und nicht veröffentlicht. Veröffentlichung nach etwa einer Woche Beta-Rückmeldung mit deren Korrekturen. `main` bekommt den Stand erst mit 8.0.0.
+Erste stabile Versionen 8.0.0 (v14) und 7.0.0 (v13) sind auf dem Branch `release/8.0.0` vorbereitet (03.11.2026, Korrekturen 05.11.2026; #68: Workflow-Job `line`, Kanäle `foundry-v13`/`foundry-v14` samt Beta, Überführung der 0.x-Installationen), committet und seit 05.11.2026 gepusht, nicht veröffentlicht. Veröffentlichung nach etwa einer Woche Beta-Rückmeldung mit deren Korrekturen. `main` bekommt den Stand erst mit 8.0.0.
 
 ## Quellenstand der Zusammenfassung
 

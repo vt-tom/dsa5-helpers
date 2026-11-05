@@ -6,7 +6,7 @@ Redaktioneller Kurzstand für die Projektübersicht. Bestehende Aufgaben, Entsch
 
 ## Nächster Einstieg
 
-Stabile Versionen 8.0.0/7.0.0 sind auf `release/8.0.0` vorbereitet und committet (nicht gepusht). Beta-Rückmeldungen bis ca. 10.11.2026 sammeln, Korrekturen auf `release/8.0.0`, dann Veröffentlichung nach Auftrag.
+Stabile Versionen 8.0.0/7.0.0 sind auf `release/8.0.0` vorbereitet, committet und gepusht (05.11.2026), nicht veröffentlicht. Beta-Rückmeldungen bis ca. 10.11.2026 sammeln, Korrekturen auf `release/8.0.0`, dann Veröffentlichung nach Auftrag.
 
 ## Bei dir offen
 
@@ -22,7 +22,7 @@ Quellengrundlage: AUFGABEN.md: 1. Ausdefinieren, 3. Umgesetzt – testen, Späte
 
 <!-- PROJECT-COORDINATION:END -->
 
-Branch `release/8.0.0` (aus `release/0.6.3`, noch nicht gepusht), Kern #68 Versionslinien. Ziel: erste stabile Versionen 8.0.0 (Foundry v14) und 7.0.0 (Foundry v13) = Beta 0.6.3 plus Korrekturen aus der Beta-Rückmeldung, Veröffentlichung in etwa einer Woche. Zuletzt veröffentlicht: Beta 0.6.3 am 02.11.2026 ([v14](https://github.com/vt-tom/dsa5-helpers/releases/tag/v0.6.3), [v13](https://github.com/vt-tom/dsa5-helpers/releases/tag/v13-0.6.3)). Stand: 03.11.2026
+Branch `release/8.0.0` (aus `release/0.6.3`, seit 05.11.2026 auf GitHub), Kern #68 Versionslinien. Ziel: erste stabile Versionen 8.0.0 (Foundry v14) und 7.0.0 (Foundry v13) = Beta 0.6.3 plus Korrekturen aus der Beta-Rückmeldung, Veröffentlichung in etwa einer Woche. Zuletzt veröffentlicht: Beta 0.6.3 am 02.11.2026 ([v14](https://github.com/vt-tom/dsa5-helpers/releases/tag/v0.6.3), [v13](https://github.com/vt-tom/dsa5-helpers/releases/tag/v13-0.6.3)). Stand: 05.11.2026
 
 **So funktioniert die Liste** (gepflegt mit `/vttom-aufgaben-pflegen`, umgesetzt mit `/vttom-todo-abarbeiten`):
 
