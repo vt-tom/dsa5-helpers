@@ -42,6 +42,9 @@ Branch `release/8.0.0` (aus `release/0.6.3`, noch nicht gepusht), Kern #68 Versi
 
 - [ ] Du: **Versionslinien 8.0.0/7.0.0** · #68 — nach der Veröffentlichung: Update aus alter stabiler URL, altem Beta-Kanal
   und v13-Beta → landet auf 8.0.0 bzw. 7.0.0, Modulverwaltung zeigt den neuen Kanal, v13 als geprüft.
+- [ ] Du: **Foundry 14.370 geprüft** — 8.0.0 unter 14.370 installieren → Modulverwaltung zeigt das Modul nicht als ungeprüft.
+- [ ] Du: **Escape im Bogenmenü** — Schloss-Menü öffnen, Escape → nur das Menü geht zu, Bogen und andere Fenster bleiben offen.
+- [ ] Du: **Würfelstatistik, manuelle Würfel** — Würfel auf „Manuell“, Probe mit Eingabe, ein Feld leer lassen → Statistik zeigt Eingaben als echte, leere als digitale Würfe.
 
 ## 4. Fertig für Release
 
@@ -78,16 +81,16 @@ Veröffentlichung nur nach Auftrag: erst 8.0.0, dann 7.0.0 (`--latest=false`), A
 <!-- GITHUB-ISSUES:START -->
 ## Überblick (erzeugt)
 
-_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-03T05:33:11.293Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
+_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-05T09:42:30.224Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
 
 | Abschnitt | Du | KI | Einträge |
 |---|---|---|---|
 | Bestehende Aufgaben im Detail | – | – | 4 |
-| Ausdefinieren | – | – | 0 |
+| Ausdefinieren | 1 | – | 1 |
 | Bereit zur Umsetzung | – | – | 0 |
-| Umgesetzt – testen | – | – | 0 |
+| Umgesetzt – testen | 4 | – | 4 |
 | Fertig für Release | – | – | 0 |
-| Später – Nächste Version | 4 | – | 4 |
+| Später – Nächste Version | 3 | – | 3 |
 | Später – Wartet auf Dritte | – | – | 1 |
 | Später – Ideen | – | – | 7 |
 
@@ -102,7 +105,7 @@ _Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-03T05:33:1
 | [#57](https://github.com/vt-tom/dsa5-helpers/issues/57) | feat: Geldbörse erweitern | – | – | Später – Ideen |
 | [#60](https://github.com/vt-tom/dsa5-helpers/issues/60) | feat: Kampf-Aktionen – Schnellzugriff im Kampf ohne Heldenbogen | – | enhancement | Später – Ideen |
 | [#61](https://github.com/vt-tom/dsa5-helpers/issues/61) | feat: Dunkles Thema für Mobil-Fenster | – | enhancement | Später – Ideen |
-| [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) | feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) | – | enhancement | Später – Nächste Version |
+| [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) | feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) | – | enhancement | Bestehende Aufgaben im Detail, Umgesetzt – testen · Achtung: Meilenstein 8.0.0 fehlt |
 | [#69](https://github.com/vt-tom/dsa5-helpers/issues/69) | feat: Hausregel „Gebundene AP“ – AP verlorener Begleiter und Gegenstände bleiben zweckgebunden | – | enhancement | Später – Nächste Version |
 | [#70](https://github.com/vt-tom/dsa5-helpers/issues/70) | feat: Hausregel „Sitzungs-Schips“ – mindestens ein Schip zu Sitzungsbeginn | – | enhancement | Später – Nächste Version |
 
@@ -110,10 +113,9 @@ _Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-03T05:33:1
 
 | # | Titel | Meilenstein | Labels | In der Liste |
 |---|---|---|---|---|
-| [#59](https://github.com/vt-tom/dsa5-helpers/issues/59) | feat: Mobil P1 – Fenster am Spieltisch im Mobil-Design (Vorschläge, Kraftspeicher, Zonen, Kampfdialog, Kampftracker) | 0.6.3 | enhancement | Bestehende Aufgaben im Detail · Achtung: geschlossen, steht noch hier |
 | [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) | feat: Grundmanöver „Stören und Ablenken“ (Paladose) | 0.6.3 | enhancement | Später – Ideen · Achtung: geschlossen, steht noch hier |
 
-**Kürzlich geschlossen (14 Tage: 29)**
+**Kürzlich geschlossen (14 Tage: 15)**
 
-[#72](https://github.com/vt-tom/dsa5-helpers/issues/72) fix: Gegenstände lassen sich nicht aus einem Behälter verschieben (erledigt, 02.11.) · [#71](https://github.com/vt-tom/dsa5-helpers/issues/71) feat: Eigenschaftsleiste – Kürzel MU, KL, IN … an den Würfeln anzeigen (erledigt, 02.11.) · [#63](https://github.com/vt-tom/dsa5-helpers/issues/63) feat: Neue Probendialoge auch am Desktop (erledigt, 02.11.) · [#67](https://github.com/vt-tom/dsa5-helpers/issues/67) feat: Mobil – Almanach-Eintrag (Person/Auftrag) als Blatt öffnen (erledigt, 02.11.) · [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) feat: Grundmanöver „Stören und Ablenken“ (Paladose) (erledigt, 02.11.) · [#65](https://github.com/vt-tom/dsa5-helpers/issues/65) feat: Mobil – Ausrüstung: Anzahl verringern, −/+ und größeres 3-Punkte-Menü (erledigt, 02.11.) · [#64](https://github.com/vt-tom/dsa5-helpers/issues/64) feat: Mobil – Wurfergebnis nach dem Würfeln im Bogen einblenden (erledigt, 02.11.) · [#62](https://github.com/vt-tom/dsa5-helpers/issues/62) feat: Passive Verteidigung – Treffer in der Chatnachricht auf einen Blick (erledigt, 02.11.) · … und 21 weitere
+[#72](https://github.com/vt-tom/dsa5-helpers/issues/72) fix: Gegenstände lassen sich nicht aus einem Behälter verschieben (erledigt, 02.11.) · [#71](https://github.com/vt-tom/dsa5-helpers/issues/71) feat: Eigenschaftsleiste – Kürzel MU, KL, IN … an den Würfeln anzeigen (erledigt, 02.11.) · [#63](https://github.com/vt-tom/dsa5-helpers/issues/63) feat: Neue Probendialoge auch am Desktop (erledigt, 02.11.) · [#67](https://github.com/vt-tom/dsa5-helpers/issues/67) feat: Mobil – Almanach-Eintrag (Person/Auftrag) als Blatt öffnen (erledigt, 02.11.) · [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) feat: Grundmanöver „Stören und Ablenken“ (Paladose) (erledigt, 02.11.) · [#65](https://github.com/vt-tom/dsa5-helpers/issues/65) feat: Mobil – Ausrüstung: Anzahl verringern, −/+ und größeres 3-Punkte-Menü (erledigt, 02.11.) · [#64](https://github.com/vt-tom/dsa5-helpers/issues/64) feat: Mobil – Wurfergebnis nach dem Würfeln im Bogen einblenden (erledigt, 02.11.) · [#62](https://github.com/vt-tom/dsa5-helpers/issues/62) feat: Passive Verteidigung – Treffer in der Chatnachricht auf einen Blick (erledigt, 02.11.) · … und 7 weitere
 <!-- GITHUB-ISSUES:END -->

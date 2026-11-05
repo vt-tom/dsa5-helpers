@@ -1060,7 +1060,14 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     menu.setAttribute('aria-label', ariaLabel);
     const close = () => { menu.remove(); document.removeEventListener('pointerdown', onDoc, true); document.removeEventListener('keydown', onKey, true); };
     const onDoc = ev => { if (!menu.contains(ev.target)) close(); };
-    const onKey = ev => { if (ev.key === 'Escape') close(); };
+    // Escape schließt nur das Menü: Foundry hört erst am window darauf und schlösse sonst alle Fenster samt Bogen.
+    const onKey = ev => {
+      if (ev.key !== 'Escape') return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      close();
+      target?.focus?.({ preventScroll: true });
+    };
     for (const entry of entries) {
       const item = document.createElement('button');
       item.type = 'button';

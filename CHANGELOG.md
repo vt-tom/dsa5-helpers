@@ -15,6 +15,12 @@ wer von 0.5.1 kommt, findet die Einzelheiten in deren Abschnitten unten.
 ### Geändert
 
 - **[nur v14]** Eigene Versionslinie für Foundry v14: Versionsnummern 8.x.x, Updates über den Kanal `foundry-v14` (Beta-Tester: `foundry-v14-beta`). Bestehende Installationen über die bisherige Manifest-URL oder den alten Beta-Kanal werden mit diesem Update automatisch umgestellt; Einstellungen, Bogenwahl und Weltdaten bleiben unverändert. Manifest-URLs im README.
+- **[nur v14]** Mit Foundry 14.370 geprüft; Foundry zeigt das Modul unter 14.370 nicht mehr als ungeprüft an. Das Update betrifft das Modul sonst nicht.
+
+### Behoben
+
+- **[v13/v14]** Escape im Auswahlmenü des Bogens (Modus unter dem Schloss, Bannerbild) schließt nur noch das Menü; bisher gingen dabei der Bogen und alle anderen Fenster zu.
+- **[v13/v14]** Würfelstatistik: Manuell eingegebene Würfel werden jetzt als echte Würfel gezählt; bisher fehlten sie ganz. Lässt man ein Feld leer oder schließt die Eingabe, würfelt Foundry selbst; diese Würfe zählen als digital.
 
 ## [7.0.0] — unveröffentlicht
 
@@ -24,6 +30,11 @@ Erste stabile Version für **Foundry v13** (DSA5 7.5.1, nur Desktop). Sie entspr
 
 - **[nur v13]** Eigene Versionslinie für Foundry v13: Versionsnummern 7.x.x, Updates über den Kanal `foundry-v13`. Wer die v13-Beta installiert hat, bekommt 7.0.0 automatisch und bleibt im Beta-Kanal `foundry-v13-beta`; für die stabile Fassung einmal mit der Manifest-URL aus dem README neu installieren.
 - **[nur v13]** Foundry 13.351 und DSA5 7.5.1 gelten jetzt als geprüft; Foundry zeigt das Modul in der Modulverwaltung nicht mehr als ungeprüft an.
+
+### Behoben
+
+- **[v13/v14]** Escape im Auswahlmenü des Bogens (Modus unter dem Schloss, Bannerbild) schließt nur noch das Menü; bisher gingen dabei der Bogen und alle anderen Fenster zu.
+- **[v13/v14]** Würfelstatistik: Manuell eingegebene Würfel werden jetzt als echte Würfel gezählt; bisher fehlten sie ganz. Lässt man ein Feld leer oder schließt die Eingabe, würfelt Foundry selbst; diese Würfe zählen als digital.
 
 ## [0.6.3] — 2026-11-02
 

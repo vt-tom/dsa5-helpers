@@ -570,6 +570,33 @@ test('Würfelstatistik (#28): Erfassung nur mit Aktivierung + Zustimmung, ohne M
   await roll(new Die(20),[7]);await r.flush();assert.equal(c().d[20][6],1);assert.equal(c().d[20][0],2,'weitergezählt');
  }finally{Object.assign(global,saved);}
 });
+test('Würfelstatistik (#28): manuelle Eingabe im RollResolver zählt als echte Würfel, von Foundry ergänzte als digital',async()=>{
+ // Nachbau von Foundry 14.370: der RollResolver schreibt die Eingaben vor _evaluateAsync in term.results,
+ // leere Eingaben und Schließen über X füllt er mit randomFace.
+ class DiceTerm{constructor(faces){this.faces=faces;this.results=[];}randomFace(){return this.nextRandom.shift();}async _evaluateAsync(){for(const v of this.next??[])this.results.push({result:v,active:true});return this;}}
+ class Die extends DiceTerm{}
+ class RollResolver{constructor(roll,entries){this.roll=roll;this.entries=entries;}async awaitFulfillment(){for(const [term,values] of this.entries){term.method='manual';for(const v of values)term.results.push({result:v??term.randomFace(),active:true});}}}
+ let flag;const saved={foundry:global.foundry,game:global.game,CONFIG:global.CONFIG,window:global.window,document:global.document,setTimeout:global.setTimeout};
+ global.foundry={dice:{terms:{DiceTerm,Die}},applications:{dice:{RollResolver}}};global.CONFIG={Dice:{fulfillment:{methods:{manual:{interactive:true}}}}};
+ global.game={user:{getFlag:()=>flag,setFlag:async(s,k,v)=>{flag=v;}}};global.window={addEventListener(){}};global.document={addEventListener(){}};global.setTimeout=()=>1;
+ try{
+  const r=await import(pathToFileURL(path.join(root,'scripts/dice-stats/recorder.js')).href+'?resolver');r.initRecorder(()=>true);
+  const kept=new Die(20);kept.results.push({result:3,active:true});
+  const a=new Die(20),b=new Die(20);b.nextRandom=[12];
+  await new RollResolver({dice:[a,b,kept]},[[a,[7,7]],[b,[null,5]]]).awaitFulfillment();
+  for(const t of [a,b,kept])await t._evaluateAsync({});
+  await r.flush();const day=Object.values(flag.days)[0];
+  assert.equal(day.m[20][6],2,'zwei eingegebene 7er');assert.equal(day.m[20][4],1,'eingegebene 5');
+  assert.equal(day.d[20][11],1,'von Foundry ergänzte 12 ist digital');assert.equal(day.m[20][11],0);
+  assert.equal(day.m[20].reduce((x,y)=>x+y)+day.d[20].reduce((x,y)=>x+y),4,'Ergebnis vor dem Resolver (3) zählt nicht');
+ }finally{Object.assign(global,saved);}
+});
+test('Auswahlmenü im Bogen: Escape schließt nur das Menü, nicht alle Fenster',()=>{
+ const src=read('scripts/sheets/dsa5-helpers-character-sheet.js');
+ const menu=src.slice(src.indexOf('_popupMenu(target, ariaLabel, entries) {'),src.indexOf('static _openModeMenu'));
+ assert(/const onKey = ev => \{[\s\S]*?ev\.preventDefault\(\);[\s\S]*?ev\.stopPropagation\(\);[\s\S]*?close\(\);/.test(menu),'Escape wird abgefangen, bevor Foundry am window alle Fenster schließt');
+ assert(/addEventListener\('keydown', onKey, true\)/.test(menu),'in der Capture-Phase am document');
+});
 test('Würfelstatistik (#28): Einstellungen und Texte',()=>{
  const src=read('scripts/dice-stats/settings.js');
  assert(/'diceStatsEnabled'[\s\S]*?scope: 'world'[\s\S]*?restricted: true[\s\S]*?default: false/.test(src),'Welt-Einstellung nur SL, Standard aus');
