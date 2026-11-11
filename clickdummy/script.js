@@ -1272,6 +1272,26 @@ function ammoToggle(w, summary) {
   );
 }
 
+// Munitionswahl in der Waffenkarte (#74): Die Karte schneidet Überstehendes ab (overflow: hidden), deshalb liegt das
+// Menü als Popover in der obersten Ebene, unter dem Knopf bzw. darüber, wenn unten kein Platz ist. Modul: _placeAmmoMenu.
+function floatAmmoMenu(menu) {
+  menu.setAttribute("popover", "manual");
+  queueMicrotask(() => {
+    if (!menu.isConnected || !menu.showPopover) return;
+    menu.showPopover();
+    placeAmmoMenu(menu);
+  });
+  return menu;
+}
+
+function placeAmmoMenu(menu) {
+  const anchor = menu.parentElement.querySelector(".ammo-toggle").getBoundingClientRect();
+  const { width, height } = menu.getBoundingClientRect();
+  const below = anchor.bottom + 3;
+  menu.style.left = `${Math.max(8, Math.min(innerWidth - width - 8, anchor.left))}px`;
+  menu.style.top = `${below + height <= innerHeight - 8 ? below : Math.max(8, anchor.top - 3 - height)}px`;
+}
+
 function ammoMenu(children) {
   const menu = el("div", { class: "ammo-menu" }, children.filter(Boolean));
   menu.addEventListener("click", (e) => e.stopPropagation());
@@ -1572,7 +1592,7 @@ function handSlot(hand) {
   if (ranged) {
     // Munitionswahl, Nachladen/Zielen/Magazin (Issue #29, Vorschlag 2026-09-30). Modul: .dsa5h-hand-ranged.
     const ammo = w.ammoTypes ? selectedAmmo(w) : null;
-    const ammoPick = w.ammoTypes ? el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]) : null;
+    const ammoPick = w.ammoTypes ? el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? floatAmmoMenu(ammoMenu([ammoChips(w)])) : null]) : null;
     const list = [ammoPick, w.reloadTime ? reloadWidget(w) : null, aimWidget(w), magWidget(w)].filter(Boolean);
     if (list.length) extras = el("div", { class: "hand-ranged-extras" }, list);
   }
@@ -3916,12 +3936,15 @@ function initSheetResize() {
 
 // Munitionsmenü (renderAmmoCell) schließt sich bei jedem Klick außerhalb, wie ein normales Dropdown.
 function initAmmoMenuOutsideClick() {
-  document.addEventListener("click", () => {
+  const close = () => {
     if (openAmmoWeapon) {
       openAmmoWeapon = null;
       renderContent();
     }
-  });
+  };
+  document.addEventListener("click", close);
+  // Das Popover steht fest und wandert beim Bildlauf mit seinem Knopf mit (#74).
+  document.addEventListener("scroll", () => document.querySelectorAll(".ammo-menu:popover-open").forEach(placeAmmoMenu), { capture: true, passive: true });
 }
 
 function initModalEscape() {

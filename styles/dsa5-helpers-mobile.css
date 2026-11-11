@@ -837,6 +837,13 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra .dsa5h-hand-swap {
   height: 40px; padding: 0 12px; border: 1px dashed var(--line2, rgba(43, 39, 33, .28)); background: none; font-size: 15px;
 }
+/* Munitionswahl (#74): Menü als Popover über der Karte, Einträge fingergerecht wie die übrigen Knöpfe der Karte. */
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ammo-menu { gap: 8px; max-width: min(320px, calc(100vw - 16px)); padding: 10px; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-content .dsa5h-ammo-chip { min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 16px; }
+/* Fußleiste der Fernkampfhand einheitlich 40 px hoch (Rückmeldung 2026-11-11: Munitionswahl stand größer als Nachladen daneben). */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card :is(.dsa5h-ammo-pick > summary, .dsa5h-reload-btn, .dsa5h-aim, .dsa5h-mag) { height: 40px; padding-inline: 12px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-ammo-pick > summary { padding-right: 28px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-reload-reset { width: 40px; height: 40px; font-size: 17px; }
 /* Freie oder belegte Hand: eine Zeile „Haupthand · frei“ + Auswahl */
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > :is(.dsa5h-hand-free, .dsa5h-hand-empty, .dsa5h-hand-2h-note) {
   display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 12px; padding: 6px 12px; text-align: left;

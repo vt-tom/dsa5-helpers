@@ -482,17 +482,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     this._updateModeButton(context.dsa5h.mode);
     this.element.dataset.theme = game.settings.get(MODULE_ID, 'theme');
     this._applyCurrentTab();
+    // Kraftspeicher-Rundmenü nur per Klick oder Pfeil nach unten, nicht beim Überfahren (#73: verdeckte sonst den Bogen).
     const sourceAnchor = this.element.querySelector('.dsa5h-power-satellite');
-    sourceAnchor?.addEventListener('pointerenter', event => {
-      if (event.pointerType !== 'touch' && matchMedia('(hover: hover)').matches) this._openPowerSources(sourceAnchor);
-    });
-    sourceAnchor?.addEventListener('pointerleave', () => {
-      clearTimeout(this._powerTimer);
-      this._powerTimer = setTimeout(() => {
-        const panel = this._powerPopup?.panel;
-        if (panel && !panel.matches(':hover') && !panel.contains(document.activeElement)) this._closePowerSources();
-      }, 350);
-    });
     sourceAnchor?.addEventListener('keydown', event => {
       if (event.key === 'ArrowDown') { event.preventDefault(); this._openPowerSources(sourceAnchor, 0, true); }
     });
@@ -572,7 +563,13 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       // scroll bubbelt nicht — Capture-Phase am Fenster, weil .dsa5h-content bei jedem Render neu entsteht.
       this.element.addEventListener('scroll', event => {
         if (event.target?.classList?.contains('dsa5h-content')) this._onContentScroll();
+        // Das Munitionsmenü steht fest auf dem Bildschirm (Popover) und wandert beim Bildlauf mit seinem Knopf mit.
+        this.element.querySelectorAll('details.dsa5h-ammo-pick[open]').forEach(details => this._placeAmmoMenu(details));
       }, { capture: true, passive: true });
+      // toggle bubbelt nicht: Capture-Phase, damit auch neu gerenderte <details> erfasst werden.
+      this.element.addEventListener('toggle', event => {
+        if (event.target?.matches?.('details.dsa5h-ammo-pick')) this._placeAmmoMenu(event.target);
+      }, { capture: true });
       this.element.addEventListener('scrollend', event => {
         if (event.target?.classList?.contains('dsa5h-content')) this._jumping = false;
       }, { capture: true, passive: true });
@@ -846,12 +843,29 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     return openPowerSourceDialog(this);
   }
 
+  // Munitionswahl (#74): Das Menü liegt als Popover in der obersten Ebene, weil die Waffenkarte überstehende Inhalte
+  // abschneidet (overflow: hidden für das Wasserzeichen). Unter dem Knopf, bei zu wenig Platz darüber, nie über den Rand.
+  _placeAmmoMenu(details) {
+    const menu = details.querySelector('.dsa5h-ammo-menu');
+    if (!menu?.showPopover) return;
+    if (!details.open) {
+      if (menu.matches(':popover-open')) menu.hidePopover();
+      return;
+    }
+    if (!menu.matches(':popover-open')) menu.showPopover();
+    const anchor = details.querySelector('summary').getBoundingClientRect();
+    const { width, height } = menu.getBoundingClientRect();
+    const below = anchor.bottom + 3;
+    const top = below + height <= innerHeight - 8 ? below : Math.max(8, anchor.top - 3 - height);
+    menu.style.left = `${Math.max(8, Math.min(innerWidth - width - 8, anchor.left))}px`;
+    menu.style.top = `${top}px`;
+  }
+
   static _showPowerSources(event, target) {
     this._openPowerSources(target, 0, true);
   }
 
   _closePowerSources(restoreFocus = false) {
-    clearTimeout(this._powerTimer);
     const popup = this._powerPopup;
     if (!popup) return;
     this._powerPopup = null;
@@ -961,11 +975,6 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const events = new AbortController();
     const signal = events.signal;
     this._powerPopup = { anchor, panel, events };
-    panel.addEventListener('pointerenter', () => clearTimeout(this._powerTimer));
-    panel.addEventListener('pointerleave', () => {
-      clearTimeout(this._powerTimer);
-      this._powerTimer = setTimeout(() => { if (!panel.contains(document.activeElement)) this._closePowerSources(); }, 350);
-    });
     panel.addEventListener('click', event => {
       if (event.target.closest('[data-action="dsa5hEditPowerSources"]')) {
         // Erst nach dem geerbten Action-Dispatch entfernen, sonst verliert Foundry das Ziel.

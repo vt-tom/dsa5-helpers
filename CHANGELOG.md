@@ -7,7 +7,7 @@ Kennzeichnung: **[v13/v14]** gilt für Foundry v13 und v14, **[nur v14]** bzw. *
 Ab 7.0.0/8.0.0 gibt es getrennte Linien: **8.x für Foundry v14**, **7.x für Foundry v13**. Das installierte Modul zeigt
 nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
 
-## [8.0.0] — unveröffentlicht
+## [8.0.0] — 2026-11-13
 
 Erste stabile Version für **Foundry v14** (Desktop, Tablet und Smartphone). Sie enthält alles aus den Betas 0.6.0 bis 0.6.3;
 wer von 0.5.1 kommt, findet die Einzelheiten in deren Abschnitten unten.
@@ -21,8 +21,10 @@ wer von 0.5.1 kommt, findet die Einzelheiten in deren Abschnitten unten.
 
 - **[v13/v14]** Escape im Auswahlmenü des Bogens (Modus unter dem Schloss, Bannerbild) schließt nur noch das Menü; bisher gingen dabei der Bogen und alle anderen Fenster zu.
 - **[v13/v14]** Würfelstatistik: Manuell eingegebene Würfel werden jetzt als echte Würfel gezählt; bisher fehlten sie ganz. Lässt man ein Feld leer oder schließt die Eingabe, würfelt Foundry selbst; diese Würfe zählen als digital.
+- **[nur v14]** Kraftspeicher am AsP-Vorrat ([#73](https://github.com/vt-tom/dsa5-helpers/issues/73)): Das Rundmenü öffnet sich nicht mehr schon beim Überfahren mit der Maus, sondern nur per Klick auf die Kugel (oder Pfeil nach unten). Ein Klick daneben oder Escape schließt es. Bisher klappte es beim Vorbeifahren auf und verdeckte den Bogen.
+- **[nur v14]** Munitionswahl an der Fernkampfwaffe (Kampf › Körper, [#74](https://github.com/vt-tom/dsa5-helpers/issues/74)): Die Auswahl wurde von der Waffenkarte abgeschnitten und war auf Tablet und Smartphone nicht bedienbar. Sie erscheint jetzt vollständig über der Karte, auf Touch-Geräten mit fingergroßen Einträgen; der Pfeil verdeckt die Anzahl nicht mehr.
 
-## [7.0.0] — unveröffentlicht
+## [7.0.0] — 2026-11-13
 
 Erste stabile Version für **Foundry v13** (DSA5 7.5.1, nur Desktop). Sie entspricht der Beta 0.6.3 für Foundry v13.
 
@@ -293,8 +295,8 @@ Erste Version, installierbar über die Manifest-URL.
 - **[v13/v14]** Magie/Religion nur bei passender Fähigkeit sichtbar.
 - **[v13/v14]** Deutsch und Englisch.
 
-[8.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.3...main
-[7.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v13-0.6.3...v13
+[8.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.3...v8.0.0
+[7.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v13-0.6.3...v7.0.0
 [0.6.3]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.0...v0.6.1

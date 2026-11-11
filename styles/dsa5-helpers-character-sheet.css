@@ -3511,11 +3511,11 @@
   font-size: var(--fs-meta);
 }
 
+/* Popover in der obersten Ebene (#74), Lage setzt _placeAmmoMenu; inset/margin heben die Popover-Vorgaben auf. */
 .dsa5-helpers-sheet .dsa5h-ammo-menu {
-  position: absolute;
-  top: calc(100% + 3px);
-  left: 0;
-  z-index: 30;
+  position: fixed;
+  inset: auto;
+  margin: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -4419,6 +4419,11 @@
   font: inherit;
   font-size: var(--fs-meta);
   line-height: 1;
+}
+
+/* Platz für den Pfeil ▾ der Munitionswahl, sonst überdeckt er die Anzahl (×1, #74). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-ammo-pick > summary {
+  padding-right: 24px;
 }
 
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-reload-reset {
