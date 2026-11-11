@@ -32,7 +32,7 @@ class PackageTests(unittest.TestCase):
                     manifest = json.loads(archive.read('module.json'))
                     manifests.append(manifest)
                     self.assertEqual(manifest['id'], 'dsa5-helpers')
-                    self.assertEqual(manifest['version'], json.loads(base.read_text(encoding='utf-8'))['version'])
+                    self.assertEqual(manifest['version'], builder.default_version(json.loads(base.read_text(encoding='utf-8'))['version'], generation))
                     self.assertEqual(manifest['compatibility']['maximum'], str(generation))
                     self.assertNotIn('AGENTS.md', archive.namelist())
                     self.assertFalse(any(name.startswith(('tests/', 'clickdummy/', '.git/')) for name in archive.namelist()))

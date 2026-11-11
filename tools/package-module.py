@@ -19,6 +19,14 @@ def line_of(generation):
     return generation - 6
 
 
+def default_version(version, generation):
+    """Ohne --version: Version aus module.json, eine Linienversion auf die Linie der Generation umgerechnet (8.0.0 -> 7.0.0
+    für v13). module.json trägt die v14-Nummer; ohne Umrechnung scheiterten lokale v13-Testpakete und die Pakettests.
+    Release-Tags setzen die Version im Workflow immer ausdrücklich (--version)."""
+    match = re.fullmatch(r'[78]\.(\d+\.\d+)', version)
+    return f'{line_of(generation)}.{match.group(1)}' if match else version
+
+
 def manifest_for(source, generation, version, channel='beta'):
     if generation not in (13, 14):
         raise ValueError('Only Foundry 13 and 14 are implemented')
@@ -71,7 +79,7 @@ def changelog_for(markdown, generation):
 
 def package(generation, version=None, channel='beta', output=None):
     source = json.loads((ROOT / 'module.json').read_text(encoding='utf-8'))
-    version = version or source['version']
+    version = version or default_version(source['version'], generation)
     manifest = manifest_for(source, generation, version, channel)
     output = Path(output) if output else ROOT / '.deploy' / 'packages'
     output.mkdir(parents=True, exist_ok=True)
