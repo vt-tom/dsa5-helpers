@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kampftracker mobil</title>
+<!-- Kampftracker im Panel „Kampf“ auf Smartphone und Tablet (Issue #59, Rückmeldung Testliste 0.6.3, 2026-10-29:
+     „Zug beenden“ und vorheriger/nächster Zug direkt im Tracker statt in der Leiste darunter). Gewählt: Variante C
+     Kopfkarte „Am Zug“ (Nutzer 2026-10-30, umgesetzt in scripts/mobile/shell.js addTurnCard; verworfen: A Leiste
+     unten, B in der Zeile am Zug). Die Knöpfe sind die des Foundry-Trackers (combat.nextTurn/previousTurn).
+     Werte sind Platzhalter. Öffnen über clickdummy/start-server.bat → …/clickdummy/mobile/kampftracker.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --onaccent: #fff8ec;
+  --gold: #c2a267;
+  --hdr: linear-gradient(180deg, #3a322b, #272320);
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font: 14px 'GentiumBasic', serif; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.about { max-width: 720px; margin: 0 auto 14px; font-size: 14px; line-height: 1.4; color: #d9cbb4; text-align: center; }
+
+/* Gerät: Szene + Panel „Kampf“ (Smartphone Vollbild, Tablet 400 px rechts) */
+.device { position: relative; display: flex; margin: 0 auto; overflow: hidden; background: radial-gradient(circle at 30% 30%, #8a7c66, #4c443a); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.device.phone { width: 390px; max-width: 100%; height: 760px; border-radius: 28px; }
+.device.tablet { width: 820px; max-width: 100%; height: 760px; border-radius: 22px; justify-content: flex-end; }
+.panel { display: flex; flex-direction: column; width: 100%; height: 100%; background: var(--paper); }
+.tablet .panel { width: 400px; box-shadow: -6px 0 20px rgba(0, 0, 0, .4); }
+.phead { flex: none; display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 4px 0 14px; background: var(--hdr); color: #f4e8d6; }
+.phead b { flex: 1; font: 21px 'Andalus', serif; font-weight: 400; }
+.phead .round { font-size: 15px; color: #d6bd8a; }
+.icon { flex: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: inherit; font-size: 20px; cursor: pointer; }
+.icon:disabled { opacity: .35; cursor: default; }
+.list { flex: 1; overflow-y: auto; }
+.cb { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.cb .av { flex: none; width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(160deg, #b9a27c, #6d5a40); box-shadow: 0 0 0 2px var(--gold); }
+.cb.foe .av { background: linear-gradient(160deg, #8a8a8a, #3d3d3d); box-shadow: 0 0 0 2px #7a2a22; }
+.cb .nm { flex: 1; min-width: 0; font-size: 17px; }
+.cb .nm small { display: block; font-size: 14px; color: var(--ink2); }
+.cb .ini { min-width: 34px; font: 700 18px 'GentiumBasic', serif; text-align: center; }
+.cb.done { opacity: .55; }
+.cb.active { background: linear-gradient(90deg, rgba(194, 162, 103, .35), rgba(194, 162, 103, .08)); box-shadow: inset 4px 0 0 var(--accent); }
+.cb.mine .nm::after { content: ' (du)'; color: var(--accent); font-size: 14px; }
+.btn { height: 48px; padding: 0 16px; border: 1px solid var(--line2); border-radius: 10px; background: var(--field); color: var(--ink); font: 16px 'GentiumBasic', serif; cursor: pointer; }
+.btn.primary { border-color: var(--accent); background: var(--accent); color: var(--onaccent); font-weight: 700; }
+.btn:disabled { opacity: .4; }
+.arrow { width: 48px; padding: 0; font-size: 22px; }
+
+/* Kopfkarte „Am Zug“ */
+.now { flex: none; margin: 10px 12px 4px; padding: 12px; border: 1px solid var(--line2); border-radius: 12px; background: var(--card); }
+.now .who { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.now .who .av { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(160deg, #b9a27c, #6d5a40); box-shadow: 0 0 0 2px var(--gold); }
+.now .who b { display: block; font: 21px 'Andalus', serif; font-weight: 400; }
+.now .who small { font-size: 14px; color: var(--ink2); }
+.now .acts { display: flex; gap: 8px; }
+.now .acts .primary { flex: 1; }
+.now .next { margin-top: 8px; font-size: 14px; color: var(--ink2); }
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+  <fieldset data-group="role"><legend>Rolle</legend><button data-v="player" aria-pressed="true">Spieler</button><button data-v="gm">SL</button></fieldset>
+</div>
+<p class="about" id="about"></p>
+<div id="app"></div>
+<script>
+const ABOUT = 'Oben eine Karte „Am Zug“ mit großem Namen, „Zug beenden“ und den Pfeilen; darunter „Danach: …“ und die Liste aller Kämpfer.';
+const CB = [
+  { n: 'Allacaya', s: 'Elfe · Zauberweberin', ini: 19, mine: true },
+  { n: 'Ork-Plünderer', s: 'Gegner', ini: 16, foe: true },
+  { n: 'Wulfgrim', s: 'Thorwaler · Krieger', ini: 16 },
+  { n: 'Kaila', s: 'Hexe', ini: 14 },
+  { n: 'Ork-Späher', s: 'Gegner', ini: 11, foe: true },
+];
+const state = { device: 'phone', role: 'player', turn: 0, round: 1 };
+const canEnd = () => state.role === 'gm' || CB[state.turn].mine;
+function row(c, i) {
+  const active = i === state.turn;
+  return `<div class="cb${c.foe ? ' foe' : ''}${c.mine ? ' mine' : ''}${active ? ' active' : ''}${i < state.turn ? ' done' : ''}"><span class="av"></span><span class="nm">${c.n}<small>${c.s}</small></span><span class="ini">${c.ini}</span></div>`;
+}
+const arrows = (cls = 'btn arrow') => [`<button type="button" class="${cls}" data-do="prev" aria-label="Voriger Zug"${state.role === 'gm' ? '' : ' disabled'}>‹</button>`, `<button type="button" class="${cls}" data-do="next" aria-label="Nächster Zug"${state.role === 'gm' ? '' : ' disabled'}>›</button>`];
+function render() {
+  document.getElementById('about').textContent = ABOUT + ' Pfeile nur für die SL (wie in Foundry); „Zug beenden“ für den Spieler, der am Zug ist.';
+  const [prev, next] = arrows();
+  let head = `<div class="phead"><b>Kampf</b><span class="round">Runde ${state.round}</span>`;
+  head += `<button type="button" class="icon" aria-label="Schließen">✕</button></div>`;
+  const c = CB[state.turn], after = CB[(state.turn + 1) % CB.length];
+  const top = `<div class="now"><div class="who"><span class="av"></span><span><small>Am Zug${c.mine ? ' – du' : ''}</small><b>${c.n}</b></span></div>
+    <div class="acts">${prev}<button type="button" class="btn primary" data-do="end"${canEnd() ? '' : ' disabled'}>Zug beenden</button>${next}</div>
+    <div class="next">Danach: ${after.n}</div></div>`;
+  document.getElementById('app').innerHTML = `<div class="device ${state.device}"><div class="panel">${head}${top}<div class="list">${CB.map(row).join('')}</div></div></div>`;
+}
+document.querySelector('.switch').addEventListener('click', ev => {
+  const b = ev.target.closest('button[data-v]'); if (!b) return;
+  const g = b.closest('fieldset');
+  g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  state[g.dataset.group] = b.dataset.v; render();
+});
+document.getElementById('app').addEventListener('click', ev => {
+  const b = ev.target.closest('button[data-do]'); if (!b || b.disabled) return;
+  const step = b.dataset.do === 'prev' ? -1 : 1;
+  state.turn += step;
+  if (state.turn >= CB.length) { state.turn = 0; state.round++; }
+  if (state.turn < 0) { state.turn = CB.length - 1; state.round = Math.max(1, state.round - 1); }
+  render();
+});
+render();
+</script>
+<script src="../pages.js?v=7"></script>
+</body>
+</html>

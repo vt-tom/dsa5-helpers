@@ -3,6 +3,7 @@
 // verletzt ist; je mehr QS, desto genauer. Das Ergebnis merkt sich der Held (Actor-Flag je Ziel), bis sich die LeP des
 // Ziels um mindestens ein Viertel geändert haben. Logik, Staffel und Texte wie im Original, nur lokalisiert und mit
 // Modul-Flags statt „world“.
+import { isFoundry13 } from '../compat/runtime.js';
 const MODULE_ID = 'dsa5-helpers';
 const PREFIX = 'DSA5HELPERS.HouseRules.woundCheck.';
 // Ab dieser LeP-Änderung (Anteil an max) gilt eine Einschätzung als veraltet.
@@ -73,10 +74,11 @@ export async function woundCheck(viewer) {
 
   // Ohne aktive Effekte des Talents würfeln (wie im Original), sonst gelten z. B. Boni aus Effekten doppelt.
   const rollSkill = skill.clone({ effects: [] }, { keepId: true });
-  const setup = await viewer.setupSkill(rollSkill, { subtitle: ` (${target.name})`, messageMode: MODE }, undefined);
+  const visibility = isFoundry13() ? { rollMode: 'selfroll' } : { messageMode: MODE };
+  const setup = await viewer.setupSkill(rollSkill, { subtitle: ` (${target.name})`, ...visibility }, undefined);
   if (!setup) return;
   setup.testData.opposable = false;
-  setup.cardOptions.messageMode = MODE; // überschreibt eine Änderung im Dialog
+  Object.assign(setup.cardOptions, visibility); // überschreibt eine Änderung im Dialog
 
   const roll = await viewer.basicTest(setup);
   const result = roll?.result;

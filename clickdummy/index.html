@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=175">
+<link rel="stylesheet" href="style.css?v=248">
 </head>
 <body>
 
@@ -12,16 +12,35 @@
   <span>Heldenbogen v2 · Click-Dummy</span>
   <span class="spacer"></span>
   <div class="mode-switch" id="modeSwitch">
-    <button type="button" data-mode="play" class="active" aria-pressed="true">Spielmodus</button>
+    <button type="button" data-mode="play" class="active" aria-pressed="true">Spielen</button>
+    <button type="button" data-mode="advance" aria-pressed="false">Steigern</button>
     <button type="button" data-mode="edit" aria-pressed="false">Bearbeiten</button>
   </div>
+  <!-- Bogenart und Foundry-Generation (Rückmeldung 2026-11-02: im Seitenmenü nur Hauptseiten); lädt die Seite mit
+       ?actor=nsc|kreatur bzw. ?foundry=13 neu, siehe initPageSwitches(). -->
+  <div class="mode-switch" id="actorSwitch" role="group" aria-label="Bogen">
+    <button type="button" data-param="actor" data-value="">Held</button>
+    <button type="button" data-param="actor" data-value="nsc">NSC</button>
+    <button type="button" data-param="actor" data-value="kreatur">Kreatur</button>
+  </div>
+  <div class="mode-switch" id="foundrySwitch" role="group" aria-label="Foundry-Version">
+    <button type="button" data-param="foundry" data-value="">v14</button>
+    <button type="button" data-param="foundry" data-value="13">v13</button>
+  </div>
+  <!-- Issue #34: als Spieler ansehen + Welt-Einstellung „Spieler dürfen bearbeiten“ (aus = nur die SL bearbeitet). -->
+  <button type="button" id="asPlayerToggle" aria-pressed="false">Als Spieler (Test)</button>
+  <button type="button" id="playersEditToggle" aria-pressed="false">Spieler ohne Bearbeiten (Welt)</button>
   <!-- Test-Schalter: Vorschau, wie die Ressourcengruppe aussieht, wenn eine Figur nur Lebenskraft hat (kein
        Zauberer/Geweihter, kein AsP/KaP) — siehe initOnlyLepToggle(). Rein visuell, ändert data.js nicht. -->
   <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
+  <!-- Issue #36 (Kampf › Körper): Testschalter Trefferzonen-Regel und nur ein Rüstungsteil, siehe initArmorToggles(). -->
+  <button type="button" id="armorOneToggle" aria-pressed="false">1 Rüstungsteil (Test)</button>
   <!-- Würfelstatistik (Issue #28): in Foundry eigenes Fenster aus den Moduleinstellungen, hier per Knopf. -->
   <button type="button" id="diceStatsBtn">Würfelstatistik</button>
   <!-- Hausregelbuch (2026-10-05): in Foundry aus den Moduleinstellungen, hier per Knopf (?houserules öffnet direkt). -->
   <button type="button" id="houseRulesBtn">Hausregelbuch</button>
+  <!-- DSA-Leiste (2026-10-28): Modul-Reiter der Systemleiste, Variante B; ?hud öffnet direkt. -->
+  <button type="button" id="hudPreviewBtn">DSA-Leiste</button>
   <button type="button" id="diceConsentBtn">Zustimmung (Dialog)</button>
   <button type="button" id="themeToggle">Dunkles Thema</button>
 </div>
@@ -39,7 +58,8 @@
     <div class="fake-window-chrome" aria-hidden="true">
       <span class="fwc-title"></span>
       <button type="button" tabindex="-1" title="Spieleransicht">◐</button>
-      <button type="button" tabindex="-1" title="Bogen sperren">🔓</button>
+      <!-- Schloss mit Auswahl Spielen · Steigern · Bearbeiten (Issue #34): zeigt den aktuellen Modus. -->
+      <button type="button" tabindex="-1" title="Modus: Spielen — wechseln" id="modeLockBtn">🔒</button>
       <button type="button" tabindex="-1" title="Dunkles Thema">☾</button>
       <!-- Bogen-Umschalter (2026-10-05): im Modul eigener Knopf vor ⋮ (scripts/sheet-switcher.js), öffnet die Liste der
            Heldenbögen; hier nur als Platzhalter. -->
@@ -49,48 +69,43 @@
       <button type="button" tabindex="-1" title="Schließen" class="fwc-close">✕</button>
     </div>
 
-    <!-- KOPF -->
+    <!-- KOPF als „Wappenbanner“ (Kopf-Varianten A+B, Nutzer-Entscheidung 2026-10-19): oben ein Bannerstreifen mit
+         dem Hintergrundbild des Helden, Name und Schips-Plakette darauf; darunter ein Band mit Spezies · Kultur ·
+         Profession und den LeP/AsP/KaP-Kugeln. Das Porträt ragt als Medaillon über die Bildkante, darunter das
+         AP-Band. Auf dem Titelblatt wandern Porträt (samt AP-Band) und Kugeln in die linke Leiste. -->
     <div class="head">
-      <!-- IDEEN.md: optionales Hintergrundbild, das nach unten hin ausblendet (siehe .head-bg-layer/.head-bg-fade
-           in style.css, nur sichtbar mit .has-bg-Klasse) — Bild+Klasse werden von renderHeader() (script.js) aus
-           HEADER_BG_IMG (data.js) gesetzt. -->
+      <!-- Hintergrundbild (HEADER_BG_IMG in data.js), nur im Bannerstreifen, blendet nach unten aus. Ohne Bild
+           bleibt ein dunkler Verlauf (.head-bg-layer ohne .has-bg). Gesetzt von renderHeader(). -->
       <div class="head-bg-layer" id="headBgLayer"></div>
       <div class="head-bg-fade"></div>
       <!-- Öffnet einen simulierten Foundry-FilePicker (openHeaderBgPicker() in script.js) — nur im
            Bearbeiten-Modus sichtbar (.edit-only), da der echte FilePicker auch nur dort Sinn ergibt. -->
-      <button type="button" id="headerBgBtn" class="edit-only header-bg-btn" title="Hintergrundbild wählen">🖼</button>
+      <button type="button" id="headerBgBtn" class="edit-only header-bg-btn" title="Bannerbild wählen">🖼</button>
       <div class="head-inner">
-        <!-- id="portrait": auf dem Titelblatt wird dieses Element per JS (siehe setCoverActive() in script.js)
-             hierher zurück bzw. in #coverSidebar hinein verschoben — ein einziges Porträt-Element statt einer
-             zweiten Kopie, damit es nicht dupliziert werden muss. -->
-        <div class="portrait" id="portrait">
-          <span>Porträt</span>
-        </div>
+        <!-- id="portrait": Medaillon (Porträt + AP-Band) — auf dem Titelblatt wird dieses Element per JS
+             (renderCoverSidebar()/leaveCoverSidebar() in script.js) in #coverSidebar und zurück verschoben, ein
+             einziges Element statt einer Kopie. Form eckig/rund: PORTRAIT_SHAPE (data.js), umschaltbar im
+             Bearbeiten-Modus über den Knopf am Porträt; Inhalt gefüllt von renderPortrait(). -->
+        <div class="portrait-medal" id="portrait"></div>
         <div class="head-main">
           <div class="head-top">
             <!-- Gefüllt von renderHeader() (script.js) aus CHARACTER_NAME (data.js) — im Bearbeiten-Modus per
                  Klick editierbar (makeEditable()), im Spielmodus reiner Text. -->
             <div class="head-name" id="headName"></div>
-            <div class="ap-block">
-              <!-- Gefüllt von renderHeader() aus EXPERIENCE (data.js) — "frei" wird IMMER aus total-spent
-                   berechnet, siehe experienceAvailable() in script.js (BEARBEITEN.md: "AP verfügbar wird immer
-                   berechnet!"). Editierbar sind Gesamt/Ausgegeben nur im Erfahrung-Panel auf dem Eigenschaften-Tab. -->
-              <span class="ap-text" id="apText">AP 1 320 · 205 frei</span>
-              <!-- Gefüllt von renderHeader() aus RESOURCES["Schicksalspunkte"] (data.js) — Klick auf ein Symbol
-                   schaltet es zwischen verfügbar/ausgegeben um, siehe fatePointsRow() in script.js. In BEIDEN
-                   Modi editierbar. -->
+            <!-- Plakette mit den Schicksalspunkten (fatePointsRow()), in BEIDEN Modi anklickbar. -->
+            <div class="head-plaque">
               <div class="fate-points" id="fatePoints"></div>
             </div>
           </div>
 
-          <!-- Gefüllt von initHeadBadges() (script.js) aus IDENTITY (data.js) — anklickbar, öffnet eine
-               Item-Vorschau (Spezies/Kultur/Profession), siehe openIdentityModal(). -->
-          <div class="badges" id="headBadges"></div>
-
-          <!-- Gefüllt von renderHeader() aus RESOURCES["Lebenskraft"/"Astralenergie"/"Karmaenergie"] (data.js) —
-               der aktuelle Wert (nicht Max) ist per Klick editierbar (vitalBar()/makeEditable() in script.js), in
-               BEIDEN Modi. Dieselben Bausteine füllen auch coverResourcesCompact() auf dem Titelblatt. -->
-          <div class="bars" id="bars"></div>
+          <div class="head-band">
+            <!-- Spezies · Kultur · Profession als Kapitälchen-Zeile (initHeadBadges() aus IDENTITY in data.js) —
+                 jeder Name anklickbar, öffnet eine Item-Vorschau (openIdentityModal()). -->
+            <div class="head-ident" id="headBadges"></div>
+            <!-- LeP/AsP/KaP als Kugeln (resourceOrbs() in script.js) — aktueller Wert per Klick editierbar, in BEIDEN
+                 Modi. Auf dem Titelblatt stehen dieselben Kugeln in der linken Leiste (coverResourcesCompact()). -->
+            <div class="bars" id="bars"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -128,10 +143,14 @@
      liefert der Browser bei einem einfachen Reload evtl. eine alte JS-Datei zusammen mit neuem HTML/CSS aus
      (führt zu einem leeren Content-Bereich, weil script.js dann Datenformen aus data.js erwartet, die die
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
-<script src="assets-map.js?v=15"></script>
-<script src="data.js?v=31"></script>
-<script src="script.js?v=131"></script>
-<script type="module" src="dice-stats.js?v=6"></script>
-<script type="module" src="house-rules.js?v=3"></script>
+<script src="assets-map.js?v=19"></script>
+<script src="data.js?v=43"></script>
+<script src="actor-types.js?v=2"></script>
+<script src="pages.js?v=7"></script>
+<script src="preview-062.js?v=13"></script>
+<script src="hud-preview.js?v=2" defer></script>
+<script src="script.js?v=178"></script>
+<script type="module" src="dice-stats.js?v=7"></script>
+<script type="module" src="house-rules.js?v=8"></script>
 </body>
 </html>

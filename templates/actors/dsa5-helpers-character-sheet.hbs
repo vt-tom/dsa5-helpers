@@ -10,8 +10,8 @@
   {{> "modules/dsa5-helpers/templates/actors/parts/cover-sidebar.hbs"}}
   {{> "modules/dsa5-helpers/templates/actors/parts/header.hbs"}}
   <div class="dsa5h-attr-overlay" data-attr-overlay hidden>
-    {{#each prepare.mentalAttrs as |ch|}}<button type="button" class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></button>{{/each}}
-    {{#each prepare.bodyAttrs as |ch|}}<button type="button" class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span></button>{{/each}}
+    {{#each prepare.mentalAttrs as |ch|}}<button type="button" class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')"><span class="dsa5h-attr-mini-key" aria-hidden="true">{{attrAbbr ch}}</span><span>{{getAttr ../document ch "value"}}</span></span></button>{{/each}}
+    {{#each prepare.bodyAttrs as |ch|}}<button type="button" class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')"><span class="dsa5h-attr-mini-key" aria-hidden="true">{{attrAbbr ch}}</span><span>{{getAttr ../document ch "value"}}</span></span></button>{{/each}}
   </div>
   <div class="dsa5h-tab-title"><span data-tab-title-label>{{dsa5h.currentTabLabel}}</span>
     {{#each dsa5h.subnav}}<nav class="dsa5h-sub-tabs" data-subnav="{{tab}}" hidden>
@@ -30,6 +30,8 @@
     {{> "modules/dsa5-helpers/templates/actors/parts/status.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/notes.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/companion.hbs"}}
+    {{#if dsa5h.quests}}{{> "modules/dsa5-helpers/templates/actors/parts/quests.hbs"}}{{/if}}
+    {{#if dsa5h.personae}}{{> "modules/dsa5-helpers/templates/actors/parts/personae.hbs"}}{{/if}}
     {{> "modules/dsa5-helpers/templates/actors/parts/planner.hbs"}}
   </div>
 </div>

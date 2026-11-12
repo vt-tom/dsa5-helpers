@@ -5,6 +5,7 @@
 
 // Nicht im Umschalter: Händlerbogen und Charakterbauer (dsa5-core, auch die Vollbild-Variante) — kein Bogen zum
 // Spielen, der Bauer hat seinen eigenen Rückweg (preChargenSheet). „Default Sheet“ ('') taucht ohnehin nicht auf.
+import { contextMenuEntries } from './compat/runtime.js';
 const EXCLUDED = ['dsa5.CharacterMerchantSheetDSA5'];
 const EXCLUDED_PREFIX = 'dsa5.DSACharBuilder';
 // Der Systembogen heißt im Umschalter „Systemstandard“ statt „DSA5 - Held“.
@@ -94,7 +95,9 @@ function createPreviews(app, sheets) {
   };
 }
 
-function openMenu(app, button) {
+// Exportiert für das „Mehr“-Blatt auf dem Smartphone (Mobile Support): dort ist der Knopf in der Fensterleiste
+// ausgeblendet, und Foundrys ContextMenu öffnet nicht an unsichtbaren Ankern — dann dient „Mehr“ als Anker.
+export function openMenu(app, button) {
   const current = app.constructor;
   const sheets = switchableSheets(app.document);
   const others = sheets.filter(sheet => sheet.cls !== current);
@@ -112,7 +115,7 @@ function openMenu(app, button) {
       },
     };
   });
-  const menu = new foundry.applications.ux.ContextMenu(app.element, '', entries, {
+  const menu = new foundry.applications.ux.ContextMenu(app.element, '', contextMenuEntries(entries), {
     jQuery: false, fixed: true, eventName: 'none',
     onClose: () => previews?.dispose(),
   });

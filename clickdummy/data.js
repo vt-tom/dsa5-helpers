@@ -1,5 +1,27 @@
 /* Demo-Daten für den Click-Dummy (statische Platzhalterwerte, kein Foundry-Datenmodell) */
 
+// #50/#47: frei gewählte Vorschauwerte, keine Regelberechnung.
+const POWER_SOURCE_DEMO = [
+  { name: 'Stab', value: 8, max: 12 },
+  { name: 'Kristall', value: 3, max: 8 },
+  { name: 'Ring', value: 0, max: 4 },
+  { name: 'Amulett mit einem langen Anzeigenamen', value: 6, max: 6 },
+  { name: 'Zweiter Kristallspeicher', value: 2, max: 10 },
+  { name: 'Bergkristall', value: 1, max: 5 },
+  { name: 'Armreif', value: 4, max: 8 },
+  { name: 'Reservekristall', value: 0, max: 6 },
+  { name: 'Zweiter Ring', value: 2, max: 4 },
+  { name: 'Anhänger', value: 3, max: 7 },
+];
+const ENERGY_ZONE_DEMO = {
+  head: { value: 3, max: 4, failed: false, resistPenalty: 0 },
+  value: { value: 11, max: 16, failed: false, resistPenalty: 0 },
+  rightarm: { value: 0, max: 4, failed: true, resistPenalty: 2 },
+  leftarm: { value: 4, max: 4, failed: false, resistPenalty: 0 },
+  rightleg: { value: 4, max: 6, failed: false, resistPenalty: 1 },
+  leftleg: { value: 6, max: 6, failed: false, resistPenalty: 0 },
+};
+
 // Charaktername (Kopfzeile, editierbar nur im Bearbeiten-Modus, siehe BEARBEITEN.md "Kopf"-Abschnitt und
 // makeEditable()/renderHeader() in script.js). "let" statt "const", da ein Primitiv (String) sich nicht wie die
 // übrigen Datenobjekte per Property-Zuweisung in-place mutieren lässt.
@@ -8,7 +30,20 @@ let CHARACTER_NAME = "Layariel Wipfelglanz";
 // IDEEN.md: Hintergrundbild im Kopfbereich, je Charakter über einen simulierten FilePicker wählbar (siehe
 // openHeaderBgPicker() in script.js) — null = kein Bild (bisheriger Zustand, reine --head-Farbe). "let" statt
 // "const", da per Auswahl ersetzbar.
-let HEADER_BG_IMG = null;
+// Seit dem „Wappenbanner“-Kopf (2026-10-19) füllt das Bild den Bannerstreifen oben im Kopf. Vorgabe: kein Bild (dunkler
+// Kopf), im Bearbeiten-Modus wählbar. Eintrag aus A.bgHeaderOptions ({ img, pos, size }) oder null. Das DSA5-Banner
+// des Systems (© Ulisses) steht bewusst nicht zur Wahl (Nutzer-Entscheidung 2026-10-19).
+let HEADER_BG = null;
+
+// Porträt des Helden: im Modul actor.img. Der Click-Dummy hat kein eigenes Heldenbild und verweist (wie bei allen Grafiken,
+// ohne Kopie) auf einen Ausschnitt des DSA5-Banners im Systemordner (size/pos = Gesicht der Elfe) — nur Platzhalter.
+const PORTRAIT_IMG = { img: ICONS + "/backgrounds/dsa5_github_banner.jpg", size: "600% auto", pos: "28% 43%" };
+// Porträt ohne Hintergrund (per ?cutout), zeigt die Aura (Issue #35) — Ausschnitt des Mannes aus dem Spezies-Bild.
+const PORTRAIT_CUTOUT = { img: ICONS + "/species/Mensch.webp", size: "230% auto", pos: "22% 4%" };
+
+// Form des Porträts im Kopf und auf dem Titelblatt: "octagon" (Ecken gekappt, Goldfassung) oder "round" (Medaillon
+// mit Goldring). Je Held im Bearbeiten-Modus umschaltbar (Knopf am Porträt), im Modul ein Actor-Flag.
+let PORTRAIT_SHAPE = "octagon";
 
 const TABS = [
   // Titelblatt: eigenständige Startseite, kommt im echten DSA5-Systembogen nicht vor (siehe TITELBLATT.md) —
@@ -28,6 +63,28 @@ const TABS = [
   // actor-companion.hbs), nicht auf dem Kampf-Tab — der ursprüngliche Gap-Report hatte die Quelle falsch als
   // actor-combat.hbs referenziert, hier korrigiert.
   { id: "companions", label: "Gefährten", icon: A.tabCompanion, title: "Gefährten", hint: "" },
+  // Issue #39: Aufträge und Personen aus dem Almanach des Systems (Auftrags- und Dramatis-Personae-Journale). Nur da,
+  // wenn die SL das Feature eingeschaltet und Journale eingerichtet hat; Details und Notizen pflegt man im Almanach.
+  { id: "quests", label: "Aufträge", icon: A.tabQuests, title: "Aufträge", hint: "" },
+  { id: "personae", label: "Personen", icon: A.tabPersonae, title: "Personen", hint: "" },
+];
+
+// Demo-Aufträge wie DSAQuestLogEntry (system.quests): priority 0 Haupt-, 1 Neben-, 2 persönlicher Auftrag; status
+// 0 offen, 1 beendet, 2 fehlgeschlagen; Ziele mit eigenem Status. Spieler sehen nur, was die SL freigegeben hat.
+const QUESTS = [
+  { title: "Das Erbe des Grafen", priority: 0, status: 0, img: ICONS + "/backgrounds/library.webp", location: "Gratenfels", summary: "Findet heraus, wer das Testament des alten Grafen gefälscht hat.", objectives: [{ text: "Mit dem Notar sprechen", status: 1 }, { text: "Den Siegelring finden", status: 0 }, { text: "Beweise dem Baron vorlegen", status: 0 }] },
+  { title: "Wölfe im Forst", priority: 1, status: 0, location: "Rodaschquell", summary: "Der Förster bittet um Hilfe gegen ein Rudel, das Schafe reißt.", objectives: [{ text: "Spuren lesen", status: 1 }, { text: "Das Rudel vertreiben", status: 0 }] },
+  { title: "Ein Brief für Mutter", priority: 2, status: 0, summary: "Layariel will ihrer Mutter in den Salamandersteinen schreiben.", objectives: [] },
+  { title: "Die Brücke am Fluss", priority: 1, status: 1, summary: "Die Brücke ist repariert, die Händler ziehen wieder.", objectives: [{ text: "Holz besorgen", status: 1 }] },
+];
+
+// Demo-Personen wie DSAPersonaEntry (system.personae): type 0 Dramatis Personae, 1 Bestiarium; important = wichtig.
+const PERSONAE = [
+  { name: "Baron Ugdalf von Gratenfels", type: 0, important: true, subtitle: "Lehnsherr", faction: "Haus Gratenfels", img: ICONS + "/species/Mensch.webp" },
+  { name: "Notar Elgor Brandeisen", type: 0, subtitle: "Schreiber, nervös", faction: "Gratenfels", img: ICONS + "/species/Zwerg.webp" },
+  { name: "Förster Answin", type: 0, subtitle: "Auftraggeber", faction: "Rodaschquell", img: ICONS + "/species/Mensch.webp" },
+  { name: "Grauwolf", type: 1, subtitle: "Rudeltier", faction: "Forst", img: ICONS + "/categories/Tiere.webp" },
+  { name: "Waldschrat", type: 1, important: true, subtitle: "Gerüchte im Dorf", faction: "Forst", img: ICONS + "/categories/Tiere.webp" },
 ];
 
 // Spezies/Kultur/Profession als eigene Item-Referenzen (system.details.species/culture/career im echten System
@@ -299,8 +356,8 @@ const COMBAT_ACTIONS = [
 // Kampfentscheidung. Waffenlos hat im System kein Item und damit auch keine Griff-Einstellung.
 
 const MELEE = [
-  { name: "Elfischer Säbel", group: "Schwerter", at: 12, pa: 6, tp: "1W6+3", reach: "mittel", img: A.meleeWeapon, structure: { value: 6, max: 6 }, fav: true, worn: { requiresBothHands: false, offHand: false } },
-  { name: "Waldläuferdolch", group: "Dolche", at: 11, pa: 5, tp: "1W6+1", reach: "kurz", img: A.meleeWeapon, structure: { value: 3, max: 5 }, worn: { requiresBothHands: false, offHand: false } },
+  { name: "Elfischer Säbel", group: "Schwerter", at: 12, pa: 6, tp: "1W6+3", reach: "mittel", img: A.coreWeapon("meleeweapon/Saebel.webp"), structure: { value: 6, max: 6 }, fav: true, worn: { requiresBothHands: false, offHand: false } },
+  { name: "Waldläuferdolch", group: "Dolche", at: 11, pa: 5, tp: "1W6+1", reach: "kurz", img: A.coreWeapon("meleeweapon/Dolch.webp"), structure: { value: 3, max: 5 }, worn: { requiresBothHands: false, offHand: true } },
   { name: "Waffenlos", group: "Raufen", at: 8, pa: 6, tp: "1W6-1", reach: "kurz", img: A.weaponless },
 ];
 
@@ -330,7 +387,7 @@ const TRAITS = { meleeAttack: [], rangeAttack: [], armor: [] };
 // NICHT aus dem Kompendium, sie dienen nur dem Layout-Test der Waffenzeile (Paket C, 2026-09-25).
 const RANGED = [
   {
-    name: "Elfenbogen", group: "Bögen", at: 14, tp: "1W6+4", reach: "10/50/80", img: A.rangeWeapon,
+    name: "Elfenbogen", group: "Bögen", at: 14, tp: "1W6+4", reach: "10/50/80", img: A.coreWeapon("rangeweapon/Elfenbogen.webp"),
     ammoTypes: [
       { name: "Jagdpfeile", count: 14, selected: true },
       { name: "Brandpfeile", count: 4, selected: false },
@@ -341,7 +398,7 @@ const RANGED = [
     worn: { requiresBothHands: true, offHand: false },
   },
   {
-    name: "Armbrust", group: "Armbrüste", at: 6, tp: "1W6+3", reach: "10/50/80", img: A.rangeWeapon,
+    name: "Armbrust", group: "Armbrüste", at: 6, tp: "1W6+3", reach: "10/50/80", img: A.coreWeapon("rangeweapon/LeichteArmbrust.webp"),
     ammoTypes: [{ name: "Bolzen", count: 10, selected: true }],
     reloadTime: 3, reloadProgress: 1,
     aim: { progress: 0 },
@@ -349,20 +406,24 @@ const RANGED = [
     worn: { requiresBothHands: true, offHand: false },
   },
   {
-    name: "Eisenwalder", group: "Armbrüste", at: 11, tp: "1W6+4", reach: "10/50/80", img: A.rangeWeapon,
+    name: "Eisenwalder", group: "Armbrüste", at: 11, tp: "1W6+4", reach: "10/50/80", img: A.coreWeapon("rangeweapon/SchwereArmbrust.webp"),
     ammoTypes: [{ name: "Magazin (Eisenwalder)", count: 2, selected: true, mag: { current: 10, max: 10 } }],
     reloadTime: 2, reloadProgress: 0,
     aim: { progress: 0 },
     worn: { requiresBothHands: false, offHand: false },
   },
-  { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", reach: "2/5/10", ammo: "3", img: A.rangeWeapon, worn: { requiresBothHands: false, offHand: false } },
+  // container: liegt in einem Behälter (im Modul system.parent_id) — Plakette mit dem Behälterbild, Anlegen nimmt heraus.
+  { name: "Wurfmesser", group: "Wurfwaffen", at: 10, tp: "1W6+1", reach: "2/5/10", ammo: "3", img: A.coreWeapon("meleeweapon/Wurfdolch.webp"), worn: { requiresBothHands: false, offHand: false }, container: { name: "Rucksack", img: A.tabInventory } },
 ];
 
+// zones: Rüstungsschutz je Trefferzone wie system.protection im System (value = Torso, head, leftarm, rightarm,
+// leftleg, rightleg) — nur bei aktiver Trefferzonen-Regel aus Kompendium 1 / Rüstkammer 2 relevant (Issue #36).
+// Je Zone trägt der Held höchstens ein Rüstungsteil.
 const ARMOR = [
-  { name: "Waldläuferkluft", rs: 2, be: 0, structure: { value: 5, max: 8 } },
-  { name: "Lederkappe", rs: 1, be: 0 },
+  { name: "Waldläuferkluft", rs: 2, be: 0, img: A.coreWeapon("armor/Lederruestung.webp"), structure: { value: 5, max: 8 }, zones: { value: 2, leftleg: 1, rightleg: 1 } },
+  { name: "Lederkappe", rs: 1, be: 0, zones: { head: 1 } },
   // Drittes Teil, damit „Körper“ die Rüstungstabelle (ab drei Teilen, 2026-09-30) zeigt.
-  { name: "Lederhandschuhe", rs: 0, be: 0 },
+  { name: "Lederhandschuhe", rs: 0, be: 0, zones: { leftarm: 1, rightarm: 1 } },
 ];
 
 // Gesamtschutz-Anzeige (actor-combat.hbs:158 "protection ({{prepare.armorSum}}...)"): Summe aller getragenen
@@ -483,13 +544,15 @@ const TRADITION_ARTIFACTS = [
 // Sonderfertigkeiten auf dem Eigenschaften-Tab (SPECIALS). Wie dort zerfällt "magical" im System in mehrere
 // Kategorien (magical, magicalStyle "Zauberstilsonderfertigkeiten", extMagical, homunculus, sikaryan).
 const MAGIC_SPECIALS = [
-  { label: "Allgemein", items: ["Astrale Regeneration", "Harmonische Verbindung (Balsam Salabunde)"] },
+  { label: "Allgemein", items: ["Tradition (Elfen)", "Astrale Regeneration", "Harmonische Verbindung (Balsam Salabunde)"] },
   { label: "Zauberstilsonderfertigkeiten", items: ["Naturmagie-Virtuosin"] },
 ];
 
 // Traditions-Kopfdaten (actor-tradition-Box): system.tradition.magical / guidevalue.magical / feature.magical /
 // energyfactor.magical — alles editierbare Freitext-/Zahlenfelder im System, hier als Tradition-Box abgebildet.
-const MAGIC_TRADITION = { tradition: "Elfen", guidevalue: "Intuition", feature: "Elementar, Hellsicht", energyfactor: 1 };
+// fromAbility: DSA5 ab 8.2 gibt die Traditions-Sonderfertigkeit Leiteigenschaft, Faktor und glückliche Talente vor
+// (nur Anzeige); ohne SF oder mit älterem System bleiben die Felder bearbeitbar.
+const MAGIC_TRADITION = { tradition: "Elfen", guidevalue: "Intuition", feature: "Elementar, Hellsicht", energyfactor: 1, fromAbility: true };
 
 const LITURGIES = [
   { name: "Heilsegen", probe: "MU/KL/IN", cost: 4, fw: 8, dauer: "1 Aktion", reach: "Berührung", img: A.liturgy("heilsegen"), fav: true, stf: "B" },
@@ -511,14 +574,14 @@ const CEREMONIAL_ITEMS = [
 // Sonderfertigkeiten der "clerical"-Familie (specblock.hbs currentCat="clerical": clerical, clericalStyle
 // "Liturgiestilsonderfertigkeiten", extClericalStyle, vision, prayer "Predigt-Sonderfertigkeiten").
 const RELIGION_SPECIALS = [
-  { label: "Allgemein", items: ["Prediger", "Wohlwollen der Göttin"] },
+  { label: "Allgemein", items: ["Tradition (Perainekirche)", "Prediger", "Wohlwollen der Göttin"] },
   { label: "Liturgiestilsonderfertigkeiten", items: ["Peraine-Segensspenderin"] },
 ];
 
 // Traditions-Kopfdaten wie MAGIC_TRADITION, plus happyTalents (Textfeld: Talente, für die ein Mirakel eingesetzt
 // werden kann — "Talente, die der Gottheit wohlgefällig sind").
 const RELIGION_TRADITION = {
-  tradition: "Kirche der Peraine", guidevalue: "Charisma", feature: "Heilung, Landwirtschaft", energyfactor: 1,
+  tradition: "Kirche der Peraine", guidevalue: "Charisma", feature: "Heilung, Landwirtschaft", energyfactor: 1, fromAbility: true,
   // Nutzer-Feedback 2026-09-19: für den Kompakt-/Kachel-Vergleich der wohlgefälligen Talente bewusst eine
   // realistisch lange Liste statt der ursprünglich kurzen drei Einträge, damit Einklappen/Ellipsis auch wirklich
   // etwas zu tun haben.
@@ -568,6 +631,15 @@ const CONDITIONS = [
   { name: "Furcht", pips: 4, filled: 1 },
   { name: "Verwirrung", pips: 4, filled: 0 },
 ];
+
+// Auswahl „Zustand hinzufügen“ (Status-Reiter, Issue #37): Namen aus CONFIG.statusEffects des Systems (config-dsa5.js,
+// Texte aus lang/de.json CONDITION.*), alphabetisch wie im Modul. pips 4 = abgestuft, 1 = an/aus.
+const CONDITION_CHOICES = [
+  ["Belastung", 4], ["Besiegt", 1], ["Betäubung", 4], ["Bewegungsunfähig", 1], ["Bewusstlos", 1], ["Blind", 1],
+  ["Blutrausch", 1], ["Brennend", 3], ["Eingeengt", 1], ["Entrückung", 4], ["Fixiert", 1], ["Furcht", 4],
+  ["Handlungsunfähig", 1], ["Krank", 1], ["Liegend", 1], ["Paralyse", 4], ["Schmerz", 4], ["Stumm", 1], ["Taub", 1],
+  ["Überrascht", 1], ["Unsichtbar", 1], ["Vergiftet", 1], ["Verwirrung", 4],
+].map(([name, pips]) => ({ name, pips }));
 
 // Kumulative Zustandseffekte (status_effects.hbs "cumulativeConditions"): eigene, stapelbare Zustände (z.B.
 // Blutung) statt der abgestuften Pip-Zustände oben — bisher komplett ohne Entsprechung im Click-Dummy.

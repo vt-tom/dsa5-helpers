@@ -20,6 +20,7 @@ export async function initSteigerungsplaner() {
   if (!planner?.active || !game.modules.get('lib-wrapper')?.active) return;
   try {
     plannerTab = planner.api?.PlannerTab ?? (await import(foundry.utils.getRoute(`modules/${PLANNER_ID}/scripts/planner-tab.js`))).default;
+    if (typeof plannerTab?.prepareContext !== 'function' || typeof plannerTab?.attachListeners !== 'function') throw new Error('Unsupported PlannerTab interface');
     await foundry.applications.handlebars.loadTemplates([PLANNER_TEMPLATE]);
   } catch (err) {
     plannerTab = null;

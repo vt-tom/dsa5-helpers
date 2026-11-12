@@ -1,0 +1,1407 @@
+/* ==========================================================================
+   DSA5 Helpers — Tablet-/Smartphone-Oberfläche („Hybrides Spiel“)
+   Alles hängt an body.dsa5h-mobile (gesetzt in scripts/mobile/mobile.js), am Desktop greift nichts davon.
+   Vorbild: clickdummy/mobile (Runde 4), Konzept: docs/MOBILE.md Abschnitt 13.
+
+   1. Variablen
+   2. Foundry-Oberfläche ausblenden / umordnen
+   3. Kopfleiste
+   4. Szenen-Knöpfe
+   5. Heldenkarte
+   6. Schwebende Knöpfe + Sprechblase (Foundrys Chat-Benachrichtigung)
+   7. Panels (Chat, Journal, Einstellungen = Foundrys Seitenleiste)
+   8. Fenster: Mobil-Kopf, Vollbild oder Blatt, Kontextmenü als Blatt
+   9. Konto-Menü
+  10. Szene: Token ziehen, Namen
+  11. Heldenbogen auf Smartphone und Tablet
+  12. Chat im Modul-Design (Karten, Probenkarten, Eingabe)
+  13. Journal im Modul-Design (Verzeichnis, Eintrag, Seitenliste)
+   ========================================================================== */
+
+/* 1. Variablen ------------------------------------------------------------ */
+body.dsa5h-mobile {
+  --dsa5h-m-head: 52px;
+  --dsa5h-m-bar: 44px;
+  --dsa5h-m-safe-b: env(safe-area-inset-bottom, 0px);
+  --dsa5h-m-paper: #ece2d2;
+  --dsa5h-m-ink: #2b2721;
+  --dsa5h-m-ink2: rgba(43, 39, 33, .72);
+  --dsa5h-m-line: rgba(43, 39, 33, .14);
+  --dsa5h-m-line2: rgba(43, 39, 33, .28);
+  --dsa5h-m-field: rgba(255, 255, 255, .64);
+  --dsa5h-m-accent: #8b6f3f;
+  --dsa5h-m-onaccent: #fff8ec;
+  --dsa5h-m-gold: #b99a5c;
+  --dsa5h-m-danger: #b3241a;
+  --dsa5h-m-ok: #2f6b2a;
+  --dsa5h-m-hdr: linear-gradient(180deg, #3a322b, #272320);
+  --dsa5h-m-phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+  --dsa5h-m-panel-w: 100vw;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+body.dsa5h-tablet { --dsa5h-m-panel-w: 400px; }
+body.dsa5h-mobile input, body.dsa5h-mobile textarea, body.dsa5h-mobile [contenteditable], body.dsa5h-mobile prose-mirror { user-select: text; }
+body.dsa5h-mobile #board { touch-action: none; }
+
+/* 2. Foundry-Oberfläche ausblenden / umordnen ------------------------------- */
+body.dsa5h-mobile #ui-left,
+body.dsa5h-mobile #ui-bottom,
+body.dsa5h-mobile #sidebar-tabs,
+body.dsa5h-mobile #sc-quickbar,
+body.dsa5h-mobile #dsa-calendar-widget,
+body.dsa5h-mobile .dsa5.initTracker { display: none; }
+/* System-Elemente, die mobil ersetzt werden: #sc-quickbar (Gruppenleiste → Heldenkarte), .initTracker (→ Kampfleiste +
+   Kampf-Panel), #dsa-calendar-widget (passt nicht in die Kopfzeile) */
+/* Foundry blendet Teile der Oberfläche ohne Maus-Hover ab (.faded-ui) — Touch kennt kein Hover */
+body.dsa5h-mobile .faded-ui { opacity: 1; }
+body.dsa5h-mobile #ui-right {
+  position: fixed;
+  inset: auto 0 0 0;
+  height: 0;
+  transform: none;
+  z-index: 45;
+  pointer-events: none;
+}
+
+/* 3. Kopfleiste ------------------------------------------------------------ */
+#dsa5h-m-shell { position: fixed; inset: 0; z-index: 40; pointer-events: none; font-family: 'GentiumBasic', Georgia, serif; color: var(--dsa5h-m-ink); }
+#dsa5h-m-shell button { font-family: inherit; }
+#dsa5h-m-shell > * { pointer-events: auto; }
+.dsa5h-m-head {
+  position: absolute; inset: 0 0 auto 0; height: var(--dsa5h-m-head);
+  padding: env(safe-area-inset-top, 0px) 8px 0 10px; box-sizing: content-box;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--dsa5h-m-hdr); color: #f4e8d6; box-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+}
+.dsa5h-m-head > img { flex: none; width: 32px; height: 32px; border: 0; }
+.dsa5h-m-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.dsa5h-m-titles strong { font-family: 'Andalus', serif; font-weight: normal; font-size: 19px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsa5h-m-titles small { font-size: 12px; color: rgba(244, 232, 214, .75); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#dsa5h-m-shell .dsa5h-m-account {
+  flex: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 22px;
+  background: radial-gradient(circle, var(--dsa5h-m-gold) 0 18px, transparent 18.5px); color: #272320;
+  font-size: 14px; font-weight: 700; line-height: 44px;
+}
+
+/* 4. Szenen-Knöpfe --------------------------------------------------------- */
+.dsa5h-m-scenebtns { position: absolute; right: 10px; top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 10px); display: flex; flex-direction: column; gap: 8px; }
+#dsa5h-m-shell .dsa5h-m-scenebtns button {
+  width: 44px; height: 44px; padding: 0; border: 0; border-radius: 6px;
+  background: rgba(20, 18, 16, .78); color: #f4e8d6; font-size: 18px; line-height: 44px;
+}
+#dsa5h-m-shell .dsa5h-m-scenebtns button[aria-pressed="true"] { background: var(--dsa5h-m-gold); color: #1c1917; }
+
+/* Kampfreihenfolge (E23) */
+.dsa5h-m-combat {
+  position: absolute; left: 0; right: 0; top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px)); height: 56px;
+  display: flex; align-items: center; gap: 8px; padding: 0 8px; box-sizing: border-box;
+  background: rgba(39, 35, 32, .92); color: #f4e8d6; border-bottom: 1px solid rgba(224, 192, 128, .4); cursor: pointer;
+}
+.dsa5h-m-combat[hidden] { display: none; }
+.dsa5h-m-cbt-round { flex: none; max-width: 30%; font-size: 13px; font-weight: 700; line-height: 1.2; }
+.dsa5h-m-cbt-round.mine { padding: 4px 8px; border-radius: 12px; background: #e0c48c; color: #1c1917; }
+.dsa5h-m-cbt-list { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.dsa5h-m-cbt { flex: none; position: relative; width: 40px; height: 40px; }
+.dsa5h-m-cbt img { width: 40px; height: 40px; border: 2px solid rgba(244, 232, 214, .35); border-radius: 50%; object-fit: cover; box-sizing: border-box; }
+.dsa5h-m-cbt.own img { border-color: #b99a5c; }
+.dsa5h-m-cbt.current img { border-color: #e0c48c; box-shadow: 0 0 0 3px rgba(224, 196, 140, .5); }
+.dsa5h-m-cbt.defeated { opacity: .4; }
+.dsa5h-m-cbt b { position: absolute; right: -3px; bottom: -3px; min-width: 18px; padding: 0 3px; border-radius: 9px; background: #1c1917; font-size: 11px; line-height: 16px; text-align: center; }
+#dsa5h-m-shell .dsa5h-m-combat button { flex: none; width: auto; height: 40px; margin: 0; padding: 0 10px; border: 0; border-radius: 6px; background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); font-size: 13px; font-weight: 700; line-height: 40px; }
+/* Foundrys Pause-Anzeige: lag unter der Heldenkarte (z-index 1). Oben unter den Kopf, über die Szene, nicht klickbar. */
+body.dsa5h-mobile #pause.paused {
+  top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 8px); bottom: auto; height: 140px; z-index: 41; pointer-events: none;
+}
+body.dsa5h-mobile.dsa5h-m-in-combat #pause.paused { top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 64px); }
+/* Offenes Panel: Die Anzeige lag sonst über der Panel-Leiste (Shell, Ebene 40). Smartphone: Panel verdeckt die Szene,
+   Anzeige aus; Tablet: nur über dem sichtbaren Teil der Szene links neben dem Panel. */
+body.dsa5h-phone.dsa5h-m-panel-open #pause.paused { display: none; }
+body.dsa5h-tablet.dsa5h-m-panel-open #pause.paused { left: 0; right: var(--dsa5h-m-panel-w); width: auto; }
+body.dsa5h-m-in-combat .dsa5h-m-scenebtns { top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + 66px); }
+
+/* 5. Heldenkarte ----------------------------------------------------------- */
+.dsa5h-m-heroes {
+  position: absolute; left: 12px; right: 12px; bottom: calc(84px + var(--dsa5h-m-safe-b));
+  max-height: 38vh; max-width: 760px; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--dsa5h-m-paper); border: 1px solid var(--dsa5h-m-line2); border-radius: 4px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .35);
+}
+body.dsa5h-m-full .dsa5h-m-heroes { display: none; }
+.dsa5h-m-heroes-head {
+  position: sticky; top: 0; z-index: 1; min-height: 44px; padding: 4px 8px 4px 12px; box-sizing: border-box;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--dsa5h-m-phead), var(--dsa5h-m-paper); font-family: 'Andalus', serif; font-size: 18px;
+}
+#dsa5h-m-shell .dsa5h-m-heroes-head button {
+  flex: none; width: auto; height: 36px; padding: 0 12px; border: 0; border-radius: 18px;
+  background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); font-size: 14px; font-weight: 700; line-height: 36px;
+}
+#dsa5h-m-shell .dsa5h-m-hero {
+  width: 100%; min-height: 68px; height: auto; margin: 0; padding: 8px 12px; border: 0; border-top: 1px solid var(--dsa5h-m-line); border-radius: 0;
+  display: flex; align-items: center; gap: 12px; background: none; color: inherit; text-align: left; line-height: 1.2;
+}
+.dsa5h-m-hero > img { flex: none; width: 44px; height: 52px; object-fit: cover; border: 1.5px solid var(--dsa5h-m-gold); border-radius: 3px; background: #d9cbb4; }
+.dsa5h-m-hero > i { flex: none; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-hero-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.dsa5h-m-hero-name { font-family: 'Andalus', serif; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dsa5h-m-hero-sub { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--dsa5h-m-ink2); white-space: nowrap; overflow: hidden; }
+.dsa5h-m-dot { flex: none; width: 8px; height: 8px; border-radius: 4px; background: rgba(43, 39, 33, .35); }
+.dsa5h-m-dot.online { background: var(--dsa5h-m-ok); }
+.dsa5h-m-bars { display: flex; gap: 6px; }
+.dsa5h-m-bar { flex: 1; max-width: 110px; display: flex; flex-direction: column; gap: 2px; }
+.dsa5h-m-bar-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; line-height: 1; }
+.dsa5h-m-bar-label > span:first-child { color: var(--dsa5h-m-ink2); }
+.dsa5h-m-bar-track { height: 5px; border-radius: 3px; background: var(--dsa5h-m-line); overflow: hidden; }
+.dsa5h-m-bar-track > span { display: block; height: 100%; }
+.dsa5h-m-bar.lep .dsa5h-m-bar-track > span { background: linear-gradient(90deg, #841a16, #c42c24); }
+.dsa5h-m-bar.asp .dsa5h-m-bar-track > span { background: linear-gradient(90deg, #1c6f9e, #3558c4); }
+.dsa5h-m-bar.kap .dsa5h-m-bar-track > span { background: linear-gradient(90deg, #5d8f24, #2a7a3a); }
+.dsa5h-m-empty { margin: 0; padding: 14px 12px; font-size: 14px; color: var(--dsa5h-m-ink2); }
+
+/* 6. Schwebende Knöpfe + Sprechblase ---------------------------------------- */
+#dsa5h-m-shell .dsa5h-m-fab {
+  position: absolute; bottom: calc(16px + var(--dsa5h-m-safe-b)); width: 56px; height: 56px; padding: 0;
+  border: 2px solid rgba(39, 35, 32, .25); border-radius: 28px;
+  background: radial-gradient(circle at 35% 30%, #dcc189, #a3824a); color: #272320;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35); font-size: 24px; line-height: 52px;
+}
+#dsa5h-m-shell .dsa5h-m-fab.journal { left: 16px; }
+#dsa5h-m-shell .dsa5h-m-fab.chat { right: 16px; }
+#dsa5h-m-shell .dsa5h-m-fab.actors { left: 84px; font-size: 22px; }
+.dsa5h-m-badge {
+  position: absolute; top: -4px; right: -4px; min-width: 24px; height: 24px; padding: 0 6px; box-sizing: border-box;
+  border: 2px solid var(--dsa5h-m-paper); border-radius: 12px; background: var(--dsa5h-m-danger);
+  color: #fff; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center;
+}
+.dsa5h-m-badge[hidden] { display: none; }
+body.dsa5h-phone.dsa5h-m-panel-open .dsa5h-m-fab,
+body.dsa5h-tablet[data-dsa5h-panel] .dsa5h-m-fab.chat { display: none; }
+
+/* Foundrys Chat-Benachrichtigungen (sichtbar, solange die Seitenleiste eingeklappt ist) als Sprechblase */
+body.dsa5h-mobile #ui-right-column-1 { position: static; }
+body.dsa5h-mobile #chat-notifications {
+  position: fixed; right: 12px; bottom: calc(84px + var(--dsa5h-m-safe-b)); z-index: 46;
+  width: min(320px, calc(100vw - 96px)); height: auto; display: block; pointer-events: auto;
+}
+body.dsa5h-mobile #chat-notifications > #chat-message,
+body.dsa5h-mobile #chat-notifications > #chat-controls { display: none; }
+body.dsa5h-mobile #chat-notifications .overflow { max-height: 34vh; }
+body.dsa5h-mobile #chat-notifications .chat-log > li:not(:last-child) { display: none; }
+body.dsa5h-mobile #chat-notifications .chat-log > li { border-radius: 12px 12px 4px 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
+body.dsa5h-mobile.dsa5h-m-panel-open #chat-notifications { display: none; }
+
+/* 7. Panels (Foundrys Seitenleiste) ----------------------------------------- */
+body.dsa5h-mobile:not(.dsa5h-m-panel-open) #sidebar { display: none; }
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar {
+  position: fixed; z-index: 44; right: 0; bottom: 0; width: var(--dsa5h-m-panel-w); height: auto;
+  top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px) + var(--dsa5h-m-bar));
+  pointer-events: auto; background: var(--color-cool-5, #1a1a1d);
+  padding-bottom: var(--dsa5h-m-safe-b); box-sizing: border-box;
+}
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar { --sidebar-width: 100%; --sidebar-scroll-gutter: 0px; }
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar-content { width: 100%; margin: 0; transition: none; }
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar-content .tab { width: 100%; }
+.dsa5h-m-panelbar {
+  position: absolute; right: 0; top: calc(var(--dsa5h-m-head) + env(safe-area-inset-top, 0px)); width: var(--dsa5h-m-panel-w); height: var(--dsa5h-m-bar);
+  display: none; align-items: center; justify-content: space-between; padding: 0 4px 0 14px; box-sizing: border-box;
+  background: var(--dsa5h-m-phead), var(--dsa5h-m-paper); font-family: 'Andalus', serif; font-size: 19px;
+}
+body.dsa5h-m-panel-open .dsa5h-m-panelbar { display: flex; }
+#dsa5h-m-shell .dsa5h-m-panelbar button { width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--dsa5h-m-ink); font-size: 20px; line-height: 44px; }
+/* Kampftracker im Panel (F11, MOBILE.md 15): Zug-Knöpfe 44 px, „Zug beenden“ 48 px, Knöpfe je Teilnehmer 36 px */
+body.dsa5h-mobile #combat button.combat-control { min-width: 44px; height: 44px; min-height: 44px; font-size: 18px; }
+body.dsa5h-mobile #combat button.combat-control-lg { height: 48px; min-height: 48px; font-size: 16px; }
+body.dsa5h-mobile #combat :is(.combatant-control, .aggroButton) { width: 36px; height: 36px; min-height: 36px; font-size: 16px; }
+/* Mobil liegt der Tracker auf dem hellen Pergament des Systems, Foundry färbt die Seitenleiste aber für sein dunkles
+   Oberflächen-Thema (helle Schrift, Befund 2026-10-30): Textfarben auf die Tinte der übrigen Panels. */
+body.dsa5h-mobile #combat {
+  --color-text-primary: var(--dsa5h-m-ink);
+  --color-text-emphatic: var(--dsa5h-m-ink);
+  --color-text-secondary: var(--dsa5h-m-ink2);
+  --color-text-subtle: var(--dsa5h-m-ink2);
+}
+body.dsa5h-mobile #combat :is(.combat-tracker-header, .combat-controls) button.inline-control { color: var(--dsa5h-m-ink2); }
+/* Karte „Am Zug“ oben im Tracker (Variante C, shell.js addTurnCard); die Zug-Knöpfe der Fußleiste stehen dann dort.
+   Die SL behält unten Runde zurück/vor und „Kampf beenden“. */
+body.dsa5h-mobile #combat:has(.dsa5h-m-turncard) .combat-controls [data-action="previousTurn"],
+body.dsa5h-mobile #combat:has(.dsa5h-m-turncard) .combat-controls [data-action="nextTurn"] { display: none; }
+body.dsa5h-mobile #combat:has(.dsa5h-m-turncard) .combat-controls:not(:has(button:not([data-action="previousTurn"], [data-action="nextTurn"]))) { display: none; }
+.dsa5h-m-turncard {
+  flex: none;
+  margin: 10px 12px 4px;
+  padding: 12px;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 12px;
+  background: #f7f1e6;
+  color: var(--dsa5h-m-ink);
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+.dsa5h-m-turn-who { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.dsa5h-m-turn-who img { flex: none; width: 48px; height: 48px; border: 0; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 2px var(--dsa5h-m-gold); }
+.dsa5h-m-turn-who span { min-width: 0; }
+.dsa5h-m-turn-who small { display: block; font-size: 14px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-turn-who b { display: block; overflow: hidden; font-family: 'Andalus', serif; font-size: 21px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.dsa5h-m-turn-acts { display: flex; gap: 8px; }
+body.dsa5h-mobile #combat .dsa5h-m-turncard button.combat-control {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 10px;
+  background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink);
+  font: inherit;
+  font-size: 20px;
+  box-shadow: none;
+}
+body.dsa5h-mobile #combat .dsa5h-m-turncard button.dsa5h-m-turn-end { flex: 1; width: auto; border-color: var(--dsa5h-m-accent); background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); font-size: 16px; font-weight: 700; }
+body.dsa5h-mobile #combat .dsa5h-m-turncard button.combat-control:disabled { opacity: .4; }
+.dsa5h-m-turn-next { margin-top: 8px; font-size: 14px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-tablet.dsa5h-m-panel-open .dsa5h-m-scenebtns { right: calc(var(--dsa5h-m-panel-w) + 10px); }
+/* Touch: größere Zeilen und Eingaben (iOS zoomt bei Schrift < 16 px in Eingabefelder) */
+body.dsa5h-mobile #sidebar .directory-item { min-height: 44px; }
+body.dsa5h-mobile #sidebar .folder > .folder-header { min-height: 44px; align-items: center; }
+body.dsa5h-mobile #sidebar input, body.dsa5h-mobile #chat-message { font-size: 16px; }
+.dsa5h-m-msgmenu { display: none; }
+body.dsa5h-mobile .chat-message .message-header .dsa5h-m-msgmenu {
+  display: grid; place-items: center; flex: none; width: 36px; height: 36px; margin: -6px -6px -6px 2px; padding: 0;
+  border: 0; background: none; color: inherit; font-size: 16px; order: 99;
+}
+
+/* 8. Fenster: Mobil-Kopf, Vollbild oder Blatt, Kontextmenü als Blatt ---------- */
+body.dsa5h-mobile .dsa5h-m-window {
+  position: fixed !important;
+  inset: calc(env(safe-area-inset-top, 0px) + 6px) 0 0 0 !important;
+  width: auto !important; height: auto !important; max-width: none !important; max-height: none !important;
+  min-width: 0 !important; min-height: 0 !important; transform: none !important; border-radius: 10px 10px 0 0;
+}
+body.dsa5h-tablet .dsa5h-m-window.dialog,
+body.dsa5h-tablet .dsa5h-m-window.dialog-dsa5 { inset: auto 0 0 0 !important; max-height: 90vh !important; margin: 0 auto; width: min(640px, 100vw) !important; }
+/* Tablet quer: Fenster und Chat nebeneinander (Rückmeldung 2026-10-19). Ist der Chat offen, endet das Fenster an der
+   Chat-Spalte; Dialoge bleiben Blätter von unten. Unter 1000 px (Tablet hoch) wäre der Bogen zu schmal, dort liegt der
+   Chat wie bisher darüber. */
+@media (min-width: 1000px) {
+  body.dsa5h-tablet[data-dsa5h-panel="chat"] .dsa5h-m-window:not(.dialog, .dialog-dsa5, .dsa5h-m-sheetwin) { right: var(--dsa5h-m-panel-w) !important; border-radius: 10px 0 0 0; }
+}
+/* Mobil-Fensterkopf (MOBILE.md 15.3, Schritt 2) statt Kopfgrafik und Buch-Ornament des Systems: 48 px, Knöpfe 44 px.
+   Vollbild dunkel wie der eingeklappte Bogenkopf, Blätter wie die Panel-Leiste; geschlossen wird überall mit „✕“ oben
+   rechts (Nutzerentscheidung 2026-10-28). Unser Bogen hat einen eigenen Kopf (Abschnitt 11). */
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet)::after { content: none !important; display: none !important; }
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet) > .window-header {
+  flex: 0 0 48px; height: 48px; min-height: 48px; top: 0 !important; gap: 4px; padding: 0 4px 0 14px;
+  border: 0 !important; border-radius: inherit; border-bottom-left-radius: 0; border-bottom-right-radius: 0;
+  background: var(--dsa5h-m-hdr) !important; color: #f4e8d6;
+}
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet) > .window-header .window-title {
+  overflow: hidden; margin: 0; color: inherit; font-family: 'Andalus', serif; font-size: 19px; line-height: 48px;
+  text-align: left; text-overflow: ellipsis; text-shadow: none; white-space: nowrap;
+}
+body.dsa5h-mobile .dsa5h-m-window:not(.dsa5-helpers-sheet) > .window-header :is(button.header-control, a.header-button) {
+  flex: none; width: 44px; height: 44px; min-height: 44px; margin: 0; padding: 0; border: 0; border-radius: 6px;
+  background: none; box-shadow: none; color: inherit; font-size: 20px;
+}
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-noctrl > .window-header [data-action="toggleControls"] { display: none; }
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-sheetwin > .window-header { background: var(--dsa5h-m-phead), var(--dsa5h-m-paper) !important; color: var(--dsa5h-m-ink); }
+/* Kleine Fenster als Blatt von unten, Höhe nach Inhalt; Eingaben 44 px und 16 px (iOS zoomt sonst), Knöpfe 48 px */
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-sheetwin {
+  inset: auto 0 0 0 !important; max-height: 92vh !important; border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, .5);
+}
+body.dsa5h-tablet .dsa5h-m-window.dsa5h-m-sheetwin { margin: 0 auto; width: min(640px, 100vw) !important; max-height: 90vh !important; }
+body.dsa5h-mobile .dsa5h-m-sheetwin > .window-content { flex: 0 1 auto; min-height: 0; padding-bottom: calc(12px + var(--dsa5h-m-safe-b)); }
+body.dsa5h-mobile .dsa5h-m-sheetwin > .window-content :is(input[type="text"], input[type="number"], input:not([type]), select) { min-height: 44px; font-size: 16px; }
+body.dsa5h-mobile .dsa5h-m-sheetwin > .window-content input[type="checkbox"] { flex: none; width: 26px; height: 26px; }
+body.dsa5h-mobile .dsa5h-m-sheetwin > .window-content :is(.form-footer, .dialog-buttons, footer) button { min-height: 48px; font-size: 16px; }
+body.dsa5h-mobile .dsa5h-m-window .window-content { overflow: auto; }
+body.dsa5h-mobile .dsa5h-m-window .window-resize-handle,
+body.dsa5h-mobile .dsa5h-m-window .window-resizable-handle { display: none; }
+/* Journal-Blatt: Abschnitt 13 */
+body.dsa5h-mobile #context-menu {
+  position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important;
+  width: auto !important; max-width: 520px; max-height: 70vh; margin: 0 auto; overflow-y: auto;
+  border-radius: 14px 14px 0 0; padding: 8px 0 calc(8px + var(--dsa5h-m-safe-b)); box-shadow: 0 -8px 30px rgba(0, 0, 0, .5);
+}
+body.dsa5h-mobile #context-menu .context-item { min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 18px; font-size: 16px; }
+
+/* Probendialoge des Systems auf dem Smartphone (MOBILE.md 14, Ü1): Blatt von unten statt Vollbild, Felder
+   untereinander über die volle Breite, Eingaben 44 px, „Würfeln“ als breiter Hauptknopf. Nur CSS, der Dialog bleibt
+   der des Systems (DialogV2 mit .dialog-form; Talent, Zauber, Liturgie, Angriff, Parade …). */
+body.dsa5h-phone dialog.application.dsa5h-m-window:has(.dialog-form) {
+  inset: auto 0 0 0 !important; max-height: 92vh !important; border-radius: 14px 14px 0 0;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, .5);
+}
+body.dsa5h-phone dialog.application:has(.dialog-form) .window-content { padding: 8px 12px calc(12px + var(--dsa5h-m-safe-b)); }
+body.dsa5h-phone dialog.application .dialog-form { font-size: 15px; }
+body.dsa5h-phone dialog.application .dialog-form .row-section { flex-direction: column; flex-wrap: nowrap; gap: 6px; height: auto; }
+body.dsa5h-phone dialog.application .dialog-form .row-section > .col { width: 100% !important; max-width: none !important; flex: none; }
+body.dsa5h-phone dialog.application .dialog-form .form-group { min-height: 44px; gap: 8px; flex-wrap: nowrap; }
+body.dsa5h-phone dialog.application .dialog-form .form-group > label { flex: 0 0 96px; font-size: 14px; line-height: 1.2; }
+body.dsa5h-phone dialog.application .dialog-form .form-group > .form-fields { flex: 1; min-width: 0; }
+/* Zeilen mit gleich breiten Spalten (Eigenschaften der Probe, Modifikatoren je Eigenschaft, FW, QS) */
+body.dsa5h-phone dialog.application .dialog-form .form-fields.gap0px { gap: 4px; flex-wrap: nowrap; }
+body.dsa5h-phone dialog.application .dialog-form .form-fields.gap0px > :is(div, input) { flex: 1 1 0; min-width: 0; width: auto; }
+body.dsa5h-phone dialog.application .dialog-form :is(input[type="text"], input[type="number"], input:not([type]), select) {
+  height: 44px; font-size: 16px;
+}
+body.dsa5h-phone dialog.application .dialog-form select.noAppearance { height: 36px; width: 100%; font-size: 13px; }
+body.dsa5h-phone dialog.application .dialog-form .dsaMessageMode { justify-content: space-between; }
+body.dsa5h-phone dialog.application .dialog-form .dsaMessageMode i { flex: 1; height: 44px; line-height: 44px; font-size: 18px; text-align: center; }
+body.dsa5h-phone dialog.application .dialog-form .targets { justify-content: flex-start; gap: 8px; }
+body.dsa5h-phone dialog.application .dialog-form .form-footer {
+  position: sticky; bottom: calc(-12px - var(--dsa5h-m-safe-b)); z-index: 1; padding: 8px 0 calc(12px + var(--dsa5h-m-safe-b));
+  background: inherit; background-color: var(--dsa5h-m-paper);
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) 48px; gap: 6px; margin-top: 8px;
+}
+body.dsa5h-phone dialog.application .dialog-form .form-footer > button { height: 48px; min-width: 0; margin: 0; padding: 0 4px; font-size: 14px; line-height: 1.1; }
+body.dsa5h-phone dialog.application .dialog-form .form-footer > button:first-child {
+  grid-column: 1 / -1; height: 52px; font-size: 18px; font-weight: 700;
+  background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); border-color: var(--dsa5h-m-accent);
+}
+
+/* Kampfdialog (F4, MOBILE.md 15): auf dem Handy ohne den inneren Seitenrand des Dialoginhalts,
+   Grundmanöver über die volle Breite; Zeilen auf Smartphone und Tablet 44 px. Der leere SF-Bereich des Systems
+   (.specImg, nur das Waffenbild, Höhe als Inline-Stil) wird niedriger, „Ziel hinzufügen“ wird ein 44-px-Ziel. */
+body.dsa5h-phone dialog.application .dialog-form > .dialog-content { padding-left: 0; padding-right: 0; }
+body.dsa5h-phone .application .dsa5h-maneuver-panel { margin-left: 0; padding: 0 0 10px; }
+body.dsa5h-phone dialog.application .dialog-form .specAbsContainer .specImg:not(:has(*)) { height: 56px !important; min-height: 0; background-size: contain; }
+body.dsa5h-phone dialog.application .dialog-form .targets .addTarget { display: inline-grid; place-items: center; width: 44px; height: 44px; }
+body.dsa5h-mobile .application .dsa5h-maneuver-panel h4 { font-size: 15px; }
+body.dsa5h-mobile .application .dsa5h-maneuver-panel .dsa5h-maneuver-row { min-height: 44px; margin-bottom: 4px; padding: 6px 10px; font-size: 15px; }
+body.dsa5h-mobile .application .dsa5h-maneuver-panel .dsa5h-maneuver-step { font-size: 14px; }
+body.dsa5h-mobile .application .dsa5h-maneuver-hint { font-size: 14px; }
+
+/* Probendialog: steht seit 0.6.3 in styles/dsa5-helpers-roll-dialog.css (auch am Desktop, Issue #63). */
+
+/* 9. Konto-Menü ------------------------------------------------------------ */
+.dsa5h-m-sheet-backdrop {
+  position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(0, 0, 0, .5); font-family: 'GentiumBasic', Georgia, serif;
+}
+.dsa5h-m-sheet {
+  width: 100%; max-width: 460px; box-sizing: border-box; padding: 8px 16px calc(24px + var(--dsa5h-m-safe-b));
+  display: flex; flex-direction: column; gap: 14px;
+  background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, .45);
+}
+.dsa5h-m-grip { width: 40px; height: 4px; border-radius: 2px; background: var(--dsa5h-m-line2); align-self: center; }
+.dsa5h-m-me { display: flex; align-items: center; gap: 12px; }
+.dsa5h-m-me > span:last-child { display: flex; flex-direction: column; }
+.dsa5h-m-me strong { font-family: 'Andalus', serif; font-weight: normal; font-size: 22px; }
+.dsa5h-m-me small { font-size: 13px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-avatar { flex: none; width: 48px; height: 48px; border-radius: 24px; display: grid; place-items: center; background: var(--dsa5h-m-gold); color: #272320; font-weight: 700; font-size: 18px; }
+.dsa5h-m-setting { display: grid; grid-template-columns: 100px 1fr; align-items: center; gap: 4px 10px; font-size: 14px; }
+.dsa5h-m-setting > span { color: var(--dsa5h-m-ink2); }
+.dsa5h-m-setting > small { grid-column: 2; font-size: 12px; line-height: 1.35; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-seg { display: flex; border: 1px solid var(--dsa5h-m-line2); border-radius: 4px; overflow: hidden; }
+.dsa5h-m-sheet .dsa5h-m-seg button {
+  flex: 1; height: 42px; margin: 0; padding: 0 4px; border: 0; border-radius: 0; background: transparent;
+  color: var(--dsa5h-m-ink); font: inherit; font-size: 14px; font-weight: 700;
+}
+.dsa5h-m-sheet .dsa5h-m-seg button[aria-pressed="true"] { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
+.dsa5h-m-sheet .dsa5h-m-wide {
+  height: 48px; margin: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 4px; background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink); font: inherit; font-size: 15px; font-weight: 700;
+}
+.dsa5h-m-sheet .dsa5h-m-wide.danger { border-color: var(--dsa5h-m-danger); background: rgba(179, 36, 26, .08); color: #8e1d15; }
+
+/* 10. Szene: Token ziehen, Namen ------------------------------------------- */
+.dsa5h-m-drag { position: fixed; inset: 0; z-index: 35; pointer-events: none; }
+.dsa5h-m-drop { position: absolute; background: rgba(185, 154, 92, .35); outline: 2px solid #e0c48c; outline-offset: -2px; }
+.dsa5h-m-drop.blocked { background: rgba(179, 36, 26, .35); outline-color: #cf4a3e; }
+.dsa5h-m-ghost { position: absolute; border: 0; border-radius: 50%; opacity: .9; transform: scale(1.12); filter: drop-shadow(0 12px 16px rgba(0, 0, 0, .6)); }
+.dsa5h-m-token-label {
+  position: fixed; z-index: 35; transform: translate(-50%, calc(-100% - 6px)); padding: 3px 4px 3px 10px; border-radius: 16px;
+  display: flex; align-items: center; gap: 8px; background: rgba(20, 18, 16, .88); color: #f4e8d6; font-size: 13px; white-space: nowrap;
+  animation: dsa5h-m-fade 3.5s ease-out forwards;
+}
+.dsa5h-m-token-label:not(:has(button)) { padding-right: 10px; pointer-events: none; animation-duration: 1.6s; }
+.dsa5h-m-token-label button {
+  width: auto; height: 34px; margin: 0; padding: 0 12px; border: 1px solid #b3241a; border-radius: 17px;
+  background: transparent; color: #f19a90; font-size: 13px; font-weight: 700; line-height: 32px;
+}
+.dsa5h-m-token-label button.on { background: #b3241a; color: #fff; }
+@keyframes dsa5h-m-fade { 0% { opacity: 0; } 8% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; } }
+
+/* 11. Heldenbogen auf Smartphone und Tablet ---------------------------------
+   Gleicher Bogen wie am Desktop (E10), nur umgeordnet. Smartphone: Reiterleiste unten (4 Reiter + „Mehr“),
+   Kopf klappt beim Scrollen zusammen (Klasse dsa5h-m-compact aus scripts/mobile/mobile.js), Titelblatt einspaltig.
+   Tablet: Reiterleiste rechts im Fenster statt außen daneben. */
+body.dsa5h-phone .dsa5-helpers-sheet .window-content { padding-bottom: calc(64px + var(--dsa5h-m-safe-b)) !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .window-content nav.dsa5h-rail {
+  position: fixed !important; inset: auto 0 0 0 !important; z-index: 6 !important;
+  display: flex !important; flex-wrap: nowrap !important; gap: 2px !important; overflow-x: auto !important; overflow-y: hidden !important;
+  scrollbar-width: none; overscroll-behavior-x: contain; scroll-snap-type: x proximity;
+  padding: 4px 4px calc(4px + var(--dsa5h-m-safe-b)) !important; margin: 0 !important;
+  background: #272320 !important; border: 0 !important; border-top: 1px solid rgba(224, 192, 128, .45) !important; border-radius: 0 !important;
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, .35);
+}
+body.dsa5h-mobile .dsa5-helpers-sheet nav.dsa5h-rail > button[hidden] { display: none !important; }
+/* Wischbar (Nutzer-Entscheidung 2026-10-19): gut fünf Reiter im Bild, der angeschnittene sechste zeigt, dass es weitergeht */
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail::-webkit-scrollbar { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button { flex: 0 0 calc((100vw - 8px) / 5.4) !important; scroll-snap-align: start; }
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button,
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button {
+  width: auto !important; height: 54px !important; min-width: 0; margin: 0 !important; padding: 0 2px !important;
+  display: flex !important; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  border: 0 !important; border-radius: 6px !important; background: transparent !important; color: #f4e8d6;
+}
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button.active,
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button.active { background: rgba(224, 192, 128, .2) !important; box-shadow: inset 0 2px 0 #e0c48c; }
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail > button img,
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > button img { width: 24px !important; height: 24px !important; }
+body.dsa5h-phone .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label,
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail .dsa5h-rail-label {
+  display: block !important; position: static; transform: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+  padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 11px; line-height: 1.1;
+}
+
+/* Kopf „Wappenbanner“ auf dem Smartphone (2026-10-19, Desktop-Kopf siehe Abschnitt 4 im Bogen-CSS): Banner oben mit „‹“
+   und „⋮“, Porträt-Medaillon links über drei Zeilen (Name + Schips, Identität), darunter die LeP/AsP/KaP-Kugeln über die
+   volle Breite, dann die Würfel. .dsa5h-head-main und das Band lösen sich auf (display: contents) und werden Rasterzellen. */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head {
+  --dsa5h-banner-h: 64px;
+  position: relative; padding-left: 28px !important;
+  display: grid !important; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 4px 10px;
+  padding: 10px 12px 8px; cursor: default;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head :is(.dsa5h-head-main, .dsa5h-head-band) { display: contents; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-portrait-medal { grid-column: 1; grid-row: 1 / span 2; width: 72px; flex: none; align-self: start; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-portrait-medal.shape-round { width: 72px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ap-ribbon { bottom: -9px; padding: 1px 10px; font-size: 11px; gap: 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ap-ribbon-free::before { margin-right: 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top { display: flex; align-items: flex-end; grid-column: 2; grid-row: 1; min-width: 0; height: calc(var(--dsa5h-banner-h) - 10px); padding: 0 0 4px; gap: 6px; margin: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top .dsa5h-name { flex: 1 1 auto; margin: 0; font-size: 26px; text-align: left; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top .dsa5h-name input { text-align: left; padding: 0; height: auto; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-fate-points { align-self: flex-end; gap: 0; margin: 0 0 2px; padding: 2px 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fate-points .dsa5h-fatepoint { flex-basis: 22px; width: 22px; height: 22px; background-size: 20px 20px; margin: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ident { grid-column: 2; grid-row: 2; align-self: start; gap: 0 5px; padding-top: 2px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top > .dsa5h-name { padding-bottom: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ident input { font-size: 12px; letter-spacing: .08em; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-resource-frame { grid-column: 1 / -1; grid-row: 3; justify-self: stretch; justify-content: center; gap: 18px; margin: 12px 0 2px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head { --dsa5h-orb: 58px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-power-satellite::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-power-pager button,
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-power-close {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-orb-val input { font-size: 19px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-regen-btn { flex: none; width: 34px; height: 34px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-banner-tools { top: 6px; right: 88px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content { padding: 0 10px 16px; }
+/* „⋮“ (Bogen-Menü: Thema, Spieleransicht, Einträge der Fensterleiste) und „✕“ oben rechts */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head { padding-right: 84px !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head :is(.dsa5h-m-menu, .dsa5h-m-close) {
+  position: absolute; top: 0; width: 44px; height: 64px; margin: 0; padding: 0; border: 0; border-radius: 0;
+  background: none; box-shadow: none; color: #f4e8d6; font-size: 20px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-menu { right: 40px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-m-close { right: 0; font-size: 22px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-m-menu, .dsa5h-m-close) { height: 52px; }
+/* Beim Scrollen eingeklappt: eine Zeile mit kleinem Porträt, Name und kleinen Kugeln (Banner füllt die Zeile) */
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { --dsa5h-banner-h: 52px; grid-template-columns: 34px minmax(0, 1fr) auto; padding: 6px 10px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait-medal { grid-row: 1; width: 34px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait { padding: 2px; clip-path: none; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-portrait-inner { clip-path: none; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head-top { height: auto; padding: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-name { font-size: 20px !important; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head :is(.dsa5h-ap-ribbon, .dsa5h-fate-points, .dsa5h-ident, .dsa5h-regen-btn, .dsa5h-orb-key, .dsa5h-orb-max),
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-attr-overlay { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-resource-frame { grid-column: 3; grid-row: 1; gap: 8px; margin: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head { --dsa5h-orb: 34px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-orb-val input { font-size: 13px; margin: 0; }
+/* Kraftspeicher neben der kleinen AsP-Kugel statt darüber (Nutzerwunsch 2026-10-31): nur der Wert; Tippfläche bleibt über ::after */
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-power-anchor { display: flex; align-items: center; gap: 5px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-power-satellite { position: relative; right: auto; bottom: auto; flex: none; width: 24px; height: 24px; min-height: 24px; padding: 0; border-width: 1px; font-size: 11px; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-power-satellite small { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-power-satellite::after { inset: -12px; }
+
+/* Titelblatt einspaltig: Kopf wie auf den anderen Reitern; der Kasten Statuseffekte/Persönliche Daten steht unter den
+   Favoriten (mobile.js verschiebt ihn in den Titelblatt-Reiter), die Seitenleiste selbst entfällt. */
+body.dsa5h-phone .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
+  grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: auto auto auto minmax(0, 1fr) !important;
+  grid-template-areas: "head" "attrbar" "tabtitle" "content" !important;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-cover-sidebar { display: none !important; }
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="cover"] > .dsa5h-side-tabs-panel { margin-top: 12px; overflow: hidden; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tabs { border-bottom: 1px solid var(--line); background: var(--dsa5h-m-phead); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tab {
+  flex: 1 1 0; min-width: 0; height: 44px; margin: 0; padding: 0 8px; border: 0; border-bottom: 3px solid transparent; border-radius: 0;
+  background: none; box-shadow: none; color: var(--muted); font-family: 'Andalus', serif; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tab[aria-selected="true"] { border-bottom-color: var(--accent); color: var(--ink); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-tab:is(:focus, :active, :focus-visible) { outline: none; box-shadow: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) auto 44px; gap: 8px; align-items: center; min-height: 52px; margin: 0; padding: 4px 12px;
+  border-top: 1px solid var(--line); font-size: 16px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition:first-child { border-top: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition img { width: 28px; height: 28px; border-radius: 3px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition a { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition .dsa5h-step { width: 44px; height: 44px; margin: 0; font-size: 22px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-condition > strong { font-size: 18px; text-align: center; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-cover-more {
+  display: block; width: 100%; height: 44px; margin: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0;
+  background: var(--field); color: var(--ink); font-size: 15px; box-shadow: none;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-empty { margin: 12px; color: var(--muted); font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details { padding: 0 12px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details div { display: block; padding: 8px 0; border-top: 1px solid var(--line); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details div:first-child { border-top: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details dt { margin: 0 0 2px; color: var(--muted); font-family: 'GentiumBasic', Georgia, serif; font-size: 14px; font-weight: normal; text-transform: none; letter-spacing: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-side-tabs-panel .dsa5h-side-details dd { color: var(--ink); font-size: 16px; white-space: normal; overflow-wrap: anywhere; }
+
+/* Reitertitel + Unterreiter (Ü5): Titel und Linie in einer Zeile, Unterreiter darunter über die volle Breite.
+   Bis 3 Einträge als Segment-Schalter, mehr als 3 als waagerecht wischbare Chips (einzige waagerechte Bewegung). */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tab-title { padding: 10px 12px 4px; gap: 8px 12px; align-items: center; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tab-title [data-tab-title-label] { font-size: 24px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tab-title .dsa5h-sub-tabs { order: 3; flex: 1 1 100%; min-width: 0; margin: 2px 0 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-sub-tabs:not([hidden]) {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0;
+  border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 4px; overflow: hidden;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-sub-tabs button {
+  height: 44px; margin: 0; padding: 0 8px; border: 0; border-radius: 0; background: transparent;
+  font-family: 'Andalus', serif; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: none;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-sub-tabs button + button { border-left: 1px solid var(--line, rgba(43, 39, 33, .14)); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-sub-tabs button.active { background: #272320; color: #f4e8d6; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-sub-tabs:not([hidden]):has(> button:nth-child(4)) {
+  display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; scrollbar-width: none; border: 0; border-radius: 0;
+  margin-inline: -12px; padding-inline: 12px; overscroll-behavior-x: contain;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-sub-tabs:has(> button:nth-child(4)) button {
+  flex: none; height: 40px; padding: 0 14px; border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 20px; overflow: visible;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-sub-tabs:has(> button:nth-child(4)) button + button { border-left: 1px solid var(--line2, rgba(43, 39, 33, .28)); }
+
+/* Tippziele (Ü6): kleine Knöpfe in Zeilen behalten ihre Größe, die Trefferfläche wächst unsichtbar auf ~44 px */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-favorite, .row button, .dsa5h-chip button, .chip button) { position: relative; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-favorite, .row button, .dsa5h-chip button, .chip button)::after {
+  content: ''; position: absolute; inset: -8px -6px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .row.item { min-height: 48px; }
+
+/* Status: doppelter Spaltenkopf der Modifikatoren (nur für die zweispaltige Desktop-Ansicht gedacht) */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-dup { display: none; }
+
+/* Bogen-Menü „⋮“ als Blatt von unten (früher „Mehr“-Blatt mit Reiter-Kacheln) */
+.dsa5h-m-more-backdrop { position: fixed; inset: 0; z-index: 210; display: flex; align-items: flex-end; background: rgba(0, 0, 0, .5); }
+.dsa5h-m-more-sheet {
+  width: 100%; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; padding: 8px 14px calc(18px + var(--dsa5h-m-safe-b)); display: flex; flex-direction: column; gap: 12px;
+  background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); border-radius: 14px 14px 0 0; box-shadow: 0 -8px 30px rgba(0, 0, 0, .45);
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+.dsa5h-m-more-sheet button {
+  margin: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 6px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink);
+  font: inherit; font-size: 15px; box-shadow: none;
+}
+.dsa5h-m-more-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dsa5h-m-more-list { display: flex; flex-direction: column; border-top: 1px solid var(--dsa5h-m-line); }
+.dsa5h-m-more-sheet .dsa5h-m-more-list button { height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 6px; border: 0; border-bottom: 1px solid var(--dsa5h-m-line); border-radius: 0; background: none; text-align: left; justify-content: flex-start; font-weight: normal; }
+.dsa5h-m-more-actions button { height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; }
+/* Kraftspeicher-Blatt (F2 Variante B, mobile.js openPowerSheet): je Speicher Name, −/+ (44 px) und Balken */
+.dsa5h-m-power-head { display: flex; align-items: center; gap: 8px; min-height: 44px; font-family: 'Andalus', serif; font-size: 21px; }
+.dsa5h-m-power-head small { flex: 1; font-family: 'GentiumBasic', Georgia, serif; font-size: 15px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-more-sheet .dsa5h-m-power-head button { width: 44px; height: 44px; padding: 0; border: 0; background: none; font-size: 20px; }
+.dsa5h-m-power-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid var(--dsa5h-m-line); }
+.dsa5h-m-power-name { min-width: 0; font-size: 17px; overflow-wrap: break-word; }
+.dsa5h-m-power-name small { display: block; font-size: 14px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-power-row .dsa5h-m-stepper { gap: 6px; }
+.dsa5h-m-power-row .dsa5h-m-stepper output { min-width: 64px; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
+.dsa5h-m-more-sheet .dsa5h-m-power-row .dsa5h-m-stepper button { width: 44px; height: 44px; padding: 0; border-radius: 22px; font-size: 22px; }
+.dsa5h-m-power-meter { grid-column: 1 / -1; height: 8px; overflow: hidden; border-radius: 4px; background: rgba(43, 39, 33, .12); }
+.dsa5h-m-power-meter > span { display: block; height: 100%; background: linear-gradient(90deg, #1c6f9e, #3558c4); }
+.dsa5h-m-power-hint { margin: 0; font-size: 14px; color: var(--dsa5h-m-ink2); }
+/* Tablet: Blatt mittig und 640 px breit wie die übrigen Blätter */
+body.dsa5h-tablet .dsa5h-m-power-backdrop { justify-content: center; }
+body.dsa5h-tablet .dsa5h-m-power-backdrop > :is(.dsa5h-m-power-sheet, .dsa5h-m-alm-sheet) { width: min(640px, 100vw); }
+/* Almanach-Eintrag als Blatt (F6 Variante A, mobile.js openAlmanacSheet): Kopf mit Bild und Name, Abschnitte wie die
+   Detailansicht des Almanachs, Text des Systems (angereichertes HTML) in Lesegröße. */
+.dsa5h-m-alm-head { display: flex; align-items: center; gap: 12px; }
+.dsa5h-m-alm-head img { flex: none; width: 64px; height: 64px; border: 0; border-radius: 8px; object-fit: cover; box-shadow: 0 0 0 2px var(--dsa5h-m-gold); }
+.dsa5h-m-alm-head span { flex: 1; min-width: 0; }
+.dsa5h-m-alm-head b { display: block; font-family: 'Andalus', serif; font-size: 22px; font-weight: normal; line-height: 1.15; overflow-wrap: break-word; }
+.dsa5h-m-alm-head small { display: block; margin-top: 2px; font-size: 15px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-more-sheet .dsa5h-m-alm-head button { flex: none; width: 44px; height: 44px; padding: 0; border: 0; background: none; font-size: 20px; }
+.dsa5h-m-alm-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.dsa5h-m-alm-tags span { padding: 2px 10px; border: 1px solid var(--dsa5h-m-line2); border-radius: 12px; font-size: 14px; }
+.dsa5h-m-alm-section h3 { margin: 0 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--dsa5h-m-line); font-family: 'Andalus', serif; font-size: 18px; font-weight: normal; }
+.dsa5h-m-alm-section p, .dsa5h-m-alm-text { margin: 0; font-size: 16px; line-height: 1.45; overflow-wrap: break-word; }
+.dsa5h-m-alm-text img { max-width: 100%; height: auto; }
+.dsa5h-m-alm-goals { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 16px; }
+.dsa5h-m-alm-goals li { display: flex; align-items: baseline; gap: 8px; }
+.dsa5h-m-alm-goals li.done { color: var(--dsa5h-m-ok); }
+.dsa5h-m-alm-goals li.failed { color: var(--dsa5h-m-danger); text-decoration: line-through; }
+.dsa5h-m-more-sheet .dsa5h-m-alm-open { height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+/* LeP/AsP/KaP und Anzahl in der Ausrüstung: Feld am Anker (Variante B, mobile.js openNumberPop). Die Kugel öffnet es, ihr eigenes Feld nimmt
+   mobil keine Tipps mehr an (sonst käme die Tastatur statt des Felds). */
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-resource-frame .dsa5h-orb { cursor: pointer; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-resource-frame .dsa5h-orb-val input { pointer-events: none; }
+.dsa5h-m-res-pop {
+  position: fixed;
+  z-index: 215;
+  width: 250px;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 12px;
+  background: #f7f1e6;
+  color: var(--dsa5h-m-ink);
+  font-family: 'GentiumBasic', Georgia, serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+}
+.dsa5h-m-res-pop::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: calc(var(--tip, 30px) - 7px);
+  width: 14px;
+  height: 14px;
+  transform: rotate(45deg);
+  border-left: 1px solid var(--dsa5h-m-line2);
+  border-top: 1px solid var(--dsa5h-m-line2);
+  background: #f7f1e6;
+}
+.dsa5h-m-res-pop-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font-family: 'Andalus', serif; font-size: 17px; }
+.dsa5h-m-res-pop-head small { font-family: 'GentiumBasic', Georgia, serif; font-size: 14px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-res-pop .dsa5h-m-stepper { gap: 6px; }
+.dsa5h-m-res-pop button {
+  flex: 1;
+  min-width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 22px;
+  background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink);
+  font: inherit;
+  font-size: 15px;
+  box-shadow: none;
+}
+.dsa5h-m-res-pop .dsa5h-m-stepper > button { flex: none; font-size: 20px; }
+.dsa5h-m-res-pop button:disabled { opacity: .4; }
+.dsa5h-m-res-pop input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+  border: 1px solid var(--dsa5h-m-line2);
+  border-radius: 8px;
+  background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+}
+.dsa5h-m-res-quick { display: flex; gap: 6px; margin-top: 8px; }
+/* Steht das Feld über dem Anker (Anzahl weiter unten in der Ausrüstung), zeigt die Spitze nach unten. */
+.dsa5h-m-res-pop.dsa5h-m-res-pop-above::before {
+  top: auto;
+  bottom: -8px;
+  border: 0;
+  border-right: 1px solid var(--dsa5h-m-line2);
+  border-bottom: 1px solid var(--dsa5h-m-line2);
+}
+/* Ausrüstung (#65): Anzahl öffnet das Feld (mobile.js quantityPopOnTap), Menü „⋮“ mit 44 px Tippfläche. */
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row [data-action="itemContextMenu"] {
+  min-width: 44px;
+  height: 40px;
+  font-size: 22px;
+}
+
+/* Favoriten: feste Wertespalten schmaler, damit der Name Platz hat */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fav-grid { grid-template-columns: minmax(0, 1fr); padding: 8px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fav-card { grid-template-columns: 24px minmax(0, 1fr) auto auto 24px; gap: 6px; }
+
+/* Nur senkrecht scrollen (Rückmeldung 2026-10-15): Zierrahmen nur oben (Plakette), keine Mindestbreite für
+   Tabellenzeilen (Desktop-Regel für schmale Fenster in Abschnitt 18 der Bogen-CSS), Spalten je Zeilentyp schmaler.
+   Nebenspalten entfallen; sie stehen im Gegenstandsblatt (Antippen des Namens). */
+/* Fensterleiste (Plakette) auf dem Smartphone ausgeblendet (Ü3): Schließen über „‹“ im Kopf, der Rest im „Mehr“-Blatt.
+   Damit entfällt auch der Zierrahmen (oben trug er die Plakette). */
+body.dsa5h-phone .dsa5-helpers-sheet { border-width: 0 !important; border-image: none !important; }
+body.dsa5h-phone .dsa5-helpers-sheet > .window-header { display: none !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .panel { overflow-x: visible; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content :is(.row, .row-head) { min-width: 0; column-gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .row > .withContext { min-width: 0; overflow-wrap: anywhere; }
+/* Talente: Bild | Name | Probe | FW | Stern (ohne Behinderung) */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row { grid-template-columns: 24px minmax(0, 1fr) auto auto 28px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row > :nth-child(4) { display: none; }
+/* Bearbeiten: Steigern-Knöpfe unter die Probe, sonst bleibt für den Namen kaum Platz */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-skill-row.item { grid-template-columns: 24px minmax(0, 1fr) auto 28px; row-gap: 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-skill-row.item > :is(:first-child, .withContext, .dsa5h-favorite) { grid-row: span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-skill-row.item > .dsa5h-skill-value { grid-column: 3; grid-row: 2; justify-content: flex-end; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-skill-row.row-head > :nth-child(5) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-talent { grid-template-columns: 24px minmax(0, 1fr) auto 32px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-head { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 2px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-aggregated-head > :first-child { grid-column: 1 / -1; }
+/* Zauber/Liturgien: Bild | Name | Probe | FW | Stern, darunter „8 AsP · Dauer 4 · 8 Schritt“ (MOBILE.md 14.3). Die drei
+   Zellen der Desktop-Spalten rücken in die zweite Zeile unter den Namen; Einheit und Bezeichnung aus data-Attributen
+   (spell-list.hbs). Ein Spaltenkopf ist dann überflüssig. */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.row-head { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item {
+  grid-template-columns: 42px auto auto minmax(0, 1fr) auto auto 34px; gap: 0; align-items: center; min-height: 56px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(2) { grid-column: 2 / span 3; grid-row: 1; align-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > .withContext a { font-size: 16px; line-height: 1.2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :is(:nth-child(5), :nth-child(6), :nth-child(7)) {
+  grid-row: 2; align-self: start; justify-self: start; white-space: nowrap; font-size: 13px; color: var(--muted, rgba(43, 39, 33, .72)); text-align: left;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(5) { grid-column: 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6) { grid-column: 3; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(7) { grid-column: 4; min-width: 0; overflow: hidden; text-overflow: ellipsis; justify-self: stretch; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(5):not(:empty)::after { content: '\a0' attr(data-dsa5h-unit); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6)::before { content: '\a0·\a0' attr(data-dsa5h-label) '\a0'; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(7):not(:empty)::before { content: '\a0·\a0'; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6) button { height: 28px; margin-left: 4px; padding: 0 6px; font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :is(:nth-child(3), :nth-child(4), :nth-child(8)) { grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(3) { grid-column: 5; margin-left: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(4) { grid-column: 6; min-width: 26px; margin-left: 6px; text-align: right; font-weight: 700; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(8) { grid-column: 7; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-spell-row.item > :nth-child(3) { grid-column: 5 / span 2; grid-row: 1; justify-self: end; align-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-spell-row.item > :nth-child(4) { grid-column: 5 / span 2; grid-row: 2; justify-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-row { grid-template-columns: 26px minmax(0, 1fr) auto 32px 40px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-tradition-row { grid-template-columns: 34px minmax(0, 1fr) auto auto; }
+/* Kampf */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-short-weapons { grid-template-columns: minmax(0, 1fr); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-short-weapon { grid-template-columns: 30px minmax(0, 1fr) auto auto auto 28px; gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-combatskill-row { grid-template-columns: minmax(0, 1fr) auto 42px 42px; }
+/* Ausrüstung: Bild | Name | Getragen | Anzahl | ⋮ | Stern (ohne Gewicht) */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row { grid-template-columns: 36px minmax(0, 1fr) auto 36px auto 28px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row > :nth-child(5) { display: none; }
+/* Status */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row { grid-template-columns: 28px minmax(0, 1fr) auto auto 24px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-modifier-row { grid-template-columns: minmax(0, 1fr) 44px minmax(0, 2fr); }
+/* FW-Feld im Bearbeiten-Modus: feste Breite (sonst drückt es den Namen auf null), Knöpfe fingergerecht */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-value input { flex: none; width: 36px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-skill-value button { flex-basis: 28px; width: 28px; height: 32px; }
+/* Gefährten (System-Template): Loyalität über der Schnellleiste statt daneben */
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] .companion-loyalty-row { flex-wrap: wrap; justify-content: center; gap: 8px; }
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] .companion-hotbar { flex: 1 1 100%; min-width: 0; max-width: 100%; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-disease-row { grid-template-columns: minmax(0, 2fr) 36px minmax(0, 1fr) minmax(0, 1fr) auto 28px; }
+
+/* Seiten-Umbau P2 (MOBILE.md 14.3) ------------------------------------------
+   Kampf: ohne Körper-Silhouette. Der Abschnitt „Waffen“ ist eine Spalte: Zauber/Liturgien wirken, Schnellaktionen mit
+   Initiative (2 Spalten), je Hand eine Karte, weitere Waffen, Kampf-Sonderfertigkeiten; die Rüstung (eigene
+   Sprungmarke) steht zuletzt. Das Körper-Panel löst sich dafür auf (display: contents), seine Teile werden geordnet. */
+body.dsa5h-phone .dsa5-helpers-sheet [data-sub-panel="combat:body"] { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet [data-sub-panel="combat:body"] > * { margin: 0 !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel { display: contents; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel > .panel-title { display: flex; padding: 0; min-height: 0; background: none; border: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel > .panel-title > span:not(.dsa5h-cast-btns) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel > .panel-title:not(:has(.dsa5h-cast-btns)) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-cast-btns { display: flex; flex: 1; gap: 8px; margin: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-cast-btn { flex: 1 1 0; min-width: 0; height: 44px; margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-panel > .panel-title .dsa5h-cast-btn > span { flex: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0; border: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-quick-actions { display: contents; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-top :is(.dsa5h-quick-actions button, .dsa5h-body-ini) {
+  box-sizing: border-box; width: auto; min-width: 0; height: auto; min-height: 52px; margin: 0; padding: 6px 10px;
+  display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 8px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--field); text-align: left; font-size: 15px; line-height: 1.15;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-quick-actions img { width: 28px; height: 28px; flex: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-ini { order: -1; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat { flex: 1; flex-direction: row; align-items: center; justify-content: space-between; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat small { font-size: 15px; text-transform: none; letter-spacing: 0; color: inherit; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-top .dsa5h-body-stat strong { font-size: 18px; }
+
+/* Hände untereinander, ohne Figur. Waffenkarte (Issue #40, drei Bänder seit 2026-10-20) aus der Bogen-CSS, fürs Handy
+   angepasst: Name, darunter Kampftechnik · KtW · RW, dann Bild 84 px neben AT | PA und TP, Tippziele 44 px.
+   Freie/belegte Hand als schmale gestrichelte Zeile mit Auswahl. */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-grid { display: flex; flex-direction: column; align-items: stretch; gap: 8px; min-height: 0; padding: 0; isolation: auto; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-grid > :is(.dsa5h-body-figure, .dsa5h-body-figure-switch) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-side { display: block; width: 100%; text-align: left; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
+  grid-template-columns: 84px minmax(0, 1fr); grid-template-areas: "name name" "meta meta" "media stats" "extra extra"; padding: 36px 12px 12px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-bg { width: 210px; height: 210px; right: -46px; top: -14px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media { width: 84px; height: 84px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-meta { font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name { font-size: 23px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name .dsa5h-favorite { width: 36px; height: 36px; margin: -6px 0; font-size: 20px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-pick { width: 40px; height: 40px; font-size: 17px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill { height: 44px; padding: 0 12px 0 4px; border-radius: 22px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill b { font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-die { width: 34px; height: 34px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage { height: 44px; min-height: 44px; padding-inline: 12px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra .dsa5h-hand-swap {
+  height: 40px; padding: 0 12px; border: 1px dashed var(--line2, rgba(43, 39, 33, .28)); background: none; font-size: 15px;
+}
+/* Munitionswahl (#74): Menü als Popover über der Karte, Einträge fingergerecht wie die übrigen Knöpfe der Karte. */
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ammo-menu { gap: 8px; max-width: min(320px, calc(100vw - 16px)); padding: 10px; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-content .dsa5h-ammo-chip { min-height: 44px; padding: 0 16px; border-radius: 22px; font-size: 16px; }
+/* Fußleiste der Fernkampfhand einheitlich 40 px hoch (Rückmeldung 2026-11-11: Munitionswahl stand größer als Nachladen daneben). */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card :is(.dsa5h-ammo-pick > summary, .dsa5h-reload-btn, .dsa5h-aim, .dsa5h-mag) { height: 40px; padding-inline: 12px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-ammo-pick > summary { padding-right: 28px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-reload-reset { width: 40px; height: 40px; font-size: 17px; }
+/* Freie oder belegte Hand: eine Zeile „Haupthand · frei“ + Auswahl */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > :is(.dsa5h-hand-free, .dsa5h-hand-empty, .dsa5h-hand-2h-note) {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 12px; padding: 6px 12px; text-align: left;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-2h-note { display: block; padding-block: 10px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-empty > .dsa5h-hand-empty-text { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-empty > .dsa5h-hand-select { width: 100%; height: 44px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-free { grid-template-columns: minmax(0, 1fr) 44px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-free > .dsa5h-hand-tile { grid-column: 2; grid-row: 1; width: 44px; height: 44px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-hand-free-text { grid-column: 1; grid-row: 1; flex-direction: row; align-items: baseline; gap: 8px; }
+
+/* Weitere Waffen und Sonderfertigkeiten kommen vor der Rüstung */
+body.dsa5h-phone .dsa5-helpers-sheet [data-sub-panel="combat:body"] > .panel { order: 3; }
+
+/* Rüstung: Kacheln RS / BE, darunter die getragenen Rüstungen als Liste */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor-row {
+  order: 5; display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--field);
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor-row > .dsa5h-figure-col-title { order: -2; font-size: 13px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-shield {
+  order: -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: auto; padding: 0;
+  border: 0; border-radius: 0; background: none; box-shadow: none; cursor: default;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-shield > span { padding: 8px 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-shield small { font-size: 12px; text-transform: uppercase; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-shield strong { font-size: 24px !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor { flex-direction: column; flex-wrap: nowrap; gap: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor-item {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) auto auto; align-items: center; gap: 10px; max-width: none; min-height: 52px; text-align: left;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor-item + .dsa5h-body-armor-item { border-top: 1px solid var(--line); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot { display: contents; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot-image { position: static; grid-column: 1; grid-row: 1; width: 40px; height: 40px; border-radius: 4px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-body-item-name { grid-column: 2; grid-row: 1; font-size: 16px; white-space: normal; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor :is(.dsa5h-armor-slot-rs, .dsa5h-armor-slot-be) {
+  position: static; grid-row: 1; padding: 0; background: none; color: var(--ink); text-shadow: none; font-size: 14px; white-space: nowrap;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot-rs { grid-column: 3; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot-be { grid-column: 4; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot meter { position: static; grid-column: 1; grid-row: 2; width: 40px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-body-armor .dsa5h-armor-slot > .dsa5h-onuse { position: static; grid-column: 2; grid-row: 2; justify-self: start; }
+
+/* Magie/Religion: Traditionskarte (Dummy 13) mit Symbol, Name, Leiteigenschaft/Merkmal/Faktor und AsP- bzw. KaP-Regler */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header {
+  display: flex; flex-wrap: wrap; gap: 8px 12px; margin: 6px 0 10px; padding: 12px;
+  border: 0; border-radius: 6px; background: var(--dsa5h-m-hdr); color: #f4e8d6; box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-name { flex: 1 1 100%; width: auto; padding: 0; background: none; gap: 10px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-tradition-icon { width: 36px; height: 36px; padding: 4px; border-radius: 6px; background: rgba(224, 192, 128, .18); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header :is(.dsa5h-tradition-name-text, .dsa5h-tradition-name input) { font-size: 22px; white-space: normal; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta { flex: 1 1 100%; min-width: 0; gap: 8px; border-left: 0; padding-left: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta label { min-width: 0; overflow-wrap: anywhere; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta label > span { white-space: normal; color: rgba(244, 232, 214, .7); font-size: 11px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta :is(input, select) { max-width: 100%; color: #f4e8d6 !important; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta :is(input, select):disabled { opacity: 1; -webkit-text-fill-color: #f4e8d6; appearance: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-meta .dsa5h-tradition-accent :is(input, select) { color: #e0c48c !important; -webkit-text-fill-color: #e0c48c; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header > .dsa5h-m-stepper { flex: 1 1 100%; }
+
+/* −/+-Regler (mobile.js addResourceSteppers): Balken mit Wert, Knöpfe 44 px */
+.dsa5h-m-stepper { display: flex; align-items: center; gap: 8px; min-width: 0; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-content .dsa5h-m-stepper > button {
+  flex: none; width: 44px; min-width: 44px; height: 44px; margin: 0; padding: 0; border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 6px;
+  background: var(--field, #fff); color: var(--ink, #2b2721); font-size: 22px; line-height: 1; box-shadow: none;
+}
+.dsa5h-m-stepper > button:disabled { opacity: .4; }
+.dsa5h-m-step-bar {
+  position: relative; flex: 1; min-width: 0; height: 36px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  border-radius: 4px; background: rgba(0, 0, 0, .35); color: #fff; font-family: 'Andalus', serif;
+}
+.dsa5h-m-step-bar > span { position: absolute; inset: 0 auto 0 0; background: var(--dsa5h-m-res, #8b6f3f); }
+.dsa5h-m-step-bar > b { position: relative; font-size: 16px; white-space: nowrap; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+.dsa5h-m-res-wounds { --dsa5h-m-res: linear-gradient(90deg, #7d1d17, #b3241a); }
+.dsa5h-m-res-astralenergy { --dsa5h-m-res: linear-gradient(90deg, #1d4f8a, #2f74c0); }
+.dsa5h-m-res-karmaenergy { --dsa5h-m-res: linear-gradient(90deg, #3f6b1f, #5f9a2c); }
+.dsa5h-m-res-fatePoints { --dsa5h-m-res: linear-gradient(90deg, #8b6f3f, #c39a4c); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-tradition-header .dsa5h-m-stepper > button { background: rgba(255, 255, 255, .08); border-color: rgba(224, 192, 128, .45); color: #f4e8d6; }
+
+/* Eigenschaften › Grundwerte im Spielmodus: Name über dem Regler statt der Tabelle Aktuell/Mod./Steig./Max
+   (bleibt im Bearbeitungsmodus). */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row.derived-row:has(> .dsa5h-m-stepper) { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-block: 8px; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row.derived-row:has(> .dsa5h-m-stepper) > :not(.left, .dsa5h-m-stepper) { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row.derived-row > .left { flex: 1 1 100%; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row.derived-row > .dsa5h-m-stepper { flex: 1 1 100%; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-content .row-head.derived-row { display: none; }
+
+/* Status: Kacheln Schmerz · Belastung · Traglast (status.hbs, nur Smartphone) */
+.dsa5h-m-status-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 6px 0 10px; }
+.dsa5h-m-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 8px 4px;
+  border: 1px solid var(--line); border-radius: 6px; background: var(--field); text-align: center;
+}
+.dsa5h-m-tile > small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.dsa5h-m-tile > strong { font-family: 'Andalus', serif; font-size: 26px; line-height: 1.1; }
+.dsa5h-m-tile > span { font-size: 12px; color: var(--muted); }
+.dsa5h-m-tile.active { border-color: var(--dsa5h-m-danger); }
+.dsa5h-m-tile.active > strong { color: var(--dsa5h-m-danger); }
+/* Zustände: eine Spalte, Stufe mit −/+ in Fingergröße */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-two-col { display: block; columns: auto; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-conditions-panel .dsa5h-effect-row { grid-template-columns: 32px minmax(0, 1fr) auto 44px 40px; min-height: 56px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-cond-steps { display: flex; gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-cond-steps .dsa5h-step { width: 44px; height: 44px; margin: 0; font-size: 22px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row > strong { font-size: 20px; text-align: center; }
+/* „Zustand hinzufügen“ als Knopf, die Auswahl als Blatt von unten; Antippen daneben (über die Zusammenfassung) schließt */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-picker > summary {
+  display: flex; align-items: center; justify-content: center; height: 44px; margin: 8px; list-style: none;
+  border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 6px; background: var(--field); font-size: 16px; font-weight: 700;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-picker > summary::-webkit-details-marker { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-picker[open] > summary::before { content: ''; position: fixed; inset: 0; z-index: 30; background: rgba(0, 0, 0, .5); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-picker[open] > .dsa5h-condition-grid {
+  position: fixed; inset: auto 0 0 0; z-index: 31; max-height: 70vh; overflow-y: auto; overscroll-behavior: contain;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 14px 12px calc(16px + var(--dsa5h-m-safe-b));
+  border-radius: 14px 14px 0 0; background: var(--dsa5h-m-paper); box-shadow: 0 -8px 30px rgba(0, 0, 0, .45);
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-grid button { min-height: 48px; margin: 0; justify-content: flex-start; gap: 8px; font-size: 15px; text-align: left; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-grid button img { width: 28px; height: 28px; flex: none; }
+/* Suche (Issue #37) bleibt beim Scrollen oben im Blatt; 16 px, sonst zoomt iOS beim Antippen */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-condition-grid > .dsa5h-condition-search {
+  position: sticky; top: -14px; z-index: 1; height: 44px; font-size: 16px;
+  box-shadow: 0 -14px 0 var(--dsa5h-m-paper), 0 6px 0 var(--dsa5h-m-paper);
+}
+/* Übertragene Effekte: Name, darunter die Quelle */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) { grid-template-columns: 32px minmax(0, 1fr) 40px; row-gap: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > :first-child { grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > a:nth-of-type(1) { grid-column: 2; grid-row: 1; align-self: end; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > a:nth-of-type(2) { grid-column: 2; grid-row: 2; align-self: start; text-align: left; font-size: 13px; color: var(--muted); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > span:empty { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-effect-row:has(> a + a) > button { grid-column: 3; grid-row: 1 / span 2; }
+
+/* Leere Abschnitte im Spielmodus ausblenden (Ü8, vorgezogen für Magie, Religion und Kampf) */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] :is([data-tab-panel="magic"], [data-tab-panel="religion"], [data-tab-panel="combat"]) .panel:not(.dsa5h-body-panel):has(> .dsa5h-empty, > .chips, > div > .dsa5h-empty):not(:has(.item, .chip)) { display: none; }
+
+/* Seiten-Umbau P3 (MOBILE.md 14.3) ------------------------------------------ */
+/* Titelblatt: Favoriten-Karten mit größerem Namen; die ganze Karte würfelt (mobile.js, Talente/Zauber/Liturgien) */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-card { min-height: 52px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-card .withContext a { font-size: 16px; }
+/* Talent-Vorschläge (F1, MOBILE.md 15): eine Spalte wie im Mobil-Dummy, Name | FW, darunter Grund | Probe; Klappkopf
+   und Anzahl −/+ als 44-px-Ziele. Die ganze Karte würfelt wie bei den Favoriten. */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-head { min-height: 48px; padding-top: 0; padding-bottom: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-toggle { align-self: stretch; min-height: 44px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count { gap: 2px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count button { width: 44px; height: 44px; font-size: 20px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-suggest-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 8px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-fav-card.dsa5h-suggest-card {
+  grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "name value" "reason roll";
+  gap: 4px 8px; min-height: 64px; padding: 8px 10px 8px 12px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-card .dsa5h-fav-name { font-size: 17px; overflow-wrap: normal; text-align: left; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-card .dsa5h-fav-card-value { font-size: 17px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-reason { align-self: center; font-size: 14px; }
+
+/* Ausrüstung: Kategorie-Chips (mobile.js addInventoryChips), Zeilen mit Gewicht als Unterzeile, Taschen als Liste */
+.dsa5h-m-chips {
+  display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain;
+  margin: 8px -10px; padding: 0 10px;
+}
+.dsa5h-m-chips::-webkit-scrollbar { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-m-chips button {
+  flex: none; width: auto; height: 40px; margin: 0; padding: 0 14px; border: 1px solid var(--line2, rgba(43, 39, 33, .28)); border-radius: 20px;
+  background: var(--field); color: var(--ink); font-family: 'Andalus', serif; font-size: 15px; white-space: nowrap; box-shadow: none;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-m-chips button small { margin-left: 4px; color: var(--muted); font-size: 12px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-m-chips button[aria-pressed="true"] { border-color: #272320; background: #272320; color: #f4e8d6; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-m-chips button[aria-pressed="true"] small { color: rgba(244, 232, 214, .7); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-m-filtered { display: none !important; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row-head { display: none; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row {
+  grid-template-columns: 40px minmax(0, 1fr) auto 44px auto 34px; row-gap: 0; min-height: 56px;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(2) { grid-column: 2; grid-row: 1; align-self: end; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(5) {
+  display: block; grid-column: 2; grid-row: 2; align-self: start; justify-self: start; font-size: 13px; color: var(--muted); text-align: left;
+}
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(5):not(:empty)::after { content: '\a0' attr(data-dsa5h-unit); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :is(:nth-child(3), :nth-child(4), :nth-child(6), :nth-child(7)) { grid-row: 1 / span 2; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(3) { grid-column: 3; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(4) { grid-column: 4; height: 36px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(6) { grid-column: 5; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(7) { grid-column: 6; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-inventory-row.row > :nth-child(4)::before { content: '×'; margin-right: 1px; color: var(--muted); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-equip-toggle { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-equip-toggle[aria-pressed="true"] { border-color: var(--accent); background: rgba(139, 111, 63, .15); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-bag-tiles { display: flex; flex-direction: column; gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-bag { width: 100%; max-width: none; box-sizing: border-box; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-bag-open { flex: 1; min-width: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-inventory-entry details > summary { min-height: 40px; display: flex; align-items: center; padding: 0 12px; font-size: 15px; }
+/* Leere Abschnitte mit Drag-&-Drop-Hinweis im Spielmodus aus (Ü8) */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] [data-tab-panel="inventory"] .panel:has(.dsa5h-empty):not(:has(.item)) { display: none; }
+
+/* Notizen: Persönliche Daten einspaltig „Bezeichnung über Wert“, leere Textfelder kleiner */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid { display: block; padding: 0 12px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid label { display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 8px 0; border-top: 1px solid var(--line); }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid label:first-child { border-top: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid label > span { color: var(--muted); font-size: 14px; text-transform: none; letter-spacing: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-details-grid :is(input, select) { width: 100%; max-width: none; padding: 0; text-align: left; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-details-grid label:has(:is(input, select):disabled) :is(input, select) { border: 0; background: none; color: var(--ink); -webkit-text-fill-color: var(--ink); opacity: 1; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-notes-text :is(.dsa5h-richtext, .dsa5h-richtext prose-mirror) { min-height: 88px; }
+/* Leere Angaben im Spielmodus weglassen (formInput schreibt den Wert ins value-Attribut) */
+body.dsa5h-phone .dsa5-helpers-sheet[data-mode="play"] .dsa5h-details-grid label:has(input[value=""]:disabled) { display: none; }
+
+/* Gefährten: Name kleiner und zweizeilig, Knöpfe 44 px */
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] h3.ellipsis { flex-wrap: wrap; gap: 4px 10px; min-width: 0; font-size: 22px; line-height: 1.15; white-space: normal; overflow: visible; }
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] h3.ellipsis > a {
+  flex: 1 1 100%; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;
+  overflow-wrap: normal; word-break: normal; hyphens: auto;
+}
+body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="companion"] button:not(.dsa5h-step) { min-height: 44px; }
+
+/* Steigerungsplaner (Modul von Lyynix): Zeilen umbrechen, die Kacheln stehen unter dem Namen und brechen selbst um */
+body.dsa5h-phone .dsa5-helpers-sheet .steigerungsplaner-tab .row-section.wrap.skills.lineheight.tableOdd { flex-wrap: wrap; row-gap: 6px; }
+body.dsa5h-phone .dsa5-helpers-sheet .steigerungsplaner-tab .planner-steps { flex: 1 1 100%; flex-wrap: wrap; gap: 6px; overflow: visible; }
+body.dsa5h-phone .dsa5-helpers-sheet .steigerungsplaner-tab .planner-step { margin-right: 0; }
+body.dsa5h-phone .dsa5-helpers-sheet .steigerungsplaner-tab .planner-group-label { min-width: 0; flex: 1 1 auto; }
+
+/* Dunkles Bogen-Thema (Ü10): aktive Unterreiter und Chips sonst dunkel auf dunkel */
+body.dsa5h-phone .dsa5-helpers-sheet[data-theme="dark"] .dsa5h-sub-tabs button.active,
+body.dsa5h-phone .dsa5-helpers-sheet[data-theme="dark"] .dsa5h-m-chips button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff8ec; }
+
+/* Tablet: Chat-Knopf unten in der Reiterleiste des Bogens (mobile.js setupTabletSheet) */
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat { position: relative; margin-top: auto !important; }
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat > i { font-size: 22px; line-height: 24px; }
+body.dsa5h-tablet[data-dsa5h-panel="chat"] .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat { background: rgba(224, 192, 128, .2) !important; box-shadow: inset 0 2px 0 #e0c48c; }
+body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat .dsa5h-m-badge { top: 2px; right: 6px; }
+
+/* Tablet: Reiterleiste rechts im Fenster */
+body.dsa5h-tablet .dsa5-helpers-sheet .window-content { padding-right: 84px !important; }
+body.dsa5h-tablet .dsa5-helpers-sheet .window-content nav.dsa5h-rail {
+  left: auto !important; right: 10px; top: 60px; bottom: 10px; z-index: 6 !important; width: 66px;
+  overflow-y: auto; gap: 4px;
+}
+
+/* 12. Chat im Modul-Design -------------------------------------------------
+   Entwurf clickdummy/mobile „Foundry Mobil“, Variante A „Karten“ (Nutzer-Entscheidung 2026-10-19): Nachricht als Karte
+   mit Panel-Kopf und Porträt, eigene Nachrichten mit Goldkante, Flüstern violett. DSA5-Probenkarten: Titel in Andalus,
+   große Eigenschaftswürfel mit Kürzel + Zielwert, Ergebnis als grünes/rotes Band mit QS-Rauten. Eingabe: Chips für die
+   Sichtbarkeit und die Empfänger, rundes Eingabefeld, Würfel-Schnellknöpfe (scripts/mobile/chat.js). */
+body.dsa5h-mobile {
+  --dsa5h-m-sub: rgba(0, 0, 0, .045);
+  --dsa5h-m-accenttext: #6d5326;
+  --dsa5h-m-okbg: rgba(47, 107, 42, .12);
+  --dsa5h-m-oktext: #24561f;
+  --dsa5h-m-dangerbg: rgba(179, 36, 26, .08);
+  --dsa5h-m-dangertext: #8e1d15;
+  --dsa5h-m-whisper: rgba(110, 70, 140, .1);
+  --dsa5h-m-whisperline: #7a4f96;
+  --dsa5h-m-whispertext: #5c3a73;
+  --dsa5h-m-card: linear-gradient(170deg, rgba(255, 250, 238, .85), rgba(236, 226, 210, .45)), var(--dsa5h-m-paper);
+}
+body.dsa5h-mobile[data-dsa5h-panel="chat"] #sidebar,
+body.dsa5h-mobile:is([data-dsa5h-panel="journal"], [data-dsa5h-panel="actors"]) #sidebar { background: var(--dsa5h-m-paper); }
+body.dsa5h-mobile #chat { background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); font-family: 'GentiumBasic', Georgia, serif; }
+body.dsa5h-mobile #chat .chat-scroll { padding: 10px 10px 6px; scrollbar-width: none; }
+body.dsa5h-mobile #chat .chat-log { display: flex; flex-direction: column; gap: 8px; padding: 0; }
+
+/* Karte */
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message {
+  position: relative; margin: 0; padding: 0; overflow: hidden;
+  border: 1px solid rgba(185, 154, 92, .55) !important; border-image: none; border-radius: 6px;
+  background: var(--dsa5h-m-card); color: var(--dsa5h-m-ink); box-shadow: none;
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+/* Chat und Journal bleiben auch im dunklen Foundry-Thema hell (wie Kopf und Heldenkarte der Mobilansicht) */
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card, #journal, #actors, .dsa5h-m-journal) {
+  --color-text-primary: var(--dsa5h-m-ink); --color-text-secondary: var(--dsa5h-m-ink2); --color-text-emphatic: var(--dsa5h-m-ink);
+  --color-text-subtle: var(--dsa5h-m-ink2); --color-form-label: var(--dsa5h-m-ink2);
+}
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message .message-content :is(b, strong, p, li, .card-content) { color: inherit; }
+body.dsa5h-mobile #chat .chat-message.dsa5h-m-mine { box-shadow: inset 3px 0 0 var(--dsa5h-m-accent); }
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message.whisper {
+  border-color: var(--dsa5h-m-whisperline) !important;
+  background: linear-gradient(170deg, var(--dsa5h-m-whisper), transparent 70%), var(--dsa5h-m-paper);
+}
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message .message-header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; min-height: 34px; margin: 0; padding: 0 2px 0 8px;
+  background: var(--dsa5h-m-phead); border: 0; border-bottom: 1px solid rgba(185, 154, 92, .35); line-height: 1.2;
+}
+body.dsa5h-mobile .chat-message .message-header :is(.sender-image, .dsa5h-m-ini) {
+  flex: none; width: 26px; height: 26px; margin: 0; box-sizing: border-box; border: 1.5px solid #e0c48c; border-radius: 50%; object-fit: cover;
+}
+body.dsa5h-mobile .chat-message .dsa5h-m-ini {
+  display: grid; place-items: center; background: var(--dsa5h-m-ini, #4a3f33); color: #f4e8d6; font-family: 'Andalus', serif; font-size: 13px;
+}
+body.dsa5h-mobile .chat-message .message-sender {
+  flex: 1; min-width: 0; margin: 0; padding: 0; color: var(--dsa5h-m-ink); font-family: inherit; font-size: 14px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dsa5h-mobile .chat-message .message-metadata { flex: none; display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; color: var(--dsa5h-m-ink2); }
+/* Löschen, Verdeckt- und Flüster-Symbol: über ⋮ bzw. als Abzeichen darunter */
+body.dsa5h-mobile .chat-message .message-metadata :is(.message-delete, .chatIndicator, .privateMessageIndicator) { display: none; }
+body.dsa5h-mobile .chat-message .message-header .dsa5h-m-msgmenu { order: 50; width: 34px; height: 34px; margin: 0; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile .chat-message .message-header:has(.whisper-to, .flavor-text)::after { content: ""; order: 60; flex-basis: 100%; height: 0; }
+body.dsa5h-mobile .chat-message .message-header .whisper-to {
+  order: 70; flex: none; max-width: 100%; margin: 6px 0 4px; padding: 2px 9px; box-sizing: border-box; border: 1px solid var(--dsa5h-m-whisperline); border-radius: 10px;
+  background: var(--dsa5h-m-whisper); color: var(--dsa5h-m-whispertext); font-size: 12px; font-weight: 700; letter-spacing: .03em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dsa5h-mobile .chat-message.blind .message-header::before {
+  content: "\f070"; order: 45; font-family: var(--font-awesome, 'Font Awesome 6 Pro'); font-weight: 900; font-size: 12px; color: var(--dsa5h-m-ink2);
+}
+body.dsa5h-mobile .chat-message .message-header .flavor-text { order: 80; flex-basis: 100%; margin: 2px 0 4px; font-size: 13px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile :is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message .message-content {
+  padding: 6px 10px 10px; color: var(--dsa5h-m-ink); font-size: 16px; line-height: 1.45; overflow-wrap: anywhere;
+}
+body.dsa5h-mobile .chat-message .message-content :is(button, .chat-button) {
+  width: auto; min-height: 36px; margin: 2px 4px 2px 0; padding: 0 12px; border: 1px solid var(--dsa5h-m-accent); border-radius: 18px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-accenttext); font-family: inherit; font-size: 14px; font-weight: 700; line-height: 34px;
+}
+/* Knöpfe, die selbst das Symbol sind (<button class="fas fa-dice">, z. B. „Probe anfordern“ des Systems): Symbolschrift
+   behalten, sonst bleiben sie leer (Rückmeldung 2026-10-20) */
+body.dsa5h-mobile .chat-message .message-content :is(button, .chat-button):is(.fa, .fas, .fa-solid, .far, .fa-regular) {
+  width: 36px; padding: 0; font-family: var(--font-awesome, 'Font Awesome 6 Pro'); font-weight: 900; text-align: center;
+}
+body.dsa5h-mobile .chat-message .message-content :is(button, .chat-button):is(.far, .fa-regular) { font-weight: 400; }
+/* Foundrys Würfelergebnis (/r …) */
+body.dsa5h-mobile .chat-message .dice-roll :is(.dice-formula, .dice-total) {
+  margin: 0 0 4px; border: 1px solid var(--dsa5h-m-line2); border-radius: 6px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); box-shadow: none;
+}
+body.dsa5h-mobile .chat-message .dice-roll .dice-formula { font-size: 14px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile .chat-message .dice-roll .dice-total { font-family: 'Andalus', serif; font-size: 24px; font-weight: normal; line-height: 40px; }
+
+/* DSA5-Probenkarte (templates/chat/roll/test-card.hbs des Systems) */
+body.dsa5h-mobile .chat-message .dsa5.chat-card { display: flex; flex-direction: column; gap: 6px; padding: 0; border: 0; background: none; color: var(--dsa5h-m-ink); }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .card-content { margin: 0; padding: 0; border: 0; background: none; font-size: 14px; line-height: 1.35; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .test-data { display: flex; align-items: center; gap: 8px; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .test-data > b { flex: 1; font-family: 'Andalus', serif; font-weight: normal; font-size: 20px; line-height: 1.1; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result { display: flex; flex-wrap: wrap; gap: 6px 10px; padding: 2px 0 16px; font-size: 0; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result > b { display: none; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result > span.display-toggle {
+  position: relative; width: 40px; height: 40px; margin: 0; background-size: contain; background-position: center; background-repeat: no-repeat;
+  font-size: 16px; line-height: 40px; text-align: center;
+}
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result > span.display-toggle::after {
+  content: attr(data-dsa5h-cap); position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 1px;
+  color: var(--dsa5h-m-ink2); font-size: 11px; font-weight: normal; line-height: 1.2; letter-spacing: .04em; white-space: nowrap; text-shadow: none;
+}
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .roll-result > span.fail::after { color: var(--dsa5h-m-danger); font-weight: 700; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .chatModifiers { font-size: 13px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-folded { display: none; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-res {
+  order: -1; display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 6px 10px; box-sizing: border-box;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 6px; background: var(--dsa5h-m-sub); font-size: 16px; font-weight: 700;
+}
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-res[data-ok="true"] { border-color: rgba(47, 107, 42, .4); background: var(--dsa5h-m-okbg); color: var(--dsa5h-m-oktext); }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-res[data-ok="false"] { border-color: rgba(179, 36, 26, .4); background: var(--dsa5h-m-dangerbg); color: var(--dsa5h-m-dangertext); }
+body.dsa5h-mobile .chat-message .dsa5.chat-card > .dsa5h-m-res[data-crit="true"] { border-width: 2px; }
+/* Ergebnisband direkt unter den Würfeln (vor den Modifikatoren) */
+body.dsa5h-mobile .chat-message .dsa5.chat-card.dsa5h-m-test > .test-data { order: -3; }
+body.dsa5h-mobile .chat-message .dsa5.chat-card.dsa5h-m-test > .roll-result { order: -2; }
+.dsa5h-m-pips { margin-left: auto; display: flex; gap: 4px; padding-right: 2px; }
+.dsa5h-m-pips > i { width: 9px; height: 9px; transform: rotate(45deg); border: 1px solid currentColor; opacity: .45; }
+.dsa5h-m-pips > i.on { background: currentColor; opacity: 1; }
+
+/* Eingabe: Foundrys Formular als Raster. Unsere Leiste (.dsa5h-m-ci, display: contents) liefert Chips und Knöpfe,
+   Foundrys Eingabefeld #chat-message bleibt ein eigenes Kind des Formulars (siehe chat.js, placeInput). */
+body.dsa5h-mobile #chat .chat-form {
+  position: relative; flex: none; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px 44px; align-items: end; gap: 6px;
+  grid-template-areas: "modes modes modes modes" "to to to to" "aa input dice send" "panel panel panel panel";
+  margin: 0; padding: 6px 10px calc(10px + var(--dsa5h-m-safe-b)); border: 0; border-top: 1px solid rgba(185, 154, 92, .55);
+  background: linear-gradient(180deg, rgba(255, 250, 238, .6), transparent 40px), var(--dsa5h-m-paper);
+  font-family: 'GentiumBasic', Georgia, serif; color: var(--dsa5h-m-ink);
+}
+body.dsa5h-mobile #chat .chat-form > #chat-controls { display: none; }
+body.dsa5h-mobile #chat .chat-form > .jump-to-bottom { position: absolute; right: 12px; bottom: calc(100% + 8px); z-index: 2; }
+.dsa5h-m-ci { display: contents; }
+body.dsa5h-mobile.dsa5h-m-panel-open #sidebar:has(#chat.active) { padding-bottom: 0; }
+.dsa5h-m-ci button { font-family: inherit; }
+.dsa5h-m-ci-row { display: flex; align-items: center; gap: 6px; min-width: 0; margin: 0 -10px; padding: 0 10px; overflow-x: auto; scrollbar-width: none; }
+.dsa5h-m-ci-row[data-row="modes"] { grid-area: modes; }
+.dsa5h-m-ci-row[data-row="to"] { grid-area: to; }
+.dsa5h-m-ci-row::-webkit-scrollbar { display: none; }
+.dsa5h-m-ci-row > small { flex: none; min-width: 38px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-ci .dsa5h-m-chip {
+  flex: none; display: flex; align-items: center; gap: 6px; width: auto; height: 34px; margin: 0; padding: 0 12px;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 17px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink);
+  font-size: 14px; line-height: 1; white-space: nowrap;
+}
+.dsa5h-m-ci .dsa5h-m-chip[aria-pressed="true"] { border-color: #272320; background: #272320; color: #f4e8d6; }
+.dsa5h-m-ci .dsa5h-m-chip[data-tone="whisper"][aria-pressed="true"] { border-color: var(--dsa5h-m-whisperline); background: var(--dsa5h-m-whisperline); color: #fff; }
+.dsa5h-m-ci .dsa5h-m-chip > i {
+  width: 22px; height: 22px; margin-left: -8px; border: 1.5px solid #e0c48c; border-radius: 50%; box-sizing: border-box;
+  display: grid; place-items: center; background: var(--dsa5h-m-ini, #4a3f33); color: #f4e8d6; font-family: 'Andalus', serif; font-size: 11px; font-style: normal;
+}
+.dsa5h-m-ci .dsa5h-m-chip-req { border-color: var(--dsa5h-m-accent); color: var(--dsa5h-m-accenttext); font-weight: 700; }
+.dsa5h-m-ci .dsa5h-m-ci-round,
+.dsa5h-m-ci .dsa5h-m-ci-send {
+  flex: none; width: 44px; height: 44px; margin: 0; padding: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 22px;
+  display: grid; place-items: center; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 15px; font-weight: 700; line-height: 1;
+}
+.dsa5h-m-ci .dsa5h-m-ci-aa { grid-area: aa; font-family: 'Andalus', serif; font-size: 17px; font-weight: normal; }
+.dsa5h-m-ci .dsa5h-m-ci-dicebtn { grid-area: dice; }
+.dsa5h-m-ci .dsa5h-m-ci-round[aria-expanded="true"] { border-color: var(--dsa5h-m-accent); background: rgba(185, 154, 92, .25); }
+.dsa5h-m-ci .dsa5h-m-ci-round > img { width: 28px; height: 28px; border: 0; }
+.dsa5h-m-ci .dsa5h-m-ci-send { grid-area: send; border: 0; background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); font-size: 17px; }
+/* Foundrys Eingabefeld (ProseMirror) als rundes Feld; die Formatleiste nur mit „Aa“ */
+body.dsa5h-mobile #chat .chat-form > #chat-message {
+  grid-area: input; min-width: 0; height: auto; min-height: 44px; max-height: 32vh; margin: 0; padding: 0 14px; box-sizing: border-box;
+  display: flex; flex-direction: column; overflow-y: auto;
+  border: 1px solid rgba(185, 154, 92, .6); border-radius: 22px; background: rgba(255, 255, 255, .7);
+  color: var(--dsa5h-m-ink); font-family: inherit; font-size: 16px; line-height: 1.35;
+}
+body.dsa5h-mobile #chat .chat-form > #chat-message .editor-content { flex: 1; min-height: 0; padding: 11px 0; }
+body.dsa5h-mobile #chat .chat-form > #chat-message :is(.editor-container, .editor-content, .ProseMirror) { min-height: 20px; outline: 0; background: none; color: var(--dsa5h-m-ink); }
+body.dsa5h-mobile #chat .chat-form > #chat-message .ProseMirror > p::before { border: 0; outline: 0; box-shadow: none; background: none; color: rgba(43, 39, 33, .45); font-style: italic; }
+body.dsa5h-mobile #chat .chat-form > #chat-message .menu-container { display: none; }
+body.dsa5h-mobile #chat .chat-form:has(.dsa5h-m-ci-fmt) > #chat-message { border-radius: 12px; }
+body.dsa5h-mobile #chat .chat-form:has(.dsa5h-m-ci-fmt) > #chat-message .menu-container { display: block; margin: 6px -8px 0; }
+.dsa5h-m-ci-dice { grid-area: panel; display: flex; flex-direction: column; gap: 8px; padding: 8px; border: 1px solid rgba(185, 154, 92, .5); border-radius: 8px; background: rgba(255, 255, 255, .35); }
+.dsa5h-m-ci-dice[hidden] { display: none; }
+.dsa5h-m-ci-quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.dsa5h-m-ci-quick > button {
+  height: 44px; margin: 0; border: 1px solid var(--dsa5h-m-accent); border-radius: 6px; background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-accenttext); font-size: 15px; font-weight: 700;
+}
+.dsa5h-m-ci-free { display: flex; align-items: center; gap: 6px; }
+.dsa5h-m-ci-free > span { flex: none; min-width: 26px; text-align: center; font-size: 16px; font-weight: 700; }
+.dsa5h-m-ci-free > button {
+  flex: none; width: 36px; height: 36px; margin: 0; padding: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 18px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 17px; line-height: 1;
+}
+.dsa5h-m-ci-free > .dsa5h-m-ci-die { width: auto; padding: 0 10px; font-size: 15px; font-weight: 700; }
+.dsa5h-m-ci-free > .dsa5h-m-ci-go {
+  flex: 1; min-width: 0; width: auto; height: 40px; border: 0; border-radius: 6px; background: var(--dsa5h-m-accent);
+  color: var(--dsa5h-m-onaccent); font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* Wurfergebnis als Blatt von unten (#64 Variante A, roll-result.js): echte Chatkarte, Kopf mit ‹ n/m › und ✕ */
+.dsa5h-m-roll-head > span { flex: 1; }
+.dsa5h-m-roll-head > small { flex: none; min-width: 32px; text-align: center; font-variant-numeric: tabular-nums; }
+.dsa5h-m-more-sheet .dsa5h-m-roll-head button:disabled { opacity: .3; }
+.dsa5h-m-roll-card { margin: 0; padding: 0; list-style: none; }
+
+/* 13. Journal im Modul-Design -----------------------------------------------
+   Verzeichnis: Suche als Pille, Ordner mit Farbkante, Einträge als Zeilen mit ›. Eintrag: Pergamentseite mit Ordnerpfad,
+   Titel in Andalus mit Goldlinie, Text mit Initiale (scripts/mobile/journal.js). Seitenwahl (Rückmeldung 2026-10-20):
+   Tablet = Foundrys Inhaltsverzeichnis links im Modul-Design + ‹ › mit Seitentiteln unten; Smartphone = Verzeichnis
+   aus, Steuerleiste unten „‹ · Seite x von y ▾ · ›“, die Mitte öffnet die Seitenliste als Blatt.
+   Das Akteur-Verzeichnis der SL (Panel „Akteure“, Rückmeldung 2026-10-20) nutzt dieselben Verzeichnis-Regeln. */
+body.dsa5h-mobile :is(#journal, #actors) { background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink); font-family: 'GentiumBasic', Georgia, serif; }
+body.dsa5h-mobile :is(#journal, #actors) .directory-header { gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--dsa5h-m-line); }
+body.dsa5h-mobile :is(#journal, #actors) .directory-header search { gap: 4px; }
+body.dsa5h-mobile :is(#journal, #actors) .directory-header search input {
+  height: 40px; padding: 0 12px; border: 1px solid var(--dsa5h-m-line2); border-radius: 20px; background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink); font-size: 16px;
+}
+body.dsa5h-mobile :is(#journal, #actors) .directory-header :is(search button, .action-buttons button) { color: var(--dsa5h-m-ink); }
+body.dsa5h-mobile :is(#journal, #actors) .directory-header .action-buttons button {
+  min-height: 40px; border: 1px solid var(--dsa5h-m-accent); border-radius: 6px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-accenttext); font-weight: 700;
+}
+body.dsa5h-mobile :is(#journal, #actors) .directory-list { padding: 0; }
+body.dsa5h-mobile :is(#journal, #actors) .folder > .folder-header {
+  min-height: 48px; padding: 0 12px 0 16px; gap: 8px; border: 0 !important; border-top: 1px solid var(--dsa5h-m-line) !important; box-shadow: none;
+  background-image: linear-gradient(90deg, transparent 4px, #e3d7c3 4px); color: var(--dsa5h-m-ink); font-size: 16px; font-weight: 700; text-shadow: none;
+}
+body.dsa5h-mobile :is(#journal, #actors) .folder > .subdirectory { margin-left: 4px; border-left-width: 4px; }
+body.dsa5h-mobile :is(#journal, #actors) .directory-item.entry {
+  min-height: 56px; align-items: center; padding: 0 12px; border-top: 1px solid var(--dsa5h-m-line); background: none;
+}
+body.dsa5h-mobile :is(#journal, #actors) .directory-item.entry .entry-name { flex: 1; min-width: 0; color: var(--dsa5h-m-ink); font-size: 16px; line-height: 56px; }
+body.dsa5h-mobile :is(#journal, #actors) .directory-item.entry::after { content: "›"; flex: none; padding-left: 8px; font-size: 20px; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile #actors .directory-item.entry { gap: 10px; }
+body.dsa5h-mobile #actors .directory-item.entry img.thumbnail { flex: none; width: 40px; height: 40px; object-fit: cover; border: 1.5px solid var(--dsa5h-m-gold); border-radius: 3px; }
+
+body.dsa5h-mobile .dsa5h-m-journal .window-content { padding: 0; background: var(--dsa5h-m-paper); }
+body.dsa5h-phone .dsa5h-m-journal .journal-sidebar { display: none !important; }
+/* Tablet: Inhaltsverzeichnis als Pergament-Leiste. Ansichtswechsel (mobil immer Einzelseite), Einklappen und die
+   Blätter-Knöpfe der Leiste (stehen unten am Text) fallen weg; Suche, Sperre und „Seite hinzufügen“ bleiben. */
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar {
+  display: flex !important; flex-direction: column; flex: 0 0 248px; width: 248px; min-width: 0; margin: 8px 0 8px 8px; padding: 0;
+  border: 1px solid rgba(185, 154, 92, .6); border-radius: 6px; background: var(--dsa5h-m-paper); color: var(--dsa5h-m-ink);
+  font-family: 'GentiumBasic', Georgia, serif; overflow: hidden;
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar search {
+  display: flex; align-items: center; gap: 4px; margin: 0; padding: 8px; border-bottom: 1px solid var(--dsa5h-m-line); background: var(--dsa5h-m-phead);
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar search :is(.view-mode, .collapse-toggle) { display: none; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar search input {
+  flex: 1; min-width: 0; height: 40px; padding: 0 12px; border: 1px solid var(--dsa5h-m-line2); border-radius: 20px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 16px;
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar search button { width: 40px; height: 40px; flex: none; color: var(--dsa5h-m-ink); font-size: 16px; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc { flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 0; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc ol { margin: 0; padding: 0; list-style: none; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc li { margin: 0; padding: 0; border: 0; background: none; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc li.category {
+  padding: 10px 12px 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--dsa5h-m-ink2);
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc .page-heading {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; margin: 0; padding: 0 10px; border-top: 1px solid var(--dsa5h-m-line);
+  background: none; color: var(--dsa5h-m-ink); font-size: 15px; line-height: 1.2; cursor: pointer;
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc .page-index {
+  flex: none; display: grid; place-items: center; width: 28px; height: 28px; margin: 0; border-radius: 50%;
+  background: var(--dsa5h-m-sub); color: var(--dsa5h-m-ink2); font-size: 13px;
+}
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc .page-title { flex: 1; min-width: 0; white-space: normal; word-break: normal; overflow-wrap: break-word; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc li.active > .page-heading { background: rgba(185, 154, 92, .22); font-weight: 700; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc li.active > .page-heading .page-index { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
+/* Überschriften der aktiven Seite (Foundry blendet sie im Verzeichnis ein): eingerückt, kleiner */
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc ol ol .page-heading,
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .toc :is(.level2, .level3) .page-heading { min-height: 40px; padding-left: 48px; font-size: 14px; font-weight: normal; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .action-buttons { flex: none; margin: 0; padding: 8px; border-top: 1px solid var(--dsa5h-m-line); }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .action-buttons :is(.previous, .next) { display: none; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .action-buttons .create { min-height: 44px; }
+body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .action-buttons:not(:has(.create)) { display: none; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-content {
+  flex: 1; width: auto; min-width: 0; margin: 8px; padding: 0; overflow: hidden; color: var(--dsa5h-m-ink);
+  border: 1px solid rgba(185, 154, 92, .6); border-radius: 6px;
+  background: linear-gradient(175deg, rgba(255, 250, 238, .9), rgba(236, 226, 210, .5)), var(--dsa5h-m-paper);
+  box-shadow: inset 0 0 0 3px var(--dsa5h-m-paper), inset 0 0 0 4px rgba(185, 154, 92, .35);
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-content > .journal-header {
+  display: flex; flex-direction: column; align-items: stretch; gap: 4px; margin: 0; padding: 14px 16px 8px; border: 0; background: none;
+}
+.dsa5h-m-jpath { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--dsa5h-m-ink2); }
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-content > .journal-header input.title {
+  height: auto; margin: 0; padding: 0 0 8px; border: 0; border-radius: 0; color: var(--dsa5h-m-ink); text-align: left;
+  background: linear-gradient(90deg, rgba(185, 154, 92, .85), rgba(185, 154, 92, 0)) bottom left / 100% 1px no-repeat;
+  font-family: 'Andalus', serif; font-size: 28px; line-height: 1.15; box-shadow: none;
+}
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-pages { padding: 0 16px 16px; background: none; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-page { margin: 0; padding: 0; border: 0; background: none; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-header { margin: 6px 0 0; padding: 0; border: 0; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-header :is(h1, h2, h3, h4) {
+  margin: 0; padding: 0; border: 0; color: var(--dsa5h-m-accenttext); font-family: 'Andalus', serif; font-weight: normal; font-size: 21px;
+}
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-page :is(.journal-page-header, .journal-page-content) { margin-left: 0; margin-right: 0; padding-left: 0; padding-right: 0; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-content { padding-top: 10px; color: var(--dsa5h-m-ink); font-family: inherit; font-size: 17px; line-height: 1.55; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-content p { margin: 0 0 .8em; }
+body.dsa5h-mobile .dsa5h-m-journal .journal-entry-page.text .journal-page-content > p:first-child::first-letter {
+  float: left; margin: 4px 8px 0 0; font-family: 'Andalus', serif; font-size: 52px; line-height: .85; color: var(--dsa5h-m-accenttext);
+}
+body.dsa5h-mobile .dsa5h-m-journal .journal-page-content img { max-width: 100%; height: auto; }
+.dsa5h-m-jnav { flex: none; display: flex; gap: 8px; padding: 8px 12px calc(10px + var(--dsa5h-m-safe-b)); border-top: 1px solid rgba(185, 154, 92, .4); }
+body.dsa5h-mobile .dsa5h-m-jnav > button {
+  flex: 1; min-width: 0; height: 44px; margin: 0; padding: 0 10px; border: 1px solid var(--dsa5h-m-line2); border-radius: 6px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-family: inherit; font-size: 14px; line-height: 1;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.dsa5h-mobile .dsa5h-m-jnav > button:disabled { opacity: .4; }
+/* Smartphone: ‹ · Seite x von y ▾ · › */
+body.dsa5h-phone .dsa5h-m-jnav > [data-dir] { flex: 0 0 52px; padding: 0; font-size: 26px; line-height: 1; }
+body.dsa5h-phone .dsa5h-m-jnav > .dsa5h-m-jpick {
+  display: flex; align-items: center; justify-content: center; gap: 8px; border-color: rgba(185, 154, 92, .6); border-radius: 22px;
+  background: rgba(255, 255, 255, .6); font-size: 15px;
+}
+.dsa5h-m-jpick > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Seitenliste als Blatt */
+.dsa5h-m-sheet-title { font-family: 'Andalus', serif; font-weight: normal; font-size: 20px; }
+.dsa5h-m-jpage-list { display: flex; flex-direction: column; max-height: 60vh; overflow-y: auto; margin: 0 -6px; }
+.dsa5h-m-jpage-list > button {
+  display: flex; align-items: center; justify-content: flex-start; gap: 10px; width: 100%; min-height: 52px; margin: 0; padding: 0 6px;
+  border: 0; border-top: 1px solid var(--dsa5h-m-line); border-radius: 0; background: none; color: var(--dsa5h-m-ink);
+  font-family: inherit; font-size: 16px; text-align: left;
+}
+.dsa5h-m-jpage-list > button > b {
+  flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--dsa5h-m-sub); color: var(--dsa5h-m-ink2); font-size: 13px;
+}
+.dsa5h-m-jpage-list > button[aria-current="true"] > b { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }

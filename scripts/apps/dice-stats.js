@@ -3,6 +3,8 @@
 // Erwartungslinie, Kennzahlen, aufklappbare Tabelle. Oben Würfeltyp, Würfelart (digital / echte Würfel) und Zeitraum
 // (gesamt, ein Tag oder eigener Zeitraum). Spieler sehen nur die eigene Statistik, die SL alle (2026-10-02).
 // Geöffnet über die Moduleinstellungen (registerMenu) oder game.modules.get('dsa5-helpers').api.openDiceStats().
+// Unten die Einstellungen der Statistik (seit 2026-11-02 nicht mehr in der Liste der Moduleinstellungen): eigene
+// Zustimmung für alle, an/aus und Löschen für die SL.
 import { evaluateDie, dieTypes, playDays, sumCounts, P_SLIGHT, P_STRONG } from '../dice-stats/stats.js';
 import { MODULE_ID, STATS_FLAG } from '../dice-stats/recorder.js';
 import { CONSENT_FLAG, consentOf, isEnabled } from '../dice-stats/settings.js';
@@ -93,6 +95,8 @@ export function getDiceStatsApp() {
         enabled: isEnabled(),
         isGM,
         ownConsent: consentOf(),
+        consentOptions: Object.entries(game.settings.settings.get(`${MODULE_ID}.diceStatsConsent`)?.choices ?? {})
+          .map(([value, label]) => ({ value, label, selected: value === consentOf() })),
         faces: this.state.faces,
         method: this.state.method,
         types: types.map(f => ({ faces: f, active: f === this.state.faces })),
@@ -118,9 +122,11 @@ export function getDiceStatsApp() {
       this.element.dataset.theme = game.settings.get(MODULE_ID, 'theme');
     }
 
-    /** Zeitraum-Auswahl und Datumsfelder (submitOnChange). */
-    static _onChangeForm(_event, _form, formData) {
+    /** Zeitraum-Auswahl, Datumsfelder und Einstellungen (submitOnChange). */
+    static async _onChangeForm(_event, _form, formData) {
       const data = formData.object;
+      if (typeof data.diceStatsConsent === 'string' && data.diceStatsConsent !== consentOf()) await game.settings.set(MODULE_ID, 'diceStatsConsent', data.diceStatsConsent);
+      if (game.user.isGM && typeof data.diceStatsEnabled === 'boolean' && data.diceStatsEnabled !== isEnabled()) await game.settings.set(MODULE_ID, 'diceStatsEnabled', data.diceStatsEnabled);
       if (typeof data.range === 'string') this.state.range = data.range;
       if (typeof data.from === 'string') this.state.from = data.from;
       if (typeof data.to === 'string') this.state.to = data.to;

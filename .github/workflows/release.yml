@@ -1,8 +1,8 @@
 # Baut beim Veröffentlichen eines GitHub-Releases das installierbare Modul:
 # Version aus dem Tag (v0.1.0 → 0.1.0), manifest-/download-URL in module.json, ZIP nur mit den Moduldateien
-# (ohne clickdummy/, project/, tests/, tools/), alles als Release-Assets.
+# (ohne clickdummy/, docs/, tests/, tools/), alles als Release-Assets.
 #
-# Zwei Kanäle (seit 0.4.0, siehe project/RELEASE.md):
+# Zwei Kanäle (seit 0.4.0, siehe docs/RELEASE.md):
 # - Stabil:  https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json
 #            `latest` zeigt nur auf normale Releases, nie auf Pre-releases.
 # - Beta:    https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json
@@ -12,6 +12,22 @@
 # Inhalt, aber eigenem Manifest: module.zip (stabil) und module-beta.zip (Beta-Kanal). So bleibt jeder in seinem Kanal.
 # Ein Pre-release (prereleased) zeigt mit seinem module.json auf den Beta-Kanal; wird es später zum normalen Release
 # erklärt (released), baut die Action dasselbe Release neu und das module.json zeigt auf den stabilen Kanal.
+#
+# v13-Beta (seit 0.6.2, Branch v13), eigener Job „v13“ unten:
+# - v13-Beta: https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13-beta/module.json
+#            Tag v13-<Version> (z. B. v13-0.6.2), nur als Pre-release. Paket aus tools/package-module.py (Foundry 13.351,
+#            DSA5 7.5.1, ohne Mobil-CSS). Die Kanäle der v14-Ausgabe bleiben unberührt.
+#
+# Stabile Linien (ab 7.0.0/8.0.0, Issue #68), eigener Job „line“ unten:
+# - Tag v7.x.y = Foundry v13 (Branch v13, nur Desktop), Tag v8.x.y = Foundry v14 (Branch release/<version>, mit Mobil).
+# - Je Linie zwei Kanäle als feste Pre-releases: foundry-v13 / foundry-v13-beta bzw. foundry-v14 / foundry-v14-beta,
+#   Manifest-URL https://github.com/vt-tom/dsa5-helpers/releases/download/<Kanal>/module.json.
+# - Am Release hängen module-v<gen>.zip (stabiler Kanal) und module-v<gen>-beta.zip (Beta-Kanal), gleicher Inhalt.
+# - Überführung der 0.x-Installationen (nur v8): Das 8.x-Release ist „Latest“, sein module.json zeigt auf foundry-v14;
+#   der alte Kanal „beta“ bekommt das Beta-Manifest der v14-Linie. Ein 7.x-Release darf nie „Latest“ sein, sonst
+#   bekämen v14-Nutzer mit der alten Manifest-URL ein v13-Paket angeboten (gh release create … --latest=false).
+#
+# Der frühere Mobil-Kanal (Tag mobile-v…, Branch feature/mobile) ist seit 2026-10-29 eingestellt; Mobil ist seit 0.6.0 Teil der Beta.
 name: Release
 
 on:
@@ -23,8 +39,9 @@ permissions:
 
 jobs:
   build:
-    # Der Beta-Kanal selbst ist auch ein Pre-release — dafür nichts bauen.
-    if: github.event.release.tag_name != 'beta'
+    # Bisherige 0.x-Versionen (v14). Die Kanäle selbst sind auch Pre-releases — dafür nichts bauen;
+    # v13-0.x und die Linien 7.x/8.x haben eigene Jobs.
+    if: startsWith(github.event.release.tag_name, 'v0.')
     runs-on: ubuntu-latest
     env:
       TAG: ${{ github.event.release.tag_name }}
@@ -78,3 +95,110 @@ jobs:
               --notes "Nicht über diese Seite installieren: in Foundry die Beta-Manifest-URL eintragen – https://github.com/$REPO/releases/download/beta/module.json"
           fi
           gh release upload beta beta/module.json --clobber
+
+  v13:
+    # Beta-Ausgabe für Foundry v13 vom Branch v13: module-v13-beta.zip mit v13-Manifest, fester Pre-release
+    # „foundry-v13-beta“ als Kanal. Foundry übernimmt die Kanal-URL aus dem module.json im ZIP.
+    if: startsWith(github.event.release.tag_name, 'v13-')
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name }}
+      REPO: ${{ github.repository }}
+      PRERELEASE: ${{ github.event.release.prerelease }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Nur als Pre-release
+        if: env.PRERELEASE != 'true'
+        run: |
+          echo "::error::$TAG ist eine v13-Beta und darf nur als Pre-release veröffentlicht werden."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Paket bauen
+        run: |
+          python3 tools/package-module.py --foundry 13 --version "${TAG#v13-}" --output out
+          dir=$(ls -d out/*/ | head -n 1)
+          cp "${dir}dsa5-helpers/module.json" module.json
+          cp "${dir}module-v13-beta.zip" module-v13-beta.zip
+          unzip -p module-v13-beta.zip module.json | grep -E '"(version|manifest|download|maximum)"'
+
+      - name: Assets an das Release hängen
+        run: gh release upload "$TAG" module.json module-v13-beta.zip --clobber
+
+      - name: v13-Beta-Kanal aktualisieren
+        run: |
+          if ! gh release view foundry-v13-beta >/dev/null 2>&1; then
+            gh release create foundry-v13-beta --prerelease --target "$GITHUB_SHA" --title "Beta-Kanal Foundry v13" \
+              --notes "Nicht über diese Seite installieren: in Foundry v13 die Manifest-URL eintragen – https://github.com/$REPO/releases/download/foundry-v13-beta/module.json"
+          fi
+          gh release upload foundry-v13-beta module.json --clobber
+
+  line:
+    # Stabile Linien 7.x (Foundry v13) und 8.x (Foundry v14). Ein Pre-release mit solchem Tag erreicht nur den
+    # Beta-Kanal seiner Linie; wird es zum normalen Release erklärt (released), baut der Job neu und füllt auch den
+    # stabilen Kanal.
+    if: startsWith(github.event.release.tag_name, 'v7.') || startsWith(github.event.release.tag_name, 'v8.')
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name }}
+      REPO: ${{ github.repository }}
+      PRERELEASE: ${{ github.event.release.prerelease }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Tag prüfen
+        run: |
+          if ! [[ "$TAG" =~ ^v[78]\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::$TAG passt nicht zum Schema v7.x.y (Foundry v13) bzw. v8.x.y (Foundry v14)."
+            exit 1
+          fi
+          version="${TAG#v}"
+          gen=$(( ${version%%.*} + 6 ))
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "GEN=$gen" >> "$GITHUB_ENV"
+
+      - name: v13 nie als „Latest“
+        if: env.GEN == '13' && env.PRERELEASE != 'true'
+        run: |
+          latest=$(gh api "repos/$REPO/releases/latest" --jq .tag_name)
+          if [ "$latest" = "$TAG" ]; then
+            echo "::error::$TAG ist als Latest markiert. v13-Releases mit --latest=false anlegen und das letzte 8.x-Release wieder als Latest setzen (gh release edit v8.… --latest)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Pakete bauen
+        run: |
+          for ch in stable beta; do
+            python3 tools/package-module.py --foundry "$GEN" --version "$VERSION" --channel "$ch" --output "out-$ch"
+            dir=$(ls -d out-$ch/*/ | head -n 1)
+            mkdir -p "$ch"
+            cp "${dir}dsa5-helpers/module.json" "$ch/module.json"
+            cp "${dir}"module-v*.zip .
+          done
+          # module.json am Release: Pre-release → Beta-Kanal, normales Release → stabiler Kanal.
+          cp "$([ "$PRERELEASE" = true ] && echo beta || echo stable)/module.json" module.json
+          for zip in module-v*.zip; do unzip -p "$zip" module.json | grep -E '"(version|manifest|download|maximum)"'; done
+
+      - name: Assets an das Release hängen
+        run: gh release upload "$TAG" module.json module-v*.zip --clobber
+
+      - name: Kanäle aktualisieren
+        run: |
+          channel() {  # <Kanal-Tag> <Titel> <module.json>
+            if ! gh release view "$1" >/dev/null 2>&1; then
+              gh release create "$1" --prerelease --latest=false --target "$GITHUB_SHA" --title "$2" \
+                --notes "Nicht über diese Seite installieren: in Foundry die Manifest-URL eintragen – https://github.com/$REPO/releases/download/$1/module.json"
+            fi
+            gh release upload "$1" "$3" --clobber
+          }
+          # Beta-Tester bekommen jede Version ihrer Linie, ob Pre-release oder normales Release.
+          channel "foundry-v$GEN-beta" "Beta-Kanal Foundry v$GEN" beta/module.json
+          if [ "$PRERELEASE" != true ]; then
+            channel "foundry-v$GEN" "Kanal Foundry v$GEN" stable/module.json
+          fi
+          # Überführung der 0.x-Installationen: der alte Beta-Kanal war nur für v14 (Foundry ≥ 14.364).
+          if [ "$GEN" = 14 ] && gh release view beta >/dev/null 2>&1; then
+            gh release upload beta beta/module.json --clobber
+          fi

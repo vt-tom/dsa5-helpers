@@ -22,6 +22,8 @@ const A = {
   combatSkill: ICONS + "/categories/Combat_Skill.webp",
   meleeWeapon: ICONS + "/categories/Meleeweapon.webp",
   rangeWeapon: ICONS + "/categories/Rangeweapon.webp",
+  // Echte Waffenbilder aus dem Modul dsa5-core (bestehende Grafiken, keine neuen), für die Waffenkarte (Issue #40).
+  coreWeapon: (file) => "../../dsa5-core/icons/" + file,
   weaponless: ICONS + "/categories/attack_weaponless.webp",
   ritual: ICONS + "/categories/ritual.webp",
   ceremony: ICONS + "/categories/ceremony.webp",
@@ -45,6 +47,10 @@ const A = {
   tabStatus: ICONS + "/categories/ability_ceremonial.webp",
   tabNotes: ICONS + "/categories/Ability_Language.webp",
   tabCompanion: ICONS + "/categories/ability_animal.webp",
+  // Issue #39: Aufträge und Personen (Dramatis Personae · Bestiarium) aus dem Almanach des Systems.
+  tabQuests: ICONS + "/categories/Career.webp",
+  tabPersonae: ICONS + "/categories/Weltliche.webp",
+  questPlaceholder: ICONS + "/backgrounds/library.webp",
   // Spezies/Kultur/Profession-Verweise auf dem Titelblatt (IDENTITY in data.js): thematisch passende, bereits
   // vorhandene Kategorie-Icons statt eigener Rasse-/Kultur-Symbole (die es im System nicht gibt).
   species: ICONS + "/categories/wesenszug.webp",
@@ -70,11 +76,12 @@ const A = {
   // (openHeaderBgPicker() in script.js) — echte Systemgrafiken aus icons/backgrounds statt erfundener Bilder,
   // auch wenn es dort eigentlich UI-Texturen statt Szenerie-Artworks sind. Der echte FilePicker würde beliebige
   // vom Nutzer hochgeladene Bilder zeigen; das kann der Click-Dummy ohne Dateizugriff nicht simulieren.
+  // pos/size = Bildausschnitt im Bannerstreifen (background-position/-size, ohne size: cover).
   bgHeaderOptions: [
-    { label: "Pergament", img: ICONS + "/backgrounds/anotherpaper.webp" },
-    { label: "Kapitelanfang", img: ICONS + "/backgrounds/kapitelstart.webp" },
-    { label: "Buchrand", img: ICONS + "/backgrounds/garadanb.webp" },
-    { label: "DSA-Kopf", img: ICONS + "/backgrounds/dsahead.webp" },
+    { label: "Pergament", img: ICONS + "/backgrounds/anotherpaper.webp", pos: "center" },
+    { label: "Kapitelanfang", img: ICONS + "/backgrounds/kapitelstart.webp", pos: "center" },
+    { label: "Buchrand", img: ICONS + "/backgrounds/garadanb.webp", pos: "center" },
+    { label: "DSA-Kopf", img: ICONS + "/backgrounds/dsahead.webp", pos: "center" },
   ],
 };
 

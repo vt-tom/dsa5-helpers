@@ -1,11 +1,20 @@
-import { Dsa5HelpersCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
+import { initSkillSuggestions } from './skill-suggestions/tracking.js';
+import { Dsa5HelpersCharacterSheet as ImportedCharacterSheet, createCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
+import { clearCharacterBuilderFlag } from './compat/runtime.js';
 import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
 import { initSteigerungsplaner } from './compat/steigerungsplaner.js';
 import { registerDiceStatsSettings, readyDiceStats } from './dice-stats/settings.js';
 import { getDiceStatsApp, openDiceStats, initDiceStatsLiveUpdate } from './apps/dice-stats.js';
 import { registerHouseRules } from './house-rules/rules.js';
+import { initHud } from './hud.js';
+import { registerAlmanacTabs } from './sheets/almanac.js';
 import { getHouseRulesApp, openHouseRules } from './apps/house-rules.js';
 import { initSheetSwitcher } from './sheet-switcher.js';
+import { initBagDrag } from './compat/bag-drag.js';
+import { initMobile, mobileMode } from './mobile/mobile.js';
+import { initRollDialogs } from './mobile/roll-dialog.js';
+import { registerBannerSettings, initBannerSocket } from './banner-upload.js';
+import { getSheetSettingsApp, getDisplaySettingsApp } from './apps/sheet-settings.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -23,10 +32,24 @@ function findTraditionIcon(text, names, folder) {
 }
 
 Hooks.once('init', async () => {
+  // DSA7 veröffentlicht game.dsa5 erst in seinem init-Hook, DSA8 schon beim Import.
+  const Dsa5HelpersCharacterSheet = ImportedCharacterSheet ?? createCharacterSheet();
+  // Changelog als erstes Menü — Foundry zeigt Menüs in der Reihenfolge ihrer Registrierung (Nutzer 2026-10-20).
+  game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
   game.settings.register('dsa5-helpers', 'theme', { scope: 'client', config: false, type: String, default: 'light', choices: { light: 'Light', dark: 'Dark' } });
   // Standard-Bogen für Helden (Issue #13): nur der Foundry-Weg über makeDefault — eine ausdrückliche Wahl am Akteur
   // oder unter „Standard-Bögen konfigurieren“ hat weiter Vorrang (Nutzerentscheidung 2026-09-30).
-  game.settings.register('dsa5-helpers', 'defaultSheet', { name: 'DSA5HELPERS.Settings.DefaultSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultSheet.Hint', scope: 'world', config: true, restricted: true, type: Boolean, default: false, requiresReload: true });
+  // Untermenü „Heldenbogen“ (Nutzer 2026-10-20: Einstellungen gruppieren): Standard-Bogen, Bearbeiten-Modus für Spieler,
+  // Ordner für Bannerbilder, Talent-Vorschläge — die Einstellungen selbst stehen dort, nicht in der langen Liste
+  // (config: false). Für alle offen (#75): Spieler sehen darin nur die Talent-Vorschläge, Welt-Einstellungen nur die SL.
+  game.settings.registerMenu('dsa5-helpers', 'sheetSettings', { name: 'DSA5HELPERS.Settings.SheetMenu.Title', label: 'DSA5HELPERS.Settings.SheetMenu.Label', hint: 'DSA5HELPERS.Settings.SheetMenu.Hint', icon: 'fas fa-id-card', type: getSheetSettingsApp(), restricted: false });
+  game.settings.register('dsa5-helpers', 'defaultSheet', { name: 'DSA5HELPERS.Settings.DefaultSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultSheet.Hint', scope: 'world', config: false, restricted: true, type: Boolean, default: false, requiresReload: true });
+  // Bannerbild ohne Dateibrowser (Issue #46): Standardordner der SL für Bilder der Spieler.
+  registerBannerSettings();
+  // Drei Modi (Issue #34): dürfen Spieler den Bearbeiten-Modus nutzen (Werte ohne AP ändern)? Die SL darf immer.
+  // Reiter Aufträge/Personen (Issue #39): einzeln abschaltbar (Untermenü „Heldenbogen“).
+  registerAlmanacTabs();
+  game.settings.register('dsa5-helpers', 'playersMayEdit', { name: 'DSA5HELPERS.Settings.PlayersMayEdit.Name', hint: 'DSA5HELPERS.Settings.PlayersMayEdit.Hint', scope: 'world', config: false, restricted: true, type: Boolean, default: true });
   // Zuletzt gesehene Version je Nutzer (Issue #11) — auch Spieler und Erstinstallation bekommen den Changelog.
   game.settings.register('dsa5-helpers', 'lastSeenVersion', { scope: 'client', config: false, type: String, default: '' });
   // Würfelstatistik (Issue #28): Einstellungen, Zustimmung, Erfassung — unabhängig vom Bogen.
@@ -35,12 +58,22 @@ Hooks.once('init', async () => {
   initDiceStatsLiveUpdate();
   // Hausregelbuch (2026-10-05): optionale Regeln, die SL schaltet sie je Welt ein; lesen dürfen alle.
   registerHouseRules();
+  // Eigenes HUD: Reiter in der DSA-Leiste (Helfen, Wundeinschätzung, Manöver, Würfelstatistik).
+  initHud();
   game.settings.registerMenu('dsa5-helpers', 'houseRules', { name: 'DSA5HELPERS.HouseRules.Title', label: 'DSA5HELPERS.HouseRules.Menu.Label', hint: 'DSA5HELPERS.HouseRules.Menu.Hint', icon: 'fas fa-book', type: getHouseRulesApp(), restricted: false });
+  // Untermenü „Darstellung und Geräte“ (Nutzer 2026-11-02: nur noch Knöpfe in der Liste): Probendialoge am Desktop,
+  // hybrides Spiel; für alle offen, Welt-Einstellungen darin sieht nur die SL.
+  game.settings.registerMenu('dsa5-helpers', 'displaySettings', { name: 'DSA5HELPERS.Settings.DisplayMenu.Title', label: 'DSA5HELPERS.Settings.DisplayMenu.Label', hint: 'DSA5HELPERS.Settings.DisplayMenu.Hint', icon: 'fas fa-display', type: getDisplaySettingsApp(), restricted: false });
   // Für Makros und das spätere HUD des Moduls.
   game.modules.get('dsa5-helpers').api = { ...(game.modules.get('dsa5-helpers').api ?? {}), openDiceStats, openHouseRules };
+  // Mobile Support (docs/MOBILE.md 13): Welt-Einstellung „Hybrides Spiel“, Oberfläche je Gerät.
+  initMobile();
+  // Probendialoge im Modul-Design (mobil und Desktop, Issue #63)
+  initRollDialogs(mobileMode);
   // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
   initSheetSwitcher();
-  game.settings.registerMenu('dsa5-helpers', 'changelog', { name: 'DSA5HELPERS.Changelog.Title', label: 'DSA5HELPERS.Changelog.Open', hint: 'DSA5HELPERS.Changelog.Hint', icon: 'fas fa-scroll', type: getChangelogApp(), restricted: false });
+  initBagDrag();
+  initSkillSuggestions();
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
   Handlebars.registerHelper('dsa5hFormatNum', value => String(value ?? 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' '));
@@ -50,13 +83,20 @@ Hooks.once('init', async () => {
   Handlebars.registerHelper('dsa5hTraditionIcon', (text, kind) => findTraditionIcon(text, kind === 'religion' ? GOD_ICONS : MAGIC_TRADITION_ICONS, kind === 'religion' ? 'months' : 'traditionen'));
   await foundry.applications.handlebars.loadTemplates([
   "modules/dsa5-helpers/templates/changelog.hbs",
+  "modules/dsa5-helpers/templates/sheet-settings.hbs",
   "modules/dsa5-helpers/templates/dice-stats.hbs",
   "modules/dsa5-helpers/templates/house-rules.hbs",
   "modules/dsa5-helpers/templates/house-rules/toggle.hbs",
   "modules/dsa5-helpers/templates/house-rules/wound-check.hbs",
   "modules/dsa5-helpers/templates/house-rules/help-action.hbs",
+  "modules/dsa5-helpers/templates/house-rules/maneuvers.hbs",
+  "modules/dsa5-helpers/templates/house-rules/maneuvers-de.hbs",
+  "modules/dsa5-helpers/templates/house-rules/maneuvers-en.hbs",
+  "modules/dsa5-helpers/templates/house-rules/maneuver-toggle.hbs",
+  "modules/dsa5-helpers/templates/house-rules/passive-defense.hbs",
   "modules/dsa5-helpers/templates/actors/dsa5-helpers-character-sheet.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/energy-zone.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body-hand.hbs",
   "modules/dsa5-helpers/templates/actors/parts/ammo-pick.hbs",
   "modules/dsa5-helpers/templates/actors/parts/cast-list.hbs",
@@ -64,6 +104,10 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/combat.hbs",
   "modules/dsa5-helpers/templates/actors/parts/combatskill-link.hbs",
   "modules/dsa5-helpers/templates/actors/parts/companion.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/quests.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/quest-card.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/personae.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/persona-card.hbs",
   "modules/dsa5-helpers/templates/actors/parts/cover.hbs",
   "modules/dsa5-helpers/templates/actors/parts/cover-sidebar.hbs",
   "modules/dsa5-helpers/templates/actors/parts/favorite.hbs",
@@ -87,11 +131,14 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/specs.hbs",
   "modules/dsa5-helpers/templates/actors/parts/spell-list.hbs",
   "modules/dsa5-helpers/templates/actors/parts/status.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/suggestions.hbs",
   "modules/dsa5-helpers/templates/actors/parts/tradition-items.hbs",
   "modules/dsa5-helpers/templates/actors/parts/weapon-short.hbs",
-  "systems/dsa5/templates/actors/companions/actor-companion.hbs",
-  "systems/dsa5/templates/actors/companions/companion-card.hbs",
-  "systems/dsa5/templates/actors/parts/member-card-header.hbs",
+  ...(typeof Dsa5HelpersCharacterSheet.prototype.prepareCompanionTab === 'function' ? [
+    "systems/dsa5/templates/actors/companions/actor-companion.hbs",
+    "systems/dsa5/templates/actors/companions/companion-card.hbs",
+    "systems/dsa5/templates/actors/parts/member-card-header.hbs",
+  ] : []),
   "systems/dsa5/templates/actors/parts/horse.hbs"
 ]);
   foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersCharacterSheet, { types: ['character'], makeDefault: game.settings.get('dsa5-helpers', 'defaultSheet'), label: 'DSA5HELPERS.SheetLabel' });
@@ -100,6 +147,7 @@ Hooks.once('init', async () => {
 });
 
 Hooks.once('ready', () => {
+  initBannerSocket();
   showChangelogIfUpdated();
   readyDiceStats();
 });
@@ -115,5 +163,5 @@ Hooks.on('preUpdateActor', (actor, changes) => {
   const next = getProperty(changes, 'flags.core.sheetClass');
   if (next === 'dsa5.DSACharBuilder') return;
   if (next === 'dsa5.ActorSheetdsa5Character' && actor.getFlag('core', 'sheetClass') === 'dsa5.DSACharBuilder') setProperty(changes, 'flags.core.sheetClass', previous);
-  setProperty(changes, 'flags.dsa5-helpers.preChargenSheet', new foundry.data.operators.ForcedDeletion());
+  clearCharacterBuilderFlag(changes);
 });

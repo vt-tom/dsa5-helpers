@@ -1,0 +1,7 @@
+{{! Reiter „Aufträge“ (Issue #39): freigegebene Aufträge aus dem Almanach des Systems (scripts/sheets/almanac.js). Ein Klick öffnet den Auftrag im Almanach. }}
+<div class="dsa5h-tab" data-tab-panel="quests" hidden>
+<div class="dsa5h-almanac-bar"><small class="dsa5h-muted">{{localize 'DSA5HELPERS.Almanac.QuestsIntro'}}</small><button type="button" class="dsa5h-almanac-btn" data-action="dsa5hOpenAlmanac" data-almanac-tab="questlog"><i class="fas fa-book-open" inert></i> {{localize 'DSA5HELPERS.Almanac.Open'}}</button></div>
+{{#each dsa5h.quests.groups}}<section class="panel"><div class="panel-title">{{localize (concat 'DSA5HELPERS.Quests.Group' priority)}}</div><div class="dsa5h-tile-grid">{{#each quests}}{{> "modules/dsa5-helpers/templates/actors/parts/quest-card.hbs"}}{{/each}}</div></section>{{/each}}
+{{#if dsa5h.quests.closed.length}}<details class="panel dsa5h-quest-closed"><summary class="panel-title">{{localize 'DSA5HELPERS.Quests.Closed' count=dsa5h.quests.closed.length}}</summary><div class="dsa5h-tile-grid">{{#each dsa5h.quests.closed}}{{> "modules/dsa5-helpers/templates/actors/parts/quest-card.hbs"}}{{/each}}</div></details>{{/if}}
+{{#if dsa5h.quests.empty}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Quests.Empty'}}</p>{{/if}}
+</div>

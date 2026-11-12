@@ -50,6 +50,8 @@
 :root {
   --paper: #ece2d2;
   --ink: #2b2721;
+  --portrait-aura-core: rgba(176,134,58,.55);
+  --portrait-aura: rgba(176,134,58,.4);
   --frame-ink: #2b2721;
   /* Porträtrahmen, im dunklen Thema bewusst gleich (Issue #19) */
   --muted: rgba(43,39,33,.72);
@@ -79,6 +81,8 @@
 [data-theme='dark'] {
   --paper: #241f1c;
   --ink: #ede3d1;
+  --portrait-aura-core: rgba(255,228,170,.6);
+  --portrait-aura: rgba(235,185,100,.4);
   --muted: rgba(237,227,209,.7);
   --line: rgba(237,227,209,.18);
   --panel: rgba(255,255,255,.05);
@@ -263,6 +267,57 @@ button {
   pointer-events: auto;
 }
 
+/* Modus-Auswahl am Schloss (Issue #34): Symbol | Name + Kurzhinweis, der aktive Modus hervorgehoben */
+/* Die Plakette liegt sonst gleichauf mit der Eigenschaftsleiste (z-index 5); offenes Menü darüber. */
+.fake-window-chrome:has(.fwc-menu) {
+  z-index: 30;
+}
+
+.fwc-mode-menu {
+  min-width: 260px;
+}
+
+.banner-menu {
+  z-index: 30;
+}
+
+:is(.fake-window-chrome, .banner-menu) .fwc-mode {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: auto;
+  padding: 7px 12px;
+  text-align: left;
+  text-shadow: none;
+}
+
+.fwc-mode-glyph {
+  font-size: 16px;
+  text-align: center;
+}
+
+.fwc-mode-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.fwc-mode-text small {
+  font-size: 12px;
+  opacity: .75;
+}
+
+.fwc-mode-menu .fwc-mode.active {
+  background: rgba(224, 192, 128, .22);
+}
+
+.fwc-mode-menu .fwc-mode:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
 .fwc-menu button {
   display: block;
   width: 100%;
@@ -387,41 +442,52 @@ button {
    4. Kopf
    ========================================================================== */
 
-/* --- Aufbau & Hintergrundbild --- */
+/* --- Aufbau & Bannerbild --- */
 
+/* „Wappenbanner“ (Kopf-Varianten A+B, Nutzer-Entscheidung 2026-10-19, Vergleich siehe AUFGABEN.md): oben ein
+   Bannerstreifen (--banner-h) mit dem Hintergrundbild des Helden, unten von einer Goldlinie begrenzt; Name und
+   Schips-Plakette stehen auf dem Bild, darunter das Band mit Spezies · Kultur · Profession und den LeP/AsP/KaP-
+   Kugeln. Das Porträt-Medaillon ragt über die Goldlinie. Vorher: einfarbiger Kopf, Badges, flache Leisten. */
 .head {
+  --banner-h: 92px;
   position: relative;
-  overflow: hidden;
   flex: none;
   background: var(--head);
   border-bottom: 1px solid rgba(224,192,128,.3);
-  padding: 15px 16px;
+  padding: 14px 16px 12px;
 }
 
-/* IDEEN.md: optionales Hintergrundbild je Charakter (HEADER_BG_IMG in data.js) — .head-bg-layer trägt das Bild
-   (background-image per JS gesetzt, siehe renderHeader()), .head-bg-fade blendet es nach unten hin zur
-   normalen --head-Farbe aus ("wie eine Art Seiten-Header"). Beide bleiben unsichtbar ohne .has-bg auf .head. */
+/* Bannerstreifen: ohne Bild ein warmer Lichtschein auf dem Kopfton, mit Bild (.has-bg, renderHeader()) das Bild
+   selbst — background-image/-position/-size setzt renderHeader() inline aus HEADER_BG (data.js). */
 .head-bg-layer,
 .head-bg-fade {
   position: absolute;
-  inset: 0;
+  inset: 0 0 auto;
+  height: var(--banner-h);
   z-index: 0;
-  display: none;
-}
-
-.head.has-bg .head-bg-layer,
-.head.has-bg .head-bg-fade {
-  display: block;
 }
 
 .head-bg-layer {
+  background-image: radial-gradient(ellipse at 70% 0%,rgba(224,192,128,.16),transparent 65%);
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
 }
 
-.head-bg-fade {
-  background: linear-gradient(to bottom,transparent 0%,var(--head-base) 92%);
+/* Abdunklung („Scrim“) nach unten und links, damit Name und Plakette auf jedem Bild lesbar bleiben. */
+.head.has-bg .head-bg-fade {
+  background:
+    linear-gradient(180deg,rgba(28,25,23,0) 20%,rgba(28,25,23,.92) 100%),
+    linear-gradient(90deg,rgba(28,25,23,.55) 0%,rgba(28,25,23,0) 60%);
+}
+
+/* Goldlinie an der Unterkante des Banners (in beiden Fällen, mit und ohne Bild). */
+.head-bg-fade::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(90deg,transparent,rgba(224,192,128,.7) 18%,rgba(224,192,128,.7) 82%,transparent);
 }
 
 .head-inner {
@@ -429,16 +495,16 @@ button {
   z-index: 1;
   display: flex;
   gap: 18px;
-  align-items: stretch;
+  align-items: flex-start;
 }
 
 /* Öffnet den simulierten FilePicker (openHeaderBgPicker()) — nur im Bearbeiten-Modus sichtbar (.edit-only,
    siehe die globale Spielmodus-Regel weiter unten), Zoom-Effekt bei Hover wie bei den anderen kleinen Buttons
-   (.regen-btn/.row-delete/.chip-delete). */
+   (.regen-btn/.row-delete/.chip-delete). Sitzt oben rechts im Banner, die Schips-Plakette rückt dafür nach links. */
 .header-bg-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   z-index: 2;
   width: 28px;
   height: 28px;
@@ -462,81 +528,232 @@ button {
   }
 }
 
-/* --- Porträt --- */
+/* --- Porträt-Medaillon --- */
 
-/* Zierrahmen: "Ecken gekappt" — Nutzer-Entscheidung 2026-09-18 nach drei Vergleichsrunden im Click-Dummy (siehe
-   STATUS.md), am offiziellen "Deluxe Heldendokument"-PDF orientiert (die "Schicksalspunkte"-Box dort nutzt
-   dieselbe dünne Tintenlinie mit diagonal gekappten Ecken statt Gold/Ornamenten). Dazu ein leichter Gold-Saum
-   (Nutzerwunsch: "wie bei den LeP") — dieselbe gedämpfte Randfarbe wie die LeP/AsP/KaP-Ressourcenkarten
-   (rgba(224,192,128,.4), siehe .res-card), nur als dünne innen liegende Linie statt Vollrahmen. */
-.portrait {
+/* #portrait = Medaillon (renderPortrait()): .portrait-frame (Fassung) + .portrait (Bild) + .ap-ribbon (AP-Band).
+   Eckig (Standard): „Ecken gekappt“ wie bisher (Seitenverhältnis 118:142), aber mit kräftiger Goldfassung statt
+   dünner Tintenlinie (Nutzer 2026-10-19: „Rahmen um das Porträt ist viel deutlicher“). Rund (.shape-round): Medaillon
+   mit Goldring wie eine Münze. Form je Held im Bearbeiten-Modus umschaltbar (.portrait-shapes). */
+.portrait-medal {
   position: relative;
   flex: 0 0 118px;
+  width: 118px;
   height: 142px;
-  border: 3px solid var(--frame-ink);
-  border-radius: 0;
-  box-shadow: inset 0 0 0 1px rgba(224,192,128,.5);
-  clip-path: polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px);
+}
+
+.portrait-frame {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  background: linear-gradient(160deg,#e9cf94,#8b6f3f 55%,#d8bb7c);
+  clip-path: polygon(16px 0,calc(100% - 16px) 0,100% 16px,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px),0 16px);
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,.6));
+}
+
+.portrait {
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   background-color: var(--paper);
-  background-image: repeating-linear-gradient(135deg,rgba(247,236,224,.1) 0 6px,transparent 6px 12px);
+  clip-path: polygon(13px 0,calc(100% - 13px) 0,100% 13px,100% calc(100% - 13px),calc(100% - 13px) 100%,13px 100%,0 calc(100% - 13px),0 13px);
+}
+
+.portrait-medal.shape-round {
+  flex-basis: 128px;
+  width: 128px;
+  height: 128px;
+}
+
+.portrait-medal.shape-round .portrait-frame {
+  padding: 0;
+  border-radius: 50%;
+  background: none;
+  clip-path: none;
+  filter: none;
+}
+
+.portrait-medal.shape-round .portrait {
+  border-radius: 50%;
+  clip-path: none;
+  box-shadow:
+    0 0 0 3px #2b2721,
+    0 0 0 6px #c2a267,
+    0 0 0 7px #5e4a2a,
+    0 6px 16px 6px rgba(0,0,0,.55);
+}
+
+/* Bild als eigene Ebene in .portrait (Papierfläche + Beschnitt), damit Licht zwischen Papier und Bild passt (Issue #35). */
+.portrait-img {
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+}
+
+/* Aura (Issue #35, Idee Nimuee, Nutzer-Entscheidung 2026-10-20): Porträts ohne Hintergrund bekommen einen dezenten
+   goldenen Schein entlang der Umrisse der Figur (drop-shadow folgt dem Alphakanal), in beiden Themen. Bei Bildern mit
+   eigenem Hintergrund liegt der Schein außerhalb des Beschnitts und ist unsichtbar. Verworfen: Spotlight (Lichtkegel
+   von oben). */
+.portrait-img {
+  filter: drop-shadow(0 0 1px var(--portrait-aura-core)) drop-shadow(0 0 6px var(--portrait-aura));
+}
+
+/* AP-Band (Element aus Variante B): AP-Wert und freie AP auf einem roten Band mit Schwalbenschwanz-Enden, das unten
+   über die Fassung reicht. Die Zahlen sind reine Anzeige, bearbeitet wird im Erfahrung-Panel (Eigenschaften). */
+.ap-ribbon {
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  z-index: 2;
+  transform: translateX(-50%);
   display: flex;
-  align-items: flex-end;
+  align-items: baseline;
+  gap: 7px;
+  padding: 2px 16px;
+  background: linear-gradient(180deg,#8e2a20,#5e1a14);
+  color: #f4e8d6;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
+  clip-path: polygon(0 0,100% 0,calc(100% - 7px) 50%,100% 100%,0 100%,7px 50%);
+  filter: drop-shadow(0 1px 0 #c2a267) drop-shadow(0 -1px 0 #c2a267);
+}
+
+.ap-ribbon-total {
+  font-weight: 700;
+}
+
+.ap-ribbon-free {
+  opacity: .85;
+}
+
+.ap-ribbon-free::before {
+  content: "·";
+  margin-right: 7px;
+  opacity: .7;
+}
+
+/* Umschalter eckig/rund oben mittig auf dem Porträt — nur im Bearbeiten-Modus vorhanden (renderPortrait()). Beide Formen
+   als Symbol nebeneinander, die aktive golden hinterlegt (Rückmeldung 2026-10-19). */
+.portrait-shapes {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  z-index: 3;
+  transform: translateX(-50%);
+  display: flex;
+  padding: 2px;
+  border: 1px solid rgba(224,192,128,.6);
+  border-radius: 12px;
+  background: #2e2823;
+  box-shadow: 0 1px 3px rgba(0,0,0,.5);
+}
+
+.portrait-shapes button {
+  width: 24px;
+  height: 20px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: rgba(236,216,177,.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  padding-bottom: 7px;
 }
 
-.portrait span {
-  font-family: ui-monospace,Menlo,monospace;
-  font-size: 11px;
-  letter-spacing: .1em;
-  color: rgba(247,236,224,.66);
-  text-transform: uppercase;
+.portrait-shapes button[aria-pressed="true"] {
+  background: #c2a267;
+  color: #2b2721;
 }
 
-/* --- Heldenname --- */
+.portrait-shapes button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
 
+@media (hover: hover) {
+  .portrait-shapes button[aria-pressed="false"]:hover {
+    color: #f4e8d6;
+    background: rgba(224,192,128,.25);
+  }
+}
+
+/* Form-Symbole als Umriss: Kreis per Rahmen, Achteck als Fläche mit ausgespartem Innen-Achteck. */
+.shape-ico {
+  position: relative;
+  display: block;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid currentColor;
+}
+
+.shape-ico.round {
+  border-radius: 50%;
+}
+
+/* Hochkantes Rechteck mit gekappten Ecken — dieselbe Form wie das eckige Porträt, damit es sich klar vom Kreis abhebt. */
+.shape-ico.octagon {
+  width: 10px;
+  height: 13px;
+  border: 0;
+  background: currentColor;
+  clip-path: polygon(30% 0,70% 0,100% 22%,100% 78%,70% 100%,30% 100%,0 78%,0 22%);
+}
+
+.shape-ico.octagon::after {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  background: #2e2823;
+  clip-path: inherit;
+}
+
+.portrait-shapes button[aria-pressed="true"] .shape-ico.octagon::after {
+  background: #c2a267;
+}
+
+/* --- Heldenname & Schips-Plakette --- */
+
+/* Raster rechts vom Porträt (Rückmeldung 2026-10-19, wie im Modul): links Name (im Banner) und direkt unter der Goldlinie
+   Spezies · Kultur · Profession; rechts oben die Schips-Plakette, darunter die Kugeln, die um die halbe Kugelhöhe über
+   die Linie ragen — die Linie läuft hinter ihnen durch. .head-top/.head-band lösen sich dafür auf (display: contents). */
 .head-main {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  grid-template-rows: calc(var(--banner-h) - 14px) auto;
+  column-gap: 16px;
 }
 
-.head-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+.head-top,
+.head-band {
+  display: contents;
 }
 
 /* Issue #25 (wie im Modul): font-size ist die Höchstgröße, fitName() (script.js) verkleinert bis 22px, bis der Name
    passt; was dann noch nicht passt, wird mit „…“ gekürzt (voller Name im Tooltip). */
 .head-name {
-  flex: 1 1 auto;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
   min-width: 0;
-}
-
-.head-top h1 {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.head-top h1 .inline-edit-input {
-  width: 100%;
-  box-sizing: border-box;
+  padding-bottom: 6px;
 }
 
 .head-top h1 {
   margin: 0;
   font-family: 'Andalus',serif;
-  font-size: 39px;
+  font-size: 40px;
   font-weight: normal;
   line-height: 1.02;
   color: var(--headink);
-  text-shadow: 0 1px 3px rgba(0,0,0,.65);
+  text-shadow: 0 2px 6px rgba(0,0,0,.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .head-top h1.editable-value {
@@ -546,31 +763,27 @@ button {
 .head-top .inline-edit-input {
   font-family: 'Andalus',serif;
   font-size: 32px;
-  width: min(100%,360px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* --- Abenteuerpunkte & Schicksalspunkte --- */
-
-/* padding-top 4px → 18px (Nutzer-Feedback zur Kopf-Vorschau 2026-09-15: "AP und Schicksalspunkte etwas tiefer
-   platzieren") — .head-top richtet Name und AP-Block per align-items:flex-start auf derselben Oberkante aus; die
-   große Namensüberschrift wirkt trotzdem "tiefer", weil ihre Zeilenhöhe optisch mehr Raum einnimmt, während der
-   kleine AP-Text direkt an dieser Oberkante klebt — dort kollidiert er mit dem darüber schwebenden
-   .fake-window-chrome-Overlay (Menü-/Würfel-/Schließen-Icons). Eigener Versatz nur für den AP-Block, Name bleibt
-   unverändert oben. */
-.ap-block {
-  margin-left: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  padding-top: 18px;
+/* Schicksalspunkte als Plakette oben rechts auf dem Banner (Variante A). */
+.head-plaque {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  flex: none;
+  align-self: start;
+  margin-top: -4px;
+  padding: 3px 6px;
+  border: 1px solid rgba(224,192,128,.55);
+  border-radius: 20px;
+  background: rgba(28,25,23,.72);
+  backdrop-filter: blur(3px);
 }
 
-.ap-text {
-  font-size: 13px;
-  color: var(--headmuted);
-  font-family: 'GentiumBasic',Georgia,serif;
-  white-space: nowrap;
+.sheet[data-mode="edit"] .head-plaque {
+  margin-right: 30px;
 }
 
 .fate-points {
@@ -605,15 +818,62 @@ button {
   }
 }
 
-/* --- Badges & Heldenerschaffung --- */
+/* --- Band: Spezies · Kultur · Profession --- */
 
-.badges {
+
+/* Gesperrte Kapitälchen-Zeile mit Trennpunkten statt gerahmter Badges (Variante A); jeder Name ist ein Knopf und
+   öffnet die Item-Vorschau (identityBadge()/openIdentityModal()). Lange Namen umbrechen statt abzuschneiden. */
+.head-ident {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  padding-top: 6px;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 2px 7px;
+  font-size: 14px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #d9bf87;
 }
 
+.ident-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+}
+
+.ident-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ident-sep {
+  color: rgba(224,192,128,.5);
+}
+
+/* Kreaturbogen (#54): Größe und Anzahl als reiner Text neben der Kreaturklasse */
+.ident-text {
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .ident-link:hover {
+    color: #f4e8d6;
+    border-bottom-color: rgba(224,192,128,.6);
+  }
+}
+
+/* Heldenerschaffung (Issue #10): Knopf statt der Spezies, bleibt als Badge gerahmt, damit er auffällt. */
 .badge {
   padding: 2px 11px;
   border: 1px solid rgba(224,192,128,.45);
@@ -623,165 +883,154 @@ button {
   font-size: 14px;
 }
 
-/* Spezies/Kultur/Profession-Badges in der Kopfzeile sind jetzt anklickbare <button>s (identityBadge() in
-   script.js, ersetzt die früher statischen <span>) statt reiner Anzeige — öffnen eine kurze Item-Vorschau im
-   bestehenden Modal (openIdentityModal(), identity-modal-body unten). .badge selbst überschreibt bereits Rahmen/
-   Hintergrund/Padding, hier nur noch Button-Reset + Zeigercursor/Hover als Klick-Affordanz ergänzt. */
-/* Lange Namen (Issue #14) einzeilig mit „…“ auf die Kopfbreite kürzen, voller Name im Tooltip (title). */
-.badges .badge {
+.head-ident .badge.chargen {
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
-  max-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-@media (hover: hover) {
-  .badges .badge:hover {
-    border-color: #f4e8d6;
-    background: rgba(224,192,128,.28);
-  }
-}
-
-.badges .badge.chargen {
+  letter-spacing: normal;
+  text-transform: none;
   border-color: rgba(224,192,128,.75);
   background: rgba(224,192,128,.28);
 }
 
 @media (hover: hover) {
-  .badges .badge.chargen:hover {
+  .head-ident .badge.chargen:hover {
     background: rgba(224,192,128,.45);
     color: #fff;
   }
 }
 
-/* --- LeP/AsP/KaP --- */
+/* --- LeP/AsP/KaP-Kugeln --- */
 
-/* LeP/AsP/KaP-Ressourcengruppe (Kopfzeile UND Titelblatt-Leiste, siehe resourceGroup() in script.js). Jede
-   Leiste steckt in einer eigenen .res-card mit eigenem goldenem Rahmen, der die Leiste eng umschließt (Nutzer-
-   Feedback 2026-09-14 nach Vergleich dreier Varianten: "Rahmen A gefällt mir am besten, allerdings sollte der
-   Rahmen direkt um das Pillenelement liegen und es einschließen" — daher knapper statt großzügiger Innenabstand).
-   Der Regenerations-Button (wirkt auf alle drei Leisten) ist ein eigenständiger kleiner Knopf am Ende der
-   Gruppe, kein Rahmen-Overlay nötig, da jede Karte schon einzeln gerahmt ist. (Frühere Varianten B/C — ein
-   gemeinsamer Rahmen mit Trennlinien bzw. beschriftete Karten — wurden nach dem Live-Vergleich verworfen.) */
+/* Kugeln (Variante B, „gefallen mir richtig gut“): dunkle Glaskugel mit Goldring, von unten bis zum Füllstand (--pct,
+   vitalOrb()) gefüllt, Glanzlicht oben links. Darin Kürzel, aktueller Wert (editierbar, beide Modi) und „/ Max“.
+   Ersetzt die flachen Leisten (.res-card/.bar, Varianten-Vergleich 2026-09-14). Farben wie bisher Rot/Blau/Grün. */
 .resource-frame {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.resource-frame-col {
-  flex-direction: column;
-  align-items: stretch;
+/* Im Kopf: Mitte der Kugeln auf der Goldlinie (halbe Kugelhöhe nach oben). */
+.head .bars {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  align-self: start;
+  margin-top: -33px;
 }
 
-.res-card {
-  display: flex;
-  border: 1px solid rgba(224,192,128,.4);
-  border-radius: 6px;
-  background: rgba(0,0,0,.18);
-}
-
-.res-lep {
-  flex: 1.25;
-}
-
-.res-asp,
-.res-kap {
-  flex: 1;
-}
-
-.resource-frame-col .res-card {
+.orb {
+  --sz: 66px;
+  position: relative;
   flex: none;
-}
-
-.res-card .bar {
-  width: 100%;
-}
-
-.bar {
-  position: relative;
-  height: 30px;
-  border-radius: 4px;
+  width: var(--sz);
+  height: var(--sz);
+  border-radius: 50%;
   overflow: hidden;
-  background: rgba(255,255,255,.1);
+  background: radial-gradient(circle at 50% 40%,#2c2622,#141110);
+  box-shadow:
+    0 0 0 2px #2b2721,
+    0 0 0 4px #c2a267,
+    0 0 0 5px #4a3a22,
+    0 3px 8px 3px rgba(0,0,0,.5);
 }
 
-.bar-fill {
+.orb-lep {
+  --liq: linear-gradient(180deg,#c42c24,#6e1511);
+}
+
+.orb-asp {
+  --liq: linear-gradient(180deg,#3558c4,#163d70);
+}
+
+.orb-kap {
+  --liq: linear-gradient(180deg,#4f9a37,#1f5a2a);
+}
+
+.orb-liquid {
   position: absolute;
-  inset: 0 auto 0 0;
+  inset: auto 0 0;
+  height: var(--pct);
+  background: var(--liq);
+  transition: height .4s ease;
 }
 
-/* UI/UX-Review 2026-09-25 Punkt 2: etwas weniger leuchtend (v. a. KaP-Hellgrün), Zuordnung Rot/Blau/Grün bleibt. */
-.bar-lep .bar-fill {
-  background: linear-gradient(90deg,#841a16,#c42c24);
+/* Flüssigkeitsoberfläche */
+.orb-liquid::before {
+  content: "";
+  position: absolute;
+  inset: -3px 0 auto;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.22);
 }
 
-.bar-asp .bar-fill {
-  background: linear-gradient(90deg,#1c6f9e,#3558c4);
+/* Glanzlicht + Randabdunklung über allem, klickt nicht mit. */
+.orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 34% 26%,rgba(255,255,255,.42),rgba(255,255,255,0) 26%),
+    radial-gradient(circle at 50% 50%,transparent 58%,rgba(0,0,0,.45) 100%);
 }
 
-.bar-kap .bar-fill {
-  background: linear-gradient(90deg,#5d8f24,#2a7a3a);
-}
-
-/* .bar-label-prefix/.bar-label-value als eigene Spans mit Gap statt nur einem Leerzeichen dazwischen —
-   Nutzer-Feedback 2026-09-14: "steht viel zu nah an den Werten". */
-.bar-label {
-  position: relative;
-  height: 100%;
+.orb-val {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
   color: #fff;
-  font-size: 16px;
-  letter-spacing: .04em;
-  text-shadow: 0 1px 2px rgba(0,0,0,.55);
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0,0,0,.9);
 }
 
-.bar-label-prefix {
+.orb-key {
+  font-size: calc(var(--sz) * .15);
+  letter-spacing: .08em;
   opacity: .85;
 }
 
-/* LeP/AsP/KaP-Wert sitzt auf einer farbigen Leiste, nicht auf hellem Papier — der generische weiße Input-Kasten
-   (s.o.) wirkt dort wie ein Fremdkörper. Nutzer-Feedback 2026-09-16: auch die erste halbtransparente Box-mit-
-   Unterstrich-Fassung wirkte noch wie ein aufgesetztes Formularfeld ("billig") — jetzt stattdessen ein
-   "eingelassenes Display": kein sichtbarer Rahmen/Unterstrich mehr, sondern ein abgerundetes, per inset-box-
-   shadow in den Balken eingesenktes Fenster (dunkler Schatten oben, dezente helle Kante unten). Die Browser-
-   eigenen Zahlen-Pfeile passen auf der schmalen, runden Leiste ohnehin nicht und fallen daher weg. */
-.bar-label .inline-edit-input {
-  width: 2.4em;
+.orb-cur {
+  font-size: calc(var(--sz) * .33);
+  margin: 1px 0;
+}
+
+.orb-max {
+  font-size: calc(var(--sz) * .16);
+  opacity: .85;
+}
+
+.orb-cur.editable-value {
+  cursor: text;
+}
+
+/* Eingabefeld in der Kugel: „eingelassenes Display“ wie früher auf den Leisten (2026-09-16), ohne Zahlenpfeile. */
+.orb-val .inline-edit-input {
+  width: 2.2em;
   text-align: center;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: calc(var(--sz) * .27);
+  font-weight: 700;
   border: none;
   border-radius: 4px;
   outline: none;
-  background: rgba(0,0,0,.38);
+  background: rgba(0,0,0,.45);
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.55);
-  box-shadow: inset 0 2px 3px rgba(0,0,0,.65),inset 0 -1px 0 rgba(255,255,255,.12);
-  padding: 1px 3px;
+  box-shadow: inset 0 2px 3px rgba(0,0,0,.65),0 0 0 2px rgba(224,192,128,.55);
+  padding: 1px 2px;
   appearance: textfield;
   -moz-appearance: textfield;
-  transition: box-shadow .15s ease,background .15s ease;
 }
 
-.bar-label .inline-edit-input:focus {
-  background: rgba(0,0,0,.48);
-  box-shadow: inset 0 2px 3px rgba(0,0,0,.7),inset 0 -1px 0 rgba(255,255,255,.12),0 0 0 2px rgba(224,192,128,.55);
-}
-
-.bar-label .inline-edit-input::selection {
-  background: rgba(224,192,128,.55);
-  color: #fff;
-}
-
-.bar-label .inline-edit-input::-webkit-inner-spin-button,
-.bar-label .inline-edit-input::-webkit-outer-spin-button {
+.orb-val .inline-edit-input::-webkit-inner-spin-button,
+.orb-val .inline-edit-input::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -808,10 +1057,201 @@ button {
 }
 
 @media (hover: hover) {
+  .orb:hover {
+    filter: brightness(1.12);
+  }
+
   .regen-btn:hover {
     transform: scale(1.45);
     background: rgba(224,192,128,.35);
     box-shadow: 0 0 9px rgba(224,192,128,.65);
+  }
+}
+
+/* --- #50: kleine Speicherkugel an AsP, Einzelwerte im Radialfächer --- */
+.preview-astral-cluster {
+  position: relative;
+  flex: none;
+  z-index: 2;
+}
+.preview-power-satellite {
+  position: absolute;
+  right: -9px;
+  bottom: -6px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to top, #285c96 var(--fill), #171f2c var(--fill));
+  color: #f4e8d6;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, .3), 0 2px 5px rgba(0, 0, 0, .6);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+  cursor: pointer;
+}
+.preview-power-satellite small {
+  font-size: inherit;
+}
+.preview-power-satellite:focus-visible,
+.preview-radial button:focus-visible,
+.preview-zone-energy:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.preview-power-open {
+  visibility: hidden;
+}
+.preview-radial {
+  position: fixed;
+  z-index: 1600;
+  width: 300px;
+  height: 300px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+  font-family: 'GentiumBasic', serif;
+  font-size: var(--fs-meta);
+}
+.preview-radial-ring {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  pointer-events: auto;
+}
+.preview-radial-center,
+.preview-radial-source {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 68px;
+  height: 68px;
+  padding: 5px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to top, #285c96 var(--fill, 0%), #171f2c var(--fill, 0%));
+  color: #f4e8d6;
+  transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + var(--y, 0px)));
+  font: inherit;
+  line-height: 1.1;
+  text-align: center;
+  cursor: pointer;
+}
+.preview-radial-center {
+  width: 86px;
+  height: 86px;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, .3), 0 3px 9px rgba(0, 0, 0, .6);
+}
+/* Gewählte Variante A: dunkle Fassung und Schlagschatten, freier Hintergrund. */
+.preview-radial-center,
+.preview-radial-source {
+  isolation: isolate;
+  text-shadow: 0 1px 2px #000;
+}
+.preview-radial .preview-radial-center,
+.preview-radial .preview-radial-source {
+  border-color: #e3c784;
+  box-shadow: inset 0 2px 3px rgba(255, 255, 255, .35), inset 0 -3px 5px rgba(0, 0, 0, .55), 0 0 0 3px #252019, 0 10px 12px 3px rgba(0, 0, 0, .8);
+}
+.preview-radial-source span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.preview-radial-center small {
+  font-size: inherit;
+}
+.preview-radial-close,
+.preview-radial-pager button {
+  min-width: var(--hit-lg, 28px);
+  min-height: var(--hit-lg, 28px);
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.preview-radial-close {
+  position: absolute;
+  right: 96px;
+  top: 96px;
+  z-index: 1;
+}
+.preview-radial-pager {
+  position: absolute;
+  top: 278px;
+  left: 48px;
+  right: 48px;
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.preview-radial-pager button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+.preview-radial-pager span {
+  padding: 3px 6px;
+  border-radius: 12px;
+  background: var(--head);
+  color: #f4e8d6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .preview-radial-source {
+    animation: preview-source-open .2s ease-out both;
+  }
+  .preview-radial-center {
+    animation: preview-center-open .2s ease-out both;
+  }
+}
+@keyframes preview-source-open {
+  from {
+    transform: translate(-50%, -50%) scale(.4);
+    opacity: 0;
+  }
+}
+@keyframes preview-center-open {
+  from {
+    transform: translate(-50%, -50%) scale(.37);
+  }
+}
+.preview-meter {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--line);
+}
+.preview-meter-fill {
+  display: block;
+  width: var(--fill);
+  height: 100%;
+  background: var(--dmg);
+}
+@media (hover: hover) {
+  .preview-power-satellite:hover,
+  .preview-radial-source:hover {
+    filter: brightness(1.2);
   }
 }
 
@@ -920,6 +1360,28 @@ button {
   background: var(--accent);
   clip-path: polygon(50% 0%,93% 28%,93% 72%,50% 100%,7% 72%,7% 28%);
   filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
+}
+
+/* Kürzel im Würfel über dem Wert (Issue #71, Variante B, Nutzerentscheidung 2026-10-31). */
+.attr-overlay .attr-die-mini {
+  width: 34px;
+  height: 34px;
+}
+
+.attr-overlay .attr-die-mini-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-size: 14px;
+}
+
+.attr-mini-key {
+  font-size: 8px;
+  letter-spacing: .04em;
+  color: rgba(255,255,255,.85);
+  pointer-events: none;
 }
 
 @media (hover: hover) {
@@ -1294,6 +1756,32 @@ button {
   padding: 0 3px;
 }
 
+/* Breite des Editors (Rückmeldung 2026-10-20: Felder wurden beim Klick sehr breit — ohne Breite nimmt ein <input> die
+   Browser-Standardbreite an): Zahlen so breit wie der Wert, ohne Pfeile; Text füllt den verfügbaren Platz. */
+.inline-edit-input[type="number"] {
+  width: 3.4em;
+  box-sizing: border-box;
+  text-align: center;
+  appearance: textfield;
+}
+
+.inline-edit-input[type="number"]::-webkit-inner-spin-button,
+.inline-edit-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.inline-edit-input[type="text"] {
+  width: 100%;
+  min-width: 8em;
+  box-sizing: border-box;
+}
+
+/* Wohlgefällige Talente: Feld über die ganze Zeile statt so breit wie der Text */
+.happy-talents-expanded > .editable-value {
+  display: block;
+}
+
 /* Mehrzeiliger Freitext-Editor (makeEditable() type "textarea", z.B. Notizen-Tab). */
 .inline-edit-textarea {
   display: block;
@@ -1318,8 +1806,10 @@ button {
   background-color: rgba(224,192,128,.18);
 }
 
-/* Spielmodus vs. Bearbeiten-Modus: .edit-only-Elemente (z.B. hideInPlay-Zeilen, Eigenschaften-Aufschlüsselung) erscheinen nur im Bearbeiten-Modus. */
-.sheet[data-mode="play"] .edit-only {
+/* Drei Modi (Issue #34): .adv-only (AP-Stepper, Neues lernen, Entfernen mit Erstattung) in Steigern und Bearbeiten,
+   .edit-only (direkte Änderungen ohne AP, z.B. hideInPlay-Zeilen, Gegenstände löschen) nur im Bearbeiten-Modus. */
+.sheet:not([data-mode="edit"]) .edit-only,
+.sheet[data-mode="play"] .adv-only {
   display: none;
 }
 
@@ -2174,14 +2664,14 @@ button.probe-die:focus-visible,
   font-size: 44px;
 }
 
-.sheet[data-tab="cover"] .badge {
-  font-size: 16px;
-  padding: 4px 14px;
+.sheet[data-tab="cover"] .head-ident {
+  font-size: 15px;
 }
 
-/* LeP/AsP/KaP/Schips leben jetzt nur noch in #coverSidebar (s.u.), nicht mehr zusätzlich in der Kopfzeile. */
-.sheet[data-tab="cover"] .head .bars,
-.sheet[data-tab="cover"] .head .fate-points {
+/* LeP/AsP/KaP/Schips leben jetzt nur noch in #coverSidebar (s.u.), nicht mehr zusätzlich in der Kopfzeile — außer im
+   schmalen Fenster (.narrow), dort bleibt alles im Kopf. */
+.sheet[data-tab="cover"]:not(.narrow) .head .bars,
+.sheet[data-tab="cover"]:not(.narrow) .head-plaque {
   display: none;
 }
 
@@ -2212,12 +2702,24 @@ button.probe-die:focus-visible,
    2026-09-15: bei 3 Ressourcenleisten (LeP/AsP/KaP) reichte der Platz nicht mehr aus, die Leiste bekam wieder
    einen Scrollbalken). */
 /* Gleiches Seitenverhältnis wie im Kopf (118×142), damit das Bild überall gleich beschnitten wird (2026-09-28). */
-.sheet[data-tab="cover"] #coverSidebar .portrait {
+/* Medaillon samt AP-Band; unten Platz für das überstehende Band. Rund: 180 × 180. */
+.sheet[data-tab="cover"] #coverSidebar .portrait-medal {
   width: 180px;
   height: auto;
   aspect-ratio: 118/142;
   flex: 0 0 auto;
   align-self: center;
+  margin-bottom: 12px;
+}
+
+.sheet[data-tab="cover"] #coverSidebar .portrait-medal.shape-round {
+  aspect-ratio: 1;
+  margin-top: 8px;
+}
+
+.sheet[data-tab="cover"] #coverSidebar .ap-ribbon {
+  font-size: 13px;
+  padding: 3px 20px;
 }
 
 .sheet[data-tab="cover"] #coverSidebar .fate-points img {
@@ -2227,24 +2729,22 @@ button.probe-die:focus-visible,
 
 /* --- LeP/AsP/KaP, Schicksalspunkte und Zustände in der Seitenleiste --- */
 
-/* LeP/AsP/KaP/Schips direkt auf der dunklen Leiste, ohne eigene Panel-Box — .bar/.bar-fill/.bar-label/
-   .resource-frame/.regen-btn sind ursprünglich schon für genau diesen dunklen Untergrund gestaltet (siehe .head
-   weiter oben), brauchen hier also keine Anpassung, nur .resource-frame-col für die Spalten- statt Zeilen-
-   Anordnung in der schmalen Leiste (siehe coverResourcesCompact() in script.js). */
+/* LeP/AsP/KaP-Kugeln + Schips direkt auf der dunklen Leiste, ohne eigene Panel-Box — die Kugeln stehen zentriert in
+   einer Reihe (coverResourcesCompact() in script.js), darunter Schips + Regeneration. */
 .cover-resources {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.cover-resources .bar {
-  height: 34px;
-  width: 100%;
+.cover-resources .resource-frame {
+  justify-content: center;
+  gap: 14px;
+  padding: 5px 0;
 }
 
-.cover-resources .bar-label {
-  font-size: 16px;
-  padding: 0 6px;
+.cover-resources .orb {
+  --sz: 68px;
 }
 
 .cover-resources .fate-points {
@@ -2585,22 +3085,10 @@ button.fav-chip-roll {
 
 /* --- Titelblatt-Leiste, Variante G (Issues #27/#31, Nutzer-Entscheidung 2026-10-05) --- */
 
-/* Flache LeP/AsP/KaP-Leisten, Schips + Regeneration in einer Zeile, darunter ein Kasten mit zwei Reitern, der den
-   Rest der Leiste füllt (nur der Inhalt scrollt, falls nötig). */
+/* LeP/AsP/KaP-Kugeln (seit 2026-10-19 statt flacher Leisten), Schips + Regeneration in einer Zeile, darunter ein
+   Kasten mit zwei Reitern, der den Rest der Leiste füllt (nur der Inhalt scrollt, falls nötig). */
 .cover-resources.compact {
-  gap: 6px;
-}
-
-.cover-resources.compact .resource-frame {
-  gap: 4px;
-}
-
-.cover-resources.compact .bar {
-  height: 24px;
-}
-
-.cover-resources.compact .bar-label {
-  font-size: 14px;
+  gap: 8px;
 }
 
 .cover-res-row {
@@ -2699,6 +3187,165 @@ button.fav-chip-roll {
   .side-tab:not(.active):hover {
     color: var(--accent);
   }
+}
+
+/* --- Vorschläge --- */
+
+/* Talent-Vorschläge über den Favoriten (suggestionsPanel() in script.js, Nutzerwunsch 2026-10-06): genau zwei Spalten,
+   zweizeilig: Name | FW, darunter Grund | Probe, der Favoritenstern direkt hinter dem Namen — ohne Bild. Anfragen mit Akzentkante. */
+.suggest-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  padding: 10px 11px;
+}
+
+/* Titel als Klappknopf (Rückmeldung 2026-10-07), eingeklappt mit Hinweis auf offene Anfragen. */
+.suggest-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.suggest-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Pfeil links, nur der Titel mittig (Rückmeldung 2026-10-07). */
+.suggest-title {
+  flex: 1;
+  text-align: center;
+}
+
+/* Anzahl − n + rechts im Titel, eingeklappt ausgeblendet. */
+.suggest-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'GentiumBasic',Georgia,serif;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.suggest-count[hidden] {
+  display: none;
+}
+
+.suggest-count > span {
+  min-width: 1.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.suggest-count button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1;
+}
+
+.suggest-count button:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.suggest-caret {
+  display: inline-block;
+  width: 1em;
+  font-size: var(--fs-small);
+}
+
+.suggest-badge {
+  margin-left: auto;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font-family: 'GentiumBasic',Georgia,serif;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.suggest-badge[hidden] {
+  display: none;
+}
+
+.fav-card.suggest-card {
+  /* Name reicht über die Würfelspalte bis zum FW; nur der Grund teilt sich die Zeile mit den Würfeln. */
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "name name value" "reason roll roll";
+  gap: 2px 6px;
+  padding: 4px 6px 4px 8px;
+}
+
+.suggest-card .suggest-name {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.suggest-card .fav-star {
+  flex: none;
+}
+
+.suggest-card .fav-card-value {
+  grid-area: value;
+  justify-self: end;
+}
+
+.suggest-card .suggest-reason {
+  grid-area: reason;
+}
+
+.suggest-card .fav-card-roll {
+  grid-area: roll;
+  justify-content: end;
+}
+
+.suggest-card.suggest-requested {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.suggest-reason {
+  font-size: var(--fs-meta);
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.suggest-requested .suggest-reason {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* --- NSC/Kreatur (#53/#54): Titelseite --- */
+
+.type-cover-empty {
+  margin: 0;
+  padding: 16px 12px;
+  font-size: var(--fs-data);
+  line-height: 1.4;
 }
 
 /* ==========================================================================
@@ -2879,10 +3526,34 @@ button.fav-chip-roll {
 .info-value,
 .armor-hero .badge-rs,
 .armor-hero .badge-be,
-.bar-label {
+.orb-val,
+.ap-ribbon {
   font-family: 'GentiumBasic',Georgia,serif;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Kreatur (#54): Schalter Ausweichen/Verteidigung unter den Werten --- */
+
+.panel-foot {
+  padding: 8px 10px;
+  border-top: 1px solid var(--line);
+}
+
+.defense-toggle {
+  min-height: var(--hit-md);
+  padding: 2px 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.defense-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ==========================================================================
@@ -3315,6 +3986,14 @@ button.fav-chip-roll {
   box-shadow: 0 6px 16px rgba(0,0,0,.35);
 }
 
+/* Munitionswahl der Waffenkarte als Popover (floatAmmoMenu, #74): feste Lage statt unter dem Knopf in der Karte. */
+.ammo-menu[popover] {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  min-width: 0;
+}
+
 .ammo-types {
   display: flex;
   flex-wrap: wrap;
@@ -3668,21 +4347,9 @@ button.fav-chip-roll {
   margin-bottom: 0;
 }
 
-.hand-slot-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  align-self: stretch;
-}
 
-.hand-slot-side {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  align-self: stretch;
-}
+
+
 
 .body-grid .hand-select {
   max-width: 100%;
@@ -3783,15 +4450,6 @@ button.fav-chip-roll {
   overflow-wrap: anywhere;
 }
 
-.body-armor-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  max-width: 116px;
-  text-align: center;
-}
-
 .cast-auto {
   display: inline-flex;
   align-items: center;
@@ -3846,30 +4504,15 @@ button.fav-chip-roll {
   text-align: center;
 }
 
-.hand-tile-at,
-.hand-tile-pa {
-  position: absolute;
-  bottom: -12px;
-  z-index: 1;
-}
 
-.hand-tile-at {
-  left: -8px;
-}
 
-.hand-tile-pa {
-  right: -8px;
-}
 
-.hand-tile:has(.hand-tile-at) {
-  margin-bottom: 10px;
-}
 
-.hand-tile .die-qs.lg {
-  width: 30px;
-  height: 30px;
-  line-height: 30px;
-}
+
+
+
+
+
 
 /* Fernkampfhand (Körper): TP-Knopf + Nachladen/Zielen/Magazin untereinander. Die Handspalte ist bei zwei Händen nur
    ~120 px breit — deshalb zweizeilig: Beschriftung oben, Segmentbalken + Stand darunter, ↺ daneben. */
@@ -4049,7 +4692,7 @@ button.fav-chip-roll {
 }
 
 /* Körper-Reiter (Issue #29, Rückmeldung 2026-10-02): ganz oben Schnellaktionen + Initiative, dann Figur mit den Händen,
-   darunter die Rüstung. */
+   die Rüstung mittig über der Figur (Issue #36). */
 .body-top {
   display: flex;
   align-items: center;
@@ -4089,104 +4732,20 @@ button.fav-chip-roll {
   font-size: calc(var(--fs-big) + 4px);
 }
 
-.body-armor-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--line);
-}
-
-.body-armor-row > .figure-col-title {
-  flex: none;
-  padding-top: 2px;
-}
-
-.body-armor-row-tiles {
-  flex: 1;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-}
-
-.body-armor-row .body-armor-item {
-  max-width: 110px;
-}
-
-.body-armor-row .armor-slot {
-  width: 76px;
-  height: 76px;
-}
-
-.body-armor-row .body-item-name {
-  display: block;
-  font-size: var(--fs-small);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.body-armor-empty {
-  align-self: center;
-  margin: auto;
-  font-size: var(--fs-small);
-}
-
-/* Rüstungsschild rechtsbündig in der Rüstungszeile (Issue #29, Nutzer-Entscheidung 2026-10-02), Tooltip mit der
-   Aufschlüsselung je Rüstungsteil. */
-.body-armor-row > .body-shield {
-  flex: none;
-  margin-left: auto;
-}
-
 .body-top-stats .body-bigstat {
   padding-top: 2px;
 }
 
-.body-shield {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  width: 64px;
-  padding: 6px 0 14px;
-  background: var(--paper);
-  border: 2px solid var(--accent);
-  border-radius: 5px 5px 32px 32px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.25);
-  cursor: help;
-}
-
-.body-shield span {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.05;
-}
-
-.body-shield small {
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: .05em;
-}
-
-.body-shield-rs strong {
-  font-size: 24px;
-}
-
-.body-shield-be strong {
-  font-size: var(--fs-data);
-}
-
-.body-shield .body-shield-magic {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  font-weight: bold;
+/* „In die Hand“ an ebenfalls angelegten Waffen (2026-10-28), gleiche Trefferfläche wie der Ausrüsten-Knopf. */
+.take-in-hand {
+  width: var(--hit-md);
+  height: var(--hit-md);
+  padding: 0;
+  border: 0;
+  background: none;
   color: var(--accent);
 }
+
 
 /* Kurzübersicht der übrigen Waffen (statt der Waffentabellen): Bild | Name + Technik | Würfel | TP | Stern */
 /* Zweispaltig erst ab genug Breite (wie im Modul, Rückmeldung 2026-10-05). */
@@ -4208,6 +4767,33 @@ button.fav-chip-roll {
 .short-weapon-row > .item-icon {
   width: 30px;
   height: 30px;
+}
+
+.short-weapon-icon {
+  position: relative;
+  width: 30px;
+  height: 30px;
+}
+
+.short-weapon-icon > img:first-child,
+.short-weapon-icon > .item-icon {
+  width: 30px;
+  height: 30px;
+}
+
+/* Waffe liegt in einem Behälter (wie .dsa5h-in-container im Modul): Behälterbild als Plakette unten rechts. */
+.short-weapon-icon > .in-container {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  object-fit: contain;
+  cursor: help;
 }
 
 /* Lange Namen gekürzt statt mitten im Wort umgebrochen (seit der Ausrüsten-Spalte, 2026-10-05), voller Name im Tooltip. */
@@ -4258,6 +4844,903 @@ button.fav-chip-roll {
   .hand-swap-btn:hover {
     border-color: var(--accent);
     color: var(--accent);
+  }
+}
+
+/* --- Körper: Waffenkarte (Issue #40 „Banner“, Aufbau in drei Bändern seit 2026-10-20) ---
+
+   Beide Hände gleich breit und gleich hoch (Raster mit gleichen Seitenspalten, Seiten strecken sich, die Karte füllt
+   ihre Seite); freie und belegte Hände als gestrichelte Karte derselben Größe. Karte: Wimpel mit der Hand, dann drei
+   feste Bänder statt frei verteilter Elemente (Rückmeldung 2026-10-20) — Kopf (Name + Stern + Anwendungswürfel, darunter
+   Kampftechnik · KtW · RW), Mitte (Bild auf Lichtschein | Würfelraster: AT und PA gleich breit, TP bzw. FK über die volle
+   Breite), Fuß (Aktionen und Fernkampf-Status als gleich hohe Pillen mit Trennlinie). Die Waffe liegt als blasses
+   Wasserzeichen dahinter. Mittelspalte --mid für die Rüstung (siehe „Körper: Rüstung mittig“).
+   Modul: body-hand.hbs + Abschnitt „Körper: Waffenkarte“ der Bogen-CSS. */
+.body-grid.sides {
+  --mid: 150px;
+  grid-template-columns: minmax(0, 1fr) var(--mid) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.body-side {
+  align-items: stretch;
+  text-align: left;
+  container: dsa5h-hand / inline-size;
+}
+
+.body-side > :is(.hand-slot, .hand-2h-note) {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0;
+  border-radius: 6px;
+}
+
+/* Freie oder belegte Hand: gestrichelte Karte, Inhalt mittig */
+.body-side > :is(.hand-slot-free, .hand-empty, .hand-2h-note) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed rgba(185, 154, 92, .6);
+  text-align: center;
+}
+
+.body-side > .hand-slot-free {
+  flex-direction: column-reverse;
+}
+
+.body-side > .hand-2h-note {
+  font-size: var(--fs-meta);
+  font-style: italic;
+  color: var(--muted);
+}
+
+.hand-empty .hand-select {
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+}
+
+.hand-empty-text {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+/* Die Karte */
+.body-side > .hand-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-rows: auto auto auto 1fr;
+  grid-template-areas: "name name" "meta meta" "media stats" "extra extra";
+  align-items: center;
+  gap: 4px 12px;
+  padding: 34px 12px 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  background: linear-gradient(160deg, rgba(255, 250, 238, .9), rgba(236, 226, 210, .4) 55%, rgba(185, 154, 92, .18)), var(--paper);
+  text-align: left;
+}
+
+.hand-card .hand-bg {
+  position: absolute;
+  top: -10px;
+  right: -40px;
+  z-index: -1;
+  width: 200px;
+  height: 200px;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  opacity: .1;
+  filter: grayscale(.3);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+
+.hand-card .hand-banner {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  z-index: 1;
+  padding: 6px 10px 12px;
+  background: linear-gradient(180deg, #3a322b, #272320);
+  color: #f4e8d6;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 7px), 0 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+}
+
+.hand-card .hand-pick {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.hand-card .hand-pick select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Kopf: Name + Stern + Anwendungswürfel, darunter Kampftechnik · KtW · RW in Textfarbe (nur die Punkte blass) */
+.hand-card .hand-name {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: none;
+  padding-bottom: 4px;
+  background: linear-gradient(90deg, rgba(185, 154, 92, .8), rgba(185, 154, 92, 0)) bottom left / 100% 1px no-repeat;
+  font-family: 'Andalus', serif;
+  font-size: 22px;
+  font-weight: normal;
+  line-height: 1.1;
+  overflow-wrap: normal;
+}
+
+.hand-card .hand-name :is(.fav-star, .onuse-btn) {
+  flex: none;
+}
+
+.hand-card .hand-name .fav-star {
+  margin: -4px 0;
+}
+
+.hand-card .hand-meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6px;
+  margin-bottom: 4px;
+  font-size: var(--fs-meta);
+  color: var(--ink);
+}
+
+.hand-card .hand-meta .ct-link {
+  margin: 0;
+  color: var(--ink);
+  text-align: left;
+}
+
+.hand-card .hand-meta .hand-reach::before {
+  content: "·";
+  margin-right: 6px;
+  color: var(--muted);
+}
+
+/* Mitte: Bild | Würfelraster */
+.hand-card .hand-media {
+  grid-area: media;
+  position: relative;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+}
+
+.hand-card .hand-media::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 236, 190, .95) 0%, rgba(255, 236, 190, .4) 45%, transparent 70%);
+}
+
+.hand-card .hand-media > img,
+.hand-card .hand-media > .item-icon > img {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .35));
+}
+
+.hand-card .hand-media > .item-icon {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  outline: 0;
+}
+
+.hand-card .hand-media .structure-bar {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: -6px;
+  height: 4px;
+}
+
+.hand-card .hand-stats {
+  grid-area: stats;
+  align-self: center;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.hand-card .hand-stats > * {
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+}
+
+.hand-card .hand-stats .damage-roll,
+.hand-card.ranged .hand-stats .hand-pill {
+  grid-column: 1 / -1;
+}
+
+/* AT/PA/FK und TP als gleich hohe Pillen mit demselben Hover (Rückmeldung 2026-10-20: TP zoomte stärker) */
+.hand-card .hand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 9px 0 3px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .55);
+  color: var(--ink);
+  box-shadow: none;
+  font-family: 'GentiumBasic', Georgia, serif;
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+
+.hand-card .hand-pill b {
+  font-size: var(--fs-meta);
+  letter-spacing: .06em;
+}
+
+.hand-card .hand-die {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b, 1px 1px 1px #140f0b, -1px -1px 1px #140f0b, 1px -1px 1px #140f0b, -1px 1px 1px #140f0b;
+}
+
+.hand-card .hand-stats .damage-roll {
+  height: 32px;
+  margin: 0;
+  border-radius: 20px;
+  font-size: var(--fs-data);
+}
+
+.hand-card .hand-stats .damage-roll small {
+  margin-right: 2px;
+  font-size: var(--fs-meta);
+  letter-spacing: .1em;
+  color: var(--muted);
+}
+
+.hand-card :is(.hand-pill, .hand-stats .damage-roll):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  transform: none;
+}
+
+/* Fuß: Aktionen und Fernkampf-Status (Munition, Nachladen, Zielen, Magazin) als eine Reihe gleich hoher Pillen */
+.hand-card .hand-extra {
+  grid-area: extra;
+  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(185, 154, 92, .35);
+}
+
+.hand-card .hand-ranged-extras {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+}
+
+.hand-card .hand-ranged-extras > *,
+.hand-card .hand-ranged-extras .reload {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  margin: 0;
+}
+
+.hand-card :is(.ammo-toggle, .reload-btn, .aim, .mag, .hand-swap-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: 30px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .55);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+}
+
+.hand-card .reload-reset {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 50%;
+}
+
+.hand-card .mag .mag-count {
+  font-weight: bold;
+}
+
+.hand-card .mag .mag-swap {
+  margin: 0;
+  padding: 0 0 0 2px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: var(--fs-data);
+}
+
+[data-theme='dark'] .body-side > .hand-card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, .06), transparent 60%), var(--paper);
+}
+
+[data-theme='dark'] .hand-card .hand-media::before {
+  background: radial-gradient(circle, rgba(255, 220, 160, .35) 0%, transparent 70%);
+}
+
+[data-theme='dark'] .hand-card :is(.hand-pill, .ammo-toggle, .reload-btn, .aim, .mag, .hand-swap-btn) {
+  background: rgba(255, 255, 255, .06);
+}
+
+@media (hover: hover) {
+  .hand-card :is(.hand-pill, .hand-stats .damage-roll):hover {
+    border-color: var(--accent);
+    transform: scale(1.05);
+    z-index: auto;
+  }
+
+  .hand-card .hand-stats .damage-roll:hover {
+    border-color: var(--dmg);
+    background: var(--dmg-bg);
+  }
+
+  .hand-card .hand-pick:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* --- Körper: Lesbarkeit (Rückmeldung 2026-10-20: Schrift zu klein) ---
+
+   Im ganzen Körper-Panel Beschriftungen mindestens 13 px (--fs-meta), blasse Texte kräftiger, die Figur dahinter
+   schwächer, damit kleine Schrift nicht auf unruhigem Grund steht. */
+.body-panel {
+  --fs-meta: max(13px, calc(var(--fs-data) - 2px));
+  --muted: rgba(43, 39, 33, .82);
+  container: dsa5h-body / inline-size;
+}
+
+[data-theme='dark'] .body-panel {
+  --muted: rgba(237, 227, 209, .8);
+}
+
+.body-grid > .body-figure {
+  opacity: .24;
+}
+
+.sheet[data-theme="dark"] .body-grid > .body-figure {
+  opacity: .18;
+}
+
+/* --- Körper: Rüstung mittig über der Figur, „Wappenschild“ (Issue #36, Nutzer-Entscheidung 2026-10-20) ---
+
+   Die Rüstung steht in der Mittelspalte zwischen den Händen statt in einer eigenen Zeile darunter: ein Schild mit dem
+   Bild der Hauptrüstung und dem Gesamtschutz, ihr Name als Band darunter, weitere Teile (nur bei mehr als einem) als
+   kleine Zeilen. Mit Trefferzonen-Regel ein Zonenkreuz (Kopf, Arme, Torso, Beine) mit RS je Zone; dafür wird die
+   Mittelspalte breiter und die Waffenkarten kompakter. Breitenabhängig (Abschnitt 18): bis 560 px Panelbreite bleibt
+   das Zonenkreuz humanoid, darunter rutscht die Rüstung unter die Hände. Modul: body.hbs + Abschnitt „Körper: Rüstung
+   mittig“ der Bogen-CSS. */
+.body-grid.sides.armor-zones {
+  --mid: 216px;
+}
+
+.armor-center {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+}
+
+/* Wappenschild */
+.armor-crest-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.armor-crest {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 112px;
+  height: 128px;
+  padding: 0 0 18px;
+  border: 2px solid var(--accent);
+  border-radius: 6px 6px 56px 56px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .3), inset 0 0 0 3px rgba(185, 154, 92, .25);
+  cursor: pointer;
+}
+
+.armor-crest.empty {
+  border-style: dashed;
+  box-shadow: none;
+  cursor: default;
+}
+
+.armor-crest-img {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  border: 0;
+  object-fit: cover;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 85%);
+  mask-image: linear-gradient(180deg, #000 30%, transparent 85%);
+}
+
+.armor-crest-rs,
+.armor-crest-be {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  line-height: 1.05;
+}
+
+.armor-crest-rs strong {
+  font-size: 30px;
+  text-shadow: 0 0 6px var(--paper), 0 0 3px var(--paper);
+}
+
+.armor-crest small,
+.armor-sum-bar small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  letter-spacing: .05em;
+}
+
+.armor-crest-be strong {
+  font-size: var(--fs-data);
+}
+
+.armor-sum-magic {
+  font-weight: bold;
+  color: var(--accent) !important;
+}
+
+.armor-crest-name {
+  z-index: 1;
+  max-width: 140px;
+  margin-top: -14px;
+  padding: 2px 10px;
+  border-radius: 3px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: bold;
+  font-size: var(--fs-small);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+}
+
+[data-theme='dark'] .armor-crest-name {
+  color: #1c1917;
+}
+
+/* Weitere Teile: kleine Zeilen Bild | Name | RS; im Bearbeiten-Modus wählt ein Klick die Hauptrüstung. */
+.armor-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.armor-extra {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 2px 5px 2px 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  text-align: left;
+  cursor: pointer;
+}
+
+.armor-extra img {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.armor-extra-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.armor-extra-rs {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.sheet[data-mode="edit"] .armor-extra {
+  border-style: dashed;
+}
+
+.armor-extra:focus-visible {
+  border-color: var(--accent);
+}
+
+.armor-extras-hint {
+  font-size: var(--fs-meta);
+  font-style: italic;
+}
+
+/* Trefferzonen: Kreuz aus sechs Zellen auf einem 6er-Raster (Kopf oben, Arme neben dem Torso, Beine darunter),
+   jede Zelle mit Zonenname, blassem Bild des Teils und großem RS. */
+.armor-zone-cross {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 5px;
+  width: 100%;
+}
+
+.armor-zone {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  height: 70px;
+  padding: 2px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  cursor: pointer;
+}
+
+.armor-zone img {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  border: 0;
+  object-fit: cover;
+  opacity: .35;
+}
+
+.armor-zone-label {
+  font-size: var(--fs-meta);
+  line-height: 1.1;
+  letter-spacing: .03em;
+  color: var(--ink);
+  text-shadow: 0 0 3px var(--paper);
+}
+
+.armor-zone :is(.armor-zone-item, .zl-long) {
+  display: none;
+}
+
+.armor-zone strong {
+  font-size: 22px;
+  line-height: 1;
+  text-shadow: 0 0 4px var(--paper), 0 0 2px var(--paper);
+}
+
+.armor-zone.empty {
+  border-style: dashed;
+  background: none;
+  box-shadow: none;
+  cursor: default;
+}
+
+.armor-zone.empty strong {
+  color: var(--muted);
+}
+
+.armor-zone:is(button):focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+@media (hover: hover) {
+  .armor-extra:hover {
+    border-color: var(--accent);
+  }
+
+  .armor-zone:is(button):hover {
+    outline: 2px solid var(--accent);
+  }
+}
+
+.zone-head {
+  grid-column: 3 / 5;
+  grid-row: 1;
+}
+
+.zone-rightarm {
+  grid-column: 1 / 3;
+  grid-row: 2;
+  align-self: start;
+}
+
+.zone-value {
+  grid-column: 3 / 5;
+  grid-row: 2;
+  height: 96px;
+}
+
+.zone-leftarm {
+  grid-column: 5 / 7;
+  grid-row: 2;
+  align-self: start;
+}
+
+.zone-rightleg {
+  grid-column: 2 / 4;
+  grid-row: 3;
+}
+
+.zone-leftleg {
+  grid-column: 4 / 6;
+  grid-row: 3;
+}
+
+/* BE (+ Zauberschutz) unter dem Zonenkreuz */
+.armor-sum-bar {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 3px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--paper);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  cursor: help;
+}
+
+.armor-sum-bar span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.armor-sum-bar strong {
+  font-size: var(--fs-data);
+}
+
+/* Kompakte Waffenkarten neben dem Zonenkreuz: kleineres Bild und kleinere Würfel, gleicher Aufbau. */
+.armor-zones > .body-side > .hand-card {
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 4px 10px;
+  padding: 30px 10px 10px;
+}
+
+.armor-zones .hand-card .hand-name {
+  font-size: 19px;
+}
+
+.armor-zones .hand-card .hand-media {
+  width: 56px;
+  height: 56px;
+}
+
+.armor-zones .hand-card .hand-bg {
+  width: 160px;
+  height: 160px;
+}
+
+.armor-zones .hand-card .hand-pill {
+  height: 30px;
+  gap: 3px;
+  padding: 0 6px 0 2px;
+}
+
+.armor-zones .hand-card .hand-die {
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
+}
+
+.armor-zones .hand-card .hand-stats {
+  gap: 5px;
+}
+
+.armor-zones .hand-card .hand-stats .damage-roll {
+  height: 30px;
+}
+
+
+/* Passive Verteidigung (#56): Auswahl, womit der Held automatisch verteidigt (Gegenstück zu body.hbs). */
+.auto-defense-panel select {
+  width: 100%;
+  min-height: var(--hit-lg);
+  font-size: var(--fs-base);
+}
+
+
+/* --- Grundmanöver (Hausregel Paladose, #45; Modul: Abschnitt „Grundmanöver“ der Bogen-CSS) --- */
+.maneuvers-panel .maneuvers-book {
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, .12);
+  color: inherit;
+  font: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+
+.maneuvers-panel .panel-note {
+  margin: 6px 10px 0;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.maneuver-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 18px;
+  padding: 4px 10px 6px;
+}
+
+.maneuver-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.maneuver-row i {
+  font-style: normal;
+  color: var(--accent);
+  text-align: center;
+}
+
+.maneuver-row small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.maneuver-row strong {
+  white-space: nowrap;
+}
+
+.maneuver-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 10px 10px;
+}
+
+.maneuver-btn {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 15px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.maneuver-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.maneuver-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Schwachpunkte eines Gegners (#48): Vorteil, darum in der Akzentfarbe. */
+.maneuver-status.maneuver-weakness {
+  font-size: var(--fs-small);
+  color: var(--accent);
+}
+
+@media (hover: hover) {
+  .maneuver-btn:hover {
+    border-color: var(--accent);
   }
 }
 
@@ -4323,6 +5806,102 @@ button.fav-chip-roll {
   font-size: var(--fs-meta);
   color: var(--muted);
   border-bottom: 1px solid var(--line);
+}
+
+/* --- #47: Zonen-LeP, getrennt von der Rüstungsaktion --- */
+.preview-zone {
+  min-width: 0;
+}
+.preview-zone.zone-value {
+  height: auto;
+}
+.preview-zone .armor-zone {
+  width: 100%;
+  height: 70px;
+}
+.preview-zone-energy {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: 16px 5px 14px;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  width: 100%;
+  height: 49px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 5px 5px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+.preview-zone-caption {
+  display: none;
+}
+.preview-zone-value {
+  grid-column: 1 / -1;
+  white-space: nowrap;
+  font-weight: bold;
+}
+.zone-meter {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  width: 100%;
+}
+.preview-zone.failed .armor-zone {
+  border-color: var(--dmg);
+}
+.preview-zone.failed .preview-zone-energy {
+  border-color: var(--dmg);
+  background: var(--dmg-bg);
+}
+.preview-zone-penalty,
+.preview-zone-failed {
+  color: var(--dmg);
+  font-weight: bold;
+}
+.preview-zone-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  grid-column: 1 / -1;
+  grid-row: 3;
+  width: 100%;
+  min-height: 14px;
+}
+
+/* --- Kreatur (#54): Kampfwerte als Reihe --- */
+
+.creature-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.creature-stat {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+}
+
+.creature-stat b {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  font-size: var(--fs-big);
+}
+
+.creature-stat small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  text-align: center;
 }
 
 /* ==========================================================================
@@ -4598,6 +6177,26 @@ button.fav-chip-roll {
 .ext-badge:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
+}
+
+/* --- Sonderfertigkeiten, Patron, Tricks/Segnungen zweispaltig (Issue #38) ---
+   Wie im Modul (.dsa5h-panel-cols): kurze Chip-Panels nebeneinander, ein allein stehendes letztes über die ganze Zeile. */
+.panel-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 16px;
+}
+
+.panel + .panel-cols {
+  margin-top: 16px;
+}
+
+.panel-cols > .panel + .panel {
+  margin-top: 0;
+}
+
+.panel-cols > .panel:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
 }
 
 /* ==========================================================================
@@ -4949,6 +6548,54 @@ button.fav-chip-roll {
 /* ==========================================================================
    13. Status
    ========================================================================== */
+
+/* „Zustand hinzufügen“ mit Suche (Issue #37), wie .dsa5h-condition-picker im Modul. Statt der weißen Foundry-
+   Symbole (icons/svg/…, liegen nicht unter Data) nur die dunkle Plakette. */
+.condition-picker {
+  grid-column: 1 / -1;
+  column-span: all;
+  padding: 10px 11px;
+  border-bottom: 1px solid var(--line);
+}
+
+.condition-picker > summary {
+  cursor: pointer;
+}
+
+.condition-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
+  gap: 6px;
+  padding-top: 10px;
+}
+
+.condition-grid > button {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 34px;
+  padding: 3px 6px;
+  text-align: left;
+  line-height: 1.15;
+}
+
+.condition-grid > .cond-search,
+.condition-grid > .cond-none {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.condition-grid > [hidden] {
+  display: none;
+}
+
+.cond-plate {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: var(--head-base);
+}
 
 .modifier-row {
   grid-template-columns: 1fr 50px 1fr;
@@ -5309,6 +6956,130 @@ button.fav-chip-roll {
   }
 }
 
+/* --- Aufträge und Personen (Issue #39): Liste aus dem Almanach des Systems --- */
+.almanac-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.almanac-btn {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 14px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+/* Kacheln immer gleich groß (Nutzer 2026-10-21): feste Höhe, Texte einzeilig mit „…“, voller Name im Tooltip.
+   Nur das Nötigste – Details öffnet der Klick im Almanach. */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.almanac-tile {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  height: 66px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.almanac-tile.closed {
+  opacity: .7;
+}
+
+.almanac-tile img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;
+  background: var(--paper);
+}
+
+.quest-card img {
+  border-radius: 6px;
+}
+
+.persona-card img {
+  border-radius: 50%;
+  object-position: top;
+}
+
+.tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tile-text > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile-text strong {
+  font-size: var(--fs-data);
+}
+
+.tile-text small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.quest-status.status-1 {
+  color: var(--use);
+}
+
+.quest-status.status-2 {
+  color: var(--dmg);
+}
+
+.quest-progress {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent) var(--pct), var(--odd) var(--pct));
+}
+
+.quest-closed > summary {
+  cursor: pointer;
+}
+
+.persona-important {
+  color: var(--accent);
+}
+
+:is(.almanac-tile, .almanac-btn):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  :is(.almanac-tile, .almanac-btn):hover {
+    border-color: var(--accent);
+  }
+}
+
 /* ==========================================================================
    16. Steigerungsplaner
    ========================================================================== */
@@ -5440,6 +7211,247 @@ button.fav-chip-roll {
 
   .rail button .rail-label {
     display: none;
+  }
+}
+
+/* --- Schmales Fenster: Titelblatt einspaltig (.narrow, initNarrowSheet(); im Modul .dsa5h-narrow, 2026-10-20) ---
+   Kopf oben wie auf den anderen Reitern, #coverSidebar (nur noch der Reiterkasten) im Inhalt unter den Favoriten. */
+.sheet.narrow[data-tab="cover"] {
+  grid-template-columns: minmax(0,1fr);
+  grid-template-rows: auto auto auto minmax(0,1fr);
+  grid-template-areas: "head" "attrbar" "tabtitle" "content";
+}
+
+/* Kopf im schmalen Fenster (alle Reiter, wie .dsa5h-narrow im Modul): kleinere Kugeln und Porträt, Spezies · Kultur ·
+   Profession als eigene Zeile unter den Kugeln über die volle Breite. */
+.sheet.narrow .head-inner {
+  gap: 12px;
+}
+
+.sheet.narrow .head-inner > .portrait-medal {
+  flex-basis: 96px;
+  width: 96px;
+  height: 116px;
+}
+
+.sheet.narrow .head-inner > .portrait-medal.shape-round {
+  height: 96px;
+}
+
+.sheet.narrow .head-main {
+  column-gap: 10px;
+}
+
+.sheet.narrow .head .bars {
+  margin-top: -26px;
+}
+
+.sheet.narrow .head .orb {
+  --sz: 52px;
+}
+
+.sheet.narrow .head-ident {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  padding-top: 4px;
+}
+
+.sheet.narrow[data-tab="cover"] #coverSidebar {
+  --headink: var(--ink);
+  --headmuted: var(--muted);
+  display: block;
+  margin-top: 16px;
+  padding: 0;
+  overflow: visible;
+  background: none;
+}
+
+/* --- Körper: Rüstung im schmaleren Panel (Issue #36, benannter Container dsa5h-body auf .body-panel) ---
+
+   Rückmeldung 2026-10-20 (Tablet mit Chat daneben): das Schild rutschte unter die Hände, obwohl daneben eine fast leere
+   Karte stand. Jetzt: Ist eine Hand frei oder von der beidhändigen Waffe belegt (.free-left/.free-right), kommt die
+   Rüstung in diese Karte, der Hinweis wird zur Kopfzeile. Sind beide Hände belegt, bleibt ein kleineres Schild in der
+   Mitte, weitere Teile als Bildchen mit RS (Name im Tooltip). Das Zonenkreuz rutscht nur bei zwei belegten Händen und
+   sehr schmalem Panel unter die Hände. */
+@container dsa5h-body (max-width: 690px) {
+  .body-grid.sides.armor-zones {
+    --mid: 188px;
+    gap: 10px;
+  }
+
+  .armor-zone {
+    height: 62px;
+  }
+
+  .zone-value {
+    height: 84px;
+  }
+}
+
+@container dsa5h-body (max-width: 680px) {
+  .body-grid.sides,
+  .body-grid.sides.armor-zones:is(.free-left, .free-right) {
+    --mid: 110px;
+  }
+
+  /* Rüstung in der freien bzw. belegten Hand: dieselbe Rasterzelle wie die gestrichelte Karte, darüber gelegt */
+  .body-grid.free-right > .armor-center {
+    grid-column: 3;
+  }
+
+  .body-grid.free-left > .armor-center {
+    grid-column: 1;
+  }
+
+  .body-grid:is(.free-left, .free-right) > .body-side {
+    grid-row: 1;
+  }
+
+  .body-grid:is(.free-left, .free-right) > .armor-center {
+    position: relative;
+    z-index: 1;
+    margin-top: 62px;
+    padding: 0 10px 10px;
+  }
+
+  .body-grid:is(.free-left, .free-right) .body-side > :is(.hand-slot-free, .hand-empty, .hand-2h-note) {
+    justify-content: flex-start;
+  }
+
+  .body-grid:is(.free-left, .free-right) .body-side > .hand-slot-free {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  /* Beide Hände belegt: kleineres Schild in der schmalen Mitte, weitere Teile als Bildchen mit RS */
+  .body-grid:not(.free-left):not(.free-right) .armor-crest {
+    width: 92px;
+    height: 106px;
+    padding-bottom: 14px;
+    border-radius: 6px 6px 46px 46px;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) .armor-crest-rs strong {
+    font-size: 24px;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) .armor-crest-name {
+    max-width: 108px;
+    padding-inline: 6px;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) .armor-extras {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) .armor-extra {
+    grid-template-columns: 22px auto;
+    width: auto;
+    padding-right: 6px;
+  }
+
+  .body-grid:not(.free-left):not(.free-right) :is(.armor-extra-name, .armor-extras-hint) {
+    display: none;
+  }
+}
+
+/* Waffenkarte zu schmal für Bild und Würfel nebeneinander (Container dsa5h-hand = Seite): Würfelraster unter dem Bild
+   über die volle Breite — normale Karte unter 250 px, kompakte neben dem Zonenkreuz unter 205 px. */
+@container dsa5h-hand (max-width: 250px) {
+  .body-grid:not(.armor-zones) .body-side > .hand-card {
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas: "name name" "meta meta" "media media" "stats stats" "extra extra";
+    row-gap: 10px;
+  }
+}
+
+@container dsa5h-hand (max-width: 205px) {
+  .body-side > .hand-card {
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas: "name name" "meta meta" "media media" "stats stats" "extra extra";
+    row-gap: 10px;
+  }
+}
+
+/* Sehr schmales Panel: Zonen bei zwei belegten Händen unter den Händen, als kleine Kacheln Bild | Zone + Teil | RS,
+   zwei bis drei je Zeile. */
+@container dsa5h-body (max-width: 560px) {
+  .body-grid.sides.armor-zones:not(.free-left):not(.free-right) {
+    --mid: 110px;
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) > .armor-center {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    grid-template-areas: "img label rs" "img item rs";
+    align-items: center;
+    justify-items: start;
+    gap: 0 8px;
+    height: auto;
+    min-height: 40px;
+    padding: 4px 10px 4px 4px;
+    text-align: left;
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone img {
+    position: static;
+    grid-area: img;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    opacity: 1;
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone.empty::before {
+    content: "";
+    grid-area: img;
+    width: 28px;
+    height: 28px;
+    border: 1px dashed var(--line);
+    border-radius: 50%;
+    box-sizing: border-box;
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone .armor-zone-label {
+    grid-area: label;
+    color: var(--muted);
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone .zl-short {
+    display: none;
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone .zl-long {
+    display: inline;
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone .armor-zone-item {
+    grid-area: item;
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--fs-small);
+  }
+
+  .armor-zones:not(.free-left):not(.free-right) .armor-zone-cross > .armor-zone strong {
+    grid-area: rs;
+    font-size: 18px;
   }
 }
 
@@ -5817,9 +7829,23 @@ button.fav-chip-roll {
   cursor: pointer;
 }
 
+/* Fußleiste: Einstellungen der Statistik links (seit 2026-11-02 hier statt in den Moduleinstellungen), Löschen rechts */
 .ds-footer {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.ds-setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-small);
+}
+
+.ds-footer .ds-btn.danger {
+  margin-left: auto;
 }
 
 .ds-btn {
@@ -6329,6 +8355,110 @@ button.fav-chip-roll {
   font-size: var(--fs-small);
 }
 
+/* Sprungleiste langer Seiten (Grundmanöver, Nutzer 2026-10-21): klebt beim Scrollen oben auf dem Blatt, Klick springt
+   zum Abschnitt (jumpToSection in scripts/apps/house-rules.js). */
+.dsa5-helpers-house-rules .dsa5h-hr-jump {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 -8px 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  background: var(--page);
+  box-shadow: 0 4px 6px -4px rgba(0,0,0,.25);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-jump button {
+  flex: none;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 18px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-jump button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-house-rules .dsa5h-hr-jump button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* Grundmanöver (Paladose, #45): Überschrift je Manöver mit eigenem Schalter, Tabellen mit Text in der ersten Spalte. */
+.dsa5-helpers-house-rules .dsa5h-hr-section h4 {
+  margin: 14px 0 4px;
+  font-size: var(--fs-data);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-head h4 {
+  margin: 0;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-switch-small {
+  flex: none;
+  font-size: var(--fs-meta);
+}
+
+/* Passive Verteidigung (#56): Schalter je Geltungsbereich (Spielercharaktere / alle anderen). */
+.dsa5-helpers-house-rules .dsa5h-hr-scope {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-scope li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-table {
+  width: auto;
+  min-width: 60%;
+  margin: 6px 0 8px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-table td:first-child {
+  width: auto;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table-wrap {
+  overflow-x: auto;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table-wrap .dsa5h-hr-maneuver-table td {
+  vertical-align: top;
+}
+
 .dsa5-helpers-house-rules .dsa5h-hr-pager {
   display: flex;
   align-items: center;
@@ -6394,6 +8524,36 @@ button.fav-chip-roll {
 
 /* --- Werkzeugleiste & Umschalter --- */
 
+/* Demo-Dialoge der abgenommenen Ressourcenanzeige. */
+.preview-editor input,
+.preview-done {
+  min-height: var(--hit-lg, 28px);
+  padding: 3px 6px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}
+.preview-editor :is(input, button):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.preview-editor-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 70px auto;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+.preview-editor input {
+  width: 100%;
+}
+.preview-done {
+  margin-top: 12px;
+  cursor: pointer;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
@@ -6440,6 +8600,12 @@ button.fav-chip-roll {
   color: #1c1917;
   font-weight: bold;
   border-color: var(--accent,#8b6f3f);
+}
+
+.mode-switch button.active {
+  background: var(--accent,#8b6f3f);
+  color: #1c1917;
+  font-weight: bold;
 }
 
 /* Steuerungen (Modus-/Tab-Stil-Umschalter, Theme-Button) sollen als Gruppe umbrechen statt einzelne Buttons zu quetschen. */
@@ -6672,5 +8838,181 @@ button.fav-chip-roll {
 @media (hover: hover) {
   .sheet-resize:hover {
     filter: brightness(1.3);
+  }
+}
+
+
+/* --- DSA-Leiste (hud-preview.js): Modul-Reiter, Variante B (Nutzer-Entscheidung 2026-10-28) --- */
+/* Nachbau des Modul-Reiters in der Systemleiste als Design-Referenz für scripts/hud.js. */
+.hudp {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(720px, calc(100vw - 24px));
+  transform: translateX(-50%);
+  font-family: 'GentiumBasic', Georgia, serif;
+}
+
+.hudp-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(20, 16, 12, .92);
+  color: #f0e4cc;
+  font-size: 13px;
+}
+
+.hudp-controls button {
+  min-height: var(--hit-sm);
+  padding: 0 8px;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hudp-title {
+  margin-right: auto;
+}
+
+.hudp-controls button[aria-pressed="true"] {
+  border-color: #e0c48c;
+  background: rgba(224, 192, 128, .25);
+}
+
+.hudp-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.hudp-tab {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 30px;
+  border-radius: 6px 6px 0 0;
+  background: rgba(255, 255, 255, .06);
+  font-size: 15px;
+}
+
+.hudp-tab img {
+  width: 24px;
+  height: 24px;
+}
+
+.hudp-tab.active {
+  background: rgba(120, 160, 220, .35);
+  box-shadow: inset 0 -2px 0 #9cc0f0;
+}
+
+.hudp-section {
+  min-height: 52px;
+}
+
+.hudp-glyph {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.hudp-badge {
+  padding: 0 5px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, .35);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.hudp-tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .07);
+  color: #f0e4cc;
+  cursor: pointer;
+}
+
+.hudp-tile.active {
+  border-color: #e0c48c;
+  background: radial-gradient(circle at 50% 40%, rgba(224, 192, 128, .55), rgba(224, 192, 128, .15));
+  box-shadow: 0 0 8px rgba(224, 192, 128, .7);
+}
+
+.hudp-tile .hudp-badge {
+  position: absolute;
+  right: -4px;
+  bottom: -5px;
+  background: #b3241a;
+  color: #fff;
+}
+
+.hudp-tile.named {
+  grid-template-rows: auto auto;
+  align-content: center;
+  gap: 2px;
+  width: 64px;
+  height: 40px;
+}
+
+.hudp-short {
+  overflow: hidden;
+  max-width: 64px;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hudp-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(224, 192, 128, .35);
+}
+
+.hudp-mini {
+  width: var(--hit-md);
+  height: var(--hit-md);
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .06);
+  color: #f0e4cc;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hudp-note {
+  min-height: 1.2em;
+  margin: 0;
+  color: #f0e4cc;
+  font-size: 13px;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
+}
+
+.hudp button:focus-visible {
+  outline: 2px solid #e0c48c;
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .hudp-tile:hover,
+  .hudp-mini:hover {
+    background: rgba(224, 192, 128, .3);
   }
 }

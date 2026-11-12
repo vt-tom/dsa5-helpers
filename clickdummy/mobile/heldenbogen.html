@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Heldenbogen mobil</title>
+<!-- Heldenbogen auf Smartphone und Tablet im heutigen Mobil-Kopf (Nutzerentscheidung 2026-11-02: neu als Einzelseite,
+     ersetzt den veralteten „Heldenbogen Mobil.dc.html“ aus Runde 3). Stand des Moduls 0.6.3: Kopf mit Wappenbanner,
+     LeP/AsP/KaP-Kugeln und Kraftspeicher an den AsP, Eigenschaftswürfel mit Kürzel, klappt beim Scrollen ein (Smartphone);
+     Reiterleiste unten (wischbar) bzw. Rail rechts (Tablet); Tippen auf eine Zeile würfelt, langes Drücken öffnet das
+     Blatt (Tablet: auch der Name). Einzelheiten haben eigene Seiten (probe, ressourcen, kraftspeicher, ausruestung,
+     wurfergebnis). ?embedded=1 füllt das Fenster ohne Umschalter (eingebettet in „Foundry Mobil“, app.html): ✕ meldet
+     sich per postMessage { dsa5h: 'back' }, Würfe per { dsa5h: 'roll', … } an den Chat der Oberfläche.
+     Werte sind Platzhalter (Layariel wie in „Foundry Mobil“). Öffnen über clickdummy/start-server.bat →
+     …/clickdummy/mobile/heldenbogen.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --onaccent: #fff8ec;
+  --gold: #c2a267;
+  --dmg: #a3221a;
+  --hdr: linear-gradient(180deg, #3a322b, #272320);
+  --dark: #2b2520;
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+  --lep: linear-gradient(180deg, #d33a2c, #7d1510);
+  --asp: linear-gradient(180deg, #3d6fd0, #1c3f8f);
+  --kap: linear-gradient(180deg, #e2b84a, #8f6a14);
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+button { font: inherit; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font-size: 14px; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.note { max-width: 780px; margin: 0 auto 16px; font-size: 14px; line-height: 1.45; color: #cbbba3; text-align: center; }
+
+/* Geräte; eingebettet füllt der Bogen das Fenster */
+.device { position: relative; display: flex; margin: 0 auto; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); user-select: none; -webkit-touch-callout: none; }
+.phone { flex-direction: column; width: 390px; max-width: 100%; height: 844px; border-radius: 28px; }
+.tablet { width: 1180px; height: 820px; border-radius: 22px; }
+body.embedded { padding: 0; }
+body.embedded .switch, body.embedded .note { display: none; }
+body.embedded .device { width: 100vw; height: 100vh; border-radius: 0; box-shadow: none; }
+.scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/* Kopf wie im Modul (Wappenbanner, Kugeln, Würfelreihe) */
+.head { position: relative; z-index: 2; flex: none; padding: 14px 14px 30px; background: var(--hdr); color: #f4e8d6; }
+.head .top { display: flex; align-items: flex-start; gap: 12px; }
+.portrait { width: 72px; height: 86px; flex: none; border: 3px solid var(--gold); clip-path: polygon(14% 0, 86% 0, 100% 12%, 100% 88%, 86% 100%, 14% 100%, 0 88%, 0 12%); background: radial-gradient(circle at 40% 35%, #6f8f3a, #33461a); }
+.name { font-family: 'Andalus', serif; font-size: 26px; line-height: 1.1; }
+.ident { margin-top: 4px; font-size: 12px; line-height: 1.5; letter-spacing: .1em; text-transform: uppercase; color: #d6bd8a; }
+.ident span + span::before { content: " · "; color: rgba(224, 192, 128, .5); }
+.winbtns { display: flex; gap: 2px; margin-left: auto; }
+.winbtns button { width: 44px; height: 44px; padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 22px; cursor: pointer; }
+.schips { display: flex; gap: 4px; padding: 3px 8px; border: 1px solid rgba(224, 192, 128, .4); border-radius: 14px; }
+.schips img { width: 20px; height: 20px; }
+.schips img.used { opacity: .35; }
+.orbs { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 10px; }
+.orb { position: relative; width: 58px; height: 58px; flex: none; overflow: hidden; border: 0; padding: 0; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2c2622, #141110); box-shadow: 0 0 0 2px #2b2721, 0 0 0 4px var(--gold); color: #fff; cursor: pointer; }
+.orb i { position: absolute; inset: auto 0 0; height: var(--p); background: var(--liq); }
+.orb b { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; font-size: 19px; line-height: 1; }
+.orb b small { display: block; font-size: 9px; font-weight: 400; letter-spacing: .08em; opacity: .85; }
+.orb.lep { --liq: var(--lep); }
+.orb.asp { --liq: var(--asp); }
+.orb.kap { --liq: var(--kap); }
+.anchor { position: relative; }
+.ks { position: absolute; right: -14px; bottom: -10px; width: 34px; height: 34px; padding: 0; overflow: hidden; border: 0; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2c2622, #141110); box-shadow: 0 0 0 2px #2b2721, 0 0 0 3px var(--gold); color: #fff; cursor: pointer; }
+.ks::before { content: ""; position: absolute; inset: auto 0 0; height: 55%; background: var(--asp); }
+.ks span { position: relative; display: grid; place-content: center; height: 100%; font-size: 13px; font-weight: 700; line-height: .95; }
+.ks small { font-size: 9px; font-weight: 400; }
+.dice { position: absolute; left: 0; right: 0; bottom: -19px; display: flex; justify-content: center; gap: 4px; }
+.die { display: grid; place-items: center; align-content: center; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 6px; background: #2b2721 center / 32px no-repeat; box-shadow: 0 0 0 2px var(--gold); color: #fff; font-size: 13px; font-weight: 700; line-height: 1; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; cursor: pointer; }
+.die small { font-size: 8px; font-weight: 400; letter-spacing: .06em; }
+/* Eingeklappt (Smartphone, ab 90 px Scrollweg): eine Zeile, Kugeln klein, KS neben den AsP */
+.head.mini { padding: 6px 4px 6px 10px; }
+.head.mini .top { align-items: center; }
+.head.mini .portrait { width: 40px; height: 46px; border-width: 2px; }
+.head.mini .name { font-size: 18px; }
+.head.mini .ident, .head.mini .dice { display: none; }
+.head.mini .orbs { gap: 8px; margin: 0; }
+.head.mini .orb { width: 38px; height: 38px; box-shadow: 0 0 0 1px #2b2721, 0 0 0 2px var(--gold); }
+.head.mini .orb b { font-size: 13px; }
+.head.mini .orb b small { display: none; }
+.head.mini .anchor { display: flex; align-items: center; gap: 6px; }
+.head.mini .ks { position: relative; right: auto; bottom: auto; width: 26px; height: 26px; }
+.head.mini .name { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.head.mini .ks small { display: none; }
+
+/* Inhalt */
+.body { padding: 30px 10px 16px; }
+.head.mini + .scroll .body { padding-top: 12px; }
+.tabtitle { display: flex; align-items: center; gap: 10px; margin: 2px 4px 10px; font-family: 'Andalus', serif; font-size: 24px; }
+.tabtitle::after { content: ""; flex: 1; border-bottom: 1px solid var(--line2); }
+.panel { margin-bottom: 12px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); }
+.panel h3 { display: flex; align-items: baseline; justify-content: space-between; margin: 0; padding: 8px 12px; background: var(--phead); font: 19px 'Andalus', serif; font-weight: 400; }
+.panel h3 small { font: 13px 'GentiumBasic', serif; color: var(--ink2); }
+.panel p { margin: 0; padding: 12px; color: var(--ink2); font-size: 15px; line-height: 1.45; }
+.sub { padding: 4px 12px; background: rgba(43, 39, 33, .06); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.row { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px; border-top: 1px solid var(--line); font-size: 16px; }
+.row[data-roll] { cursor: pointer; }
+.row.pressing { background: rgba(139, 111, 63, .14); }
+.row .grow { flex: 1; min-width: 0; }
+.row .grow small { display: block; color: var(--ink2); font-size: 13px; }
+.row .v { min-width: 34px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.row img.ico { width: 30px; height: 30px; border-radius: 3px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 10px; border: 1px solid var(--line2); border-radius: 4px; background: var(--field); font-size: 15px; }
+.chip img { width: 20px; height: 20px; }
+.groups { display: flex; gap: 6px; overflow-x: auto; margin: 0 0 10px; padding-bottom: 2px; scrollbar-width: none; }
+.groups button { flex: none; min-height: 40px; padding: 0 14px; border: 1px solid var(--line2); border-radius: 20px; background: var(--field); color: var(--ink); cursor: pointer; }
+.groups button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #f4e8d6; }
+.attrs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.attr { display: grid; justify-items: center; gap: 4px; padding: 10px 4px 8px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); font-size: 12px; letter-spacing: .1em; color: var(--ink2); cursor: pointer; }
+.attr b { display: grid; place-items: center; width: 46px; height: 48px; background: center / contain no-repeat; color: #fff; font-size: 19px; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; letter-spacing: 0; }
+.probe { display: flex; gap: 2px; }
+.probe span { display: grid; place-items: center; width: 26px; height: 28px; background: center / contain no-repeat; color: #fff; font-size: 10px; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b; }
+.cdie { display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: center / contain no-repeat; color: #fff; font-size: 15px; font-weight: 700; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; cursor: pointer; }
+.tp { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border: 1px solid var(--dmg); border-radius: 6px; background: #f6dcd8; color: var(--dmg); font-weight: 700; cursor: pointer; }
+.tp::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--dmg); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 6px; padding: 12px 8px; text-align: center; }
+.stats div { display: grid; justify-items: center; gap: 2px; }
+.stats b { display: grid; place-items: center; height: 40px; font-size: 20px; }
+.stats small { font-size: 13px; color: var(--ink2); }
+.pips { display: flex; gap: 3px; }
+.pips i { width: 14px; height: 14px; border: 1px solid var(--line2); background: var(--field); }
+.pips i.on { background: var(--dmg); border-color: var(--dmg); }
+.weapon { padding: 10px 12px; border-top: 1px solid var(--line); }
+.weapon .hand { display: inline-block; padding: 2px 8px; background: var(--dark); color: #f4e8d6; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.weapon .wname { margin: 6px 0 2px; font-size: 18px; }
+.weapon .meta { color: var(--ink2); font-size: 13px; }
+.weapon .roll { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.star { width: 44px; height: 44px; flex: none; border: 0; background: none; color: var(--accent); font-size: 20px; cursor: pointer; }
+.qty { min-width: 52px; min-height: 40px; padding: 0 8px; border: 1px solid var(--line2); border-radius: 20px; background: var(--field); color: var(--ink); cursor: pointer; }
+.more { width: 44px; height: 44px; flex: none; border: 0; background: none; color: var(--ink); font-size: 20px; cursor: pointer; }
+.sugg { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 8px 12px; border-top: 1px solid var(--line); cursor: pointer; }
+.sugg .nm { font-size: 17px; }
+.sugg .v { grid-row: 1 / 3; grid-column: 2; align-self: center; font-size: 20px; font-weight: 700; }
+.sugg .why { display: flex; align-items: center; gap: 8px; color: var(--ink2); font-size: 13px; }
+.card { display: flex; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); cursor: pointer; }
+.card .pic { width: 52px; height: 52px; flex: none; border-radius: 4px; background: #d9c7a3 center / cover no-repeat; }
+.card .grow small { display: block; color: var(--ink2); font-size: 13px; }
+
+/* Reiterleiste unten (Smartphone, wischbar) */
+.nav { flex: none; display: flex; gap: 2px; overflow-x: auto; padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); background: #211c18; scrollbar-width: none; }
+.nav button { display: grid; justify-items: center; align-content: center; gap: 2px; min-width: 74px; height: 58px; padding: 0 4px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 12px; cursor: pointer; }
+.nav button img { width: 28px; height: 28px; }
+.nav button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+
+/* Tablet: linke Spalte, Inhalt, Rail rechts */
+.tablet .left { flex: none; display: flex; flex-direction: column; align-items: center; gap: 14px; width: 260px; padding: 20px 16px; overflow-y: auto; background: var(--hdr); color: #f4e8d6; }
+.tablet .left .portrait { width: 180px; height: 216px; border-width: 4px; }
+.tablet .left .orbs { gap: 14px; }
+.tablet .side { align-self: stretch; border: 1px solid rgba(224, 192, 128, .3); }
+.tablet .side h4 { margin: 0; padding: 8px 10px; border-bottom: 2px solid var(--gold); font-size: 14px; text-align: center; }
+.tablet .side .row { min-height: 40px; border-color: rgba(224, 192, 128, .2); color: #f4e8d6; font-size: 14px; }
+.tablet main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tablet .head { padding: 22px 24px 30px; }
+.tablet .attrs { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+.tablet .body { padding: 30px 18px 18px; }
+.tablet .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; align-items: start; }
+.tablet .stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.rail { flex: none; display: flex; flex-direction: column; gap: 2px; width: 84px; margin: 20px 8px 20px 0; padding: 6px 4px; overflow-y: auto; border-radius: 6px; background: #211c18; scrollbar-width: none; }
+.rail button { display: grid; justify-items: center; gap: 2px; padding: 5px 2px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 11px; cursor: pointer; }
+.rail button img { width: 26px; height: 26px; }
+.rail button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+
+/* Blatt von unten (Eintrag nach langem Drücken) und Rückmeldung */
+.backdrop { position: absolute; inset: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .5); }
+.sheet { width: 100%; max-width: 640px; max-height: 80%; overflow-y: auto; border-radius: 14px 14px 0 0; background: var(--paper); box-shadow: 0 -8px 30px rgba(0, 0, 0, .5); }
+.sheet .bar { display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 4px 0 14px; background: var(--phead), var(--paper); font: 20px 'Andalus', serif; }
+.sheet .bar button { width: 44px; height: 44px; border: 0; background: none; color: var(--ink); font-size: 22px; cursor: pointer; }
+.sheet p { margin: 0; padding: 12px 14px 20px; font-size: 15px; line-height: 1.45; color: var(--ink2); }
+.toast { position: absolute; left: 50%; top: 14px; z-index: 11; max-width: 90%; padding: 8px 14px; border-radius: 18px; background: rgba(27, 23, 20, .92); color: #f4e8d6; font-size: 14px; transform: translateX(-50%); pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+</div>
+<p class="note">Heldenbogen im Stand von 0.6.3. Tippen auf eine Zeile, Karte oder einen Würfel würfelt, langes Drücken öffnet das Blatt des Eintrags (am Tablet auch ein Tipp auf den Namen). Am Smartphone klappt der Kopf beim Scrollen ein. Einzelheiten: Probendialog, LeP/AsP/KaP, Kraftspeicher, Ausrüstung und Wurfergebnis haben eigene Seiten im Menü.</p>
+<div id="stage"></div>
+
+<script>
+const SYS = '../../../../systems/dsa5';
+const ICON = n => `${SYS}/icons/categories/${n}.webp`;
+const DIE = k => `${SYS}/icons/dice/d20${k.toLowerCase()}.svg`;
+const EMBEDDED = new URLSearchParams(location.search).get('embedded') === '1';
+const HERO = { name: 'Layariel Wipfelglanz', ident: ['Elf', 'Auelfen', 'Waldläuferin'], ap: 'Erfahren · AP 1 320 · 35 frei' };
+const ATTRS = { MU: 13, KL: 12, IN: 14, CH: 13, FF: 15, GE: 14, KO: 12, KK: 11 };
+const ATTR_NAMES = { MU: 'Mut', KL: 'Klugheit', IN: 'Intuition', CH: 'Charisma', FF: 'Fingerfertigkeit', GE: 'Gewandtheit', KO: 'Konstitution', KK: 'Körperkraft' };
+const RES = [['lep', 'LeP', 28, 32], ['asp', 'AsP', 24, 34], ['kap', 'KaP', 12, 18]];
+const TABS = [['cover', 'Titelblatt', 'Spellextension'], ['main', 'Eigenschaften', 'DSA-Auge'], ['skills', 'Talente', 'Skill'], ['combat', 'Kampf', 'ability_combat'],
+  ['magic', 'Magie', 'Spell'], ['religion', 'Religion', 'Liturgy'], ['inventory', 'Ausrüstung', 'Equipment'], ['status', 'Status', 'ability_ceremonial'],
+  ['notes', 'Notizen', 'Ability_Language'], ['companions', 'Gefährten', 'ability_animal'], ['quests', 'Aufträge', 'Career'], ['persons', 'Personen', 'Weltliche']];
+const SKILLS = {
+  'Körper': [['Klettern', 'MU/GE/KK', 6], ['Körperbeherrschung', 'GE/GE/KO', 8], ['Kraftakt', 'KO/KK/KK', 3], ['Schwimmen', 'GE/KO/KK', 5], ['Selbstbeherrschung', 'MU/MU/KO', 6], ['Sinnesschärfe', 'KL/IN/IN', 12], ['Verbergen', 'MU/IN/GE', 9]],
+  'Gesellschaft': [['Etikette', 'KL/IN/CH', 2], ['Menschenkenntnis', 'KL/IN/CH', 5], ['Überreden', 'MU/IN/CH', 4], ['Willenskraft', 'MU/IN/CH', 7]],
+  'Natur': [['Fährtensuchen', 'MU/IN/GE', 10], ['Orientierung', 'KL/IN/IN', 8], ['Pflanzenkunde', 'KL/FF/KO', 7], ['Tierkunde', 'MU/MU/CH', 6], ['Wildnisleben', 'MU/GE/KO', 11]],
+  'Wissen': [['Magiekunde', 'KL/KL/IN', 4], ['Sagen & Legenden', 'KL/KL/IN', 3]],
+  'Handwerk': [['Heilkunde Wunden', 'KL/FF/FF', 6], ['Holzbearbeitung', 'FF/GE/KK', 4]],
+};
+const SPELLS = [['Adlerauge', 'KL/IN/FF', 7, '4 AsP · 2 Aktionen · selbst'], ['Axxeleratus', 'KL/GE/KO', 6, '8 AsP · 1 Aktion · Berührung'], ['Balsam Salabunde', 'KL/IN/CH', 8, '4 AsP · 2 Aktionen · Berührung'], ['Visibili', 'KL/IN/GE', 5, '8 AsP · 1 Aktion · selbst']];
+const LITURGIES = [['Ruf in den Schlaf', 'MU/IN/CH', 4, '4 KaP · 2 Aktionen · 4 Schritt'], ['Wundsegen', 'MU/IN/CH', 6, '4 KaP · 2 Aktionen · Berührung']];
+const WEAPONS = [['Haupthand', 'Elfenbogen', 'Bögen · FK 15 · RW 20/100/200 · 18 Pfeile', [['FK', 15, 'ff']], '1W6+5'], ['Nebenhand', 'Wolfsmesser', 'Dolche · KtW 13 · RW kurz', [['AT', 13, 'mu'], ['PA', 7, 'in']], '1W6+2']];
+const ITEMS = [['Am Körper', [['Elfenbogen', 1, '1,0'], ['Wolfsmesser', 1, '0,6'], ['Lederrüstung', 1, '3,0']]], ['Rucksack', [['Pfeile', 18, '0,1'], ['Heiltrank', 2, '0,2'], ['Proviant (Tag)', 3, '0,5'], ['Seil (10 Schritt)', 1, '1,5']]]];
+const COND = [['Schmerz', 1], ['Belastung', 0], ['Betäubung', 0], ['Furcht', 0], ['Verwirrung', 0]];
+const FAVS = [['Talente', 'Skill', 'Sinnesschärfe', 'KL/IN/IN', 12], ['Zauber', 'Spell', 'Balsam Salabunde', 'KL/IN/CH', 8], ['Ausrüstung', 'Equipment', 'Heiltrank', null, '× 2']];
+const SUGG = [['Fährtensuchen', 'MU/IN/GE', 10, 'Spuren im Kampagnenjournal'], ['Wildnisleben', 'MU/GE/KO', 11, 'Lagerplatz gesucht'], ['Willenskraft', 'MU/IN/CH', 7, 'Furcht in der Nähe']];
+
+const state = { device: 'phone', tab: 'cover', group: 'Körper', collapsed: false };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const panel = (title, inner, small = '') => `<section class="panel"><h3>${title}${small ? `<small>${small}</small>` : ''}</h3>${inner}</section>`;
+const probe = p => `<span class="probe">${p.split('/').map(k => `<span style="background-image:url('${DIE(k)}')">${k}</span>`).join('')}</span>`;
+const cdie = (label, v, k, name) => `<button type="button" class="cdie" style="background-image:url('${DIE(k)}')" data-roll="${esc(name)} · ${label}" data-sub="${label} ${v}" title="${label}">${v}</button>`;
+// Zeile, die beim Tippen würfelt und beim langen Drücken das Blatt öffnet
+const rollRow = (name, p, fw, extra = '', ico = '') => `<div class="row" data-roll="${esc(name)}" data-probe="${p}" data-fw="${fw}" data-open="${esc(name)}">${ico ? `<img class="ico" src="${ICON(ico)}" alt="">` : ''}<span class="grow"><span data-name>${esc(name)}</span>${extra ? `<small>${extra}</small>` : ''}</span>${probe(p)}<span class="v">${fw}</span><button type="button" class="star" aria-label="Favorit">☆</button></div>`;
+
+const TAB = {
+  cover: () => {
+    const sugg = panel('Vorschläge', SUGG.map(([n, p, fw, why]) => `<div class="sugg" data-roll="${n}" data-probe="${p}" data-fw="${fw}" data-open="${n}"><span class="nm" data-name>${n}</span><span class="v">${fw}</span><span class="why">${probe(p)}${why}</span></div>`).join(''), 'aus Szene und Journal');
+    const favs = panel('Favoriten', FAVS.map(([g, ico, n, p, v]) => `<div class="sub">${g}</div>` + (p ? rollRow(n, p, v, '', ico).replace('☆', '★') : `<div class="row" data-open="${n}"><img class="ico" src="${ICON(ico)}" alt=""><span class="grow" data-name>${n}</span><span class="v">${v}</span><button type="button" class="star">★</button></div>`)).join(''));
+    const cond = panel('Aktive Zustände', `<div class="chips"><span class="chip">Schmerz I</span></div>`);
+    return state.device === 'tablet' ? `<div class="cols"><div>${sugg}${cond}</div><div>${favs}</div></div>` : sugg + favs + cond;
+  },
+  main: () => {
+    const attrs = `<div class="attrs">${Object.entries(ATTRS).map(([k, v]) => `<div class="attr" data-roll="${ATTR_NAMES[k]}" data-sub="${k} ${v}"><b style="background-image:url('${DIE(k)}')">${v}</b>${k}</div>`).join('')}</div>`;
+    const values = panel('Grundwerte', [['Lebenskraft', '28 / 32'], ['Astralenergie', '24 / 34'], ['Karmaenergie', '12 / 18'], ['Seelenkraft', 6], ['Zähigkeit', 6], ['Ausweichen', 7], ['Initiative', '13 + 1W6'], ['Geschwindigkeit', 8], ['Wundschwelle', 6]].map(([k, v]) => `<div class="row"><span class="grow">${k}</span><span class="v">${v}</span></div>`).join(''));
+    const chips = [['Vorteile', 'Vorteil', ['Zauberer', 'Dunkelsicht I', 'Zweistimmiger Gesang']], ['Nachteile', 'Nachteil', ['Unfähig (Zechen)', 'Sensibler Geruchssinn']], ['Sonderfertigkeiten', 'ability_general', ['Fährtensuche', 'Scharfschütze (Bögen)', 'Ortskenntnis (Auwald)']], ['Sprachen und Schriften', 'Ability_Language', ['Isdira III', 'Garethi II']]]
+      .map(([t, ico, list]) => panel(t, `<div class="chips">${list.map(c => `<span class="chip"><img src="${ICON(ico)}" alt="">${c}</span>`).join('')}</div>`)).join('');
+    return attrs + (state.device === 'tablet' ? `<div class="cols"><div>${values}</div><div>${chips}</div></div>` : values + chips);
+  },
+  skills: () => `<div class="groups" role="group" aria-label="Talentgruppen">${Object.keys(SKILLS).map(g => `<button type="button" data-group-skill="${g}" aria-pressed="${g === state.group}">${g}</button>`).join('')}</div>`
+    + panel(state.group, SKILLS[state.group].map(([n, p, fw]) => rollRow(n, p, fw)).join('')),
+  combat: () => panel('Waffen', WEAPONS.map(([hand, n, meta, rolls, tp]) => `<div class="weapon"><span class="hand">${hand}</span><div class="wname">${n}</div><div class="meta">${meta}</div><div class="roll">${rolls.map(([l, v, k]) => cdie(l, v, k, n)).join('')}<button type="button" class="tp" data-roll="${n} · Schaden" data-sub="TP ${tp}">${tp}</button></div></div>`).join(''))
+    + panel('Kampfwerte', `<div class="stats"><div>${cdie('Ausweichen', 7, 'ge', 'Ausweichen')}<small>Ausweichen</small></div><div><b>13</b><small>Initiative</small></div><div><b>2</b><small>Rüstungsschutz</small></div></div>`)
+    + panel('Rüstung', `<div class="row"><span class="grow">Lederrüstung<small>RS 2 · BE 1</small></span></div>`),
+  magic: () => panel('Tradition', `<p>Elf · Leiteigenschaft IN · AsP 24 / 34, Kraftspeicher an der AsP-Kugel</p>`) + panel('Zauber', SPELLS.map(([n, p, fw, sub]) => rollRow(n, p, fw, sub, 'Spell')).join('')),
+  religion: () => panel('Tradition', `<p>Laienpriesterin der Tsa · KaP 12 / 18</p>`) + panel('Liturgien', LITURGIES.map(([n, p, fw, sub]) => rollRow(n, p, fw, sub, 'Liturgy')).join('')),
+  inventory: () => panel('Geldbörse', `<div class="row"><span class="grow">3 D · 14 S · 6 H · 2 K</span></div>`) + ITEMS.map(([box, list]) => panel(box, list.map(([n, q, w]) => `<div class="row" data-open="${n}"><img class="ico" src="${ICON('Equipment')}" alt=""><span class="grow" data-name>${n}<small>${w} Stein</small></span><button type="button" class="qty">× ${q}</button><button type="button" class="more" aria-label="Menü">⋮</button></div>`).join(''))).join(''),
+  status: () => panel('Auf einen Blick', `<div class="stats"><div><b>I</b><small>Schmerz</small></div><div><b>0</b><small>Belastung</small></div><div><b>11,9 / 22</b><small>Traglast</small></div></div>`)
+    + panel('Zustände', COND.map(([n, f]) => `<div class="row"><span class="grow">${n}</span><span class="pips">${[0, 1, 2, 3].map(i => `<i class="${i < f ? 'on' : ''}"></i>`).join('')}</span></div>`).join('')),
+  notes: () => [['Abenteuertagebuch', 'Platzhalter: Einträge der Spielabende.'], ['Persönliche Daten', 'Weiblich · 87 Jahre · 176 cm · Auwald am Born'], ['Biografie', 'Platzhalter.']].map(([t, x]) => panel(t, `<p>${x}</p>`)).join(''),
+  companions: () => panel('Gefährten', `<div class="card" data-open="Sturmwind"><span class="pic" style="background-image:url('${ICON('ability_animal')}')"></span><span class="grow" data-name>Sturmwind<small>Elfenpferd · LeP 52 / 52</small></span></div>`),
+  quests: () => panel('Aufträge', [['Die verschwundene Karawane', 'Offen · Ziele 1 / 3'], ['Ein Brief für Gareth', 'Erledigt']].map(([n, s]) => `<div class="card" data-open="${n}"><span class="pic" style="background-image:url('${ICON('Career')}')"></span><span class="grow" data-name>${n}<small>${s}</small></span></div>`).join(''), 'Tipp zeigt den Eintrag'),
+  persons: () => panel('Personen', [['Alrik vom Bärenstein', 'Wirt · Gratenfels'], ['Firunja', 'Jägerin · Auftraggeberin']].map(([n, s]) => `<div class="card" data-open="${n}"><span class="pic" style="background-image:url('${ICON('Weltliche')}')"></span><span class="grow" data-name>${n}<small>${s}</small></span></div>`).join(''), 'Tipp zeigt den Eintrag'),
+};
+// Aufträge und Personen öffnen schon beim Tippen (Almanach-Blatt, #67)
+const TAP_OPENS = ['quests', 'persons', 'companions'];
+
+const orb = ([cls, label, cur, max]) => `<button type="button" class="orb ${cls}" style="--p:${Math.round(100 * cur / max)}%" data-toast="${label}: Feld mit −/+ (siehe Seite LeP/AsP/KaP)"><i></i><b><small>${label}</small>${cur}<small>/ ${max}</small></b></button>`;
+const orbs = () => `<div class="orbs">${orb(RES[0])}<div class="anchor">${orb(RES[1])}<button type="button" class="ks" data-toast="Kraftspeicher-Blatt (siehe Seite Kraftspeicher)" aria-label="Kraftspeicher"><span><small>KS</small>11</span></button></div>${orb(RES[2])}</div>`;
+const schips = () => `<span class="schips">${[0, 1, 2].map(i => `<img src="${SYS}/icons/schip.webp" alt="" class="${i > 1 ? 'used' : ''}">`).join('')}</span>`;
+const dice = () => state.tab === 'main' ? '' : `<div class="dice">${Object.entries(ATTRS).map(([k, v]) => `<button type="button" class="die" style="background-image:url('${DIE(k)}')" data-roll="${ATTR_NAMES[k]}" data-sub="${k} ${v}"><small>${k}</small>${v}</button>`).join('')}</div>`;
+const winbtns = () => `<div class="winbtns"><button type="button" title="Fenstermenü" data-toast="Fenstermenü: Thema, Spieleransicht, Bogen konfigurieren …">⋮</button><button type="button" title="Schließen" data-close>✕</button></div>`;
+
+function head() {
+  if (state.device === 'tablet') return `<header class="head"><div class="top"><div><div class="name" style="font-size:40px">${HERO.name}</div><div class="ident">${HERO.ident.map(s => `<span>${s}</span>`).join('')}<span>${HERO.ap}</span></div></div>${winbtns()}</div>${dice()}</header>`;
+  if (state.collapsed) return `<header class="head mini"><div class="top"><div class="portrait"></div><div class="name" style="flex:1;min-width:0">Layariel</div>${orbs()}${winbtns()}</div></header>`;
+  return `<header class="head"><div class="top"><div class="portrait"></div><div style="flex:1;min-width:0"><div class="name">${HERO.name}</div><div class="ident">${HERO.ident.map(s => `<span>${s}</span>`).join('')}</div></div>${winbtns()}</div>${orbs()}${dice()}</header>`;
+}
+const tabTitle = () => TABS.find(([id]) => id === state.tab)[1];
+const navButtons = () => TABS.map(([id, label, ico]) => `<button type="button" data-tab="${id}" ${id === state.tab ? 'aria-current="page"' : ''}><img src="${ICON(ico)}" alt="">${label}</button>`).join('');
+const content = () => `<div class="body"><div class="tabtitle">${tabTitle()}</div>${TAB[state.tab]()}</div>`;
+
+function render(keepScroll) {
+  const stage = document.getElementById('stage');
+  const top = keepScroll ? stage.querySelector('.scroll')?.scrollTop ?? 0 : 0;
+  if (state.device === 'phone') stage.innerHTML = `<div class="device phone">${head()}<div class="scroll">${content()}</div><nav class="nav" aria-label="Reiter">${navButtons()}</nav></div>`;
+  else stage.innerHTML = `<div class="device tablet">
+    <aside class="left"><div class="portrait"></div>${orbs()}${schips()}
+      <div class="side"><h4>Statuseffekte</h4>${COND.filter(([, f]) => f).map(([n, f]) => `<div class="row"><span class="grow">${n}</span><span>${f}/4</span></div>`).join('')}</div></aside>
+    <main>${head()}<div class="scroll">${content()}</div></main>
+    <nav class="rail" aria-label="Reiter">${navButtons()}</nav></div>`;
+  const scroll = stage.querySelector('.scroll');
+  scroll.scrollTop = top;
+  // Kopf klappt ab 90 px Scrollweg ein und unter 4 px wieder aus (wie im Modul)
+  scroll.addEventListener('scroll', () => {
+    if (state.device !== 'phone') return;
+    const y = scroll.scrollTop;
+    if (!state.collapsed && y > 90) { state.collapsed = true; render(true); }
+    else if (state.collapsed && y < 4) { state.collapsed = false; render(true); }
+  });
+}
+
+function toast(text) {
+  const device = document.querySelector('.device');
+  device.querySelector('.toast')?.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = text;
+  device.append(t);
+  setTimeout(() => t.remove(), 1800);
+}
+function openSheet(name) {
+  const device = document.querySelector('.device');
+  const wrap = document.createElement('div');
+  wrap.className = 'backdrop';
+  wrap.innerHTML = `<div class="sheet" role="dialog" aria-label="${esc(name)}"><div class="bar">${esc(name)}<button type="button" data-sheet-close aria-label="Schließen">✕</button></div><p>Blatt des Eintrags (Gegenstand, Talent, Almanach-Eintrag …) wie im Modul – hier nur ein Platzhalter.</p></div>`;
+  device.append(wrap);
+}
+// Würfeln: Ergebnis als Rückmeldung; eingebettet zusätzlich an den Chat der Oberfläche
+function roll(el) {
+  const name = el.dataset.roll;
+  if (el.dataset.probe) {
+    const d = [0, 0, 0].map(() => 1 + Math.floor(Math.random() * 20));
+    toast(`${name}: ${d.join(' · ')} – Probendialog siehe Seite „Probendialog“`);
+    if (EMBEDDED) parent.postMessage({ dsa5h: 'roll', title: name, sub: `Probe ${el.dataset.probe} · FW ${el.dataset.fw}`, dice: d }, '*');
+    return;
+  }
+  const d = 1 + Math.floor(Math.random() * 20);
+  toast(`${name} (${el.dataset.sub}): ${d}`);
+  if (EMBEDDED) parent.postMessage({ dsa5h: 'roll', title: name, sub: el.dataset.sub, dice: [d], headline: `Wurf ${d}`, ok: null }, '*');
+}
+
+// Tippen würfelt, langes Drücken (500 ms) öffnet; am Tablet öffnet auch der Name
+let press = null;
+document.addEventListener('pointerdown', ev => {
+  const row = ev.target.closest('[data-open]');
+  if (!row || ev.target.closest('.star, .qty, .more, .cdie')) return;
+  row.classList.add('pressing');
+  press = { row, timer: setTimeout(() => { press.done = true; row.classList.remove('pressing'); openSheet(row.dataset.open); }, 500) };
+});
+const endPress = () => { if (!press) return; clearTimeout(press.timer); press.row.classList.remove('pressing'); setTimeout(() => { press = null; }, 0); };
+document.addEventListener('pointerup', endPress);
+document.addEventListener('pointercancel', endPress);
+document.addEventListener('contextmenu', ev => { if (ev.target.closest('.device')) ev.preventDefault(); });
+
+document.addEventListener('click', ev => {
+  if (press?.done) return;
+  const b = ev.target.closest('button, [data-roll], [data-open], .backdrop');
+  if (!b || b.closest('.dummy-pages')) return;
+  const group = b.closest('fieldset')?.dataset.group;
+  if (group) {
+    state[group] = b.dataset.v;
+    state.collapsed = false;
+    b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    return render();
+  }
+  if (b.dataset.tab) { state.tab = b.dataset.tab; state.collapsed = false; return render(); }
+  if (b.dataset.groupSkill) { state.group = b.dataset.groupSkill; return render(true); }
+  if (b.matches('[data-sheet-close]') || (b.matches('.backdrop') && ev.target === b)) return b.closest('.backdrop').remove();
+  if (b.matches('[data-close]')) return EMBEDDED ? parent.postMessage({ dsa5h: 'back' }, '*') : toast('Schließt den Bogen');
+  if (b.dataset.toast) return toast(b.dataset.toast);
+  if (b.matches('.star')) return toast('Favorit umgeschaltet');
+  if (b.matches('.qty')) return toast('Anzahl: Feld mit −/+ (siehe Seite Ausrüstung)');
+  if (b.matches('.more')) return toast('Menü des Gegenstands');
+  if (b.dataset.open && (TAP_OPENS.includes(state.tab) || (state.device === 'tablet' && ev.target.closest('[data-name]')))) return openSheet(b.dataset.open);
+  if (b.dataset.roll) return roll(b);
+  if (b.dataset.open) return openSheet(b.dataset.open);
+});
+
+if (EMBEDDED) {
+  document.body.classList.add('embedded');
+  state.device = new URLSearchParams(location.search).get('device') === 'tablet' ? 'tablet' : 'phone';
+}
+render();
+</script>
+<script src="../pages.js?v=7"></script>
+</body>
+</html>

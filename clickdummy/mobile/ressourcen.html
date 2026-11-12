@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LeP/AsP/KaP mobil</title>
+<!-- LeP/AsP/KaP im Bogenkopf auf Smartphone und Tablet leichter ändern (Issue #59, Rückmeldung Testliste 0.6.3,
+     2026-10-29: die Werte in den Kugeln sind schwer zu tippen; Vorschlag Nutzer: Feld mit Eingabe und −/+).
+     Gewählt: Variante B „Feld an der Kugel“ (Nutzer 2026-10-30, umgesetzt in scripts/mobile/mobile.js openResourcePop;
+     verworfen: A Blatt mit Reglern, C Schaden/Heilung). Im Modul wird nur system.status.<wert>.value geschrieben.
+     Werte sind Platzhalter. Öffnen über clickdummy/start-server.bat → …/clickdummy/mobile/ressourcen.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --onaccent: #fff8ec;
+  --gold: #c2a267;
+  --danger: #8e1d15;
+  --good: #2f6b2a;
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+  --lep: #a3221a;
+  --asp: #2f55b8;
+  --kap: #c7962c;
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font: 14px 'GentiumBasic', serif; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.about { max-width: 720px; margin: 0 auto 14px; font-size: 14px; line-height: 1.4; color: #d9cbb4; text-align: center; }
+
+/* Gerät und Bogenkopf (vereinfacht wie im Modul: Banner, Porträt, Kugeln) */
+.device { position: relative; margin: 0 auto; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.device.phone { width: 390px; max-width: 100%; height: 760px; border-radius: 28px; }
+.device.tablet { width: 820px; max-width: 100%; height: 760px; border-radius: 22px; }
+.head { position: relative; display: flex; gap: 14px; padding: 72px 16px 14px; background: linear-gradient(180deg, #5b4a37 0 64px, var(--paper) 64px); border-bottom: 1px solid var(--line2); }
+.head .name { position: absolute; left: 104px; top: 22px; font: 26px 'Andalus', serif; color: #f4e8d6; }
+.portrait { flex: none; width: 72px; height: 88px; margin-top: -40px; border-radius: 6px; background: linear-gradient(160deg, #b9a27c, #6d5a40); box-shadow: 0 0 0 3px var(--gold); }
+.orbs { display: flex; gap: 14px; align-items: center; }
+.orb { position: relative; display: grid; place-items: center; width: 58px; height: 58px; padding: 0; border: 0; border-radius: 50%; color: #fff; font: inherit; cursor: pointer; box-shadow: 0 0 0 2px #2b2721, 0 0 0 4px var(--gold); }
+.orb[data-res="lep"] { background: radial-gradient(circle at 40% 35%, #d2483d, var(--lep) 60%, #5c120d); }
+.orb[data-res="asp"] { background: radial-gradient(circle at 40% 35%, #5f86e6, var(--asp) 60%, #172c66); }
+.orb[data-res="kap"] { background: radial-gradient(circle at 40% 35%, #f2cd6c, var(--kap) 60%, #6e4e10); }
+.orb small { position: absolute; top: 6px; font-size: 10px; letter-spacing: .06em; }
+.orb b { margin-top: 6px; font-size: 19px; line-height: 1; }
+.orb i { position: absolute; bottom: 7px; font-size: 10px; font-style: normal; opacity: .85; }
+.orb[aria-expanded="true"] { box-shadow: 0 0 0 2px #2b2721, 0 0 0 4px #fff3d1, 0 0 14px 4px rgba(255, 220, 140, .7); }
+.body { padding: 16px; font-size: 15px; color: var(--ink2); }
+.body p { margin: 0 0 10px; }
+
+/* Feld an der Kugel */
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper button, .quick button { flex: none; min-width: 44px; height: 44px; padding: 0 8px; border: 1px solid var(--line2); border-radius: 22px; background: var(--field); color: var(--ink); font: 20px 'GentiumBasic', serif; cursor: pointer; }
+.stepper input { width: 70px; height: 44px; border: 1px solid var(--line2); border-radius: 8px; background: var(--field); color: var(--ink); font: 700 18px 'GentiumBasic', serif; text-align: center; }
+.stepper .max { font-size: 15px; color: var(--ink2); }
+.quick { display: flex; gap: 6px; }
+.quick button { font-size: 15px; }
+.pop { position: absolute; z-index: 5; width: 250px; padding: 10px; border: 1px solid var(--line2); border-radius: 12px; background: var(--card); box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
+.pop::before { content: ''; position: absolute; top: -8px; left: var(--tip, 30px); width: 14px; height: 14px; transform: rotate(45deg); border-left: 1px solid var(--line2); border-top: 1px solid var(--line2); background: var(--card); }
+.pop .ttl { display: flex; justify-content: space-between; margin-bottom: 8px; font: 17px 'Andalus', serif; }
+.pop .ttl small { font: 14px 'GentiumBasic', serif; color: var(--ink2); }
+.pop .stepper input { flex: 1; width: auto; min-width: 0; }
+.pop .quick { margin-top: 8px; }
+.pop .quick button { flex: 1; }
+
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+</div>
+<p class="about" id="about"></p>
+<div id="app"></div>
+<script>
+const ABOUT = 'Antippen einer Kugel öffnet ein kleines Feld direkt darunter mit −/+, Eingabe und −5/0/voll/+5. Jede Änderung speichert sofort; Tipp daneben, Scrollen oder erneuter Tipp auf die Kugel schließt es.';
+const RES = [
+  { k: 'lep', abbr: 'LeP', name: 'Lebensenergie', max: 28, v: 21, color: 'var(--lep)', minus: 'Schaden', plus: 'Heilung' },
+  { k: 'asp', abbr: 'AsP', name: 'Astralenergie', max: 35, v: 30, color: 'var(--asp)', minus: 'Verbrauchen', plus: 'Auffüllen' },
+  { k: 'kap', abbr: 'KaP', name: 'Karmaenergie', max: 12, v: 12, color: 'var(--kap)', minus: 'Verbrauchen', plus: 'Auffüllen' },
+];
+const state = { device: 'phone', open: null };
+const clamp = (r, v) => Math.max(0, Math.min(r.max, v));
+const byKey = k => RES.find(r => r.k === k);
+
+function orb(r) {
+  return `<button type="button" class="orb" data-res="${r.k}" aria-expanded="${state.open === r.k}" aria-label="${r.name} ${r.v} von ${r.max} – ändern"><small>${r.abbr}</small><b>${r.v}</b><i>/ ${r.max}</i></button>`;
+}
+function stepper(r, quick) {
+  return `<span class="stepper"><button type="button" data-step="-1" data-res="${r.k}" aria-label="${r.abbr} −1">−</button><input type="number" inputmode="numeric" data-in="${r.k}" value="${r.v}" aria-label="${r.abbr}"><button type="button" data-step="1" data-res="${r.k}" aria-label="${r.abbr} +1">+</button>${quick ? '' : `<span class="max">/ ${r.max}</span>`}</span>`;
+}
+function popB() {
+  const r = byKey(state.open);
+  const idx = RES.indexOf(r);
+  const left = 102 + idx * 72;
+  return `<div class="pop" role="dialog" aria-label="${r.name}" style="left:${Math.min(left - 10, (state.device === 'phone' ? 390 : 820) - 262)}px;top:150px;--tip:${30 + Math.max(0, left - 10 - Math.min(left - 10, (state.device === 'phone' ? 390 : 820) - 262))}px">
+    <div class="ttl">${r.name}<small>max. ${r.max}</small></div>${stepper(r, true)}
+    <div class="quick"><button type="button" data-step="-5" data-res="${r.k}">−5</button><button type="button" data-set="0" data-res="${r.k}">0</button><button type="button" data-set="max" data-res="${r.k}">voll</button><button type="button" data-step="5" data-res="${r.k}">+5</button></div></div>`;
+}
+function render() {
+  document.getElementById('about').textContent = ABOUT;
+  const overlay = state.open ? popB() : '';
+  document.getElementById('app').innerHTML = `<div class="device ${state.device}">
+    <div class="head"><span class="name">Allacaya</span><div class="portrait"></div><div class="orbs">${RES.map(orb).join('')}</div></div>
+    <div class="body"><p>Titelblatt …</p><p>Kugel antippen, um den Wert zu ändern.</p></div>${overlay}</div>`;
+}
+document.querySelector('.switch').addEventListener('click', ev => {
+  const b = ev.target.closest('button[data-v]'); if (!b) return;
+  const g = b.closest('fieldset');
+  g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  state[g.dataset.group] = b.dataset.v; state.open = null; render();
+});
+const app = document.getElementById('app');
+app.addEventListener('click', ev => {
+  const t = ev.target;
+  const o = t.closest('.orb');
+  if (o) { state.open = state.open === o.dataset.res ? null : o.dataset.res; return render(); }
+  const step = t.closest('[data-step]');
+  if (step) { const r = byKey(step.dataset.res); r.v = clamp(r, r.v + Number(step.dataset.step)); return render(); }
+  const set = t.closest('[data-set]');
+  if (set) { const r = byKey(set.dataset.res); r.v = set.dataset.set === 'max' ? r.max : 0; return render(); }
+  // Tipp neben das Feld schließt es
+  if (state.open && !t.closest('.pop')) { state.open = null; render(); }
+});
+app.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.dataset.in) { const r = byKey(t.dataset.in); r.v = clamp(r, Number(t.value) || 0); render(); }
+});
+render();
+</script>
+<script src="../pages.js?v=7"></script>
+</body>
+</html>

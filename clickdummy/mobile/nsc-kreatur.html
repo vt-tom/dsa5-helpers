@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NSC und Kreatur mobil</title>
+<!-- NSC- und Kreaturbogen auf Smartphone und Tablet (Issues #53/#54, Nutzerentscheidung 2026-10-30): Heldenbogen-Gerüst,
+     NSC und Kreatur getrennt, nur die Reiter des jeweiligen Systembogens, eigene Titelseite (Rückmeldung 2026-10-31:
+     RS/INI/GS/SK/ZK, Angriffe nur ausgerüsteter Waffen, Talente mit Wert in wählbarer Anzahl plus Sinnesschärfe und
+     Willenskraft, Weiteres über Favoriten). Desktop: ../index.html?actor=nsc bzw. ?actor=kreatur (actor-types.js).
+     Eigenständige Seite im heutigen Mobil-Kopf (Wappenbanner, Kugeln, Würfelreihe, Reiterleiste unten bzw. Rail
+     rechts), weil der Mobil-Dummy noch den alten Bogen zeigt. Werte und Texte sind frei erfundene Platzhalter.
+     Öffnen über clickdummy/start-server.bat → …/clickdummy/mobile/nsc-kreatur.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --gold: #c2a267;
+  --dmg: #a3221a;
+  --hdr: linear-gradient(180deg, #3a322b, #272320);
+  --dark: #2b2520;
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+button { font: inherit; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font-size: 14px; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.note { max-width: 780px; margin: 0 auto 16px; font-size: 14px; line-height: 1.45; color: #cbbba3; text-align: center; }
+
+/* Geräte */
+.device { position: relative; display: flex; margin: 0 auto; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.phone { flex-direction: column; width: 390px; max-width: 100%; height: 844px; border-radius: 28px; }
+.tablet { width: 1180px; height: 820px; border-radius: 22px; }
+.scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/* Kopf wie im Modul (Wappenbanner, Kugeln) */
+.head { position: relative; flex: none; padding: 14px 14px 30px; background: var(--hdr); color: #f4e8d6; }
+.head .top { display: flex; align-items: flex-start; gap: 12px; }
+.portrait { width: 72px; height: 86px; flex: none; border: 3px solid var(--gold); clip-path: polygon(14% 0, 86% 0, 100% 12%, 100% 88%, 86% 100%, 14% 100%, 0 88%, 0 12%); background: #d9c7a3 center / cover no-repeat; }
+.name { font-family: 'Andalus', serif; font-size: 26px; line-height: 1.1; }
+.ident { margin-top: 4px; font-size: 12px; line-height: 1.5; letter-spacing: .1em; text-transform: uppercase; color: #d6bd8a; }
+.ident span + span::before { content: " · "; color: rgba(224, 192, 128, .5); }
+.winbtns { display: flex; gap: 2px; margin-left: auto; }
+.winbtns button { width: 40px; height: 40px; padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 22px; cursor: pointer; }
+.schips { display: flex; gap: 4px; padding: 3px 8px; border: 1px solid rgba(224, 192, 128, .4); border-radius: 14px; }
+.schips img { width: 20px; height: 20px; }
+.schips img.used { opacity: .35; }
+.orbs { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 10px; }
+.orb { position: relative; width: 58px; height: 58px; flex: none; overflow: hidden; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2c2622, #141110); box-shadow: 0 0 0 2px #2b2721, 0 0 0 4px var(--gold); }
+.orb i { position: absolute; inset: auto 0 0; height: var(--p); background: linear-gradient(180deg, #d33a2c, #7d1510); }
+.orb b { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; font-size: 19px; line-height: 1; color: #fff; }
+.orb b small { display: block; font-size: 9px; letter-spacing: .08em; opacity: .85; }
+.regen { width: 32px; height: 32px; border: 1px solid rgba(224, 192, 128, .5); border-radius: 50%; background: none; color: #f4e8d6; }
+.dice { position: absolute; left: 0; right: 0; bottom: -17px; display: flex; justify-content: center; gap: 4px; }
+.die { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 6px; background: #2b2721 center / 28px no-repeat; box-shadow: 0 0 0 2px var(--gold); color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; }
+
+/* Inhalt */
+.body { padding: 26px 10px 16px; }
+.tabtitle { display: flex; align-items: center; gap: 10px; margin: 2px 4px 10px; font-family: 'Andalus', serif; font-size: 24px; }
+.tabtitle::after { content: ""; flex: 1; border-bottom: 1px solid var(--line2); }
+.panel { margin-bottom: 12px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); }
+.panel h3 { display: flex; align-items: baseline; justify-content: space-between; margin: 0; padding: 8px 12px; background: var(--phead); font: 19px 'Andalus', serif; font-weight: 400; }
+.panel h3 small { font: 13px 'GentiumBasic', serif; color: var(--ink2); }
+.panel p { margin: 0; padding: 12px; color: var(--ink2); font-size: 15px; line-height: 1.45; }
+.sub { padding: 4px 12px; background: rgba(43, 39, 33, .06); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.row { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px; border-top: 1px solid var(--line); font-size: 16px; }
+.row .grow { flex: 1; min-width: 0; }
+.row .grow small { display: block; color: var(--ink2); font-size: 13px; }
+.row .v { min-width: 34px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.row img.ico { width: 30px; height: 30px; border-radius: 3px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 10px; border: 1px solid var(--line2); border-radius: 4px; background: var(--field); font-size: 15px; }
+.chip img { width: 20px; height: 20px; }
+.attrs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.attr { display: grid; justify-items: center; gap: 4px; padding: 10px 4px 8px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); font-size: 12px; letter-spacing: .1em; color: var(--ink2); }
+.attr b { display: grid; place-items: center; width: 46px; height: 48px; background: center / contain no-repeat; color: #fff; font-size: 19px; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; letter-spacing: 0; }
+.probe { display: flex; gap: 2px; }
+.probe span { display: grid; place-items: center; width: 26px; height: 28px; background: center / contain no-repeat; color: #fff; font-size: 10px; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b; }
+.cdie { display: grid; place-items: center; width: 36px; height: 36px; border: 0; background: center / contain no-repeat; color: #fff; font-size: 15px; font-weight: 700; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; cursor: pointer; }
+.tp { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid var(--dmg); border-radius: 6px; background: #f6dcd8; color: var(--dmg); font-weight: 700; cursor: pointer; }
+.tp::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--dmg); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 6px; padding: 12px 8px; text-align: center; }
+.stats div { display: grid; justify-items: center; gap: 2px; }
+.stats b { display: grid; place-items: center; height: 36px; font-size: 20px; }
+.stats small { font-size: 13px; color: var(--ink2); }
+.pips { display: flex; gap: 3px; }
+.pips i { width: 14px; height: 14px; border: 1px solid var(--line2); background: var(--field); }
+.pips i.on { background: var(--dmg); border-color: var(--dmg); }
+.step { width: 40px; height: 40px; border: 1px solid var(--line2); border-radius: 20px; background: var(--field); color: var(--ink); font-size: 20px; cursor: pointer; }
+.weapon { padding: 10px 12px; border-top: 1px solid var(--line); }
+.weapon .hand { display: inline-block; padding: 2px 8px; background: var(--dark); color: #f4e8d6; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.weapon .wname { margin: 6px 0 2px; font-size: 18px; }
+.weapon .meta { color: var(--ink2); font-size: 13px; }
+.weapon .roll { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.count { display: inline-flex; align-items: center; gap: 6px; font: 15px 'GentiumBasic', serif; color: var(--ink); }
+.count .step { width: 36px; height: 36px; font-size: 18px; }
+.star { width: 40px; height: 40px; border: 0; background: none; color: var(--accent); font-size: 20px; cursor: pointer; }
+.star.fixed { visibility: hidden; }
+
+/* Reiterleiste unten (Smartphone) */
+.nav { flex: none; display: flex; gap: 2px; overflow-x: auto; padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); background: #211c18; scrollbar-width: none; }
+.nav button { display: grid; justify-items: center; align-content: center; gap: 2px; min-width: 74px; height: 58px; padding: 0 4px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 12px; cursor: pointer; }
+.nav button img { width: 28px; height: 28px; }
+.nav button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+
+/* Tablet: linke Spalte, Inhalt, Rail rechts */
+.tablet .left { flex: none; display: flex; flex-direction: column; align-items: center; gap: 14px; width: 260px; padding: 20px 16px; background: var(--hdr); color: #f4e8d6; }
+.tablet .left .portrait { width: 180px; height: 216px; border-width: 4px; }
+.tablet .side { align-self: stretch; flex: 1; border: 1px solid rgba(224, 192, 128, .3); }
+.tablet .side h4 { margin: 0; padding: 8px 10px; border-bottom: 2px solid var(--gold); font-size: 14px; text-align: center; }
+.tablet .side .row { min-height: 40px; border-color: rgba(224, 192, 128, .2); color: #f4e8d6; font-size: 14px; }
+.tablet main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tablet .head { padding: 26px 24px 30px; }
+.tablet .attrs { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+.tablet .body { padding: 26px 18px 18px; }
+.tablet .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; align-items: start; }
+.tablet .stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.rail { flex: none; display: flex; flex-direction: column; gap: 4px; width: 84px; margin: 90px 8px 20px 0; padding: 6px 4px; border-radius: 6px; background: #211c18; }
+.rail button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 11px; cursor: pointer; }
+.rail button img { width: 28px; height: 28px; }
+.rail button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="kind"><legend>Bogen</legend><button data-v="nsc" aria-pressed="true">NSC</button><button data-v="kreatur">Kreatur</button></fieldset>
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+</div>
+<p class="note">Nur die Reiter des jeweiligen Systembogens. Titelseite: RS, INI, GS, SK, ZK, Angriffe der ausgerüsteten Waffen, Talente mit Wert (Anzahl mit − / +, Sinnesschärfe und Willenskraft immer), Weiteres über Favoriten. Am Smartphone wie beim Helden nur der Spielmodus.</p>
+<div id="stage"></div>
+
+<script>
+const SYS = '../../../../systems/dsa5';
+const ICON = n => `${SYS}/icons/categories/${n}.webp`;
+const DIE = k => `${SYS}/icons/dice/d20${k.toLowerCase()}.svg`;
+const TAB_ICONS = { cover: 'Spellextension', main: 'DSA-Auge', skills: 'Skill', combat: 'ability_combat', inventory: 'Equipment', status: 'ability_ceremonial', notes: 'Ability_Language', companions: 'ability_animal' };
+const ATTR_KEYS = ['MU', 'KL', 'IN', 'CH', 'FF', 'GE', 'KO', 'KK'];
+const COND = [['Schmerz', 0], ['Betäubung', 0], ['Furcht', 1], ['Verwirrung', 0]];
+
+const TYPES = {
+  nsc: {
+    name: 'Brandolf Eisenhauer', ident: ['Mensch', 'Mittelreicher', 'Schmied'], portrait: `url('${SYS}/icons/species/Mensch.webp') 22% 4% / 230% auto no-repeat, #d9c7a3`,
+    lep: [34, 34], schips: [3, 1],
+    attrs: [13, 11, 12, 11, 14, 11, 14, 15],
+    tabs: [['cover', 'Titelseite'], ['main', 'Eigenschaften'], ['skills', 'Talente'], ['combat', 'Kampf'], ['inventory', 'Ausrüstung'], ['status', 'Status'], ['notes', 'Notizen'], ['companions', 'Gefährten']],
+    chips: [['Vorteile', 'Vorteil', ['Hohe Lebenskraft I', 'Zäher Hund']], ['Nachteile', 'Nachteil', ['Schlechte Eigenschaft (Jähzorn)']], ['Sonderfertigkeiten', 'ability_general', ['Fertigkeitsspezialisierung (Metallbearbeitung)', 'Ortskenntnis (Gratenfels)']]],
+    values: [['Grundwerte'], ['Lebenskraft', '34 / 34'], ['Seelenkraft', 1], ['Zähigkeit', 2], ['Ausweichen', 6], ['Geschwindigkeit', 8], ['Initiative', 13], ['Wundschwelle', 7], ['Größenkategorie', 'mittel']],
+    skills: [['Kraftakt', 'KO/KK/KK', 8], ['Selbstbeherrschung', 'MU/MU/KO', 6], ['Sinnesschärfe', 'KL/IN/IN', 5], ['Zechen', 'KL/KO/KK', 7], ['Einschüchtern', 'MU/IN/CH', 5], ['Handel', 'KL/IN/CH', 6], ['Metallbearbeitung', 'FF/KO/KK', 12]],
+    cover: [['RS', 1], ['INI', 13], ['GS', 8], ['SK', 1], ['ZK', 2]],
+    favs: [['Sonderfertigkeiten', 'ability_general', 'Ortskenntnis (Gratenfels)']],
+    weapons: [['Haupthand', 'Schmiedehammer', 'Hiebwaffen · KtW 12 · RW mittel', 12, 6, '1W6+4'], ['Nebenhand', 'Messer', 'Dolche · KtW 11 · RW kurz', 10, 4, '1W6+1']],
+    items: [['Schmiedehammer', 1, '1,5'], ['Messer', 1, '0,3'], ['Lederschürze', 1, '2,0'], ['Geldbeutel', 1, '0,1']],
+    notes: [['Persönliche Daten', 'Männlich · 47 Jahre · 184 cm · grau, kurz · Gratenfels'], ['Hintergrundgeschichte', 'Platzhalter: Herkunft und Geschichte des NSC.'], ['Notizen', 'Platzhalter.'], ['SL-Notizen', 'Platzhalter: nur für die Spielleitung.']],
+  },
+  kreatur: {
+    name: 'Luchs', ident: ['Tier', 'Größe mittel', 'Anzahl 1'], portrait: `url('${ICON('Tiere')}') center / cover no-repeat, #d9c7a3`,
+    lep: [21, 21], schips: null,
+    attrs: [12, 2, 13, 8, 2, 13, 12, 12],
+    tabs: [['cover', 'Titelseite'], ['main', 'Eigenschaften'], ['skills', 'Talente'], ['combat', 'Kampf'], ['inventory', 'Beute'], ['status', 'Status'], ['notes', 'Notizen']],
+    chips: [['Kreatur-Eigenschaften', 'ability_general', ['Einzelgänger', 'Gute Augen', 'Nachtsicht', 'Anspringen']], ['Sonderfertigkeiten', 'ability_general', ['Finte I', 'Wuchtschlag I']]],
+    values: [['Werte'], ['Lebenskraft', '21 / 21'], ['Seelenkraft', -1], ['Zähigkeit', 0], ['Ausweichen', 7], ['Geschwindigkeit', 10], ['Initiative', 13], ['Aktionen', 1], ['Jagd', 2], ['Größenkategorie', 'mittel']],
+    skills: [['Körperbeherrschung', 'GE/GE/KO', 5], ['Kraftakt', 'KO/KK/KK', 4], ['Selbstbeherrschung', 'MU/MU/KO', 6], ['Sinnesschärfe', 'KL/IN/IN', 8], ['Verbergen', 'MU/IN/GE', 6], ['Fährtensuchen', 'MU/IN/GE', 9]],
+    cover: [['RS', 1], ['INI', 13], ['GS', 10], ['SK', -1], ['ZK', 0]],
+    favs: [],
+    stats: [['Ausweichen', 7, 'ge'], ['Rüstungsschutz', 1], ['Initiative', 13], ['Aktionen', 1], ['Geschwindigkeit', 10]],
+    attacks: [['Biss', 'RW kurz', 12, 6, '1W6+3'], ['Pranke', 'RW kurz · nur nach Anspringen', 10, null, '1W6+1']],
+    armor: [['Dichtes Fell', 'RS 1 · BE 0']],
+    items: [['Fell', 1, '2,0'], ['Zähne', 6, '0,1'], ['Fleisch', 4, '1,0']],
+    notes: [['Beschreibung', 'Platzhalter: Aussehen und Lebensraum der Kreatur.'], ['Verhalten', 'Platzhalter: Verhalten im Kampf und außerhalb.'], ['Flucht', 'Platzhalter: wann die Kreatur flieht.'], ['Sonderregeln', 'Platzhalter: besondere Regeln.'], ['Notizen', ''], ['Private Notizen', '']],
+  },
+};
+
+const state = { kind: 'nsc', device: 'phone', tab: 'cover', talents: 6 };
+const FIXED_TALENTS = [['Sinnesschärfe', 'KL/IN/IN'], ['Willenskraft', 'MU/IN/CH']];
+const t = () => TYPES[state.kind];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const panel = (title, inner, small = '') => `<section class="panel"><h3>${title}${small ? `<small>${small}</small>` : ''}</h3>${inner}</section>`;
+const cdie = (v, k, label) => `<button type="button" class="cdie" style="background-image:url('${DIE(k)}')" title="${label}">${v}</button>`;
+const probe = p => `<span class="probe">${p.split('/').map(k => `<span style="background-image:url('${DIE(k)}')">${k}</span>`).join('')}</span>`;
+
+// Titelseite: Werte, Angriffe (NSC nur ausgerüstete Waffen, Kreatur natürliche Angriffe), Talente, Favoriten.
+function cover() {
+  const x = t();
+  const stats = panel('Werte', `<div class="stats" style="grid-template-columns:repeat(5,minmax(0,1fr))">${x.cover.map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div>`);
+  const attacks = state.kind === 'nsc'
+    ? x.weapons.map(([hand, n, meta, at, pa, tp]) => `<div class="row"><img class="ico" src="${ICON('Combat_Skill')}" alt=""><span class="grow">${n}<small>${hand} · ${meta}</small></span>${cdie(at, 'mu', 'Attacke')}${cdie(pa, 'in', 'Parade')}<button type="button" class="tp">${tp}</button></div>`)
+    : x.attacks.map(([n, meta, at, pa, tp]) => `<div class="row"><img class="ico" src="${ICON('Combat_Skill')}" alt=""><span class="grow">${n}<small>${meta}</small></span>${cdie(at, 'mu', 'Attacke')}${pa != null ? cdie(pa, 'in', 'Parade') : ''}<button type="button" class="tp">${tp}</button></div>`);
+  const fixed = FIXED_TALENTS.map(([n, p]) => [n, p, x.skills.find(([m]) => m === n)?.[2] ?? 0, true]);
+  const rest = x.skills.filter(([n, , fw]) => fw > 0 && !FIXED_TALENTS.some(([m]) => m === n)).sort((a, b) => b[2] - a[2]).slice(0, state.talents);
+  const talentRows = [...fixed, ...rest].map(([n, p, fw, isFixed]) => `<div class="row"><span class="grow">${n}</span>${probe(p)}<span class="v">${fw}</span><button type="button" class="star${isFixed ? ' fixed' : ''}" aria-label="Favorit">☆</button></div>`).join('');
+  const count = `<span class="count"><button type="button" class="step" data-talents="-2" ${state.talents <= 2 ? 'disabled' : ''} aria-label="Weniger Talente">−</button>${state.talents}<button type="button" class="step" data-talents="2" ${state.talents >= 12 ? 'disabled' : ''} aria-label="Mehr Talente">+</button></span>`;
+  const talents = `<section class="panel"><h3>Talente${count}</h3>${talentRows}</section>`;
+  const favs = panel('Favoriten', x.favs.length
+    ? x.favs.map(([group, ico, n]) => `<div class="sub">${group}</div><div class="row"><img class="ico" src="${ICON(ico)}" alt=""><span class="grow">${n}</span><button type="button" class="star" aria-label="Favorit entfernen">★</button></div>`).join('')
+    : '<p>Noch keine Favoriten: Stern bei Talenten, Zaubern, Ausrüstung oder Sonderfertigkeiten antippen.</p>');
+  return stats + panel('Angriffe', attacks.join('')) + (state.device === 'tablet' ? `<div class="cols"><div>${talents}</div><div>${favs}</div></div>` : talents + favs);
+}
+
+const TAB = {
+  cover,
+  main: () => {
+    const attrs = `<div class="attrs">${ATTR_KEYS.map((k, i) => `<div class="attr"><b style="background-image:url('${DIE(k)}')">${t().attrs[i]}</b>${k}</div>`).join('')}</div>`;
+    const chips = t().chips.map(([title, ico, list]) => panel(title, `<div class="chips">${list.map(c => `<span class="chip"><img src="${ICON(ico)}" alt="">${esc(c)}</span>`).join('')}</div>`)).join('');
+    const [[title], ...rows] = t().values;
+    const values = panel(title, rows.map(([k, v]) => `<div class="row"><span class="grow">${k}</span><span class="v">${v}</span></div>`).join(''));
+    return attrs + (state.device === 'tablet' ? `<div class="cols"><div>${chips}</div><div>${values}</div></div>` : values + chips);
+  },
+  skills: () => panel('Talente', t().skills.map(([n, p, fw]) => `<div class="row"><span class="grow">${n}</span><span class="probe">${p.split('/').map(k => `<span style="background-image:url('${DIE(k)}')">${k}</span>`).join('')}</span><span class="v">${fw}</span></div>`).join(''), 'nur gesteigerte'),
+  combat: () => state.kind === 'nsc'
+    ? panel('Ausrüstung am Körper', t().weapons.map(([hand, n, meta, at, pa, tp]) => `<div class="weapon"><span class="hand">${hand}</span><div class="wname">${n}</div><div class="meta">${meta}</div><div class="roll">${cdie(at, 'mu', 'Attacke')}${cdie(pa, 'in', 'Parade')}<button type="button" class="tp">${tp}</button></div></div>`).join(''))
+      + panel('Kampfwerte', `<div class="stats"><div>${cdie(6, 'ge', 'Ausweichen')}<small>Ausweichen</small></div><div><b>13</b><small>Initiative</small></div><div><b>1</b><small>Rüstungsschutz</small></div></div>`)
+    : panel('Kampfwerte', `<div class="stats">${t().stats.map(([n, v, k]) => `<div>${k ? cdie(v, k, n) : `<b>${v}</b>`}<small>${n}</small></div>`).join('')}</div>`)
+      + panel('Angriffe', t().attacks.map(([n, meta, at, pa, tp]) => `<div class="row"><img class="ico" src="${ICON('Combat_Skill')}" alt=""><span class="grow">${n}<small>${meta}</small></span>${cdie(at, 'mu', 'Attacke')}${pa != null ? cdie(pa, 'in', 'Parade') : ''}<button type="button" class="tp">${tp}</button></div>`).join(''))
+      + panel('Natürliche Rüstung', t().armor.map(([n, v]) => `<div class="row"><span class="grow">${n}</span><span>${v}</span></div>`).join('')),
+  inventory: () => panel(state.kind === 'nsc' ? 'Ausrüstung' : 'Beute', `<div class="sub">Gegenstand · Anzahl · Gewicht</div>` + t().items.map(([n, q, w]) => `<div class="row"><img class="ico" src="${ICON('Equipment')}" alt=""><span class="grow">${n}</span><span class="v">${q}</span><span style="min-width:40px;text-align:right;color:var(--ink2)">${w}</span></div>`).join(''), state.kind === 'nsc' ? '' : 'für die Helden nach dem Kampf'),
+  status: () => panel('Zustände', COND.map(([n, f]) => `<div class="row"><span class="grow">${n}</span><button type="button" class="step" aria-label="weniger">−</button><span class="pips">${[0, 1, 2, 3].map(i => `<i class="${i < f ? 'on' : ''}"></i>`).join('')}</span><button type="button" class="step" aria-label="mehr">+</button></div>`).join('')),
+  notes: () => t().notes.map(([title, text]) => panel(title, `<p>${text ? esc(text) : '<em>leer</em>'}</p>`)).join(''),
+  companions: () => panel('Gefährten', '<p>Wie im Heldenbogen (Reittier, Vertraute, Begleiter).</p>'),
+};
+
+function head() {
+  const x = t();
+  const schips = x.schips ? `<span class="schips">${Array.from({ length: x.schips[0] }, (_, i) => `<img src="${SYS}/icons/schip.webp" alt="" class="${i >= x.schips[0] - x.schips[1] ? 'used' : ''}">`).join('')}</span>` : '';
+  const orbs = `<div class="orbs"><div class="orb" style="--p:${Math.round(100 * x.lep[0] / x.lep[1])}%"><i></i><b><small>LeP</small>${x.lep[0]}<small>/ ${x.lep[1]}</small></b></div><button type="button" class="regen" title="Regeneration">☾</button>${schips}</div>`;
+  const dice = state.tab === 'main' ? '' : `<div class="dice">${ATTR_KEYS.map((k, i) => `<span class="die" style="background-image:url('${DIE(k)}')">${x.attrs[i]}</span>`).join('')}</div>`;
+  if (state.device === 'tablet') return `<header class="head"><div class="name" style="font-size:40px">${esc(x.name)}</div><div class="ident">${x.ident.map(s => `<span>${s}</span>`).join('')}</div>${dice}</header>`;
+  return `<header class="head"><div class="top"><div class="portrait" style="background:${x.portrait}"></div><div style="flex:1;min-width:0"><div class="name">${esc(x.name)}</div><div class="ident">${x.ident.map(s => `<span>${s}</span>`).join('')}</div></div><div class="winbtns"><button type="button" title="Fenstermenü">⋮</button><button type="button" title="Schließen">✕</button></div></div>${orbs}${dice}</header>`;
+}
+
+const tabTitle = () => t().tabs.find(([id]) => id === state.tab)[1];
+const navButtons = () => t().tabs.map(([id, label]) => `<button type="button" data-tab="${id}" ${id === state.tab ? 'aria-current="page"' : ''}><img src="${ICON(TAB_ICONS[id])}" alt="">${label}</button>`).join('');
+const content = () => `<div class="body"><div class="tabtitle">${tabTitle()}</div>${TAB[state.tab]()}</div>`;
+
+function render() {
+  if (!t().tabs.some(([id]) => id === state.tab)) state.tab = 'cover';
+  const stage = document.getElementById('stage');
+  if (state.device === 'phone') {
+    stage.innerHTML = `<div class="device phone">${head()}<div class="scroll">${content()}</div><nav class="nav" aria-label="Reiter">${navButtons()}</nav></div>`;
+    return;
+  }
+  const x = t();
+  const schips = x.schips ? `<span class="schips">${Array.from({ length: x.schips[0] }, (_, i) => `<img src="${SYS}/icons/schip.webp" alt="" class="${i >= x.schips[0] - x.schips[1] ? 'used' : ''}">`).join('')}</span>` : '';
+  stage.innerHTML = `<div class="device tablet">
+    <aside class="left"><div class="portrait" style="background:${x.portrait}"></div>
+      <div class="orbs"><div class="orb" style="--p:100%"><i></i><b><small>LeP</small>${x.lep[0]}<small>/ ${x.lep[1]}</small></b></div><button type="button" class="regen">☾</button></div>${schips}
+      <div class="side"><h4>Statuseffekte</h4>${COND.map(([n, f]) => `<div class="row"><span class="grow">${n}</span><span>${f}/4</span></div>`).join('')}</div></aside>
+    <main>${head()}<div class="scroll">${content()}</div></main>
+    <nav class="rail" aria-label="Reiter">${navButtons()}</nav></div>`;
+}
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('button');
+  if (!b) return;
+  const group = b.closest('fieldset')?.dataset.group;
+  if (group) {
+    state[group] = b.dataset.v;
+    b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  } else if (b.dataset.tab) state.tab = b.dataset.tab;
+  else if (b.dataset.talents) state.talents += Number(b.dataset.talents);
+  else return;
+  render();
+});
+render();
+</script>
+<script src="../pages.js?v=7"></script>
+</body>
+</html>

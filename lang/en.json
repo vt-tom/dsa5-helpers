@@ -1,5 +1,7 @@
 {
   "DSA5HELPERS": {
+    "RangedAttackShort": "RC",
+    "SelectAmmo": "Select ammunition",
     "SheetLabel": "DSA5 Helpers Character Sheet",
     "Free": "free",
     "AdvantagesDisadvantages": "Advantages & Disadvantages",
@@ -51,7 +53,9 @@
       "status": "Status",
       "notes": "Notes",
       "companion": "Companions",
-      "steigerungsplaner": "Advancement planner"
+      "steigerungsplaner": "Advancement planner",
+      "quests": "Quests",
+      "personae": "People"
     },
     "Hints": {
       "cover": "",
@@ -64,7 +68,9 @@
       "status": "",
       "notes": "",
       "companion": "",
-      "steigerungsplaner": ""
+      "steigerungsplaner": "",
+      "quests": "",
+      "personae": ""
     },
     "SpecialAbilities": "Special abilities",
     "Consume": "Consume",
@@ -73,6 +79,7 @@
     "OpenBag": "Open container (drop items here to pack them)",
     "GMNotes": "GM notes",
     "OpenTradition": "Open tradition",
+    "TraditionFromAbility": "Set by the tradition special ability",
     "GripTwoHanded": "Two-handed",
     "GripSwitchToTwo": "Wield two-handed",
     "GripSwitchToOne": "Wield one-handed",
@@ -91,9 +98,11 @@
       "skills": "Skills",
       "hotbar": "Hotbar",
       "train": "Trick",
-      "mount": "Mount"
+      "mount": "Mount",
+      "remove": "Remove"
     },
     "SearchCombatSkills": "Search combat techniques …",
+    "SearchConditions": "Search conditions …",
     "NoSearchResults": "No matches.",
     "JumpToCombatSkill": "{name}, combat technique rating {value} — go to combat technique",
     "HandFreeChoose": "Off hand free — choose a weapon",
@@ -120,10 +129,19 @@
     "HandFree": "empty",
     "HandFreeOption": "— empty —",
     "TwoHandedSuffix": "(two-handed)",
+    "InContainerSuffix": "(in {name})",
+    "InContainer": "Stored in “{name}” – taken out when equipped",
     "WeaponInHand": "Weapon in {hand}",
     "BodyFigure": "Background figure",
     "BodyFigurePlaceholder": "Placeholder",
     "BodyFigurePortrait": "Actor portrait",
+    "BannerPick": "Choose banner image",
+    "BannerClear": "Remove banner image",
+    "PortraitShape": "Portrait shape",
+    "PortraitRound": "Round portrait",
+    "PortraitOctagon": "Cut-corner portrait",
+    "APAbbrev": "AP",
+    "ApRibbon": "Adventure points: {total} total, {free} free",
     "BothHands": "Both hands",
     "BodyTwoHandedNote": "Off hand: taken by the two-handed weapon",
     "BodyMoveRight": "to the right",
@@ -135,11 +153,72 @@
     "CastSpellsTitle": "Spells, rituals & cantrips",
     "CastLiturgiesTitle": "Liturgies, ceremonies & blessings",
     "NoArmorWorn": "No armor worn",
+    "NoArmor": "No armor",
+    "MainArmorHint": "Click picks the main armor",
+    "MainArmorPick": "Show as main armor",
+    "MagicArmorShort": "Magic",
+    "ArmorBonus": "Armor bonus",
+    "Zone": {
+      "head": "Head",
+      "value": "Torso",
+      "rightarm": "Right arm",
+      "leftarm": "Left arm",
+      "rightleg": "Right leg",
+      "leftleg": "Left leg"
+    },
+    "ZoneShort": {
+      "head": "Head",
+      "value": "Torso",
+      "rightarm": "Arm R",
+      "leftarm": "Arm L",
+      "rightleg": "Leg R",
+      "leftleg": "Leg L"
+    },
     "Close": "Close",
     "Settings": {
+      "RollDialogDesktop": {
+        "Name": "Roll dialogs on desktop",
+        "Hint": "The module's tidy roll dialogs or those of the DSA5 system, e.g. when another module extends them. Applies to everyone; tablet and phone always use the module.",
+        "Module": "Module (new layout)",
+        "System": "DSA5 system"
+      },
       "DefaultSheet": {
         "Name": "Default sheet for heroes",
         "Hint": "Makes the DSA5 Helpers sheet the default for all heroes. Heroes with an explicitly chosen sheet keep it. Foundry reloads after changing this."
+      },
+      "PlayersMayEdit": {
+        "Name": "Players: change values without AP (edit mode)",
+        "Hint": "Allows players to use the hero sheet's “Edit” mode, where values can be changed directly without adventure points. When off, players can only play and advance with AP; the GM can always edit."
+      },
+      "BannerPath": {
+        "Name": "Default folder for banner images",
+        "Hint": "The module stores banner images uploaded by players from their computers here. Players do not need file browser permission for this; a GM has to be logged in."
+      },
+      "DisplayMenu": {
+        "Title": "Display and devices",
+        "Label": "Configure display",
+        "GroupSheet": "Roll dialogs",
+        "GroupMobile": "Tablet and smartphone",
+        "Hint": "Roll dialogs on desktop and hybrid play on tablet and phone (interface and roll result per device)."
+      },
+      "SheetMenu": {
+        "Title": "Hero sheet",
+        "Label": "Configure hero sheet",
+        "Hint": "Default sheet for heroes, edit mode for players, folder for banner images and skill suggestions on the cover page.",
+        "Save": "Save"
+      },
+      "QuestsTab": {
+        "Name": "“Quests” tab",
+        "Hint": "Shows the shared quests from the almanac (quest log) in the hero sheet. Only appears if quest journals are activated in the almanac."
+      },
+      "PersonaeTab": {
+        "Name": "“People” tab",
+        "Hint": "Shows the shared Dramatis Personae and bestiary entries of the almanac in the hero sheet. Only appears if persona journals are activated in the almanac."
+      },
+      "SkillSuggestions": {
+        "Name": "Skill suggestions on the cover page",
+        "Hint": "How many skills are suggested above the favorites; adjustable per hero on the sheet with − / +. Applies to you only.",
+        "Off": "Off"
       }
     },
     "Changelog": {
@@ -157,17 +236,19 @@
       "Consent": {
         "Question": "May your rolls be included in the dice statistics?",
         "Info": "Only how often each face comes up per day is counted – no individual rolls. You see your own statistics, the GM sees everyone’s.",
-        "Change": "You can change this at any time in the module settings. If you withdraw consent, nothing is counted any more and your statistics are hidden.",
+        "Change": "You can change this at any time at the bottom of the dice statistics window. If you withdraw consent, nothing is counted any more and your statistics are hidden.",
         "Yes": "Yes, include them",
         "No": "No"
       },
       "Settings": {
         "Enabled": {
           "Name": "Dice statistics",
+          "Short": "Statistics in this world",
           "Hint": "Counts per player and die type how often each face comes up and shows whether the distribution is statistically unusual. Every player is asked for consent first and only sees their own statistics; the GM sees everyone’s. Only counters per day are stored; days older than 12 months are merged."
         },
         "Consent": {
           "Name": "Dice statistics: include my rolls",
+          "Short": "Evaluate my rolls",
           "Hint": "Whether your rolls are included in the dice statistics. Without consent nothing is counted; existing data is kept but hidden.",
           "Undecided": "Not decided yet",
           "Yes": "Yes",
@@ -178,7 +259,7 @@
         "Label": "Open dice statistics",
         "Hint": "Shows how often each face came up and whether that is statistically unusual – players see their own statistics, the GM sees everyone’s."
       },
-      "Disabled": "Dice statistics are switched off. The GM can switch them on in the module settings; existing data stays visible.",
+      "Disabled": "Dice statistics are switched off. The GM can switch them on at the bottom of this window; existing data stays visible.",
       "DieType": "Die type",
       "Die": "d{faces}",
       "MethodLabel": "Dice",
@@ -227,7 +308,7 @@
         "From": "from",
         "To": "to"
       },
-      "NoConsent": "You have not agreed to your rolls being evaluated. You can change this in the module settings."
+      "NoConsent": "You have not agreed to your rolls being evaluated. You can change this at the bottom of this window."
     },
     "OtherWeapons": "Other weapons",
     "HouseRules": {
@@ -327,18 +408,443 @@
           "Intro": "In combat, not everyone has to strike themselves. A hero can use their action to help an ally with a skill check that fits the situation. The remaining quality levels ease the ally's next check.",
           "Example": "Example: with Intimidation, a hero draws an enemy's attention away from a fighter – the fighter's attack against that enemy is then eased.",
           "Step1": "Optionally target the ally you help (click the token and press T) – they will then be named in the chat.",
-          "Step2": "In the hero sheet (DSA5 Helpers), click “Help” among the quick actions on the Combat tab.",
-          "Step3": "Choose the fitting skill, pick modifiers in the usual check dialog and roll. The GM decides whether the skill fits the situation.",
+          "Step2": "Open any skill check (in any hero sheet or the DSA toolbar) and tick “Roll as help” in the check dialog. In the DSA5 Helpers hero sheet you can also click “Help” among the quick actions on the Combat tab: choose the skill first, the switch is then already on.",
+          "Step3": "Pick modifiers and roll – help is never opposed. The GM decides whether the skill fits the situation.",
           "Step4": "If the check succeeds, a chat message names the bonus equal to the QL.",
           "Note1": "The bonus is not applied automatically: the supported ally enters it as a modifier on their next check.",
           "Note2": "Helping costs the helper's action for this combat round.",
           "Note3": "If the check fails, there is no bonus."
+        },
+        "Toggle": "Roll as help",
+        "ToggleHint": "House rule help: after the roll the chat reports the QL as a bonus for the targeted ally. Never opposed."
+      },
+      "maneuvers": {
+        "Title": "Basic maneuvers",
+        "Summary": "Options in combat: every hero may use basic maneuvers such as feint attack, advance or defensive stance; their strength depends on a key attribute. Own section below the special abilities in the roll dialog.",
+        "CombineHint": "Basic maneuvers: per attack one basic maneuver plus one basic or special maneuver; passive maneuvers freely.",
+        "Block": "Basic maneuvers",
+        "BlockHint": "Tier per key attribute; pick the maneuvers in the roll dialog.",
+        "OpenBook": "Read rules",
+        "feint": {
+          "Name": "Feint attack",
+          "Defense": "opponent PA −{x}"
+        },
+        "targeted": {
+          "Name": "Targeted attack",
+          "Zone": {
+            "head": "Head",
+            "torso": "Torso",
+            "arm": "Arm",
+            "leg": "Leg",
+            "eye": "Eye",
+            "foot": "Foot",
+            "neck": "Neck",
+            "hand": "Hand"
+          },
+          "HitzoneHint": "Targeted attack: take the penalty from only one choice – either the basic maneuver or “Targeted attack” of the hit zone rule (which also determines the armor zone)."
+        },
+        "mighty": {
+          "Name": "Mighty attack"
+        },
+        "advance": {
+          "Name": "Advance",
+          "Later": "then PA/dodge {malus} until end of round",
+          "MalusActive": "PA/dodge penalty until end of round",
+          "Status": "Advance: PA/dodge {malus} until end of round"
+        },
+        "stance": {
+          "Name": "Defensive stance",
+          "Toggle": "Defensive stance on/off",
+          "On": "Defensive stance active",
+          "Off": "Take defensive stance",
+          "AttackHint": "Defensive stance: no offensive actions"
+        },
+        "aim": {
+          "Name": "Aim",
+          "Button": "Aim (one round)",
+          "Rounds": "{n} round(s)",
+          "Status": "Aim {count}/{max}",
+          "NoCombat": "Aiming only counts during a running combat.",
+          "OncePerRound": "You already aimed this combat round.",
+          "Max": "Your tier does not allow more than {max} rounds of aiming."
+        },
+        "PanelHint": "House rule basic maneuvers (Paladose): level by key attribute",
+        "RowHint": "Click: next level · right-click: one level back",
+        "RowHintSingle": "Click: on/off",
+        "weakness": {
+          "Name": "Recognize Weak Spots",
+          "Button": "Recognize weak spots",
+          "ButtonHint": "Analyse the targeted opponent: roll, then split the QL between PA and DP against them.",
+          "HudHint": "Recognize the weak spots of the targeted opponent",
+          "Attr": "QL",
+          "Value": "PA / DP",
+          "NoCombat": "Recognize Weak Spots only works in a running combat.",
+          "NoTarget": "Please target the opponent first.",
+          "Self": "You cannot analyse your own hero – please target an opponent.",
+          "NoSkill": "{name} does not have the skill {skill}.",
+          "Share": "Share",
+          "Shared": "Shared",
+          "NotOwner": "Only the hero's player can share this.",
+          "Expired": "These weak spots no longer apply (combat over or round expired).",
+          "Status": "{foe}: PA +{pa} · DP +{tp}",
+          "StatusShared": "{foe}: PA +{pa} · DP +{tp} (shared, until CR {round})",
+          "Dialog": {
+            "Title": "Split weak spots",
+            "Intro": "{qs} QL against {foe}: each QL raises either your PA or your DP against this opponent until the end of combat.",
+            "NoArmor": "{foe} is a demon, ghost or elemental – armour reduction does not work against them. All {qs} QL go to PA.",
+            "MagicArmor": "DP +1 stands for PRO −1. It does not work against magical protection; the GM keeps an eye on that.",
+            "Confirm": "Apply"
+          },
+          "Chat": {
+            "Success": "<b>{actor}</b> recognizes weak spots of <b>{foe}</b>: PA +{pa} against their attacks, DP +{tp} against them, until the end of combat.",
+            "Failure": "{actor} finds no weak spots of {foe}.",
+            "Shared": "<b>{actor}</b> shares the weak spots of <b>{foe}</b>: PA +{pa}, DP +{tp} for all allies. From now on {foe} guards their weak spots – the bonus lasts for everyone only until the end of CR {round}."
+          }
+        },
+        "distract": {
+          "Name": "Disrupt and Distract",
+          "Button": "Disrupt and distract",
+          "ButtonHint": "Distract the targeted opponent: check on Throwing Weapons or Intimidation; on a success they suffer −1 to AT, RA, PA, Dodge and damage until the end of the combat round.",
+          "HudHint": "Disrupt and distract the targeted opponent",
+          "Attr": "Check",
+          "Value": "−1 AT/RA/PA/DO/DP",
+          "NoCombat": "Disrupt and Distract only works in a running combat.",
+          "NoTarget": "Please target the opponent first.",
+          "Self": "You cannot distract your own hero – please target an opponent.",
+          "NoSkill": "{name} has neither the combat technique Throwing Weapons nor the skill Intimidation.",
+          "Status": "{foe} distracted (until end of CR {round})",
+          "Modifier": "Disrupted and distracted ({by})",
+          "Dialog": {
+            "Title": "Disrupt and Distract",
+            "Intro": "How does {actor} distract {foe}?",
+            "Throw": "Throw something ({skill})",
+            "Intimidate": "Intimidation"
+          },
+          "Chat": {
+            "Success": "<b>{actor}</b> distracts <b>{foe}</b>: −1 to AT, RA, PA, Dodge and damage until the end of the combat round. Thrown objects deal no damage.",
+            "Failure": "{actor} fails to distract {foe}.",
+            "Undead": "Undead and ghosts can only be distracted if they are intelligent enough – the GM decides."
+          }
+        },
+        "hits": {
+          "Title": "Targeted hit: {zone} ({sp} sDP)",
+          "Resist": "Resistance: {text}",
+          "Resists": {
+            "composure": "Self-Control (stay capable of acting)",
+            "disturb": "Self-Control (ignore distractions)",
+            "death": "Special rule “Cheating Death”",
+            "firstAid": "First aid, minor healing, healing potions; finally special rule “Cheating Death”"
+          },
+          "Effect": {
+            "head": "{n} level(s) of Stupor",
+            "headNone": "Below 5 sDP: no Stupor.",
+            "torso": "Additional 1D3+1 sDP.",
+            "arm": "Drops whatever is held in that hand (not two-handed weapons or shields).",
+            "leg": "Falls down: Prone.",
+            "eyeFatal": "Fatal (5 sDP or more).",
+            "eye": "Blinded.",
+            "foot": "{n} level(s) of Pain, movement halved.",
+            "footNone": "Movement halved.",
+            "neckFatal": "Fatal (8 sDP or more).",
+            "neck": "Bleeding (1D3+1 sDP per CR).",
+            "hand": "+1 level of Pain, hand unusable.",
+            "handNone": "Below 5 sDP: no effect."
+          },
+          "Roll": "Roll 1D3+1 sDP",
+          "RollFlavor": "Targeted hit ({zone}): additional sDP",
+          "NotOwner": "The condition is set by the GM or whoever controls the target."
+        }
+      },
+      "passiveDefense": {
+        "Title": "Passive defense",
+        "Summary": "Actors can defend automatically: if the attack succeeds, the module openly rolls a d20 against the chosen or best defense – no reaction dialog.",
+        "OtherScene": "Passive defense: the target is not on the scene you are viewing – please let it defend as usual.",
+        "Block": "Defense against attacks",
+        "BlockHint": "Applies to attacks on this hero while the house rule is active.",
+        "Mode": {
+          "manual": "Roll yourself (normal rule)",
+          "best": "Automatic: best defense",
+          "option": "Automatic: {name} ({value})",
+          "missing": "Automatic: chosen weapon not equipped – best defense",
+          "Menu": "Passive defense …",
+          "Hint": "How does {name} defend when attacked?",
+          "Save": "Apply",
+          "Short": {
+            "manual": "manual",
+            "best": "best",
+            "dodge": "dodge",
+            "parryWeaponless": "unarmed"
+          },
+          "HudHint": "How does the selected token defend when attacked? Click to change."
+        },
+        "Chat": {
+          "hit": "{attacker} hits {defender}.",
+          "defended": "{defender} fends off the attack of {attacker}.",
+          "miss": "The attack of {attacker} on {defender} fails.",
+          "Roll": "Defense (d20): {roll}",
+          "Word": {
+            "hit": "Hit",
+            "defended": "Fended off",
+            "miss": "Missed"
+          },
+          "GMTitle": "Passive defense (GM only)",
+          "GMLine": "AT {at} succeeded (d20 {d20}). Defense with {option}: D {defense}, rolled {roll} – fended off at {defense} or less (always on 1, never on 20).",
+          "Option": "Defense",
+          "Base": "Base",
+          "Mods": "Mod."
+        },
+        "Page": {
+          "Intro": "Fights run faster when not every attack needs a reaction dialog. With this house rule actors can defend automatically: the attacker targets and rolls the attack as usual. If it succeeds, the module immediately and openly rolls a d20 against the target's defense.",
+          "Formula": "Fended off on d20 ≤ D – like a normal parry or dodge. A 1 always fends off, a 20 never does. Every successful attack is fended off just as often as with the reaction dialog. Example AT 13 vs. D 6: the attack succeeds 65 % of the time, 30 % of those are fended off.",
+          "ScopeTitle": "For whom?",
+          "Scope": "Set per actor: in the hero sheet under Combat › Body (“Defense against attacks”), for NPCs and creatures in the ⋮ menu of the system sheet. Choose “Roll yourself” (normal rule), “Automatic: best defense” or a specific weapon or dodge. Without a choice player characters roll themselves, NPCs and creatures defend automatically with their best option.",
+          "Step1": "Target and attack as usual (melee or ranged).",
+          "Step2": "The chosen option counts as defense, otherwise the highest of dodge, unarmed parry, worn weapons and shields or a creature's parry – against ranged attacks only dodge and shields. Conditions, further defenses in the round, feint and similar penalties are included; after a 1 on the attack the defense is halved (rounded).",
+          "Step3": "If the attack roll fails, the attack is over. If it succeeds, the module rolls the d20 for the defense.",
+          "Step4": "On a hit, damage follows as for an undefended attack, otherwise the chat reports the defense. The GM can expand the calculation on the chat card.",
+          "Note1": "A defense counts as used when the attack roll succeeded.",
+          "Note2": "A fate point on the attack also rerolls the defense; an old hit card disappears if the attack is now fended off. Damage already applied must then be corrected by hand.",
+          "Note3": "Critical parries, parry botches and abilities requiring a critical parry do not apply to the automatic defense.",
+          "Note4": "The GM must be logged in and view the target's scene. Without a target and for attacks of opportunity the normal flow applies."
         }
       }
     },
     "NoConditions": "No conditions.",
     "ConditionsToStatus": "All conditions and effects → Status",
     "NoPersonalDetails": "No personal details yet.",
-    "EditInNotes": "Edit → Notes"
+    "EditInNotes": "Edit → Notes",
+    "Mobile": {
+      "RollResult": {
+        "Title": "Roll result",
+        "Older": "Older roll",
+        "Newer": "Newer roll"
+      },
+      "Roll": {
+        "Less": "Less",
+        "More": "More",
+        "Circumstances": "Circumstances and opponent",
+        "Situation": "Circumstances",
+        "SpellOptions": "Modifications",
+        "Fine": "Fine-tuning (attributes, SR, QL)"
+      },
+      "Settings": {
+        "Hybrid": {
+          "Name": "Hybrid play (tablet/smartphone)",
+          "Hint": "Players and GM can join on a tablet or smartphone with a dedicated interface. Experimental."
+        },
+        "Mode": {
+          "Name": "Interface on this device",
+          "Hint": "Automatic detects smartphone and tablet. Escape hatch: append ?dsa5h-ui=foundry to the address."
+        },
+        "RollResult": {
+          "Name": "Show roll result (tablet)",
+          "Hint": "Chat card of your own rolls as a sheet above the character sheet while the chat is closed. Always on smartphones."
+        }
+      },
+      "Mode": {
+        "auto": "Automatic",
+        "phone": "Smartphone",
+        "tablet": "Tablet",
+        "foundry": "Foundry"
+      },
+      "Panel": {
+        "chat": "Chat",
+        "journal": "Journal",
+        "settings": "Settings",
+        "combat": "Combat",
+        "actors": "Actors"
+      },
+      "Connected": "{n} of {total} players connected",
+      "ChatUnread": "Chat, {n} unread",
+      "Account": "Account and settings",
+      "RoleGM": "Gamemaster",
+      "RolePlayer": "Player",
+      "Detected": "Detected automatically: {mode} ({w} × {h} px).",
+      "Scene": "Scene",
+      "On": "On",
+      "Off": "Off",
+      "SceneHint": "Off: no scene, saves battery and data. Applies to this device only.",
+      "FoundrySettings": "Foundry settings",
+      "ToDesktop": "Switch to the full Foundry interface",
+      "Logout": "Log out",
+      "Close": "Close",
+      "Center": "Center on my hero",
+      "CenterGM": "Center on own token",
+      "Enlarge": "Enlarge scene",
+      "Pause": "Pause game",
+      "Resume": "Resume game",
+      "Heroes": "My heroes",
+      "HeroesGM": "Party heroes",
+      "NoHeroes": "No hero assigned.",
+      "RequestRoll": "Request roll",
+      "NoRequest": "Roll requests are not available in this DSA5 version.",
+      "NoToken": "Your hero has no token in this scene.",
+      "DesktopSite": "“Desktop site” is enabled in your browser, which makes everything tiny. In Chrome: menu ⋮ → untick “Desktop site” (or turn it off for this site under Settings → Site settings → Desktop site).",
+      "Paused": "The game is paused.",
+      "Blocked": "The token cannot move there (wall).",
+      "MessageActions": "Message actions",
+      "CastShort": "Time",
+      "Weapons": "Weapons",
+      "CombatSkills": "Combat techniques",
+      "NoneLevel": "none",
+      "Level": "Level {value} of {max}",
+      "Decrease": "Decrease {name}",
+      "Increase": "Increase {name}",
+      "Full": "full",
+      "MaxValue": "max. {max}",
+      "SaveFailed": "The value could not be saved. Please try again.",
+      "AllItems": "All",
+      "Menu": "Sheet menu",
+      "Round": "Round {n}",
+      "CombatNotStarted": "Combat prepared",
+      "YourTurn": "Your turn!",
+      "OnTurn": "Current turn",
+      "OnTurnYou": "Current turn – you",
+      "NextUp": "Next: {name}",
+      "RollInitiative": "Roll initiative",
+      "Target": "Target",
+      "Untarget": "Untarget",
+      "Theme": "Theme",
+      "Light": "Light",
+      "Dark": "Dark",
+      "Chat": {
+        "Visibility": "Show",
+        "To": "To",
+        "All": "All",
+        "GM": "Game Master",
+        "ToAll": "Message to everyone …",
+        "WhisperTo": "Whisper to {names} …",
+        "Mode": {
+          "public": "Public",
+          "ic": "In character",
+          "gm": "Private · GM",
+          "blind": "Blind",
+          "self": "Only me"
+        },
+        "Format": "Format",
+        "Dice": "Dice",
+        "Send": "Send",
+        "Die": "d",
+        "FewerDice": "Fewer dice",
+        "MoreDice": "More dice",
+        "ModDown": "Lower modifier",
+        "ModUp": "Raise modifier",
+        "RollFree": "Roll {roll}"
+      },
+      "Journal": {
+        "Pages": "Pages",
+        "PageOf": "Page {n} of {total}",
+        "Prev": "Previous",
+        "Next": "Next"
+      }
+    },
+    "Mode": {
+      "title": "Mode",
+      "play": "Play",
+      "playHint": "Roll, LP and conditions — nothing changes by accident",
+      "advance": "Advance",
+      "advanceHint": "Raise values with AP, learn new things or refund",
+      "edit": "Edit",
+      "editHint": "Change anything freely, without AP",
+      "gmOnly": "Editing is reserved for the GM in this world",
+      "dropLocked": "Nothing new can be learned in play mode — switch to “Advance” via the lock."
+    },
+    "Banner": {
+      "FromComputer": "Upload from computer",
+      "FromComputerHint": "Choose an image, it is resized and stored in the default folder",
+      "FromFoundry": "Foundry file browser",
+      "FromFoundryHint": "Pick an existing image on the server",
+      "NoPath": "The GM still has to set a default folder for banner images in the module settings.",
+      "NoPathGM": "Please set a default folder for banner images in the module settings first.",
+      "NoGM": "A GM has to be logged in to upload.",
+      "NotImage": "The chosen file is not an image.",
+      "NoPermission": "No permission for this hero.",
+      "Failed": "The banner image could not be uploaded.",
+      "Timeout": "No answer from the GM — please try again."
+    },
+    "DeleteRefund": "Delete (refund AP)",
+    "CompanionRemove": "Remove companion",
+    "CompanionRemoveConfirm": "Remove {name} from this hero's companions? The actor itself is kept.",
+    "CompanionRemoveFailed": "The companion could not be removed — please use ⋮ → Delete.",
+    "Hud": {
+      "Tab": "DSA5 Helpers",
+      "Settings": "Settings",
+      "Rules": "House rules",
+      "Short": {
+        "help": "Help",
+        "woundCheck": "Wounds",
+        "stance": "Stance",
+        "aim": "Aim",
+        "weakness": "Weakness",
+        "distract": "Distract",
+        "passiveDefense": "Defense"
+      }
+    },
+    "Almanac": {
+      "Open": "Open almanac",
+      "OpenEntry": "Open in the almanac",
+      "QuestsIntro": "Quests shared with the group. Details and notes in the almanac.",
+      "PersonaeIntro": "People and creatures shared with the group. Group notes in the almanac.",
+      "Hidden": "Not shared with players",
+      "Unavailable": "The system almanac is not available.",
+      "NoText": "No text yet."
+    },
+    "Quests": {
+      "Group0": "Main quests",
+      "Group1": "Side quests",
+      "Group2": "Personal quests",
+      "Closed": "Completed ({count})",
+      "Goals": "Objectives {done}/{total}",
+      "Empty": "No shared quests yet."
+    },
+    "Personae": {
+      "Dramatis": "Dramatis Personae",
+      "Bestiary": "Bestiary",
+      "Important": "Important",
+      "Empty": "Nobody shared yet."
+    },
+    "PowerSources": {
+      "Title": "Power sources",
+      "Abbr": "PS",
+      "Total": "AE total",
+      "Summary": "Power sources: {value} of {max} AE, {count} sources. Open overview",
+      "Source": "{name}: {value} of {max} AE",
+      "Previous": "Previous sources",
+      "Next": "More sources",
+      "Page": "{page} / {pages} · {count} sources",
+      "SaveFailed": "Power sources could not be saved. Please reopen the dialog and try again.",
+      "OpenFailed": "The power source dialog could not be opened.",
+      "SavedAtOnce": "Changes are saved immediately."
+    },
+    "EnergyZones": {
+      "Summary": "{name}: {value} of {max} zone LP",
+      "Failed": "Zone failed",
+      "Penalty": "Resistance penalty {value}"
+    },
+    "Suggestions": {
+      "Title": "Suggestions",
+      "Reason": {
+        "requested": "Requested",
+        "mention": "Mentioned in chat",
+        "usage": "Rolled often",
+        "specialist": "Best in the group",
+        "combat": "Useful in combat",
+        "advanced": "Recently improved",
+        "chance": "Good odds",
+        "classic": "Common check"
+      },
+      "RequestedCount": "{count} requested",
+      "Count": "Number of suggestions",
+      "Fewer": "Fewer suggestions",
+      "More": "More suggestions",
+      "SkillNames": {
+        "intimidation": "Intimidation",
+        "empathy": "Empathy",
+        "stealth": "Stealth"
+      }
+    },
+    "AlsoWorn": "Also equipped",
+    "AlsoWornHint": "These weapons are equipped but not assigned to a hand. You can still roll; “Take in hand” assigns them via the system's hand selection.",
+    "TakeInHand": "Take in hand"
   }
 }

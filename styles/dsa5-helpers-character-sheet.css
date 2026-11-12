@@ -56,6 +56,9 @@
 .dsa5-helpers-sheet {
   --paper: #ece2d2;
   --ink: #2b2721;
+  /* Aura um freigestellte Porträts (Issue #35): innerer Kern + weicher Schein. */
+  --portrait-aura-core: rgba(176, 134, 58, .55);
+  --portrait-aura: rgba(176, 134, 58, .4);
   /* Porträtrahmen (Tintenlinie): in beiden Themen dasselbe Braun — mit --ink wurde er im dunklen Thema zur hellen
      Linie und passte nicht mehr zum hellen Thema (Issue #19). Im dunklen Thema bewusst nicht überschrieben. */
   --frame-ink: #2b2721;
@@ -96,6 +99,8 @@
 .dsa5-helpers-sheet[data-theme="dark"] {
   --paper: #272320;
   --ink: #e9dfcd;
+  --portrait-aura-core: rgba(255, 228, 170, .6);
+  --portrait-aura: rgba(235, 185, 100, .4);
   --muted: #b9ad9b;
   --line: #ffffff2e;
   --panel: #ffffff08;
@@ -129,9 +134,25 @@
   overflow: visible !important;
   box-shadow: 0 10px 20px rgba(0, 0, 0, .5) !important;
   background: var(--paper) !important;
+  /* Foundry-Werte; DSA5 8.2 „Aventurisch“/„Drachenleder“ setzen Rundung (8px/3px), Titelhöhe (Mindesthöhe des
+     Fensters) und Scrollfarbe am Fenster selbst. */
+  border-radius: 6px !important;
+  --header-height: 36px;
+  scrollbar-color: var(--color-scrollbar) var(--color-scrollbar-track);
 }
 
 .dsa5-helpers-sheet:after {
+  content: none !important;
+}
+
+/* Skins von DSA5 8.2: „Drachenleder“ zeichnet Logo und Drachen-Ornamente als Pseudo-Elemente an Fenster, Titelleiste
+   und Inhalt. Das Skript nimmt dem Bogen die Klasse dafür (_initializeApplicationOptions); hier zusätzlich abgesichert,
+   falls das System sie künftig anders setzt. Unser Rahmen nutzt keine dieser Pseudo-Elemente. */
+.dsa5-helpers-sheet::before,
+.dsa5-helpers-sheet > .window-header::before,
+.dsa5-helpers-sheet > .window-header::after,
+.dsa5-helpers-sheet > .window-content::before,
+.dsa5-helpers-sheet > .window-content::after {
   content: none !important;
 }
 
@@ -160,13 +181,27 @@
   gap: 0 !important;
 }
 
+/* --button-size fest: Foundrys Symbolknöpfe nehmen sie als Mindestbreite (24px, so sah die Plakette immer aus); der
+   DSA5-8.2-Skin „Aventurisch“ setzt sie auf 22px und machte die Plakette schmaler. --button-text-color fest, weil
+   „Drachenleder“ die Symbole sonst bronze färbt. */
 .dsa5-helpers-sheet .window-header .header-control {
+  --button-size: 24px;
+  --button-text-color: var(--headink);
+  /* Rundung, Deckkraft und Hintergrund wie in Foundry: „Aventurisch“ setzt 3px/0.8, „Pergament“ einen dunklen Hintergrund. */
+  border-radius: 4px;
+  opacity: 1;
+  background-color: var(--button-background-color, transparent);
   width: 22px !important;
   height: 20px !important;
   min-height: 0 !important;
   padding: 0 !important;
   font-size: 12px !important;
   text-shadow: 0 1px 1px rgba(0, 0, 0, .6);
+}
+
+/* Fenstersymbol (ausgeblendet): Farbe fest, die DSA5-Designs färben es bronze. */
+.dsa5-helpers-sheet .window-header .window-icon {
+  color: var(--headink);
 }
 
 /* Feiner Trennstrich zwischen den Bogen-Knöpfen und ⋮/✕ — als Hintergrund-Verlauf, nicht als ::before: dort zeichnet
@@ -178,6 +213,14 @@
 
 .dsa5-helpers-sheet .window-header .window-title {
   display: none !important;
+  /* Schrift wie in Foundry (sichtbar nur minimiert); die DSA5-Designs setzen eigene Schrift, Schatten und Einzug. */
+  margin: 0;
+  color: var(--color-light-1);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: inherit;
+  letter-spacing: normal;
+  text-shadow: none;
 }
 
 .dsa5-helpers-sheet .window-header .header-button {
@@ -185,10 +228,32 @@
 }
 
 @media (hover: hover) {
+  .dsa5-helpers-sheet .window-header .header-control:hover {
+    background-color: var(--button-hover-background-color);
+  }
+
   .dsa5-helpers-sheet .window-header .header-button:hover {
     background: rgba(224, 192, 128, .18) !important;
     border-radius: 3px !important;
   }
+}
+
+/* --- Griff zum Ändern der Größe --- */
+
+/* Wie in Foundry (11px-Symbol in der Ecke): „Pergament“ zeichnet einen 24px-Kasten, „Aventurisch“/„Drachenleder“
+   ein eingefärbtes, kleineres Symbol, dunkles Foundry invertiert es. */
+.dsa5-helpers-sheet > .window-resize-handle {
+  inset: auto 1px 1px auto;
+  width: 11px;
+  height: 11px;
+  z-index: auto;
+  border-radius: 0;
+  background: transparent url('../../../ui/resize-handle.webp') no-repeat center / contain;
+  filter: none;
+}
+
+.dsa5-helpers-sheet > .window-resize-handle::before {
+  content: none;
 }
 
 /* --- Minimiert --- */
@@ -206,6 +271,67 @@
 
 .dsa5-helpers-sheet.dsa5-helpers-sheet:is(.minimized, .minimizing, .maximizing) .window-content {
   display: none !important;
+}
+
+/* Auswahlmenü unter einem Knopf (_popupMenu): Modus am Schloss (Issue #34), Bannerbild (Issue #46) */
+.dsa5-helpers-sheet .dsa5h-popup-menu {
+  position: absolute;
+  z-index: 100;
+  min-width: 260px;
+  padding: 4px 0;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 4px;
+  background: #1c1917;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .5);
+}
+
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: #ecd8b1;
+  font: 14px 'GentiumBasic', Georgia, serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item > span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item small {
+  font-size: 12px;
+  opacity: .75;
+}
+
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item.active {
+  background: rgba(224, 192, 128, .22);
+}
+
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item:focus-visible {
+  outline: 2px solid rgba(224, 192, 128, .8);
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-popup-menu .dsa5h-popup-item:not(:disabled):hover {
+    background: rgba(224, 192, 128, .15);
+  }
 }
 
 .dsa5-helpers-sheet.minimized .window-header {
@@ -268,11 +394,63 @@
   position: relative !important;
   border: none !important;
   border-image: none !important;
+  /* DSA5 8.2 „Drachenleder“ zieht sonst eine Innenlinie um den Inhalt; dunkles Foundry legt einen Weichzeichner dahinter
+     (unsichtbar, ändert aber die Kantenglättung der Schrift). */
+  box-shadow: none !important;
+  backdrop-filter: none !important;
   overflow: visible !important;
 }
 
 .dsa5-helpers-sheet .window-content * {
   box-sizing: border-box;
+}
+
+/* --- Unabhängig vom DSA5-Design --- */
+
+/* Der Bogen sieht in jedem DSA5-Design gleich aus (Nutzerentscheidung 2026-11-12). Das Skript gibt ihm fest Foundrys
+   helles Thema (themed theme-light); „Aventurisch“ und „Drachenleder“ (body.dsa5-modern) überschreiben aber Foundrys
+   Farbvariablen an jedem Fenster und Eingabefeld. Hier wieder Foundrys Werte für helles Thema (foundry2.css,
+   .themed.theme-light; „Pergament“ setzt einen Teil davon ebenfalls); sonst greift Foundry selbst. Hell/Dunkel des Bogens kommt aus den eigenen Tokens. */
+:where(body.dsa5-modern, body.dsa5-immersive) .dsa5-helpers-sheet {
+  --color-header-background: var(--color-dark-3);
+  --color-border: var(--color-cool-4);
+  --color-text-primary: var(--color-dark-2);
+  --color-text-secondary: var(--color-dark-3);
+  --color-text-emphatic: var(--color-dark-1);
+  --color-text-subtle: var(--color-dark-5);
+  --color-form-label: var(--color-dark-2);
+  --color-form-label-hover: var(--color-dark-1);
+  --color-form-hint: var(--color-dark-4);
+  --color-form-hint-hover: var(--color-dark-2);
+  --color-fieldset-border: var(--color-light-2);
+  --color-tabs-border: var(--color-dark-5);
+  --color-data-border: var(--color-dark-4);
+  --color-data-background: #ddd;
+  --table-background-color: none;
+  --table-header-bg-color: rgba(0, 0, 0, .1);
+  --table-header-border-color: var(--color-dark-1);
+  --table-row-color-even: rgba(0, 0, 0, .1);
+  --table-row-color-odd: transparent;
+  --table-row-color-highlight: var(--color-cool-5-75);
+  --hr-gradient: none;
+}
+
+:where(body.dsa5-modern) .dsa5-helpers-sheet :is(input, select, textarea):not(:is(color-picker, file-picker, formula-input, document-tags, string-tags) *) {
+  --input-background-color: rgba(0, 0, 0, .1);
+  --input-border-color: var(--color-dark-6);
+  --input-text-color: var(--color-dark-2);
+  --input-placeholder-color: var(--color-dark-4);
+  --input-focus-outline-color: var(--color-warm-2);
+}
+
+:where(body.dsa5-modern) .dsa5-helpers-sheet :is(input, select, textarea):not(:is(color-picker, file-picker, formula-input, document-tags, string-tags) *):focus {
+  --input-text-color: var(--color-dark-1);
+}
+
+:where(body.dsa5-modern) .dsa5-helpers-sheet :is(input, select, textarea):not(:is(color-picker, file-picker, formula-input, document-tags, string-tags) *):is(:disabled, [readonly]) {
+  --input-background-color: rgba(0, 0, 0, .2);
+  --input-border-color: transparent;
+  --input-text-color: var(--color-dark-3);
 }
 
 .dsa5-helpers-sheet .window-content a {
@@ -401,11 +579,18 @@
 
 /* --- Aufbau & Fenster ziehen --- */
 
+/* Kopf „Wappenbanner“ (Nutzer-Entscheidung 2026-10-19, Kombination der Kopf-Varianten A und B im Click-Dummy): oben ein
+   Bannerstreifen (--dsa5h-banner-h) mit dem Bannerbild des Helden, unten von einer Goldlinie begrenzt; Name und Schips-
+   Plakette stehen darauf, darunter das Band mit Spezies · Kultur · Profession und den LeP/AsP/KaP-Kugeln. Das Porträt-
+   Medaillon ragt über die Goldlinie. Vorher: einfarbiger Kopf, Badges, flache Leisten. */
 .dsa5-helpers-sheet .dsa5h-head {
+  --dsa5h-banner-h: 92px;
+  --dsa5h-orb: 64px;
+  position: relative;
   display: flex;
-  align-items: stretch;
-  gap: 16px;
-  padding: 15px 16px 15px;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 14px 16px 12px;
   background: var(--head-base);
   color: var(--headink);
   border-bottom: 1px solid rgba(224, 192, 128, .3);
@@ -430,46 +615,124 @@
   cursor: inherit;
 }
 
-.dsa5-helpers-sheet .dsa5h-head-main {
-  flex: 1;
-  min-width: 0;
+/* Alles außer Banner und Banner-Knöpfen liegt über dem Bild. */
+.dsa5-helpers-sheet .dsa5h-head > :not(.dsa5h-banner, .dsa5h-banner-tools) {
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Bannerbild --- */
+
+/* Ohne Bild ein warmer Lichtschein auf dem Kopfton, mit Bild (Actor-Flag bannerImg, .has-banner) das Bild selbst. */
+.dsa5-helpers-sheet .dsa5h-banner {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 0;
+  height: var(--dsa5h-banner-h);
+  background-color: transparent;
+  background-image: radial-gradient(ellipse at 70% 0%, rgba(224, 192, 128, .16), transparent 65%);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  pointer-events: none;
+}
+
+/* Abdunklung („Scrim“) nach unten und links, damit Name und Plakette auf jedem Bild lesbar bleiben. */
+.dsa5-helpers-sheet .dsa5h-head.has-banner .dsa5h-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(28, 25, 23, 0) 20%, rgba(28, 25, 23, .92) 100%),
+    linear-gradient(90deg, rgba(28, 25, 23, .55) 0%, rgba(28, 25, 23, 0) 60%);
+}
+
+/* Goldlinie an der Unterkante des Banners (mit und ohne Bild). */
+.dsa5-helpers-sheet .dsa5h-banner::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(224, 192, 128, .7) 18%, rgba(224, 192, 128, .7) 82%, transparent);
+}
+
+/* Bild wählen / entfernen — nur im Bearbeiten-Modus vorhanden, oben rechts im Banner. */
+.dsa5-helpers-sheet .dsa5h-banner-tools {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 2;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+}
+
+.dsa5-helpers-sheet .dsa5h-banner-tools button {
+  flex: none;
+  width: var(--hit-lg);
+  height: var(--hit-lg);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(224, 192, 128, .5);
+  border-radius: 50%;
+  background: rgba(46, 40, 35, .75);
+  color: #ecd8b1;
+  font-size: 12px;
+  line-height: 1;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.dsa5-helpers-sheet .dsa5h-head-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+.dsa5-helpers-sheet .dsa5h-banner-tools button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
-/* --- Porträt --- */
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-banner-tools button:hover {
+    background: rgba(224, 192, 128, .35);
+  }
+}
 
-/* Zierrahmen: "Ecken gekappt" — Nutzer-Entscheidung 2026-09-18 nach drei Vergleichsrunden im Click-Dummy (siehe
-   project/STATUS.md), am offiziellen "Deluxe Heldendokument"-PDF orientiert (die "Schicksalspunkte"-Box dort
-   nutzt dieselbe dünne Tintenlinie mit diagonal gekappten Ecken statt Gold/Ornamenten). Dazu ein leichter
-   Gold-Saum (Nutzerwunsch: "wie bei den LeP") — dieselbe gedämpfte Randfarbe wie die LeP/AsP/KaP-
-   Ressourcenkarten (rgba(224,192,128,.4), siehe .dsa5h-res-card), nur als dünne innen liegende Linie statt
-   Vollrahmen. Löst den bisherigen, zweitverwendeten cite_v45.webp-Rahmen ab — reines CSS, kein Bild-Asset mehr. */
-.dsa5-helpers-sheet .dsa5h-portrait {
-  /* Festes Seitenverhältnis 118:142 in Kopf UND Titelblatt (Nutzer-Feedback 2026-09-28: das Bild war auf dem
-     Titelblatt fast quer, im Kopf so hoch wie der Kopf — unterschiedlich beschnitten). aspect-ratio greift nur
-     mit fester Breite, nicht bei per align-items gestreckter Höhe. */
+/* --- Porträt-Medaillon --- */
+
+/* .dsa5h-portrait-medal = Porträt + AP-Band (+ Formknopf im Bearbeiten-Modus), wandert als Ganzes aufs Titelblatt.
+   Eckig (Standard): „Ecken gekappt“, Seitenverhältnis 118:142 in Kopf UND Titelblatt (2026-09-28), aber mit kräftiger
+   Goldfassung statt dünner Tintenlinie (Nutzer 2026-10-19: „Rahmen um das Porträt ist viel deutlicher“). Rund
+   (.shape-round, Actor-Flag portraitShape): Medaillon mit Goldring. */
+.dsa5-helpers-sheet .dsa5h-portrait-medal {
+  position: relative;
   flex: 0 0 118px;
   width: 118px;
   height: auto;
   aspect-ratio: 118 / 142;
   align-self: flex-start;
-  border: 3px solid var(--frame-ink);
-  box-shadow: inset 0 0 0 1px rgba(224, 192, 128, .5);
-  clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 14px 100%, 0 calc(100% - 14px), 0 14px);
-  overflow: hidden;
-  background-color: var(--paper);
-  background-image: none;
 }
 
+.dsa5-helpers-sheet .dsa5h-portrait {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  border: 0;
+  background: linear-gradient(160deg, #e9cf94, #8b6f3f 55%, #d8bb7c);
+  clip-path: polygon(16px 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 0 calc(100% - 16px), 0 16px);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .6));
+}
+
+/* Papierfläche + Beschnitt als eigene Ebene, damit die Aura (Issue #35) zwischen Papier und Bild liegt. */
+.dsa5-helpers-sheet .dsa5h-portrait-inner {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--paper);
+  clip-path: polygon(13px 0, calc(100% - 13px) 0, 100% 13px, 100% calc(100% - 13px), calc(100% - 13px) 100%, 13px 100%, 0 calc(100% - 13px), 0 13px);
+}
+
+/* Aura (Issue #35, Idee Nimuee, Nutzer-Entscheidung 2026-10-20): Porträts ohne Hintergrund bekommen einen dezenten
+   goldenen Schein entlang der Umrisse der Figur (drop-shadow folgt dem Alphakanal), in beiden Themen. Bei Bildern mit
+   eigenem Hintergrund liegt er außerhalb des Beschnitts. Verworfen: Spotlight (Lichtkegel von oben). */
 .dsa5-helpers-sheet .dsa5h-portrait img {
   display: block;
   width: 100%;
@@ -477,9 +740,178 @@
   object-fit: cover;
   margin: 0;
   border: none;
+  filter: drop-shadow(0 0 1px var(--portrait-aura-core)) drop-shadow(0 0 6px var(--portrait-aura));
 }
 
-/* --- Heldenname --- */
+.dsa5-helpers-sheet .dsa5h-portrait-medal.shape-round {
+  flex-basis: 128px;
+  width: 128px;
+  aspect-ratio: 1;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-medal.shape-round .dsa5h-portrait {
+  padding: 0;
+  background: none;
+  clip-path: none;
+  filter: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-medal.shape-round .dsa5h-portrait-inner {
+  border-radius: 50%;
+  clip-path: none;
+  box-shadow:
+    0 0 0 3px #2b2721,
+    0 0 0 6px #c2a267,
+    0 0 0 7px #5e4a2a,
+    0 6px 16px 6px rgba(0, 0, 0, .55);
+}
+
+/* AP-Band (Element aus Variante B): AP-Wert und freie AP auf einem roten Band mit Schwalbenschwanz-Enden, das unten über
+   die Fassung reicht. Reine Anzeige, bearbeitet wird im Erfahrung-Panel (Eigenschaften). */
+.dsa5-helpers-sheet .dsa5h-ap-ribbon {
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  z-index: 2;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 2px 16px;
+  background: linear-gradient(180deg, #8e2a20, #5e1a14);
+  color: #f4e8d6;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 50%, 100% 100%, 0 100%, 7px 50%);
+  filter: drop-shadow(0 1px 0 #c2a267) drop-shadow(0 -1px 0 #c2a267);
+}
+
+.dsa5-helpers-sheet .dsa5h-ap-ribbon-total {
+  font-weight: 700;
+}
+
+.dsa5-helpers-sheet .dsa5h-ap-ribbon-free {
+  opacity: .85;
+}
+
+.dsa5-helpers-sheet .dsa5h-ap-ribbon-free::before {
+  content: "·";
+  margin-right: 7px;
+  opacity: .7;
+}
+
+/* Umschalter eckig/rund oben mittig auf dem Porträt (Rückmeldung 2026-10-19): beide Formen als Symbol nebeneinander,
+   die aktive golden hinterlegt — vorher ein einzelner Knopf mit der Zielform, das war nicht eindeutig. */
+.dsa5-helpers-sheet .dsa5h-portrait-shapes {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  z-index: 3;
+  transform: translateX(-50%);
+  display: flex;
+  padding: 2px;
+  border: 1px solid rgba(224, 192, 128, .6);
+  border-radius: 12px;
+  background: #2e2823;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-shapes button {
+  flex: none;
+  width: var(--hit-sm);
+  height: 20px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  box-shadow: none;
+  color: rgba(236, 216, 177, .7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-shapes button[aria-pressed="true"] {
+  background: #c2a267;
+  color: #2b2721;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-shapes button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.dsa5-helpers-sheet .dsa5h-shape-ico {
+  display: block;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid currentColor;
+}
+
+.dsa5-helpers-sheet .dsa5h-shape-ico.round {
+  border-radius: 50%;
+}
+
+/* Eckiges Symbol = hochkantes Rechteck mit gekappten Ecken (Form des eckigen Porträts), als Umriss: äußere Fläche in
+   Schriftfarbe, innen per zweiter, gleicher Form ausgespart. */
+.dsa5-helpers-sheet .dsa5h-shape-ico.octagon {
+  position: relative;
+  width: 10px;
+  height: 13px;
+  border: 0;
+  background: currentColor;
+  clip-path: polygon(30% 0, 70% 0, 100% 22%, 100% 78%, 70% 100%, 30% 100%, 0 78%, 0 22%);
+}
+
+.dsa5-helpers-sheet .dsa5h-shape-ico.octagon::after {
+  content: "";
+  position: absolute;
+  inset: 1.5px;
+  background: #2e2823;
+  clip-path: inherit;
+}
+
+.dsa5-helpers-sheet .dsa5h-portrait-shapes button[aria-pressed="true"] .dsa5h-shape-ico.octagon::after {
+  background: #c2a267;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-portrait-shapes button[aria-pressed="false"]:hover {
+    color: #f4e8d6;
+    background: rgba(224, 192, 128, .25);
+  }
+}
+
+/* --- Heldenname & Schips-Plakette --- */
+
+/* Raster rechts vom Porträt (Rückmeldung 2026-10-19): links Name (im Banner) und direkt unter der Goldlinie Spezies ·
+   Kultur · Profession; rechts oben die Schips-Plakette, darunter die Kugeln, die um die halbe Kugelhöhe nach oben über
+   die Linie ragen — die Linie läuft hinter ihnen durch. .dsa5h-head-top und .dsa5h-head-band lösen sich dafür auf
+   (display: contents), ihre Kinder sind die Rasterzellen. Zeile 1 ist so hoch wie der Banner abzüglich Innenabstand. */
+.dsa5-helpers-sheet .dsa5h-head-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: calc(var(--dsa5h-banner-h) - 14px) auto;
+  column-gap: 16px;
+}
+
+.dsa5-helpers-sheet .dsa5h-head-top,
+.dsa5-helpers-sheet .dsa5h-head-band {
+  display: contents;
+}
+
+.dsa5-helpers-sheet .dsa5h-head-top > .dsa5h-name {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  padding-bottom: 6px;
+}
 
 .dsa5-helpers-sheet .dsa5h-name {
   flex: 1 1 auto;
@@ -487,21 +919,27 @@
   margin: 0;
   font-family: 'Andalus', serif;
   /* Höchstgröße — passt der Name nicht, verkleinert _fitName() sie per Inline-Stil (Issue #25). */
-  font-size: 39px;
+  font-size: 40px;
   font-weight: normal;
   line-height: 1.1;
   color: #f4e8d6;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, .85);
 }
 
+/* box-shadow: Foundry zeichnet in Textfelder einen inneren Schein in --input-background-color; unter dem DSA5-8.2-Skin
+   „Aventurisch“ ist die hell und wirkte im dunklen Kopf wie ein Kasten. */
 .dsa5-helpers-sheet .dsa5h-name input {
   display: block;
   flex: 1 1 auto;
   background: transparent;
+  box-shadow: none;
   border: none;
   border-bottom: 1px solid rgba(244, 232, 214, .3);
   color: #f4e8d6;
   font: inherit;
   font-size: inherit !important;
+  text-shadow: inherit;
+  text-align: left;
   text-overflow: ellipsis;
   width: 100%;
   min-width: 0;
@@ -514,28 +952,29 @@
   border-bottom-color: transparent;
 }
 
-/* --- Abenteuerpunkte & Schicksalspunkte --- */
-
-.dsa5-helpers-sheet .dsa5h-ap-block {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  /* Platz für die darüber schwebende Knopfgruppe der Fensterleiste. */
-  padding-top: 26px;
-}
-
-.dsa5-helpers-sheet .dsa5h-ap-text {
-  font-size: 13px;
-  color: var(--headmuted);
-  font-family: 'GentiumBasic', Georgia, serif;
-  white-space: nowrap;
-}
-
 .dsa5-helpers-sheet .dsa5h-fate-points {
   display: flex;
   gap: 0;
+}
+
+/* Im Kopf als Plakette oben rechts auf dem Banner (Variante A); auf dem Titelblatt steht sie ohne Plakette in der Leiste. */
+.dsa5-helpers-sheet .dsa5h-head .dsa5h-fate-points {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  flex: none;
+  align-self: start;
+  margin-top: -4px;
+  padding: 3px 6px;
+  border: 1px solid rgba(224, 192, 128, .55);
+  border-radius: 20px;
+  background: rgba(28, 25, 23, .72);
+  backdrop-filter: blur(3px);
+}
+
+/* Im Bearbeiten-Modus Platz für die Banner-Knöpfe oben rechts. */
+.dsa5-helpers-sheet[data-mode="edit"] .dsa5h-head .dsa5h-fate-points {
+  margin-right: 64px;
 }
 
 .dsa5-helpers-sheet .dsa5h-fatepoint {
@@ -561,38 +1000,24 @@
   opacity: .45;
 }
 
-/* --- Badges & Heldenerschaffung --- */
+/* --- Band: Spezies · Kultur · Profession & Heldenerschaffung --- */
 
-.dsa5-helpers-sheet .dsa5h-badges {
+/* Gesperrte Kapitälchen-Zeile mit Trennpunkten statt gerahmter Badges (Variante A). Die Felder bleiben die
+   Formularfelder des Systems (im Bearbeiten-Modus editierbar, Spezies nur lesbar); Breite setzt _sizeIdentity(). */
+.dsa5-helpers-sheet .dsa5h-ident {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  padding-top: 6px;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 2px 7px;
 }
 
-.dsa5-helpers-sheet .dsa5h-badges input {
-  flex: 0 0 auto;
-  /* DSA5's own autosizing (actor-sheet.js _onRender) sets an inline `width: Nch` sized purely to fit the text
-     content — but our blanket `.window-content *{box-sizing:border-box}` rule (section 2, "Fensterinhalt & Grundschrift")
-     turns that into an OUTER width, so the 22px of left/right padding plus the 2px border get subtracted from
-     the space actually available for text instead of added on top, clipping longer values (Nutzer-Feedback:
-     "Spezies ist im Header abgeschnitten und nicht komplett lesbar"). Reverting to content-box here restores
-     the padding/border as extra room around the autosized text box, exactly as the vanilla DSA5 sheet renders it. */
-  box-sizing: content-box;
-  background: rgba(224, 192, 128, .12);
-  border: 1px solid rgba(224, 192, 128, .45);
-  color: #ecd8b1;
-  border-radius: 3px;
-  padding: 2px 11px;
-  font-size: 14px;
-  line-height: 1.4;
-  width: auto;
-  /* Nie breiter als die Kopfzeile (Issue #14: lange Professionsnamen ragten rechts aus dem Bogen) — das Inline-
-     `width: Nch` der Autosizing-Logik bleibt, wird hier nur gedeckelt; 24px = Padding + Rand (content-box). Der
-     Rest wird mit „…“ gekürzt, den vollen Text zeigt der Tooltip am Wrapper .dsa5h-badge. */
-  max-width: calc(100% - 24px);
-  text-overflow: ellipsis;
-  height: auto;
+.dsa5-helpers-sheet .dsa5h-ident-sep {
+  color: rgba(224, 192, 128, .5);
 }
 
 .dsa5-helpers-sheet .dsa5h-badge {
@@ -601,14 +1026,45 @@
   max-width: 100%;
 }
 
+.dsa5-helpers-sheet .dsa5h-ident input {
+  flex: 0 0 auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 0 2px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #d9bf87;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+}
+
+/* Bearbeiten-Modus: dezente Unterstreichung als Eingabe-Hinweis. */
+.dsa5-helpers-sheet .dsa5h-ident input:not(:disabled) {
+  border-bottom-color: rgba(224, 192, 128, .45);
+}
+
+.dsa5-helpers-sheet .dsa5h-ident input:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+  box-shadow: none;
+}
+
 /* Gesperrt (Spielmodus) bekäme das Feld keine Mausereignisse für den Tooltip — der Wrapper übernimmt sie. Ziehen
    und Doppelklick des Kopfs funktionieren dort wie bisher (gesperrte Felder stehen nicht in DRAG_EXCLUDE). */
-.dsa5-helpers-sheet .dsa5h-badges input:disabled {
+.dsa5-helpers-sheet .dsa5h-ident input:disabled {
   pointer-events: none;
 }
 
-/* Heldenerschaffung (Issue #10): statt des Spezies-Feldes, gleiche Pillenform wie die Badges, aber als Knopf */
-.dsa5-helpers-sheet .dsa5h-badges .dsa5h-chargen {
+/* Heldenerschaffung (Issue #10): statt des Spezies-Feldes, bleibt gerahmt, damit der Knopf auffällt. */
+.dsa5-helpers-sheet .dsa5h-ident .dsa5h-chargen {
   flex: 0 0 auto;
   width: auto;
   height: auto;
@@ -623,116 +1079,154 @@
   cursor: pointer;
 }
 
-.dsa5-helpers-sheet .dsa5h-badges .dsa5h-chargen:focus-visible {
+.dsa5-helpers-sheet .dsa5h-ident .dsa5h-chargen:focus-visible {
   background: rgba(224, 192, 128, .45);
   color: #fff;
 }
 
 @media (hover: hover) {
-  .dsa5-helpers-sheet .dsa5h-badges .dsa5h-chargen:hover {
+  .dsa5-helpers-sheet .dsa5h-ident .dsa5h-chargen:hover {
     background: rgba(224, 192, 128, .45);
     color: #fff;
   }
 }
 
-/* --- LeP/AsP/KaP --- */
+/* --- LeP/AsP/KaP-Kugeln --- */
 
+/* Kugeln (Variante B): dunkle Glaskugel mit Goldring, von unten bis zum Füllstand (--pct) gefüllt, Glanzlicht oben links.
+   Darin Kürzel, aktueller Wert (Formularfeld, beide Modi) und „/ Max“. Ersetzt die flachen Leisten (.dsa5h-res-card/
+   .dsa5h-bar). Farben wie bisher Rot/Blau/Grün. */
 .dsa5-helpers-sheet .dsa5h-resource-frame {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.dsa5-helpers-sheet .dsa5h-res-card {
-  flex: 1 1 140px;
-  display: flex;
-  border: 1px solid rgba(224, 192, 128, .4);
-  border-radius: 6px;
-  background: rgba(0, 0, 0, .18);
+/* Im Kopf: Mitte der Kugeln auf der Goldlinie (halbe Kugelhöhe nach oben). */
+.dsa5-helpers-sheet .dsa5h-head .dsa5h-resource-frame {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  align-self: start;
+  margin-top: calc(var(--dsa5h-orb) / -2);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar {
+.dsa5-helpers-sheet .dsa5h-orb {
+  --sz: var(--dsa5h-orb, 64px);
   position: relative;
-  width: 100%;
-  height: 30px;
-  border-radius: 4px;
+  flex: none;
+  width: var(--sz);
+  height: var(--sz);
+  border-radius: 50%;
   overflow: hidden;
-  background: rgba(255, 255, 255, .1);
-  margin: 0;
+  background: radial-gradient(circle at 50% 40%, #2c2622, #141110);
+  box-shadow:
+    0 0 0 2px #2b2721,
+    0 0 0 4px #c2a267,
+    0 0 0 5px #4a3a22,
+    0 3px 8px 3px rgba(0, 0, 0, .5);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-fill {
+.dsa5-helpers-sheet .dsa5h-res-lep {
+  --liq: linear-gradient(180deg, #c42c24, #6e1511);
+}
+
+.dsa5-helpers-sheet .dsa5h-res-asp {
+  --liq: linear-gradient(180deg, #3558c4, #163d70);
+}
+
+.dsa5-helpers-sheet .dsa5h-res-kap {
+  --liq: linear-gradient(180deg, #4f9a37, #1f5a2a);
+}
+
+.dsa5-helpers-sheet .dsa5h-orb-liquid {
   position: absolute;
-  inset: 0 auto 0 0;
+  inset: auto 0 0;
+  height: var(--pct);
+  background: var(--liq);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-lep .dsa5h-bar-fill {
-  background: linear-gradient(90deg, #841a16, #c42c24);
+/* Flüssigkeitsoberfläche */
+.dsa5-helpers-sheet .dsa5h-orb-liquid::before {
+  content: "";
+  position: absolute;
+  inset: -3px 0 auto;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .22);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-asp .dsa5h-bar-fill {
-  background: linear-gradient(90deg, #1c6f9e, #3558c4);
-}
-
-.dsa5-helpers-sheet .dsa5h-bar-kap .dsa5h-bar-fill {
-  background: linear-gradient(90deg, #5d8f24, #2a7a3a);
-}
-
-.dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-label {
-  position: relative;
+/* Glanzlicht + Randabdunklung über allem, klickt nicht mit. */
+.dsa5-helpers-sheet .dsa5h-orb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   z-index: 1;
-  height: 100%;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 26%),
+    radial-gradient(circle at 50% 50%, transparent 58%, rgba(0, 0, 0, .45) 100%);
+}
+
+.dsa5-helpers-sheet .dsa5h-orb-val {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 7px;
   color: #fff;
-  font-size: 16px;
-  letter-spacing: .04em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .55);
-  margin: 0;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .9);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-label-prefix {
+.dsa5-helpers-sheet .dsa5h-orb-key {
+  font-size: calc(var(--sz) * .15);
+  letter-spacing: .08em;
   opacity: .85;
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-label-value input {
-  background: rgba(0, 0, 0, .38);
+.dsa5-helpers-sheet .dsa5h-orb-max {
+  font-size: calc(var(--sz) * .16);
+  opacity: .85;
+}
+
+/* Aktueller Wert: Formularfeld ohne Rahmen, wirkt wie die Zahl selbst; beim Fokus ein „eingelassenes Display“. */
+.dsa5-helpers-sheet .dsa5h-orb-val input {
+  width: 2.2em;
+  min-width: 0;
+  height: auto;
+  margin: 1px 0;
+  padding: 0 2px;
   border: none;
   border-radius: 4px;
   outline: none;
+  background: transparent;
+  box-shadow: none;
   color: #fff;
   font: inherit;
-  font-weight: 600;
-  font-size: 16px;
+  font-size: calc(var(--sz) * .33);
   text-align: center;
-  width: 2.4em;
-  min-width: 0;
-  padding: 1px 3px;
-  height: auto;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .55);
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .65), inset 0 -1px 0 rgba(255, 255, 255, .12);
+  text-shadow: inherit;
   appearance: textfield;
   -moz-appearance: textfield;
-  transition: box-shadow .15s ease, background .15s ease;
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-label-value input:focus {
-  background: rgba(0, 0, 0, .48);
-  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .7), inset 0 -1px 0 rgba(255, 255, 255, .12), 0 0 0 2px rgba(224, 192, 128, .55);
+.dsa5-helpers-sheet .dsa5h-orb-val input:focus {
+  background: rgba(0, 0, 0, .45);
+  box-shadow: inset 0 2px 3px rgba(0, 0, 0, .65), 0 0 0 2px rgba(224, 192, 128, .55);
 }
 
-.dsa5-helpers-sheet .dsa5h-bar-label-value input::-webkit-inner-spin-button,
-.dsa5-helpers-sheet .dsa5h-bar-label-value input::-webkit-outer-spin-button {
+.dsa5-helpers-sheet .dsa5h-orb-val input::-webkit-inner-spin-button,
+.dsa5-helpers-sheet .dsa5h-orb-val input::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
-}
-
-.dsa5-helpers-sheet .dsa5h-bar-label-value input:not(:disabled):focus {
-  text-decoration: underline dotted;
-  text-underline-offset: 3px;
-  cursor: text;
 }
 
 .dsa5-helpers-sheet .dsa5h-regen-btn {
@@ -763,15 +1257,209 @@
 }
 
 @media (hover: hover) {
-  .dsa5-helpers-sheet .dsa5h-bar-label-value input:not(:disabled):hover {
+  .dsa5-helpers-sheet .dsa5h-orb:hover {
+    filter: brightness(1.12);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-orb-val input:not(:disabled):hover {
     text-decoration: underline dotted;
     text-underline-offset: 3px;
-    cursor: text;
   }
 
   .dsa5-helpers-sheet .dsa5h-regen-btn:hover {
     transform: scale(1.15);
     background: rgba(224, 192, 128, .35);
+  }
+}
+
+.dsa5-helpers-sheet .dsa5h-power-anchor {
+  position: relative;
+  flex: none;
+  z-index: 2;
+}
+.dsa5-helpers-sheet .dsa5h-power-satellite {
+  position: absolute;
+  right: -9px;
+  bottom: -6px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to top, #285c96 var(--fill), #171f2c var(--fill));
+  color: #f4e8d6;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, .3), 0 2px 5px rgba(0, 0, 0, .6);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+  cursor: pointer;
+}
+.dsa5-helpers-sheet .dsa5h-power-satellite small {
+  font-size: inherit;
+}
+.dsa5-helpers-sheet .dsa5h-power-satellite:focus-visible,
+.dsa5-helpers-sheet .dsa5h-power-radial button:focus-visible,
+.dsa5-helpers-sheet .dsa5h-zone-energy:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.dsa5-helpers-sheet .dsa5h-power-open {
+  visibility: hidden;
+}
+.dsa5-helpers-sheet .dsa5h-power-radial {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  overflow: visible;
+  z-index: 1600;
+  width: 300px;
+  height: 300px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: none;
+  max-height: none;
+  box-shadow: none;
+  pointer-events: none;
+  font-family: 'GentiumBasic', serif;
+  font-size: var(--fs-meta);
+}
+.dsa5-helpers-sheet .dsa5h-power-ring {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  pointer-events: auto;
+}
+.dsa5-helpers-sheet .dsa5h-power-center,
+.dsa5-helpers-sheet .dsa5h-power-source {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 68px;
+  height: 68px;
+  padding: 5px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+  background: linear-gradient(to top, #285c96 var(--fill, 0%), #171f2c var(--fill, 0%));
+  color: #f4e8d6;
+  transform: translate(calc(-50% + var(--x, 0px)), calc(-50% + var(--y, 0px)));
+  font: inherit;
+  line-height: 1.1;
+  text-align: center;
+  cursor: pointer;
+}
+.dsa5-helpers-sheet .dsa5h-power-center {
+  width: 86px;
+  height: 86px;
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, .3), 0 3px 9px rgba(0, 0, 0, .6);
+}
+/* Gewählte Variante A: dunkle Fassung und Schlagschatten, freier Hintergrund. */
+.dsa5-helpers-sheet .dsa5h-power-center,
+.dsa5-helpers-sheet .dsa5h-power-source {
+  isolation: isolate;
+  text-shadow: 0 1px 2px #000;
+}
+.dsa5-helpers-sheet .dsa5h-power-center,
+.dsa5-helpers-sheet .dsa5h-power-source {
+  border-color: #e3c784;
+  box-shadow: inset 0 2px 3px rgba(255, 255, 255, .35), inset 0 -3px 5px rgba(0, 0, 0, .55), 0 0 0 3px #252019, 0 10px 12px 3px rgba(0, 0, 0, .8);
+}
+.dsa5-helpers-sheet .dsa5h-power-source span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.dsa5-helpers-sheet .dsa5h-power-center small {
+  font-size: inherit;
+}
+.dsa5-helpers-sheet .dsa5h-power-close,
+.dsa5-helpers-sheet .dsa5h-power-pager button {
+  min-width: var(--hit-lg, 28px);
+  min-height: var(--hit-lg, 28px);
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.dsa5-helpers-sheet .dsa5h-power-close {
+  position: absolute;
+  right: 96px;
+  top: 96px;
+  z-index: 1;
+}
+.dsa5-helpers-sheet .dsa5h-power-pager {
+  position: absolute;
+  top: 278px;
+  left: 48px;
+  right: 48px;
+  pointer-events: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.dsa5-helpers-sheet .dsa5h-power-pager button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+.dsa5-helpers-sheet .dsa5h-power-pager span {
+  padding: 3px 6px;
+  border-radius: 12px;
+  background: var(--head);
+  color: #f4e8d6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .dsa5-helpers-sheet .dsa5h-power-source {
+    animation: dsa5h-source-open .2s ease-out both;
+  }
+  .dsa5-helpers-sheet .dsa5h-power-center {
+    animation: dsa5h-center-open .2s ease-out both;
+  }
+}
+@keyframes dsa5h-source-open {
+  from {
+    transform: translate(-50%, -50%) scale(.4);
+    opacity: 0;
+  }
+}
+@keyframes dsa5h-center-open {
+  from {
+    transform: translate(-50%, -50%) scale(.37);
+  }
+}
+.dsa5-helpers-sheet .dsa5h-power-radial::backdrop {
+  background: transparent;
+  pointer-events: none;
+}
+.dsa5-helpers-sheet .dsa5h-power-radial button {
+  min-height: 0;
+  margin: 0;
+  outline-offset: 3px;
+}
+.dsa5-helpers-sheet .dsa5h-power-radial button:disabled {
+  opacity: 1;
+  cursor: default;
+}
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-power-satellite:hover,
+  .dsa5-helpers-sheet .dsa5h-power-source:hover {
+    filter: brightness(1.2);
   }
 }
 
@@ -790,7 +1478,7 @@
   z-index: 5;
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 16px;
   margin: -13px 16px 2px;
 }
 
@@ -817,10 +1505,12 @@
    lassen und den Würfel gestaucht/den Zahlen-Mittelpunkt verschoben (Nutzer-Feedback 2026-09-16) — jetzt wieder
    exakt die ursprüngliche, bewährte Box, nur mit echtem Klick-Handler statt cursor:default. */
 /* Kopf-Würfel sind jetzt echte <button> (Tastatur) — Foundry-Button-Optik zurücksetzen, Fokus zoomt wie Hover. */
+/* 34 px mit Kürzel im Würfel über dem Wert (Issue #71, Variante B, Nutzerentscheidung 2026-10-31); Lücke 16 px,
+   weil der Goldrahmen 7 px übersteht. */
 .dsa5-helpers-sheet .dsa5h-attr-die-mini {
   position: relative;
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
   cursor: pointer;
   transition: transform .15s ease;
   transform-origin: center;
@@ -839,19 +1529,29 @@
 }
 
 .dsa5-helpers-sheet .dsa5h-attr-die-mini-face {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 100%;
-  line-height: 26px;
+  line-height: 1;
   text-align: center;
   font-family: 'GentiumBasic',serif;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 14px;
   color: #fff;
   background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
   border-radius: 50%;
+}
+
+.dsa5-helpers-sheet .dsa5h-attr-mini-key {
+  font-size: 8px;
+  letter-spacing: .04em;
+  color: rgba(255,255,255,.85);
+  pointer-events: none;
 }
 
 .dsa5-helpers-sheet .dsa5h-attr-die-mini::after {
@@ -1137,8 +1837,7 @@
 }
 
 /* Zahlen in Textschrift statt Andalus (Überschriften bleiben Andalus). */
-.dsa5-helpers-sheet .dsa5h-content :is(.big, .xp-num),
-.dsa5-helpers-sheet .dsa5h-bar .dsa5h-bar-label {
+.dsa5-helpers-sheet .dsa5h-content :is(.big, .xp-num) {
   font-family: 'GentiumBasic', Georgia, serif;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -1193,10 +1892,11 @@
   padding-right: 4px;
 }
 
-/* Play mode: elements only meant for setup/build actions (Sheet: hideable via .dsa5h-edit-only class, e.g. the
-   FW advance/refund steppers in skill-value.hbs) — mirrors the click-dummy's .sheet[data-mode="play"] .edit-only
-   rule. [data-mode] is set in _onRender() from dsa5h.editMode. */
-.dsa5-helpers-sheet[data-mode="play"] .dsa5h-edit-only {
+/* Drei Modi (Issue #34, [data-mode] aus dsa5h.mode in _onRender): .dsa5h-adv-only (AP-Stepper, z. B. FW in
+   skill-value.hbs) in Steigern und Bearbeiten, .dsa5h-edit-only (direkte Änderungen ohne AP) nur im Bearbeiten-Modus —
+   wie .adv-only/.edit-only im Click-Dummy. */
+.dsa5-helpers-sheet:not([data-mode="edit"]) .dsa5h-edit-only,
+.dsa5-helpers-sheet[data-mode="play"] .dsa5h-adv-only {
   display: none;
 }
 
@@ -1285,6 +1985,15 @@
 }
 
 /* Favoritenstern in SF-Chips (Issue #30): kleiner als in Zeilen, steht vorn in den Chip-Aktionen. */
+/* Favoriten-Stern hinter dem Waffennamen in der Hand (Kampf › Körper, Rückmeldung 2026-10-19) */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-item-name .dsa5h-favorite {
+  width: 24px;
+  height: 24px;
+  margin: -4px 0 -4px 4px;
+  font-size: 16px;
+  vertical-align: middle;
+}
+
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-favorite.dsa5h-chip-fav {
   width: 22px;
   height: 22px;
@@ -1760,6 +2469,10 @@
   font-size: 44px;
 }
 
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-ident input {
+  font-size: 15px;
+}
+
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-attr-overlay {
   grid-area: attrbar;
 }
@@ -1796,20 +2509,24 @@
 /* border/border-image absichtlich NICHT mehr überschrieben (früher border:0) — der Zierrahmen (siehe .dsa5h-portrait
    im Kopf, Abschnitt 4) soll auch auf dem vergrößerten Titelblatt-Porträt sichtbar sein, nicht nur in der Kopfzeile
    (Nutzer-Feedback 2026-09-18: "Rahmen ist noch nicht auf dem Titelblatt angewendet"). */
-.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-portrait {
+/* Medaillon samt AP-Band (Kopf „Wappenbanner“ 2026-10-19); unten Platz für das überstehende Band. Rund: 180 × 180. */
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-portrait-medal {
   width: 180px;
   height: auto;
   min-height: 0;
   aspect-ratio: 118 / 142;
   flex: 0 0 auto;
-  margin: 0;
-  align-self: center;
+  margin: 0 auto 12px;
 }
 
-/* Titelblatt: Porträt mittig in der Seitenleiste — es steckt im Platzhalter [data-cover-slot="portrait"], daher
-   zentriert per Auto-Rand statt align-self (Nutzer-Feedback 2026-09-28: stand links). */
-.dsa5-helpers-sheet .dsa5h-cover-sidebar [data-cover-slot="portrait"] .dsa5h-portrait {
-  margin: 0 auto;
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-portrait-medal.shape-round {
+  aspect-ratio: 1;
+  margin-top: 8px;
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-ap-ribbon {
+  font-size: 13px;
+  padding: 3px 20px;
 }
 
 .dsa5-helpers-sheet .dsa5h-cover-resources {
@@ -1818,28 +2535,16 @@
   color: var(--headink);
 }
 
-/* Variante G (Issues #27/#31): flachere Leisten, damit der Reiterkasten darunter Platz hat. */
+/* LeP/AsP/KaP-Kugeln zentriert in einer Reihe (seit 2026-10-19 statt flacher Leisten); 3 × 60 px passen in die 240-px-Leiste. */
 .dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-resource-frame {
-  flex-direction: column;
-  gap: 4px;
+  justify-content: center;
+  gap: 14px;
+  margin: 0;
+  padding: 5px 0;
 }
 
-.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-bar {
-  height: 24px;
-}
-
-.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-bar .dsa5h-bar-label {
-  font-size: 14px;
-}
-
-.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-bar-label-value input {
-  padding: 0 3px;
-  font-size: 14px;
-}
-
-.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-res-card {
-  flex: 0 0 auto;
-  width: 100%;
+.dsa5-helpers-sheet .dsa5h-cover-resources .dsa5h-orb {
+  --sz: 60px;
 }
 
 /* Schips links, Regeneration rechts in einer Zeile unter den Leisten (Variante G). */
@@ -1945,11 +2650,13 @@
   border-top: 0;
 }
 
+/* Foundrys Grundregel „dl dt“ gibt einen schwarzen Textschatten mit — machte „Sozialstatus“ unlesbar (Rückmeldung 2026-10-20). */
 .dsa5-helpers-sheet .dsa5h-side-details dt {
   flex: none;
   margin: 0;
   color: var(--headmuted);
   font-weight: normal;
+  text-shadow: none;
 }
 
 /* Farbe ausdrücklich: Foundry färbt dd sonst dunkel — auf der dunklen Leiste unlesbar (Rückmeldung 2026-10-05). */
@@ -2192,6 +2899,163 @@
   }
 }
 
+/* --- Vorschläge --- */
+
+/* Talent-Vorschläge über den Favoriten (parts/suggestions.hbs, Nutzerwunsch 2026-10-06): genau zwei Spalten, Karten
+   zweizeilig: Name | FW, darunter Grund | Probe, der Favoritenstern direkt hinter dem Namen — ohne Bild, sonst bliebe dem Namen bei zwei Spalten kaum
+   Platz. Angefragte Proben mit Akzentkante. */
+.dsa5-helpers-sheet .dsa5h-suggest-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  padding: 10px 11px;
+}
+
+/* Titel als Klappknopf (Rückmeldung 2026-10-07): sieht aus wie jeder Panel-Titel, ▾/▸ davor, eingeklappt mit Hinweis auf
+   offene Anfragen. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Anzahl − n + rechts im Titel (Rückmeldung 2026-10-07), eingeklappt ausgeblendet. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: var(--fs-small);
+  font-weight: 700;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest.is-collapsed .dsa5h-suggest-count {
+  display: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count > span {
+  min-width: 1.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--hit-sm);
+  height: var(--hit-sm);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-count button:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-caret {
+  display: inline-block;
+  width: 1em;
+  font-size: var(--fs-small);
+}
+
+/* Pfeil bleibt am linken Rand, nur der Titel steht mittig (Rückmeldung 2026-10-07; Foundry zentriert sonst den ganzen
+   Knopfinhalt). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-title {
+  flex: 1;
+  text-align: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-badge {
+  margin-left: auto;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font-family: 'GentiumBasic', Georgia, serif;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-fav-card.dsa5h-suggest-card {
+  /* Name reicht über die Würfelspalte bis zum FW; nur der Grund teilt sich die Zeile mit den Würfeln. */
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-areas: "name name value" "reason roll roll";
+  gap: 2px 6px;
+  padding: 4px 6px 4px 8px;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-suggest-name {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-favorite {
+  flex: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-fav-card-value {
+  grid-area: value;
+  justify-self: end;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-suggest-reason {
+  grid-area: reason;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card .dsa5h-fav-card-roll {
+  grid-area: roll;
+  justify-content: end;
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-card.dsa5h-suggest-requested {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-suggest-reason {
+  font-size: var(--fs-meta);
+  line-height: 1.2;
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-suggest-requested .dsa5h-suggest-reason {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 /* ==========================================================================
    8. Eigenschaften
    ========================================================================== */
@@ -2399,6 +3263,13 @@
 /* Belastung-Spalte 80→88px: „ENCUMBRANCE“ (en) ist als Kopf 85px breit und brach sonst mitten im Wort (Issue #16). */
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row {
   grid-template-columns: 26px minmax(120px,1fr) 108px 88px 96px 24px;
+}
+
+/* Talentname in der Farbe des Bogens: der DSA5-8.2-Skin „Aventurisch“ (auch unter „Drachenleder“ aktiv) färbt
+   .talentName nach dem Foundry-Thema (body.dsa5-modern … .talentName, Spezifität 0,5,1) — bei hellem Bogen und
+   dunklem Foundry stand der Name hell auf Papier. */
+.dsa5-helpers-sheet .dsa5h-skill-row a.talentName {
+  color: inherit !important;
 }
 
 .dsa5-helpers-sheet .dsa5h-skill-row img {
@@ -2762,11 +3633,11 @@
   font-size: var(--fs-meta);
 }
 
+/* Popover in der obersten Ebene (#74), Lage setzt _placeAmmoMenu; inset/margin heben die Popover-Vorgaben auf. */
 .dsa5-helpers-sheet .dsa5h-ammo-menu {
-  position: absolute;
-  top: calc(100% + 3px);
-  left: 0;
-  z-index: 30;
+  position: fixed;
+  inset: auto;
+  margin: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -2920,7 +3791,7 @@
 
 /* Kampf-Unterreiter „Körper“ (body.hbs, Issue #6/#29; Click-Dummy renderBody()): Figur in der Mitte (Artenbild als
    Platzhalter oder Akteur-Porträt, abgeblendet), Haupthand links, Nebenhand rechts; darüber Schnellaktionen und
-   Initiative, darunter die Rüstungszeile (Variante A, Nutzer-Entscheidung 2026-10-02). */
+   Initiative, die Rüstung mittig über der Figur (Issue #36; Smartphone: Rüstungszeile darunter). */
 .dsa5-helpers-sheet .dsa5h-body-grid {
   position: relative;
   isolation: isolate;
@@ -3046,7 +3917,7 @@
 
 /* --- Körper: Hände --- */
 
-/* Hand: Titel, Name, Kachel (Waffenbild, AT/PA-Würfel auf der Unterkante), darunter TP-Knopf und Auswahl. */
+/* Hand: Grundgerüst (freie Nebenhand kompakt); die Waffenkarte selbst steht unter „Waffenkarte Banner“. */
 .dsa5-helpers-sheet .dsa5h-hand-slot {
   display: flex;
   flex-direction: column;
@@ -3066,25 +3937,6 @@
   background: var(--paper);
 }
 
-.dsa5-helpers-sheet .dsa5h-hand-tile > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  border: 0;
-  border-radius: 3px;
-  object-fit: cover;
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-tile > meter {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 3px;
-}
-
 .dsa5-helpers-sheet .dsa5h-hand-tile.empty {
   display: flex;
   align-items: center;
@@ -3094,25 +3946,6 @@
   background: var(--field);
   font-size: var(--fs-meta);
   color: var(--muted);
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-tile-at,
-.dsa5-helpers-sheet .dsa5h-hand-tile-pa {
-  position: absolute;
-  bottom: -12px;
-  z-index: 1;
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-tile-at {
-  left: -8px;
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-tile-pa {
-  right: -8px;
-}
-
-.dsa5-helpers-sheet .dsa5h-hand-slot > .dsa5h-damage {
-  margin-top: 4px;
 }
 
 .dsa5-helpers-sheet .dsa5h-hand-2h-note {
@@ -3251,75 +4084,6 @@
   }
 }
 
-/* --- Körper: AT/PA-Würfel im Siegel --- */
-
-/* AT/PA-Würfel in der „Wachssiegel“-Fassung der Kopf-Würfel (.dsa5h-attr-die-mini): dunkle Fassung in Würfelform +
-   Goldrand dahinter (Rückmeldung 2026-09-30). Gezoomt wird die ganze Fassung, nicht nur der Würfel. */
-.dsa5-helpers-sheet .dsa5h-die-seal {
-  display: block;
-  width: 30px;
-  height: 30px;
-  transition: transform .15s ease;
-  transform-origin: center;
-}
-
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-die-seal .dsa5h-combat-die {
-  display: block;
-  width: 30px;
-  height: 30px;
-  flex: none;
-  font-size: 14px;
-  filter: none;
-  background-color: transparent;
-  box-shadow: none;
-}
-
-/* Foundrys Button-Hintergrund (grau) + border-radius:50% ergab einen grauen Kreis im Siegel — transparent halten, auch bei Hover/Fokus (Rückmeldung 2026-09-30). */
-.dsa5-helpers-sheet .dsa5h-content .dsa5h-die-seal .dsa5h-combat-die:focus-visible {
-  transform: none;
-  background-color: transparent;
-  box-shadow: none;
-}
-
-.dsa5-helpers-sheet .dsa5h-die-seal:focus-within {
-  transform: scale(1.6);
-  z-index: 6;
-}
-
-.dsa5-helpers-sheet .dsa5h-die-seal::after,
-.dsa5-helpers-sheet .dsa5h-die-seal::before {
-  content: "";
-  position: absolute;
-  clip-path: polygon(50% 0%, 93% 28%, 93% 72%, 50% 100%, 7% 72%, 7% 28%);
-}
-
-.dsa5-helpers-sheet .dsa5h-die-seal::after {
-  inset: -5px;
-  z-index: -1;
-  background: var(--head-base);
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.55));
-}
-
-.dsa5-helpers-sheet .dsa5h-die-seal::before {
-  inset: -7px;
-  z-index: -2;
-  background: var(--accent);
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.5));
-}
-
-@media (hover: hover) {
-  .dsa5-helpers-sheet .dsa5h-content .dsa5h-die-seal .dsa5h-combat-die:hover {
-    transform: none;
-    background-color: transparent;
-    box-shadow: none;
-  }
-
-  .dsa5-helpers-sheet .dsa5h-die-seal:hover {
-    transform: scale(1.6);
-    z-index: 6;
-  }
-}
-
 /* --- Körper: Kopfzeile (Schnellaktionen, Initiative, Zauber/Liturgien) --- */
 
 .dsa5-helpers-sheet .dsa5h-body-top {
@@ -3407,7 +4171,422 @@
   }
 }
 
+/* --- Körper: Waffenkarte (Issue #40 „Banner“, Aufbau in drei Bändern seit 2026-10-20) ---
+
+   Beide Hände gleich breit und gleich hoch (Raster mit gleichen Seitenspalten, Seiten strecken sich, die Karte füllt
+   ihre Seite); freie und belegte Hände als gestrichelte Karte derselben Größe. Karte: Wimpel mit der Hand, dann drei
+   feste Bänder statt frei verteilter Elemente (Rückmeldung 2026-10-20) — Kopf (Name + Stern + Anwendungswürfel, darunter
+   Kampftechnik · KtW · RW), Mitte (Bild auf Lichtschein | Würfelraster: AT und PA gleich breit, TP bzw. FK über die volle
+   Breite), Fuß (Aktionen und Fernkampf-Status als gleich hohe Pillen mit Trennlinie). Die Waffe liegt als blasses
+   Wasserzeichen dahinter. Mittelspalte --mid für die Rüstung (Abschnitt „Körper: Rüstung mittig“). Vorlage: clickdummy
+   handSlot(). */
+.dsa5-helpers-sheet .dsa5h-body-grid.sides {
+  --mid: 150px;
+  grid-template-columns: minmax(0, 1fr) var(--mid) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side {
+  align-items: stretch;
+  text-align: left;
+  container: dsa5h-hand / inline-size;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > :is(.dsa5h-hand-slot, .dsa5h-hand-2h-note) {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  margin: 0;
+  border-radius: 6px;
+}
+
+/* Freie oder belegte Hand: gestrichelte Karte, Inhalt mittig */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > :is(.dsa5h-hand-free, .dsa5h-hand-empty, .dsa5h-hand-2h-note) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px dashed rgba(185, 154, 92, .6);
+  text-align: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-free {
+  flex-direction: column-reverse;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-2h-note {
+  font-size: var(--fs-meta);
+  font-style: italic;
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-empty .dsa5h-hand-select {
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-empty-text {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+/* Die Karte */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-rows: auto auto auto 1fr;
+  grid-template-areas: "name name" "meta meta" "media stats" "extra extra";
+  align-items: center;
+  gap: 4px 12px;
+  padding: 34px 12px 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  background: linear-gradient(160deg, rgba(255, 250, 238, .9), rgba(236, 226, 210, .4) 55%, rgba(185, 154, 92, .18)), var(--paper);
+  text-align: left;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-bg {
+  position: absolute;
+  top: -10px;
+  right: -40px;
+  z-index: -1;
+  width: 200px;
+  height: 200px;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  opacity: .1;
+  filter: grayscale(.3);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-banner {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  z-index: 1;
+  padding: 6px 10px 12px;
+  background: linear-gradient(180deg, #3a322b, #272320);
+  color: #f4e8d6;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 7px), 0 100%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .3);
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-pick {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--field);
+  color: var(--muted);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pick .dsa5h-hand-select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name {
+  grid-area: name;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: none;
+  padding-bottom: 4px;
+  background: linear-gradient(90deg, rgba(185, 154, 92, .8), rgba(185, 154, 92, 0)) bottom left / 100% 1px no-repeat;
+  font-family: 'Andalus', serif;
+  font-size: 22px;
+  font-weight: normal;
+  line-height: 1.1;
+  overflow-wrap: normal;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name :is(.dsa5h-favorite, .dsa5h-onuse) {
+  flex: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-name .dsa5h-favorite {
+  margin: -4px 0;
+}
+
+/* Unter dem Namen: Kampftechnik · KtW · RW in Textfarbe, nur die Punkte blass */
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6px;
+  margin-bottom: 4px;
+  font-size: var(--fs-meta);
+  color: var(--ink);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-meta .dsa5h-ct-link {
+  margin: 0;
+  color: var(--ink);
+  text-align: left;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-meta .dsa5h-hand-reach::before {
+  content: "·";
+  margin-right: 6px;
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media {
+  grid-area: media;
+  position: relative;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 236, 190, .95) 0%, rgba(255, 236, 190, .4) 45%, transparent 70%);
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media > img {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 5px rgba(0, 0, 0, .35));
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-media > meter {
+  position: absolute;
+  left: 18%;
+  bottom: -6px;
+  width: 64%;
+  height: 4px;
+}
+
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-stats {
+  grid-area: stats;
+  align-self: center;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats > * {
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage, .dsa5h-hand-card.ranged .dsa5h-hand-stats .dsa5h-hand-pill) {
+  grid-column: 1 / -1;
+}
+
+/* AT/PA/FK und TP als gleich hohe Pillen mit demselben Hover (Rückmeldung 2026-10-20: TP zoomte stärker) */
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 9px 0 3px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, .55);
+  color: var(--ink);
+  box-shadow: none;
+  font-family: 'GentiumBasic', Georgia, serif;
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-pill b {
+  font-size: var(--fs-meta);
+  letter-spacing: .06em;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-die {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b, 1px 1px 1px #140f0b, -1px -1px 1px #140f0b, 1px -1px 1px #140f0b, -1px 1px 1px #140f0b;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage {
+  min-height: 0;
+  height: 32px;
+  margin: 0;
+  border-radius: 20px;
+  font-size: var(--fs-data);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage small {
+  margin-right: 2px;
+  font-size: var(--fs-meta);
+  letter-spacing: .1em;
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card :is(.dsa5h-hand-pill, .dsa5h-hand-stats .dsa5h-damage):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  transform: none;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card :is(.dsa5h-hand-pill, .dsa5h-hand-stats .dsa5h-damage):hover {
+    border-color: var(--accent);
+    transform: scale(1.05);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage:hover {
+    border-color: var(--dmg);
+    background: var(--dmg-bg);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-pick:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* Fuß: Aktionen und Fernkampf-Status (Munition, Nachladen, Zielen, Magazin) als eine Reihe gleich hoher Pillen */
+.dsa5-helpers-sheet .dsa5h-hand-card .dsa5h-hand-extra {
+  grid-area: extra;
+  align-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(185, 154, 92, .35);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-extra .dsa5h-hand-ranged {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-ranged > *,
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-hand-ranged .dsa5h-reload {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  width: auto;
+  margin: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card :is(.dsa5h-ammo-pick > summary, .dsa5h-reload-btn, .dsa5h-aim, .dsa5h-mag, .dsa5h-hand-swap) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: 30px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .55);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+}
+
+/* Platz für den Pfeil ▾ der Munitionswahl, sonst überdeckt er die Anzahl (×1, #74). */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-ammo-pick > summary {
+  padding-right: 24px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-reload-reset {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 50%;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-hand-card .dsa5h-mag .dsa5h-mag-swap {
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0 0 2px;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: var(--fs-data);
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, .06), transparent 60%), var(--paper);
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-hand-card .dsa5h-hand-media::before {
+  background: radial-gradient(circle, rgba(255, 220, 160, .35) 0%, transparent 70%);
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-content .dsa5h-hand-card :is(.dsa5h-hand-pill, .dsa5h-ammo-pick > summary, .dsa5h-reload-btn, .dsa5h-aim, .dsa5h-mag, .dsa5h-hand-swap) {
+  background: rgba(255, 255, 255, .06);
+}
+
 /* --- Körper: Rüstung --- */
+
+/* Seit Issue #36 nur noch die Rüstungszeile des Smartphones (body.hbs, Mobil-CSS); Desktop/Tablet: „Körper: Rüstung
+   mittig“ unten. */
 
 /* Rüstung als Ausrüstungsreihe (Nutzerentscheidung 2026-09-19 nach Drei-Konzepte-Vergleich im Click-Dummy,
    siehe clickdummy/script.js renderArmorSlotsBody()/Konzept 2 "Ausrüstungsreihe"): jedes getragene Rüstungsteil
@@ -3575,7 +4754,533 @@
   margin: 0;
 }
 
+/* --- Körper: Lesbarkeit (Rückmeldung 2026-10-20: Schrift zu klein) ---
+
+   Im ganzen Körper-Panel Beschriftungen mindestens 13 px (--fs-meta), blasse Texte kräftiger, die Figur dahinter
+   schwächer, damit kleine Schrift nicht auf unruhigem Grund steht. Benannter Container für die breitenabhängigen
+   Regeln der Rüstung (Abschnitt 18). */
+.dsa5-helpers-sheet .dsa5h-body-panel {
+  --fs-meta: max(13px, calc(var(--fs-data) - 2px));
+  --muted: rgba(43, 39, 33, .82);
+  container: dsa5h-body / inline-size;
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-body-panel {
+  --muted: #cbbfac;
+}
+
+.dsa5-helpers-sheet .dsa5h-body-grid > .dsa5h-body-figure {
+  opacity: .24;
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-body-grid > .dsa5h-body-figure {
+  opacity: .18;
+}
+
+/* --- Körper: Rüstung mittig über der Figur, „Wappenschild“ (Issue #36, Nutzer-Entscheidung 2026-10-20) ---
+
+   Die Rüstung steht in der Mittelspalte zwischen den Händen statt in einer eigenen Zeile darunter: ein Schild mit dem
+   Bild der Hauptrüstung und dem Gesamtschutz, ihr Name als Band darunter, weitere Teile (nur bei mehr als einem) als
+   kleine Zeilen. Mit Trefferzonen-Regel (Kompendium 1 + Rüstkammer 2) ein Zonenkreuz (Kopf, Arme, Torso, Beine) mit RS
+   je Zone; dafür wird die Mittelspalte breiter und die Waffenkarten kompakter. Breitenabhängig (Abschnitt 18): bis
+   560 px Panelbreite bleibt das Zonenkreuz humanoid, darunter rutscht die Rüstung unter die Hände. Smartphone: weiter
+   die Rüstungszeile (Abschnitt „Körper: Rüstung“, Mobil-CSS). Vorlage: clickdummy renderBody(). */
+.dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones {
+  --mid: 216px;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-center {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+}
+
+/* Wappenschild */
+.dsa5-helpers-sheet .dsa5h-armor-crest-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-crest {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 112px;
+  height: 128px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0 18px;
+  border: 2px solid var(--accent);
+  border-radius: 6px 6px 56px 56px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.05;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .3), inset 0 0 0 3px rgba(185, 154, 92, .25);
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-crest.empty {
+  border-style: dashed;
+  box-shadow: none;
+  cursor: default;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest-img {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  object-fit: cover;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 85%);
+  mask-image: linear-gradient(180deg, #000 30%, transparent 85%);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest :is(.dsa5h-armor-crest-rs, .dsa5h-armor-crest-be) {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest-rs strong {
+  font-size: 30px;
+  text-shadow: 0 0 6px var(--paper), 0 0 3px var(--paper);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest-be strong {
+  font-size: var(--fs-data);
+}
+
+.dsa5-helpers-sheet :is(.dsa5h-armor-crest, .dsa5h-armor-sum-bar) small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  letter-spacing: .05em;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest .dsa5h-armor-sum-magic {
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-crest-name {
+  z-index: 1;
+  max-width: 140px;
+  margin-top: -14px;
+  padding: 2px 10px;
+  border-radius: 3px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: bold;
+  font-size: var(--fs-small);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+}
+
+.dsa5-helpers-sheet[data-theme="dark"] .dsa5h-armor-crest-name {
+  color: #1c1917;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-crest-group > .dsa5h-onuse {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 2;
+}
+
+/* Weitere Teile: kleine Zeilen Bild | Name | RS; im Bearbeiten-Modus wählt ein Klick die Hauptrüstung. */
+.dsa5-helpers-sheet .dsa5h-armor-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extra {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-extra-main {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 5px 2px 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extra-main img {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extra-name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extra-rs {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.dsa5-helpers-sheet[data-mode="edit"] .dsa5h-content .dsa5h-armor-extra-main {
+  border-style: dashed;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-extra-main:focus-visible {
+  border-color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-extras-hint {
+  font-size: var(--fs-meta);
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* Trefferzonen: Kreuz aus sechs Zellen auf einem 6er-Raster (Kopf oben, Arme neben dem Torso, Beine darunter), jede
+   Zelle mit Zonenname (kurz), blassem Bild des Teils und großem RS; der volle Name steht im Tooltip. */
+.dsa5-helpers-sheet .dsa5h-armor-zone-cross {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 5px;
+  width: 100%;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-zone {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  width: auto;
+  height: 70px;
+  min-height: 0;
+  margin: 0;
+  padding: 2px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone img {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  object-fit: cover;
+  opacity: .35;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone-label {
+  font-size: var(--fs-meta);
+  letter-spacing: .03em;
+  color: var(--ink);
+  text-shadow: 0 0 3px var(--paper);
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone :is(.dsa5h-armor-zone-item, .dsa5h-zl-long) {
+  display: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone strong {
+  font-size: 22px;
+  line-height: 1;
+  text-shadow: 0 0 4px var(--paper), 0 0 2px var(--paper);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-zone.empty {
+  border-style: dashed;
+  background: none;
+  box-shadow: none;
+  cursor: default;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-zone.empty strong {
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-content button.dsa5h-armor-zone:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-head {
+  grid-column: 3 / 5;
+  grid-row: 1;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-rightarm {
+  grid-column: 1 / 3;
+  grid-row: 2;
+  align-self: start;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-value {
+  grid-column: 3 / 5;
+  grid-row: 2;
+  height: 96px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-leftarm {
+  grid-column: 5 / 7;
+  grid-row: 2;
+  align-self: start;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-rightleg {
+  grid-column: 2 / 4;
+  grid-row: 3;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-leftleg {
+  grid-column: 4 / 6;
+  grid-row: 3;
+}
+
+/* BE (+ Zauber-/Liturgieschutz) unter dem Zonenkreuz */
+.dsa5-helpers-sheet .dsa5h-armor-sum-bar {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 3px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--paper);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  cursor: help;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-sum-bar span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.dsa5-helpers-sheet .dsa5h-armor-sum-bar strong {
+  font-size: var(--fs-data);
+}
+
+/* Kompakte Waffenkarten neben dem Zonenkreuz: kleineres Bild und kleinere Würfel, gleicher Aufbau. */
+.dsa5-helpers-sheet .dsa5h-content .armor-zones > .dsa5h-body-side > .dsa5h-hand-card {
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 4px 10px;
+  padding: 30px 10px 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .armor-zones .dsa5h-hand-card .dsa5h-hand-name {
+  font-size: 19px;
+}
+
+.dsa5-helpers-sheet .armor-zones .dsa5h-hand-card .dsa5h-hand-media {
+  width: 56px;
+  height: 56px;
+}
+
+.dsa5-helpers-sheet .armor-zones .dsa5h-hand-card .dsa5h-hand-bg {
+  width: 160px;
+  height: 160px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .armor-zones .dsa5h-hand-card .dsa5h-hand-pill {
+  height: 30px;
+  gap: 3px;
+  padding: 0 6px 0 2px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .armor-zones .dsa5h-hand-card .dsa5h-hand-die {
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
+}
+
+.dsa5-helpers-sheet .armor-zones .dsa5h-hand-card .dsa5h-hand-stats {
+  gap: 5px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .armor-zones .dsa5h-hand-card .dsa5h-hand-stats .dsa5h-damage {
+  height: 30px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-extra-main:hover {
+    border-color: var(--accent);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content button.dsa5h-armor-zone:hover {
+    outline: 2px solid var(--accent);
+  }
+}
+
+/* --- Grundmanöver (Hausregel Paladose, #45) ---
+
+/* Passive Verteidigung (#56): Auswahl, womit der Held automatisch verteidigt. */
+.dsa5-helpers-sheet .dsa5h-auto-defense-select {
+  width: 100%;
+  min-height: var(--hit-lg);
+  font-size: var(--fs-base);
+}
+
+
+   Block im Kampf-Reiter: Stufe je Leiteigenschaft als Zeilen Symbol | Name | Eigenschaft | Wirkung, darunter
+   Verteidigungshaltung (Schalter), Zielen (Rundenzähler) und der Vorstoß-Malus dieser Runde. */
+.dsa5-helpers-sheet .dsa5h-maneuvers .panel-title .dsa5h-maneuvers-book {
+  width: auto;
+  height: 24px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, .12);
+  color: inherit;
+  font: inherit;
+  font-size: var(--fs-meta);
+}
+
+.dsa5-helpers-sheet .dsa5h-maneuver-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0 18px;
+  padding: 4px 10px 6px;
+}
+
+.dsa5-helpers-sheet .dsa5h-maneuver-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.dsa5-helpers-sheet .dsa5h-maneuver-row i {
+  color: var(--accent);
+  text-align: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-maneuver-row small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.dsa5-helpers-sheet .dsa5h-maneuver-row strong {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dsa5-helpers-sheet .dsa5h-maneuver-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-maneuver-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: 30px;
+  min-height: 0;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 15px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-maneuver-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.dsa5-helpers-sheet .dsa5h-maneuver-status {
+  font-size: var(--fs-small);
+  color: var(--dmg);
+}
+
+/* Schwachpunkte eines Gegners sind ein Vorteil, nicht rot wie der Vorstoß-Malus (#48). */
+.dsa5-helpers-sheet .dsa5h-maneuver-status.dsa5h-maneuver-weakness {
+  color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-maneuver-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-maneuver-btn:not(:disabled):hover {
+    border-color: var(--accent);
+  }
+}
+
 /* --- Weitere Waffen --- */
+
+/* „In die Hand“ an ebenfalls angelegten Waffen (2026-10-28), gleiche Trefferfläche wie der Ausrüsten-Knopf. */
+.dsa5-helpers-sheet .dsa5h-take-in-hand {
+  width: var(--hit-md);
+  height: var(--hit-md);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+}
+
 
 /* Kurzübersicht „Weitere Waffen“: Bild | Name + Technik | Würfel | TP | Ausrüsten | Stern; zweispaltig erst ab
    genug Breite, sonst blieb für Name und Technik kaum Platz (Rückmeldung 2026-10-05). */
@@ -3616,6 +5321,21 @@
   bottom: 0;
   width: 30px;
   height: 3px;
+}
+
+/* Waffe liegt in einem Behälter (2026-10-20): Bild des Behälters als Plakette unten rechts am Waffenbild, Name im Tooltip. */
+.dsa5-helpers-sheet .dsa5h-short-weapon .dsa5h-item-image .dsa5h-in-container {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  background: var(--paper);
+  object-fit: contain;
+  cursor: help;
 }
 
 /* Lange Namen gekürzt statt mitten im Wort umgebrochen (seit der Ausrüsten-Spalte, 2026-10-05), voller Name im Tooltip. */
@@ -3690,6 +5410,79 @@
   border: 0;
 }
 
+/* #47: Rüstung und Zonenenergie bleiben getrennte Aktionen. */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-energy-zone,
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-energy-zone.dsa5h-zone-value {
+  min-width: 0;
+  height: auto;
+}
+.dsa5-helpers-sheet .dsa5h-energy-zone .dsa5h-armor-zone {
+  width: 100%;
+}
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-energy {
+  display: grid;
+  grid-template-rows: 16px 5px 14px;
+  align-items: center;
+  gap: 3px;
+  width: 100%;
+  height: 49px;
+  min-height: 49px;
+  margin: 0;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 5px 5px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+  box-shadow: none;
+  cursor: pointer;
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy-value {
+  white-space: nowrap;
+  font-weight: bold;
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy-meter {
+  display: block;
+  width: 100%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--line);
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy-meter > span {
+  display: block;
+  width: var(--fill);
+  height: 100%;
+  background: var(--dmg);
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy-status {
+  display: flex;
+  justify-content: space-between;
+  min-height: 14px;
+  color: var(--dmg);
+  font-weight: bold;
+}
+.dsa5-helpers-sheet .dsa5h-energy-zone.failed .dsa5h-zone-energy {
+  border-color: var(--dmg);
+  background: var(--dmg-bg);
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.dsa5-helpers-sheet .dsa5h-zone-energy:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.dsa5-helpers-sheet .dsa5h-phone-energy-zones {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 /* ==========================================================================
    11. Magie & Religion
    ========================================================================== */
@@ -3702,7 +5495,7 @@
    Bogen, damit die Leiste wie eine normale Zeile wirkt statt wie ein eigenes UI-Element. Werte zentriert (vorher
    liefen Leiteigenschaft/Tradition trotz zentrierter Kopfzeile links aus) und etwas größer (13px Label/15px Wert
    statt 12px/geerbter 14px-Basisschrift). */
-/* "Wappen-Badge"-Layout (Nutzer-Entscheidung 2026-09-18 nach Click-Dummy-Vergleich, siehe project/STATUS.md):
+/* "Wappen-Badge"-Layout (Nutzer-Entscheidung 2026-09-18 nach Click-Dummy-Vergleich, siehe docs/archive/STATUS.md):
    die bisherige 4-Spalten-Kachel behandelte Tradition/Leiteigenschaft/Merkmal/Faktor gleichrangig, obwohl nur die
    Tradition selbst wirklich herausstechen soll. Tradition jetzt als akzentfarbene Pille mit Icon (siehe
    dsa5hTraditionIcon-Helfer, icons/traditionen bzw. icons/months), die drei Nebenwerte als schmale, gedämpfte
@@ -3968,6 +5761,23 @@
   color: #1c1917;
   background: #e0c080;
   border-radius: 50%;
+}
+
+/* --- Sonderfertigkeiten, Patron, Tricks/Segnungen zweispaltig (Issue #38) ---
+   Die Chip-Panels sind meist kurz; über die volle Breite blieb rechts viel leere Fläche. Ein allein stehendes
+   letztes Panel nimmt die ganze Zeile. Unter 560 px einspaltig (Abschnitt 18). */
+.dsa5-helpers-sheet .dsa5h-panel-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 16px;
+}
+
+.dsa5-helpers-sheet .dsa5h-panel-cols > .panel:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.dsa5-helpers-sheet [data-sub-panel] > .panel + .dsa5h-panel-cols {
+  margin-top: 16px;
 }
 
 /* ==========================================================================
@@ -4362,6 +6172,21 @@
   overflow-wrap: anywhere;
 }
 
+/* Suche (Issue #37): eigene Zeile über dem Raster; Treffer per [hidden] aus — die Knöpfe sind sonst display:flex. */
+.dsa5-helpers-sheet .dsa5h-condition-grid > .dsa5h-condition-search,
+.dsa5-helpers-sheet .dsa5h-condition-grid > .dsa5h-condition-none {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-condition-grid > .dsa5h-condition-search {
+  text-align: left;
+}
+
+.dsa5-helpers-sheet .dsa5h-condition-grid > [hidden] {
+  display: none !important;
+}
+
 .dsa5-helpers-sheet .dsa5h-condition-grid img {
   flex: 0 0 24px;
   width: 24px;
@@ -4510,15 +6335,53 @@
 .dsa5-helpers-sheet .dsa5h-system-content .groupbox {
   background: var(--panel);
   border: 1px solid var(--line);
+  border-radius: 3px;
   box-shadow: none;
   margin: 0 0 16px;
 }
 
 .dsa5-helpers-sheet .dsa5h-system-content .table-title {
+  /* Rundung, Unterstrich, Ausrichtung, Abstände und Mindesthöhe setzt „Aventurisch“ an .groupbox > .table-title. */
+  align-items: normal;
+  gap: normal;
+  min-height: 0;
+  border-bottom: none;
+  border-radius: 0;
   background: var(--title);
   color: var(--ink);
   font: var(--fs-panel-title) Andalus,serif;
   padding: 5px 11px;
+}
+
+/* Kopfzeile wie gehabt geerbt: der DSA5-8.2-Skin „Aventurisch“ (auch unter „Drachenleder“) setzt in
+   .groupbox > .table-title eigene Schrift (Signika) und ein helles Grau, das auf unserem Papier kaum lesbar war. */
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title * {
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title > :not(.fas, .fa-solid, button) {
+  font-family: inherit;
+  font-weight: inherit;
+}
+
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title > :not(.small, .fas, .fa-solid, button) {
+  font-size: inherit;
+}
+
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title > .small {
+  font-size: var(--font-size-12);
+}
+
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title > .title-type b {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+/* Ablagefeld: Randfarbe fest (System: var(--border-color), je DSA5-Design und Foundry-Thema anders). */
+.dsa5-helpers-sheet .dsa5h-system-content .droparea {
+  border-color: rgba(115, 105, 83, .65);
 }
 
 .dsa5-helpers-sheet .dsa5h-system-content .smallHeader {
@@ -4670,6 +6533,19 @@
   justify-self: end;
   position: relative;
   z-index: 1;
+}
+
+/* „Entfernen“ (Bearbeiten-Modus) im Knopfraster: rot beim Zeigen/Fokus */
+.dsa5-helpers-sheet [data-tab-panel="companion"] .dsa5h-companion-actions .dsa5h-companion-remove:focus-visible {
+  border-color: var(--dmg);
+  color: var(--dmg);
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet [data-tab-panel="companion"] .dsa5h-companion-actions .dsa5h-companion-remove:hover {
+    border-color: var(--dmg);
+    color: var(--dmg);
+  }
 }
 
 .dsa5-helpers-sheet [data-tab-panel="companion"] .dsa5h-btn-short {
@@ -4955,10 +6831,6 @@
     gap: 4px;
   }
 
-  .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
-    grid-template-columns: 150px minmax(0,1fr);
-  }
-
   .dsa5-helpers-sheet .dsa5h-rail-label {
     display: none !important;
   }
@@ -4967,29 +6839,6 @@
 @container (max-width: 520px) {
   .dsa5-helpers-sheet .dsa5h-content .grid-2 {
     grid-template-columns: 1fr;
-  }
-
-  .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto 1fr;
-    grid-template-areas: "sidebar" "head" "attrbar" "tabtitle" "content";
-  }
-
-  .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-cover-sidebar {
-    border-bottom: 1px solid rgba(224,192,128,.3);
-  }
-
-  /* Leiste steht hier über dem Kopf statt daneben: Reiterkasten mit fester Höhe statt „Rest füllen“. */
-  .dsa5-helpers-sheet .dsa5h-cover-sidebar .dsa5h-side-tabs-panel {
-    flex: none;
-  }
-
-  .dsa5-helpers-sheet .dsa5h-side-tabs-body {
-    max-height: 220px;
-  }
-
-  .dsa5-helpers-sheet .dsa5h-head {
-    flex-wrap: wrap;
   }
 
   .dsa5-helpers-sheet .dsa5h-details-grid {
@@ -5007,13 +6856,508 @@
 }
 
 @container (max-width: 560px) {
-  .dsa5-helpers-sheet .dsa5h-two-col {
+  .dsa5-helpers-sheet :is(.dsa5h-two-col, .dsa5h-panel-cols) {
     grid-template-columns: 1fr;
   }
 
   .dsa5-helpers-sheet .dsa5h-head-dup {
     display: none;
   }
+}
+
+/* --- Schmales Fenster: Titelblatt einspaltig (.dsa5h-narrow, _applyNarrow(), Nutzer-Entscheidung 2026-10-20) ---
+   Unter 560 px Inhalt wie auf dem Smartphone: Kopf oben wie auf den anderen Reitern, die Leiste (nur noch der Kasten
+   „Statuseffekte | Persönliche Daten“) steht im Titelblatt-Reiter unter den Favoriten, auf hellem Grund. Früher zwei
+   Container-Regeln auf .dsa5h-main selbst, die nie griffen (und gegriffen schlechter aussahen). */
+.dsa5-helpers-sheet.dsa5h-narrow[data-tab="cover"] .dsa5h-main {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-areas: "head" "attrbar" "tabtitle" "content";
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow[data-tab="cover"] [data-tab-panel="cover"] > .dsa5h-cover-sidebar {
+  --headink: var(--ink);
+  --headmuted: var(--muted);
+  display: block;
+  margin-top: 16px;
+  padding: 0;
+  overflow: visible;
+  background: none;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-cover-sidebar > :not(.dsa5h-side-tabs-panel) {
+  display: none;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-cover-sidebar .dsa5h-side-tabs-panel {
+  min-height: 0;
+}
+
+/* Kopf im schmalen Fenster (alle Reiter, Nutzer 2026-10-20): mit drei Kugeln verdrängten Porträt und Kugeln sonst den
+   Namen. Kleinere Kugeln, etwas kleineres Porträt, engere Abstände. */
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-head {
+  --dsa5h-orb: 52px;
+  gap: 12px;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-head .dsa5h-portrait-medal {
+  flex-basis: 96px;
+  width: 96px;
+}
+
+/* Spezies · Kultur · Profession als eigene Zeile unter den Kugeln über die volle Breite (sonst untereinander und gekürzt). */
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-head-main {
+  column-gap: 10px;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-head .dsa5h-ident {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  padding-top: 4px;
+}
+
+/* Die Mindestbreite der Zeilen in schmalen Panels (Container-Regel < 520 px) gilt hier nicht — sonst ist die Stufe
+   abgeschnitten. Die weißen Zustandssymbole bekommen auf hellem Grund eine dunkle Plakette. */
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-cover-sidebar .dsa5h-cover-condition {
+  min-width: 0;
+}
+
+.dsa5-helpers-sheet.dsa5h-narrow .dsa5h-cover-sidebar .dsa5h-cover-condition img {
+  padding: 2px;
+  background: var(--head-base);
+}
+
+/* Körper: Rüstung im schmaleren Panel (Issue #36, benannter Container dsa5h-body auf .dsa5h-body-panel).
+   Rückmeldung 2026-10-20 (Tablet mit Chat daneben): das Schild rutschte unter die Hände, obwohl daneben eine fast leere
+   Karte stand. Jetzt: Ist eine Hand frei oder von der beidhändigen Waffe belegt (.free-left/.free-right), kommt die
+   Rüstung in diese Karte, der Hinweis wird zur Kopfzeile. Sind beide Hände belegt, bleibt ein kleineres Schild in der
+   Mitte, weitere Teile als Bildchen mit RS (Name im Tooltip). Das Zonenkreuz rutscht nur bei zwei belegten Händen und
+   sehr schmalem Panel unter die Hände. */
+@container dsa5h-body (max-width: 690px) {
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones {
+    --mid: 188px;
+    gap: 10px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-armor-zone {
+    height: 62px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-zone-value {
+    height: 84px;
+  }
+}
+
+@container dsa5h-body (max-width: 680px) {
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides,
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones:is(.free-left, .free-right) {
+    --mid: 110px;
+  }
+
+  /* Rüstung in der freien bzw. belegten Hand: dieselbe Rasterzelle wie die gestrichelte Karte, darüber gelegt */
+  .dsa5-helpers-sheet .dsa5h-body-grid:is(.free-left, .free-right) > .dsa5h-body-side {
+    grid-row: 1;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid.free-right > .dsa5h-armor-center {
+    grid-column: 3;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid.free-left > .dsa5h-armor-center {
+    grid-column: 1;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:is(.free-left, .free-right) > .dsa5h-armor-center {
+    position: relative;
+    z-index: 1;
+    margin-top: 62px;
+    padding: 0 10px 10px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:is(.free-left, .free-right) .dsa5h-body-side > :is(.dsa5h-hand-free, .dsa5h-hand-empty, .dsa5h-hand-2h-note) {
+    justify-content: flex-start;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:is(.free-left, .free-right) .dsa5h-body-side > .dsa5h-hand-free {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  /* Beide Hände belegt: kleineres Schild in der schmalen Mitte, weitere Teile als Bildchen mit RS */
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-crest {
+    width: 92px;
+    height: 106px;
+    padding-bottom: 14px;
+    border-radius: 6px 6px 46px 46px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-crest-rs strong {
+    font-size: 24px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-crest-name {
+    max-width: 108px;
+    padding-inline: 6px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-extras {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:not(.free-left):not(.free-right) .dsa5h-armor-extra-main {
+    grid-template-columns: 22px auto;
+    padding-right: 6px;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-body-grid:not(.free-left):not(.free-right) :is(.dsa5h-armor-extra-name, .dsa5h-armor-extras-hint) {
+    display: none;
+  }
+}
+
+/* Waffenkarte zu schmal für Bild und Würfel nebeneinander (Container dsa5h-hand = Seite): Würfelraster unter dem Bild
+   über die volle Breite — normale Karte unter 250 px, kompakte neben dem Zonenkreuz unter 205 px. */
+@container dsa5h-hand (max-width: 250px) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-grid:not(.armor-zones) .dsa5h-body-side > .dsa5h-hand-card {
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas: "name name" "meta meta" "media media" "stats stats" "extra extra";
+    row-gap: 10px;
+  }
+}
+
+@container dsa5h-hand (max-width: 205px) {
+  .dsa5-helpers-sheet .dsa5h-content .dsa5h-body-side > .dsa5h-hand-card {
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas: "name name" "meta meta" "media media" "stats stats" "extra extra";
+    row-gap: 10px;
+  }
+}
+
+/* Sehr schmales Panel: Zonen bei zwei belegten Händen unter den Händen, als kleine Kacheln Bild | Zone + Teil | RS,
+   zwei bis drei je Zeile. */
+@container dsa5h-body (max-width: 560px) {
+  .dsa5-helpers-sheet .dsa5h-body-grid.sides.armor-zones:not(.free-left):not(.free-right) {
+    --mid: 110px;
+  }
+
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) > .dsa5h-armor-center {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .armor-zones:not(.free-left):not(.free-right) .dsa5h-energy-zone {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .dsa5-helpers-sheet .dsa5h-content .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    grid-template-areas: "img label rs" "img item rs";
+    align-items: center;
+    justify-items: start;
+    gap: 0 8px;
+    height: auto;
+    min-height: 40px;
+    padding: 4px 10px 4px 4px;
+    text-align: left;
+  }
+
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone img {
+    position: static;
+    grid-area: img;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    opacity: 1;
+  }
+
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone.empty::before {
+    content: "";
+    grid-area: img;
+    width: 28px;
+    height: 28px;
+    box-sizing: border-box;
+    border: 1px dashed var(--line);
+    border-radius: 50%;
+  }
+
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone .dsa5h-armor-zone-label {
+    grid-area: label;
+    color: var(--muted);
+  }
+
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone .dsa5h-zl-short {
+    display: none;
+  }
+
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone .dsa5h-zl-long {
+    display: inline;
+  }
+
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone .dsa5h-armor-zone-item {
+    grid-area: item;
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--fs-small);
+  }
+
+  .dsa5-helpers-sheet .armor-zones:not(.free-left):not(.free-right) .dsa5h-armor-zone-cross .dsa5h-armor-zone strong {
+    grid-area: rs;
+    font-size: 18px;
+  }
+}
+
+/* Grundmanöver (Paladose, #45): Hinweis zur Kombinationsregel im Probendialog des Systems. */
+.application .dsa5h-maneuver-hint {
+  margin: 2px 0 6px;
+  font-size: 12px;
+  font-style: italic;
+  opacity: .8;
+}
+
+/* Grundmanöver als eigener Abschnitt im Kampf-Probendialog (#45, rechts unter .specAbsContainer). Optik wie die
+   System-SF (.specAbs: inaktiv grau, aktiv mit rotem Rand), eigene Klasse wegen der Klick-Handler des Systems. */
+.application .dsa5h-maneuver-panel {
+  margin-left: 20px;
+  padding: 0 10px 10px;
+}
+.application .dsa5h-maneuver-panel h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-color, #736953a6);
+}
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+  padding: 3px 5px;
+  border: 1px solid var(--border-color, #736953a6);
+  box-shadow: 0 0 12px rgba(110, 59, 1, .56) inset;
+  border-radius: 2px;
+  line-height: 20px;
+  color: #888;
+  cursor: pointer;
+  user-select: none;
+}
+/* Aktiv in der Farbe der Dialog-Beschriftungen (helle Schrift unter Foundrys dunklem Thema wäre auf Pergament blass). */
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active {
+  color: var(--color-form-label, inherit);
+  border-color: #cf1e1e;
+}
+body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { border-color: var(--dsa-danger, #cf1e1e); }
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-row i { width: 16px; text-align: center; }
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-name { flex: 1; min-width: 0; }
+/* Wirkung der gewählten Stufe als zweite Zeile unter dem Namen (passt so in die schmale rechte Spalte). */
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-step { flex-basis: 100%; padding-left: 22px; font-size: 12px; font-weight: bold; line-height: 16px; }
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-step:empty { display: none; }
+.application .dsa5h-maneuver-panel .dsa5h-maneuver-hint { margin-top: 6px; }
+
+/* Grundmanöver Stufe 3 (#48): Chatkarten „Schwachpunkte erkannt“ und Trefferfolge in der Ergebniskarte des Systems,
+   Verteil-Dialog der QS. */
+.chat-message .dsa5h-weakness-share,
+.chat-message .dsa5h-hit-buttons button {
+  width: auto;
+  margin: 6px 6px 0 0;
+  padding: 0 8px;
+  line-height: 24px;
+  font-size: var(--font-size-12, 12px);
+}
+.chat-message .dsa5h-hit-consequence {
+  margin-top: 6px;
+  padding: 4px 6px;
+  border-left: 3px solid #b99a5c;
+  background: rgba(185, 154, 92, .12);
+}
+.chat-message .dsa5h-hit-consequence.fatal { border-left-color: #cf1e1e; }
+.chat-message .dsa5h-hit-consequence small { display: block; opacity: .8; }
+.chat-message .dsa5h-hit-buttons { display: flex; flex-wrap: wrap; }
+.application .dsa5h-weakness-split {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+.application .dsa5h-weakness-split label { flex: none; white-space: nowrap; }
+
+/* Passive Verteidigung (#56): Ergebniskarte im Chat als „Symbol und Wort“ (#62, Variante B), Rechnung der SL als
+   kleine Tabelle. Farbe je Ergebnis über --pd. */
+.chat-message .dsa5h-pd-card {
+  --pd: #6b6157;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+}
+.chat-message .dsa5h-pd-card.dsa5h-pd-hit { --pd: #a3221a; }
+.chat-message .dsa5h-pd-card.dsa5h-pd-defended { --pd: #2f6b2a; }
+.chat-message .dsa5h-pd-icon {
+  grid-row: span 3;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--pd);
+  color: #fff;
+  font-size: 20px;
+}
+.chat-message .dsa5h-pd-title {
+  font-size: var(--font-size-12, 12px);
+  opacity: .8;
+}
+.chat-message .dsa5h-pd-word {
+  color: var(--pd);
+  font-family: 'Andalus', serif;
+  font-size: 22px;
+  line-height: 1.05;
+}
+.chat-message .dsa5h-pd-card p {
+  margin: 2px 0 0;
+  font-size: var(--font-size-13, 13px);
+}
+.chat-message .dsa5h-pd-roll {
+  font-weight: bold;
+  white-space: nowrap;
+}
+.chat-message .dsa5h-pd-table {
+  width: 100%;
+  margin: 4px 0 0;
+  font-size: var(--font-size-12, 12px);
+}
+.chat-message .dsa5h-pd-table .dsa5h-pd-chosen {
+  font-weight: bold;
+}
+.chat-message .dsa5h-pd-table th,
+.chat-message .dsa5h-pd-table td:not(:first-child) {
+  white-space: nowrap;
+}
+.chat-message .dsa5h-pd-bands {
+  margin: 2px 0 4px;
+  padding-left: 16px;
+}
+.chat-message .dsa5h-pd-band-hit {
+  color: #8e1d15;
+  font-weight: bold;
+}
+.chat-message .dsa5h-pd-gm {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+}
+.chat-message .dsa5h-pd-gm summary {
+  cursor: pointer;
+  font-size: var(--font-size-12, 12px);
+}
+
+/* Hausregeln im Standardbogen des Systems (Issue #44, scripts/house-rules/system-sheet.js): kleines Symbol hinter dem
+   Talentnamen statt Foundrys großem Standardknopf. */
+.application.dsa5 .dsa5h-system-house-hint {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  min-height: 0;
+  margin: 0 0 0 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: #8b1a1a;
+  font-size: 13px;
+  line-height: 1;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.application.dsa5 .dsa5h-system-house-hint:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .application.dsa5 .dsa5h-system-house-hint:hover {
+    transform: scale(1.2);
+  }
+}
+
+/* Untermenüs „Heldenbogen“ und „Darstellung und Geräte“ der Moduleinstellungen (scripts/apps/sheet-settings.js):
+   Bezeichnung links, Feld rechts, Hinweis klein darunter, Zwischenüberschriften je Gruppe (Rückmeldung 2026-11-02: im
+   neuen Untermenü griffen die Regeln nicht, weil sie an der ID des Heldenbogen-Menüs hingen). */
+.dsa5-helpers-sheet-settings .dsa5h-settings-group {
+  margin: 14px 0 4px;
+  padding: 0 0 3px;
+  border-bottom: 1px solid var(--color-border-light-2, rgba(0, 0, 0, .25));
+  font-size: var(--font-size-16, 16px);
+}
+
+.dsa5-helpers-sheet-settings .dsa5h-settings-group:first-child {
+  margin-top: 0;
+}
+
+.dsa5-helpers-sheet-settings .form-group {
+  align-items: center;
+  column-gap: 12px;
+}
+
+.dsa5-helpers-sheet-settings .form-group > label {
+  flex: 1 1 0;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+/* Auswahllisten und Häkchen stehen im Systemstil auf voller Breite und schöben die Bezeichnung in eine eigene Zeile */
+.dsa5-helpers-sheet-settings .form-group > .form-fields {
+  flex: 0 0 auto;
+  width: auto;
+  justify-content: flex-end;
+}
+
+.dsa5-helpers-sheet-settings .form-group > .form-fields:has(> select) {
+  flex-basis: 210px;
+  width: 210px;
+}
+
+.dsa5-helpers-sheet-settings .form-group > .form-fields > select {
+  width: 100%;
+}
+
+.dsa5-helpers-sheet-settings .form-group > .form-fields > input[type="checkbox"] {
+  flex: none;
+  width: auto;
+  margin: 0;
+}
+
+.dsa5-helpers-sheet-settings .form-group:has(file-picker) > .form-fields {
+  flex: 2;
+}
+
+.dsa5-helpers-sheet-settings .form-group > .hint {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  font-size: var(--font-size-12, 12px);
+  line-height: 1.35;
+  opacity: .8;
+}
+
+.dsa5-helpers-sheet-settings .form-group + .form-group {
+  margin-top: 10px;
+}
+
+/* Abstand zum Zierrahmen unten (DSA5-Design „Immersive“): der Knopf klebte sonst am Rahmen (Rückmeldung 2026-10-20). */
+.dsa5-helpers-sheet-settings .dsa5h-sheet-settings > .form-footer {
+  margin: 16px 0 18px;
 }
 
 /* ==========================================================================
@@ -5167,12 +7511,14 @@
   color-scheme: dark;
 }
 
+/* background mit !important: der DSA5-8.2-Skin „Drachenleder“ setzt am Inhalt jedes Fensters background:none (mit
+   deutlich höherer Spezifität), sonst stünde die Schrift auf dunklem Leder. */
 .dsa5-helpers-dice-stats .window-content {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   padding: 0;
-  background: var(--paper);
+  background: var(--paper) !important;
   color: var(--ink);
   font-family: 'GentiumBasic', Georgia, serif;
 }
@@ -5492,11 +7838,42 @@
   color: var(--muted);
 }
 
+/* Fußleiste: Einstellungen der Statistik links (seit 2026-11-02 hier statt in den Moduleinstellungen), Löschen rechts */
 .dsa5-helpers-dice-stats .dsa5h-ds-footer {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
   padding: 8px 12px;
   border-top: 1px solid var(--line);
+}
+
+.dsa5-helpers-dice-stats .dsa5h-ds-setting {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-dice-stats .dsa5h-ds-setting input[type="checkbox"] {
+  margin: 0;
+}
+
+.dsa5-helpers-dice-stats .dsa5h-ds-setting select {
+  width: auto;
+  height: auto;
+  min-height: 0;
+  padding: 2px 6px;
+  background: var(--field);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  font: inherit;
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-dice-stats .dsa5h-ds-footer .dsa5h-ds-reset-all {
+  margin-left: auto;
 }
 
 .dsa5-helpers-dice-stats .dsa5h-ds-range {
@@ -5582,12 +7959,13 @@
   color-scheme: dark;
 }
 
+/* background mit !important wie bei der Würfelstatistik (Skin „Drachenleder“ von DSA5 8.2). */
 .dsa5-helpers-house-rules .window-content {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   padding: 0;
-  background: var(--paper);
+  background: var(--paper) !important;
   color: var(--ink);
   font-family: 'GentiumBasic', Georgia, serif;
 }
@@ -5969,6 +8347,110 @@
   font-size: var(--fs-small);
 }
 
+/* Sprungleiste langer Seiten (Grundmanöver, Nutzer 2026-10-21): klebt beim Scrollen oben auf dem Blatt, Klick springt
+   zum Abschnitt (jumpToSection in scripts/apps/house-rules.js). */
+.dsa5-helpers-house-rules .dsa5h-hr-jump {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 -8px 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  background: var(--page);
+  box-shadow: 0 4px 6px -4px rgba(0,0,0,.25);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-jump button {
+  flex: none;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 18px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-jump button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-house-rules .dsa5h-hr-jump button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+/* Grundmanöver (Paladose, #45): Überschrift je Manöver mit eigenem Schalter, Tabellen mit Text in der ersten Spalte. */
+.dsa5-helpers-house-rules .dsa5h-hr-section h4 {
+  margin: 14px 0 4px;
+  font-size: var(--fs-data);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-head h4 {
+  margin: 0;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-switch-small {
+  flex: none;
+  font-size: var(--fs-meta);
+}
+
+/* Passive Verteidigung (#56): Schalter je Geltungsbereich (Spielercharaktere / alle anderen). */
+.dsa5-helpers-house-rules .dsa5h-hr-scope {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-scope li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-table {
+  width: auto;
+  min-width: 60%;
+  margin: 6px 0 8px;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-maneuver-table td:first-child {
+  width: auto;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table-wrap {
+  overflow-x: auto;
+}
+
+.dsa5-helpers-house-rules .dsa5h-hr-table-wrap .dsa5h-hr-maneuver-table td {
+  vertical-align: top;
+}
+
 .dsa5-helpers-house-rules .dsa5h-hr-pager {
   display: flex;
   align-items: center;
@@ -5996,4 +8478,229 @@
   .dsa5-helpers-house-rules .dsa5h-hr-switch:hover .dsa5h-hr-switch-track {
     border-color: var(--accent);
   }
+}
+
+/* Eigenes HUD (scripts/hud.js): Reiter in der DSA-Leiste, Variante B (Nutzer-Entscheidung 2026-10-28). Links die
+   Hausregel-Aktionen als Kacheln (Symbol + Kurzname, aktiv golden mit Leuchten, Zähler als Abzeichen), rechts eine schmale
+   Spalte mit den Modul-Knöpfen. Passt in die zwei Slot-Reihen der Leiste (~90 px hoch: 2 × 40 px Kacheln); mehr als zwei Reihen scrollen. */
+#hotbar .dsa5h-hud-tab i {
+  font-size: 15px;
+}
+/* Die Leiste (#hotbar.hotbarV4) gibt jedem Listeneintrag 45 × 45 px mit Rahmen, Hintergrund und overflow: hidden und
+   jedem Font-Awesome-Symbol 30 px bei 45 px Zeilenhöhe (Spezifität bis 1,4,1). Darum hier durchgehend
+   `#hotbar .sections .skillItems.dsa5h-hud` als Präfix und die Vorgaben der Leiste für unsere zwei Bereiche zurückgesetzt. */
+#hotbar .sections .skillItems.dsa5h-hud:not(.collapsed) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 8px;
+  padding: 2px 2px 0;
+  overflow-y: auto;
+}
+#hotbar .sections .skillItems.dsa5h-hud > li:is(.dsa5h-hud-actions, .dsa5h-hud-side) {
+  position: static;
+  flex: none;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  filter: none;
+  transform: none;
+  transition: none;
+  text-align: center;
+  cursor: default;
+}
+#hotbar .sections .skillItems.dsa5h-hud > li.dsa5h-hud-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 3px 4px;
+  padding: 0;
+}
+#hotbar .sections .skillItems.dsa5h-hud > li.dsa5h-hud-side {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  grid-column: 2;
+  padding: 0 0 0 6px;
+  border-left: 1px solid rgba(217, 180, 95, .45);
+}
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-tile {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  width: 64px;
+  height: 40px;
+  margin: 0;
+  padding: 0 2px;
+  border: 1px solid rgba(217, 180, 95, .45);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, .07);
+  color: #f3e9d6;
+  line-height: 1;
+  cursor: pointer;
+}
+#hotbar .sections .skillItems.dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini) i {
+  width: auto;
+  font-size: 15px;
+  line-height: 1;
+  color: #d9b45f;
+}
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-mini i {
+  font-size: 13px;
+}
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-name {
+  max-width: 60px;
+  overflow: hidden;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-tile.active {
+  border-color: #e0c48c;
+  background: radial-gradient(circle at 50% 40%, rgba(224, 192, 128, .55), rgba(224, 192, 128, .15));
+  box-shadow: 0 0 8px rgba(224, 192, 128, .7);
+}
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-tile.active i {
+  color: #fff6dc;
+}
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-badge {
+  position: absolute;
+  right: -4px;
+  bottom: -5px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: #b3241a;
+  color: #fff;
+  font-size: 10px;
+  line-height: 15px;
+}
+#hotbar .sections .skillItems.dsa5h-hud .dsa5h-hud-mini {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--hit-md, 26px);
+  min-width: 0;
+  height: var(--hit-md, 26px);
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .06);
+  color: #d9b45f;
+  line-height: 1;
+  cursor: pointer;
+}
+#hotbar .sections .skillItems.dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini):focus-visible {
+  outline: 2px solid #e0c48c;
+  outline-offset: 1px;
+}
+@media (hover: hover) {
+  /* Rot-Rahmen und Anheben der Leiste für Listeneinträge (#hotbar .skillItems li:hover, .hSection > li:hover) aus. */
+  #hotbar .sections .skillItems.dsa5h-hud > li:is(.dsa5h-hud-actions, .dsa5h-hud-side):hover {
+    border-color: transparent;
+    background: none;
+    box-shadow: none;
+    filter: none;
+    transform: none;
+  }
+  #hotbar .sections .skillItems.dsa5h-hud > li.dsa5h-hud-side:hover {
+    border-left-color: rgba(217, 180, 95, .45);
+  }
+  #hotbar .sections .skillItems.dsa5h-hud :is(.dsa5h-hud-tile, .dsa5h-hud-mini):hover {
+    background: rgba(224, 192, 128, .3);
+  }
+}
+
+/* Hausregel Helfen: Schalter „Als Hilfe würfeln“ im Talent-Probendialog (#44). */
+.application .dsa5h-help-toggle label i { margin-right: 2px; opacity: .8; }
+
+/* --- Aufträge und Personen (Issue #39, scripts/sheets/almanac.js): Listen aus dem Almanach des Systems, Optik wie im
+   Click-Dummy (clickdummy/style.css „Aufträge und Personen“). --- */
+.dsa5-helpers-sheet .dsa5h-muted { color: var(--muted); }
+.dsa5-helpers-sheet .dsa5h-almanac-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.dsa5-helpers-sheet .dsa5h-almanac-btn {
+  flex: none;
+  width: auto;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid rgba(185, 154, 92, .6);
+  border-radius: 14px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  line-height: 26px;
+  cursor: pointer;
+}
+/* Kacheln immer gleich groß (Nutzer 2026-10-21): feste Höhe, Texte einzeilig mit „…“, voller Name im Tooltip. */
+.dsa5-helpers-sheet .dsa5h-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+.dsa5-helpers-sheet .dsa5h-tile-grid > .dsa5h-empty { grid-column: 1 / -1; }
+.dsa5-helpers-sheet .dsa5h-almanac-tile {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 66px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  box-shadow: none;
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+.dsa5-helpers-sheet .dsa5h-almanac-tile.closed { opacity: .7; }
+.dsa5-helpers-sheet .dsa5h-almanac-tile img {
+  width: 52px;
+  height: 52px;
+  border: 0;
+  object-fit: cover;
+  background: var(--paper);
+}
+.dsa5-helpers-sheet .dsa5h-quest-card img { border-radius: 6px; }
+.dsa5-helpers-sheet .dsa5h-persona-card img { border-radius: 50%; object-position: top; }
+.dsa5-helpers-sheet .dsa5h-tile-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dsa5-helpers-sheet .dsa5h-tile-text > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dsa5-helpers-sheet .dsa5h-tile-text strong { font-size: var(--fs-data); }
+.dsa5-helpers-sheet .dsa5h-tile-text small { color: var(--muted); font-size: var(--fs-meta); }
+.dsa5-helpers-sheet .dsa5h-quest-status.status-1 { color: var(--use); }
+.dsa5-helpers-sheet .dsa5h-quest-status.status-2 { color: var(--dmg); }
+.dsa5-helpers-sheet .dsa5h-quest-progress {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent) var(--pct), var(--odd) var(--pct));
+}
+.dsa5-helpers-sheet .dsa5h-quest-closed > summary { cursor: pointer; }
+.dsa5-helpers-sheet .dsa5h-persona-important { color: var(--accent); }
+.dsa5-helpers-sheet :is(.dsa5h-almanac-tile, .dsa5h-almanac-btn):focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+@media (hover: hover) {
+  .dsa5-helpers-sheet :is(.dsa5h-almanac-tile, .dsa5h-almanac-btn):hover { border-color: var(--accent); }
 }

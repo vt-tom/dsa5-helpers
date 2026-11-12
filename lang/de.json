@@ -1,5 +1,7 @@
 {
   "DSA5HELPERS": {
+    "RangedAttackShort": "FK",
+    "SelectAmmo": "Munition wählen",
     "SheetLabel": "DSA5 Helfer-Heldenbogen",
     "Free": "frei",
     "AdvantagesDisadvantages": "Vor- & Nachteile",
@@ -51,7 +53,9 @@
       "status": "Status",
       "notes": "Notizen",
       "companion": "Gefährten",
-      "steigerungsplaner": "Steigerungsplaner"
+      "steigerungsplaner": "Steigerungsplaner",
+      "quests": "Aufträge",
+      "personae": "Personen"
     },
     "Hints": {
       "cover": "",
@@ -64,7 +68,9 @@
       "status": "",
       "notes": "",
       "companion": "",
-      "steigerungsplaner": ""
+      "steigerungsplaner": "",
+      "quests": "",
+      "personae": ""
     },
     "SpecialAbilities": "Sonderfertigkeiten",
     "Consume": "Verbrauchen",
@@ -73,6 +79,7 @@
     "OpenBag": "Behältnis öffnen (Gegenstände hierher ziehen, um sie einzupacken)",
     "GMNotes": "Spielleiternotizen",
     "OpenTradition": "Tradition öffnen",
+    "TraditionFromAbility": "Vorgegeben durch die Traditions-Sonderfertigkeit",
     "GripTwoHanded": "Beidhändig",
     "GripSwitchToTwo": "Beidhändig führen",
     "GripSwitchToOne": "Einhändig führen",
@@ -91,9 +98,11 @@
       "skills": "Fähigkeiten",
       "hotbar": "Hotbar",
       "train": "Trick",
-      "mount": "Reittier"
+      "mount": "Reittier",
+      "remove": "Entfernen"
     },
     "SearchCombatSkills": "Kampftechniken suchen …",
+    "SearchConditions": "Zustand suchen …",
     "NoSearchResults": "Keine Treffer.",
     "JumpToCombatSkill": "{name}, Kampftechnikwert {value} — zur Kampftechnik springen",
     "HandFreeChoose": "Nebenhand frei — Waffe wählen",
@@ -120,10 +129,19 @@
     "HandFree": "frei",
     "HandFreeOption": "— frei —",
     "TwoHandedSuffix": "(beidhändig)",
+    "InContainerSuffix": "(in {name})",
+    "InContainer": "In „{name}“ verstaut – wird beim Anlegen herausgenommen",
     "WeaponInHand": "Waffe in der {hand}",
     "BodyFigure": "Figur im Hintergrund",
     "BodyFigurePlaceholder": "Platzhalter",
     "BodyFigurePortrait": "Akteur-Porträt",
+    "BannerPick": "Bannerbild wählen",
+    "BannerClear": "Bannerbild entfernen",
+    "PortraitShape": "Porträtform",
+    "PortraitRound": "Porträt rund",
+    "PortraitOctagon": "Porträt eckig",
+    "APAbbrev": "AP",
+    "ApRibbon": "Abenteuerpunkte: {total} gesamt, {free} frei",
     "BothHands": "Beide Hände",
     "BodyTwoHandedNote": "Nebenhand: von der beidhändigen Waffe belegt",
     "BodyMoveRight": "nach rechts",
@@ -135,11 +153,72 @@
     "CastSpellsTitle": "Zauber, Rituale & Zaubertricks",
     "CastLiturgiesTitle": "Liturgien, Zeremonien & Segnungen",
     "NoArmorWorn": "Keine Rüstung getragen",
+    "NoArmor": "Keine Rüstung",
+    "MainArmorHint": "Klick wählt die Hauptrüstung",
+    "MainArmorPick": "Als Hauptrüstung zeigen",
+    "MagicArmorShort": "Magie",
+    "ArmorBonus": "Rüstungsbonus",
+    "Zone": {
+      "head": "Kopf",
+      "value": "Torso",
+      "rightarm": "Rechter Arm",
+      "leftarm": "Linker Arm",
+      "rightleg": "Rechtes Bein",
+      "leftleg": "Linkes Bein"
+    },
+    "ZoneShort": {
+      "head": "Kopf",
+      "value": "Torso",
+      "rightarm": "Arm r.",
+      "leftarm": "Arm l.",
+      "rightleg": "Bein r.",
+      "leftleg": "Bein l."
+    },
     "Close": "Schließen",
     "Settings": {
+      "RollDialogDesktop": {
+        "Name": "Probendialoge am Desktop",
+        "Hint": "Aufgeräumte Probendialoge des Moduls oder die des DSA5-Systems, etwa wenn ein anderes Modul diese erweitert. Gilt für alle; Tablet und Smartphone nutzen immer das Modul.",
+        "Module": "Modul (neues Design)",
+        "System": "DSA5-System"
+      },
       "DefaultSheet": {
         "Name": "Standard-Bogen für Helden",
         "Hint": "Macht den DSA5-Helpers-Bogen zum Standard für alle Helden. Helden, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Nach dem Ändern wird Foundry neu geladen."
+      },
+      "PlayersMayEdit": {
+        "Name": "Spieler: Werte ohne AP ändern (Bearbeiten-Modus)",
+        "Hint": "Erlaubt Spielern im Heldenbogen den Modus „Bearbeiten“, in dem sich Werte direkt und ohne Abenteuerpunkte ändern lassen. Ausgeschaltet können Spieler nur spielen und mit AP steigern; die Spielleitung darf immer bearbeiten."
+      },
+      "BannerPath": {
+        "Name": "Standardordner für Bannerbilder",
+        "Hint": "Hier speichert das Modul Bannerbilder, die Spieler von ihrem Computer hochladen. Spieler brauchen dafür kein Recht auf den Dateibrowser; eine Spielleitung muss angemeldet sein."
+      },
+      "DisplayMenu": {
+        "Title": "Darstellung und Geräte",
+        "Label": "Darstellung einrichten",
+        "GroupSheet": "Probendialoge",
+        "GroupMobile": "Tablet und Smartphone",
+        "Hint": "Probendialoge am Desktop und hybrides Spiel auf Tablet und Smartphone (Oberfläche und Wurfergebnis je Gerät)."
+      },
+      "SheetMenu": {
+        "Title": "Heldenbogen",
+        "Label": "Heldenbogen einrichten",
+        "Hint": "Standard-Bogen für Helden, Bearbeiten-Modus für Spieler, Ordner für Bannerbilder und Talent-Vorschläge auf dem Titelblatt.",
+        "Save": "Speichern"
+      },
+      "QuestsTab": {
+        "Name": "Reiter „Aufträge“",
+        "Hint": "Zeigt im Heldenbogen die freigegebenen Aufträge aus dem Almanach (Auftragsbuch). Erscheint nur, wenn im Almanach Auftrags-Journale aktiviert sind."
+      },
+      "PersonaeTab": {
+        "Name": "Reiter „Personen“",
+        "Hint": "Zeigt im Heldenbogen die freigegebenen Einträge aus Dramatis Personae und Bestiarium des Almanachs. Erscheint nur, wenn im Almanach Personen-Journale aktiviert sind."
+      },
+      "SkillSuggestions": {
+        "Name": "Talent-Vorschläge auf dem Titelblatt",
+        "Hint": "Wie viele Talente über den Favoriten vorgeschlagen werden; je Held im Bogen mit − / + änderbar. Gilt nur für dich.",
+        "Off": "Aus"
       }
     },
     "Changelog": {
@@ -157,17 +236,19 @@
       "Consent": {
         "Question": "Dürfen deine Würfe für die Würfelstatistik ausgewertet werden?",
         "Info": "Gezählt wird nur, wie oft welche Augenzahl je Tag fällt – keine einzelnen Würfe. Du siehst deine eigene Statistik, die Spielleitung die aller Spieler.",
-        "Change": "Du kannst das jederzeit in den Moduleinstellungen ändern. Ziehst du die Zustimmung zurück, wird nichts mehr gezählt und deine Statistik ausgeblendet.",
+        "Change": "Du kannst das jederzeit unten im Fenster Würfelstatistik ändern. Ziehst du die Zustimmung zurück, wird nichts mehr gezählt und deine Statistik ausgeblendet.",
         "Yes": "Ja, auswerten",
         "No": "Nein"
       },
       "Settings": {
         "Enabled": {
           "Name": "Würfelstatistik",
+          "Short": "Statistik in dieser Welt",
           "Hint": "Zählt je Spieler und Würfeltyp, wie oft welche Augenzahl fällt, und zeigt, ob die Verteilung statistisch auffällig ist. Jeder Spieler wird vorher um Zustimmung gefragt und sieht nur seine eigene Statistik, die Spielleitung alle. Gespeichert werden nur Zähler je Tag; Tage älter als 12 Monate werden zusammengefasst."
         },
         "Consent": {
           "Name": "Würfelstatistik: meine Würfe auswerten",
+          "Short": "Meine Würfe auswerten",
           "Hint": "Ob deine Würfe in die Würfelstatistik eingehen. Ohne Zustimmung wird nichts gezählt; bisherige Daten bleiben erhalten, werden aber ausgeblendet.",
           "Undecided": "Noch nicht entschieden",
           "Yes": "Ja",
@@ -178,7 +259,7 @@
         "Label": "Würfelstatistik öffnen",
         "Hint": "Zeigt, wie oft welche Augenzahl gefallen ist und ob das statistisch auffällig ist – Spieler ihre eigene Statistik, die Spielleitung alle."
       },
-      "Disabled": "Die Würfelstatistik ist ausgeschaltet. Die Spielleitung kann sie in den Moduleinstellungen einschalten; bisherige Daten bleiben sichtbar.",
+      "Disabled": "Die Würfelstatistik ist ausgeschaltet. Die Spielleitung kann sie unten in diesem Fenster einschalten; bisherige Daten bleiben sichtbar.",
       "DieType": "Würfeltyp",
       "Die": "W{faces}",
       "MethodLabel": "Würfelart",
@@ -227,7 +308,7 @@
         "From": "von",
         "To": "bis"
       },
-      "NoConsent": "Du hast der Auswertung deiner Würfe nicht zugestimmt. Das kannst du in den Moduleinstellungen ändern."
+      "NoConsent": "Du hast der Auswertung deiner Würfe nicht zugestimmt. Das kannst du unten in diesem Fenster ändern."
     },
     "OtherWeapons": "Weitere Waffen",
     "HouseRules": {
@@ -327,18 +408,443 @@
           "Intro": "Im Kampf muss nicht jeder selbst zuschlagen. Ein Held kann seine Aktion nutzen, um einem Mitstreiter mit einer Talentprobe zu helfen, die zur Situation passt. Die übrig behaltenen Qualitätsstufen erleichtern dessen nächste Probe.",
           "Example": "Beispiel: Mit Einschüchtern lenkt ein Held den Gegner eines Kämpfenden auf sich – dessen Angriff gegen den Gegner ist dann erleichtert.",
           "Step1": "Optional den Mitstreiter markieren, dem geholfen wird (Token anklicken und T drücken) – er wird dann im Chat genannt.",
-          "Step2": "Im Heldenbogen (DSA5 Helpers) im Reiter Kampf bei den Schnellaktionen auf „Helfen“ klicken.",
-          "Step3": "Das passende Talent wählen und im gewohnten Probendialog Modifikatoren wählen und würfeln. Die Spielleitung entscheidet, ob das Talent zur Situation passt.",
+          "Step2": "Eine beliebige Talentprobe öffnen (in jedem Heldenbogen oder in der DSA-Leiste) und im Probendialog „Als Hilfe würfeln“ anhaken. Im Heldenbogen von DSA5 Helpers geht es auch über „Helfen“ bei den Schnellaktionen im Reiter Kampf: erst das Talent wählen, der Schalter ist dann schon an.",
+          "Step3": "Modifikatoren wählen und würfeln – Hilfe ist nie vergleichend. Die Spielleitung entscheidet, ob das Talent zur Situation passt.",
           "Step4": "Gelingt die Probe, nennt eine Chatnachricht die Erleichterung in Höhe der QS.",
           "Note1": "Die Erleichterung wird nicht automatisch angerechnet: Der Unterstützte trägt sie bei seiner nächsten Probe selbst als Modifikator ein.",
           "Note2": "Helfen kostet die Aktion des Helfenden in dieser Kampfrunde.",
           "Note3": "Misslingt die Probe, gibt es keine Erleichterung."
+        },
+        "Toggle": "Als Hilfe würfeln",
+        "ToggleHint": "Hausregel Helfen: Nach dem Wurf meldet der Chat die QS als Erleichterung für das markierte Ziel. Nie vergleichend."
+      },
+      "maneuvers": {
+        "Title": "Grundmanöver",
+        "Summary": "Möglichkeiten des Kampfes: Jeder Held darf Grundmanöver wie Angriff antäuschen, Vorstoß oder Verteidigungshaltung einsetzen; ihre Stärke hängt von einer Leiteigenschaft ab. Im Probendialog als eigener Abschnitt unter den Sonderfertigkeiten.",
+        "CombineHint": "Grundmanöver: pro Attacke ein Grundmanöver plus ein Grund- oder Spezialmanöver; passive Manöver beliebig.",
+        "Block": "Grundmanöver",
+        "BlockHint": "Stufe je Leiteigenschaft; die Manöver wählst du im Probendialog.",
+        "OpenBook": "Regeln lesen",
+        "feint": {
+          "Name": "Angriff antäuschen",
+          "Defense": "PA des Gegners −{x}"
+        },
+        "targeted": {
+          "Name": "Gezielter Angriff",
+          "Zone": {
+            "head": "Kopf",
+            "torso": "Torso",
+            "arm": "Arm",
+            "leg": "Bein",
+            "eye": "Auge",
+            "foot": "Fuß",
+            "neck": "Hals",
+            "hand": "Hand"
+          },
+          "HitzoneHint": "Gezielter Angriff: Malus nur über eine Auswahl nehmen – entweder das Grundmanöver oder „Gezielter Angriff“ der Trefferzonen-Regel (diese bestimmt auch die Rüstungszone)."
+        },
+        "mighty": {
+          "Name": "Mächtiger Angriff"
+        },
+        "advance": {
+          "Name": "Vorstoß",
+          "Later": "danach PA/AW {malus} bis Rundenende",
+          "MalusActive": "PA/AW-Malus bis Rundenende",
+          "Status": "Vorstoß: PA/AW {malus} bis Rundenende"
+        },
+        "stance": {
+          "Name": "Verteidigungshaltung",
+          "Toggle": "Verteidigungshaltung an/aus",
+          "On": "Verteidigungshaltung aktiv",
+          "Off": "Verteidigungshaltung einnehmen",
+          "AttackHint": "Verteidigungshaltung: keine offensiven Aktionen"
+        },
+        "aim": {
+          "Name": "Zielen",
+          "Button": "Zielen (eine Runde)",
+          "Rounds": "{n} Runde(n)",
+          "Status": "Zielen {count}/{max}",
+          "NoCombat": "Zielen zählt nur in einem laufenden Kampf.",
+          "OncePerRound": "In dieser Kampfrunde wurde schon gezielt.",
+          "Max": "Mehr als {max} Runden Zielen erlaubt die Stufe nicht."
+        },
+        "PanelHint": "Hausregel Grundmanöver (Paladose): Stufe je Leiteigenschaft",
+        "RowHint": "Klick: nächste Stufe · Rechtsklick: eine Stufe zurück",
+        "RowHintSingle": "Klick: an/aus",
+        "weakness": {
+          "Name": "Schwachpunkte erkennen",
+          "Button": "Schwachpunkte erkennen",
+          "ButtonHint": "Markierten Gegner analysieren: Probe, dann die QS auf PA und TP gegen ihn verteilen.",
+          "HudHint": "Schwachpunkte des markierten Gegners erkennen",
+          "Attr": "QS",
+          "Value": "PA / TP",
+          "NoCombat": "Schwachpunkte erkennen gilt nur in einem laufenden Kampf.",
+          "NoTarget": "Bitte zuerst den Gegner als Ziel markieren.",
+          "Self": "Der eigene Held lässt sich nicht analysieren – bitte einen Gegner markieren.",
+          "NoSkill": "{name} hat das Talent {skill} nicht.",
+          "Share": "Mitteilen",
+          "Shared": "Mitgeteilt",
+          "NotOwner": "Mitteilen kann nur, wer den Helden führt.",
+          "Expired": "Diese Schwachpunkte gelten nicht mehr (Kampf vorbei oder Runde abgelaufen).",
+          "Status": "{foe}: PA +{pa} · TP +{tp}",
+          "StatusShared": "{foe}: PA +{pa} · TP +{tp} (mitgeteilt, bis KR {round})",
+          "Dialog": {
+            "Title": "Schwachpunkte verteilen",
+            "Intro": "{qs} QS gegen {foe}: Jede QS erhöht entweder deine PA oder deine TP gegen diesen Gegner, bis zum Ende des Kampfes.",
+            "NoArmor": "{foe} ist ein Dämon, Geist oder Elementar – gegen ihn wirkt keine Rüstungsreduktion. Alle {qs} QS gehen auf die PA.",
+            "MagicArmor": "TP +1 steht für RS −1. Gegen magischen Rüstungsschutz wirkt das nicht; darauf achtet die Spielleitung.",
+            "Confirm": "Übernehmen"
+          },
+          "Chat": {
+            "Success": "<b>{actor}</b> erkennt Schwachpunkte von <b>{foe}</b>: PA +{pa} bei dessen Angriffen, TP +{tp} gegen ihn, bis Kampfende.",
+            "Failure": "{actor} erkennt keine Schwachpunkte von {foe}.",
+            "Shared": "<b>{actor}</b> teilt die Schwachpunkte von <b>{foe}</b> mit: PA +{pa}, TP +{tp} für alle Verbündeten. {foe} gibt sich ab jetzt keine Blöße mehr – der Bonus gilt für alle nur noch bis zum Ende von KR {round}."
+          }
+        },
+        "distract": {
+          "Name": "Stören und Ablenken",
+          "Button": "Stören und Ablenken",
+          "ButtonHint": "Markierten Gegner ablenken: Probe auf Wurfwaffen oder Einschüchtern; gelingt sie, hat er bis zum Ende der Kampfrunde −1 auf AT, FK, PA, AW und Schaden.",
+          "HudHint": "Den markierten Gegner stören und ablenken",
+          "Attr": "Probe",
+          "Value": "−1 AT/FK/PA/AW/TP",
+          "NoCombat": "Stören und Ablenken gilt nur in einem laufenden Kampf.",
+          "NoTarget": "Bitte zuerst den Gegner als Ziel markieren.",
+          "Self": "Der eigene Held lässt sich nicht ablenken – bitte einen Gegner markieren.",
+          "NoSkill": "{name} hat weder die Kampftechnik Wurfwaffen noch das Talent Einschüchtern.",
+          "Status": "{foe} abgelenkt (bis Ende KR {round})",
+          "Modifier": "Gestört und abgelenkt ({by})",
+          "Dialog": {
+            "Title": "Stören und Ablenken",
+            "Intro": "Wie lenkt {actor} {foe} ab?",
+            "Throw": "Etwas werfen ({skill})",
+            "Intimidate": "Einschüchtern"
+          },
+          "Chat": {
+            "Success": "<b>{actor}</b> lenkt <b>{foe}</b> ab: bis zum Ende der Kampfrunde −1 auf AT, FK, PA, AW und Schaden. Geworfenes richtet keinen Schaden an.",
+            "Failure": "{actor} gelingt es nicht, {foe} abzulenken.",
+            "Undead": "Untote und Geister lassen sich nur ablenken, wenn sie intelligent genug sind – die Spielleitung entscheidet."
+          }
+        },
+        "hits": {
+          "Title": "Gezielter Treffer: {zone} ({sp} SP)",
+          "Resist": "Widerstand: {text}",
+          "Resists": {
+            "composure": "Selbstbeherrschung (Handlungsfähigkeit bewahren)",
+            "disturb": "Selbstbeherrschung (Störungen ignorieren)",
+            "death": "Sonderregel „Dem Tod von der Schippe springen“",
+            "firstAid": "Erste Hilfe, kleine Heilungen, Heiltränke; final Sonderregel „Dem Tod von der Schippe springen“"
+          },
+          "Effect": {
+            "head": "{n} Stufe(n) Betäubung",
+            "headNone": "Unter 5 SP: keine Betäubung.",
+            "torso": "Zusätzlich 1W3+1 SP.",
+            "arm": "Lässt in dieser Hand Gehaltenes los (nicht bei Zweihandwaffen und Schilden).",
+            "leg": "Geht zu Boden: Liegend.",
+            "eyeFatal": "Tödlich (ab 5 SP).",
+            "eye": "Geblendet.",
+            "foot": "{n} Stufe(n) Schmerz, GS halbiert.",
+            "footNone": "GS halbiert.",
+            "neckFatal": "Tödlich (ab 8 SP).",
+            "neck": "Blutend (1W3+1 SP je KR).",
+            "hand": "+1 Stufe Schmerz, Hand unbrauchbar.",
+            "handNone": "Unter 5 SP: keine Folge."
+          },
+          "Roll": "1W3+1 SP würfeln",
+          "RollFlavor": "Gezielter Treffer ({zone}): zusätzliche SP",
+          "NotOwner": "Den Zustand setzt die Spielleitung oder wer das Ziel führt."
+        }
+      },
+      "passiveDefense": {
+        "Title": "Passive Verteidigung",
+        "Summary": "Akteure verteidigen auf Wunsch automatisch: Gelingt die Attacke, würfelt das Modul offen einen W20 gegen die gewählte oder beste Verteidigung – ohne Reaktionsdialog.",
+        "OtherScene": "Passive Verteidigung: Das Ziel steht nicht in der Szene, die du gerade ansiehst – bitte wie gewohnt verteidigen lassen.",
+        "Block": "Verteidigung bei Angriffen",
+        "BlockHint": "Gilt für Angriffe auf diesen Helden, solange die Hausregel aktiv ist.",
+        "Mode": {
+          "manual": "Selbst würfeln (normale Regel)",
+          "best": "Automatisch: beste Verteidigung",
+          "option": "Automatisch: {name} ({value})",
+          "missing": "Automatisch: gewählte Waffe nicht angelegt – beste Verteidigung",
+          "Menu": "Passive Verteidigung …",
+          "Hint": "Womit verteidigt {name}, wenn er angegriffen wird?",
+          "Save": "Übernehmen",
+          "Short": {
+            "manual": "selbst",
+            "best": "beste",
+            "dodge": "Ausweichen",
+            "parryWeaponless": "waffenlos"
+          },
+          "HudHint": "Womit verteidigt der gewählte Token, wenn er angegriffen wird? Anklicken zum Ändern."
+        },
+        "Chat": {
+          "hit": "{attacker} trifft {defender}.",
+          "defended": "{defender} wehrt den Angriff von {attacker} ab.",
+          "miss": "Der Angriff von {attacker} auf {defender} misslingt.",
+          "Roll": "Verteidigung (W20): {roll}",
+          "Word": {
+            "hit": "Treffer",
+            "defended": "Abgewehrt",
+            "miss": "Verfehlt"
+          },
+          "GMTitle": "Passive Verteidigung (nur SL)",
+          "GMLine": "AT {at} gelungen (W20 {d20}). Verteidigung mit {option}: V {defense}, gewürfelt {roll} – abgewehrt bei {defense} oder weniger (1 immer, 20 nie).",
+          "Option": "Verteidigung",
+          "Base": "Basis",
+          "Mods": "Mod."
+        },
+        "Page": {
+          "Intro": "Kämpfe gehen schneller, wenn nicht jeder Angriff einen Reaktionsdialog braucht. Mit dieser Hausregel verteidigen Akteure auf Wunsch automatisch: Der Angreifer markiert sein Ziel und würfelt die Attacke wie gewohnt. Gelingt sie, würfelt das Modul sofort und offen einen W20 gegen die Verteidigung des Ziels.",
+          "Formula": "Abgewehrt bei W20 ≤ V – wie eine normale Parade oder ein normales Ausweichen. Eine 1 wehrt immer ab, eine 20 nie. Jede gelungene Attacke wird also genauso oft abgewehrt wie mit dem Reaktionsdialog. Beispiel AT 13 gegen V 6: Die Attacke gelingt in 65 % der Fälle, davon werden 30 % abgewehrt.",
+          "ScopeTitle": "Für wen?",
+          "Scope": "Je Akteur einstellbar: im Heldenbogen unter Kampf › Körper („Verteidigung bei Angriffen“), bei NSC und Kreaturen im Menü ⋮ des Systembogens. Zur Wahl stehen „Selbst würfeln“ (normale Regel), „Automatisch: beste Verteidigung“ oder eine bestimmte Waffe bzw. Ausweichen. Ohne Wahl würfeln Spielercharaktere selbst, NSC und Kreaturen verteidigen automatisch mit ihrer besten Option.",
+          "Step1": "Ziel markieren und wie gewohnt angreifen (Nah- oder Fernkampf).",
+          "Step2": "Als Verteidigung zählt die gewählte Option, sonst die höchste aus Ausweichen, waffenloser Parade, getragenen Waffen und Schilden bzw. den Paradewerten einer Kreatur – gegen Fernkampf nur Ausweichen und Schilde. Zustände, weitere Verteidigungen in der Runde, Finte und ähnliche Abzüge sind eingerechnet; nach einer 1 im Angriff zählt die halbe Verteidigung (gerundet).",
+          "Step3": "Misslingt die Attacke, ist der Angriff vorbei. Gelingt sie, würfelt das Modul den W20 für die Verteidigung.",
+          "Step4": "Bei einem Treffer folgt der Schaden wie bei einem unverteidigten Angriff, sonst meldet der Chat die Abwehr. Die Spielleitung kann die Rechnung an der Chatkarte aufklappen.",
+          "Note1": "Eine Verteidigung zählt als verbraucht, wenn die Attacke gelungen ist.",
+          "Note2": "Ein Schip auf die Attacke würfelt auch die Verteidigung neu; eine alte Trefferkarte verschwindet, wenn der Angriff jetzt abgewehrt wird. Bereits angewendeter Schaden muss dann von Hand korrigiert werden.",
+          "Note3": "Kritische Paraden, Paradepatzer und Fähigkeiten, die eine kritische Parade voraussetzen, entfallen bei der automatischen Verteidigung.",
+          "Note4": "Die Spielleitung muss angemeldet sein und die Szene des Ziels ansehen. Ohne markiertes Ziel und bei Gelegenheitsangriffen gilt der normale Ablauf."
         }
       }
     },
     "NoConditions": "Keine Zustände.",
     "ConditionsToStatus": "Alle Zustände und Effekte → Status",
     "NoPersonalDetails": "Noch keine persönlichen Daten eingetragen.",
-    "EditInNotes": "Bearbeiten → Notizen"
+    "EditInNotes": "Bearbeiten → Notizen",
+    "Mobile": {
+      "RollResult": {
+        "Title": "Wurfergebnis",
+        "Older": "Älterer Wurf",
+        "Newer": "Neuerer Wurf"
+      },
+      "Roll": {
+        "Less": "Weniger",
+        "More": "Mehr",
+        "Circumstances": "Umstände und Gegner",
+        "Situation": "Umstände",
+        "SpellOptions": "Modifikationen",
+        "Fine": "Feinheiten (Eigenschaften, FW, QS)"
+      },
+      "Settings": {
+        "Hybrid": {
+          "Name": "Hybrides Spiel (Tablet/Smartphone)",
+          "Hint": "Spieler und Spielleitung können mit Tablet oder Smartphone in einer eigenen Oberfläche teilnehmen. Experimentell."
+        },
+        "Mode": {
+          "Name": "Oberfläche auf diesem Gerät",
+          "Hint": "Automatisch erkennt Smartphone und Tablet. Notausgang: ?dsa5h-ui=foundry an die Adresse hängen."
+        },
+        "RollResult": {
+          "Name": "Wurfergebnis einblenden (Tablet)",
+          "Hint": "Chatkarte eigener Würfe als Blatt über dem Bogen, solange der Chat zu ist. Auf dem Smartphone immer."
+        }
+      },
+      "Mode": {
+        "auto": "Automatisch",
+        "phone": "Smartphone",
+        "tablet": "Tablet",
+        "foundry": "Foundry"
+      },
+      "Panel": {
+        "chat": "Chat",
+        "journal": "Journal",
+        "settings": "Einstellungen",
+        "combat": "Kampf",
+        "actors": "Akteure"
+      },
+      "Connected": "{n} von {total} Spielern verbunden",
+      "ChatUnread": "Chat, {n} ungelesen",
+      "Account": "Konto und Einstellungen",
+      "RoleGM": "Spielleitung",
+      "RolePlayer": "Spieler",
+      "Detected": "Automatisch erkannt: {mode} ({w} × {h} px).",
+      "Scene": "Spielfeld",
+      "On": "An",
+      "Off": "Aus",
+      "SceneHint": "Aus: ohne Szene, spart Akku und Datenvolumen. Gilt nur für dieses Gerät.",
+      "FoundrySettings": "Foundry-Einstellungen",
+      "ToDesktop": "Zur vollständigen Foundry-Oberfläche",
+      "Logout": "Abmelden",
+      "Close": "Schließen",
+      "Center": "Auf meinen Helden zentrieren",
+      "CenterGM": "Auf den eigenen Token zentrieren",
+      "Enlarge": "Spielfeld vergrößern",
+      "Pause": "Spiel pausieren",
+      "Resume": "Spiel fortsetzen",
+      "Heroes": "Meine Helden",
+      "HeroesGM": "Helden der Gruppe",
+      "NoHeroes": "Kein Held zugewiesen.",
+      "RequestRoll": "Probe anfordern",
+      "NoRequest": "Probenanfragen sind in dieser DSA5-Version nicht verfügbar.",
+      "NoToken": "Dein Held hat keinen Token in dieser Szene.",
+      "DesktopSite": "„Desktop-Website“ ist im Browser eingeschaltet, deshalb ist alles winzig. In Chrome: Menü ⋮ → Häkchen bei „Desktop-Website“ entfernen (bzw. unter Einstellungen → Websiteeinstellungen → Desktop-Website für diese Seite ausschalten).",
+      "Paused": "Das Spiel ist pausiert.",
+      "Blocked": "Dort kommt der Token nicht hin (Wand).",
+      "MessageActions": "Aktionen zur Nachricht",
+      "CastShort": "Dauer",
+      "Weapons": "Waffen",
+      "CombatSkills": "Kampftechniken",
+      "NoneLevel": "keine",
+      "Level": "Stufe {value} von {max}",
+      "Decrease": "{name} verringern",
+      "Increase": "{name} erhöhen",
+      "Full": "voll",
+      "MaxValue": "max. {max}",
+      "SaveFailed": "Der Wert konnte nicht gespeichert werden. Bitte noch einmal versuchen.",
+      "AllItems": "Alle",
+      "Menu": "Bogen-Menü",
+      "Round": "Runde {n}",
+      "CombatNotStarted": "Kampf vorbereitet",
+      "YourTurn": "Du bist dran!",
+      "OnTurn": "Am Zug",
+      "OnTurnYou": "Am Zug – du",
+      "NextUp": "Danach: {name}",
+      "RollInitiative": "Initiative würfeln",
+      "Target": "Ziel",
+      "Untarget": "Ziel aufheben",
+      "Theme": "Darstellung",
+      "Light": "Hell",
+      "Dark": "Dunkel",
+      "Chat": {
+        "Visibility": "Sicht",
+        "To": "An",
+        "All": "Alle",
+        "GM": "Spielleitung",
+        "ToAll": "Nachricht an alle …",
+        "WhisperTo": "Flüstern an {names} …",
+        "Mode": {
+          "public": "Öffentlich",
+          "ic": "Als Held",
+          "gm": "Privat · SL",
+          "blind": "Verdeckt",
+          "self": "Nur ich"
+        },
+        "Format": "Formatieren",
+        "Dice": "Würfel",
+        "Send": "Senden",
+        "Die": "W",
+        "FewerDice": "Weniger Würfel",
+        "MoreDice": "Mehr Würfel",
+        "ModDown": "Modifikator senken",
+        "ModUp": "Modifikator erhöhen",
+        "RollFree": "{roll} würfeln"
+      },
+      "Journal": {
+        "Pages": "Seiten",
+        "PageOf": "Seite {n} von {total}",
+        "Prev": "Zurück",
+        "Next": "Weiter"
+      }
+    },
+    "Mode": {
+      "title": "Modus",
+      "play": "Spielen",
+      "playHint": "Würfeln, LeP und Zustände — nichts versehentlich ändern",
+      "advance": "Steigern",
+      "advanceHint": "Werte mit AP steigern, Neues lernen oder zurücknehmen",
+      "edit": "Bearbeiten",
+      "editHint": "Alles frei ändern, ohne AP",
+      "gmOnly": "Bearbeiten ist in dieser Welt der Spielleitung vorbehalten",
+      "dropLocked": "Im Spielmodus lässt sich nichts Neues lernen — Modus über das Schloss auf „Steigern“ stellen."
+    },
+    "Banner": {
+      "FromComputer": "Vom Computer hochladen",
+      "FromComputerHint": "Bild auswählen, es wird verkleinert und im Standardordner gespeichert",
+      "FromFoundry": "Foundry-Dateibrowser",
+      "FromFoundryHint": "Vorhandenes Bild auf dem Server wählen",
+      "NoPath": "Die Spielleitung muss in den Moduleinstellungen noch einen Standardordner für Bannerbilder festlegen.",
+      "NoPathGM": "Bitte zuerst in den Moduleinstellungen einen Standardordner für Bannerbilder festlegen.",
+      "NoGM": "Zum Hochladen muss eine Spielleitung angemeldet sein.",
+      "NotImage": "Die gewählte Datei ist kein Bild.",
+      "NoPermission": "Keine Berechtigung für diesen Helden.",
+      "Failed": "Das Bannerbild konnte nicht hochgeladen werden.",
+      "Timeout": "Keine Antwort der Spielleitung — bitte erneut versuchen."
+    },
+    "DeleteRefund": "Löschen (AP zurückerstatten)",
+    "CompanionRemove": "Begleiter entfernen",
+    "CompanionRemoveConfirm": "{name} aus den Begleitern dieses Helden entfernen? Der Akteur selbst bleibt erhalten.",
+    "CompanionRemoveFailed": "Der Begleiter konnte nicht entfernt werden — bitte über ⋮ → Löschen.",
+    "Hud": {
+      "Tab": "DSA5 Helpers",
+      "Settings": "Einstellungen",
+      "Rules": "Hausregeln",
+      "Short": {
+        "help": "Helfen",
+        "woundCheck": "Wunden",
+        "stance": "Haltung",
+        "aim": "Zielen",
+        "weakness": "Schwachp.",
+        "distract": "Ablenken",
+        "passiveDefense": "Abwehr"
+      }
+    },
+    "Almanac": {
+      "Open": "Almanach öffnen",
+      "OpenEntry": "Im Almanach öffnen",
+      "QuestsIntro": "Freigegebene Aufträge der Gruppe. Details und Notizen im Almanach.",
+      "PersonaeIntro": "Freigegebene Personen und Wesen. Notizen der Gruppe im Almanach.",
+      "Hidden": "Für Spieler nicht freigegeben",
+      "Unavailable": "Der Almanach des Systems ist nicht verfügbar.",
+      "NoText": "Noch kein Text eingetragen."
+    },
+    "Quests": {
+      "Group0": "Hauptaufträge",
+      "Group1": "Nebenaufträge",
+      "Group2": "Persönliche Aufträge",
+      "Closed": "Abgeschlossen ({count})",
+      "Goals": "Ziele {done}/{total}",
+      "Empty": "Noch keine freigegebenen Aufträge."
+    },
+    "Personae": {
+      "Dramatis": "Dramatis Personae",
+      "Bestiary": "Bestiarium",
+      "Important": "Wichtig",
+      "Empty": "Noch niemand freigegeben."
+    },
+    "PowerSources": {
+      "Title": "Kraftspeicher",
+      "Abbr": "KS",
+      "Total": "AsP gesamt",
+      "Summary": "Kraftspeicher: {value} von {max} AsP, {count} Speicher. Übersicht öffnen",
+      "Source": "{name}: {value} von {max} AsP",
+      "Previous": "Vorherige Speicher",
+      "Next": "Weitere Speicher",
+      "Page": "{page} / {pages} · {count} Speicher",
+      "SaveFailed": "Kraftspeicher konnten nicht gespeichert werden. Bitte den Dialog erneut öffnen und noch einmal versuchen.",
+      "OpenFailed": "Der Kraftspeicherdialog konnte nicht geöffnet werden.",
+      "SavedAtOnce": "Änderungen werden sofort gespeichert."
+    },
+    "EnergyZones": {
+      "Summary": "{name}: {value} von {max} Zonen-LeP",
+      "Failed": "Zone ausgefallen",
+      "Penalty": "Widerstands-Malus {value}"
+    },
+    "Suggestions": {
+      "Title": "Vorschläge",
+      "Reason": {
+        "requested": "Angefragt",
+        "mention": "Im Chat genannt",
+        "usage": "Oft gewürfelt",
+        "specialist": "Bester der Gruppe",
+        "combat": "Im Kampf nützlich",
+        "advanced": "Kürzlich gesteigert",
+        "chance": "Gute Erfolgschance",
+        "classic": "Häufige Probe"
+      },
+      "RequestedCount": "{count} angefragt",
+      "Count": "Anzahl der Vorschläge",
+      "Fewer": "Weniger Vorschläge",
+      "More": "Mehr Vorschläge",
+      "SkillNames": {
+        "intimidation": "Einschüchtern",
+        "empathy": "Menschenkenntnis",
+        "stealth": "Verbergen"
+      }
+    },
+    "AlsoWorn": "Ebenfalls angelegt",
+    "AlsoWornHint": "Diese Waffen sind angelegt, aber keiner Hand zugeordnet. Würfeln geht trotzdem; „In die Hand“ ordnet sie über die Handwahl des Systems zu.",
+    "TakeInHand": "In die Hand nehmen"
   }
 }

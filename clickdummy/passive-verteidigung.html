@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Passive Verteidigung im Chat</title>
+<!-- Chatnachricht der Hausregel „Passive Verteidigung“ (Issue #62, Rückmeldung 2026-10-29: schneller sehen, ob
+     getroffen wurde). Heute: eigene Karte unter dem Angriff mit Titel, Satz und „Verteidigung (W20): 14“, nur eine
+     dünne farbige Linie links. Gewählt: Variante B „Symbol und Wort“ (Nutzer 2026-10-30, umgesetzt in
+     scripts/house-rules/passive-defense.js publicContent, .dsa5h-pd-card; verworfen: A Ergebnisband, C Ergebniszeile
+     in der Angriffskarte). Spieler sehen nur den Verteidigungswurf, V nur die SL in der Rechnung.
+     Gilt für Desktop- und Mobil-Chat. Werte sind Platzhalter.
+     Öffnen über clickdummy/start-server.bat → …/clickdummy/passive-verteidigung.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .16);
+  --line2: rgba(43, 39, 33, .28);
+  --gold: #c2a267;
+  --hit: #a3221a;
+  --hit-bg: #f6dcd8;
+  --def: #2f6b2a;
+  --def-bg: #dcebd6;
+  --miss: #6b6157;
+  --miss-bg: #e7e1d8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font: 14px 'GentiumBasic', serif; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.about { max-width: 720px; margin: 0 auto 14px; font-size: 14px; line-height: 1.4; color: #d9cbb4; text-align: center; }
+
+/* Chatspalte: Desktop 300 px wie die Foundry-Seitenleiste, Mobil 390 px */
+.log { display: flex; flex-direction: column; gap: 8px; margin: 0 auto; padding: 8px; border-radius: 6px; background: #2b2520; }
+.log.desktop { width: 316px; }
+.log.mobile { width: 390px; padding: 10px; }
+.msg { padding: 6px 8px 8px; border: 1px solid #8b6f3f; border-radius: 4px; background: var(--paper); color: var(--ink); font-size: 14px; }
+.mobile .msg { font-size: 15px; }
+.msg header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+.msg header .av { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(160deg, #b9a27c, #6d5a40); }
+.msg header b { flex: 1; font: 16px 'Andalus', serif; font-weight: 400; }
+.msg header small { color: var(--ink2); font-size: 12px; }
+.atk { display: flex; justify-content: space-between; gap: 6px; }
+.atk .t { font-weight: 700; }
+.atk .ok { color: var(--def); }
+.atk .bad { color: var(--hit); }
+.sub { color: var(--ink2); font-size: 13px; }
+.gm { margin-top: 6px; font-size: 12px; color: var(--ink2); }
+.gm summary { cursor: pointer; }
+
+/* Symbol und Wort */
+.stamp { display: grid; grid-template-columns: 46px 1fr; gap: 2px 10px; align-items: center; }
+.stamp .k { font-size: 12px; color: var(--ink2); }
+.stamp .ic { grid-row: span 3; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; font-size: 24px; color: #fff; }
+.stamp .w { font: 22px/1 'Andalus', serif; }
+.stamp .s { font-size: 13px; color: var(--ink2); }
+.stamp.hit .ic { background: var(--hit); }
+.stamp.hit .w { color: var(--hit); }
+.stamp.defended .ic { background: var(--def); }
+.stamp.defended .w { color: var(--def); }
+.stamp.miss .ic { background: var(--miss); }
+.stamp.miss .w { color: var(--miss); }
+
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="device"><legend>Chat</legend><button data-v="desktop" aria-pressed="true">Desktop</button><button data-v="mobile">Mobil</button></fieldset>
+</div>
+<p class="about" id="about"></p>
+<div id="app"></div>
+<script>
+const ABOUT = 'Links ein großes rundes Symbol (Schwert bzw. Schild), daneben klein „Passive Verteidigung“, das Ergebnis als großes Wort und darunter der Satz mit dem Verteidigungswurf.';
+const CASES = [
+  { o: 'hit', word: 'Treffer', icon: '⚔', text: 'Allacaya trifft Ork-Plünderer.', at: 12, atOk: true, roll: 14, v: 9 },
+  { o: 'defended', word: 'Abgewehrt', icon: '🛡', text: 'Ork-Plünderer wehrt den Angriff von Wulfgrim ab.', at: 9, atOk: true, roll: 6, v: 9 },
+  { o: 'miss', word: 'Verfehlt', icon: '✗', text: 'Der Angriff von Kaila auf Ork-Späher misslingt.', at: 17, atOk: false },
+];
+const state = { device: 'desktop' };
+const gm = c => c.roll ? `<details class="gm"><summary>Passive Verteidigung (nur SL)</summary>AT gelungen. Verteidigung mit Säbel: V ${c.v}, gewürfelt ${c.roll} – abgewehrt bei ${c.v} oder weniger (1 immer, 20 nie).</details>` : '';
+const header = (who, sub) => `<header><span class="av"></span><b>${who}</b><small>${sub}</small></header>`;
+const attack = c => `<div class="atk"><span><span class="t">Attacke</span> · Säbel</span><span class="${c.atOk ? 'ok' : 'bad'}">W20 ${c.at} – ${c.atOk ? 'gelungen' : 'misslungen'}</span></div>`;
+function cardFor(c) {
+  const who = c.text.split(' ')[0] === 'Der' ? 'Kaila' : c.o === 'defended' ? 'Wulfgrim' : 'Allacaya';
+  const atkMsg = `<div class="msg">${header(who, 'gerade eben')}${attack(c)}<div class="sub">Ziel: ${c.o === 'miss' ? 'Ork-Späher' : 'Ork-Plünderer'}</div>`;
+  const rollTxt = c.roll ? `Verteidigung (W20): ${c.roll}` : '';
+  const pd = `<div class="stamp ${c.o}"><span class="ic">${c.icon}</span><span class="k">Passive Verteidigung</span><span class="w">${c.word}</span><span class="s">${c.text}${rollTxt ? ' <b>' + rollTxt + '</b>' : ''}</span></div>`;
+  return `${atkMsg}</div><div class="msg">${header(who, 'gerade eben')}${pd}${gm(c)}</div>`;
+}
+function render() {
+  document.getElementById('about').textContent = ABOUT;
+  document.getElementById('app').innerHTML = `<div class="log ${state.device}">${CASES.map(cardFor).join('')}</div>`;
+}
+document.querySelector('.switch').addEventListener('click', ev => {
+  const b = ev.target.closest('button[data-v]'); if (!b) return;
+  const g = b.closest('fieldset');
+  g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  state[g.dataset.group] = b.dataset.v; render();
+});
+render();
+</script>
+<script src="pages.js?v=7"></script>
+</body>
+</html>

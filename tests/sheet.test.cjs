@@ -4,17 +4,22 @@ const fs=require('node:fs');
 const path=require('node:path');
 const {createRequire}=require('node:module');
 const root=path.resolve(__dirname,'..');
-const dataRoot=path.resolve(root,'../..');
-const app=process.env.FOUNDRY_APP_PATH || path.resolve(root,'../../../../../foundry-nodejs-v14');
+const dataRoot=process.env.FOUNDRY_DATA_PATH || 'D:/FoundryVTT/user-data-paths/v14/Data';
+const app=process.env.FOUNDRY_APP_PATH || 'D:/FoundryVTT/foundry-nodejs-v14';
+const targetGeneration=JSON.parse(fs.readFileSync(path.join(app,'package.json'),'utf8')).release.generation;
 const req=createRequire(path.join(app,'package.json'));
 const H=req('handlebars').create();
 const postcss=req('postcss');
 const {parseDocument}=req('htmlparser2');
 const dom=req('domutils');
-const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+// Zeilenenden vereinheitlichen: mit core.autocrlf checkt Git unter Windows CRLF aus, die Muster unten erwarten LF
+const read=p=>fs.readFileSync(path.join(root,p),'utf8').replace(/\r\n/g,'\n');
 const lookup=(o,p)=>p.split('.').reduce((v,k)=>v?.[k],o);
 const de=JSON.parse(fs.readFileSync(path.join(dataRoot,'systems/dsa5/lang/de.json')));
 const own=JSON.parse(read('lang/de.json'));
+// System-JS: bis DSA5 8.1.x Einzeldateien unter modules/, ab 8.2.0 ein gebündeltes bundle/modules/dsa5.js
+const systemBundle=path.join(dataRoot,'systems/dsa5/bundle/modules/dsa5.js');
+const systemJs=paths=>fs.existsSync(systemBundle)?[fs.readFileSync(systemBundle,'utf8')]:paths.map(p=>fs.readFileSync(path.join(dataRoot,'systems/dsa5/modules',p),'utf8'));
 const missing=new Set();
 const localize=key=>{if(typeof key!=='string')return '';const value=lookup(own,key)??lookup(de,key);if(value===undefined && !key.startsWith('TYPES.Item.'))missing.add(key);return value??key;};
 // Wie Foundrys {{localize}}: Hash-Argumente ersetzen {platzhalter} (game.i18n.format).
@@ -34,7 +39,7 @@ H.registerHelper('formInput',(field,options)=>{
 H.registerHelper('selectOptions',()=>new H.SafeString('<option>Test</option>'));
 const modulePaths=['templates/actors/dsa5-helpers-character-sheet.hbs',...fs.readdirSync(path.join(root,'templates/actors/parts')).filter(f=>f.endsWith('.hbs')).map(f=>'templates/actors/parts/'+f)];
 for(const p of modulePaths)H.registerPartial('modules/dsa5-helpers/'+p,read(p));
-for(const p of ['companions/actor-companion','companions/companion-card','parts/member-card-header','parts/horse']) H.registerPartial('systems/dsa5/templates/actors/'+p+'.hbs',fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/actors/'+p+'.hbs'),'utf8'));
+for(const p of [...(targetGeneration>=14?['companions/actor-companion','companions/companion-card','parts/member-card-header']:[]),'parts/horse']) H.registerPartial('systems/dsa5/templates/actors/'+p+'.hbs',fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/actors/'+p+'.hbs'),'utf8'));
 const render=H.compile(read(modulePaths[0]));
 const valueField=v=>({value:v});
 function item(id,type='skill') {return {_id:id,id,name:'Test '+id,img:'icons/svg/d20.svg',type,attack:13,parry:8,damagedie:'1d6',damageAdd:'+2',structureMax:10,structureCurrent:7,system:{characteristic1:valueField('mu'),characteristic2:valueField('ge'),characteristic3:valueField('kk'),talentValue:valueField(7),burden:valueField('yes'),quantity:valueField(2),preparedWeight:1,step:valueField(1),maxRank:valueField(3),max:valueField(3),guidevalue:valueField('ge'),weapontype:valueField(0),attack:valueField(12),parry:valueField(6),combatskill:valueField('Swords'),reach:valueField('medium'),AsPCost:valueField('4'),castingTime:valueField('2'),range:valueField('8'),equipmentType:valueField('tools'),worn:valueField(true),protection:valueField(3),calculatedEncumbrance:1,capacity:15,bagweight:2,talent:{value:'Test skill',value2:'Other',value3:'Third'},interval:valueField('1 h'),usedTestCount:valueField(1),allowedTestCount:valueField(7),cummulatedQS:valueField(3)}};}
@@ -42,7 +47,7 @@ function fixture() {
  const skills=[item('skill')],spell=item('spell','spell'),weapon=item('weapon','meleeweapon'),armor=item('armor','armor'),bag=item('bag','equipment');bag.children=[item('bag-child','equipment')];bag.children[0].system.weight=valueField(0.75);bag.system.equipmentType.value='bags';bag.system.capacity=10;
  const tradition=item('tradition','specialability');tradition.name='Tradition (Gildenmagier)';tradition.system.category={value:'magical'};
  // Foundry's EmbeddedCollection is a Map with Array-style helpers — find() is what the sheet uses.
- const items=Object.assign(new Map([skills[0],spell,weapon,armor,bag,tradition,...bag.children].map(i=>[i._id,i])),{find(fn){return [...this.values()].find(fn);}});
+ const items=Object.assign(new Map([skills[0],spell,weapon,armor,bag,tradition,...bag.children].map(i=>[i._id,i])),{filter(fn){return [...this.values()].filter(fn);},find(fn){return [...this.values()].find(fn);}});
  const status=Object.fromEntries(['wounds','astralenergy','karmaenergy','fatePoints','soulpower','toughness','dodge','initiative','speed'].map(k=>[k,{value:10,current:10,max:20,modifier:0,advances:0,initial:5}]));status.size=valueField('average');
  const system={status,characteristics:Object.fromEntries(['mu','kl','in','ch','ff','ge','ko','kk'].map(k=>[k,valueField(13)])),sheetLocked:valueField(false),details:{experience:{current:100,total:1000,spent:900},biography:valueField('Public biography'),notes:{value:'Notes',ownerdescription:'OWNER_SECRET',gmdescription:'GM_SECRET'}},temperature:{coldProtection:0,heatProtection:0},repeatingEffects:{startOfRound:{},disabled:{}}};
  const prepare={allSkillsLeft:{body:skills,social:[],nature:[]},allSkillsRight:{knowledge:[],trade:[]},sortedSpecs:{general:['general'],combat:['Combat'],magical:[],clerical:[]},specAbs:{general:[item('general','specialability')],Combat:[item('combat','specialability')]},advantages:[],disadvantages:[],mentalAttrs:['mu','kl','in','ch'],bodyAttrs:['ff','ge','ko','kk'],canAdvance:true,sheetLocked:false,schips:[{value:1,cssClass:''}],magic:{hasSpells:true,hasPrayers:true,spellList:[spell],ritualList:[],liturgy:[item('liturgy','liturgy')],ceremony:[]},wornMeleeWeapons:[weapon],wornRangedWeapons:[],wornArmor:[armor],combatskills:[item('combatskill','combatskill')],brawling:{attack:12,parry:6},inventory:{bags:{show:true,items:[bag]},tools:{show:true,dataType:'equipment',items:[item('tool','equipment')]}},money:{coins:[item('coin','money')]},aggregatedtests:[item('aggregate','aggregatedTest')],diseases:[item('disease','disease')],itemModifiers:{Attack:{value:1,sources:['Test source']}}};
@@ -53,18 +58,74 @@ function fixture() {
  const actor={system,items,isOwner:true,flags:{favorites:['skill','weapon','missing']},getFlag(_scope,key){return this.flags[key];},async setFlag(scope,key,value){this.saved={scope,key,value};}};
  return {context,actor};
 }
-let Sheet;
+let Sheet, createSheet;
 // data:-URLs, weil die Modul-.js hier sonst als CommonJS gälten; der eine relative Import wird mit ersetzt.
-const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code).toString('base64');
+const runtimeUrl='data:text/javascript;base64,'+Buffer.from(read('scripts/compat/runtime.js')).toString('base64');
+const dataUrl=code=>'data:text/javascript;base64,'+Buffer.from(code.replace(/['"](?:\.\.\/|\.\/)compat\/runtime\.js['"]/g,JSON.stringify(runtimeUrl))).toString('base64');
 // Hausregeln: rules.js importiert wound-check.js und help-action.js relativ — alles als data:-URL.
-function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(dataUrl(read('scripts/house-rules/help-action.js')))));}
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={i18n:{localize},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};({Dsa5HelpersCharacterSheet:Sheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())))));return Sheet;}
+// help-action.js importiert maneuvers.js relativ (hideModifierRows).
+function helpActionUrl(){return dataUrl(read('scripts/house-rules/help-action.js').replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))));}
+function suggestionsUrl(){return dataUrl(read('scripts/skill-suggestions/context.js').replace("'./score.js'",JSON.stringify(dataUrl(read('scripts/skill-suggestions/score.js')))));}
+function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').replace("'./wound-check.js'",JSON.stringify(dataUrl(read('scripts/house-rules/wound-check.js')))).replace("'./help-action.js'",JSON.stringify(helpActionUrl())).replace("'./system-sheet.js'",JSON.stringify(dataUrl(read('scripts/house-rules/system-sheet.js')))).replace("'./maneuvers.js'",JSON.stringify(dataUrl(read('scripts/house-rules/maneuvers.js')))).replace("'./hit-consequences.js'",JSON.stringify(dataUrl(read('scripts/house-rules/hit-consequences.js')))).replace("'./passive-defense.js'",JSON.stringify(dataUrl(read('scripts/house-rules/passive-defense.js')))));}
+function houseRulesAppUrl(){return dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())));}
+// Echter Anzeigehelfer aus der installierten Rüstkammer II, keine nachgebaute Berechnung.
+function energyZonesUrl(){const dir=path.join(dataRoot,'modules/dsa5-armory2/modules');if(!fs.existsSync(path.join(dir,'energyzones.js')))return 'file:///unavailable-armory-test-module.js';return dataUrl(fs.readFileSync(path.join(dir,'energyzones.js'),'utf8').replace(/['"]\.\/hitlocation\.js['"]/,JSON.stringify(dataUrl(fs.readFileSync(path.join(dir,'hitlocation.js'),'utf8')))));}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={release:{generation:targetGeneration},i18n:{localize,has:key=>(lookup(own,key)??lookup(de,key))!==undefined},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};if(targetGeneration===13)delete global.dsa5.sheets.ActorSheetdsa5Character.prototype.prepareCompanionTab;({Dsa5HelpersCharacterSheet:Sheet,createCharacterSheet:createSheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/powersource-dialog.js'",JSON.stringify(dataUrl(read('scripts/compat/powersource-dialog.js')))).replace("foundry.utils.getRoute('modules/dsa5-armory2/modules/energyzones.js')",JSON.stringify(energyZonesUrl())).replace("'../skill-suggestions/context.js'",JSON.stringify(suggestionsUrl())).replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'./almanac.js'",JSON.stringify(dataUrl(read('scripts/sheets/almanac.js')))).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
+// #63 Layout A: Probendialoge des Moduls auch am Desktop (480 px), abschaltbar je Gerät; CSS in eigener Datei, auch für v13.
+test('roll dialogs (#63): desktop uses the mobile layout, own CSS file scoped to body.dsa5h-rd-*, client setting',()=>{
+ assert(JSON.parse(read('module.json')).styles.includes('styles/dsa5-helpers-roll-dialog.css'));
+ const loose=[];postcss.parse(read('styles/dsa5-helpers-roll-dialog.css')).walkRules(r=>{for(const s of r.selectors)if(!/^body\.dsa5h-(rd-on|rd-desktop|tablet)\b/.test(s.trim()))loose.push(s);});
+ assert.deepEqual(loose,[],'Probendialog-Regeln nur hinter body.dsa5h-rd-on/-desktop');
+ assert(!read('styles/dsa5-helpers-mobile.css').includes('.dsa5h-rd-head'),'Regeln nicht doppelt im Mobil-CSS');
+ const src=read('scripts/mobile/roll-dialog.js'),main=read('scripts/dsa5-helpers.js');
+ assert(/register\(MODULE_ID, 'rollDialogDesktopStyle', \{[^}]*scope: 'world', config: false, restricted: true, type: String, default: 'module'/.test(src),'Welt-Einstellung der SL (2026-11-02)');
+ assert(src.includes("get(MODULE_ID, 'rollDialogDesktopStyle') !== 'module') return;"));
+ assert(src.includes("document.body.classList.add('dsa5h-rd-on', 'dsa5h-rd-desktop')")&&src.includes("document.body.classList.add('dsa5h-rd-on');"));
+ assert(/initMobile\(\);\n[^\n]*\n\s*initRollDialogs\(mobileMode\);/.test(main),'nach initMobile, damit mobileMode feststeht');
+ assert(src.includes('const DESKTOP_WIDTH = 480;'));
+ for(const l of [own,JSON.parse(read('lang/en.json'))])for(const k of ['Name','Hint','Module','System'])assert.equal(typeof l.DSA5HELPERS.Settings.RollDialogDesktop[k],'string');
+});
+test('mobile: CSS loaded and scoped, all texts localized',()=>{
+ assert(JSON.parse(read('module.json')).styles.includes('styles/dsa5-helpers-mobile.css'));
+ const loose=[];postcss.parse(read('styles/dsa5-helpers-mobile.css')).walkRules(r=>{if(r.parent.type==='atrule'&&r.parent.name==='keyframes')return;for(const s of r.selectors)if(!/body\.dsa5h-|^#dsa5h-m-shell|^\.dsa5h-m-/.test(s.trim()))loose.push(s);});
+ assert.deepEqual(loose,[],'mobile selectors must stay behind body.dsa5h-mobile / own classes');
+ const en=JSON.parse(read('lang/en.json'));const get=(o,k)=>k.split('.').reduce((a,x)=>a?.[x],o);
+ const src=['mobile','shell','canvas-touch','touch-context','roll-dialog','roll-result'].map(f=>read(`scripts/mobile/${f}.js`)).join('\n');
+ const used=new Set([...src.matchAll(/DSA5HELPERS\.Mobile\.([A-Za-z.]*[A-Za-z])/g)].map(m=>m[1]));for(const m of src.matchAll(/L\('([A-Za-z.]+)'\)/g))used.add(m[1]);
+ for(const k of ['auto','phone','tablet','foundry'])used.add(`Mode.${k}`);for(const k of ['chat','journal','settings','combat'])used.add(`Panel.${k}`);
+ used.delete('Mode');used.delete('Panel'); // nur als Präfix `…Mode.${m}`, Einzelwerte oben ergänzt
+ for(const k of used){assert.equal(typeof get(own.DSA5HELPERS.Mobile,k),'string','de: Mobile.'+k);assert.equal(typeof get(en.DSA5HELPERS.Mobile,k),'string','en: Mobile.'+k);}
+});
+// #65 Variante B: Anzahl in der Ausrüstung öffnet mobil das Zahlenfeld der LeP-Kugeln (Untergrenze 0 wie das System), „⋮“ 44 px.
+test('mobile (#65): quantity opens the number field, ⋮ has a 44 px hit area',()=>{
+ const src=read('scripts/mobile/mobile.js');
+ assert.equal((src.match(/quantityPopOnTap\(el, app\);/g)||[]).length,2,'Smartphone und Tablet');
+ assert(src.includes(`'.dsa5h-content [data-action="quantityClick"]'`));
+ assert(read('templates/actors/parts/inventory-row.hbs').includes('data-action="quantityClick"'));
+ assert(/write: next => item\.update\(\{ 'system\.quantity\.value': next \}\)/.test(src));
+ assert(/save\(Math\.max\(0, Math\.min\(max\(\)/.test(src),'nie unter 0');
+ const css=read('styles/dsa5-helpers-mobile.css');assert(/\.dsa5h-inventory-row \[data-action="itemContextMenu"\] \{[^}]*min-width: 44px/.test(css));
+});
+// #64 Variante A: eigene Würfe als Blatt von unten, Smartphone immer, Tablet per Client-Einstellung.
+test('mobile (#64): own rolls as a bottom sheet, tablet setting, card buttons forwarded to the chat log',()=>{
+ const src=read('scripts/mobile/roll-result.js'),mob=read('scripts/mobile/mobile.js');
+ assert(mob.includes("initRollResult(mode);"));
+ assert(/register\(MODULE_ID, 'rollResultTablet', \{[^}]*scope: 'client'[^}]*type: Boolean, default: true/.test(mob));
+ assert(src.includes('message.isAuthor && message.visible'),'nur eigene, sichtbare Würfe');
+ assert(src.includes("mobile === 'phone' || game.settings.get(MODULE_ID, 'rollResultTablet')"));
+ assert(src.includes("document.body.dataset.dsa5hPanel === 'chat'"),'bei offenem Chat nicht');
+ assert(src.includes('message.renderHTML()'),'echte Chatkarte');
+ assert(src.includes('target.dispatchEvent(new MouseEvent'),'Knöpfe an die Karte im Chat-Log weiterreichen');
+ for(const l of ['de','en']){const m=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Mobile;assert(m.Settings.RollResult.Name&&m.Settings.RollResult.Hint&&m.RollResult.Title,l);}
+ assert(read('styles/dsa5-helpers-mobile.css').includes(':is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message {'),'Kartenstil wie im Chat');
+});
 // Issue #7: Hover-Effekte nur in @media (hover: hover), damit sie auf Touch-Geräten nicht hängen bleiben (Modul und Click-Dummy).
-test('every :hover rule sits inside @media (hover: hover)',()=>{for(const file of ['styles/dsa5-helpers-character-sheet.css','clickdummy/style.css']){const bad=[];postcss.parse(read(file)).walkRules(rule=>{if(!/:hover\b/.test(rule.selector))return;let ok=false;for(let p=rule.parent;p&&p.type==='atrule';p=p.parent)if(p.name==='media'&&/\(\s*hover\s*:\s*hover\s*\)/.test(p.params))ok=true;if(!ok)bad.push(rule.selector.replace(/\s+/g,' '));});assert.deepEqual(bad,[],file+': :hover outside @media (hover: hover)');}});
-test('full hero renders all ten tabs, real item bindings and no duplicate form names',async()=>{const {context}=await prepare();const html=render(context);const panels=elements(html,el=>el.attribs?.['data-tab-panel']);assert.equal(panels.length,10);assert(html.includes('data-action="rollAggregatedProbe"'));assert(html.includes('data-which="3"'));assert(!html.includes('data-item-id="bag-child"'),'bag contents belong to the DSA5 item sheet, not a sheet-side dialog');assert(html.includes('OWNER_SECRET'));assert(html.includes('GM_SECRET'));const names=elements(html,el=>el.attribs?.name).map(el=>el.attribs.name);assert.equal(names.length,new Set(names).size,'duplicate form field names');assert(!html.includes('TabInProgress'));});
+test('click dummy: every page loads the page menu and is listed there, with every link pointing at an existing page',()=>{const dir=path.join(root,'clickdummy');const pages=fs.readdirSync(dir,{recursive:true}).map(p=>p.split(path.sep).join('/')).filter(p=>p.endsWith('.html')&&!p.endsWith('.dc.html')&&!p.includes('vendor/'));const menu=read('clickdummy/pages.js');const listed=new Set([...menu.matchAll(/\["([\w/.-]+\.html)[?#"]/g)].map(m=>m[1]));for(const p of pages){assert.match(read('clickdummy/'+p),/<script src="(\.\.\/)?pages\.js(\?v=\d+)?"><\/script>/,p+' does not load pages.js');assert(listed.has(p),p+' missing in pages.js');}for(const p of listed)assert(pages.includes(p),'pages.js lists missing page '+p);});
+test('every :hover rule sits inside @media (hover: hover)',()=>{for(const file of ['styles/dsa5-helpers-character-sheet.css','styles/dsa5-helpers-roll-dialog.css','clickdummy/style.css']){const bad=[];postcss.parse(read(file)).walkRules(rule=>{if(!/:hover\b/.test(rule.selector))return;let ok=false;for(let p=rule.parent;p&&p.type==='atrule';p=p.parent)if(p.name==='media'&&/\(\s*hover\s*:\s*hover\s*\)/.test(p.params))ok=true;if(!ok)bad.push(rule.selector.replace(/\s+/g,' '));});assert.deepEqual(bad,[],file+': :hover outside @media (hover: hover)');}});
+test('full hero renders all ten tabs, real item bindings and no duplicate form names',async()=>{const {context}=await prepare();const html=render(context);const panels=elements(html,el=>el.attribs?.['data-tab-panel']);assert.equal(panels.length,targetGeneration===13?9:10);assert(html.includes('data-action="rollAggregatedProbe"'));assert(html.includes('data-which="3"'));assert(!html.includes('data-item-id="bag-child"'),'bag contents belong to the DSA5 item sheet, not a sheet-side dialog');assert(html.includes('OWNER_SECRET'));assert(html.includes('GM_SECRET'));const names=elements(html,el=>el.attribs?.name).map(el=>el.attribs.name);assert.equal(names.length,new Set(names).size,'duplicate form field names');assert(!html.includes('TabInProgress'));});
 test('limited rendering excludes private actor data',async()=>{const {sheet}=await prepare();sheet.limited=true;const context=await sheet._prepareContext({});const html=render(context);assert(!html.includes('OWNER_SECRET'));assert(!html.includes('GM_SECRET'));assert(!html.includes('data-tab-panel'));assert(html.includes('Public biography'));assert.equal(Sheet.LIMITEDPARTS,Sheet.PARTS);});
 test('observer and player views exclude GM and owner notes appropriately',async()=>{const {context}=await prepare();context.isGM=false;let html=render(context);assert(!html.includes('GM_SECRET'));assert(html.includes('OWNER_SECRET'));context.owner=false;context.editable=false;context.dsa5h.editMode=false;html=render(context);assert(!html.includes('OWNER_SECRET'));assert(!html.includes('GM_SECRET'));assert(!html.includes('data-action="dsa5hFavorite"'));});
 test('Heldenname (#25): Tooltip im Spielmodus, Schrift wird bis 22px eingepasst, danach „…“',async()=>{
@@ -78,12 +139,67 @@ test('Heldenname (#25): Tooltip im Spielmodus, Schrift wird bis 22px eingepasst,
 });
 test('personal details are the first, default notes sub-tab (issue #26)',async()=>{const {sheet,context}=await prepare();const html=render(context);assert.deepEqual(context.dsa5h.subnav.find(n=>n.tab==='notes').items.slice(0,3).map(i=>i.id),['details','biography','notes']);assert.equal(sheet._subtabs.notes,'details');assert(!html.includes('dsa5h-notes-layout'));const panel=id=>elements(html,el=>el.attribs?.['data-sub-panel']==='notes:'+id)[0];assert(panel('details')&&!('hidden' in panel('details').attribs));assert(!('hidden' in panel('biography').attribs),'all notes sections stacked (#32)');assert.equal(elements(html,el=>el.name==='input'&&/^system\.details\.(gender|family|age|height|weight|Home|socialstate|haircolor|eyecolor|distinguishingmark)\.value$/.test(el.attribs?.name||'')).length,10);});
 test('notes editors and coin inputs follow the real ApplicationV2 context flag "editable"',async()=>{const {context}=await prepare();delete context.isEditable;context.editable=true;let html=render(context);const coin=()=>elements(html,el=>el.attribs?.class==='money-change')[0];const editors=()=>elements(html,el=>['system.details.biography.value','system.details.notes.value','system.details.notes.ownerdescription','system.details.notes.gmdescription'].includes(el.attribs?.name));assert(coin());assert(!('disabled' in coin().attribs));assert.equal(editors().length,4);assert(editors().every(el=>!('disabled' in el.attribs)));context.editable=false;html=render(context);assert('disabled' in coin().attribs);assert(editors().every(el=>'disabled' in el.attribs));});
+test('three modes (#34): lock closed = play, open = advance or edit (actor flag), edit can be reserved for the GM',async()=>{
+ const {sheet,actor}=await prepare();const saved=global.game;
+ try {
+  const ctx=async()=>(await sheet._prepareContext({})).dsa5h;
+  assert.equal((await ctx()).mode,'edit','unlocked without flag: edit as before');
+  actor.flags.sheetMode='advance';let d=await ctx();assert.equal(d.mode,'advance');assert(d.advanceMode&&!d.editMode);
+  let html=render(await sheet._prepareContext({}));
+  assert(html.includes('data-fct="_advanceItem"'),'advance: AP steppers');assert(elements(html,el=>el.attribs?.class==='skill-advances').every(el=>Object.hasOwn(el.attribs,'disabled')),'advance: no direct FW input');
+  assert(elements(html,el=>String(el.attribs?.['data-fct']).includes('Advance')||el.attribs?.['data-fct']==='_advanceItem').every(el=>!String(el.attribs.class??'').includes('dsa5h-edit-only')),'steppers are adv-only, not edit-only');
+  actor.flags.sheetMode='edit';sheet.context.prepare.sheetLocked=true;assert.equal((await ctx()).mode,'play');sheet.context.prepare.sheetLocked=false;
+  global.game={...saved,user:{isGM:false},settings:{get:(m,k)=>k==='playersMayEdit'?false:'light'}};
+  assert.equal((await ctx()).mode,'advance','players without edit right fall back to advance');assert.equal(sheet._mayEdit(),false);
+  global.game={...saved,user:{isGM:true},settings:{get:(m,k)=>k==='playersMayEdit'?false:'light'}};assert.equal((await ctx()).mode,'edit','GM may always edit');
+  // Spielmodus: nichts Neues lernen per Drag & Drop, Ausrüstung schon
+  let notified=null;global.game={...saved,user:{isGM:true}};global.ui={notifications:{info:k=>{notified=k;},warn:k=>{notified=k;}}};
+  sheet.context.prepare.sheetLocked=true;actor.system.sheetLocked.value=true;
+  actor.uuid='Actor.hero';await sheet._onDropItem({}, {type:'specialability',parent:null});assert.equal(notified,'DSA5HELPERS.Mode.dropLocked');
+ } finally { global.game=saved;delete actor.flags.sheetMode;actor.system.sheetLocked.value=false;sheet.context.prepare.sheetLocked=false; }
+});
+test('banner upload (#46): hints without folder or GM, the GM client uploads for owners only and sets the flag',async()=>{
+ const saved={game:global.game,ui:global.ui,foundry:global.foundry,fetch:global.fetch,File:global.File};
+ const B=await import(dataUrl(read('scripts/banner-upload.js')));
+ const notes=[];let handler=null;const emitted=[];const uploads=[];let flag=null;
+ const actor={id:'a1',name:'Wulf',testUserPermission:(u,l)=>u.id==='owner'&&l==='OWNER',setFlag:async(m,k,v)=>{flag=[m,k,v];}};
+ let path='';const gm={id:'gm',isGM:true};
+ try {
+  global.ui={notifications:{warn:k=>notes.push(k),error:k=>notes.push(k),info:k=>notes.push(k)}};
+  global.game={user:{id:'p',isGM:false,can:()=>false},users:{activeGM:null,get:id=>({id})},actors:{get:()=>actor},settings:{get:()=>path},socket:{on:(n,f)=>{handler=f;},emit:(n,m)=>emitted.push(m)}};
+  assert.equal(B.canBrowseFiles(),false);assert.equal(B.canBrowseFiles(gm),true);assert.equal(B.canBrowseFiles({can:k=>k==='FILES_BROWSE'}),true);
+  await B.uploadBannerFromComputer(actor);assert.equal(notes.pop(),'DSA5HELPERS.Banner.NoPath','no folder: player is told to ask the GM');
+  path='worlds/dsa5/banner/';assert.equal(B.bannerPath(),'worlds/dsa5/banner','trailing slash removed');
+  await B.uploadBannerFromComputer(actor);assert.equal(notes.pop(),'DSA5HELPERS.Banner.NoGM','no GM online');
+  // SL-Client: lädt hoch und setzt das Flag, aber nur für Besitzer
+  B.initBannerSocket();global.game.user=gm;global.game.users.activeGM=gm;
+  global.fetch=async()=>({blob:async()=>({type:'image/webp'})});global.File=class{constructor(parts,name,o){this.name=name;this.type=o.type;}};
+  global.foundry={applications:{apps:{FilePicker:{implementation:{createDirectory:async()=>{},upload:async(src,dir,file)=>{uploads.push([src,dir,file.name]);return {path:dir+'/'+file.name};}}}}}};
+  await handler({type:'bannerUpload',requestId:'r1',userId:'owner',actorId:'a1',fileName:'wulf.webp',dataUrl:'data:'});
+  assert.deepEqual(uploads[0],['data','worlds/dsa5/banner','wulf.webp']);assert.deepEqual(flag,['dsa5-helpers','bannerImg','worlds/dsa5/banner/wulf.webp']);assert.equal(emitted.pop().ok,true);
+  flag=null;await handler({type:'bannerUpload',requestId:'r2',userId:'stranger',actorId:'a1',fileName:'x.webp',dataUrl:'data:'});
+  assert.equal(flag,null);assert.equal(emitted.pop().error,'DSA5HELPERS.Banner.NoPermission');
+  global.game.user={id:'gm2',isGM:true};flag=null;await handler({type:'bannerUpload',requestId:'r3',userId:'owner',actorId:'a1',fileName:'y.webp',dataUrl:'data:'});assert.equal(flag,null,'only the active GM handles requests');
+ } finally { Object.assign(global,saved); }
+});
+test('house rules in the system sheet (#44): every rule names its entries, system sheets get the heart and the header entries, ours are left alone',async()=>{
+ const {rules}=await houseRuleModules();const S=await import(dataUrl(read('scripts/house-rules/system-sheet.js')));
+ for(const rule of rules.HOUSE_RULES){assert(Array.isArray(rule.entries)&&rule.entries.length,rule.id+' names its entries');assert(rule.entries.some(e=>e.sheet),rule.id+': module sheet');assert(rule.entries.some(e=>['skill','header','dialog'].includes(e.system)),rule.id+': system sheet');
+  for(const e of rule.entries.filter(e=>['skill','header'].includes(e.system)))assert.equal(typeof e.run,'function',rule.id+' entry runs');}
+ const app=(type,classes)=>({actor:{type},options:{classes}});
+ assert(S.isSystemSheet(app('character',['dsa5','actor'])));assert(S.isSystemSheet(app('npc',['dsa5','actor'])));
+ assert(!S.isSystemSheet(app('creature',['dsa5','actor'])),'no creatures');assert(!S.isSystemSheet(app('character',['dsa5','dsa5-helpers-sheet'])),'not our sheet');
+ const on=id=>id==='helpAction';
+ // Helfen läuft im Systembogen über den Probendialog (Nutzer 2026-10-21), nicht mehr über das Kopfmenü.
+ assert.deepEqual(S.activeEntries('header',rules.HOUSE_RULES,on),[],'help: no header entry');assert(rules.HOUSE_RULES.find(r=>r.id==='helpAction').entries.some(e=>e.system==='dialog'));assert.deepEqual(S.activeEntries('skill',rules.HOUSE_RULES,on),[],'inactive rule: no heart');
+ assert.deepEqual(S.activeEntries('skill',rules.HOUSE_RULES,()=>true).map(x=>x.rule.id),['woundCheck']);
+});
 test('play mode disables FW correction, preserves rolls',async()=>{const {sheet}=await prepare();sheet.context.prepare.sheetLocked=true;sheet.context.prepare.canAdvance=false;const context=await sheet._prepareContext({});const html=render(context);const values=elements(html,el=>el.attribs?.class==='skill-advances');assert(values.length);assert(values.every(el=>Object.hasOwn(el.attribs,'disabled')));assert(html.includes('data-action="skillSelect"'));assert(!html.includes('data-fct="_advanceItem"'));});
 test('favorites use actor flags, remove missing items and enforce ownership',async()=>{const {sheet,actor,context}=await prepare();assert.equal(context.dsa5h.favorites.missing,undefined);assert.equal(context.dsa5h.favoriteGroups.length,2);await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'skill'}});assert.deepEqual(actor.saved.value,['weapon']);delete actor.saved;sheet.isEditable=false;await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'spell'}});assert.equal(actor.saved,undefined);});
-test('empty character still renders every tab',async()=>{const {sheet}=await prepare();sheet.context.prepare={};sheet.context.conditions=[];const html=render(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']).length,10);assert(html.includes(localize('DSA5HELPERS.NoFavorites')));});
-test('companion context is prepared for the custom root',async()=>{const {sheet}=await prepare();assert(sheet.companionPrepared);});
-test('every static action exists in module, Foundry or DSA5 action tables',()=>{const sources=[read('scripts/sheets/dsa5-helpers-character-sheet.js'),...['actor/actor-sheet.js','actor/character-sheet.js','actor/companions/companion-handler-class.js'].map(p=>fs.readFileSync(path.join(dataRoot,'systems/dsa5/modules',p),'utf8')),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');for(const p of modulePaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');});
-test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field),'unverified system schema path: '+field);});
+test('empty character still renders every tab',async()=>{const {sheet}=await prepare();sheet.context.prepare={};sheet.context.conditions=[];const html=render(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']).length,targetGeneration===13?9:10);assert(html.includes(localize('DSA5HELPERS.NoFavorites')));});
+test('companion context is prepared for the custom root',async()=>{const {sheet}=await prepare();assert.equal(!!sheet.companionPrepared,targetGeneration>=14);});
+test('every static action exists in module, Foundry or DSA5 action tables',()=>{const sources=[read('scripts/sheets/dsa5-helpers-character-sheet.js'),...systemJs(['actor/actor-sheet.js','actor/character-sheet.js',...(targetGeneration>=14?['actor/companions/companion-handler-class.js']:[])]),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');for(const p of modulePaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');});
+test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');const bundle=fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8'):'';const inSchema=field=>{if(field==='systemFields.happyTalents.fields.value')return /happyTalents:new \w+\(\{value:new \w+\(\{initial:""/.test(bundle);const m=field.match(/^systemFields\.(tradition|guidevalue|energyfactor)\.fields\.(magical|clerical)$/);return !!m&&new RegExp(m[1]+':new \\w+\\(\\{magical:new \\w+\\(\\{initial:[^}]*label:"'+m[1]+'"[^}]*\\}\\),clerical:').test(bundle);};for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field)||inSchema(field),'unverified system schema path: '+field);});
 test('localization keys used by nonempty hero resolve',async()=>{missing.clear();const {context}=await prepare();render(context);const unresolved=[...missing].filter(k=>k && !['Swords','Test coin'].includes(k));assert.deepEqual(unresolved,[]);});
 
 test('ranged weapons, charged magic, tradition items and companions render populated',async()=>{
@@ -93,7 +209,7 @@ test('ranged weapons, charged magic, tradition items and companions render popul
  p.magic.ritualList=[item('ritual','ritual')];p.magic.ceremony=[item('ceremony','ceremony')];
  const artifact=item('staff','specialability');artifact.system.artifact='staff';artifact.abilities=[{...item('ability','specialability'),AEpayable:true,OnUseEffect:true}];p.traditionArtifacts=[artifact];
  sheet.context.companionSections=[{visible:true,label:'COMPANIONS.Companion',contents:[{uuid:'Actor.companion',name:'Companion',img:'icons/svg/pawprint.svg',system:sheet.actor.system,prepareCompanion:{}}]}];sheet.context.hasCompanions=true;
- const html=render(await sheet._prepareContext({}));assert(html.includes('data-ammo-id="ammo-id"'));assert(html.includes('data-action="chargeSpell"'));assert(html.includes('data-action="traditionPayCost"'));assert(html.includes('data-action="memberCardLink"'));assert(html.includes('Test extension'));
+ const html=render(await sheet._prepareContext({}));assert(html.includes(targetGeneration===13?'class="ammo-selector"':'data-ammo-id="ammo-id"'));assert(html.includes('data-action="chargeSpell"'));assert(html.includes('data-action="traditionPayCost"'));assert.equal(html.includes('data-action="memberCardLink"'),targetGeneration>=14);assert(html.includes('Test extension'));
 });
 test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the off hand, figure flag and cast dialogs',async()=>{
  const {sheet,actor}=await prepare();const p=sheet.context.prepare;
@@ -101,20 +217,34 @@ test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the 
  p.wornMeleeWeapons=[main,off];p.wornRangedWeapons=[];actor.items.set('main',main);actor.items.set('off',off);
  let context=await sheet._prepareContext({});let html=render(context);
  assert(html.includes('data-sub-panel="combat:body"'));assert(context.dsa5h.subnav.find(n=>n.tab==='combat').items.some(i=>i.id==='body'));
- assert.equal(context.dsa5h.body.hands.length,2);assert(html.includes('data-dsa5h-hand="offhand"'));assert(html.includes('data-current="off"'));
+ assert.equal(context.dsa5h.body.hands.length,2);assert.equal(context.dsa5h.body.freeSide,null,'both hands busy: no free side');assert(html.includes('data-dsa5h-hand="offhand"'));assert(html.includes('data-current="off"'));
  const offSelect=elements(html,el=>el.attribs?.['data-dsa5h-hand']==='offhand')[0];assert(!dom.findAll(el=>el.attribs?.value==='main'&&Object.hasOwn(el.attribs,'selected'),offSelect.children).length);
- assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-die-seal')).length,4);
+ assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-pill')).length,4,'AT/PA pills on both hands (Waffenkarte F, #40)');assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-hand-card')).length,2);
  assert(html.includes('data-action="dsa5hBodyFigure"'),'figure switch in edit mode');assert(html.includes('data-cast-dialog="spell"'));
  main.wieldedTwoHand=true;context=await sheet._prepareContext({});html=render(context);
  assert.equal(context.dsa5h.body.hands.length,1);assert(context.dsa5h.body.single);assert(!html.includes('data-dsa5h-hand="offhand"'));
+ // Schmaler Bogen (Issue #36): die von der beidhändigen Waffe belegte Seite nimmt die Rüstung auf (CSS über free-*).
+ assert.equal(context.dsa5h.body.freeSide,'right');assert(html.includes('dsa5h-body-grid sides free-right'));
  const mainOptions=context.dsa5h.body.hands[0].options;assert(mainOptions.find(o=>o.id==='main').twoHanded);
  context.dsa5h.editMode=false;assert(!render(context).includes('data-action="dsa5hBodyFigure"'),'figure switch only in edit mode');
  assert(elements(html,el=>el.name==='img'&&String(el.attribs?.class??'').includes('dsa5h-body-figure')&&el.attribs.src===context.dsa5h.body.figure).length===1,'figure is a real img, not a CSS url() variable');assert(!html.includes('--figure'));
  const armor=n=>Array.from({length:n},(_,i)=>{const a=item('a'+i,'armor');a.system.protection={value:1};a.system.calculatedEncumbrance=0;return a;});
- // Rüstung unter der Figur (Issue #29, Variante A): immer Kacheln in einer Zeile, Initiative rechts daneben, keine Wertezeile/Badge mehr.
- p.wornArmor=armor(4);context=await sheet._prepareContext({});html=render(context);
- const armorRow=elements(html,el=>el.attribs?.class==='dsa5h-body-armor-row')[0];assert(armorRow,'armor row');
- assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-body-armor-item'),armorRow.children).length,4,'tiles also from three pieces on');
+ // Rüstung mittig über der Figur (Issue #36, „Wappenschild“): Hauptrüstung = höchster RS, die übrigen Teile darunter;
+ // zwischen den Händen; die Rüstungszeile gibt es nur noch auf dem Smartphone (eigene Sprungmarke, alle Teile als Kacheln).
+ p.wornArmor=armor(4);p.wornArmor[2].system.protection.value=3;context=await sheet._prepareContext({});html=render(context);
+ assert(!elements(html,el=>el.attribs?.class==='dsa5h-body-armor-row').length,'no armor row on desktop');
+ assert.equal(context.dsa5h.body.mainArmor._id,'a2','highest RS is the main armor');assert.equal(context.dsa5h.body.zones,null,'no zones without the hit zone rule');
+ const grid=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-body-grid'))[0];const gridKids=grid.children.filter(n=>n.type==='tag').map(n=>n.attribs.class);
+ const centerAt=gridKids.findIndex(c=>c.includes('dsa5h-armor-center-crest'));assert(centerAt>0&&gridKids[centerAt-1].includes('left')&&gridKids[centerAt+1].includes('right'),'armor between the hands');
+ const crestGroup=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-armor-crest-group'))[0];assert.equal(crestGroup.attribs['data-item-id'],'a2');
+ assert.deepEqual(elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-armor-extra')).map(e=>e.attribs['data-item-id']),['a0','a1','a3'],'other pieces below the crest');
+ assert(html.includes('data-action="dsa5hMainArmor"'),'edit mode: a click on another piece picks the main armor');
+ context.dsa5h.editMode=false;assert(!render(context).includes('data-action="dsa5hMainArmor"'),'play mode: pieces open the item');context.dsa5h.editMode=true;
+ actor.flags.mainArmor='a3';assert.equal((await sheet._prepareContext({})).dsa5h.body.mainArmor._id,'a3','flag picks the main armor');delete actor.flags.mainArmor;
+ context.dsa5h.phone=true;const phoneHtml=render(context);context.dsa5h.phone=false;
+ const armorRow=elements(phoneHtml,el=>el.attribs?.class==='dsa5h-body-armor-row')[0];assert(armorRow,'armor row on the phone');assert.equal(armorRow.attribs['data-sub-panel'],'combat:armor');
+ assert.equal(dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-body-armor-item'),armorRow.children).length,4,'phone: every piece as a tile');
+ assert(!phoneHtml.includes('dsa5h-armor-center'),'phone: no armor in the middle');
  const top=elements(html,el=>el.attribs?.class==='dsa5h-body-top')[0];assert(top,'top bar');assert(dom.findAll(el=>el.attribs?.class==='dsa5h-body-ini',top.children).length===1,'initiative at the top');assert(dom.findAll(el=>el.attribs?.class==='dsa5h-quick-actions',top.children).length===1,'quick actions at the top');
  assert(!html.includes('dsa5h-figure-badge')&&!html.includes('dsa5h-figure-stats')&&!html.includes('dsa5h-body-armor-table'));
  const panelHtml=html.slice(html.indexOf('dsa5h-body-panel'));assert(panelHtml.indexOf('dsa5h-body-top')<panelHtml.indexOf('dsa5h-body-grid'),'quick actions above everything');
@@ -200,7 +330,7 @@ test('favorites for equipment and special abilities (#30): stars on inventory ro
  for(const row of rows)assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',row.children).length,1);
  assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-chip-fav')).length,2);
  const consume=elements(html,el=>el.attribs?.['data-action']==='dsa5hConsume');assert.equal(consume.length,1);
- const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name'));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
+ const names=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-name')&&!(function inSuggest(n){return !!n&&(String(n.attribs?.class??'').includes('dsa5h-suggest-card')||inSuggest(n.parent));})(el));assert.equal(names.length,6);for(const n of names)assert.equal(n.attribs['data-action'],'itemEdit');
  let consumed;sheet.consumeItem=async i=>{consumed=i;};sheet._getItemId=()=>'potion';await Sheet.DEFAULT_OPTIONS.ownerActions.dsa5hConsume.call(sheet,{},{});assert.equal(consumed,potion);
 });
 test('aggregated tests can be added in play mode',async()=>{
@@ -211,8 +341,8 @@ test('ammo row: selection inside a dropdown incl. "no ammunition", magazine coun
  const {sheet}=await prepare();const p=sheet.context.prepare;
  const ranged=item('ranged','rangeweapon');ranged.LZ=2;ranged.progress='0/2';ranged.system.reloadTime={progress:0};ranged.ammo=[{pickId:'mag-id',name:'Magazin',count:'2',selected:true}];ranged.selectedAmmo={pickId:'mag-id',img:'x.webp',tooltip:'Magazin',count:'2'};ranged.clearAmmo={pickId:'clear',selected:false};ranged.ammoCurrent=10;ranged.ammoMax=10;p.wornMeleeWeapons=[];p.wornRangedWeapons=[ranged];
  const html=render(await sheet._prepareContext({}));
- const picker=elements(html,el=>el.name==='details'&&String(el.attribs?.class).includes('dsa5h-ammo-pick'));assert.equal(picker.length,1);
- const picks=dom.findAll(el=>el.attribs?.['data-action']==='selectAmmo',picker[0].children).map(el=>el.attribs['data-ammo-id']);assert.deepEqual(picks,['mag-id','clear']);
+ const picker=elements(html,el=>targetGeneration===13?el.name==='select'&&el.attribs?.class==='ammo-selector':el.name==='details'&&String(el.attribs?.class).includes('dsa5h-ammo-pick'));assert.equal(picker.length,1);
+ if(targetGeneration>=14){const picks=dom.findAll(el=>el.attribs?.['data-action']==='selectAmmo',picker[0].children).map(el=>el.attribs['data-ammo-id']);assert.deepEqual(picks,['mag-id','clear']);}else{assert.equal(picker[0].attribs['data-item-id'],'ranged');assert(!picker[0].attribs.name,'system listener owns the update');}
  const swap=elements(html,el=>el.attribs?.['data-action']==='itemSwapMag');assert.equal(swap.length,1);assert.equal(swap[0].attribs['aria-disabled'],'true');assert(swap[0].attribs['aria-label']);
 });
 test('AP total/spent editable only in edit mode; combat skill search and two-column status render',async()=>{
@@ -344,7 +474,7 @@ test('Steigerungsplaner (#17): advanceWrapper is inherited, planner tab only wit
   sheet.actor.isOwner=false;assert(!(await sheet._prepareContext({})).dsa5h.tabs.some(t=>t.id==='steigerungsplaner'),'owners only');
  }finally{delete global.game.modules;delete global.foundry;}
 });
-test('Gefährten-Reiter (#21): je Held per Titelleisten-Menü aus-/einblendbar, nur für Owner',async()=>{
+test('Gefährten-Reiter (#21): je Held per Titelleisten-Menü aus-/einblendbar, nur für Owner',{skip:targetGeneration===13?'DSA7 has no companion system':false},async()=>{
  const {sheet,actor,context}=await prepare();assert(context.dsa5h.tabs.some(t=>t.id==='companion'));
  const control=()=>sheet._getHeaderControls().find(c=>c.action==='dsa5hToggleCompanionTab');
  assert.equal(sheet._getHeaderControls()[0].action,'system','system controls stay');assert.equal(control().label,'DSA5HELPERS.CompanionTab.Hide');assert(localize(control().label)!==control().label);assert(control().visible.call(sheet));
@@ -367,12 +497,35 @@ test('Fensterrahmen (#22): eigene Rahmengrafik eingebunden, Ziehen am oberen Rah
 test('Traditions-Badge (#23): Name und Symbol aus der Sonderfertigkeit, sonst aus dem Freitextfeld',async()=>{
  const {sheet}=await prepare();sheet.actor.system.tradition={magical:'',clerical:'Praioskirche'};sheet.context.prepare.sheetLocked=true;
  const context=await sheet._prepareContext({});
- assert.deepEqual(context.dsa5h.tradition.magical,{name:'Gildenmagier',fromItem:'Gildenmagier'},'tradition SF wins like in the system');
- assert.deepEqual(context.dsa5h.tradition.clerical,{name:'Praioskirche',fromItem:''},'free-text field without SF');
+ assert.deepEqual(context.dsa5h.tradition.magical,{name:'Gildenmagier',fromItem:'Gildenmagier',derived:false},'tradition SF wins like in the system');
+ assert.deepEqual(context.dsa5h.tradition.clerical,{name:'Praioskirche',fromItem:'',derived:false},'free-text field without SF');
  const html=render(context);const names=elements(html,el=>el.attribs?.class==='dsa5h-tradition-name-text').map(el=>dom.textContent(el));
  assert.deepEqual(names,['Gildenmagier','Praioskirche']);
  const icons=elements(html,el=>el.attribs?.class==='dsa5h-tradition-icon').map(el=>el.attribs.src);
  assert(icons.includes('systems/dsa5/icons/traditionen/gildenmagier.webp'));assert(icons.includes('systems/dsa5/icons/months/Praios.webp'));
+});
+// DSA5 ab 8.2: genau eine Traditions-SF je Art gibt Name, Leiteigenschaft, Faktor und glückliche Talente vor
+test('Traditionen aus der Sonderfertigkeit (DSA5 8.2): gesperrte Werte, glückliche Talente aus der SF, SF auch in der Liste',async()=>{
+ const prev=globalThis.CONFIG;globalThis.CONFIG={...(prev??{}),Item:{dataModels:{specialability:{schema:{fields:{isTradition:{}}}}}}};
+ try{
+  const {sheet}=await prepare();
+  const priest=sheet.actor.items.find(i=>i.name==='Tradition (Gildenmagier)');
+  Object.assign(priest.system,{isTradition:true});
+  const kor={...priest,_id:'kor',id:'kor',name:'Tradition (Korkirche)',system:{...priest.system,category:{value:'clerical'},isTradition:true,happyTalents:'Einschüchtern, Kraftakt'}};
+  sheet.actor.items.push?sheet.actor.items.push(kor):sheet.actor.items.set(kor._id,kor);
+  sheet.actor.system.happyTalents={value:'Alt, Veraltet, Weg'};
+  sheet.context.prepare.traditionAbilities={magical:[priest],clerical:[kor]};
+  sheet.context.prepare.sortedSpecs.clerical=['clerical'];sheet.context.prepare.sortedSpecs.magical=['magical'];
+  const context=await sheet._prepareContext({});
+  assert.equal(context.dsa5h.tradition.clerical.derived,true);assert.equal(context.dsa5h.tradition.clerical.happyTalents,'Einschüchtern, Kraftakt');
+  assert.equal(context.dsa5h.happyTalentsCount,2,'count from the SF');
+  assert(context.dsa5h.specs.clerical.some(g=>g.items.includes(kor)),'tradition SF listed again');
+  context.dsa5h.editMode=true;const html=render(context);
+  const named=n=>elements(html,el=>el.name==='select'||el.name==='input'||el.name==='textarea').filter(el=>el.attribs.name===n);
+  for(const n of ['system.guidevalue.clerical','system.energyfactor.clerical','system.guidevalue.magical','system.energyfactor.magical','system.happyTalents.value'])assert(named(n).length&&named(n).every(el=>'disabled' in el.attribs),n+' locked');
+  assert(!named('system.tradition.clerical').length&&!named('system.tradition.magical').length,'no free-text tradition with SF');
+  assert(named('system.feature.clerical').every(el=>!('disabled' in el.attribs)),'feature stays editable');
+ }finally{globalThis.CONFIG=prev;}
 });
 test('Titelleisten-Plakette (#24): kein eigenes ::before/::after an Foundrys Kopfknöpfen (dort zeichnet Font Awesome das Symbol)',()=>{
  const root=postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));const bad=[];
@@ -443,6 +596,33 @@ test('Würfelstatistik (#28): Erfassung nur mit Aktivierung + Zustimmung, ohne M
   await roll(new Die(20),[7]);await r.flush();assert.equal(c().d[20][6],1);assert.equal(c().d[20][0],2,'weitergezählt');
  }finally{Object.assign(global,saved);}
 });
+test('Würfelstatistik (#28): manuelle Eingabe im RollResolver zählt als echte Würfel, von Foundry ergänzte als digital',async()=>{
+ // Nachbau von Foundry 14.370: der RollResolver schreibt die Eingaben vor _evaluateAsync in term.results,
+ // leere Eingaben und Schließen über X füllt er mit randomFace.
+ class DiceTerm{constructor(faces){this.faces=faces;this.results=[];}randomFace(){return this.nextRandom.shift();}async _evaluateAsync(){for(const v of this.next??[])this.results.push({result:v,active:true});return this;}}
+ class Die extends DiceTerm{}
+ class RollResolver{constructor(roll,entries){this.roll=roll;this.entries=entries;}async awaitFulfillment(){for(const [term,values] of this.entries){term.method='manual';for(const v of values)term.results.push({result:v??term.randomFace(),active:true});}}}
+ let flag;const saved={foundry:global.foundry,game:global.game,CONFIG:global.CONFIG,window:global.window,document:global.document,setTimeout:global.setTimeout};
+ global.foundry={dice:{terms:{DiceTerm,Die}},applications:{dice:{RollResolver}}};global.CONFIG={Dice:{fulfillment:{methods:{manual:{interactive:true}}}}};
+ global.game={user:{getFlag:()=>flag,setFlag:async(s,k,v)=>{flag=v;}}};global.window={addEventListener(){}};global.document={addEventListener(){}};global.setTimeout=()=>1;
+ try{
+  const r=await import(pathToFileURL(path.join(root,'scripts/dice-stats/recorder.js')).href+'?resolver');r.initRecorder(()=>true);
+  const kept=new Die(20);kept.results.push({result:3,active:true});
+  const a=new Die(20),b=new Die(20);b.nextRandom=[12];
+  await new RollResolver({dice:[a,b,kept]},[[a,[7,7]],[b,[null,5]]]).awaitFulfillment();
+  for(const t of [a,b,kept])await t._evaluateAsync({});
+  await r.flush();const day=Object.values(flag.days)[0];
+  assert.equal(day.m[20][6],2,'zwei eingegebene 7er');assert.equal(day.m[20][4],1,'eingegebene 5');
+  assert.equal(day.d[20][11],1,'von Foundry ergänzte 12 ist digital');assert.equal(day.m[20][11],0);
+  assert.equal(day.m[20].reduce((x,y)=>x+y)+day.d[20].reduce((x,y)=>x+y),4,'Ergebnis vor dem Resolver (3) zählt nicht');
+ }finally{Object.assign(global,saved);}
+});
+test('Auswahlmenü im Bogen: Escape schließt nur das Menü, nicht alle Fenster',()=>{
+ const src=read('scripts/sheets/dsa5-helpers-character-sheet.js');
+ const menu=src.slice(src.indexOf('_popupMenu(target, ariaLabel, entries) {'),src.indexOf('static _openModeMenu'));
+ assert(/const onKey = ev => \{[\s\S]*?ev\.preventDefault\(\);[\s\S]*?ev\.stopPropagation\(\);[\s\S]*?close\(\);/.test(menu),'Escape wird abgefangen, bevor Foundry am window alle Fenster schließt');
+ assert(/addEventListener\('keydown', onKey, true\)/.test(menu),'in der Capture-Phase am document');
+});
 test('Würfelstatistik (#28): Einstellungen und Texte',()=>{
  const src=read('scripts/dice-stats/settings.js');
  assert(/'diceStatsEnabled'[\s\S]*?scope: 'world'[\s\S]*?restricted: true[\s\S]*?default: false/.test(src),'Welt-Einstellung nur SL, Standard aus');
@@ -497,7 +677,7 @@ test('Würfelstatistik (#28): Fenster „Karten“ – Karten je Spieler, Diagra
  assert(/registerMenu\('dsa5-helpers', 'diceStats'[\s\S]*?restricted: false/.test(read('scripts/dsa5-helpers.js')),'für alle über die Moduleinstellungen erreichbar');
  assert(read('scripts/dsa5-helpers.js').includes('"modules/dsa5-helpers/templates/dice-stats.hbs"'));
 });
-test('body tab (#29): armor shield in the armor row with breakdown tooltip, ammo picker in the ranged hand, short list of other weapons and trait attacks',async()=>{
+test('body tab (#29/#36): armor crest with breakdown tooltip, ammo picker in the ranged hand, short list of other weapons and trait attacks',async()=>{
  const {sheet,actor}=await prepare();const p=sheet.context.prepare;
  const armor=(id,rs,be,name)=>{const a=item(id,'armor');a.name=name;a.system.protection={value:rs};a.system.calculatedEncumbrance=be;return a;};
  p.wornArmor=[armor('a1',2,1,'Kettenhemd'),armor('a2',1,0,'Helm <b>')];p.armorSum=3;p.spellArmor=1;p.liturgyArmor=0;
@@ -508,21 +688,38 @@ test('body tab (#29): armor shield in the armor row with breakdown tooltip, ammo
  p.wornMeleeWeapons=[dagger,spare];p.wornRangedWeapons=[ranged];p.traits={meleeAttack:[bite],rangeAttack:[]};
  for(const w of [ranged,dagger,spare])actor.items.set(w._id,w);
  const context=await sheet._prepareContext({});const html=render(context);
- const armorRow=elements(html,el=>el.attribs?.class==='dsa5h-body-armor-row')[0];
- const shield=dom.findAll(el=>el.attribs?.class==='dsa5h-body-shield',armorRow.children)[0];assert(shield,'shield in the armor row');assert.equal(armorRow.children.filter(n=>n.type==='tag').at(-1),shield,'right-aligned at the end');
+ const shield=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-armor-crest withContext'))[0];assert(shield,'armor crest');
  assert(dom.textContent(shield).includes('3')&&dom.textContent(shield).includes('+1'),'RS sum and magic bonus');
+ assert.equal(dom.textContent(elements(html,el=>el.attribs?.class==='dsa5h-armor-crest-name')[0]),'Kettenhemd','main armor named below the crest');
  const tip=shield.attribs['data-tooltip'];assert(tip.includes('Kettenhemd')&&tip.includes('Helm &amp;lt;b&amp;gt;')||tip.includes('Helm &lt;b&gt;'),'pieces listed, names escaped');assert(!tip.includes('<b>'));
  assert.equal(context.dsa5h.body.magicArmor,1);assert(shield.attribs['aria-label']);
  const hands=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-body-side'));
- assert.equal(dom.findAll(el=>el.name==='details'&&String(el.attribs?.class).includes('dsa5h-ammo-pick'),hands[0].children).length,1,'ammo picker in the ranged main hand');
+ assert.equal(dom.findAll(el=>targetGeneration===13?el.name==='select'&&el.attribs?.class==='ammo-selector':el.name==='details'&&String(el.attribs?.class).includes('dsa5h-ammo-pick'),hands[0].children).length,1,'ammo picker in the ranged main hand');
  const short=elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-short-weapon'));
  assert.deepEqual(short.map(r=>r.attribs['data-item-id']),['spare','bite'],'worn weapon outside the hands + trait attack');
  assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='chRollCombat',short[1].children).length,3,'trait attack stays rollable (AT, PA, TP)');
  assert(dom.findAll(el=>String(el.attribs?.class??'').includes('withContext'),short[0].children).length,'context menu target');
 });
+test('body tab (#36): hit zone rule (Kompendium 1 + Rüstkammer 2) shows the zone cross with RS per zone',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;const saved=global.game;
+ const armor=(id,name,protection)=>{const a=item(id,'armor');a.name=name;a.system.protection={value:0,head:0,leftarm:0,rightarm:0,leftleg:0,rightleg:0,...protection};a.system.calculatedEncumbrance=1;return a;};
+ p.wornArmor=[armor('k','Kettenhemd',{value:4,leftarm:2,rightarm:2}),armor('h','Helm <b>',{head:3}),armor('g','Gambeson',{value:1})];actor.system.totalArmor=1;actor.type='character';
+ try {
+  global.game={...saved,modules:{get:id=>['dsa5-compendium','dsa5-armory2'].includes(id)?{active:true}:undefined},settings:{get:(m,k)=>(m==='dsa5-compendium'&&k==='enableHitzones')||(m==='dsa5-armory2'&&k==='enableArmorZones')?true:'light'}};
+  const context=await sheet._prepareContext({});const html=render(context);const zones=context.dsa5h.body.zones;
+  assert.deepEqual(zones.map(z=>[z.key,z.rs]),[['head',4],['value',6],['rightarm',3],['leftarm',3],['rightleg',1],['leftleg',1]],'sum of the pieces per zone + totalArmor, like Rüstkammer 2');
+  assert(zones[1].tooltip.includes('Kettenhemd')&&zones[1].tooltip.includes('Gambeson'));assert(zones[0].tooltip.includes('Helm &lt;b&gt;'),'names escaped');
+  assert(html.includes('dsa5h-body-grid sides armor-zones'));assert(!html.includes('dsa5h-armor-crest'),'cross instead of the crest');
+  const cells=elements(html,el=>String(el.attribs?.class??'').startsWith('dsa5h-armor-zone dsa5h-zone-'));assert.equal(cells.length,6);
+  assert.equal(cells.filter(c=>c.name==='button').length,4,'zones with armor open the item');assert.equal(cells.find(c=>c.attribs.class.includes('zone-rightleg')).name,'div');
+  assert.equal(cells[0].attribs['data-item-id'],'h');
+  actor.type='npc';assert.equal((await sheet._prepareContext({})).dsa5h.body.zones,null,'characters only');actor.type='character';
+  global.game.settings={get:()=>false};assert.equal((await sheet._prepareContext({})).dsa5h.body.zones,null,'rule off');
+ } finally { global.game=saved; }
+});
 test('sub-tabs as jump marks in every tab (#32): all sections render, a sub-tab scrolls to its section, scrolling moves the mark',async()=>{
  const {sheet,context}=await prepare();const html=render(context);
- for(const [tab,ids] of [['combat',['body','skills']],['magic',['spells','equipment']],['religion',['spells','equipment']],['notes',['details','biography','notes']]]){
+ for(const [tab,ids] of [['combat',['body','skills']],['magic',['spells','equipment']],['religion',targetGeneration===13?['spells']:['spells','equipment']],['notes',['details','biography','notes']]]){
   for(const id of ids){const panel=elements(html,el=>el.attribs?.['data-sub-panel']===tab+':'+id)[0];assert(panel,tab+':'+id);assert(!('hidden' in panel.attribs),tab+':'+id+' visible');}
  }
  // Scroll-Mitführung und Sprung an einem nachgebauten Inhaltsbereich (Abschnitte bei 0/400/900 px, Fenster 300 px hoch).
@@ -553,8 +750,8 @@ test('Würfelstatistik (#28): Tage älter als 12 Monate werden zusammengefasst, 
  assert.deepEqual(s.sumCounts(st).d[6],[2,3,4,5,0,1]);
 });
 // Hausregelbuch (2026-10-05): relative Importe werden wie bei loadSheet() durch data:-URLs ersetzt.
-const houseRuleModules=async()=>{const wound=dataUrl(read('scripts/house-rules/wound-check.js'));const help=dataUrl(read('scripts/house-rules/help-action.js'));const rules=houseRulesUrl();const app=dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(rules)));return {wound:await import(wound),help:await import(help),rules:await import(rules),app:await import(app)};};
-for(const p of ['templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs','templates/house-rules/help-action.hbs'])H.registerPartial('modules/dsa5-helpers/'+p,read(p));
+const houseRuleModules=async()=>{const wound=dataUrl(read('scripts/house-rules/wound-check.js'));const help=helpActionUrl();const rules=houseRulesUrl();const app=dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(rules)));return {wound:await import(wound),help:await import(help),rules:await import(rules),app:await import(app)};};
+for(const p of ['templates/house-rules/toggle.hbs','templates/house-rules/wound-check.hbs','templates/house-rules/help-action.hbs','templates/house-rules/passive-defense.hbs'])H.registerPartial('modules/dsa5-helpers/'+p,read(p));
 test('Hausregel Wundeinschätzung: QS-Staffel und Veralten wie in Knigges World Script',async()=>{
  const {wound}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;const w=(qs,cur,max=40)=>wound.woundText(qs,cur,max,t);
  assert.equal(w(0,10),'Text.none');assert.equal(w(1,40),'Text.unhurt');assert.equal(w(1,39),'Text.hurt');
@@ -565,17 +762,156 @@ test('Hausregel Wundeinschätzung: QS-Staffel und Veralten wie in Knigges World 
  assert(wound.isFresh({lep:20},29,40),'Änderung unter einem Viertel bleibt gültig');assert(!wound.isFresh({lep:20},30,40),'ab einem Viertel veraltet');assert(!wound.isFresh(undefined,20,40));
  for(const key of ['none','unhurt','hurt','incapacitated','critical','severe','marked','light','range','about'])assert(lookup(own,'DSA5HELPERS.HouseRules.woundCheck.Text.'+key),key);
 });
+test('Grundmanöver (#45): Stufen, Waffenfilter, Modifikatoren im Probendialog, Zustände und Buchseite mit Einzelschaltern',async()=>{
+ const saved=global.game;
+ try {
+  const M=await import(dataUrl(read('scripts/house-rules/maneuvers.js')));
+  assert.deepEqual([10,12,13,14,15,16,17,20].map(M.paladoseTier),[0,0,1,1,2,2,3,3]);
+  assert.equal(M.targetedMalus(-10,0,false),-10);assert.equal(M.targetedMalus(-10,1,true),-4,'erst halbieren, dann IN abziehen');assert.equal(M.targetedMalus(-4,3,true),-1,'nie besser als −1');
+  const de={'LocalizedCTs.Schwerter':'Swords','LocalizedCTs.Fechtwaffen':'Fencing Weapons','LocalizedCTs.Bögen':'Bows','LocalizedCTs.Raufen':'Brawling','LocalizedCTs.Lanzen':'Lances','LocalizedCTs.Swords':'Swords'};
+  const loc=k=>de[k]??k;
+  global.game={...saved,i18n:{localize:k=>de[k]??k,format:(k,d)=>k+JSON.stringify(d)}};
+  const w=(type,ct,mode='attack')=>({mode,source:{type,system:{combatskill:{value:ct}}}});
+  assert.equal(M.techniqueKey(w('meleeweapon','Schwerter').source,loc),'Swords');assert.equal(M.techniqueKey(w('meleeweapon','Swords').source,loc),'Swords','englische Welt');
+  assert(M.allowed('feint',w('meleeweapon','Schwerter'),loc));assert(!M.allowed('feint',w('meleeweapon','Lanzen'),loc));assert(!M.allowed('feint',w('meleeweapon','Schwerter','parry'),loc),'nur Angriff');
+  assert(!M.allowed('mighty',w('meleeweapon','Fechtwaffen'),loc));assert(M.allowed('mighty',w('meleeweapon','Raufen'),loc));assert(!M.allowed('mighty',w('rangeweapon','Bögen'),loc));
+  assert(M.allowed('stance',{source:{type:'dodge'}},loc));assert(M.allowed('stance',w('meleeweapon','Schwerter','parry'),loc));assert(!M.allowed('stance',w('meleeweapon','Lanzen','parry'),loc));
+  assert(M.allowed('aim',w('rangeweapon','Bögen'),loc));assert(!M.allowed('aim',w('meleeweapon','Schwerter'),loc));assert(M.allowed('targeted',w('rangeweapon','Bögen'),loc));
+  const actor={type:'character',items:[],system:{characteristics:{mu:{value:15},ge:{value:13},kk:{value:12},in:{value:17},ff:{value:15}}}};
+  const all=M.MANEUVER_IDS;const none={advanceMalus:0,stance:false,aim:0};
+  let mods=M.buildModifiers(actor,w('meleeweapon','Schwerter'),{enabled:all,st:none,t:k=>k,localize:loc});
+  const ids=mods.map(m=>m.ref.id);
+  assert.deepEqual(ids.filter(i=>i.startsWith('dsa5h:feint')),['dsa5h:feint:1','dsa5h:feint:2','dsa5h:feint:3','dsa5h:feint:4'],'GE 13: −1 … −4');
+  const feint=mods.find(m=>m.ref.id==='dsa5h:feint:3');assert.equal(feint.value,-3);assert.equal(feint.dmmalus,-3,'Parade des Gegners um denselben Wert');assert.equal(feint.selected,false);
+  const mighty=mods.find(m=>m.ref.id==='dsa5h:mighty:2');assert.equal(mighty.value,-2);assert.equal(mighty.damageBonus,2);assert(!mods.some(m=>m.ref.id==='dsa5h:mighty:3'),'KK 12: höchstens −2');
+  assert.equal(mods.find(m=>m.ref.id.startsWith('dsa5h:advance')).value,4,'MU 15: +4');
+  assert.equal(mods.filter(m=>M.maneuverGroup(m.ref.id)==='targeted').length,8,'acht Zonen');
+  mods=M.buildModifiers(actor,w('meleeweapon','Schwerter'),{enabled:['feint'],st:none,t:k=>k,localize:loc});assert(mods.every(m=>M.maneuverGroup(m.ref.id)==='feint'),'abgeschaltete Manöver fehlen');
+  mods=M.buildModifiers(actor,w('meleeweapon','Schwerter','parry'),{enabled:all,st:{advanceMalus:-2,stance:true,aim:0},t:k=>k,localize:loc});
+  assert.deepEqual(mods.map(m=>[m.ref.id,m.value,m.selected]),[['dsa5h:advanceMalus',-2,true],['dsa5h:stance',8,true]],'Verteidigung: Vorstoß-Malus und Haltung (IN 17: +8) angehakt');
+  mods=M.buildModifiers(actor,w('rangeweapon','Bögen'),{enabled:all,st:{...none,aim:3},t:k=>k,localize:loc});
+  const aim=mods.find(m=>M.maneuverGroup(m.ref.id)==='aim');assert.deepEqual([aim.value,aim.damageBonus,aim.selected],[6,6,true],'FF 15: 3 Runden × +2/+2');
+  assert.deepEqual(M.enabledManeuvers(()=>({feint:false})),all.filter(i=>i!=='feint'),'ohne Eintrag an');
+  assert.equal(M.maneuverGroup('dsa5h:feint:2'),'feint');assert.equal(M.maneuverGroup('abc'),null);
+  // Abschnitt im Probendialog: Zeilentitel/Stufentext aus dem Namen, Klick weiter (am Ende aus), Rechtsklick zurück.
+  assert.deepEqual(M.splitModifierName({name:'Antäuschen (GE 14): AT −2, PA −2',value:-2}),{title:'Antäuschen (GE 14)',step:'AT −2, PA −2'});
+  assert.deepEqual(M.splitModifierName({name:'Vorstoß: Malus aktiv',value:-2}),{title:'Vorstoß',step:'Malus aktiv -2'});
+  assert.deepEqual([M.nextStep(-1,3),M.nextStep(2,3),M.nextStep(0,3,true),M.nextStep(-1,3,true)],[0,-1,-1,-1]);
+  for(const l of ['de','en']){const m=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.HouseRules.maneuvers;for(const k of ['PanelHint','RowHint','RowHintSingle'])assert(m[k],l+' '+k);}
+  // Buchseite: beide Sprachen mit je acht Einzelschaltern (#48: Schwachpunkte erkennen, #66: Stören und Ablenken).
+  for(const l of ['de','en']){const page=read(`templates/house-rules/maneuvers-${l}.hbs`);assert.equal((page.match(/maneuver-toggle\.hbs/g)||[]).length,8,l);assert(/id="distract"/.test(page),l);}
+  // Sprungleiste: jeder Knopf hat genau ein Ziel, beide Sprachen gleich (Nutzer 2026-10-21).
+  const jumps=l=>{const page=read(`templates/house-rules/maneuvers-${l}.hbs`);const keys=[...page.matchAll(/data-jump="(\w+)"/g)].map(m=>m[1]);for(const k of keys)assert.equal(page.split(`data-jump-target="${k}"`).length,2,l+' Ziel '+k);return keys;};
+  assert.deepEqual(jumps('de'),jumps('en'));assert(jumps('de').length>=10);
+  assert(read('scripts/apps/house-rules.js').includes('jumpTo: this._jumpTo'),'Aktion jumpTo');
+  const entry=read('scripts/dsa5-helpers.js');for(const p of ['maneuvers.hbs','maneuvers-de.hbs','maneuvers-en.hbs','maneuver-toggle.hbs'])assert(entry.includes('templates/house-rules/'+p),p+' wird geladen');
+ } finally { global.game=saved; }
+});
+test('Stören und Ablenken (#66): Malus des Gegners bis Rundenende, Einstiege, Texte',async()=>{
+ const saved=global.game;
+ try {
+  const M=await import(dataUrl(read('scripts/house-rules/maneuvers.js')));
+  const loc=k=>({'LocalizedCTs.Schwerter':'Swords','LocalizedCTs.Bögen':'Bows','CHARAbbrev.AT':'AT','CHARAbbrev.PA':'PA','CHARAbbrev.AW':'AW','CHARAbbrev.damage':'TP'})[k]??k;
+  global.game={...saved,i18n:{localize:loc,format:(k,d)=>k+JSON.stringify(d)}};
+  assert(M.MANEUVER_IDS.includes('distract'));assert.equal(M.MANEUVERS.distract.attr,null,'keine Leiteigenschaft');
+  // Gespeichert beim Ablenkenden je Ziel-Token, gilt nur in derselben Kampfrunde.
+  const cur={combat:'c1',round:3};
+  const by=(name,distract)=>({name,getFlag:()=>({distract})});
+  const others=[by('Alrik',{tokX:{combat:'c1',round:3,name:'Ork'}}),by('Gerling',{tokY:{combat:'c1',round:2,name:'Wolf'}})];
+  assert.deepEqual(M.distractedBy(['tokX'],others,cur),{by:'Alrik'});
+  assert.equal(M.distractedBy(['tokY'],others,cur),null,'Vorrunde abgelaufen');
+  assert.equal(M.distractedBy(['tokX'],others,{combat:'c2',round:3}),null,'anderer Kampf');
+  assert.equal(M.distractedBy(['tokX'],others,null),null,'ohne Kampf');
+  // Modifikatoren beim Gestörten, angehakt: Nahkampf AT −1 und TP −1, Fernkampf nur TP −1, PA und AW −1.
+  const actor={type:'character',items:[],system:{characteristics:{mu:{value:12},ge:{value:12},kk:{value:12},in:{value:12},ff:{value:12}}}};
+  const none={advanceMalus:0,stance:false,aim:0,weakness:[],distract:[]};
+  const w=(type,ct,mode='attack')=>({mode,source:{type,system:{combatskill:{value:ct}}}});
+  const pick=(ctx,o={})=>M.buildModifiers(actor,ctx,{enabled:['distract'],st:none,distracted:{by:'Alrik'},t:k=>k,localize:loc,...o}).map(m=>[m.ref.id,m.value,m.damageBonus??0,m.selected]);
+  assert.deepEqual(pick(w('meleeweapon','Schwerter')),[['dsa5h:distracted',-1,-1,true]]);
+  assert.deepEqual(pick(w('rangeweapon','Bögen')),[['dsa5h:distracted',-1,-1,true]],'FK −1 nach Nutzerentscheidung');
+  assert.deepEqual(pick(w('meleeweapon','Schwerter','parry')),[['dsa5h:distracted',-1,0,true]]);
+  assert.deepEqual(pick({source:{type:'dodge'}}),[['dsa5h:distracted',-1,0,true]]);
+  assert.deepEqual(pick(w('meleeweapon','Schwerter'),{distracted:null}),[],'nicht abgelenkt');
+  assert.deepEqual(pick(w('meleeweapon','Schwerter'),{enabled:[]}),[],'abgeschaltet');
+  assert.deepEqual(pick({source:{type:'skill'}}),[],'Talentproben unberührt');
+  // Einstiege: Kampf-Reiter, Menü ⋮ des Systembogens, DSA-Leiste.
+  assert(read('templates/actors/parts/body.hbs').includes('data-action="dsa5hDistract"'));
+  assert(read('scripts/sheets/dsa5-helpers-character-sheet.js').includes('dsa5hDistract: this._maneuverDistract'));
+  assert(read('scripts/house-rules/rules.js').includes('maneuvers.distract.Button'));
+  assert(read('scripts/hud.js').includes("case 'distract'"));
+  for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;const d=j.HouseRules.maneuvers.distract;
+   for(const k of ['Name','Button','ButtonHint','HudHint','Attr','Value','NoCombat','NoTarget','Self','NoSkill','Status','Modifier'])assert(d[k],l+' '+k);
+   for(const k of ['Title','Intro','Throw','Intimidate'])assert(d.Dialog[k],l+' Dialog.'+k);for(const k of ['Success','Failure','Undead'])assert(d.Chat[k],l+' Chat.'+k);
+   assert(j.Hud.Short.distract,l+' Kurzname');}
+ } finally { global.game=saved; }
+});
+test('Grundmanöver Stufe 3 (#48): Schwachpunkte erkennen, gleichwertige SF, Folgen gezielter Treffer',async()=>{
+ const saved=global.game;
+ try {
+  const M=await import(dataUrl(read('scripts/house-rules/maneuvers.js')));
+  const loc=k=>({'LocalizedCTs.Schwerter':'Swords','LocalizedCTs.Bögen':'Bows'})[k]??k;
+  global.game={...saved,i18n:{localize:loc,format:(k,d)=>k+JSON.stringify(d)}};
+  const w=(type,ct,mode='attack')=>({mode,source:{type,system:{combatskill:{value:ct}}}});
+  // Gegnerart → Talent; TP-Bonus nicht gegen Dämonen, Geister, Elementare.
+  assert.deepEqual(M.foeKind(['DemonType'],'creature'),{kind:'demon',noArmor:true});
+  assert.deepEqual(M.foeKind([],'npc'),{kind:'culture',noArmor:false},'NSC ohne Typ ist kulturschaffend');
+  assert.deepEqual(M.foeKind(['IntelligentCreatureType'],'creature'),{kind:'culture',noArmor:false});
+  assert.deepEqual(M.foeKind(['AnimalType'],'creature'),{kind:'animal',noArmor:false});
+  assert.equal(M.foeKind(['GhostType'],'creature').noArmor,true);
+  const hero={name:'Alrik',items:[{type:'skill',name:'Menschenkenntnis'},{type:'skill',name:'Sphärenkunde'}]};
+  assert.equal(M.weaknessSkill(hero,'culture').name,'Menschenkenntnis');assert.equal(M.weaknessSkill(hero,'animal'),undefined,'ohne Tierkunde');
+  // Gültigkeit: bis Kampfende; nach dem Mitteilen für alle nur bis Ende der nächsten Runde.
+  const cur={combat:'c1',round:3};
+  assert(M.weakPointValid({combat:'c1',sharedRound:null},{combat:'c1',round:9}));assert(!M.weakPointValid({combat:'c0',sharedRound:null},cur),'anderer Kampf');
+  assert(M.weakPointValid({combat:'c1',sharedRound:2},cur));assert(!M.weakPointValid({combat:'c1',sharedRound:1},cur),'mitgeteilt: abgelaufen');
+  const flag=weakness=>({getFlag:()=>({weakness})});
+  const me=flag({tokA:{combat:'c1',name:'Ork',pa:1,tp:2,sharedRound:null}});
+  assert.deepEqual(M.weakPointBonus(me,'tokA',cur),{name:'Ork',pa:1,tp:2});assert.equal(M.weakPointBonus(me,'tokB',cur),null);
+  const ally={...flag({tokB:{combat:'c1',name:'Wolf',pa:0,tp:3,sharedRound:3}}),name:'Gerling'};const quiet=flag({tokB:{combat:'c1',name:'Wolf',pa:3,tp:0,sharedRound:null}});
+  assert.deepEqual(M.weakPointBonus(me,'tokB',cur,[quiet,ally]),{name:'Wolf',pa:0,tp:3,from:'Gerling'},'nur Mitgeteiltes von Verbündeten');
+  // Modifikatoren: TP angehakt beim Angriff, PA nur bei der Parade, nichts beim Ausweichen oder abgeschaltet.
+  const actor={type:'character',items:[],system:{characteristics:{mu:{value:12},ge:{value:12},kk:{value:12},in:{value:12},ff:{value:12}}}};
+  const none={advanceMalus:0,stance:false,aim:0,weakness:[]};const weak={name:'Ork',pa:1,tp:2};
+  const pick=(ctx,o={})=>M.buildModifiers(actor,ctx,{enabled:['weakness'],st:none,weak,t:k=>k,localize:loc,...o});
+  let mods=pick(w('meleeweapon','Schwerter'));assert.deepEqual(mods.map(m=>[m.ref.id,m.value,m.damageBonus,m.selected]),[['dsa5h:weakness',0,2,true]]);
+  assert.deepEqual(pick(w('rangeweapon','Bögen')).map(m=>m.damageBonus),[2],'auch Fernkampf');
+  assert.deepEqual(pick(w('meleeweapon','Schwerter','parry')).map(m=>[m.value,m.selected]),[[1,true]],'PA bei der Parade');
+  assert.deepEqual(pick({source:{type:'dodge'}}),[],'nicht beim Ausweichen');assert.deepEqual(pick(w('meleeweapon','Schwerter'),{enabled:[]}),[],'abgeschaltet');
+  assert.deepEqual(pick(w('meleeweapon','Schwerter'),{weak:null}),[]);
+  assert.equal(M.maneuverGroup('dsa5h:weakness'),'weakness','eigene Zeile im Abschnitt Grundmanöver');
+  // Gleichwertige SF nur ausblenden, wenn das Grundmanöver an ist.
+  const all=M.MANEUVER_IDS;
+  assert.deepEqual(['Finte','Feint','Wuchtschlag','Forceful Blow','Vorstoß','Verteidigungshaltung','Defensive Posture','Sturmangriff','Finte (Waffenlos)'].map(n=>M.replacedBy(n,all)),['feint','feint','mighty','mighty','advance','stance','stance',null,'feint']);
+  assert.equal(M.replacedBy('Wuchtschlag',['feint']),null,'Mächtiger Angriff aus');assert.equal(M.replacedBy('Vorstoßen',all),null,'nur ganzes Wort');
+  // Folgen gezielter Treffer (Tabelle Paladose; genau 5 bzw. 8 SP sind schon fatal).
+  const H=await import(dataUrl(read('scripts/house-rules/hit-consequences.js')));
+  assert.equal(H.targetedZone([{ref:{id:'dsa5h:feint:1'}},{selected:false,ref:{id:'dsa5h:targeted:eye'}},{ref:{id:'dsa5h:targeted:neck'}}]),'neck','nur angehakt');
+  assert.equal(H.targetedZone([{name:'x'}]),null);
+  assert.equal(H.hitConsequence('head',0),null,'ohne SP keine Folge');
+  assert.deepEqual(H.hitConsequence('head',11).conditions,[{id:'stunned',value:2}]);assert.deepEqual(H.hitConsequence('head',4).conditions,[]);
+  assert.equal(H.hitConsequence('torso',3).roll,'1d3+1');assert.deepEqual(H.hitConsequence('leg',1).conditions,[{id:'prone',value:1}]);
+  assert.deepEqual([4,5].map(sp=>H.hitConsequence('eye',sp).conditions[0].id),['blind','dead']);
+  assert.deepEqual([7,8].map(sp=>H.hitConsequence('neck',sp).conditions[0].id),['bleeding','dead']);
+  assert.deepEqual([4,5].map(sp=>H.hitConsequence('hand',sp).conditions),[[],[{id:'inpain',value:1}]]);
+  assert.deepEqual(H.hitConsequence('foot',10).conditions,[{id:'inpain',value:2}]);
+  assert.deepEqual(['head','torso','arm','leg','eye','foot','neck','hand'].map(z=>H.hitConsequence(z,6).resist),['composure','composure','disturb','disturb','death','composure','firstAid','composure']);
+  // Texte in beiden Sprachen.
+  for(const l of ['de','en']){const m=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.HouseRules.maneuvers;
+   for(const k of ['Name','Button','ButtonHint','HudHint','Attr','Value','NoCombat','NoTarget','Self','NoSkill','Share','Shared','NotOwner','Expired','Status','StatusShared','Dialog.Title','Dialog.Intro','Dialog.NoArmor','Dialog.MagicArmor','Dialog.Confirm','Chat.Success','Chat.Failure','Chat.Shared'])assert(k.split('.').reduce((o,p)=>o?.[p],m.weakness),l+' weakness.'+k);
+   for(const k of ['Title','Resist','Roll','RollFlavor','NotOwner','Resists.composure','Resists.disturb','Resists.death','Resists.firstAid','Effect.head','Effect.headNone','Effect.torso','Effect.arm','Effect.leg','Effect.eye','Effect.eyeFatal','Effect.foot','Effect.footNone','Effect.neck','Effect.neckFatal','Effect.hand','Effect.handNone'])assert(k.split('.').reduce((o,p)=>o?.[p],m.hits),l+' hits.'+k);}
+ } finally { global.game=saved; }
+});
 test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, Einstellung je Welt',async()=>{
  const settings={houseRules:{},theme:'light'};let isGM=true;
  global.game={i18n:{localize},settings:{get:(_m,k)=>settings[k],async set(_m,k,v){settings[k]=v;}},get user(){return {isGM};}};
  global.foundry={applications:{api:{ApplicationV2:class{async _prepareContext(){return {};}_onRender(){}render(){this.rendered=(this.rendered??0)+1;}},HandlebarsApplicationMixin:B=>B},instances:new Map()}};
  const {rules,app}=await houseRuleModules();const App=app.getHouseRulesApp();const tpl=H.compile(read('templates/house-rules.hbs'));
- assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','VTTom']]);
+ assert.deepEqual(rules.HOUSE_RULES.map(r=>[r.id,r.credit]),[['woundCheck','Knigge'],['helpAction','VTTom'],['maneuvers','Paladose'],['passiveDefense','VTTom']]);
  const sheet=new App();missing.clear();let html=tpl(await sheet._prepareContext({}));
- assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,2);
- assert(html.includes('Idee: Knigge')&&html.includes('Idee: VTTom'),'Urheber je Regel');
- assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,2);
- assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,2);
+ assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-entry')).length,4);
+ assert(html.includes('Idee: Knigge')&&html.includes('Idee: VTTom')&&html.includes('Idee: Paladose'),'Urheber je Regel');
+ assert.equal(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['data-action']==='toggleRule'&&el.attribs['aria-checked']==='false').length,4);
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='openPage').length,4);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true});assert(rules.isRuleActive('woundCheck'));
  App.DEFAULT_OPTIONS.actions.setView.call(sheet,{},{dataset:{view:'book'}});html=tpl(await sheet._prepareContext({}));
  assert.equal(elements(html,el=>el.attribs?.class?.split(' ').includes('dsa5h-hr-toc')).length,1,'Buch beginnt mit dem Inhaltsverzeichnis');
@@ -584,7 +920,11 @@ test('Hausregelbuch: Liste und Buch, Schalter nur für die SL, Urheber im Buch, 
  App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'1'}});html=tpl(await sheet._prepareContext({}));
  const top=elements(html,el=>el.attribs?.class==='dsa5h-hr-page-top')[0];assert(top&&dom.findAll(el=>el.attribs?.role==='switch',top.children).length===1,'Schalter oben rechts im Seitenkopf');
  assert(html.includes('Knigge'),'Urheber auf der Buchseite');assert.equal(elements(html,el=>el.name==='tr').length,7,'Kopf + 6 QS-Zeilen');
- assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 3'));
+ assert(elements(html,el=>el.attribs?.role==='switch'&&el.attribs['aria-checked']==='true').length===1,'Schalter auch auf der Buchseite');assert(html.includes('Seite 2 von 5'));
+ // Passive Verteidigung (#56): Buchseite erklärt die Wahl je Akteur, ohne eigene Schalter (Nutzer 2026-10-28).
+ App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'4'}});html=tpl(await sheet._prepareContext({}));
+ assert(html.includes(own.DSA5HELPERS.HouseRules.passiveDefense.Page.Scope.slice(0,40)));assert.equal(elements(html,el=>el.attribs?.role==='switch').length,1,'nur der Regelschalter');
+ App.DEFAULT_OPTIONS.actions.openPage.call(sheet,{},{dataset:{page:'1'}});
  isGM=false;html=tpl(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.role==='switch').length,0);assert.equal(elements(html,el=>el.attribs?.class==='dsa5h-hr-state active').length,1);
  await App.DEFAULT_OPTIONS.actions.toggleRule.call(sheet,{},{dataset:{ruleId:'woundCheck'}});assert.deepEqual(settings.houseRules,{woundCheck:true},'Spieler schalten nichts um');
  assert.deepEqual([...missing].filter(k=>k.startsWith('DSA5HELPERS')),[]);
@@ -628,7 +968,7 @@ test('Titelblatt-Leiste Variante G (#27/#31): Reiter Zustände | Persönliche Da
  Sheet.DEFAULT_OPTIONS.actions.dsa5hCoverSideTab.call(sheet,{},{dataset:{sideTab:'x'}});assert.equal(sheet._coverSideTab,'conditions');
  for(const k of ['NoConditions','ConditionsToStatus','NoPersonalDetails','EditInNotes'])assert(lookup(own,'DSA5HELPERS.'+k),k);
 });
-test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel, Talentwahl, Probe über das System, QS-Hinweis im Chat',async()=>{
+test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel, Talentwahl, Probe über das System mit Schalter „Als Hilfe würfeln“, QS aus der Chatnachricht',async()=>{
  const {help}=await houseRuleModules();const t=(k,d)=>d?k+':'+Object.values(d).join(','):k;
  assert.equal(help.helpMessage({helper:'Alrik',skill:'Einschüchtern',target:'Gerion',qs:2},t),'<strong>Title</strong><br>Chat.Success:Alrik,Einschüchtern,Chat.Target:Gerion,2<br><small>Chat.Manual</small>');
  assert.equal(help.helpMessage({helper:'Alrik',skill:'Einschüchtern',target:null,qs:0},t),'<strong>Title</strong><br>Chat.Failure:Alrik,Einschüchtern');
@@ -642,7 +982,7 @@ test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel
  let p=btn(html)[0];while(p&&!p.attribs?.['data-sub-panel'])p=p.parent;assert.equal(p?.attribs['data-sub-panel'],'combat:body','im Kampf-Reiter');
  global.foundry={utils:{escapeHTML:x=>String(x)},applications:{api:{DialogV2:{prompt:async o=>{dialog=o;return 'skill';}}}}};
  global.ChatMessage={getSpeaker:()=>({alias:'x'}),create:async m=>{chat=m;}};global.ui={notifications:{warn(){}}};
- actor.setupSkill=async(s,o)=>{setup={s,o};return {testData:{},cardOptions:{}};};actor.basicTest=async()=>({result:{successLevel:1,qualityStep:3}});actor.name='Alrik';
+ let rolled=null;actor.setupSkill=async(s,o)=>{setup={s,o};return {testData:{},cardOptions:{}};};actor.basicTest=async d=>{rolled=d;};actor.name='Alrik';
  await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hHelpAction.call(sheet,{},{});
  assert(dialog.content.includes('<optgroup')&&dialog.content.includes('Gerion'),'Talentauswahl nach Gruppen, markiertes Ziel genannt');
  assert(dialog.content.includes('name="search"')&&typeof dialog.render==='function','Suchfeld im Dialog');
@@ -656,8 +996,10 @@ test('Hausregel Helfen: Knopf in den Kampf-Schnellaktionen nur bei aktiver Regel
  input.value='einsch';inputL.input();assert.equal(sel.value,'c');assert(g1.hidden&&!g2.hidden,'leere Gruppe ausgeblendet');
  input.value='kr';inputL.input();assert.equal(sel.value,'b');inputL.keydown({key:'ArrowUp',preventDefault(){}});assert.equal(sel.value,'b','nur sichtbare Treffer');
  listeners.dblclick();assert.equal(ok,1,'Doppelklick würfelt');
- assert.equal(setup.s,skill,'Probe über den Probendialog des Systems');assert(chat.content.includes('3')&&chat.content.includes('Gerion'),'QS und Ziel im Chat');
- assert(!chat.whisper,'öffentlich, damit der Unterstützte es sieht');
+ assert.equal(setup.s,skill,'Probe über den Probendialog des Systems');assert.equal(rolled.testData.opposable,false,'nie vergleichend');
+ // Die Chatnachricht entsteht nach dem Wurf aus dem Merker-Modifikator (Hook), QS nur bei Gelingen.
+ assert.equal(help.HELP_REF,'dsa5h:help');assert.deepEqual([help.helpQS({successLevel:1,qualityStep:3}),help.helpQS({successLevel:-1,qualityStep:2}),help.helpQS(null)],[3,0,0]);
+ for(const l of ['de','en']){const h=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.HouseRules.helpAction;for(const k of ['Toggle','ToggleHint'])assert(h[k],l+' '+k);}
 });
 test('Fokus in Eingabefeldern bleibt nach dem Neuzeichnen erhalten (Tab durch Notizen › Persönliche Daten)',async()=>{
  const {sheet}=await prepare();global.CSS??={escape:x=>String(x)};
@@ -678,4 +1020,516 @@ test('Sammelproben (DSA5 8.1.9): Ziel-QS aus dem Item, 0 erlaubte Proben = unbeg
  actor.items.set('aggregate',doc);const p=sheet._aggregatedProgress({_id:'aggregate',system:{allowedTestCount:{value:0}}});
  assert.equal(p.progress,'3 / 5');assert.equal(p.allowed,localize('GROUPCHECK.unlimited'));
  const html=render(await sheet._prepareContext({}));assert(html.includes('3 / 5'),'Anzeige im Talente-Reiter');
+});
+test('Zustand hinzufügen mit Suche (#37), Sonderfertigkeiten in Magie/Religion zweispaltig (#38)',async()=>{
+ const {sheet,context}=await prepare();
+ context.manualConditions=[{id:'blind',name:'CONDITION.blind',img:'icons/svg/blind.svg'},{id:'prone',name:'CONDITION.prone',img:'icons/svg/falling.svg'}];
+ const html=render(context);
+ assert(html.includes('class="dsa5h-condition-search"')&&html.includes(localize('DSA5HELPERS.SearchConditions')),'Suchfeld mit Platzhalter');
+ assert(/dsa5h-condition-none" hidden/.test(html),'Hinweis „Keine Treffer“ zunächst aus');
+ for(const t of ['magic','religion'])assert(read(`templates/actors/parts/${t}.hbs`).includes('<div class="dsa5h-panel-cols">'),`${t}: Chip-Panels im Raster`);
+ const css=read('styles/dsa5-helpers-character-sheet.css');assert(css.includes('.dsa5h-condition-grid > [hidden]'),'ausgeblendete Treffer trotz display:flex weg');
+ // Filterlogik ohne DOM: Knöpfe als Attrappen.
+ const mk=t=>({textContent:t,hidden:false,clicks:0,click(){this.clicks++;}});const buttons=[mk('Blind'),mk('Liegend'),mk('Bewusstlos')];
+ const L={},P={};const input={value:'',addEventListener:(t,f)=>{L[t]=f;},focus(){}};const none={hidden:true};
+ const picker={open:false,addEventListener:(t,f)=>{P[t]=f;},querySelector:q=>q.includes('search')?input:q.includes('none')?none:{focus(){}},querySelectorAll:()=>buttons};
+ sheet.element={querySelector:q=>q==='.dsa5h-condition-picker'?picker:null};global.window??={};window.matchMedia??=()=>({matches:false});
+ sheet._attachConditionSearch();
+ input.value='li';L.input();assert.deepEqual(buttons.map(b=>b.hidden),[false,false,true],'Teilstring, ohne Groß-/Kleinschreibung');
+ input.value='lieg';L.input();L.keydown({key:'Enter',preventDefault(){}});assert.equal(buttons[1].clicks,1,'Enter fügt den einzigen Treffer hinzu');
+ input.value='xyz';L.input();assert(!none.hidden,'Hinweis bei keinem Treffer');
+ L.keydown({key:'Escape',preventDefault(){},stopPropagation(){}});assert.equal(input.value,'','Escape leert zuerst');
+ picker.open=true;L.keydown({key:'Escape',preventDefault(){},stopPropagation(){}});assert.equal(picker.open,false,'dann schließt Escape');
+});
+test('Waffe aus einem Behälter: Plakette am Gegenstand, Anlegen nimmt sie heraus (2026-10-20)',async()=>{
+ const {sheet}=await prepare();const updates=[];
+ const bag={id:'bag1',name:'Beutel',img:'bag.webp'};const sword={id:'sw1',system:{parent_id:'bag1'},update:u=>updates.push(u)};const loose={id:'sw2',system:{parent_id:''},update:u=>updates.push(u)};
+ const items=new Map([['bag1',bag],['sw1',sword],['sw2',loose]]);sheet.actor={...sheet.actor,items:{get:id=>items.get(id)}};
+ assert.deepEqual(sheet._containerInfo(sword),{name:'Beutel',img:'bag.webp'});assert.equal(sheet._containerInfo(loose),null);
+ assert.equal(sheet._containerOf({id:'x',system:{parent_id:'gone'}}),null,'nur, wenn es den Behälter gibt');
+ await sheet._takeOutOfContainer('sw2');assert.equal(updates.length,0);await sheet._takeOutOfContainer('sw1');assert.deepEqual(updates,[{'system.parent_id':''}]);
+ const html=H.compile(read('templates/actors/parts/weapon-short.hbs'))({item:{_id:'sw1',name:'Langschwert',img:'s.webp',system:{}},container:{name:'Beutel',img:'bag.webp'}});
+ assert(html.includes('class="dsa5h-in-container" src="bag.webp"'),'Plakette mit Behälterbild');
+ for(const l of ['de','en'])for(const k of ['InContainer','InContainerSuffix'])assert.equal(typeof JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS[k],'string',`${l}: ${k}`);
+});
+test('Eigenes HUD: Reiter in der DSA-Leiste, oben Einstellungen/Hausregelbuch, darunter aktive Hausregeln mit Zustand',async()=>{
+ // Importe durch Attrappen ersetzen: hudEntries bekommt seine Abhängigkeiten ohnehin als Parameter.
+ const src=read('scripts/hud.js').replace(/^import .*$/gm,'').replace(/^/,'const isRuleActive=()=>false,runWoundCheck=()=>{},findTreatWounds=()=>null,helpAction=()=>{},toggleStance=()=>{},aimRound=()=>{},recognizeWeakPoints=()=>{},enabledManeuvers=()=>[],maneuverSheetData=()=>null,defenseMode=()=>"manual",openDefenseDialog=()=>{},openHouseRules=()=>{},openDiceStats=()=>{},diceStatsEnabled=()=>false;\n');
+ const H=await import(dataUrl(src));const hero={type:'character',isOwner:true};
+ const list=(actor,o)=>H.hudEntries(actor,{active:()=>false,maneuvers:()=>[],diceStats:()=>false,treatWounds:()=>null,maneuverState:()=>({stance:{active:true},aim:{count:1,max:3}}),defense:()=>'best',...o});
+ const ids=(actor,o)=>list(actor,o).map(e=>e.id);
+ assert.deepEqual(ids(hero),['settings','houseRules'],'Einstellungen und Hausregelbuch immer, zuerst');
+ const all=list(hero,{active:()=>true,maneuvers:()=>['stance','aim'],diceStats:()=>true,treatWounds:()=>({id:'x'})});
+ assert.deepEqual(all.map(e=>e.id+':'+e.group),['settings:module','houseRules:module','diceStats:module','help:rules','woundCheck:rules','stance:rules','aim:rules','passiveDefense:rules']);
+ assert(all.find(e=>e.id==='passiveDefense').on,'passive Verteidigung: automatische Wahl markiert');
+ assert(all.find(e=>e.id==='stance').on,'Haltung aktiv markiert');assert.equal(all.find(e=>e.id==='aim').badge,'1/3','Zielen mit Stand');
+ assert.deepEqual(ids(hero,{active:()=>true,maneuvers:()=>['feint']}),['settings','houseRules','help','passiveDefense'],'ohne Heilkunde Wunden, ohne Haltung/Zielen');
+ assert.deepEqual(ids(null,{active:()=>true,diceStats:()=>true}),['settings','houseRules','diceStats'],'ohne Token keine Hausregel-Aktionen');
+ assert.deepEqual(ids({type:'creature'},{active:()=>true}),['settings','houseRules','passiveDefense'],'Kreaturen nur mit der passiven Verteidigung (#56)');
+ assert.equal(list(hero,{active:id=>id==='passiveDefense',defense:()=>'manual'})[2].on,false,'selbst würfeln = nicht markiert');
+ assert(read('scripts/dsa5-helpers.js').includes('initHud()'));for(const l of ['de','en']){const h=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Hud;assert(h.Tab&&h.Settings&&h.Rules,l);}
+});
+test('Aufträge und Personen (#39): Almanach-Journale, Sichtbarkeit wie im System, Reiter abschaltbar, Klick öffnet den Almanach',async()=>{
+ const {sheet}=await prepare();const A=await import(dataUrl(read('scripts/sheets/almanac.js')));const saved={game:global.game,fromUuid:global.fromUuid,fromUuidSync:global.fromUuidSync};
+ try{
+  const player={id:'p1',isGM:false},gm={id:'gm',isGM:true};
+  assert(A.questVisible({visible:true},player)&&!A.questVisible({visible:false},player)&&A.questVisible({visible:false},gm),'freigegeben bzw. SL');
+  assert(!A.questVisible({visible:true,audience:2},player)&&A.questVisible({visible:true,audience:1,playerOwners:['p1']},player)&&!A.questVisible({visible:true,audience:1,playerOwners:['x']},player),'Publikum');
+  const quests={a:{title:'Erbe',priority:0,status:0,visible:true,location:'Gratenfels',objectives:{o2:{text:'Zwei',status:0,visible:true,sort:2},o1:{text:'Eins',status:1,visible:true,sort:1},o3:{text:'Geheim',status:0,visible:false,sort:3}}},
+   b:{title:'Wölfe',priority:1,status:0,visible:true},c:{title:'Brücke',priority:1,status:1,visible:true},d:{title:'SL',priority:0,status:0,visible:false}};
+  const personae={x:{name:'Baron',type:0,visible:true,important:true,actor_uuid:'Actor.b',faction:'Haus'},y:{name:'Wolf',type:1,visible:true,actor_uuid:'Actor.w'},z:{name:'Geheim',type:0,visible:false,actor_uuid:'Actor.g'},n:{name:'Ohne Akteur',type:0,visible:true}};
+  const journals={'JournalEntry.q':{pages:[{type:'dsaquestlog',uuid:'Page.q',system:{quests}}]},'JournalEntry.p':{pages:[{type:'dsapersonaedramatis',uuid:'Page.p',system:{personae}}]}};
+  let settings={};const vis={questlog:true,personae:true};
+  global.game={...saved.game,user:player,i18n:{...saved.game.i18n,lang:'de'},settings:{get:(scope,key)=>scope==='dsa5'?(key==='questlogJournals'?{activated:[{uuid:'JournalEntry.q'}]}:key==='calendarActors'?{activated:[{uuid:'JournalEntry.p'}]}:key==='calendarFeatureVisibility'?vis:'light'):(key in settings?settings[key]:'light')}};
+  global.fromUuid=async u=>journals[u]??null;global.fromUuidSync=u=>({name:u,img:'actor.webp'});
+  const q=await A.loadQuests(player);
+  assert.deepEqual(q.groups.map(g=>[g.priority,g.quests.map(x=>x.title)]),[[0,['Erbe']],[1,['Wölfe']]],'offene nach Priorität, SL-Auftrag fehlt');
+  assert.deepEqual(q.closed.map(x=>x.title),['Brücke']);assert.deepEqual(q.groups[0].quests[0].objectives.map(o=>o.text),['Eins','Zwei'],'Ziele sortiert, verborgene fehlen');
+  assert.equal(q.groups[0].quests[0].img,A.QUEST_PLACEHOLDER);assert.equal((await A.loadQuests(gm)).groups[0].quests.length,2,'SL sieht alles');
+  const p=await A.loadPersonae(player);assert.deepEqual([p.dramatis.map(x=>x.name),p.bestiary.map(x=>x.name)],[['Baron'],['Wolf']],'freigegeben und mit Akteur');assert.equal(p.bestiary[0].img,'actor.webp','Bild vom Akteur');
+  assert(A.almanacTabEnabled('quests',player)&&A.almanacTabEnabled('personae',player));
+  vis.questlog=false;assert(!A.almanacTabEnabled('quests',player)&&A.almanacTabEnabled('quests',gm),'Almanach-Bereich für Spieler aus');vis.questlog=true;
+  settings.personaeTab=false;assert(!A.almanacTabEnabled('personae',gm),'Moduleinstellung aus');settings={};
+  // Bogen: beide Reiter, Karten mit Almanach-Aktion, Personen mit Unterreitern als Sprungmarken.
+  const html=render(await sheet._prepareContext({}));
+  for(const t of ['quests','personae'])assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']===t).length,1,t);
+  const cards=elements(html,el=>el.attribs?.['data-action']==='dsa5hOpenAlmanac'&&el.attribs['data-entry-key']);assert.deepEqual(cards.map(c=>c.attribs['data-entry-key']),['a','b','c','x','y']);
+  assert(cards.every(c=>c.attribs.class.includes('dsa5h-almanac-tile')),'gleich große Kacheln');assert(!html.includes('Gratenfels')&&!html.includes('>Haus<'),'nur das Nötigste: kein Ort, keine Fraktion');
+  assert(html.includes('data-sub-panel="personae:dramatis"')&&html.includes('data-sub-panel="personae:bestiary"'));assert.equal(typeof Sheet.DEFAULT_OPTIONS.actions.dsa5hOpenAlmanac,'function');
+  settings.questsTab=false;const off=render(await sheet._prepareContext({}));assert.equal(elements(off,el=>el.attribs?.['data-tab-panel']==='quests').length,0,'Reiter abgeschaltet');
+  const st=read('scripts/apps/sheet-settings.js');assert(st.includes("'questsTab'")&&st.includes("'personaeTab'"),'im Untermenü Heldenbogen');
+  for(const l of ['de','en']){const d=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;for(const k of ['QuestsTab','PersonaeTab'])assert(d.Settings[k]?.Name&&d.Settings[k]?.Hint,l+k);assert(d.Tabs.quests&&d.Tabs.personae&&d.Quests.Group2&&d.Personae.Bestiary,l);}
+ } finally { Object.assign(global,saved); }
+});
+
+
+test('#50: only prepared source data with system capability; no source or limited view stays empty',async()=>{
+ const {sheet}=await prepare();
+ const charge=sheet.constructor._powersourceEdit;
+ try {
+  sheet.context.prepare.powersource={value:7,max:12,segments:[{label:'Test <source>',value:7,max:12,itemId:'i',effectId:'e'}]};
+  assert.equal((await sheet._prepareContext({})).dsa5h.powerSources,null,'no inherited editor means no unsupported control');
+  sheet.constructor._powersourceEdit=()=>{};
+  const ctx=await sheet._prepareContext({});
+  assert.equal(ctx.dsa5h.powerSources.value,7);assert.equal(ctx.dsa5h.powerSources.max,12);
+  assert.equal(ctx.dsa5h.powerSources.segments[0].itemId,'i');
+  assert(render(ctx).includes('data-action="dsa5hPowerSources"'));
+  assert.equal(ctx.document.system.status.astralenergy.value,10,'personal AE stays separate');
+  sheet.limited=true;assert.equal((await sheet._prepareContext({})).dsa5h.powerSources,null);sheet.limited=false;
+  sheet.context.prepare.powersource.max=0;assert.equal((await sheet._prepareContext({})).dsa5h.powerSources,null);
+  sheet.context.prepare.powersource.max=12;sheet.context.prepare.powersource.segments=[];
+  assert.equal((await sheet._prepareContext({})).dsa5h.powerSources,null);
+ } finally {if(charge)sheet.constructor._powersourceEdit=charge;else delete sheet.constructor._powersourceEdit;}
+});
+
+test('#47: real armory display data, capability gate, independent edit controls and observer display',{skip:!fs.existsSync(path.join(dataRoot,'modules/dsa5-armory2/modules/energyzones.js'))},async()=>{
+ const {sheet,actor}=await prepare();const saved=global.game;actor.type='character';
+ const savedFoundry=global.foundry;
+ global.foundry={...global.foundry,utils:global.foundry?.utils??{},applications:{...global.foundry?.applications,handlebars:global.foundry?.applications?.handlebars??{}}};
+ const keys=['head','value','rightarm','leftarm','rightleg','leftleg'];
+ actor.system.status.energyZones=Object.fromEntries(keys.map(key=>[key,{value:2,max:4,failed:key==='rightarm',resistPenalty:key==='rightarm'?2:0}]));
+ let enabled=true;
+ try {
+  global.game={...saved,modules:{get:id=>id==='dsa5-compendium'?{active:true}:id==='dsa5-armory2'?{active:true,api:{isEnergyZonesActive:()=>enabled}}:undefined},settings:{get:(m,k)=>['enableHitzones','enableArmorZones'].includes(k)?true:'light'}};
+  let ctx=await sheet._prepareContext({});
+  assert.equal(ctx.dsa5h.body.zones[2].energy.failed,true);
+  assert.equal(ctx.dsa5h.body.zones[2].energy.resistPenalty,2);
+  let html=render(ctx);
+  const controls=elements(html,el=>String(el.attribs?.class??'').includes('energyzone-zone-header'));
+  assert.equal(controls.length,6);
+  assert.equal(new Set(controls.map(el=>el.attribs.id)).size,6);
+  assert.equal(elements(html,el=>el.name==='button'&&dom.findOne(child=>child.name==='button',el.children??[],true)).length,0,'no nested energy/item buttons');
+  assert(controls.every(el=>el.name==='button'&&!el.attribs['data-action']),'system zone dialog hook, separate from itemEdit');
+  assert(!html.includes('name="system.status.energyZones.'),'no extra named field or second actor.update path');
+  actor.isOwner=false;ctx=await sheet._prepareContext({});html=render(ctx);
+  assert.equal(elements(html,el=>String(el.attribs?.class??'').includes('energyzone-zone-header')).length,0,'observer cannot open writable armory dialog');
+  assert.equal(ctx.dsa5h.body.zones[2].energy.value,2,'observer still sees prepared values');
+  actor.system.status.wounds={value:20,max:32};
+  for(const key of keys)actor.system.status.energyZones[key]={value:0,max:0,failed:false,resistPenalty:0};
+  const stored=JSON.stringify(actor.system.status.energyZones);
+  ctx=await sheet._prepareContext({});
+  assert.equal(ctx.dsa5h.body.zones[0].energy.value,2,'first-use display matches the real zone editor');
+  assert.equal(ctx.dsa5h.body.zones[0].energy.max,3,'capacity is provided by Rüstkammer II, not the stored zero');
+  assert.equal(JSON.stringify(actor.system.status.energyZones),stored,'display never initializes or saves actor fields');
+  actor.system.status.energyZones.head.value=1;
+  ctx=await sheet._prepareContext({});
+  assert.equal(ctx.dsa5h.body.zones[0].energy.value,1,'stored damage is preserved');
+  assert.equal(ctx.dsa5h.body.zones[2].energy.value,0,'an empty zone stays empty after first initialization');
+  enabled=false;ctx=await sheet._prepareContext({});assert(ctx.dsa5h.body.zones.every(zone=>zone.energy===null));
+  assert(!render(ctx).includes('class="dsa5h-zone-energy'));
+ } finally {global.game=saved;global.foundry=savedFoundry;}
+});
+
+
+test('#50: charge updates distinguish identical effect IDs on different items',async()=>{
+ const {powerSourceUpdates}=await import(dataUrl(read('scripts/compat/powersource-dialog.js')));
+ const sources=[{itemId:'first',effectId:'copied-effect',value:10,max:10},{itemId:'second',effectId:'copied-effect',value:10,max:10}];
+ const plan=powerSourceUpdates(sources,['10','5']);
+ assert.equal(plan.has('first'),false,'unchanged first source is untouched');
+ assert.deepEqual(plan.get('second'),[{_id:'copied-effect','system.powersource.value':5}]);
+ const both=powerSourceUpdates(sources,['3','7']);
+ assert.equal(both.get('first')[0]['system.powersource.value'],3);
+ assert.equal(both.get('second')[0]['system.powersource.value'],7);
+ assert.equal(powerSourceUpdates(sources,['10','10']).size,0);
+ assert.equal(powerSourceUpdates(sources,['-1','20']).get('first')[0]['system.powersource.value'],0);
+ assert.throws(()=>powerSourceUpdates(sources,['5']),/Incomplete/,'missing fields must never silently clear a source');
+});
+
+
+test('#50: dialog compatibility uses the loaded runtime, never unbundled DSA5 source imports',()=>{
+ const source=read('scripts/compat/powersource-dialog.js');
+ assert(!/import\s*\(['"]\/systems\//.test(source),'would create a second DSA5 module graph beside the bundle');
+ assert(source.includes('sheet.constructor._powersourceEdit.call(sheet)'),'open via inherited runtime action');
+ const core=fs.readFileSync(path.join(app,'client/applications/api/application.mjs'),'utf8');
+ assert(core.includes('this.options.actions[action]'),'Foundry reads handlers from the live application options');
+ assert(!core.includes('Object.freeze(this.options.actions)'),'action table must remain mutable');
+});
+
+// v13-Verträge: echte ältere Quellen abgleichen; Rendern bleibt ein statischer Fixture-Test.
+test('v13: factory resolves game.dsa5 after init and keeps existing sheet id, omits absent capabilities', async () => {
+ await loadSheet();
+ const savedGame=global.game,savedSystem=global.dsa5;
+ const f=fixture();
+ class LegacyBase {
+  tabGroups={};
+  async _prepareContext(){return this.context;}
+  showLimited(){return false;}
+  _getHeaderControls(){return [];}
+  static _selectTraditionArtifact(){}
+  static _deleteTraditionArtifact(){}
+ }
+ try {
+  global.dsa5=undefined;
+  global.game={...savedGame,release:{generation:13},dsa5:{sheets:{ActorSheetdsa5Character:LegacyBase}}};
+  const C=createSheet();
+  assert.equal(Object.getPrototypeOf(C),LegacyBase);
+  assert.equal(C.name,'','stored sheet id must remain dsa5-helpers.');
+  assert.equal(C.DEFAULT_OPTIONS.ownerActions.dsa5hWoundCheck,C._woundCheck);
+  assert.equal(C.DEFAULT_OPTIONS.ownerActions.selectTraditionItem,LegacyBase._selectTraditionArtifact);
+  const sheet=new C();Object.assign(sheet,{actor:f.actor,context:f.context,isEditable:true});
+  const context=await sheet._prepareContext({});
+  assert(context.dsa5h.legacySystem);
+  assert(!context.dsa5h.supportsCompanions);
+  assert(!context.dsa5h.tabs.some(t=>['companion','quests'].includes(t.id)));
+  assert(!context.dsa5h.subnav.find(t=>t.tab==='religion').items.some(i=>i.id==='equipment'));
+  const html=render(context);
+  assert(!html.includes('data-tab-panel="companion"'));
+  assert(!html.includes('specCategoryHelp'));
+  assert(!html.includes('data-tradition-kind="ceremonial"'));
+  assert.deepEqual(sheet._getHeaderControls(),[]);
+ } finally {global.game=savedGame;global.dsa5=savedSystem;}
+});
+
+test('v13: context menu adapter and flag deletion use real older core contracts', async () => {
+ const {contextMenuEntries,clearCharacterBuilderFlag}=await import(runtimeUrl);
+ const savedGame=global.game,savedFoundry=global.foundry;
+ try {
+  global.game={release:{generation:13}};
+  let clicked;
+  const entries=contextMenuEntries([{label:'Example',visible:false,onClick:(_event,target)=>{clicked=target;}}]);
+  assert.equal(entries[0].name,'Example');assert.equal(entries[0].condition,false);
+  entries[0].callback('target');assert.equal(clicked,'target');
+  const oldCore=fs.readFileSync('D:/FoundryVTT/foundry-nodejs-v13/client/applications/ux/context-menu.mjs','utf8');
+  assert(oldCore.includes('item.name')&&oldCore.includes('item?.callback')&&oldCore.includes('entry.condition'));
+  const oldSystem=fs.readFileSync('D:/FoundryVTT/user-data-paths/v13/Data/systems/dsa5/modules/actor/actor-sheet.js','utf8');
+  assert(oldSystem.includes('_selectTraditionArtifact(')&&oldSystem.includes('_deleteTraditionArtifact('));
+  assert(!oldSystem.includes('prepareCompanionTab('));
+  const paths={};global.foundry={utils:{setProperty:(_obj,key,value)=>{paths[key]=value;}}};
+  const changes={flags:{'dsa5-helpers':{preChargenSheet:'old'}}};clearCharacterBuilderFlag(changes);
+  assert.deepEqual(paths,{'flags.dsa5-helpers.-=preChargenSheet':null});
+  assert(!('preChargenSheet' in changes.flags['dsa5-helpers']));
+  global.game={release:{generation:14}};const modern=[{label:'Example'}];assert.equal(contextMenuEntries(modern),modern);
+ } finally {global.game=savedGame;global.foundry=savedFoundry;}
+});
+
+test('v13: mobile init exits before settings, hooks or DOM mutations', async () => {
+ const saved=global.game;
+ const source=read('scripts/mobile/mobile.js').replace(/^import .*;\r?$/gm,'');
+ const guarded=source.replace('export function initMobile()', 'function initMobile()');
+ // Execute the real init body, with dependencies that throw if the guard is bypassed.
+ const body=guarded.slice(guarded.indexOf('function initMobile()'));
+ const vm=require('node:vm');
+ const start=body.indexOf('{');let depth=1,end=start+1;
+ while(depth&&end<body.length){if(body[end]==='{')depth++;if(body[end]==='}')depth--;end++;}
+ let touched=false;
+ vm.runInNewContext(body.slice(0,end)+'; initMobile();',{isFoundry13:()=>true,game:{settings:{register(){touched=true;throw Error('settings touched');}}}});
+ assert(!touched);
+ global.game=saved;
+});
+
+test('v13: wound check forces selfroll in setup and final card options', async () => {
+ const {woundCheck}=await import(dataUrl(read('scripts/house-rules/wound-check.js')));
+ const saved=global.game;
+ try {
+  const target={name:'Target',actor:{id:'target',system:{status:{wounds:{value:20,max:32}}}}};
+  global.game={release:{generation:13},i18n:{localize,format:(_key,args)=>args.name},user:{targets:{first:()=>target}}};
+  let options,submitted;
+  const skill={type:'skill',name:'Heilkunde Wunden',clone:()=>({})};
+  const viewer={items:[skill],getFlag:()=>undefined,setupSkill:async(_skill,data)=>{options=data;return {testData:{},cardOptions:{rollMode:'publicroll'}};},basicTest:async data=>{submitted=data;return {result:null};}};
+  await woundCheck(viewer);
+  assert.equal(options.rollMode,'selfroll');
+  assert.equal(submitted.cardOptions.rollMode,'selfroll');
+  assert(!('messageMode' in submitted.cardOptions));
+ } finally {global.game=saved;}
+});
+
+test('v13: passive Verteidigung – Wartezustand DSA7 (flags.oppose) und DSA8 (flags.opposes)', async () => {
+ const {isOpposePending,clearOpposedFor}=await import(runtimeUrl);
+ const saved=global.game;
+ try {
+  assert(isOpposePending({flags:{opposes:{s1:{}}}},'s1'),'DSA8 je Startnachricht');
+  assert(isOpposePending({flags:{oppose:{startMessageId:'s1'}}},'s1'),'DSA7 ein offener Angriff');
+  assert(!isOpposePending({flags:{oppose:{startMessageId:'s2'}}},'s1'),'fremder Angriff zählt nicht');
+  assert(!isOpposePending({flags:{}},'s1'));
+  const calls=[];const Oppose={clearOpposed:(...args)=>calls.push(args)};
+  global.game={release:{generation:13}};
+  await clearOpposedFor(Oppose,{id:'a',flags:{oppose:{startMessageId:'s2'}}},'s1');
+  assert.equal(calls.length,0,'DSA7: späteren Angriff eines anderen nicht löschen');
+  const target={id:'a',flags:{oppose:{startMessageId:'s1'}}};
+  await clearOpposedFor(Oppose,target,'s1');
+  assert.deepEqual(calls.pop(),[target],'DSA7: clearOpposed(actor) ohne Optionen');
+  global.game={release:{generation:14}};
+  await clearOpposedFor(Oppose,target,'s1');
+  assert.deepEqual(calls.pop(),[target,{startMessageId:'s1'}],'DSA8: je Startnachricht');
+  const src=read('scripts/house-rules/passive-defense.js');
+  assert(!/flags\?\.opposes/.test(src),'Wartezustand nur über isOpposePending');
+  assert(!/OpposeDSA\.clearOpposed\(/.test(src),'Lösen nur über clearOpposedFor');
+  const sys='D:/FoundryVTT/user-data-paths/v13/Data/systems/dsa5/modules/system/rolls/opposed-dsa5.js';
+  if(fs.existsSync(sys)){const code=fs.readFileSync(sys,'utf8');for(const fn of ['resolveUndefended','handleOpposedTarget','clearOpposed','hideReactionButton'])assert(code.includes(`static async ${fn}(`),fn);}
+ } finally {global.game=saved;}
+});
+
+test('v13: unsupported modifier integrations stay inactive even with existing world flags', async () => {
+ const {availableHouseRules,isRuleActive,isRuleSupported}=await import(houseRulesUrl());
+ const saved=global.game;
+ try {
+  global.game={release:{generation:13},settings:{get:()=>({woundCheck:true,helpAction:true,maneuvers:true,passiveDefense:true})}};
+  assert.deepEqual(availableHouseRules().map(rule=>rule.id),['woundCheck','passiveDefense']);
+  assert(isRuleActive('woundCheck'));assert(!isRuleActive('helpAction'));assert(!isRuleActive('maneuvers'));
+  assert(isRuleActive('passiveDefense'),'passive Verteidigung läuft seit 0.6.3 auch unter DSA7');
+  assert(!isRuleSupported('maneuvers'));
+  const systemRoot='D:/FoundryVTT/user-data-paths/v13/Data/systems/dsa5/modules';
+  const collect=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?collect(path.join(dir,e.name)):e.name.endsWith('.js')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);
+  assert(!collect(systemRoot).some(source=>source.includes('dsa5.prepareRollSituationalModifiers')),'DSA7 cannot supply the hook required by these integrations');
+  global.game.release.generation=14;
+  assert(isRuleActive('helpAction'));assert(isRuleActive('maneuvers'));
+ } finally {global.game=saved;}
+});
+
+
+test('legacy spell and ritual lists reach magic tab, favorites and combat dialog',async()=>{
+ const {sheet,actor}=await prepare();
+ const magic=sheet.context.prepare.magic;
+ const spell=item('legacy-spell','spell'),ritual=item('legacy-ritual','ritual');
+ delete magic.spellList;delete magic.ritualList;
+ magic.spell=[spell];magic.ritual=[ritual];
+ actor.items.set(spell._id,spell);actor.items.set(ritual._id,ritual);
+ actor.flags.favorites=[spell._id,ritual._id];
+ const context=await sheet._prepareContext({});
+ assert.equal(context.prepare.magic.spellList,magic.spell);
+ assert.equal(context.prepare.magic.ritualList,magic.ritual);
+ assert.deepEqual(context.dsa5h.favoriteGroups.find(g=>g.label==='spells').items.map(i=>i._id),[spell._id,ritual._id]);
+ const html=render(context);
+ for(const id of [spell._id,ritual._id])assert(elements(html,el=>el.attribs?.['data-item-id']===id).length>=3,id+' missing from magic, favorites or cast dialog');
+ magic.spellList=[];magic.ritualList=[];
+ await sheet._prepareContext({});
+ assert.deepEqual(magic.spellList,[],'existing modern list must take precedence');
+ assert.deepEqual(magic.ritualList,[]);
+ const systemSpells=fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/actors/parts/spells.hbs'),'utf8');
+ assert(systemSpells.includes(targetGeneration===13?'prepare.magic.spell ':'prepare.magic.spellList'),'fixture contract matches installed system');
+});
+
+
+test('priest-only hero renders liturgies, ceremonies and blessings using installed system paths',async()=>{
+ const {sheet,actor}=await prepare();
+ const magic=sheet.context.prepare.magic;
+ magic.hasSpells=false;magic.hasPrayers=true;
+ magic.spellList=[];magic.ritualList=[];
+ const liturgy=item('priest-liturgy','liturgy'),ceremony=item('priest-ceremony','ceremony'),blessing=item('priest-blessing','blessing');
+ magic.liturgy=[liturgy];magic.ceremony=[ceremony];magic.blessing=[blessing];
+ for(const entry of [liturgy,ceremony,blessing])actor.items.set(entry._id,entry);
+ actor.flags.favorites=[liturgy._id,ceremony._id];
+ sheet._currentTab='religion';
+ const context=await sheet._prepareContext({});
+ assert(context.dsa5h.tabs.some(t=>t.id==='religion'));
+ assert(!context.dsa5h.tabs.some(t=>t.id==='magic'));
+ const html=render(context);
+ const panel=elements(html,el=>el.attribs?.['data-tab-panel']==='religion')[0];
+ for(const entry of [liturgy,ceremony,blessing])assert(dom.findAll(el=>el.attribs?.['data-item-id']===entry._id,[panel]).length,entry.type+' missing in religion');
+ for(const entry of [liturgy,ceremony])assert(elements(html,el=>el.attribs?.['data-item-id']===entry._id).length>=3,entry.type+' missing in favorites or cast dialog');
+ const refs=fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/actors/parts/liturgies.hbs'),'utf8');
+ for(const key of ['liturgy','ceremony'])assert(refs.includes('prepare.magic.'+key),'installed system path '+key);
+});
+
+// Talent-Vorschläge (2026-10-06): Bewertung ohne Foundry, Anfragen aus dem Chat, Karten auf dem Titelblatt.
+const suggestionModules=async()=>{const score=await import(dataUrl(read('scripts/skill-suggestions/score.js')));const context=await import(suggestionsUrl());return {score,context};};
+test('Vorschläge: Erfolgschance der 3W20-Probe exakt, inkl. Doppel-1 und Doppel-20',async()=>{
+ const {score}=await suggestionModules();
+ assert.equal(score.successChance([20,20,20],0),1-(1+3*19)/8000,'nur zwei/drei Zwanzigen misslingen');
+ const low=score.successChance([1,1,1],0);assert.equal(low,(1+3*19)/8000,'nur zwei/drei Einsen gelingen');
+ assert(score.successChance([14,14,14],10)>score.successChance([11,11,11],10));
+ assert(score.successChance([12,12,12],5,2)>score.successChance([12,12,12],5),'Erleichterung hebt die Chance');
+ const now=Date.now(),day=86400000;assert.equal(score.decay(4,now-14*day,now,14),2);
+ const bumped=score.bumpUsage({s:2,t:now-14*day},now);assert.equal(bumped.s,2);assert.equal(bumped.t,now);
+});
+test('Vorschläge: Anfragen vorn, Favoriten raus, Nutzung/Spezialist/Kampf/Steigerung zählen, FW 0 nur bei Bedarf',async()=>{
+ const {score}=await suggestionModules();const now=Date.now();
+ const sk=(id,fw,a=12)=>({id,name:id,fw,attributes:[a,a,a]});
+ const skills=[sk('Klettern',6),sk('Sinnesschärfe',8),sk('Zechen',3),sk('Reiten',4),sk('Tanzen',0,16),sk('Schwimmen',2),sk('Kraftakt',5),sk('Fliegen',0),sk('Lesen',10),sk('Malen',1)];
+ const ranked=score.rankSuggestions({skills,now,requests:{Fliegen:{messageId:'m1',modifier:-2}},usage:{Zechen:{s:6,t:now}},advanced:{Malen:now},othersBest:{Reiten:2},inCombat:true,combatSkills:new Set(['Kraftakt']),classicSkills:new Set(['Sinnesschärfe']),favorites:new Set(['Lesen'])});
+ assert.equal(ranked[0].id,'Fliegen');assert.equal(ranked[0].reason,'requested');assert.equal(ranked[0].messageId,'m1');assert.equal(ranked[0].modifier,-2);
+ assert.equal(ranked.length,6);assert(!ranked.some(r=>r.id==='Lesen'),'Favoriten fallen heraus');assert(!ranked.some(r=>r.id==='Tanzen'),'FW 0 ohne Nutzung fällt heraus');
+ const reason=id=>ranked.find(r=>r.id===id)?.reason;
+ assert.equal(reason('Zechen'),'usage');assert.equal(reason('Reiten'),'specialist');assert.equal(reason('Kraftakt'),'combat');assert.equal(reason('Malen'),'advanced');
+});
+test('Vorschläge: offene Anfragen und @Rq-Links aus dem Chat',async()=>{
+ const {context}=await suggestionModules();const now=Date.now();
+ const previousQueries=global.dsa5.queries;global.dsa5.queries={RollRequestService:{triggerRollFromCard(){}}};
+ assert.deepEqual(context.parseRequestLink('Klettern -1'),{name:'Klettern',modifier:-1});assert.deepEqual(context.parseRequestLink('Bekehren & Überzeugen'),{name:'Bekehren & Überzeugen',modifier:0});assert.deepEqual(context.parseRequestLink('Fliegen 2'),{name:'Fliegen',modifier:2});assert.deepEqual(context.parseRequestLink('Klettern -1 options={"attrs":"MU,GE,KK"}'),{name:'Klettern',modifier:-1});
+ const req=(id,status,extra={})=>({id,timestamp:now,flags:{dsa5:{rollRequest:{category:'skill',name:'Klettern',modifier:1,finalized:false,recipients:[{actorId:'a1',status}],...extra}}}});
+ const {requests,mentions}=context.chatRequests({id:'a1'},[req('m0','unowned',{name:'Fliegen'}),req('m1','pending'),{id:'m6',timestamp:now,content:'<p>@RQ[Bekehren &amp; Überzeugen&nbsp;-1]</p>'},{id:'m7',timestamp:now,content:'<p><a class="roll-button request-roll" data-type="skill" data-modifier="2" data-name="Fliegen">Fliegen +2</a></p>'},req('m2','success',{name:'Reiten'}),req('m3','pending',{name:'Zechen',finalized:true}),{id:'m4',timestamp:now,content:'Bitte @Rq[Schwimmen +2] würfeln'},{id:'m5',timestamp:now-20*60000,content:'@Rq[Tanzen]'}],now);
+ assert.deepEqual(requests,{Fliegen:{messageId:'m0',modifier:1},Klettern:{messageId:'m1',modifier:1}},'auch ohne Spieler online (unowned)');global.dsa5.queries=previousQueries;assert.deepEqual(mentions,{'Bekehren & Überzeugen':{modifier:-1},Fliegen:{modifier:2},Schwimmen:{modifier:2}});
+});
+test('Vorschläge: sechs Karten im Titelblatt, würfelbar wie Favoriten, offene Anfrage über den RollRequestService',async()=>{
+ await loadSheet();global.game={i18n:{localize},settings:{get:()=> 'light'},user:{targets:{first:()=>undefined}}};
+ const {sheet,actor}=await prepare();
+ assert.equal((await sheet._prepareContext({})).dsa5h.suggestions.length,0,'einziges Talent ist Favorit');
+ actor.flags.favorites=['weapon'];const context=await sheet._prepareContext({});const list=context.dsa5h.suggestions;assert(context.owner);
+ assert(list.length>0&&list.length<=6);for(const e of list)assert(e.reasonLabel&&!e.reasonLabel.startsWith('DSA5HELPERS'),e.reasonLabel);
+ const html=render(context);const cover=elements(html,el=>el.attribs?.['data-tab-panel']==='cover')[0];
+ const cards=dom.findAll(el=>String(el.attribs?.class??'').includes('dsa5h-suggest-card'),cover.children);assert.equal(cards.length,list.length);
+ assert(dom.findAll(el=>el.attribs?.['data-action']==='skillSelect',cards).length===list.length);
+ const stars=dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',cards);assert.equal(stars.length,list.length,'Favoritenstern je Vorschlag');for(const st of stars)assert.equal(st.attribs['aria-pressed'],'false');
+ const calls=[];const previousQueries=global.dsa5.queries;global.dsa5.queries={RollRequestService:{triggerRollFromCard:(m,a)=>calls.push([m,a])}};sheet.actor.isOwner=true;
+ await Sheet.DEFAULT_OPTIONS.ownerRollActions.dsa5hAnswerRequest.call(sheet,{}, {dataset:{which:'msg1'}});assert.deepEqual(calls,[['msg1',sheet.actor.id]]);global.dsa5.queries=previousQueries;
+});
+test('Vorschläge: Anzahl aus der Benutzer-Einstellung (0 = aus, 2–12), Anfragen bleiben bei kleiner Anzahl vorn',async()=>{
+ const {score}=await suggestionModules();const skills=['A','B','C','D','E'].map(n=>({id:n,name:n,fw:8,attributes:[12,12,12]}));
+ assert.equal(score.rankSuggestions({skills,count:2}).length,2);
+ const r=score.rankSuggestions({skills,count:2,requests:{E:{messageId:'m',modifier:0}}});assert.equal(r[0].id,'E');assert.equal(r.length,2);
+ await loadSheet();const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+ const withSetting=async value=>{global.game={i18n:{localize},settings:{get:(_m,key)=>key==='skillSuggestions'?value:'light'},user:{targets:{first:()=>undefined}}};return (await sheet._prepareContext({})).dsa5h.suggestions;};
+ assert.equal((await withSetting(0)).length,0,'aus');
+ const ctx=await sheet._prepareContext({});assert(!render(ctx).includes('dsa5h-suggest-grid'));
+ assert((await withSetting(2)).length<=2);assert((await withSetting(12)).length>=1);
+});
+test('Vorschläge: Titel klappt ein/aus, Zustand aus der Benutzer-Einstellung, eingeklappt mit Hinweis auf offene Anfragen',async()=>{
+ await loadSheet();const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+ const ctxWith=async collapsed=>{global.game={i18n:{localize:(k,d)=>k==='DSA5HELPERS.Suggestions.RequestedCount'?`${d?.count} angefragt`:localize(k,d)},settings:{get:(_m,key)=>key==='skillSuggestionsCollapsed'?collapsed:'light'},user:{targets:{first:()=>undefined}}};return sheet._prepareContext({});};
+ const open=await ctxWith(false);const html=render(open);
+ const toggle=elements(html,el=>el.attribs?.['data-action']==='dsa5hToggleSuggestions')[0];assert(toggle,'Klappknopf');assert.equal(toggle.attribs['aria-expanded'],'true');
+ const grid=elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-grid'))[0];assert(!('hidden' in grid.attribs));
+ const closed=await ctxWith(true);closed.dsa5h.suggestionsRequested=1;const html2=render(closed);
+ assert.equal(elements(html2,el=>el.attribs?.['data-action']==='dsa5hToggleSuggestions')[0].attribs['aria-expanded'],'false');
+ assert('hidden' in elements(html2,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-grid'))[0].attribs);
+ assert(elements(html2,el=>String(el.attribs?.class??'').includes('dsa5h-suggest-badge')).length===1);
+});
+test('Vorschläge: Anzahl im Bogen per − / + je Benutzer und Held (User-Flag), Einstellung als Standard, „Aus“ schlägt alles',async()=>{
+ await loadSheet();const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+ const user={flags:{},targets:{first:()=>undefined},getFlag(_m,k){return this.flags[k];},async setFlag(_m,k,v){this.flags[k]={...(this.flags[k]??{}),...v};}};
+ let setting=6;global.game={i18n:{localize},settings:{get:(_m,key)=>key==='skillSuggestions'?setting:'light'},user};
+ let ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestionsCount,6);
+ const html=render(ctx);const steps=elements(html,el=>el.attribs?.['data-action']==='dsa5hSuggestionCount');assert.deepEqual(steps.map(b=>b.attribs['data-step']),['-2','2']);
+ let rendered=0;sheet.render=()=>{rendered++;};
+ const handler=Sheet.DEFAULT_OPTIONS.actions.dsa5hSuggestionCount;
+ await handler.call(sheet,{},{dataset:{step:'2'}});assert.deepEqual(user.flags.suggestionCounts,{[actor.id]:8});assert.equal(rendered,1);
+ for(let i=0;i<5;i++)await handler.call(sheet,{},{dataset:{step:'2'}});assert.equal(user.flags.suggestionCounts[actor.id],12,'höchstens 12');
+ ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestionsCount,12);assert.equal(ctx.dsa5h.suggestionsMore,false);
+ for(let i=0;i<8;i++)await handler.call(sheet,{},{dataset:{step:'-2'}});assert.equal(user.flags.suggestionCounts[actor.id],2,'mindestens 2');
+ setting=0;ctx=await sheet._prepareContext({});assert.equal(ctx.dsa5h.suggestions.length,0,'Aus in der Einstellung schlägt die Wahl im Bogen');
+});
+
+
+test('Vorschläge: ohne System-Anfragedienst nur normale Talentwürfe, keine unbeantwortbaren Karten',async()=>{
+ const {context}=await suggestionModules();const previous=global.dsa5.queries;const previousLegacy=global.game.dsa5;const previousSettings=global.game.settings;
+ global.game.settings={get:(_m,k)=>k==='skillSuggestions'?6:'light'};
+ try {
+  delete global.dsa5.queries;delete global.game.dsa5;
+  const requests=context.chatRequests({id:'hero'},[{id:'request',flags:{dsa5:{rollRequest:{category:'skill',name:'Klettern',recipients:[{actorId:'hero',status:'pending'}]}}}}]).requests;
+  assert.deepEqual(requests,{});
+  const {sheet,actor}=await prepare();actor.flags.favorites=['weapon'];
+  let ctx=await sheet._prepareContext({});assert(ctx.dsa5h.suggestions.length);
+  const html=render(ctx);assert(!html.includes('data-action="dsa5hAnswerRequest"'));
+  sheet.limited=true;ctx=await sheet._prepareContext({});assert.deepEqual(ctx.dsa5h.suggestions,[]);
+  sheet.limited=false;sheet.context.owner=false;ctx=await sheet._prepareContext({});assert.deepEqual(ctx.dsa5h.suggestions,[]);
+ }finally{global.dsa5.queries=previous;global.game.dsa5=previousLegacy;global.game.settings=previousSettings;}
+});
+
+// Passive Verteidigung (#56, Variante B 2026-10-28): gelungene AT, dann W20 gegen V; Wahl je Akteur.
+test('passive defense (#56): d20 against chosen or best defense, per-actor mode with type defaults',async()=>{
+ const pd=await import(dataUrl(read('scripts/house-rules/passive-defense.js')));
+ assert.deepEqual(pd.resolveDefense({successLevel:-1,roll:3,defense:6}),{outcome:'miss'});
+ assert.equal(pd.resolveDefense({successLevel:1,roll:6,defense:6}).outcome,'defended','W20 ≤ V wehrt ab');
+ assert.equal(pd.resolveDefense({successLevel:1,roll:7,defense:6}).outcome,'hit');
+ assert.equal(pd.resolveDefense({successLevel:3,roll:2,defense:0}).outcome,'hit','ohne Verteidigung trifft jede gelungene AT außer bei einer 1');
+ // 1 wehrt immer ab, 20 nie (Nutzer 2026-10-29).
+ assert.equal(pd.resolveDefense({successLevel:1,roll:1,defense:0}).outcome,'defended','1 wehrt immer ab');
+ assert.equal(pd.resolveDefense({successLevel:1,roll:20,defense:25}).outcome,'hit','20 wehrt nie ab');
+ // Jede gelungene AT wird mit V/20 abgewehrt, unabhängig vom AT-Wurf (Rückmeldung zum W100-Entwurf).
+ assert.equal(Array.from({length:20},(_,i)=>pd.resolveDefense({successLevel:1,roll:i+1,defense:6}).outcome).filter(o=>o==='defended').length,6);
+ const opts=[{id:'sword',value:12},{id:'shield',value:14},{id:'dodge',value:8}];
+ assert.deepEqual(pd.bestDefense(opts),{id:'shield',value:14},'highest, no sum or average');assert.equal(pd.bestDefense([]),null);
+ assert.equal(pd.chooseDefense(opts,'dodge').id,'dodge','chosen option');assert.equal(pd.chooseDefense(opts,'best').id,'shield');
+ assert.equal(pd.chooseDefense(opts,'gone').id,'shield','abgelegte Waffe: beste erlaubte');
+ const actor=(type,flag)=>({type,getFlag:(_m,k)=>k==='autoDefense'?flag:undefined});
+ assert.deepEqual(['character','npc','creature'].map(t=>pd.defenseMode(actor(t))),['manual','best','best'],'Vorbelegung je Typ');
+ assert.equal(pd.defenseMode(actor('character','best')),'best');assert.equal(pd.defenseMode(actor('npc','manual')),'manual');
+ assert.deepEqual([actor('character'),actor('npc'),actor('creature','dodge'),actor('vehicle')].map(pd.appliesTo),[false,true,true,false]);
+});
+test('bag window (#72): slots become draggable with system drag data, left click opens on click',async()=>{
+ const template=fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/items/item-containercontent.hbs'),'utf8');
+ assert.match(template,/class='slot[^']*'\s+data-item-id=/,'System renders bag contents as .slot[data-item-id]');
+ let hook;const prevHooks=global.Hooks;global.Hooks={on:(name,fn)=>{if(name==='renderItemSheetV2')hook=fn;}};
+ try{
+  (await import(dataUrl(read('scripts/compat/bag-drag.js')))).initBagDrag();
+  assert.equal(typeof hook,'function');
+  const el=()=>{const l={};return {l,dataset:{},addEventListener:(t,f,c)=>{(l[t]??=[]).push({f,c});}};};
+  const slot=Object.assign(el(),{dataset:{itemId:'i1'},draggable:false,closest:sel=>sel.startsWith('.slot')?slot:null});
+  const root=Object.assign(el(),{querySelectorAll:()=>[slot]});
+  global.HTMLElement??=class{};
+  let opened=0;const item={toDragData:()=>({type:'Item',uuid:'Actor.a.Item.i1'}),sheet:{render:()=>opened++}};
+  const ours=class{static DEFAULT_OPTIONS={classes:['dsa5-helpers-sheet']}};
+  const actor={isOwner:true,_getSheetClass:()=>ours,items:{get:id=>id==='i1'?item:null}};
+  const prevDoc=global.document;global.document={querySelectorAll:()=>[]};
+  hook({item:{actor,system:{isBagWithContents:true}}},[root]);
+  assert.equal(slot.draggable,true);
+  const data={};slot.l.dragstart[0].f({dataTransfer:{setData:(k,v)=>data[k]=v}});
+  assert.deepEqual(JSON.parse(data['text/plain']),{type:'Item',uuid:'Actor.a.Item.i1'});
+  let stopped=false;root.l.mousedown[0].f({button:0,target:slot,stopPropagation:()=>stopped=true});
+  assert.equal(stopped,true,'system mousedown (opens at once) must not catch the drag');assert.equal(root.l.mousedown[0].c,true);
+  stopped=false;root.l.mousedown[0].f({button:2,target:slot,stopPropagation:()=>stopped=true});
+  assert.equal(stopped,false,'right click keeps the system take-out');
+  root.l.click[0].f({target:slot});assert.equal(opened,1);
+  const other=Object.assign(el(),{dataset:{itemId:'i1'},draggable:false});const root2=Object.assign(el(),{querySelectorAll:()=>[other]});
+  hook({item:{actor:{...actor,_getSheetClass:()=>class{static DEFAULT_OPTIONS={classes:['dsa5']}}},system:{isBagWithContents:true}}},[root2]);
+  assert.equal(other.draggable,false,'system sheet users keep the system behaviour');
+  global.document=prevDoc;
+ }finally{global.Hooks=prevHooks;}
+});
+
+test('DSA5-8.2-Designs: Bogen unabhängig von DSA-Design und Foundry-Thema (fest themed theme-light, ohne Drachenleder-Klasse)',async()=>{
+ await loadSheet();
+ // Wie DSA5Skin.applyImmersiveSheetTheme bei body.dsa5-immersive-v2: Themenklassen raus, Immersiv-Klassen rein.
+ const Base=class{_initializeApplicationOptions(o){const classes=['dsa5','actor','character-sheet',...(o.classes??[])].filter(c=>!['themed','theme-light','theme-dark'].includes(c));return {...o,classes:[...classes,'dsa-immersive-sheet','themed','theme-dark']};}};
+ const C=createSheet(Base);
+ const {classes}=C.prototype._initializeApplicationOptions.call(Object.create(C.prototype),{classes:['dsa5-helpers-sheet']});
+ assert.deepEqual(classes,['dsa5','actor','character-sheet','dsa5-helpers-sheet','themed','theme-light']);
+ const Plain=class{_initializeApplicationOptions(o){return {...o,classes:['dsa5',...o.classes]};}};
+ assert.deepEqual(createSheet(Plain).prototype._initializeApplicationOptions.call({},{classes:['x']}).classes,['dsa5','x','themed','theme-light'],'auch ohne Drachenleder fest hell, unabhängig vom Foundry-Thema');
+ if(fs.existsSync(systemBundle)){
+  const js=fs.readFileSync(systemBundle,'utf8');
+  if(js.includes('dsa5-immersive-v2'))assert.match(js,/applyImmersiveSheetTheme\(e\)\{[^}]*"dsa-immersive-sheet"/,'System setzt die Drachenleder-Klasse noch unter diesem Namen');
+ }
+ const css=read('styles/dsa5-helpers-character-sheet.css');
+ assert.match(css,/\.dsa5-helpers-sheet > \.window-header::before,[\s\S]*?content: none !important/,'Pseudo-Elemente des Systemrahmens sind abgeschaltet');
+ assert.match(css,/:where\(body\.dsa5-modern, body\.dsa5-immersive\) \.dsa5-helpers-sheet \{[^}]*--color-text-primary: var\(--color-dark-2\)/,'Foundry-Farbvariablen gegen die DSA-Designs zurückgesetzt');
+ assert.match(css,/:where\(body\.dsa5-modern\) \.dsa5-helpers-sheet :is\(input, select, textarea\)[^{]*\{[^}]*--input-background-color: rgba\(0, 0, 0, \.1\)/,'Eingabefelder wie Foundry hell');
+ for(const app of ['dice-stats','house-rules'])assert.match(css,new RegExp(`\\.dsa5-helpers-${app} \\.window-content \\{[^}]*background: var\\(--paper\\) !important`),`${app}: Papier überlebt background:none des Skins`);
+});
+
+test('Talent-Vorschläge (#75): Einstellung unter „Heldenbogen einrichten“, Menü für alle offen',async()=>{
+ const {SHEET_SETTINGS,DISPLAY_SETTINGS}=await import(dataUrl(read('scripts/apps/sheet-settings.js')));
+ assert(SHEET_SETTINGS.some(s=>s.key==='skillSuggestions'),'im Menü Heldenbogen');
+ assert(!DISPLAY_SETTINGS.some(s=>s.key==='skillSuggestions'),'nicht mehr unter Darstellung und Geräte');
+ assert(/registerMenu\('dsa5-helpers', 'sheetSettings'.*restricted: false/.test(read('scripts/dsa5-helpers.js')),'Spieler erreichen ihre Benutzer-Einstellung');
 });
