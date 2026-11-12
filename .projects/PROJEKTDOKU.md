@@ -10,15 +10,15 @@ Einen übersichtlichen DSA5-Heldenbogen für Foundry anbieten und Desktop, Smart
 
 ## Projektstand kompakt
 
-Beta 0.6.3 ist am 02.11.2026 veröffentlicht (v14: Tag `v0.6.3`, Beta-Kanal; v13: Tag `v13-0.6.3`, Kanal `foundry-v13-beta`), alle Punkte vom Nutzer bestätigt, Meilenstein 0.6.3 und seine Issues geschlossen. Stabil bleibt 0.5.1.
+Erste stabile Versionen am 12.11.2026 veröffentlicht: **8.0.0** für Foundry v14 (Kanal `foundry-v14`, „Latest“; alte stabile URL und alter Beta-Kanal führen dorthin) und **7.0.0** für Foundry v13 (Kanal `foundry-v13`). `main` = 8.0.0. Issues #68, #73, #74, #75 geschlossen.
 
 ## Offene Grenze
 
-Erste stabile Versionen 8.0.0 (v14) und 7.0.0 (v13) sind auf dem Branch `release/8.0.0` vorbereitet (03.11.2026; #68: Workflow-Job `line`, Kanäle `foundry-v13`/`foundry-v14` samt Beta, Überführung der 0.x-Installationen) und seit 11.11.2026 releasefertig (Version 8.0.0, CHANGELOG-Datum 13.11.2026, Korrekturen #73/#74 aus der Beta-Rückmeldung), nicht veröffentlicht. Veröffentlichung geplant 13.11.2026 nach Auftrag. `main` bekommt den Stand erst mit 8.0.0. Da `module.json` jetzt 8.0.0 trägt, rechnet `tools/package-module.py` ohne `--version` auf die Linie um (v13 → 7.0.0); der Workflow übergibt die Version immer aus dem Tag.
+Version **8.1.0** (nur v14) in Planung auf `release/8.1.0`: NSC- und Kreaturbogen (#53/#54, Titelseite im Click-Dummy, Annahmen am 12.11.2026 bestätigt) und Gruppenbogen (#55, noch nicht ausdefiniert). Parallel Bugfixes 8.0.x auf `release/8.0.1` (Branch-Modell unter „Versionslinien“).
 
 ## Quellenstand der Zusammenfassung
 
-Aufgabenstand 31.10.2026; dokumentierte Einzelprüfungen haben ihre eigenen Daten. Redaktionell zusammengefasst am 02.11.2026, ohne neue Produktprüfung.
+Aufgabenstand 12.11.2026; dokumentierte Einzelprüfungen haben ihre eigenen Daten. Redaktionell zusammengefasst am 12.11.2026.
 
 Quellengrundlage: AUFGABEN.md: 1. Ausdefinieren, 3. Umgesetzt – testen, Später. PROJEKTDOKU.md: Ziel, Aktueller Stand.
 
@@ -246,6 +246,11 @@ Abschlussprüfung 21.10.2026: erste Übertragung erfolgreich, vollständiger Alt
 - `tools/package-module.py --foundry 13|14` erzeugt generationseigene Manifeste, ZIPs und fertige Modulordner unter `.deploy/packages/`, ohne Quellmanifest oder Laufzeitkopie zu ändern (v13: Foundry 13.351…13, DSA5 7.5.1, ohne Mobil-CSS). Prüfung: `python tests/package_module_test.py`.
 - **v13-Beta-Kanal (seit 0.6.2, 28.10.2026):** Branch `v13` (aus `release/0.6.2`), Tag `v13-<Version>` nur als Pre-release, Job `v13` in `release.yml` baut mit `package-module.py --foundry 13 --output` und ersetzt das `module.json` des festen Pre-release `foundry-v13-beta`. Manifest-URL `https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13-beta/module.json`; Download `v13-<Version>/module-v13-beta.zip`. Neue Arbeit vor jeder v13-Beta von `release/<version>` nach `v13` mergen. Ablauf in [RELEASE.md](../docs/RELEASE.md#v13-beta-kanal-seit-062).
 - Click-Dummy `?foundry=13` zeigt die reduzierte Desktop-Referenz.
+
+**Veröffentlicht und Branch-Modell (Nutzerentscheidung 12.11.2026):**
+- 8.0.0 (v14) und 7.0.0 (v13) am 12.11.2026 veröffentlicht, `main` nachgezogen.
+- Features der nächsten Version auf `release/8.1.0`; Bugfixes der laufenden Version auf `release/8.0.<n>` (zuerst `release/8.0.1`), beide aus dem Tag `v8.0.0`. Jeder Bugfix wird nach `release/8.1.0` übernommen (Merge des Bugfix-Branches). Ein 8.0.x-Release folgt RELEASE.md mit Tag `v8.0.<n>` vom Bugfix-Branch; danach `main` nachziehen und den nächsten Bugfix-Branch aus dem Tag anlegen.
+- v13 bekommt nur noch Bugfixes (7.0.x, Nutzerentscheidung 12.11.2026: 8.1.0-Features nur für v14): `v13` übernimmt ausschließlich `release/8.0.<n>`, **nie** `release/8.1.0`. Der Gruppenbogen (#55) ginge unter v13 ohnehin nicht (Gruppen-Akteure erst ab DSA5 8.x).
 
 ### Systemvergleich DSA5 7.5.1 / 8.1.x und Foundry 13.351 / 14.369 (statische Analyse 26.10.2026)
 
