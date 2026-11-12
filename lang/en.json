@@ -79,6 +79,7 @@
     "OpenBag": "Open container (drop items here to pack them)",
     "GMNotes": "GM notes",
     "OpenTradition": "Open tradition",
+    "TraditionFromAbility": "Set by the tradition special ability",
     "GripTwoHanded": "Two-handed",
     "GripSwitchToTwo": "Wield two-handed",
     "GripSwitchToOne": "Wield one-handed",
@@ -196,14 +197,14 @@
       "DisplayMenu": {
         "Title": "Display and devices",
         "Label": "Configure display",
-        "GroupSheet": "Roll dialogs and hero sheet",
+        "GroupSheet": "Roll dialogs",
         "GroupMobile": "Tablet and smartphone",
-        "Hint": "Roll dialogs on desktop, skill suggestions on the cover page and hybrid play on tablet and phone (interface and roll result per device)."
+        "Hint": "Roll dialogs on desktop and hybrid play on tablet and phone (interface and roll result per device)."
       },
       "SheetMenu": {
         "Title": "Hero sheet",
         "Label": "Configure hero sheet",
-        "Hint": "Default sheet for heroes, edit mode for players and folder for banner images.",
+        "Hint": "Default sheet for heroes, edit mode for players, folder for banner images and skill suggestions on the cover page.",
         "Save": "Save"
       },
       "QuestsTab": {

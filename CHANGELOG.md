@@ -4,6 +4,44 @@ Alle nennenswerten Änderungen an DSA5 Helpers. Neueste Version oben.
 
 Kennzeichnung: **[v13/v14]** gilt für Foundry v13 und v14, **[nur v14]** bzw. **[nur v13]** nur für diese Generation. Versionen bis 0.6.1 gab es nur für v14; ihre mit v13 gekennzeichneten Funktionen kommen dort erst mit der v13-Ausgabe an.
 
+Ab 7.0.0/8.0.0 gibt es getrennte Linien: **8.x für Foundry v14**, **7.x für Foundry v13**. Das installierte Modul zeigt
+nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
+
+## [8.0.0] — 2026-11-12
+
+Erste stabile Version für **Foundry v14** (Desktop, Tablet und Smartphone). Sie enthält alles aus den Betas 0.6.0 bis 0.6.3;
+wer von 0.5.1 kommt, findet die Einzelheiten in deren Abschnitten unten.
+
+### Geändert
+
+- **[nur v14]** Eigene Versionslinie für Foundry v14: Versionsnummern 8.x.x, Updates über den Kanal `foundry-v14` (Beta-Tester: `foundry-v14-beta`). Bestehende Installationen über die bisherige Manifest-URL oder den alten Beta-Kanal werden mit diesem Update automatisch umgestellt; Einstellungen, Bogenwahl und Weltdaten bleiben unverändert. Manifest-URLs im README.
+- **[nur v14]** Mit Foundry 14.370 geprüft; Foundry zeigt das Modul unter 14.370 nicht mehr als ungeprüft an. Das Update betrifft das Modul sonst nicht.
+- **[v13/v14]** Moduleinstellungen: „Talent-Vorschläge auf dem Titelblatt“ steht jetzt unter „Heldenbogen einrichten“ statt unter „Darstellung und Geräte“ ([#75](https://github.com/vt-tom/dsa5-helpers/issues/75)). Das Menü „Heldenbogen einrichten“ können dafür jetzt alle öffnen; Spieler sehen darin nur diese eigene Einstellung, die Welt-Einstellungen weiter nur die Spielleitung.
+- **[nur v14]** Angepasst an DSA5 8.2.1 (dort geprüft): Traditionen kommen jetzt aus der Sonderfertigkeit „Tradition (…)“. Hat ein Held genau eine solche Sonderfertigkeit, zeigen Magie und Religion Leiteigenschaft und Energiefaktor nur noch an; die wohlgefälligen Talente stammen dann aus der Sonderfertigkeit, so wie das System sie für Proben verwendet. Der Name der Tradition ist in dem Fall nicht mehr frei editierbar, das Merkmal bzw. der Aspekt bleibt es. Ohne Traditions-Sonderfertigkeit (oder mit älterem DSA5) bleibt alles bearbeitbar wie bisher. Die Traditions-Sonderfertigkeit steht außerdem weiter in der Liste der Sonderfertigkeiten, die DSA5 8.2 dort nicht mehr führt.
+
+### Behoben
+
+- **[v13/v14]** Escape im Auswahlmenü des Bogens (Modus unter dem Schloss, Bannerbild) schließt nur noch das Menü; bisher gingen dabei der Bogen und alle anderen Fenster zu.
+- **[v13/v14]** Würfelstatistik: Manuell eingegebene Würfel werden jetzt als echte Würfel gezählt; bisher fehlten sie ganz. Lässt man ein Feld leer oder schließt die Eingabe, würfelt Foundry selbst; diese Würfe zählen als digital.
+- **[nur v14]** Kraftspeicher am AsP-Vorrat ([#73](https://github.com/vt-tom/dsa5-helpers/issues/73)): Das Rundmenü öffnet sich nicht mehr schon beim Überfahren mit der Maus, sondern nur per Klick auf die Kugel (oder Pfeil nach unten). Ein Klick daneben oder Escape schließt es. Bisher klappte es beim Vorbeifahren auf und verdeckte den Bogen.
+- **[nur v14]** Darstellungen („Design“) von DSA5 8.2: Der Heldenbogen sieht jetzt am Desktop, auf dem Tablet und auf dem Smartphone in jedem Design gleich aus, auch bei dunklem Foundry-Thema; Hell oder Dunkel bestimmt allein die Einstellung des Bogens. Bisher übernahm er unter „Klassisch – Drachenleder“ Teile des Systembogens (Holzleiste, Drachen-Ornamente, DSA-Logo), unter „Aventurisch“ und „Drachenleder“ waren Talentnamen und der Kopf des Reittier-Kastens (Gefährten) teils kaum lesbar, Eingabefelder wechselten ihre Farbe (bei dunklem Foundry schwarze Felder mit kaum lesbarem Wert), und Rahmen, Knopfleiste und Größenänderungs-Griff änderten sich. Würfelstatistik und Hausregelbuch behalten unter „Drachenleder“ ihren Papierhintergrund.
+- **[nur v14]** Munitionswahl an der Fernkampfwaffe (Kampf › Körper, [#74](https://github.com/vt-tom/dsa5-helpers/issues/74)): Die Auswahl wurde von der Waffenkarte abgeschnitten und war auf Tablet und Smartphone nicht bedienbar. Sie erscheint jetzt vollständig über der Karte, auf Touch-Geräten mit fingergroßen Einträgen; der Pfeil verdeckt die Anzahl nicht mehr.
+
+## [7.0.0] — 2026-11-12
+
+Erste stabile Version für **Foundry v13** (DSA5 7.5.1, nur Desktop). Sie entspricht der Beta 0.6.3 für Foundry v13.
+
+### Geändert
+
+- **[nur v13]** Eigene Versionslinie für Foundry v13: Versionsnummern 7.x.x, Updates über den Kanal `foundry-v13`. Wer die v13-Beta installiert hat, bekommt 7.0.0 automatisch und bleibt im Beta-Kanal `foundry-v13-beta`; für die stabile Fassung einmal mit der Manifest-URL aus dem README neu installieren.
+- **[nur v13]** Foundry 13.351 und DSA5 7.5.1 gelten jetzt als geprüft; Foundry zeigt das Modul in der Modulverwaltung nicht mehr als ungeprüft an.
+- **[v13/v14]** Moduleinstellungen: „Talent-Vorschläge auf dem Titelblatt“ steht jetzt unter „Heldenbogen einrichten“ statt unter „Darstellung und Geräte“ ([#75](https://github.com/vt-tom/dsa5-helpers/issues/75)). Das Menü „Heldenbogen einrichten“ können dafür jetzt alle öffnen; Spieler sehen darin nur diese eigene Einstellung, die Welt-Einstellungen weiter nur die Spielleitung.
+
+### Behoben
+
+- **[v13/v14]** Escape im Auswahlmenü des Bogens (Modus unter dem Schloss, Bannerbild) schließt nur noch das Menü; bisher gingen dabei der Bogen und alle anderen Fenster zu.
+- **[v13/v14]** Würfelstatistik: Manuell eingegebene Würfel werden jetzt als echte Würfel gezählt; bisher fehlten sie ganz. Lässt man ein Feld leer oder schließt die Eingabe, würfelt Foundry selbst; diese Würfe zählen als digital.
+
 ## [0.6.3] — 2026-11-02
 
 ### Neu
@@ -261,6 +299,8 @@ Erste Version, installierbar über die Manifest-URL.
 - **[v13/v14]** Magie/Religion nur bei passender Fähigkeit sichtbar.
 - **[v13/v14]** Deutsch und Englisch.
 
+[8.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.3...v8.0.0
+[7.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v13-0.6.3...v7.0.0
 [0.6.3]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.0...v0.6.1

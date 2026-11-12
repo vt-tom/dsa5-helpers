@@ -8,3 +8,4 @@ __pycache__/
 tmp/
 .playwright-mcp/
 *.pyc
+.coordination-backups/

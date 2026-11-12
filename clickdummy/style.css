@@ -3986,6 +3986,14 @@ button.fav-chip-roll {
   box-shadow: 0 6px 16px rgba(0,0,0,.35);
 }
 
+/* Munitionswahl der Waffenkarte als Popover (floatAmmoMenu, #74): feste Lage statt unter dem Knopf in der Karte. */
+.ammo-menu[popover] {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  min-width: 0;
+}
+
 .ammo-types {
   display: flex;
   flex-wrap: wrap;

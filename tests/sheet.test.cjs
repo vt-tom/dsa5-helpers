@@ -17,6 +17,9 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8').replace(/\r\n/g,'\n');
 const lookup=(o,p)=>p.split('.').reduce((v,k)=>v?.[k],o);
 const de=JSON.parse(fs.readFileSync(path.join(dataRoot,'systems/dsa5/lang/de.json')));
 const own=JSON.parse(read('lang/de.json'));
+// System-JS: bis DSA5 8.1.x Einzeldateien unter modules/, ab 8.2.0 ein gebündeltes bundle/modules/dsa5.js
+const systemBundle=path.join(dataRoot,'systems/dsa5/bundle/modules/dsa5.js');
+const systemJs=paths=>fs.existsSync(systemBundle)?[fs.readFileSync(systemBundle,'utf8')]:paths.map(p=>fs.readFileSync(path.join(dataRoot,'systems/dsa5/modules',p),'utf8'));
 const missing=new Set();
 const localize=key=>{if(typeof key!=='string')return '';const value=lookup(own,key)??lookup(de,key);if(value===undefined && !key.startsWith('TYPES.Item.'))missing.add(key);return value??key;};
 // Wie Foundrys {{localize}}: Hash-Argumente ersetzen {platzhalter} (game.i18n.format).
@@ -44,7 +47,7 @@ function fixture() {
  const skills=[item('skill')],spell=item('spell','spell'),weapon=item('weapon','meleeweapon'),armor=item('armor','armor'),bag=item('bag','equipment');bag.children=[item('bag-child','equipment')];bag.children[0].system.weight=valueField(0.75);bag.system.equipmentType.value='bags';bag.system.capacity=10;
  const tradition=item('tradition','specialability');tradition.name='Tradition (Gildenmagier)';tradition.system.category={value:'magical'};
  // Foundry's EmbeddedCollection is a Map with Array-style helpers — find() is what the sheet uses.
- const items=Object.assign(new Map([skills[0],spell,weapon,armor,bag,tradition,...bag.children].map(i=>[i._id,i])),{find(fn){return [...this.values()].find(fn);}});
+ const items=Object.assign(new Map([skills[0],spell,weapon,armor,bag,tradition,...bag.children].map(i=>[i._id,i])),{filter(fn){return [...this.values()].filter(fn);},find(fn){return [...this.values()].find(fn);}});
  const status=Object.fromEntries(['wounds','astralenergy','karmaenergy','fatePoints','soulpower','toughness','dodge','initiative','speed'].map(k=>[k,{value:10,current:10,max:20,modifier:0,advances:0,initial:5}]));status.size=valueField('average');
  const system={status,characteristics:Object.fromEntries(['mu','kl','in','ch','ff','ge','ko','kk'].map(k=>[k,valueField(13)])),sheetLocked:valueField(false),details:{experience:{current:100,total:1000,spent:900},biography:valueField('Public biography'),notes:{value:'Notes',ownerdescription:'OWNER_SECRET',gmdescription:'GM_SECRET'}},temperature:{coldProtection:0,heatProtection:0},repeatingEffects:{startOfRound:{},disabled:{}}};
  const prepare={allSkillsLeft:{body:skills,social:[],nature:[]},allSkillsRight:{knowledge:[],trade:[]},sortedSpecs:{general:['general'],combat:['Combat'],magical:[],clerical:[]},specAbs:{general:[item('general','specialability')],Combat:[item('combat','specialability')]},advantages:[],disadvantages:[],mentalAttrs:['mu','kl','in','ch'],bodyAttrs:['ff','ge','ko','kk'],canAdvance:true,sheetLocked:false,schips:[{value:1,cssClass:''}],magic:{hasSpells:true,hasPrayers:true,spellList:[spell],ritualList:[],liturgy:[item('liturgy','liturgy')],ceremony:[]},wornMeleeWeapons:[weapon],wornRangedWeapons:[],wornArmor:[armor],combatskills:[item('combatskill','combatskill')],brawling:{attack:12,parry:6},inventory:{bags:{show:true,items:[bag]},tools:{show:true,dataType:'equipment',items:[item('tool','equipment')]}},money:{coins:[item('coin','money')]},aggregatedtests:[item('aggregate','aggregatedTest')],diseases:[item('disease','disease')],itemModifiers:{Attack:{value:1,sources:['Test source']}}};
@@ -195,8 +198,8 @@ test('play mode disables FW correction, preserves rolls',async()=>{const {sheet}
 test('favorites use actor flags, remove missing items and enforce ownership',async()=>{const {sheet,actor,context}=await prepare();assert.equal(context.dsa5h.favorites.missing,undefined);assert.equal(context.dsa5h.favoriteGroups.length,2);await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'skill'}});assert.deepEqual(actor.saved.value,['weapon']);delete actor.saved;sheet.isEditable=false;await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'spell'}});assert.equal(actor.saved,undefined);});
 test('empty character still renders every tab',async()=>{const {sheet}=await prepare();sheet.context.prepare={};sheet.context.conditions=[];const html=render(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']).length,targetGeneration===13?9:10);assert(html.includes(localize('DSA5HELPERS.NoFavorites')));});
 test('companion context is prepared for the custom root',async()=>{const {sheet}=await prepare();assert.equal(!!sheet.companionPrepared,targetGeneration>=14);});
-test('every static action exists in module, Foundry or DSA5 action tables',()=>{const sources=[read('scripts/sheets/dsa5-helpers-character-sheet.js'),...['actor/actor-sheet.js','actor/character-sheet.js',...(targetGeneration>=14?['actor/companions/companion-handler-class.js']:[])].map(p=>fs.readFileSync(path.join(dataRoot,'systems/dsa5/modules',p),'utf8')),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');for(const p of modulePaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');});
-test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field),'unverified system schema path: '+field);});
+test('every static action exists in module, Foundry or DSA5 action tables',()=>{const sources=[read('scripts/sheets/dsa5-helpers-character-sheet.js'),...systemJs(['actor/actor-sheet.js','actor/character-sheet.js',...(targetGeneration>=14?['actor/companions/companion-handler-class.js']:[])]),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');for(const p of modulePaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');});
+test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');const bundle=fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8'):'';const inSchema=field=>{if(field==='systemFields.happyTalents.fields.value')return /happyTalents:new \w+\(\{value:new \w+\(\{initial:""/.test(bundle);const m=field.match(/^systemFields\.(tradition|guidevalue|energyfactor)\.fields\.(magical|clerical)$/);return !!m&&new RegExp(m[1]+':new \\w+\\(\\{magical:new \\w+\\(\\{initial:[^}]*label:"'+m[1]+'"[^}]*\\}\\),clerical:').test(bundle);};for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field)||inSchema(field),'unverified system schema path: '+field);});
 test('localization keys used by nonempty hero resolve',async()=>{missing.clear();const {context}=await prepare();render(context);const unresolved=[...missing].filter(k=>k && !['Swords','Test coin'].includes(k));assert.deepEqual(unresolved,[]);});
 
 test('ranged weapons, charged magic, tradition items and companions render populated',async()=>{
@@ -494,12 +497,35 @@ test('Fensterrahmen (#22): eigene Rahmengrafik eingebunden, Ziehen am oberen Rah
 test('Traditions-Badge (#23): Name und Symbol aus der Sonderfertigkeit, sonst aus dem Freitextfeld',async()=>{
  const {sheet}=await prepare();sheet.actor.system.tradition={magical:'',clerical:'Praioskirche'};sheet.context.prepare.sheetLocked=true;
  const context=await sheet._prepareContext({});
- assert.deepEqual(context.dsa5h.tradition.magical,{name:'Gildenmagier',fromItem:'Gildenmagier'},'tradition SF wins like in the system');
- assert.deepEqual(context.dsa5h.tradition.clerical,{name:'Praioskirche',fromItem:''},'free-text field without SF');
+ assert.deepEqual(context.dsa5h.tradition.magical,{name:'Gildenmagier',fromItem:'Gildenmagier',derived:false},'tradition SF wins like in the system');
+ assert.deepEqual(context.dsa5h.tradition.clerical,{name:'Praioskirche',fromItem:'',derived:false},'free-text field without SF');
  const html=render(context);const names=elements(html,el=>el.attribs?.class==='dsa5h-tradition-name-text').map(el=>dom.textContent(el));
  assert.deepEqual(names,['Gildenmagier','Praioskirche']);
  const icons=elements(html,el=>el.attribs?.class==='dsa5h-tradition-icon').map(el=>el.attribs.src);
  assert(icons.includes('systems/dsa5/icons/traditionen/gildenmagier.webp'));assert(icons.includes('systems/dsa5/icons/months/Praios.webp'));
+});
+// DSA5 ab 8.2: genau eine Traditions-SF je Art gibt Name, Leiteigenschaft, Faktor und glückliche Talente vor
+test('Traditionen aus der Sonderfertigkeit (DSA5 8.2): gesperrte Werte, glückliche Talente aus der SF, SF auch in der Liste',async()=>{
+ const prev=globalThis.CONFIG;globalThis.CONFIG={...(prev??{}),Item:{dataModels:{specialability:{schema:{fields:{isTradition:{}}}}}}};
+ try{
+  const {sheet}=await prepare();
+  const priest=sheet.actor.items.find(i=>i.name==='Tradition (Gildenmagier)');
+  Object.assign(priest.system,{isTradition:true});
+  const kor={...priest,_id:'kor',id:'kor',name:'Tradition (Korkirche)',system:{...priest.system,category:{value:'clerical'},isTradition:true,happyTalents:'Einschüchtern, Kraftakt'}};
+  sheet.actor.items.push?sheet.actor.items.push(kor):sheet.actor.items.set(kor._id,kor);
+  sheet.actor.system.happyTalents={value:'Alt, Veraltet, Weg'};
+  sheet.context.prepare.traditionAbilities={magical:[priest],clerical:[kor]};
+  sheet.context.prepare.sortedSpecs.clerical=['clerical'];sheet.context.prepare.sortedSpecs.magical=['magical'];
+  const context=await sheet._prepareContext({});
+  assert.equal(context.dsa5h.tradition.clerical.derived,true);assert.equal(context.dsa5h.tradition.clerical.happyTalents,'Einschüchtern, Kraftakt');
+  assert.equal(context.dsa5h.happyTalentsCount,2,'count from the SF');
+  assert(context.dsa5h.specs.clerical.some(g=>g.items.includes(kor)),'tradition SF listed again');
+  context.dsa5h.editMode=true;const html=render(context);
+  const named=n=>elements(html,el=>el.name==='select'||el.name==='input'||el.name==='textarea').filter(el=>el.attribs.name===n);
+  for(const n of ['system.guidevalue.clerical','system.energyfactor.clerical','system.guidevalue.magical','system.energyfactor.magical','system.happyTalents.value'])assert(named(n).length&&named(n).every(el=>'disabled' in el.attribs),n+' locked');
+  assert(!named('system.tradition.clerical').length&&!named('system.tradition.magical').length,'no free-text tradition with SF');
+  assert(named('system.feature.clerical').every(el=>!('disabled' in el.attribs)),'feature stays editable');
+ }finally{globalThis.CONFIG=prev;}
 });
 test('Titelleisten-Plakette (#24): kein eigenes ::before/::after an Foundrys Kopfknöpfen (dort zeichnet Font Awesome das Symbol)',()=>{
  const root=postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));const bad=[];
@@ -569,6 +595,33 @@ test('Würfelstatistik (#28): Erfassung nur mit Aktivierung + Zustimmung, ohne M
   assert.equal(c().d[20][0],2);assert.equal(c().d[20][19],1);assert.equal(c().m[20][4],1,'echte Würfel getrennt');assert.equal(c().d[20][4],0);
   await roll(new Die(20),[7]);await r.flush();assert.equal(c().d[20][6],1);assert.equal(c().d[20][0],2,'weitergezählt');
  }finally{Object.assign(global,saved);}
+});
+test('Würfelstatistik (#28): manuelle Eingabe im RollResolver zählt als echte Würfel, von Foundry ergänzte als digital',async()=>{
+ // Nachbau von Foundry 14.370: der RollResolver schreibt die Eingaben vor _evaluateAsync in term.results,
+ // leere Eingaben und Schließen über X füllt er mit randomFace.
+ class DiceTerm{constructor(faces){this.faces=faces;this.results=[];}randomFace(){return this.nextRandom.shift();}async _evaluateAsync(){for(const v of this.next??[])this.results.push({result:v,active:true});return this;}}
+ class Die extends DiceTerm{}
+ class RollResolver{constructor(roll,entries){this.roll=roll;this.entries=entries;}async awaitFulfillment(){for(const [term,values] of this.entries){term.method='manual';for(const v of values)term.results.push({result:v??term.randomFace(),active:true});}}}
+ let flag;const saved={foundry:global.foundry,game:global.game,CONFIG:global.CONFIG,window:global.window,document:global.document,setTimeout:global.setTimeout};
+ global.foundry={dice:{terms:{DiceTerm,Die}},applications:{dice:{RollResolver}}};global.CONFIG={Dice:{fulfillment:{methods:{manual:{interactive:true}}}}};
+ global.game={user:{getFlag:()=>flag,setFlag:async(s,k,v)=>{flag=v;}}};global.window={addEventListener(){}};global.document={addEventListener(){}};global.setTimeout=()=>1;
+ try{
+  const r=await import(pathToFileURL(path.join(root,'scripts/dice-stats/recorder.js')).href+'?resolver');r.initRecorder(()=>true);
+  const kept=new Die(20);kept.results.push({result:3,active:true});
+  const a=new Die(20),b=new Die(20);b.nextRandom=[12];
+  await new RollResolver({dice:[a,b,kept]},[[a,[7,7]],[b,[null,5]]]).awaitFulfillment();
+  for(const t of [a,b,kept])await t._evaluateAsync({});
+  await r.flush();const day=Object.values(flag.days)[0];
+  assert.equal(day.m[20][6],2,'zwei eingegebene 7er');assert.equal(day.m[20][4],1,'eingegebene 5');
+  assert.equal(day.d[20][11],1,'von Foundry ergänzte 12 ist digital');assert.equal(day.m[20][11],0);
+  assert.equal(day.m[20].reduce((x,y)=>x+y)+day.d[20].reduce((x,y)=>x+y),4,'Ergebnis vor dem Resolver (3) zählt nicht');
+ }finally{Object.assign(global,saved);}
+});
+test('Auswahlmenü im Bogen: Escape schließt nur das Menü, nicht alle Fenster',()=>{
+ const src=read('scripts/sheets/dsa5-helpers-character-sheet.js');
+ const menu=src.slice(src.indexOf('_popupMenu(target, ariaLabel, entries) {'),src.indexOf('static _openModeMenu'));
+ assert(/const onKey = ev => \{[\s\S]*?ev\.preventDefault\(\);[\s\S]*?ev\.stopPropagation\(\);[\s\S]*?close\(\);/.test(menu),'Escape wird abgefangen, bevor Foundry am window alle Fenster schließt');
+ assert(/addEventListener\('keydown', onKey, true\)/.test(menu),'in der Capture-Phase am document');
 });
 test('Würfelstatistik (#28): Einstellungen und Texte',()=>{
  const src=read('scripts/dice-stats/settings.js');
@@ -1452,4 +1505,31 @@ test('bag window (#72): slots become draggable with system drag data, left click
   assert.equal(other.draggable,false,'system sheet users keep the system behaviour');
   global.document=prevDoc;
  }finally{global.Hooks=prevHooks;}
+});
+
+test('DSA5-8.2-Designs: Bogen unabhängig von DSA-Design und Foundry-Thema (fest themed theme-light, ohne Drachenleder-Klasse)',async()=>{
+ await loadSheet();
+ // Wie DSA5Skin.applyImmersiveSheetTheme bei body.dsa5-immersive-v2: Themenklassen raus, Immersiv-Klassen rein.
+ const Base=class{_initializeApplicationOptions(o){const classes=['dsa5','actor','character-sheet',...(o.classes??[])].filter(c=>!['themed','theme-light','theme-dark'].includes(c));return {...o,classes:[...classes,'dsa-immersive-sheet','themed','theme-dark']};}};
+ const C=createSheet(Base);
+ const {classes}=C.prototype._initializeApplicationOptions.call(Object.create(C.prototype),{classes:['dsa5-helpers-sheet']});
+ assert.deepEqual(classes,['dsa5','actor','character-sheet','dsa5-helpers-sheet','themed','theme-light']);
+ const Plain=class{_initializeApplicationOptions(o){return {...o,classes:['dsa5',...o.classes]};}};
+ assert.deepEqual(createSheet(Plain).prototype._initializeApplicationOptions.call({},{classes:['x']}).classes,['dsa5','x','themed','theme-light'],'auch ohne Drachenleder fest hell, unabhängig vom Foundry-Thema');
+ if(fs.existsSync(systemBundle)){
+  const js=fs.readFileSync(systemBundle,'utf8');
+  if(js.includes('dsa5-immersive-v2'))assert.match(js,/applyImmersiveSheetTheme\(e\)\{[^}]*"dsa-immersive-sheet"/,'System setzt die Drachenleder-Klasse noch unter diesem Namen');
+ }
+ const css=read('styles/dsa5-helpers-character-sheet.css');
+ assert.match(css,/\.dsa5-helpers-sheet > \.window-header::before,[\s\S]*?content: none !important/,'Pseudo-Elemente des Systemrahmens sind abgeschaltet');
+ assert.match(css,/:where\(body\.dsa5-modern, body\.dsa5-immersive\) \.dsa5-helpers-sheet \{[^}]*--color-text-primary: var\(--color-dark-2\)/,'Foundry-Farbvariablen gegen die DSA-Designs zurückgesetzt');
+ assert.match(css,/:where\(body\.dsa5-modern\) \.dsa5-helpers-sheet :is\(input, select, textarea\)[^{]*\{[^}]*--input-background-color: rgba\(0, 0, 0, \.1\)/,'Eingabefelder wie Foundry hell');
+ for(const app of ['dice-stats','house-rules'])assert.match(css,new RegExp(`\\.dsa5-helpers-${app} \\.window-content \\{[^}]*background: var\\(--paper\\) !important`),`${app}: Papier überlebt background:none des Skins`);
+});
+
+test('Talent-Vorschläge (#75): Einstellung unter „Heldenbogen einrichten“, Menü für alle offen',async()=>{
+ const {SHEET_SETTINGS,DISPLAY_SETTINGS}=await import(dataUrl(read('scripts/apps/sheet-settings.js')));
+ assert(SHEET_SETTINGS.some(s=>s.key==='skillSuggestions'),'im Menü Heldenbogen');
+ assert(!DISPLAY_SETTINGS.some(s=>s.key==='skillSuggestions'),'nicht mehr unter Darstellung und Geräte');
+ assert(/registerMenu\('dsa5-helpers', 'sheetSettings'.*restricted: false/.test(read('scripts/dsa5-helpers.js')),'Spieler erreichen ihre Benutzer-Einstellung');
 });

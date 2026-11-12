@@ -14,35 +14,72 @@ ROOT = Path(__file__).resolve().parent.parent
 RUNTIME = ('scripts', 'styles', 'templates', 'lang', 'LICENSE', 'README.md', 'CHANGELOG.md')
 
 
+def line_of(generation):
+    """Stable version line of a Foundry generation: 7.x.y for v13, 8.x.y for v14 (Nutzerentscheidung 26.10.2026)."""
+    return generation - 6
+
+
+def default_version(version, generation):
+    """Ohne --version: Version aus module.json, eine Linienversion auf die Linie der Generation umgerechnet (8.0.0 -> 7.0.0
+    für v13). module.json trägt die v14-Nummer; ohne Umrechnung scheiterten lokale v13-Testpakete und die Pakettests.
+    Release-Tags setzen die Version im Workflow immer ausdrücklich (--version)."""
+    match = re.fullmatch(r'[78]\.(\d+\.\d+)', version)
+    return f'{line_of(generation)}.{match.group(1)}' if match else version
+
+
 def manifest_for(source, generation, version, channel='beta'):
     if generation not in (13, 14):
         raise ValueError('Only Foundry 13 and 14 are implemented')
-    major = 0 if channel == 'beta' else generation - 6
-    if channel not in ('beta', 'stable') or not re.fullmatch(rf'{major}\.\d+\.\d+', version):
-        raise ValueError('Beta: 0.x.y; stable: 7.x.y for v13, 8.x.y for v14')
+    legacy = re.fullmatch(r'0\.\d+\.\d+', version) is not None
+    # Bisherige Betas laufen im 0.x-Schema (nur Beta-Kanal). Versionen der Linie 7.x/8.x gibt es für beide Kanäle:
+    # Das stabile ZIP zeigt auf foundry-v<gen>, das Beta-ZIP auf foundry-v<gen>-beta, damit Tester in ihrem Kanal bleiben.
+    if channel not in ('beta', 'stable') or not (
+            re.fullmatch(rf'{line_of(generation)}\.\d+\.\d+', version) or (legacy and channel == 'beta')):
+        raise ValueError('Beta: 0.x.y or the line version; stable: 7.x.y for v13, 8.x.y for v14')
     result = copy.deepcopy(source)
     result['version'] = version
     result['compatibility'] = {'minimum': '13.351' if generation == 13 else '14.364', 'maximum': str(generation)}
-    # v13 has source/static verification only; do not declare a live-verified build yet.
-    if generation == 14:
-        result['compatibility']['verified'] = source['compatibility']['verified']
+    # v13 gilt als geprüft (Nutzerentscheidung 03.11.2026, nach Beta-Tests mit 0.6.2/0.6.3): Foundry 13.351, DSA5 7.5.1.
+    result['compatibility']['verified'] = '13.351' if generation == 13 else source['compatibility']['verified']
     system = next(item for item in result['relationships']['systems'] if item['id'] == 'dsa5')
-    system['compatibility'] = ({'minimum': '7.5.1', 'maximum': '7.5.1'} if generation == 13
+    system['compatibility'] = ({'minimum': '7.5.1', 'verified': '7.5.1', 'maximum': '7.5.1'} if generation == 13
                                else copy.deepcopy(system['compatibility']))
     if generation == 13:
         result['styles'] = [style for style in result['styles'] if not style.endswith('dsa5-helpers-mobile.css')]
     suffix = '-beta' if channel == 'beta' else ''
     base = result['url'].rstrip('/') + '/releases/download'
     result['manifest'] = f'{base}/foundry-v{generation}{suffix}/module.json'
-    # v13-Betas teilen sich die Nummer mit der v14-Beta und bekommen deshalb ein eigenes Release v13-<Version>
-    # (Branch v13, Job „v13“ in .github/workflows/release.yml, seit 0.6.2).
-    tag = f'v13-{version}' if generation == 13 and channel == 'beta' else f'v{version}'
+    # v13-Betas im 0.x-Schema teilen sich die Nummer mit der v14-Beta und bekommen deshalb ein eigenes Release
+    # v13-<Version> (Branch v13, Job „v13“ in .github/workflows/release.yml, seit 0.6.2). Ab 7.0.0/8.0.0 ist die
+    # Nummer je Linie eindeutig, der Tag also einfach v<Version>.
+    tag = f'v13-{version}' if generation == 13 and legacy else f'v{version}'
     result['download'] = f'{base}/{tag}/module-v{generation}{suffix}.zip'
     return result
 
 
-def package(generation, version='0.6.2', channel='beta', output=None):
+def changelog_for(markdown, generation):
+    """CHANGELOG.md ohne die Abschnitte der anderen Linie (## [8.x.y] fehlt im v13-Paket und umgekehrt).
+
+    Das Changelog-Fenster im Modul zeigt alle Abschnitte bis zur installierten Version; ohne Filter sähe ein
+    v14-Nutzer mit 8.0.0 auch die 7.x-Abschnitte. 0.x-Abschnitte und Vergleichslinks der eigenen Linie bleiben.
+    """
+    other = {13: '8', 14: '7'}[generation]
+    kept, skip = [], False
+    for line in markdown.splitlines(keepends=True):
+        heading = re.match(r'^##\s+\[?(\d+)\.', line)
+        if heading:
+            skip = heading.group(1) == other
+        elif line.startswith('## ') or line.startswith('['):
+            skip = False
+        if re.match(rf'^\[{other}\.\d+\.\d+\]:', line) or skip:
+            continue
+        kept.append(line)
+    return ''.join(kept)
+
+
+def package(generation, version=None, channel='beta', output=None):
     source = json.loads((ROOT / 'module.json').read_text(encoding='utf-8'))
+    version = version or default_version(source['version'], generation)
     manifest = manifest_for(source, generation, version, channel)
     output = Path(output) if output else ROOT / '.deploy' / 'packages'
     output.mkdir(parents=True, exist_ok=True)
@@ -55,6 +92,8 @@ def package(generation, version='0.6.2', channel='beta', output=None):
             shutil.copytree(source_path, folder / name)
         else:
             shutil.copy2(source_path, folder / name)
+    changelog = (ROOT / 'CHANGELOG.md').read_text(encoding='utf-8')
+    (folder / 'CHANGELOG.md').write_text(changelog_for(changelog, generation), encoding='utf-8', newline='')
     (folder / 'module.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     suffix = '-beta' if channel == 'beta' else ''
     archive = destination / f'module-v{generation}{suffix}.zip'
@@ -121,7 +160,7 @@ def install(folder, data_path, backup_root=Path('D:/FoundryBackups')):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--foundry', type=int, required=True, choices=(13, 14))
-    parser.add_argument('--version', default='0.6.2')
+    parser.add_argument('--version', help='Default: version in module.json')
     parser.add_argument('--channel', choices=('beta', 'stable'), default='beta')
     parser.add_argument('--output', metavar='DIR', help='Target folder (default .deploy/packages)')
     parser.add_argument('--install', metavar='DATA_PATH', help='Foundry Data folder, e.g. D:/FoundryVTT/user-data-paths/v13/Data')

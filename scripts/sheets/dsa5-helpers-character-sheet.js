@@ -158,6 +158,18 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // aber über row.hidden statt der System-Klasse — .notLearned ist im System-CSS global display:none.
   _onlyLearned = false;
 
+  // Der Bogen sieht in jedem DSA5-Design und bei hellem wie dunklem Foundry gleich aus (Nutzerentscheidung 2026-11-12);
+  // Hell/Dunkel kommt nur aus der Modul-Einstellung „theme“ (data-theme). Darum fest Foundrys helles Thema — wie mobil
+  // (mobile.js) — und ohne dsa-immersive-sheet: daran hängt DSA5 8.2 unter „Drachenleder“ (DSA5Skin.applyImmersiveSheetTheme)
+  // Holzleiste, Drachen-Ornamente und Logo des Systembogens. Mit „themed“ in den Optionen lässt Foundry die Klassen bei
+  // einem Wechsel des Farbschemas in Ruhe.
+  _initializeApplicationOptions(options) {
+    options = super._initializeApplicationOptions(options);
+    const drop = ['dsa-immersive-sheet', 'themed', 'theme-dark', 'theme-light'];
+    options.classes = [...(options.classes ?? []).filter(cls => !drop.includes(cls)), 'themed', 'theme-light'];
+    return options;
+  }
+
   _toggleDisabled(disabled) {
     super._toggleDisabled(disabled);
     // Observers may still navigate tabs even when Foundry disables document edits.
@@ -273,7 +285,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const specs = {};
     for (const kind of ['general', 'combat', 'magical', 'clerical']) {
       specs[kind] = Array.from(prepare.sortedSpecs?.[kind] ?? []).filter(cat => kind !== 'general' || cat !== 'language')
-        .map(cat => ({ cat, items: prepare.specAbs?.[cat] ?? [] })).filter(group => group.items.length);
+        // DSA5 ab 8.2 führt Traditions-SF getrennt (prepare.traditionAbilities), bei uns stehen sie weiter in der Liste.
+        .map(cat => ({ cat, items: [...(prepare.traditionAbilities?.[cat] ?? []), ...(prepare.specAbs?.[cat] ?? [])] })).filter(group => group.items.length);
     }
     // Own labels ("Nahkampfwaffen"/"Fernkampfwaffen") instead of the system's own 'closeCombatAttacks'/'rangeweapons'
     // strings ("Nahkampfangriffe") — Nutzer-Feedback 2026-09-19: the panel holds worn weapons, not "attacks", and
@@ -370,6 +383,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       ? { value: source.value, max: source.max, segments: source.segments } : null;
     this._powerSources = powerSources;
     const status = this.actor.system.status;
+    const tradition = this._traditionNames();
     context.dsa5h = {
       supportsCompanions: typeof this.prepareCompanionTab === 'function',
       legacySystem: isFoundry13(),
@@ -406,7 +420,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
         return Object.assign(item, { dsa5hFill: { weight, capacity, over: capacity > 0 && weight > capacity } });
       }),
       traditionItems: this._traditionItems(),
-      tradition: this._traditionNames(),
+      tradition,
       // Sammelproben (Nutzer-Notiz 2026-09-30): je Talent Probe + FW wie in der Talentliste. Das Talent wird wie im
       // System gesucht (item-dsa5.js rollAggregatedProbe: Name + Typ skill); gewürfelt wird weiter über rollAggregatedProbe.
       aggregated: (prepare.aggregatedtests ?? []).map(item => ({
@@ -448,7 +462,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       // Passive Verteidigung (#56): Auswahl je Held im Kampf-Reiter, nur für Besitzer.
       autoDefense: !limited && this.actor.isOwner && isRuleActive('passiveDefense') ? { choices: defenseChoices(this.actor) } : null,
       body,
-      happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
+      happyTalentsCount: String(tradition.clerical.happyTalents ?? this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
     // The original sheet prepares this only for its separate companion part.
     if (!limited && typeof this.prepareCompanionTab === 'function') await this.prepareCompanionTab(context);
@@ -482,17 +496,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     this._updateModeButton(context.dsa5h.mode);
     this.element.dataset.theme = game.settings.get(MODULE_ID, 'theme');
     this._applyCurrentTab();
+    // Kraftspeicher-Rundmenü nur per Klick oder Pfeil nach unten, nicht beim Überfahren (#73: verdeckte sonst den Bogen).
     const sourceAnchor = this.element.querySelector('.dsa5h-power-satellite');
-    sourceAnchor?.addEventListener('pointerenter', event => {
-      if (event.pointerType !== 'touch' && matchMedia('(hover: hover)').matches) this._openPowerSources(sourceAnchor);
-    });
-    sourceAnchor?.addEventListener('pointerleave', () => {
-      clearTimeout(this._powerTimer);
-      this._powerTimer = setTimeout(() => {
-        const panel = this._powerPopup?.panel;
-        if (panel && !panel.matches(':hover') && !panel.contains(document.activeElement)) this._closePowerSources();
-      }, 350);
-    });
     sourceAnchor?.addEventListener('keydown', event => {
       if (event.key === 'ArrowDown') { event.preventDefault(); this._openPowerSources(sourceAnchor, 0, true); }
     });
@@ -572,7 +577,13 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       // scroll bubbelt nicht — Capture-Phase am Fenster, weil .dsa5h-content bei jedem Render neu entsteht.
       this.element.addEventListener('scroll', event => {
         if (event.target?.classList?.contains('dsa5h-content')) this._onContentScroll();
+        // Das Munitionsmenü steht fest auf dem Bildschirm (Popover) und wandert beim Bildlauf mit seinem Knopf mit.
+        this.element.querySelectorAll('details.dsa5h-ammo-pick[open]').forEach(details => this._placeAmmoMenu(details));
       }, { capture: true, passive: true });
+      // toggle bubbelt nicht: Capture-Phase, damit auch neu gerenderte <details> erfasst werden.
+      this.element.addEventListener('toggle', event => {
+        if (event.target?.matches?.('details.dsa5h-ammo-pick')) this._placeAmmoMenu(event.target);
+      }, { capture: true });
       this.element.addEventListener('scrollend', event => {
         if (event.target?.classList?.contains('dsa5h-content')) this._jumping = false;
       }, { capture: true, passive: true });
@@ -846,12 +857,29 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     return openPowerSourceDialog(this);
   }
 
+  // Munitionswahl (#74): Das Menü liegt als Popover in der obersten Ebene, weil die Waffenkarte überstehende Inhalte
+  // abschneidet (overflow: hidden für das Wasserzeichen). Unter dem Knopf, bei zu wenig Platz darüber, nie über den Rand.
+  _placeAmmoMenu(details) {
+    const menu = details.querySelector('.dsa5h-ammo-menu');
+    if (!menu?.showPopover) return;
+    if (!details.open) {
+      if (menu.matches(':popover-open')) menu.hidePopover();
+      return;
+    }
+    if (!menu.matches(':popover-open')) menu.showPopover();
+    const anchor = details.querySelector('summary').getBoundingClientRect();
+    const { width, height } = menu.getBoundingClientRect();
+    const below = anchor.bottom + 3;
+    const top = below + height <= innerHeight - 8 ? below : Math.max(8, anchor.top - 3 - height);
+    menu.style.left = `${Math.max(8, Math.min(innerWidth - width - 8, anchor.left))}px`;
+    menu.style.top = `${top}px`;
+  }
+
   static _showPowerSources(event, target) {
     this._openPowerSources(target, 0, true);
   }
 
   _closePowerSources(restoreFocus = false) {
-    clearTimeout(this._powerTimer);
     const popup = this._powerPopup;
     if (!popup) return;
     this._powerPopup = null;
@@ -961,11 +989,6 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const events = new AbortController();
     const signal = events.signal;
     this._powerPopup = { anchor, panel, events };
-    panel.addEventListener('pointerenter', () => clearTimeout(this._powerTimer));
-    panel.addEventListener('pointerleave', () => {
-      clearTimeout(this._powerTimer);
-      this._powerTimer = setTimeout(() => { if (!panel.contains(document.activeElement)) this._closePowerSources(); }, 350);
-    });
     panel.addEventListener('click', event => {
       if (event.target.closest('[data-action="dsa5hEditPowerSources"]')) {
         // Erst nach dem geerbten Action-Dispatch entfernen, sonst verliert Foundry das Ziel.
@@ -1060,7 +1083,14 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     menu.setAttribute('aria-label', ariaLabel);
     const close = () => { menu.remove(); document.removeEventListener('pointerdown', onDoc, true); document.removeEventListener('keydown', onKey, true); };
     const onDoc = ev => { if (!menu.contains(ev.target)) close(); };
-    const onKey = ev => { if (ev.key === 'Escape') close(); };
+    // Escape schließt nur das Menü: Foundry hört erst am window darauf und schlösse sonst alle Fenster samt Bogen.
+    const onKey = ev => {
+      if (ev.key !== 'Escape') return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      close();
+      target?.focus?.({ preventScroll: true });
+    };
     for (const entry of entries) {
       const item = document.createElement('button');
       item.type = 'button';
@@ -1239,11 +1269,28 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     target.closest('dialog')?.close();
   }
 
-  // Die Tradition steht im System nur als Textfeld (system.tradition.magical/clerical); das zugehörige Item ist die
-  // Sonderfertigkeit „Tradition (…)“ — gleiche Erkennung wie das System selbst (item-dsa5.js, LocalizedIDs.assumeTradition).
+  // Bis DSA5 8.1 steht die Tradition nur als Textfeld (system.tradition.magical/clerical) am Helden; das zugehörige
+  // Item ist die Sonderfertigkeit „Tradition (…)“ — gleiche Erkennung wie das System (LocalizedIDs.assumeTradition).
+  // Ab 8.2 tragen Traditions-SF `isTradition` samt Leiteigenschaft, Energiefaktor und glücklichen Talenten.
   _findTradition(kind) {
+    if (this._traditionsFromAbility()) {
+      const hit = this.actor.items.find(item => item.type === 'specialability' && item.system.isTradition && item.system.category?.value === kind);
+      if (hit) return hit;
+    }
     const prefix = game.i18n.localize('LocalizedIDs.assumeTradition');
     return this.actor.items.find(item => item.type === 'specialability' && item.name.startsWith(prefix) && item.system.category?.value === kind);
+  }
+
+  _traditionsFromAbility() {
+    return !!globalThis.CONFIG?.Item?.dataModels?.specialability?.schema?.fields?.isTradition;
+  }
+
+  // Wie das System ab 8.2 (Datenvorbereitung des Akteurs): nur bei genau einer Traditions-SF je Art gelten deren
+  // Werte, dann überschreibt das System system.guidevalue/energyfactor; die Felder am Helden wirken nicht mehr.
+  _derivedTradition(kind) {
+    if (!this._traditionsFromAbility()) return null;
+    const items = this.actor.items.filter(item => item.type === 'specialability' && item.system.isTradition && item.system.category?.value === kind);
+    return items.length === 1 ? items[0] : null;
   }
 
   _traditionItems() {
@@ -1258,7 +1305,9 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     for (const kind of ['magical', 'clerical']) {
       const item = this._findTradition(kind);
       const fromItem = item ? (item.name.match(/\(([^)]*)\)\s*$/)?.[1] ?? item.name).trim() : '';
-      names[kind] = { name: fromItem || this.actor.system.tradition?.[kind] || '', fromItem };
+      const derived = this._derivedTradition(kind);
+      names[kind] = { name: fromItem || this.actor.system.tradition?.[kind] || '', fromItem, derived: !!derived };
+      if (derived && kind === 'clerical') names[kind].happyTalents = derived.system.happyTalents ?? '';
     }
     return names;
   }

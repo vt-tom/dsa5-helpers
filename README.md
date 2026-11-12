@@ -6,38 +6,41 @@ nicht dessen Ersatz. Alle Würfe, Berechnungen und Datenzugriffe kommen aus dem 
 
 ## Installation
 
-In Foundry unter **Add-on-Module → Modul installieren** diese Manifest-URL eintragen:
+Es gibt eine eigene Ausgabe je Foundry-Generation. Die Versionsnummer zeigt, wofür sie ist: **8.x.x für Foundry v14**,
+**7.x.x für Foundry v13**. In Foundry unter **Add-on-Module → Modul installieren** die passende Manifest-URL eintragen:
+
+| Foundry | Ausgabe | Manifest-URL |
+|---|---|---|
+| v14 (≥ 14.364), DSA5 ≥ 8.1.5 | 8.x – Desktop, Tablet und Smartphone | `https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v14/module.json` |
+| v13 (13.351), DSA5 7.5.1 | 7.x – nur Desktop | `https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13/module.json` |
+
+Updates kommen dann nur aus der eigenen Linie; eine v13-Installation bekommt nie die v14-Ausgabe angeboten und
+umgekehrt. Wer später Foundry aktualisiert, deinstalliert das Modul und installiert es mit der URL der neuen Generation
+neu – Einstellungen und Bogenwahl bleiben in der Welt erhalten.
+
+**Beta-Kanäle (für Tester):** Darüber kommen Vorabversionen und auch alle stabilen Versionen der Linie:
 
 ```text
-https://github.com/vt-tom/dsa5-helpers/releases/latest/download/module.json
+https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v14-beta/module.json
+https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13-beta/module.json
 ```
 
-**Beta-Kanal (für Tester):** Wer neue Versionen vorab testen möchte, trägt stattdessen diese Manifest-URL ein. Darüber
-kommen Beta-Versionen und auch alle stabilen Versionen:
+Zurück zum stabilen Kanal: Modul deinstallieren und mit der URL aus der Tabelle neu installieren.
 
-```text
-https://github.com/vt-tom/dsa5-helpers/releases/download/beta/module.json
-```
-
-Zurück zum stabilen Kanal: Modul deinstallieren und mit der ersten URL neu installieren (Einstellungen bleiben in der
-Welt erhalten).
+**Ältere Installationen (0.x):** Wer mit der früheren URL `…/releases/latest/download/module.json` oder dem alten
+Beta-Kanal `…/releases/download/beta/module.json` installiert hat, bekommt 8.0.0 als normales Update und landet dabei
+automatisch im Kanal `foundry-v14` bzw. `foundry-v14-beta`. Die v13-Beta (`foundry-v13-beta`) geht nahtlos in die 7.x-Linie über.
 
 Danach das Modul in der Welt aktivieren und beim Helden über **Bogen → Bogenkonfiguration** den Bogen „DSA5 Helfer-Heldenbogen“
 wählen.
 
-**Voraussetzungen:** Foundry VTT v14 (≥ 14.364), System DSA5 ≥ 8.1.5.
+### Ausgabe für Foundry v13
 
-### Beta für Foundry v13 (seit 0.6.2)
-
-Für Foundry **13.351 mit DSA5 7.5.1** gibt es eine getrennte Desktop-Beta mit eigenem Kanal. In der v13-Installation
-diese Manifest-URL eintragen:
-
-```text
-https://github.com/vt-tom/dsa5-helpers/releases/download/foundry-v13-beta/module.json
-```
-
-Updates kommen dann nur aus diesem Kanal, die v14-Ausgabe wird nie angeboten. Weltdaten müssen weder kopiert noch
-migriert werden. Gebaut wird die Ausgabe vom Branch `v13` (Ablauf in [docs/RELEASE.md](docs/RELEASE.md)).
+V13 bietet vorhandene DSA7-Funktionen einschließlich Reittier im Kampf-Reiter und magischer Traditionsartefakte.
+Gefährten-/Auftragsverwaltung, neue Zeremonialgegenstände, Kraftspeicher, Lebensenergiezonen und Modul-Mobiloberfläche
+entfallen. Die Erweiterungen „Helfen“ und „Grundmanöver“ benötigen den DSA8-Modifikatoren-Hook und sind ebenfalls ausgeblendet;
+Wundeinschätzung, Passive Verteidigung und Würfelstatistik bleiben verfügbar. Optionale Fremdmodule müssen selbst zu v13 passen.
+Gebaut wird die Ausgabe vom Branch `v13` (Ablauf in [docs/RELEASE.md](docs/RELEASE.md)).
 
 Lokal bauen und einspielen (Entwicklung), mit Sicherung des alten Modulordners unter
 `D:\FoundryBackups\<Zeit>\dsa5-helpers-v13\previous-module` und SHA-256-Prüfung:
@@ -46,16 +49,8 @@ Lokal bauen und einspielen (Entwicklung), mit Sicherung des alten Modulordners u
 python tools/package-module.py --foundry 13 --install D:/FoundryVTT/user-data-paths/v13/Data
 ```
 
-Danach im Browser F5; Foundry selbst muss nicht neu starten.
-
-V13 bietet vorhandene DSA7-Funktionen einschließlich Reittier im Kampf-Reiter und magischer Traditionsartefakte.
-Gefährten-/Auftragsverwaltung, neue Zeremonialgegenstände, Kraftspeicher, Lebensenergiezonen und Modul-Mobiloberfläche
-entfallen. Die Erweiterungen „Helfen“ und „Grundmanöver“ benötigen den DSA8-Modifikatoren-Hook und sind ebenfalls ausgeblendet;
-Wundeinschätzung, Passive Verteidigung (seit 0.6.3) und Würfelstatistik bleiben verfügbar. Optionale Fremdmodule müssen selbst zu v13 passen.
-
-Die Ausgabe ist statisch gegen die v13-Quellen geprüft; die interaktive Foundry-Abnahme erfolgt durch die Tester.
-`python tools/package-module.py --foundry 14` erzeugt separat die v14-Beta. Stabile Linien starten später bei
-7.0.0 (v13) und 8.0.0 (v14); Modul-ID und gespeicherte Bogenzuordnung bleiben erhalten.
+Danach im Browser F5; Foundry selbst muss nicht neu starten. `python tools/package-module.py --foundry 14` erzeugt
+entsprechend die v14-Ausgabe; Modul-ID und gespeicherte Bogenzuordnung sind in beiden Linien gleich.
 
 ## Funktionen
 

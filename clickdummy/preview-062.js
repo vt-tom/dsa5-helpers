@@ -39,10 +39,8 @@ function previewPowerEditor(selectedName) {
 }
 
 let previewRadial = null;
-let previewRadialTimer = null;
 
 function closePreviewRadial(restoreFocus = false) {
-  clearTimeout(previewRadialTimer);
   if (!previewRadial) return;
   const { anchor, panel } = previewRadial;
   previewRadial = null;
@@ -95,9 +93,6 @@ function openPreviewRadial(anchor, page = 0, keyboard = false) {
   anchor.classList.add('preview-power-open');
   anchor.setAttribute('aria-expanded', 'true');
   previewRadial = { anchor, panel };
-  const schedule = () => { clearTimeout(previewRadialTimer); previewRadialTimer = setTimeout(() => { if (previewRadial?.panel === panel && !panel.contains(document.activeElement)) closePreviewRadial(); }, 300); };
-  panel.addEventListener('pointerenter', () => clearTimeout(previewRadialTimer));
-  panel.addEventListener('pointerleave', schedule);
   panel.addEventListener('focusout', () => setTimeout(() => { if (previewRadial?.panel === panel && !panel.contains(document.activeElement) && document.activeElement !== anchor) closePreviewRadial(); }, 0));
   if (keyboard) center.focus({ preventScroll: true });
 }
@@ -109,8 +104,7 @@ function previewPower() {
   const value = sources.reduce((sum, source) => sum + source.value, 0);
   const max = sources.reduce((sum, source) => sum + source.max, 0);
   const button = el('button', { type: 'button', class: 'preview-power-satellite', style: `--fill:${max ? value / max * 100 : 0}%`, 'aria-label': `Kraftspeicher: ${value} von ${max} AsP, ${sources.length} Speicher. Radialübersicht öffnen`, 'aria-expanded': 'false', 'aria-haspopup': 'dialog', 'aria-controls': 'previewRadial' }, [el('small', {}, 'KS'), el('strong', {}, String(value))]);
-  button.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch' && matchMedia('(hover: hover)').matches) openPreviewRadial(button); });
-  button.addEventListener('pointerleave', () => { previewRadialTimer = setTimeout(() => { if (previewRadial && !previewRadial.panel.matches(':hover') && !previewRadial.panel.contains(document.activeElement)) closePreviewRadial(); }, 300); });
+  // Nur per Klick oder Pfeil nach unten, nicht beim Überfahren (#73: verdeckte sonst den Bogen).
   button.addEventListener('click', () => openPreviewRadial(button, 0, true));
   button.addEventListener('keydown', event => { if (event.key === 'ArrowDown') { event.preventDefault(); openPreviewRadial(button, 0, true); } });
   return button;

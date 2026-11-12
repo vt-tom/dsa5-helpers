@@ -1272,6 +1272,26 @@ function ammoToggle(w, summary) {
   );
 }
 
+// Munitionswahl in der Waffenkarte (#74): Die Karte schneidet Überstehendes ab (overflow: hidden), deshalb liegt das
+// Menü als Popover in der obersten Ebene, unter dem Knopf bzw. darüber, wenn unten kein Platz ist. Modul: _placeAmmoMenu.
+function floatAmmoMenu(menu) {
+  menu.setAttribute("popover", "manual");
+  queueMicrotask(() => {
+    if (!menu.isConnected || !menu.showPopover) return;
+    menu.showPopover();
+    placeAmmoMenu(menu);
+  });
+  return menu;
+}
+
+function placeAmmoMenu(menu) {
+  const anchor = menu.parentElement.querySelector(".ammo-toggle").getBoundingClientRect();
+  const { width, height } = menu.getBoundingClientRect();
+  const below = anchor.bottom + 3;
+  menu.style.left = `${Math.max(8, Math.min(innerWidth - width - 8, anchor.left))}px`;
+  menu.style.top = `${below + height <= innerHeight - 8 ? below : Math.max(8, anchor.top - 3 - height)}px`;
+}
+
 function ammoMenu(children) {
   const menu = el("div", { class: "ammo-menu" }, children.filter(Boolean));
   menu.addEventListener("click", (e) => e.stopPropagation());
@@ -1572,7 +1592,7 @@ function handSlot(hand) {
   if (ranged) {
     // Munitionswahl, Nachladen/Zielen/Magazin (Issue #29, Vorschlag 2026-09-30). Modul: .dsa5h-hand-ranged.
     const ammo = w.ammoTypes ? selectedAmmo(w) : null;
-    const ammoPick = w.ammoTypes ? el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? ammoMenu([ammoChips(w)]) : null]) : null;
+    const ammoPick = w.ammoTypes ? el("span", { class: "ammo-pick" }, [ammoToggle(w, ammo ? `${ammo.name} ×${ammo.count}` : "Keine Munition"), openAmmoWeapon === w ? floatAmmoMenu(ammoMenu([ammoChips(w)])) : null]) : null;
     const list = [ammoPick, w.reloadTime ? reloadWidget(w) : null, aimWidget(w), magWidget(w)].filter(Boolean);
     if (list.length) extras = el("div", { class: "hand-ranged-extras" }, list);
   }
@@ -2060,7 +2080,7 @@ function renderHappyTalentsCollapse(t) {
   toggleBtn.addEventListener("click", () => { happyTalentsExpanded = !happyTalentsExpanded; renderContent(); });
   if (!expanded) return el("div", { class: "trad-tiles-note happy-talents-note-collapsed" }, [toggleBtn]);
   const span = el("span", {}, t.happyTalents);
-  if (mode === "edit") makeEditable(span, t.happyTalents, (v) => { t.happyTalents = v; renderContent(); }, { type: "text" });
+  if (mode === "edit" && !t.fromAbility) makeEditable(span, t.happyTalents, (v) => { t.happyTalents = v; renderContent(); }, { type: "text" });
   return el("div", { class: "trad-tiles-note happy-talents-note-collapsed" }, [toggleBtn, el("div", { class: "happy-talents-expanded" }, span)]);
 }
 
@@ -2083,7 +2103,8 @@ function traditionHeader(t, kind) {
   const tile = (label, rawValue, valClass, field, key) => {
     const type = typeof rawValue === "number" ? "number" : "text";
     const valEl = el("div", { class: "trad-tile-val" + (valClass ? " " + valClass : "") }, String(rawValue));
-    if (field && mode === "edit") {
+    // Leiteigenschaft/Faktor gibt ab DSA5 8.2 die Traditions-SF vor (t.fromAbility), Merkmal bleibt bearbeitbar.
+    if (field && mode === "edit" && !(t.fromAbility && field !== "feature")) {
       makeEditable(valEl, rawValue, (v) => { t[field] = v; renderContent(); }, { type, min: type === "number" ? 0 : undefined, max: type === "number" ? 99 : undefined });
     }
     return el("div", { class: "trad-tile" + (key ? " trad-tile-" + key : "") }, [el("div", { class: "trad-tile-label" }, label), valEl]);
@@ -2095,7 +2116,7 @@ function traditionHeader(t, kind) {
   traditionTile.setAttribute("role", "button");
   traditionTile.title = "Tradition öffnen";
   traditionTile.addEventListener("click", () => flashNotice(`📜 Sonderfertigkeit „Tradition (${t.tradition})“ würde geöffnet`));
-  const metaTiles = el("div", { class: "trad-tile-meta" }, [
+  const metaTiles = el("div", { class: "trad-tile-meta", ...(t.fromAbility ? { title: "Vorgegeben durch die Traditions-Sonderfertigkeit" } : {}) }, [
     tile("Leiteigenschaft", t.guidevalue, null, "guidevalue", "guidevalue"),
     tile("Merkmal", t.feature, null, "feature", "feature"),
     tile("Faktor", t.energyfactor, "accent", "energyfactor", "energyfactor"),
@@ -3916,12 +3937,15 @@ function initSheetResize() {
 
 // Munitionsmenü (renderAmmoCell) schließt sich bei jedem Klick außerhalb, wie ein normales Dropdown.
 function initAmmoMenuOutsideClick() {
-  document.addEventListener("click", () => {
+  const close = () => {
     if (openAmmoWeapon) {
       openAmmoWeapon = null;
       renderContent();
     }
-  });
+  };
+  document.addEventListener("click", close);
+  // Das Popover steht fest und wandert beim Bildlauf mit seinem Knopf mit (#74).
+  document.addEventListener("scroll", () => document.querySelectorAll(".ammo-menu:popover-open").forEach(placeAmmoMenu), { capture: true, passive: true });
 }
 
 function initModalEscape() {

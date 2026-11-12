@@ -2,8 +2,8 @@
  * Untermenüs der Moduleinstellungen (Nutzer 2026-10-20: Einstellungen gruppieren, damit die Liste nicht
  * unübersichtlich wird; 2026-11-02: alle Einstellungen in Untermenüs, die Liste zeigt nur noch Knöpfe).
  * „Heldenbogen“ bündelt die Welt-Einstellungen des Bogens: Standard-Bogen (#13), Bearbeiten-Modus für Spieler (#34),
- * Reiter Aufträge/Personen (#39) und Ordner für Bannerbilder (#46). „Darstellung und Geräte“ bündelt Probendialoge am
- * Desktop (#63), Talent-Vorschläge und das hybride Spiel auf Tablet/Smartphone; Welt-Einstellungen darin sieht nur,
+ * Reiter Aufträge/Personen (#39), Talent-Vorschläge (#75) und Ordner für Bannerbilder (#46). „Darstellung und Geräte“
+ * bündelt Probendialoge am Desktop (#63) und das hybride Spiel auf Tablet/Smartphone; Welt-Einstellungen darin sieht nur,
  * wer sie ändern darf, Geräte-Einstellungen jeder. Die Einstellungen selbst sind mit config: false registriert; neue
  * gehören in die passende Liste unten. Die Würfelstatistik hat ihre Einstellungen im eigenen Fenster.
  */
@@ -20,12 +20,13 @@ export const SHEET_SETTINGS = [
   { key: 'playersMayEdit', kind: 'checkbox' },
   { key: 'questsTab', kind: 'checkbox', when: () => !isFoundry13() },
   { key: 'personaeTab', kind: 'checkbox' },
+  // Benutzer-Einstellung (#75): Spieler sehen im Menü nur diese, die Welt-Einstellungen nur die SL.
+  { key: 'skillSuggestions', kind: 'select' },
   { key: 'bannerPath', kind: 'folder' },
 ];
 
 export const DISPLAY_SETTINGS = [
   { key: 'rollDialogDesktopStyle', kind: 'select', group: 'DSA5HELPERS.Settings.DisplayMenu.GroupSheet' },
-  { key: 'skillSuggestions', kind: 'select', group: 'DSA5HELPERS.Settings.DisplayMenu.GroupSheet' },
   { key: 'hybridPlay', kind: 'checkbox', group: 'DSA5HELPERS.Settings.DisplayMenu.GroupMobile' },
   { key: 'uiMode', kind: 'select', when: hybrid, group: 'DSA5HELPERS.Settings.DisplayMenu.GroupMobile' },
   { key: 'rollResultTablet', kind: 'checkbox', when: hybrid, group: 'DSA5HELPERS.Settings.DisplayMenu.GroupMobile' },
