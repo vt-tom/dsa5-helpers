@@ -134,9 +134,25 @@
   overflow: visible !important;
   box-shadow: 0 10px 20px rgba(0, 0, 0, .5) !important;
   background: var(--paper) !important;
+  /* Foundry-Werte; DSA5 8.2 „Aventurisch“/„Drachenleder“ setzen Rundung (8px/3px), Titelhöhe (Mindesthöhe des
+     Fensters) und Scrollfarbe am Fenster selbst. */
+  border-radius: 6px !important;
+  --header-height: 36px;
+  scrollbar-color: var(--color-scrollbar) var(--color-scrollbar-track);
 }
 
 .dsa5-helpers-sheet:after {
+  content: none !important;
+}
+
+/* Skins von DSA5 8.2: „Drachenleder“ zeichnet Logo und Drachen-Ornamente als Pseudo-Elemente an Fenster, Titelleiste
+   und Inhalt. Das Skript nimmt dem Bogen die Klasse dafür (_initializeApplicationOptions); hier zusätzlich abgesichert,
+   falls das System sie künftig anders setzt. Unser Rahmen nutzt keine dieser Pseudo-Elemente. */
+.dsa5-helpers-sheet::before,
+.dsa5-helpers-sheet > .window-header::before,
+.dsa5-helpers-sheet > .window-header::after,
+.dsa5-helpers-sheet > .window-content::before,
+.dsa5-helpers-sheet > .window-content::after {
   content: none !important;
 }
 
@@ -165,13 +181,27 @@
   gap: 0 !important;
 }
 
+/* --button-size fest: Foundrys Symbolknöpfe nehmen sie als Mindestbreite (24px, so sah die Plakette immer aus); der
+   DSA5-8.2-Skin „Aventurisch“ setzt sie auf 22px und machte die Plakette schmaler. --button-text-color fest, weil
+   „Drachenleder“ die Symbole sonst bronze färbt. */
 .dsa5-helpers-sheet .window-header .header-control {
+  --button-size: 24px;
+  --button-text-color: var(--headink);
+  /* Rundung, Deckkraft und Hintergrund wie in Foundry: „Aventurisch“ setzt 3px/0.8, „Pergament“ einen dunklen Hintergrund. */
+  border-radius: 4px;
+  opacity: 1;
+  background-color: var(--button-background-color, transparent);
   width: 22px !important;
   height: 20px !important;
   min-height: 0 !important;
   padding: 0 !important;
   font-size: 12px !important;
   text-shadow: 0 1px 1px rgba(0, 0, 0, .6);
+}
+
+/* Fenstersymbol (ausgeblendet): Farbe fest, die DSA5-Designs färben es bronze. */
+.dsa5-helpers-sheet .window-header .window-icon {
+  color: var(--headink);
 }
 
 /* Feiner Trennstrich zwischen den Bogen-Knöpfen und ⋮/✕ — als Hintergrund-Verlauf, nicht als ::before: dort zeichnet
@@ -183,6 +213,14 @@
 
 .dsa5-helpers-sheet .window-header .window-title {
   display: none !important;
+  /* Schrift wie in Foundry (sichtbar nur minimiert); die DSA5-Designs setzen eigene Schrift, Schatten und Einzug. */
+  margin: 0;
+  color: var(--color-light-1);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: inherit;
+  letter-spacing: normal;
+  text-shadow: none;
 }
 
 .dsa5-helpers-sheet .window-header .header-button {
@@ -190,10 +228,32 @@
 }
 
 @media (hover: hover) {
+  .dsa5-helpers-sheet .window-header .header-control:hover {
+    background-color: var(--button-hover-background-color);
+  }
+
   .dsa5-helpers-sheet .window-header .header-button:hover {
     background: rgba(224, 192, 128, .18) !important;
     border-radius: 3px !important;
   }
+}
+
+/* --- Griff zum Ändern der Größe --- */
+
+/* Wie in Foundry (11px-Symbol in der Ecke): „Pergament“ zeichnet einen 24px-Kasten, „Aventurisch“/„Drachenleder“
+   ein eingefärbtes, kleineres Symbol, dunkles Foundry invertiert es. */
+.dsa5-helpers-sheet > .window-resize-handle {
+  inset: auto 1px 1px auto;
+  width: 11px;
+  height: 11px;
+  z-index: auto;
+  border-radius: 0;
+  background: transparent url('../../../ui/resize-handle.webp') no-repeat center / contain;
+  filter: none;
+}
+
+.dsa5-helpers-sheet > .window-resize-handle::before {
+  content: none;
 }
 
 /* --- Minimiert --- */
@@ -334,11 +394,63 @@
   position: relative !important;
   border: none !important;
   border-image: none !important;
+  /* DSA5 8.2 „Drachenleder“ zieht sonst eine Innenlinie um den Inhalt; dunkles Foundry legt einen Weichzeichner dahinter
+     (unsichtbar, ändert aber die Kantenglättung der Schrift). */
+  box-shadow: none !important;
+  backdrop-filter: none !important;
   overflow: visible !important;
 }
 
 .dsa5-helpers-sheet .window-content * {
   box-sizing: border-box;
+}
+
+/* --- Unabhängig vom DSA5-Design --- */
+
+/* Der Bogen sieht in jedem DSA5-Design gleich aus (Nutzerentscheidung 2026-11-12). Das Skript gibt ihm fest Foundrys
+   helles Thema (themed theme-light); „Aventurisch“ und „Drachenleder“ (body.dsa5-modern) überschreiben aber Foundrys
+   Farbvariablen an jedem Fenster und Eingabefeld. Hier wieder Foundrys Werte für helles Thema (foundry2.css,
+   .themed.theme-light; „Pergament“ setzt einen Teil davon ebenfalls); sonst greift Foundry selbst. Hell/Dunkel des Bogens kommt aus den eigenen Tokens. */
+:where(body.dsa5-modern, body.dsa5-immersive) .dsa5-helpers-sheet {
+  --color-header-background: var(--color-dark-3);
+  --color-border: var(--color-cool-4);
+  --color-text-primary: var(--color-dark-2);
+  --color-text-secondary: var(--color-dark-3);
+  --color-text-emphatic: var(--color-dark-1);
+  --color-text-subtle: var(--color-dark-5);
+  --color-form-label: var(--color-dark-2);
+  --color-form-label-hover: var(--color-dark-1);
+  --color-form-hint: var(--color-dark-4);
+  --color-form-hint-hover: var(--color-dark-2);
+  --color-fieldset-border: var(--color-light-2);
+  --color-tabs-border: var(--color-dark-5);
+  --color-data-border: var(--color-dark-4);
+  --color-data-background: #ddd;
+  --table-background-color: none;
+  --table-header-bg-color: rgba(0, 0, 0, .1);
+  --table-header-border-color: var(--color-dark-1);
+  --table-row-color-even: rgba(0, 0, 0, .1);
+  --table-row-color-odd: transparent;
+  --table-row-color-highlight: var(--color-cool-5-75);
+  --hr-gradient: none;
+}
+
+:where(body.dsa5-modern) .dsa5-helpers-sheet :is(input, select, textarea):not(:is(color-picker, file-picker, formula-input, document-tags, string-tags) *) {
+  --input-background-color: rgba(0, 0, 0, .1);
+  --input-border-color: var(--color-dark-6);
+  --input-text-color: var(--color-dark-2);
+  --input-placeholder-color: var(--color-dark-4);
+  --input-focus-outline-color: var(--color-warm-2);
+}
+
+:where(body.dsa5-modern) .dsa5-helpers-sheet :is(input, select, textarea):not(:is(color-picker, file-picker, formula-input, document-tags, string-tags) *):focus {
+  --input-text-color: var(--color-dark-1);
+}
+
+:where(body.dsa5-modern) .dsa5-helpers-sheet :is(input, select, textarea):not(:is(color-picker, file-picker, formula-input, document-tags, string-tags) *):is(:disabled, [readonly]) {
+  --input-background-color: rgba(0, 0, 0, .2);
+  --input-border-color: transparent;
+  --input-text-color: var(--color-dark-3);
 }
 
 .dsa5-helpers-sheet .window-content a {
@@ -814,10 +926,13 @@
   text-shadow: 0 2px 6px rgba(0, 0, 0, .85);
 }
 
+/* box-shadow: Foundry zeichnet in Textfelder einen inneren Schein in --input-background-color; unter dem DSA5-8.2-Skin
+   „Aventurisch“ ist die hell und wirkte im dunklen Kopf wie ein Kasten. */
 .dsa5-helpers-sheet .dsa5h-name input {
   display: block;
   flex: 1 1 auto;
   background: transparent;
+  box-shadow: none;
   border: none;
   border-bottom: 1px solid rgba(244, 232, 214, .3);
   color: #f4e8d6;
@@ -3148,6 +3263,13 @@
 /* Belastung-Spalte 80→88px: „ENCUMBRANCE“ (en) ist als Kopf 85px breit und brach sonst mitten im Wort (Issue #16). */
 .dsa5-helpers-sheet .dsa5h-content .dsa5h-skill-row {
   grid-template-columns: 26px minmax(120px,1fr) 108px 88px 96px 24px;
+}
+
+/* Talentname in der Farbe des Bogens: der DSA5-8.2-Skin „Aventurisch“ (auch unter „Drachenleder“ aktiv) färbt
+   .talentName nach dem Foundry-Thema (body.dsa5-modern … .talentName, Spezifität 0,5,1) — bei hellem Bogen und
+   dunklem Foundry stand der Name hell auf Papier. */
+.dsa5-helpers-sheet .dsa5h-skill-row a.talentName {
+  color: inherit !important;
 }
 
 .dsa5-helpers-sheet .dsa5h-skill-row img {
@@ -6213,15 +6335,53 @@
 .dsa5-helpers-sheet .dsa5h-system-content .groupbox {
   background: var(--panel);
   border: 1px solid var(--line);
+  border-radius: 3px;
   box-shadow: none;
   margin: 0 0 16px;
 }
 
 .dsa5-helpers-sheet .dsa5h-system-content .table-title {
+  /* Rundung, Unterstrich, Ausrichtung, Abstände und Mindesthöhe setzt „Aventurisch“ an .groupbox > .table-title. */
+  align-items: normal;
+  gap: normal;
+  min-height: 0;
+  border-bottom: none;
+  border-radius: 0;
   background: var(--title);
   color: var(--ink);
   font: var(--fs-panel-title) Andalus,serif;
   padding: 5px 11px;
+}
+
+/* Kopfzeile wie gehabt geerbt: der DSA5-8.2-Skin „Aventurisch“ (auch unter „Drachenleder“) setzt in
+   .groupbox > .table-title eigene Schrift (Signika) und ein helles Grau, das auf unserem Papier kaum lesbar war. */
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title * {
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title > :not(.fas, .fa-solid, button) {
+  font-family: inherit;
+  font-weight: inherit;
+}
+
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title > :not(.small, .fas, .fa-solid, button) {
+  font-size: inherit;
+}
+
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title > .small {
+  font-size: var(--font-size-12);
+}
+
+.dsa5-helpers-sheet .dsa5h-system-content .groupbox > .table-title > .title-type b {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+/* Ablagefeld: Randfarbe fest (System: var(--border-color), je DSA5-Design und Foundry-Thema anders). */
+.dsa5-helpers-sheet .dsa5h-system-content .droparea {
+  border-color: rgba(115, 105, 83, .65);
 }
 
 .dsa5-helpers-sheet .dsa5h-system-content .smallHeader {
@@ -7351,12 +7511,14 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   color-scheme: dark;
 }
 
+/* background mit !important: der DSA5-8.2-Skin „Drachenleder“ setzt am Inhalt jedes Fensters background:none (mit
+   deutlich höherer Spezifität), sonst stünde die Schrift auf dunklem Leder. */
 .dsa5-helpers-dice-stats .window-content {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   padding: 0;
-  background: var(--paper);
+  background: var(--paper) !important;
   color: var(--ink);
   font-family: 'GentiumBasic', Georgia, serif;
 }
@@ -7797,12 +7959,13 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   color-scheme: dark;
 }
 
+/* background mit !important wie bei der Würfelstatistik (Skin „Drachenleder“ von DSA5 8.2). */
 .dsa5-helpers-house-rules .window-content {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   padding: 0;
-  background: var(--paper);
+  background: var(--paper) !important;
   color: var(--ink);
   font-family: 'GentiumBasic', Georgia, serif;
 }

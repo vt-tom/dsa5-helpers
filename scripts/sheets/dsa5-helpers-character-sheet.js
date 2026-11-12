@@ -158,6 +158,18 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // aber über row.hidden statt der System-Klasse — .notLearned ist im System-CSS global display:none.
   _onlyLearned = false;
 
+  // Der Bogen sieht in jedem DSA5-Design und bei hellem wie dunklem Foundry gleich aus (Nutzerentscheidung 2026-11-12);
+  // Hell/Dunkel kommt nur aus der Modul-Einstellung „theme“ (data-theme). Darum fest Foundrys helles Thema — wie mobil
+  // (mobile.js) — und ohne dsa-immersive-sheet: daran hängt DSA5 8.2 unter „Drachenleder“ (DSA5Skin.applyImmersiveSheetTheme)
+  // Holzleiste, Drachen-Ornamente und Logo des Systembogens. Mit „themed“ in den Optionen lässt Foundry die Klassen bei
+  // einem Wechsel des Farbschemas in Ruhe.
+  _initializeApplicationOptions(options) {
+    options = super._initializeApplicationOptions(options);
+    const drop = ['dsa-immersive-sheet', 'themed', 'theme-dark', 'theme-light'];
+    options.classes = [...(options.classes ?? []).filter(cls => !drop.includes(cls)), 'themed', 'theme-light'];
+    return options;
+  }
+
   _toggleDisabled(disabled) {
     super._toggleDisabled(disabled);
     // Observers may still navigate tabs even when Foundry disables document edits.

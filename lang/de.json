@@ -197,14 +197,14 @@
       "DisplayMenu": {
         "Title": "Darstellung und Geräte",
         "Label": "Darstellung einrichten",
-        "GroupSheet": "Probendialoge und Heldenbogen",
+        "GroupSheet": "Probendialoge",
         "GroupMobile": "Tablet und Smartphone",
-        "Hint": "Probendialoge am Desktop, Talent-Vorschläge auf dem Titelblatt und hybrides Spiel auf Tablet und Smartphone (Oberfläche und Wurfergebnis je Gerät)."
+        "Hint": "Probendialoge am Desktop und hybrides Spiel auf Tablet und Smartphone (Oberfläche und Wurfergebnis je Gerät)."
       },
       "SheetMenu": {
         "Title": "Heldenbogen",
         "Label": "Heldenbogen einrichten",
-        "Hint": "Standard-Bogen für Helden, Bearbeiten-Modus für Spieler und Ordner für Bannerbilder.",
+        "Hint": "Standard-Bogen für Helden, Bearbeiten-Modus für Spieler, Ordner für Bannerbilder und Talent-Vorschläge auf dem Titelblatt.",
         "Save": "Speichern"
       },
       "QuestsTab": {

@@ -40,8 +40,9 @@ Hooks.once('init', async () => {
   // Standard-Bogen für Helden (Issue #13): nur der Foundry-Weg über makeDefault — eine ausdrückliche Wahl am Akteur
   // oder unter „Standard-Bögen konfigurieren“ hat weiter Vorrang (Nutzerentscheidung 2026-09-30).
   // Untermenü „Heldenbogen“ (Nutzer 2026-10-20: Einstellungen gruppieren): Standard-Bogen, Bearbeiten-Modus für Spieler,
-  // Ordner für Bannerbilder — die Einstellungen selbst stehen dort, nicht in der langen Liste (config: false).
-  game.settings.registerMenu('dsa5-helpers', 'sheetSettings', { name: 'DSA5HELPERS.Settings.SheetMenu.Title', label: 'DSA5HELPERS.Settings.SheetMenu.Label', hint: 'DSA5HELPERS.Settings.SheetMenu.Hint', icon: 'fas fa-id-card', type: getSheetSettingsApp(), restricted: true });
+  // Ordner für Bannerbilder, Talent-Vorschläge — die Einstellungen selbst stehen dort, nicht in der langen Liste
+  // (config: false). Für alle offen (#75): Spieler sehen darin nur die Talent-Vorschläge, Welt-Einstellungen nur die SL.
+  game.settings.registerMenu('dsa5-helpers', 'sheetSettings', { name: 'DSA5HELPERS.Settings.SheetMenu.Title', label: 'DSA5HELPERS.Settings.SheetMenu.Label', hint: 'DSA5HELPERS.Settings.SheetMenu.Hint', icon: 'fas fa-id-card', type: getSheetSettingsApp(), restricted: false });
   game.settings.register('dsa5-helpers', 'defaultSheet', { name: 'DSA5HELPERS.Settings.DefaultSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultSheet.Hint', scope: 'world', config: false, restricted: true, type: Boolean, default: false, requiresReload: true });
   // Bannerbild ohne Dateibrowser (Issue #46): Standardordner der SL für Bilder der Spieler.
   registerBannerSettings();
@@ -61,7 +62,7 @@ Hooks.once('init', async () => {
   initHud();
   game.settings.registerMenu('dsa5-helpers', 'houseRules', { name: 'DSA5HELPERS.HouseRules.Title', label: 'DSA5HELPERS.HouseRules.Menu.Label', hint: 'DSA5HELPERS.HouseRules.Menu.Hint', icon: 'fas fa-book', type: getHouseRulesApp(), restricted: false });
   // Untermenü „Darstellung und Geräte“ (Nutzer 2026-11-02: nur noch Knöpfe in der Liste): Probendialoge am Desktop,
-  // Talent-Vorschläge, hybrides Spiel; für alle offen, Welt-Einstellungen darin sieht nur die SL.
+  // hybrides Spiel; für alle offen, Welt-Einstellungen darin sieht nur die SL.
   game.settings.registerMenu('dsa5-helpers', 'displaySettings', { name: 'DSA5HELPERS.Settings.DisplayMenu.Title', label: 'DSA5HELPERS.Settings.DisplayMenu.Label', hint: 'DSA5HELPERS.Settings.DisplayMenu.Hint', icon: 'fas fa-display', type: getDisplaySettingsApp(), restricted: false });
   // Für Makros und das spätere HUD des Moduls.
   game.modules.get('dsa5-helpers').api = { ...(game.modules.get('dsa5-helpers').api ?? {}), openDiceStats, openHouseRules };

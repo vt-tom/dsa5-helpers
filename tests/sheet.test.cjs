@@ -1506,3 +1506,30 @@ test('bag window (#72): slots become draggable with system drag data, left click
   global.document=prevDoc;
  }finally{global.Hooks=prevHooks;}
 });
+
+test('DSA5-8.2-Designs: Bogen unabhängig von DSA-Design und Foundry-Thema (fest themed theme-light, ohne Drachenleder-Klasse)',async()=>{
+ await loadSheet();
+ // Wie DSA5Skin.applyImmersiveSheetTheme bei body.dsa5-immersive-v2: Themenklassen raus, Immersiv-Klassen rein.
+ const Base=class{_initializeApplicationOptions(o){const classes=['dsa5','actor','character-sheet',...(o.classes??[])].filter(c=>!['themed','theme-light','theme-dark'].includes(c));return {...o,classes:[...classes,'dsa-immersive-sheet','themed','theme-dark']};}};
+ const C=createSheet(Base);
+ const {classes}=C.prototype._initializeApplicationOptions.call(Object.create(C.prototype),{classes:['dsa5-helpers-sheet']});
+ assert.deepEqual(classes,['dsa5','actor','character-sheet','dsa5-helpers-sheet','themed','theme-light']);
+ const Plain=class{_initializeApplicationOptions(o){return {...o,classes:['dsa5',...o.classes]};}};
+ assert.deepEqual(createSheet(Plain).prototype._initializeApplicationOptions.call({},{classes:['x']}).classes,['dsa5','x','themed','theme-light'],'auch ohne Drachenleder fest hell, unabhängig vom Foundry-Thema');
+ if(fs.existsSync(systemBundle)){
+  const js=fs.readFileSync(systemBundle,'utf8');
+  if(js.includes('dsa5-immersive-v2'))assert.match(js,/applyImmersiveSheetTheme\(e\)\{[^}]*"dsa-immersive-sheet"/,'System setzt die Drachenleder-Klasse noch unter diesem Namen');
+ }
+ const css=read('styles/dsa5-helpers-character-sheet.css');
+ assert.match(css,/\.dsa5-helpers-sheet > \.window-header::before,[\s\S]*?content: none !important/,'Pseudo-Elemente des Systemrahmens sind abgeschaltet');
+ assert.match(css,/:where\(body\.dsa5-modern, body\.dsa5-immersive\) \.dsa5-helpers-sheet \{[^}]*--color-text-primary: var\(--color-dark-2\)/,'Foundry-Farbvariablen gegen die DSA-Designs zurückgesetzt');
+ assert.match(css,/:where\(body\.dsa5-modern\) \.dsa5-helpers-sheet :is\(input, select, textarea\)[^{]*\{[^}]*--input-background-color: rgba\(0, 0, 0, \.1\)/,'Eingabefelder wie Foundry hell');
+ for(const app of ['dice-stats','house-rules'])assert.match(css,new RegExp(`\\.dsa5-helpers-${app} \\.window-content \\{[^}]*background: var\\(--paper\\) !important`),`${app}: Papier überlebt background:none des Skins`);
+});
+
+test('Talent-Vorschläge (#75): Einstellung unter „Heldenbogen einrichten“, Menü für alle offen',async()=>{
+ const {SHEET_SETTINGS,DISPLAY_SETTINGS}=await import(dataUrl(read('scripts/apps/sheet-settings.js')));
+ assert(SHEET_SETTINGS.some(s=>s.key==='skillSuggestions'),'im Menü Heldenbogen');
+ assert(!DISPLAY_SETTINGS.some(s=>s.key==='skillSuggestions'),'nicht mehr unter Darstellung und Geräte');
+ assert(/registerMenu\('dsa5-helpers', 'sheetSettings'.*restricted: false/.test(read('scripts/dsa5-helpers.js')),'Spieler erreichen ihre Benutzer-Einstellung');
+});

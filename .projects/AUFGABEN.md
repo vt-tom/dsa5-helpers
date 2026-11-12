@@ -33,7 +33,6 @@ Branch `release/8.0.0` (aus `release/0.6.3`, seit 05.11.2026 auf GitHub), Kern #
 
 ## 1. Ausdefinieren
 
-
 ## 2. Bereit zur Umsetzung
 
 ## 3. Umgesetzt – testen
@@ -49,6 +48,12 @@ Branch `release/8.0.0` (aus `release/0.6.3`, seit 05.11.2026 auf GitHub), Kern #
   → Auswahl vollständig über der Karte sichtbar, Wechsel auf „Keine Munition“ und zurück klappt.
 - [X] Du: **Traditionen unter DSA5 8.2.1** — Held mit einer Traditions-SF im Bearbeiten-Modus → Leiteigenschaft/Faktor gesperrt,
   wohlgefällige Talente aus der SF (gesperrt), Merkmal frei, SF auch in der SF-Liste; Held ohne SF → alles bearbeitbar wie bisher.
+- [X] Du: **Skins von DSA5 8.2** — je Skin (Einstellung „Design“) Bogen öffnen → kein Logo/Drachen-Ornamente, Talentnamen und
+  Reittier-Kopf (Gefährten) lesbar; Würfelstatistik und Hausregelbuch unter Drachenleder auf Papier, nicht auf Leder.
+- [X] Du: **Talent-Vorschläge unter „Heldenbogen einrichten“** · #75 — als SL und als Spieler das Menü öffnen → Einstellung steht dort
+  (Spieler sehen nur sie), unter „Darstellung und Geräte“ nicht mehr; Änderung wirkt auf dem Titelblatt. Auch unter v13 (7.0.0).
+- [ ] Du: **Bogen unabhängig vom DSA-Design** — Desktop, Tablet, Handy: je Design (auch mit dunklem Foundry) Bogen im Bearbeiten-Modus,
+  Eigenschaften und Notizen → Felder, Rahmen, Plakette, Griff unten rechts sehen überall gleich aus, auch bei dunklem Bogen.
 
 ## 4. Fertig für Release
 
@@ -83,45 +88,47 @@ Veröffentlichung nur nach Auftrag: erst 8.0.0, dann 7.0.0 (`--latest=false`), A
 ---
 
 <!-- GITHUB-ISSUES:START -->
+
 ## Überblick (erzeugt)
 
-_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-12T06:32:27.373Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
+_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-12T07:33:56.284Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
 
-| Abschnitt | Du | KI | Einträge |
-|---|---|---|---|
-| Bestehende Aufgaben im Detail | – | – | 4 |
-| Ausdefinieren | – | – | 0 |
-| Bereit zur Umsetzung | – | – | 0 |
-| Umgesetzt – testen | 6 | – | 6 |
-| Fertig für Release | – | – | 0 |
-| Später – Nächste Version | 3 | – | 3 |
-| Später – Wartet auf Dritte | – | – | 1 |
-| Später – Ideen | – | – | 7 |
+| Abschnitt                     | Du | KI | Einträge |
+| ----------------------------- | -- | -- | --------- |
+| Bestehende Aufgaben im Detail | – | – | 4         |
+| Ausdefinieren                 | – | – | 0         |
+| Bereit zur Umsetzung          | – | – | 0         |
+| Umgesetzt – testen           | 7  | – | 7         |
+| Fertig für Release           | – | – | 0         |
+| Später – Nächste Version   | 3  | – | 3         |
+| Später – Wartet auf Dritte  | – | – | 1         |
+| Später – Ideen              | – | – | 7         |
 
 **Offene Issues (12)**
 
-| # | Titel | Meilenstein | Labels | In der Liste |
-|---|---|---|---|---|
-| [#52](https://github.com/vt-tom/dsa5-helpers/issues/52) | feat: Tooltips | – | – | Später – Ideen |
-| [#53](https://github.com/vt-tom/dsa5-helpers/issues/53) | feat: NSC Sheet im DSA Helpers Design | – | – | Später – Nächste Version |
-| [#54](https://github.com/vt-tom/dsa5-helpers/issues/54) | feat: Kreatur Sheet im DSA Helpers Design | – | – | Später – Nächste Version |
-| [#55](https://github.com/vt-tom/dsa5-helpers/issues/55) | feat: Gruppen Sheet im DSA Helpers Design | – | – | Später – Ideen |
-| [#57](https://github.com/vt-tom/dsa5-helpers/issues/57) | feat: Geldbörse erweitern | – | – | Später – Ideen |
-| [#60](https://github.com/vt-tom/dsa5-helpers/issues/60) | feat: Kampf-Aktionen – Schnellzugriff im Kampf ohne Heldenbogen | – | enhancement | Später – Ideen |
-| [#61](https://github.com/vt-tom/dsa5-helpers/issues/61) | feat: Dunkles Thema für Mobil-Fenster | – | enhancement | Später – Ideen |
-| [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) | feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) | – | enhancement | Bestehende Aufgaben im Detail, Umgesetzt – testen · Achtung: Meilenstein 8.0.0 fehlt |
-| [#69](https://github.com/vt-tom/dsa5-helpers/issues/69) | feat: Hausregel „Gebundene AP“ – AP verlorener Begleiter und Gegenstände bleiben zweckgebunden | – | enhancement | Später – Nächste Version |
-| [#70](https://github.com/vt-tom/dsa5-helpers/issues/70) | feat: Hausregel „Sitzungs-Schips“ – mindestens ein Schip zu Sitzungsbeginn | – | enhancement | Später – Nächste Version |
-| [#73](https://github.com/vt-tom/dsa5-helpers/issues/73) | bug: Kraftspeicher öffnet sich immer beim Mouseover | – | – | Nächster Einstieg, Umgesetzt – testen · Achtung: Meilenstein 8.0.0 fehlt |
-| [#74](https://github.com/vt-tom/dsa5-helpers/issues/74) | bug: Tablet und Smartphone - Munitionsauswahl kann nicht verwendet werden, Auswahl nicht sichtbar. | – | – | Umgesetzt – testen · Achtung: Meilenstein 8.0.0 fehlt |
+| #                                                      | Titel                                                                                              | Meilenstein | Labels      | In der Liste                                                                           |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ----------- | ----------- | -------------------------------------------------------------------------------------- |
+| [#52](https://github.com/vt-tom/dsa5-helpers/issues/52) | feat: Tooltips                                                                                     | –          | –          | Später – Ideen                                                                       |
+| [#53](https://github.com/vt-tom/dsa5-helpers/issues/53) | feat: NSC Sheet im DSA Helpers Design                                                              | –          | –          | Später – Nächste Version                                                            |
+| [#54](https://github.com/vt-tom/dsa5-helpers/issues/54) | feat: Kreatur Sheet im DSA Helpers Design                                                          | –          | –          | Später – Nächste Version                                                            |
+| [#55](https://github.com/vt-tom/dsa5-helpers/issues/55) | feat: Gruppen Sheet im DSA Helpers Design                                                          | –          | –          | Später – Ideen                                                                       |
+| [#57](https://github.com/vt-tom/dsa5-helpers/issues/57) | feat: Geldbörse erweitern                                                                         | –          | –          | Später – Ideen                                                                       |
+| [#60](https://github.com/vt-tom/dsa5-helpers/issues/60) | feat: Kampf-Aktionen – Schnellzugriff im Kampf ohne Heldenbogen                                   | –          | enhancement | Später – Ideen                                                                       |
+| [#61](https://github.com/vt-tom/dsa5-helpers/issues/61) | feat: Dunkles Thema für Mobil-Fenster                                                             | –          | enhancement | Später – Ideen                                                                       |
+| [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) | feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15)                   | –          | enhancement | Bestehende Aufgaben im Detail, Umgesetzt – testen · Achtung: Meilenstein 8.0.0 fehlt |
+| [#69](https://github.com/vt-tom/dsa5-helpers/issues/69) | feat: Hausregel „Gebundene AP“ – AP verlorener Begleiter und Gegenstände bleiben zweckgebunden | –          | enhancement | Später – Nächste Version                                                            |
+| [#70](https://github.com/vt-tom/dsa5-helpers/issues/70) | feat: Hausregel „Sitzungs-Schips“ – mindestens ein Schip zu Sitzungsbeginn                      | –          | enhancement | Später – Nächste Version                                                            |
+| [#73](https://github.com/vt-tom/dsa5-helpers/issues/73) | bug: Kraftspeicher öffnet sich immer beim Mouseover                                               | –          | –          | Nächster Einstieg, Umgesetzt – testen · Achtung: Meilenstein 8.0.0 fehlt            |
+| [#74](https://github.com/vt-tom/dsa5-helpers/issues/74) | bug: Tablet und Smartphone - Munitionsauswahl kann nicht verwendet werden, Auswahl nicht sichtbar. | –          | –          | Umgesetzt – testen · Achtung: Meilenstein 8.0.0 fehlt                                |
 
 **Geschlossen, aber noch in der Liste**
 
-| # | Titel | Meilenstein | Labels | In der Liste |
-|---|---|---|---|---|
-| [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) | feat: Grundmanöver „Stören und Ablenken“ (Paladose) | 0.6.3 | enhancement | Später – Ideen · Achtung: geschlossen, steht noch hier |
+| #                                                      | Titel                                                   | Meilenstein | Labels      | In der Liste                                              |
+| ------------------------------------------------------ | ------------------------------------------------------- | ----------- | ----------- | --------------------------------------------------------- |
+| [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) | feat: Grundmanöver „Stören und Ablenken“ (Paladose) | 0.6.3       | enhancement | Später – Ideen · Achtung: geschlossen, steht noch hier |
 
 **Kürzlich geschlossen (14 Tage: 9)**
 
 [#72](https://github.com/vt-tom/dsa5-helpers/issues/72) fix: Gegenstände lassen sich nicht aus einem Behälter verschieben (erledigt, 02.11.) · [#71](https://github.com/vt-tom/dsa5-helpers/issues/71) feat: Eigenschaftsleiste – Kürzel MU, KL, IN … an den Würfeln anzeigen (erledigt, 02.11.) · [#63](https://github.com/vt-tom/dsa5-helpers/issues/63) feat: Neue Probendialoge auch am Desktop (erledigt, 02.11.) · [#67](https://github.com/vt-tom/dsa5-helpers/issues/67) feat: Mobil – Almanach-Eintrag (Person/Auftrag) als Blatt öffnen (erledigt, 02.11.) · [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) feat: Grundmanöver „Stören und Ablenken“ (Paladose) (erledigt, 02.11.) · [#65](https://github.com/vt-tom/dsa5-helpers/issues/65) feat: Mobil – Ausrüstung: Anzahl verringern, −/+ und größeres 3-Punkte-Menü (erledigt, 02.11.) · [#64](https://github.com/vt-tom/dsa5-helpers/issues/64) feat: Mobil – Wurfergebnis nach dem Würfeln im Bogen einblenden (erledigt, 02.11.) · [#62](https://github.com/vt-tom/dsa5-helpers/issues/62) feat: Passive Verteidigung – Treffer in der Chatnachricht auf einen Blick (erledigt, 02.11.) · … und 1 weitere
+
 <!-- GITHUB-ISSUES:END -->
