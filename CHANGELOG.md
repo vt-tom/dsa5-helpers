@@ -16,6 +16,7 @@ wer von 0.5.1 kommt, findet die Einzelheiten in deren Abschnitten unten.
 
 - **[nur v14]** Eigene Versionslinie für Foundry v14: Versionsnummern 8.x.x, Updates über den Kanal `foundry-v14` (Beta-Tester: `foundry-v14-beta`). Bestehende Installationen über die bisherige Manifest-URL oder den alten Beta-Kanal werden mit diesem Update automatisch umgestellt; Einstellungen, Bogenwahl und Weltdaten bleiben unverändert. Manifest-URLs im README.
 - **[nur v14]** Mit Foundry 14.370 geprüft; Foundry zeigt das Modul unter 14.370 nicht mehr als ungeprüft an. Das Update betrifft das Modul sonst nicht.
+- **[nur v14]** Angepasst an DSA5 8.2.1 (dort geprüft): Traditionen kommen jetzt aus der Sonderfertigkeit „Tradition (…)“. Hat ein Held genau eine solche Sonderfertigkeit, zeigen Magie und Religion Leiteigenschaft und Energiefaktor nur noch an; die wohlgefälligen Talente stammen dann aus der Sonderfertigkeit, so wie das System sie für Proben verwendet. Der Name der Tradition ist in dem Fall nicht mehr frei editierbar, das Merkmal bzw. der Aspekt bleibt es. Ohne Traditions-Sonderfertigkeit (oder mit älterem DSA5) bleibt alles bearbeitbar wie bisher. Die Traditions-Sonderfertigkeit steht außerdem weiter in der Liste der Sonderfertigkeiten, die DSA5 8.2 dort nicht mehr führt.
 
 ### Behoben
 

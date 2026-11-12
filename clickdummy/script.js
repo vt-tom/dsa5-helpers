@@ -2080,7 +2080,7 @@ function renderHappyTalentsCollapse(t) {
   toggleBtn.addEventListener("click", () => { happyTalentsExpanded = !happyTalentsExpanded; renderContent(); });
   if (!expanded) return el("div", { class: "trad-tiles-note happy-talents-note-collapsed" }, [toggleBtn]);
   const span = el("span", {}, t.happyTalents);
-  if (mode === "edit") makeEditable(span, t.happyTalents, (v) => { t.happyTalents = v; renderContent(); }, { type: "text" });
+  if (mode === "edit" && !t.fromAbility) makeEditable(span, t.happyTalents, (v) => { t.happyTalents = v; renderContent(); }, { type: "text" });
   return el("div", { class: "trad-tiles-note happy-talents-note-collapsed" }, [toggleBtn, el("div", { class: "happy-talents-expanded" }, span)]);
 }
 
@@ -2103,7 +2103,8 @@ function traditionHeader(t, kind) {
   const tile = (label, rawValue, valClass, field, key) => {
     const type = typeof rawValue === "number" ? "number" : "text";
     const valEl = el("div", { class: "trad-tile-val" + (valClass ? " " + valClass : "") }, String(rawValue));
-    if (field && mode === "edit") {
+    // Leiteigenschaft/Faktor gibt ab DSA5 8.2 die Traditions-SF vor (t.fromAbility), Merkmal bleibt bearbeitbar.
+    if (field && mode === "edit" && !(t.fromAbility && field !== "feature")) {
       makeEditable(valEl, rawValue, (v) => { t[field] = v; renderContent(); }, { type, min: type === "number" ? 0 : undefined, max: type === "number" ? 99 : undefined });
     }
     return el("div", { class: "trad-tile" + (key ? " trad-tile-" + key : "") }, [el("div", { class: "trad-tile-label" }, label), valEl]);
@@ -2115,7 +2116,7 @@ function traditionHeader(t, kind) {
   traditionTile.setAttribute("role", "button");
   traditionTile.title = "Tradition öffnen";
   traditionTile.addEventListener("click", () => flashNotice(`📜 Sonderfertigkeit „Tradition (${t.tradition})“ würde geöffnet`));
-  const metaTiles = el("div", { class: "trad-tile-meta" }, [
+  const metaTiles = el("div", { class: "trad-tile-meta", ...(t.fromAbility ? { title: "Vorgegeben durch die Traditions-Sonderfertigkeit" } : {}) }, [
     tile("Leiteigenschaft", t.guidevalue, null, "guidevalue", "guidevalue"),
     tile("Merkmal", t.feature, null, "feature", "feature"),
     tile("Faktor", t.energyfactor, "accent", "energyfactor", "energyfactor"),

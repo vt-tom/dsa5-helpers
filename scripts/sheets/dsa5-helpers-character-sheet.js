@@ -273,7 +273,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const specs = {};
     for (const kind of ['general', 'combat', 'magical', 'clerical']) {
       specs[kind] = Array.from(prepare.sortedSpecs?.[kind] ?? []).filter(cat => kind !== 'general' || cat !== 'language')
-        .map(cat => ({ cat, items: prepare.specAbs?.[cat] ?? [] })).filter(group => group.items.length);
+        // DSA5 ab 8.2 führt Traditions-SF getrennt (prepare.traditionAbilities), bei uns stehen sie weiter in der Liste.
+        .map(cat => ({ cat, items: [...(prepare.traditionAbilities?.[cat] ?? []), ...(prepare.specAbs?.[cat] ?? [])] })).filter(group => group.items.length);
     }
     // Own labels ("Nahkampfwaffen"/"Fernkampfwaffen") instead of the system's own 'closeCombatAttacks'/'rangeweapons'
     // strings ("Nahkampfangriffe") — Nutzer-Feedback 2026-09-19: the panel holds worn weapons, not "attacks", and
@@ -370,6 +371,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       ? { value: source.value, max: source.max, segments: source.segments } : null;
     this._powerSources = powerSources;
     const status = this.actor.system.status;
+    const tradition = this._traditionNames();
     context.dsa5h = {
       supportsCompanions: typeof this.prepareCompanionTab === 'function',
       legacySystem: isFoundry13(),
@@ -406,7 +408,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
         return Object.assign(item, { dsa5hFill: { weight, capacity, over: capacity > 0 && weight > capacity } });
       }),
       traditionItems: this._traditionItems(),
-      tradition: this._traditionNames(),
+      tradition,
       // Sammelproben (Nutzer-Notiz 2026-09-30): je Talent Probe + FW wie in der Talentliste. Das Talent wird wie im
       // System gesucht (item-dsa5.js rollAggregatedProbe: Name + Typ skill); gewürfelt wird weiter über rollAggregatedProbe.
       aggregated: (prepare.aggregatedtests ?? []).map(item => ({
@@ -448,7 +450,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       // Passive Verteidigung (#56): Auswahl je Held im Kampf-Reiter, nur für Besitzer.
       autoDefense: !limited && this.actor.isOwner && isRuleActive('passiveDefense') ? { choices: defenseChoices(this.actor) } : null,
       body,
-      happyTalentsCount: String(this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
+      happyTalentsCount: String(tradition.clerical.happyTalents ?? this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
     };
     // The original sheet prepares this only for its separate companion part.
     if (!limited && typeof this.prepareCompanionTab === 'function') await this.prepareCompanionTab(context);
@@ -1255,11 +1257,28 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     target.closest('dialog')?.close();
   }
 
-  // Die Tradition steht im System nur als Textfeld (system.tradition.magical/clerical); das zugehörige Item ist die
-  // Sonderfertigkeit „Tradition (…)“ — gleiche Erkennung wie das System selbst (item-dsa5.js, LocalizedIDs.assumeTradition).
+  // Bis DSA5 8.1 steht die Tradition nur als Textfeld (system.tradition.magical/clerical) am Helden; das zugehörige
+  // Item ist die Sonderfertigkeit „Tradition (…)“ — gleiche Erkennung wie das System (LocalizedIDs.assumeTradition).
+  // Ab 8.2 tragen Traditions-SF `isTradition` samt Leiteigenschaft, Energiefaktor und glücklichen Talenten.
   _findTradition(kind) {
+    if (this._traditionsFromAbility()) {
+      const hit = this.actor.items.find(item => item.type === 'specialability' && item.system.isTradition && item.system.category?.value === kind);
+      if (hit) return hit;
+    }
     const prefix = game.i18n.localize('LocalizedIDs.assumeTradition');
     return this.actor.items.find(item => item.type === 'specialability' && item.name.startsWith(prefix) && item.system.category?.value === kind);
+  }
+
+  _traditionsFromAbility() {
+    return !!globalThis.CONFIG?.Item?.dataModels?.specialability?.schema?.fields?.isTradition;
+  }
+
+  // Wie das System ab 8.2 (Datenvorbereitung des Akteurs): nur bei genau einer Traditions-SF je Art gelten deren
+  // Werte, dann überschreibt das System system.guidevalue/energyfactor; die Felder am Helden wirken nicht mehr.
+  _derivedTradition(kind) {
+    if (!this._traditionsFromAbility()) return null;
+    const items = this.actor.items.filter(item => item.type === 'specialability' && item.system.isTradition && item.system.category?.value === kind);
+    return items.length === 1 ? items[0] : null;
   }
 
   _traditionItems() {
@@ -1274,7 +1293,9 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     for (const kind of ['magical', 'clerical']) {
       const item = this._findTradition(kind);
       const fromItem = item ? (item.name.match(/\(([^)]*)\)\s*$/)?.[1] ?? item.name).trim() : '';
-      names[kind] = { name: fromItem || this.actor.system.tradition?.[kind] || '', fromItem };
+      const derived = this._derivedTradition(kind);
+      names[kind] = { name: fromItem || this.actor.system.tradition?.[kind] || '', fromItem, derived: !!derived };
+      if (derived && kind === 'clerical') names[kind].happyTalents = derived.system.happyTalents ?? '';
     }
     return names;
   }

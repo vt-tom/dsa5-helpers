@@ -544,13 +544,15 @@ const TRADITION_ARTIFACTS = [
 // Sonderfertigkeiten auf dem Eigenschaften-Tab (SPECIALS). Wie dort zerfällt "magical" im System in mehrere
 // Kategorien (magical, magicalStyle "Zauberstilsonderfertigkeiten", extMagical, homunculus, sikaryan).
 const MAGIC_SPECIALS = [
-  { label: "Allgemein", items: ["Astrale Regeneration", "Harmonische Verbindung (Balsam Salabunde)"] },
+  { label: "Allgemein", items: ["Tradition (Elfen)", "Astrale Regeneration", "Harmonische Verbindung (Balsam Salabunde)"] },
   { label: "Zauberstilsonderfertigkeiten", items: ["Naturmagie-Virtuosin"] },
 ];
 
 // Traditions-Kopfdaten (actor-tradition-Box): system.tradition.magical / guidevalue.magical / feature.magical /
 // energyfactor.magical — alles editierbare Freitext-/Zahlenfelder im System, hier als Tradition-Box abgebildet.
-const MAGIC_TRADITION = { tradition: "Elfen", guidevalue: "Intuition", feature: "Elementar, Hellsicht", energyfactor: 1 };
+// fromAbility: DSA5 ab 8.2 gibt die Traditions-Sonderfertigkeit Leiteigenschaft, Faktor und glückliche Talente vor
+// (nur Anzeige); ohne SF oder mit älterem System bleiben die Felder bearbeitbar.
+const MAGIC_TRADITION = { tradition: "Elfen", guidevalue: "Intuition", feature: "Elementar, Hellsicht", energyfactor: 1, fromAbility: true };
 
 const LITURGIES = [
   { name: "Heilsegen", probe: "MU/KL/IN", cost: 4, fw: 8, dauer: "1 Aktion", reach: "Berührung", img: A.liturgy("heilsegen"), fav: true, stf: "B" },
@@ -572,14 +574,14 @@ const CEREMONIAL_ITEMS = [
 // Sonderfertigkeiten der "clerical"-Familie (specblock.hbs currentCat="clerical": clerical, clericalStyle
 // "Liturgiestilsonderfertigkeiten", extClericalStyle, vision, prayer "Predigt-Sonderfertigkeiten").
 const RELIGION_SPECIALS = [
-  { label: "Allgemein", items: ["Prediger", "Wohlwollen der Göttin"] },
+  { label: "Allgemein", items: ["Tradition (Perainekirche)", "Prediger", "Wohlwollen der Göttin"] },
   { label: "Liturgiestilsonderfertigkeiten", items: ["Peraine-Segensspenderin"] },
 ];
 
 // Traditions-Kopfdaten wie MAGIC_TRADITION, plus happyTalents (Textfeld: Talente, für die ein Mirakel eingesetzt
 // werden kann — "Talente, die der Gottheit wohlgefällig sind").
 const RELIGION_TRADITION = {
-  tradition: "Kirche der Peraine", guidevalue: "Charisma", feature: "Heilung, Landwirtschaft", energyfactor: 1,
+  tradition: "Kirche der Peraine", guidevalue: "Charisma", feature: "Heilung, Landwirtschaft", energyfactor: 1, fromAbility: true,
   // Nutzer-Feedback 2026-09-19: für den Kompakt-/Kachel-Vergleich der wohlgefälligen Talente bewusst eine
   // realistisch lange Liste statt der ursprünglich kurzen drei Einträge, damit Einklappen/Ellipsis auch wirklich
   // etwas zu tun haben.

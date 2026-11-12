@@ -17,6 +17,9 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8').replace(/\r\n/g,'\n');
 const lookup=(o,p)=>p.split('.').reduce((v,k)=>v?.[k],o);
 const de=JSON.parse(fs.readFileSync(path.join(dataRoot,'systems/dsa5/lang/de.json')));
 const own=JSON.parse(read('lang/de.json'));
+// System-JS: bis DSA5 8.1.x Einzeldateien unter modules/, ab 8.2.0 ein gebündeltes bundle/modules/dsa5.js
+const systemBundle=path.join(dataRoot,'systems/dsa5/bundle/modules/dsa5.js');
+const systemJs=paths=>fs.existsSync(systemBundle)?[fs.readFileSync(systemBundle,'utf8')]:paths.map(p=>fs.readFileSync(path.join(dataRoot,'systems/dsa5/modules',p),'utf8'));
 const missing=new Set();
 const localize=key=>{if(typeof key!=='string')return '';const value=lookup(own,key)??lookup(de,key);if(value===undefined && !key.startsWith('TYPES.Item.'))missing.add(key);return value??key;};
 // Wie Foundrys {{localize}}: Hash-Argumente ersetzen {platzhalter} (game.i18n.format).
@@ -44,7 +47,7 @@ function fixture() {
  const skills=[item('skill')],spell=item('spell','spell'),weapon=item('weapon','meleeweapon'),armor=item('armor','armor'),bag=item('bag','equipment');bag.children=[item('bag-child','equipment')];bag.children[0].system.weight=valueField(0.75);bag.system.equipmentType.value='bags';bag.system.capacity=10;
  const tradition=item('tradition','specialability');tradition.name='Tradition (Gildenmagier)';tradition.system.category={value:'magical'};
  // Foundry's EmbeddedCollection is a Map with Array-style helpers — find() is what the sheet uses.
- const items=Object.assign(new Map([skills[0],spell,weapon,armor,bag,tradition,...bag.children].map(i=>[i._id,i])),{find(fn){return [...this.values()].find(fn);}});
+ const items=Object.assign(new Map([skills[0],spell,weapon,armor,bag,tradition,...bag.children].map(i=>[i._id,i])),{filter(fn){return [...this.values()].filter(fn);},find(fn){return [...this.values()].find(fn);}});
  const status=Object.fromEntries(['wounds','astralenergy','karmaenergy','fatePoints','soulpower','toughness','dodge','initiative','speed'].map(k=>[k,{value:10,current:10,max:20,modifier:0,advances:0,initial:5}]));status.size=valueField('average');
  const system={status,characteristics:Object.fromEntries(['mu','kl','in','ch','ff','ge','ko','kk'].map(k=>[k,valueField(13)])),sheetLocked:valueField(false),details:{experience:{current:100,total:1000,spent:900},biography:valueField('Public biography'),notes:{value:'Notes',ownerdescription:'OWNER_SECRET',gmdescription:'GM_SECRET'}},temperature:{coldProtection:0,heatProtection:0},repeatingEffects:{startOfRound:{},disabled:{}}};
  const prepare={allSkillsLeft:{body:skills,social:[],nature:[]},allSkillsRight:{knowledge:[],trade:[]},sortedSpecs:{general:['general'],combat:['Combat'],magical:[],clerical:[]},specAbs:{general:[item('general','specialability')],Combat:[item('combat','specialability')]},advantages:[],disadvantages:[],mentalAttrs:['mu','kl','in','ch'],bodyAttrs:['ff','ge','ko','kk'],canAdvance:true,sheetLocked:false,schips:[{value:1,cssClass:''}],magic:{hasSpells:true,hasPrayers:true,spellList:[spell],ritualList:[],liturgy:[item('liturgy','liturgy')],ceremony:[]},wornMeleeWeapons:[weapon],wornRangedWeapons:[],wornArmor:[armor],combatskills:[item('combatskill','combatskill')],brawling:{attack:12,parry:6},inventory:{bags:{show:true,items:[bag]},tools:{show:true,dataType:'equipment',items:[item('tool','equipment')]}},money:{coins:[item('coin','money')]},aggregatedtests:[item('aggregate','aggregatedTest')],diseases:[item('disease','disease')],itemModifiers:{Attack:{value:1,sources:['Test source']}}};
@@ -195,8 +198,8 @@ test('play mode disables FW correction, preserves rolls',async()=>{const {sheet}
 test('favorites use actor flags, remove missing items and enforce ownership',async()=>{const {sheet,actor,context}=await prepare();assert.equal(context.dsa5h.favorites.missing,undefined);assert.equal(context.dsa5h.favoriteGroups.length,2);await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'skill'}});assert.deepEqual(actor.saved.value,['weapon']);delete actor.saved;sheet.isEditable=false;await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'spell'}});assert.equal(actor.saved,undefined);});
 test('empty character still renders every tab',async()=>{const {sheet}=await prepare();sheet.context.prepare={};sheet.context.conditions=[];const html=render(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']).length,targetGeneration===13?9:10);assert(html.includes(localize('DSA5HELPERS.NoFavorites')));});
 test('companion context is prepared for the custom root',async()=>{const {sheet}=await prepare();assert.equal(!!sheet.companionPrepared,targetGeneration>=14);});
-test('every static action exists in module, Foundry or DSA5 action tables',()=>{const sources=[read('scripts/sheets/dsa5-helpers-character-sheet.js'),...['actor/actor-sheet.js','actor/character-sheet.js',...(targetGeneration>=14?['actor/companions/companion-handler-class.js']:[])].map(p=>fs.readFileSync(path.join(dataRoot,'systems/dsa5/modules',p),'utf8')),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');for(const p of modulePaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');});
-test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field),'unverified system schema path: '+field);});
+test('every static action exists in module, Foundry or DSA5 action tables',()=>{const sources=[read('scripts/sheets/dsa5-helpers-character-sheet.js'),...systemJs(['actor/actor-sheet.js','actor/character-sheet.js',...(targetGeneration>=14?['actor/companions/companion-handler-class.js']:[])]),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');for(const p of modulePaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');});
+test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');const bundle=fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8'):'';const inSchema=field=>{if(field==='systemFields.happyTalents.fields.value')return /happyTalents:new \w+\(\{value:new \w+\(\{initial:""/.test(bundle);const m=field.match(/^systemFields\.(tradition|guidevalue|energyfactor)\.fields\.(magical|clerical)$/);return !!m&&new RegExp(m[1]+':new \\w+\\(\\{magical:new \\w+\\(\\{initial:[^}]*label:"'+m[1]+'"[^}]*\\}\\),clerical:').test(bundle);};for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field)||inSchema(field),'unverified system schema path: '+field);});
 test('localization keys used by nonempty hero resolve',async()=>{missing.clear();const {context}=await prepare();render(context);const unresolved=[...missing].filter(k=>k && !['Swords','Test coin'].includes(k));assert.deepEqual(unresolved,[]);});
 
 test('ranged weapons, charged magic, tradition items and companions render populated',async()=>{
@@ -494,12 +497,35 @@ test('Fensterrahmen (#22): eigene Rahmengrafik eingebunden, Ziehen am oberen Rah
 test('Traditions-Badge (#23): Name und Symbol aus der Sonderfertigkeit, sonst aus dem Freitextfeld',async()=>{
  const {sheet}=await prepare();sheet.actor.system.tradition={magical:'',clerical:'Praioskirche'};sheet.context.prepare.sheetLocked=true;
  const context=await sheet._prepareContext({});
- assert.deepEqual(context.dsa5h.tradition.magical,{name:'Gildenmagier',fromItem:'Gildenmagier'},'tradition SF wins like in the system');
- assert.deepEqual(context.dsa5h.tradition.clerical,{name:'Praioskirche',fromItem:''},'free-text field without SF');
+ assert.deepEqual(context.dsa5h.tradition.magical,{name:'Gildenmagier',fromItem:'Gildenmagier',derived:false},'tradition SF wins like in the system');
+ assert.deepEqual(context.dsa5h.tradition.clerical,{name:'Praioskirche',fromItem:'',derived:false},'free-text field without SF');
  const html=render(context);const names=elements(html,el=>el.attribs?.class==='dsa5h-tradition-name-text').map(el=>dom.textContent(el));
  assert.deepEqual(names,['Gildenmagier','Praioskirche']);
  const icons=elements(html,el=>el.attribs?.class==='dsa5h-tradition-icon').map(el=>el.attribs.src);
  assert(icons.includes('systems/dsa5/icons/traditionen/gildenmagier.webp'));assert(icons.includes('systems/dsa5/icons/months/Praios.webp'));
+});
+// DSA5 ab 8.2: genau eine Traditions-SF je Art gibt Name, Leiteigenschaft, Faktor und glückliche Talente vor
+test('Traditionen aus der Sonderfertigkeit (DSA5 8.2): gesperrte Werte, glückliche Talente aus der SF, SF auch in der Liste',async()=>{
+ const prev=globalThis.CONFIG;globalThis.CONFIG={...(prev??{}),Item:{dataModels:{specialability:{schema:{fields:{isTradition:{}}}}}}};
+ try{
+  const {sheet}=await prepare();
+  const priest=sheet.actor.items.find(i=>i.name==='Tradition (Gildenmagier)');
+  Object.assign(priest.system,{isTradition:true});
+  const kor={...priest,_id:'kor',id:'kor',name:'Tradition (Korkirche)',system:{...priest.system,category:{value:'clerical'},isTradition:true,happyTalents:'Einschüchtern, Kraftakt'}};
+  sheet.actor.items.push?sheet.actor.items.push(kor):sheet.actor.items.set(kor._id,kor);
+  sheet.actor.system.happyTalents={value:'Alt, Veraltet, Weg'};
+  sheet.context.prepare.traditionAbilities={magical:[priest],clerical:[kor]};
+  sheet.context.prepare.sortedSpecs.clerical=['clerical'];sheet.context.prepare.sortedSpecs.magical=['magical'];
+  const context=await sheet._prepareContext({});
+  assert.equal(context.dsa5h.tradition.clerical.derived,true);assert.equal(context.dsa5h.tradition.clerical.happyTalents,'Einschüchtern, Kraftakt');
+  assert.equal(context.dsa5h.happyTalentsCount,2,'count from the SF');
+  assert(context.dsa5h.specs.clerical.some(g=>g.items.includes(kor)),'tradition SF listed again');
+  context.dsa5h.editMode=true;const html=render(context);
+  const named=n=>elements(html,el=>el.name==='select'||el.name==='input'||el.name==='textarea').filter(el=>el.attribs.name===n);
+  for(const n of ['system.guidevalue.clerical','system.energyfactor.clerical','system.guidevalue.magical','system.energyfactor.magical','system.happyTalents.value'])assert(named(n).length&&named(n).every(el=>'disabled' in el.attribs),n+' locked');
+  assert(!named('system.tradition.clerical').length&&!named('system.tradition.magical').length,'no free-text tradition with SF');
+  assert(named('system.feature.clerical').every(el=>!('disabled' in el.attribs)),'feature stays editable');
+ }finally{globalThis.CONFIG=prev;}
 });
 test('Titelleisten-Plakette (#24): kein eigenes ::before/::after an Foundrys Kopfknöpfen (dort zeichnet Font Awesome das Symbol)',()=>{
  const root=postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));const bad=[];
