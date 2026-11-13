@@ -4,10 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=248">
+<link rel="stylesheet" href="style.css?v=265">
 </head>
 <body>
 
+<!-- Werkzeugleiste: ausgeblendet, ihre Schalter erscheinen als Stellvertreter im Menü „☰ Click-Dummy“ (pages.js, VIEW/TESTDATA). -->
 <div class="toolbar">
   <span>Heldenbogen v2 · Click-Dummy</span>
   <span class="spacer"></span>
@@ -35,6 +36,8 @@
   <button type="button" id="onlyLepToggle" aria-pressed="false">Nur LeP (Test)</button>
   <!-- Issue #36 (Kampf › Körper): Testschalter Trefferzonen-Regel und nur ein Rüstungsteil, siehe initArmorToggles(). -->
   <button type="button" id="armorOneToggle" aria-pressed="false">1 Rüstungsteil (Test)</button>
+  <!-- #54 (2026-11-13): Akteur im Händler-/Schatzmodus des Systems → Hinweisleiste über dem Reiter-Titel, siehe initMerchantToggle(). -->
+  <button type="button" id="merchantModeToggle" aria-pressed="false">Als Schatz (Test)</button>
   <!-- Würfelstatistik (Issue #28): in Foundry eigenes Fenster aus den Moduleinstellungen, hier per Knopf. -->
   <button type="button" id="diceStatsBtn">Würfelstatistik</button>
   <!-- Hausregelbuch (2026-10-05): in Foundry aus den Moduleinstellungen, hier per Knopf (?houserules öffnet direkt). -->
@@ -122,6 +125,9 @@
          siehe renderAttrOverlay() in script.js. -->
     <div class="attr-overlay" id="attrOverlay"></div>
 
+    <!-- HINWEIS Händler-/Schatzmodus (#54): Laden/Schatzkiste nur im Händlerbogen des Systems (eigene Bögen #77/#78). -->
+    <p class="notice" id="merchantNotice" role="note" hidden>Dieser Akteur ist gerade „Schatz“. Laden und Schatzkiste zeigt nur der Händlerbogen des Systems – im Fenstermenü unter „Bogen anpassen“ den Bogen „DSA5 - Händler/Schatz/Garadan“ wählen.</p>
+
     <!-- REITER-TITEL -->
     <div class="tab-title">
       <span id="tabTitle">Eigenschaften</span>
@@ -145,11 +151,11 @@
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
 <script src="assets-map.js?v=19"></script>
 <script src="data.js?v=43"></script>
-<script src="actor-types.js?v=2"></script>
-<script src="pages.js?v=7"></script>
+<script src="actor-types.js?v=22"></script>
+<script src="pages.js?v=22"></script>
 <script src="preview-062.js?v=13"></script>
 <script src="hud-preview.js?v=2" defer></script>
-<script src="script.js?v=178"></script>
+<script src="script.js?v=181"></script>
 <script type="module" src="dice-stats.js?v=7"></script>
 <script type="module" src="house-rules.js?v=8"></script>
 </body>

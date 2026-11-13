@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gruppe mobil</title>
+<!-- Gruppenbogen auf Smartphone und Tablet (Issue #55, Entwurf 2026-11-12): Entscheidungen im Issue – Titelblatt mit
+     Mitgliederkarten (Porträt, LeP/AsP/KaP, Zustände, Schips), darüber Gruppenkasse, Gruppen-Schips und Reisetempo;
+     Werkzeuge der Spielleitung auf eigenem Reiter; Reiter „Lager“ mit Werkzeugen des Moduls (Vorschlag). Mitglieder in
+     Kacheln in drei Größen (Rückmeldung 2026-11-12, ?variante=s|m|l); Tablet: Kasse/Schips/Reisetempo links unter dem Überblick. Gerüst wie nsc-kreatur.html. Desktop: ../index.html?actor=gruppe.
+     Werte und Namen sind frei erfundene Platzhalter. Öffnen über clickdummy/start-server.bat -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --gold: #c2a267;
+  --dmg: #a3221a;
+  --hdr: linear-gradient(180deg, #3a322b, #272320);
+  --dark: #2b2520;
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+button { font: inherit; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font-size: 14px; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.note { max-width: 780px; margin: 0 auto 16px; font-size: 14px; line-height: 1.45; color: #cbbba3; text-align: center; }
+
+/* Geräte */
+.device { position: relative; display: flex; margin: 0 auto; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.phone { flex-direction: column; width: 390px; max-width: 100%; height: 844px; border-radius: 28px; }
+.tablet { width: 1180px; height: 820px; border-radius: 22px; }
+.scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/* Kopf wie im Modul (Wappenbanner, Kugeln) */
+.head { position: relative; flex: none; padding: 14px 14px 30px; background: var(--hdr); color: #f4e8d6; }
+.head .top { display: flex; align-items: flex-start; gap: 12px; }
+.portrait { width: 72px; height: 86px; flex: none; border: 3px solid var(--gold); clip-path: polygon(14% 0, 86% 0, 100% 12%, 100% 88%, 86% 100%, 14% 100%, 0 88%, 0 12%); background: #d9c7a3 center / cover no-repeat; }
+.name { font-family: 'Andalus', serif; font-size: 26px; line-height: 1.1; }
+.ident { margin-top: 4px; font-size: 12px; line-height: 1.5; letter-spacing: .1em; text-transform: uppercase; color: #d6bd8a; }
+.ident span + span::before { content: " · "; color: rgba(224, 192, 128, .5); }
+.winbtns { display: flex; gap: 2px; margin-left: auto; }
+.winbtns button { width: 40px; height: 40px; padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 22px; cursor: pointer; }
+.schips { display: flex; gap: 4px; padding: 3px 8px; border: 1px solid rgba(224, 192, 128, .4); border-radius: 14px; }
+.schips img { width: 20px; height: 20px; }
+.schips img.used { opacity: .35; }
+.orbs { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 10px; }
+.orb { position: relative; width: 58px; height: 58px; flex: none; overflow: hidden; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2c2622, #141110); box-shadow: 0 0 0 2px #2b2721, 0 0 0 4px var(--gold); }
+.orb i { position: absolute; inset: auto 0 0; height: var(--p); background: linear-gradient(180deg, #d33a2c, #7d1510); }
+.orb b { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; font-size: 19px; line-height: 1; color: #fff; }
+.orb b small { display: block; font-size: 9px; letter-spacing: .08em; opacity: .85; }
+.regen { width: 32px; height: 32px; border: 1px solid rgba(224, 192, 128, .5); border-radius: 50%; background: none; color: #f4e8d6; }
+.dice { position: absolute; left: 0; right: 0; bottom: -17px; display: flex; justify-content: center; gap: 4px; }
+.die { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 6px; background: #2b2721 center / 28px no-repeat; box-shadow: 0 0 0 2px var(--gold); color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; }
+
+/* Inhalt */
+.body { padding: 26px 10px 16px; }
+.tabtitle { display: flex; align-items: center; gap: 10px; margin: 2px 4px 10px; font-family: 'Andalus', serif; font-size: 24px; }
+.tabtitle::after { content: ""; flex: 1; border-bottom: 1px solid var(--line2); }
+.panel { margin-bottom: 12px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); }
+.panel h3 { display: flex; align-items: baseline; justify-content: space-between; margin: 0; padding: 8px 12px; background: var(--phead); font: 19px 'Andalus', serif; font-weight: 400; }
+.panel h3 small { font: 13px 'GentiumBasic', serif; color: var(--ink2); }
+.panel p { margin: 0; padding: 12px; color: var(--ink2); font-size: 15px; line-height: 1.45; }
+.sub { padding: 4px 12px; background: rgba(43, 39, 33, .06); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.row { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 6px 12px; border-top: 1px solid var(--line); font-size: 16px; }
+.row .grow { flex: 1; min-width: 0; }
+.row .grow small { display: block; color: var(--ink2); font-size: 13px; }
+.row .v { min-width: 34px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.row img.ico { width: 30px; height: 30px; border-radius: 3px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 10px; border: 1px solid var(--line2); border-radius: 4px; background: var(--field); font-size: 15px; }
+.chip img { width: 20px; height: 20px; }
+.attrs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.attr { display: grid; justify-items: center; gap: 4px; padding: 10px 4px 8px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); font-size: 12px; letter-spacing: .1em; color: var(--ink2); }
+.attr b { display: grid; place-items: center; width: 46px; height: 48px; background: center / contain no-repeat; color: #fff; font-size: 19px; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; letter-spacing: 0; }
+.probe { display: flex; gap: 2px; }
+.probe span { display: grid; place-items: center; width: 26px; height: 28px; background: center / contain no-repeat; color: #fff; font-size: 10px; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b; }
+.cdie { display: grid; place-items: center; width: 36px; height: 36px; border: 0; background: center / contain no-repeat; color: #fff; font-size: 15px; font-weight: 700; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; cursor: pointer; }
+.tp { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid var(--dmg); border-radius: 6px; background: #f6dcd8; color: var(--dmg); font-weight: 700; cursor: pointer; }
+.tp::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--dmg); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 6px; padding: 12px 8px; text-align: center; }
+.stats div { display: grid; justify-items: center; gap: 2px; }
+.stats b { display: grid; place-items: center; height: 36px; font-size: 20px; }
+.stats small { font-size: 13px; color: var(--ink2); }
+.pips { display: flex; gap: 3px; }
+.pips i { width: 14px; height: 14px; border: 1px solid var(--line2); background: var(--field); }
+.pips i.on { background: var(--dmg); border-color: var(--dmg); }
+.step { width: 40px; height: 40px; border: 1px solid var(--line2); border-radius: 20px; background: var(--field); color: var(--ink); font-size: 20px; cursor: pointer; }
+.weapon { padding: 10px 12px; border-top: 1px solid var(--line); }
+.weapon .hand { display: inline-block; padding: 2px 8px; background: var(--dark); color: #f4e8d6; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.weapon .wname { margin: 6px 0 2px; font-size: 18px; }
+.weapon .meta { color: var(--ink2); font-size: 13px; }
+.weapon .roll { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.count { display: inline-flex; align-items: center; gap: 6px; font: 15px 'GentiumBasic', serif; color: var(--ink); }
+.count .step { width: 36px; height: 36px; font-size: 18px; }
+.star { width: 40px; height: 40px; border: 0; background: none; color: var(--accent); font-size: 20px; cursor: pointer; }
+.star.fixed { visibility: hidden; }
+
+/* Reiterleiste unten (Smartphone) */
+.nav { flex: none; display: flex; gap: 2px; overflow-x: auto; padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); background: #211c18; scrollbar-width: none; }
+.nav button { display: grid; justify-items: center; align-content: center; gap: 2px; min-width: 74px; height: 58px; padding: 0 4px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 12px; cursor: pointer; }
+.nav button img { width: 28px; height: 28px; }
+.nav button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+
+/* Tablet: linke Spalte, Inhalt, Rail rechts */
+.tablet .left { flex: none; display: flex; flex-direction: column; align-items: center; gap: 14px; width: 260px; padding: 20px 16px; background: var(--hdr); color: #f4e8d6; }
+.tablet .left .portrait { width: 180px; height: 216px; border-width: 4px; }
+.tablet .side { align-self: stretch; flex: 1; border: 1px solid rgba(224, 192, 128, .3); }
+.tablet .side h4 { margin: 0; padding: 8px 10px; border-bottom: 2px solid var(--gold); font-size: 14px; text-align: center; }
+.tablet .side .row { min-height: 40px; border-color: rgba(224, 192, 128, .2); color: #f4e8d6; font-size: 14px; }
+.tablet main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tablet .head { padding: 26px 24px 30px; }
+.tablet .attrs { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+.tablet .body { padding: 26px 18px 18px; }
+.tablet .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; align-items: start; }
+.tablet .stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.rail { flex: none; display: flex; flex-direction: column; gap: 4px; width: 84px; margin: 90px 8px 20px 0; padding: 6px 4px; border-radius: 6px; background: #211c18; }
+.rail button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 11px; cursor: pointer; }
+.rail button img { width: 28px; height: 28px; }
+.rail button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+
+/* Gruppe (#55): Leiste, Mitglieder in zwei Varianten (Tabelle, Tafeln) mit festem Raster */
+.gtable .tr { display: grid; grid-template-columns: minmax(0, 1fr) repeat(3, 46px) 30px; gap: 4px; align-items: center; min-height: 54px; padding: 4px 10px; border-top: 1px solid var(--line); }
+.tablet .gtable .tr { grid-template-columns: minmax(0, 1fr) repeat(3, 70px) 70px 44px; }
+.gtable .th { min-height: 0; padding: 6px 10px; border-top: 0; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); text-align: center; }
+.gtable .th span:first-child { text-align: left; }
+.member { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.member .portrait-s { width: 36px; height: 36px; border-width: 1px; border-radius: 50%; }
+.member .nm2 { min-width: 0; font-size: 15px; }
+.member .nm2 b, .member .nm2 small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+.member .nm2 small { color: var(--ink2); font-size: 12px; }
+.pool { display: grid; justify-items: center; gap: 2px; padding: 0; border: 0; background: none; color: var(--ink); font-size: 14px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.pool small { color: var(--ink2); font-size: 11px; }
+.pool .bar { width: 100%; max-width: 44px; height: 4px; overflow: hidden; border-radius: 2px; background: var(--line2); }
+.pool .bar i { display: block; height: 100%; }
+.pool.lep .bar i { background: #b8291e; }
+.pool.asp .bar i { background: #2f5fbf; }
+.pool.kap .bar i { background: #c39a2c; }
+.pool.empty { color: var(--ink2); cursor: default; }
+.ccount { display: inline-grid; place-items: center; min-width: 24px; height: 24px; border: 1px solid var(--line2); border-radius: 12px; font-size: 12px; }
+.tiles { display: grid; gap: 8px; }
+.tiles.size-s { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tablet .tiles.size-s { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tablet .tiles.size-m { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.tile.ts { justify-items: center; gap: 5px; padding: 8px 6px; font-size: 13px; }
+.tile.ts .portrait-s { width: 46px; height: 46px; border-radius: 50%; }
+.nm-s { max-width: 100%; overflow: hidden; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.tile.ts .foot { width: 100%; font-size: 11px; }
+.mini-asp { color: #2f5fbf; }
+.mini-kap { color: #9a7618; }
+.tile.tl { grid-template-columns: auto minmax(0, 1fr); gap: 12px; }
+.portrait-l { width: 72px; height: 88px; border: 2px solid var(--gold); border-radius: 4px; background: #e8dcc6 center / cover no-repeat; }
+.tl-main { display: grid; gap: 6px; min-width: 0; }
+.tl-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.tl-head .nm2 b { display: block; font: 19px/1.15 'Andalus', serif; }
+.tl-head .nm2 small { display: block; color: var(--ink2); font-size: 12px; }
+.tablet .side .sblk { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border-bottom: 1px solid rgba(224, 192, 128, .2); color: #f4e8d6; }
+.tablet .side .sblk .lbl { color: #d6bd8a; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.gmtag { display: inline-block; padding: 0 6px; border: 1px solid var(--accent); border-radius: 8px; color: var(--accent); font: 400 11px 'GentiumBasic', serif; letter-spacing: 0; text-transform: none; vertical-align: middle; }
+.tablet .side .sblk .gmtag { border-color: #d6bd8a; color: #d6bd8a; }
+.pool.ro { cursor: default; }
+.coin { display: inline-flex; align-items: center; gap: 3px; min-height: 32px; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; cursor: pointer; }
+.backdrop { position: absolute; inset: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .5); }
+.asksheet { display: grid; gap: 8px; width: 100%; max-width: 560px; padding: 14px; border-radius: 14px 14px 0 0; background: var(--paper); color: var(--ink); }
+.asksheet b { font: 19px 'Andalus', serif; font-weight: 400; }
+.asksheet small { color: var(--ink2); font-size: 13px; }
+.asksheet textarea { width: 100%; min-height: 80px; padding: 8px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); color: var(--ink); font: 15px 'GentiumBasic', serif; }
+.campcard.ask span { color: var(--ink); text-decoration: underline dotted; }
+.gstrip3.no-schips .cell:first-child { grid-column: 1 / -1; }
+.sizesw { display: inline-flex; order: 2; gap: 3px; font-family: 'GentiumBasic', serif; }
+.sizesw button { min-height: 32px; padding: 0 10px; font-size: 13px; border: 1px solid var(--line2); border-radius: 16px; background: var(--field); color: var(--ink); cursor: pointer; }
+.sizesw button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff8ec; }
+.slink { align-self: flex-start; padding: 0; border: 0; border-bottom: 1px dotted rgba(244, 232, 214, .6); background: none; color: inherit; cursor: pointer; }
+.tile { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); }
+.tile .pools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 6px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); text-align: center; }
+.tile .pools > div { display: grid; justify-items: center; gap: 2px; }
+.tile .pools > div > small { display: block; color: var(--ink2); font-size: 11px; }
+.tile .foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; color: var(--ink2); }
+.tile .foot.on { color: var(--ink); }
+.gstrip3 { display: grid; grid-template-columns: auto minmax(0, 1fr); }
+.gstrip3 .cell { display: flex; flex-direction: column; justify-content: center; gap: 3px; min-width: 0; min-height: 58px; padding: 8px 12px; }
+.gstrip3 .cell + .cell { border-left: 1px solid var(--line); }
+.gstrip3 .cell.wide { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); }
+.tablet .gstrip3 { grid-template-columns: auto auto minmax(0, 1fr); }
+.tablet .gstrip3 .cell.wide { grid-column: auto; border-top: 0; border-left: 1px solid var(--line); }
+.gstrip3 .lbl { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.gstrip3 .link { align-self: flex-start; padding: 0; border: 0; border-bottom: 1px dotted var(--ink2); background: none; color: var(--ink); text-align: left; cursor: pointer; }
+.gstrip { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; padding: 10px 12px; }
+.gstrip .item { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 0; border: 0; background: none; color: var(--ink); text-align: left; }
+.gstrip .item.wide { grid-column: 1 / -1; cursor: pointer; }
+.gstrip .lbl { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.purse { display: flex; flex-wrap: wrap; gap: 10px; font-weight: 700; }
+.purse span { display: inline-flex; align-items: center; gap: 3px; }
+.purse img { width: 18px; height: 18px; }
+.gschips { display: flex; gap: 2px; }
+.gschips button { width: 44px; height: 44px; padding: 0; border: 0; background: none; cursor: pointer; }
+.gschips img { width: 26px; height: 26px; }
+.gschips img.used { opacity: .35; }
+.portrait-s { flex: none; width: 46px; height: 46px; border: 2px solid var(--gold); border-radius: 4px; background: #e8dcc6 center / cover no-repeat; }
+.owner { flex: none; padding: 1px 8px; border-radius: 10px; background: var(--c); color: #fff; font-size: 12px; }
+.gcard { padding: 10px 12px; border-top: 1px solid var(--line); }
+.gcard .hd { display: flex; align-items: center; gap: 10px; }
+.gcard .nm { flex: 1; min-width: 0; font-size: 17px; }
+.gcard .nm small { display: block; color: var(--ink2); font-size: 13px; }
+.gorbs { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.gorb { position: relative; width: 48px; height: 48px; flex: none; overflow: hidden; padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2c2622, #141110); box-shadow: 0 0 0 2px var(--gold); color: #fff; cursor: pointer; }
+.gorb i { position: absolute; inset: auto 0 0; height: var(--p); background: var(--liq); }
+.gorb b { position: absolute; inset: 0; display: grid; place-content: center; font-size: 16px; line-height: 1; text-shadow: 0 1px 2px #000; }
+.gorb small { display: block; font-size: 8px; font-weight: 400; }
+.gorb.lep { --liq: linear-gradient(180deg, #d33a2c, #7d1510); }
+.gorb.asp { --liq: linear-gradient(180deg, #3d6fd0, #1c3f8f); }
+.gorb.kap { --liq: linear-gradient(180deg, #e2b84a, #8f6a14); }
+.mini-schips { display: inline-flex; gap: 1px; }
+.mini-schips img { width: 15px; height: 15px; }
+.mini-schips img.used { opacity: .35; }
+.gconds { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; font-size: 14px; }
+.gconds .chip { min-height: 30px; }
+.gconds .none { color: var(--ink2); }
+.meters { display: grid; gap: 4px; margin-top: 8px; }
+.meter { display: grid; grid-template-columns: 34px minmax(0, 1fr) 58px; gap: 8px; align-items: center; font-size: 13px; }
+.meter .bar { height: 10px; overflow: hidden; border-radius: 5px; background: var(--field); box-shadow: inset 0 0 0 1px var(--line2); }
+.meter .bar i { display: block; height: 100%; }
+.meter.lep .bar i { background: #b8291e; }
+.meter.asp .bar i { background: #2f5fbf; }
+.meter.kap .bar i { background: #c39a2c; }
+.meter span:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.faces { display: flex; gap: 6px; padding: 10px 8px; overflow-x: auto; }
+.face { position: relative; display: grid; justify-items: center; gap: 3px; min-width: 70px; padding: 6px 4px; border: 1px solid transparent; border-radius: 6px; background: none; color: var(--ink); cursor: pointer; }
+.face[aria-selected="true"] { border-color: var(--accent); background: var(--card); }
+.face .portrait-s { width: 52px; height: 52px; border: 0; border-radius: 50%; box-shadow: 0 0 0 2px var(--paper), 0 0 0 5px #b8291e; }
+.face small { font-size: 13px; }
+.face .lp { font-size: 11px; color: var(--ink2); }
+.face .alert { position: absolute; top: 2px; right: 6px; min-width: 18px; height: 18px; border-radius: 9px; background: #b8291e; color: #fff; font-size: 12px; line-height: 18px; text-align: center; }
+.open { flex: none; min-height: 36px; padding: 0 10px; border: 1px solid var(--line2); border-radius: 18px; background: var(--field); color: var(--ink); cursor: pointer; }
+.drop { margin: 10px 2px 0; padding: 12px; border: 2px dashed var(--line2); border-radius: 4px; color: var(--ink2); font-size: 14px; font-style: italic; text-align: center; }
+.gmgrid { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+.rollbtns { display: flex; gap: 4px; }
+.rbtn { min-height: 36px; padding: 0 9px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); color: var(--ink); font: 14px 'GentiumBasic', serif; }
+.attrrolls { display: flex; justify-content: space-between; gap: 2px; }
+.adie { width: 40px; height: 40px; padding: 0; border: 0; background: transparent center / contain no-repeat; color: #fff; font: 700 13px 'GentiumBasic', serif; text-shadow: 0 1px 1px rgba(0, 0, 0, .6); }
+.tablet .side .adie { width: 30px; height: 30px; font-size: 11px; }
+.gmbtn { min-height: 44px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 22px; background: var(--field); color: var(--ink); cursor: pointer; }
+.gmbtn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff8ec; }
+.camp { display: grid; gap: 8px; }
+.campcard { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 0 10px; padding: 10px 12px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); color: var(--ink); text-align: left; cursor: pointer; }
+.campcard img { grid-row: span 3; width: 40px; height: 40px; }
+.campcard small { color: var(--ink2); font-size: 13px; }
+.campcard span { color: var(--accent); font-size: 12px; }
+.toast { position: absolute; left: 50%; top: 14px; z-index: 11; max-width: 90%; padding: 8px 14px; border-radius: 18px; background: rgba(27, 23, 20, .92); color: #f4e8d6; font-size: 14px; transform: translateX(-50%); pointer-events: none; }
+.tablet .gcards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 8px; }
+.tablet .gcards .gcard { border: 1px solid var(--line); border-radius: 4px; background: var(--paper); }
+.tablet .gstrip { grid-template-columns: auto auto minmax(0, 1fr); }
+.tablet .gstrip .item.wide { grid-column: auto; }
+.tablet .side dl { margin: 0; padding: 6px 10px; }
+.tablet .side dl div { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(224, 192, 128, .2); font-size: 14px; }
+.tablet .side dt { color: #d6bd8a; }
+.tablet .side dd { margin: 0; }
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="rolle"><legend>Rolle</legend><button data-v="sl" aria-pressed="true">Spielleitung</button><button data-v="spieler">Spieler (Anna)</button></fieldset>
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+</div>
+<p class="note">Gruppenbogen (Entwurf, #55): oben Gruppenkasse, Gruppen-Schips und Reisetempo, Mitglieder als Kacheln, Größe per Umschalter im Bogen; Rolle Spielleitung/Spieler im Menü › Diese Seite; am Tablet stehen Kasse, Schips und Reisetempo links. Werkzeuge der Spielleitung auf eigenem Reiter, „Lager“ zeigt Werkzeuge des Moduls (Vorschlag).</p>
+<div id="stage"></div>
+
+<script>
+const SYS = '../../../../systems/dsa5';
+const ICON = n => `${SYS}/icons/categories/${n}.webp`;
+const TABS = [['cover', 'Titelblatt', 'Spellextension'], ['skills', 'Talente', 'Skill'], ['inventory', 'Inventar', 'Equipment'], ['travel', 'Reise', 'arrow'], ['gm', 'Spielleitung', 'secret'], ['camp', 'Lager', 'consumable'], ['notes', 'Notizen', 'Ability_Language']];
+const G = {
+  name: 'Die Gefährten vom Bornwald',
+  vis: { identity: true, lep: false, pools: false, cond: false },
+  requests: [{ who: 'Ben', what: 'Nahrungssuche', note: 'Unser Proviant reicht nur noch einen Tag.' }],
+  purse: [['D', 3], ['S', 41], ['H', 18], ['K', 7]],
+  schips: { max: 3, used: 1 },
+  travel: [['Zu Fuß', 7, '3,2', 'langsamstes Mitglied: Thorgrim'], ['Fahrzeug', 10, '4,5', 'Depot „Planwagen“'], ['Fluss', 8, '3,6', ''], ['See', 14, '6,3', '']],
+  members: [
+    { name: 'Layariel Wipfelglanz', img: `${SYS}/icons/species/Elf.webp`, ident: 'Elf · Waldläuferin', owner: 'Anna', c: '#4a7fc0', lep: [28, 32], asp: [24, 34], cond: [['Schmerz', 1]], schips: [3, 1] },
+    { name: 'Alrik Grimmwald', img: `${SYS}/icons/species/Mensch.webp`, ident: 'Mensch · Söldner', owner: 'Ben', c: '#b0563c', lep: [38, 38], cond: [], schips: [3, 0] },
+    { name: 'Rhulana Kirschweiler', img: `${SYS}/icons/species/Mensch.webp`, ident: 'Mensch · Geweihte der Travia', owner: 'Clara', c: '#4f8a3e', lep: [22, 29], kap: [18, 24], cond: [['Furcht', 1]], schips: [3, 2] },
+    { name: 'Thorgrim Sohn des Thorbosch', img: `${SYS}/icons/species/Zwerg.webp`, ident: 'Zwerg · Kämpfer', owner: 'David', c: '#8a6a2e', lep: [14, 41], cond: [['Schmerz', 2], ['Betäubung', 1]], schips: [3, 3] },
+    { name: 'Sturmwind', img: ICON('Tiere'), ident: 'Elfenpferd · Reittier von Layariel', owner: 'Anna', c: '#4a7fc0', lep: [52, 52], cond: [], schips: null },
+  ],
+  skills: [['Sinnesschärfe', 12, 'Layariel'], ['Wildnisleben', 11, 'Layariel'], ['Kraftakt', 11, 'Thorgrim'], ['Fährtensuchen', 10, 'Layariel'], ['Metallbearbeitung', 10, 'Thorgrim'], ['Menschenkenntnis', 9, 'Rhulana'], ['Heilkunde Wunden', 9, 'Rhulana'], ['Willenskraft', 8, 'Rhulana']],
+  depots: [['Planwagen', 'Fahrzeug · 86,0 / 400', [['Zelt (4 Personen)', 1], ['Proviant (Tag)', 20], ['Fass Bier', 1]], true], ['Truhe im Gasthaus', 'Lagerdepot · gesperrt', [['Heiltrank', 3], ['Landkarte Bornland', 1]], false]],
+};
+// Wie am Desktop: Helfer der Inhaltsmodule (vorhanden), Vorschläge, Werkzeuge des Moduls
+const CAMP = [
+  ['Aus DSA5-Inhaltsmodulen (vorhanden)', [['ability_general', 'Widrige Umstände', 'Wetter, Kälte, Hitze und Gelände auf die Gruppe anwenden', 'Grundregelwerk', 'alle'], ['consumable', 'Nahrungssuche', 'Probe auf Wildnisleben bzw. Pflanzenkunde für die Gruppe', 'Kompendium', 'SL'], ['Rangeweapon', 'Jagd', 'Fährtensuchen und Jagd auf Wild', 'Kompendium', 'SL'], ['Geweihte', 'Schicksal und Verdammnis', 'Götter- und Erzdämonen-Schips zuweisen; Schicksalspunkt gegen einen Schip tauschen', 'Götter Aventuriens 2', 'SL']]],
+  ['Vorschläge: Rast und Versorgung', [['ability_ceremonial', 'Rasten', 'Regeneration für alle mit Lagerplatz und Störung; Rastdauer stellt die Zeit weiter', 'System', 'SL'], ['Spelltrick', 'Wetter', 'Wetter des Tages aus dem Kalender', 'System', 'alle'], ['Dodge', 'Wache einteilen', 'Wer wann wacht; eine Störung fließt in die Rast ein', 'neu', 'alle'], ['planthealing', 'Pflanzen- und Kräutersuche', 'Pflanzenkunde anfordern; Funde ins Gruppendepot', 'neu', 'SL']]],
+  ['Werkzeuge des Moduls', [['d20', 'Würfelstatistik', 'Würfe der Gruppe nach Tag', 'DSA5 Helpers', 'alle'], ['Spellextension', 'Hausregelbuch', 'Regeln der Runde nachlesen', 'DSA5 Helpers', 'alle'], ['ability_command', 'Helfen', 'Gegenseitige Hilfe bei Proben (Hausregel)', 'DSA5 Helpers', 'alle'], ['disease', 'Wundeinschätzung', 'Verdeckte Probe Heilkunde Wunden', 'DSA5 Helpers', 'SL']]],
+];
+const state = { device: 'phone', variante: 'm', tab: 'cover', rolle: 'sl' };
+// Rollen wie im Systembogen (Rückmeldung 2026-11-12), Spieler „Anna“ (Layariel, Sturmwind): von Fremden nur Porträt, Name,
+// Spezies (Kultur/Profession/Schips, wenn die SL sie nicht ausblendet), Werte und Zustände nur eigener Helden; kein Reiter
+// „Spielleitung“, keine Gruppen-Schips; Depots sichtbar, Handel nur mit Rechten; Kasse und Reise ändern alle Besitzer.
+const PLAYER = 'Anna';
+const isGM = () => state.rolle === 'sl';
+const own = m => isGM() || m.owner === PLAYER;
+// Was Spieler von fremden Mitgliedern sehen, stellt die SL ein (Desktop: Bearbeiten-Modus, mobil: Reiter Spielleitung)
+const sees = (m, w) => own(m) || G.vis[w];
+const hidden = m => !sees(m, 'identity');
+const gmTag = (t = 'nur SL') => isGM() ? `<span class="gmtag">${t}</span>` : '';
+const tabs = () => TABS.filter(([id]) => isGM() || id !== 'gm');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const panel = (title, inner, small = '') => `<section class="panel"><h3>${title}${small ? `<small>${small}</small>` : ''}</h3>${inner}</section>`;
+const pools = m => [['lep', 'LeP'], ['asp', 'AsP'], ['kap', 'KaP']].filter(([k]) => m[k]);
+const orb = (k, l, [cur, max]) => `<button type="button" class="gorb ${k}" style="--p:${Math.round(100 * cur / max)}%" data-toast="${l}: Feld mit −/+ wie im Heldenbogen"><i></i><b><small>${l}</small>${cur}</b></button>`;
+const meter = (k, l, [cur, max]) => `<div class="meter ${k}"><span>${l}</span><span class="bar"><i style="width:${Math.round(100 * cur / max)}%"></i></span><span>${cur} / ${max}</span></div>`;
+const conds = m => `<div class="gconds">${m.cond.length ? m.cond.map(([n, l]) => `<span class="chip">${n} ${['', 'I', 'II', 'III', 'IV'][l]}</span>`).join('') : '<span class="none">keine Zustände</span>'}</div>`;
+const mschips = m => hidden(m) ? '' : m.schips ? `<span class="mini-schips">${Array.from({ length: m.schips[0] }, (_, i) => `<img src="${SYS}/icons/${i >= m.schips[0] - m.schips[1] ? 'gray_schip' : 'schip'}.webp" alt="" class="${i >= m.schips[0] - m.schips[1] ? 'used' : ''}">`).join('')}</span>` : '';
+const portrait = m => `<span class="portrait-s" style="background-image:url('${m.img}')"></span>`;
+const owner = m => `<span class="owner" style="--c:${m.c}">${m.owner}</span>`;
+
+function strip() {
+  const purse = `<div class="cell"><span class="lbl">Gruppenkasse</span><span class="purse">${G.purse.map(([k, v]) => `<button type="button" class="coin" data-toast="Münzen ändern (Feld mit −/+, für alle mit Besitzerrechten)"><img src="${SYS}/icons/money-${k}.webp" alt="">${v}</button>`).join('')}</span></div>`;
+  const schips = !isGM() ? '' : `<div class="cell"><span class="lbl">Gruppen-Schips ${gmTag()}</span><span class="gschips">${Array.from({ length: G.schips.max }, (_, i) => { const used = i >= G.schips.max - G.schips.used; return `<button type="button" data-gschip="${used ? -1 : 1}" aria-label="${used ? 'Gruppen-Schip wiederherstellen' : 'Gruppen-Schip ausgeben'}"><img src="${SYS}/icons/${used ? 'gray_schip' : 'schip'}.webp" alt="" class="${used ? 'used' : ''}"></button>`; }).join('')}</span></div>`;
+  const travel = `<div class="cell wide"><span class="lbl">Reisetempo</span><button type="button" class="link" data-tab="travel" title="${G.travel[0][3]}">zu Fuß ${G.travel[0][2]} Meilen/h</button></div>`;
+  return `<section class="panel"><div class="gstrip3${isGM() ? '' : ' no-schips'}">${purse}${schips}${travel}</div></section>`;
+}
+const POOLS = [['lep', 'LeP'], ['asp', 'AsP'], ['kap', 'KaP']];
+// LeP/AsP/KaP und Zustände fremder Mitglieder sehen Spieler nicht (System: showStatusBars = canViewPrivateDetails)
+const pool = (m, k, l) => m[k] && !sees(m, k === 'lep' ? 'lep' : 'pools') ? '<span class="pool empty" title="für Spieler nicht freigegeben">–</span>' : m[k] && !own(m) ? `<span class="pool ${k} ro"><span>${m[k][0]}<small> / ${m[k][1]}</small></span><span class="bar"><i style="width:${Math.round(100 * m[k][0] / m[k][1])}%"></i></span></span>` : m[k] ? `<button type="button" class="pool ${k}" data-toast="${esc(m.name)}: ${l} ändern (Feld mit −/+)"><span>${m[k][0]}<small> / ${m[k][1]}</small></span><span class="bar"><i style="width:${Math.round(100 * m[k][0] / m[k][1])}%"></i></span></button>` : '<span class="pool empty">–</span>';
+const condText = m => !sees(m, 'cond') ? '' : m.cond.length ? m.cond.map(([n, l]) => `${n} ${['', 'I', 'II', 'III', 'IV'][l]}`).join(', ') : 'keine Zustände';
+const member = m => `<span class="member">${portrait(m)}<span class="nm2" title="Spieler: ${m.owner}"><b>${esc(m.name)}</b><small>${hidden(m) ? m.ident.split(' · ')[0] : m.ident}</small></span></span>`;
+function members() {
+  const v = state.variante;
+  const orbs = m => { const o = POOLS.filter(([k]) => m[k] && sees(m, k === 'lep' ? 'lep' : 'pools')).map(([k, l]) => orb(k, l, m[k])).join(''); return o || '<span style="color:var(--ink2);font-size:13px">Werte für Spieler nicht freigegeben</span>'; };
+  const tile = {
+    s: m => `<div class="tile ts">${portrait(m)}<b class="nm-s">${esc(m.name.split(' ')[0])}</b>${pool(m, 'lep', 'LeP')}<div class="foot"><span class="mini">${POOLS.slice(1).filter(([k]) => m[k] && sees(m, 'pools')).map(([k, l]) => `<span class="mini-${k}">${l} ${m[k][0]}</span>`).join(' ')}</span>${sees(m, 'cond') && m.cond.length ? `<span class="ccount" title="${condText(m)}">${m.cond.length}</span>` : '<span>–</span>'}</div></div>`,
+    m: m => `<div class="tile">${member(m)}${own(m) || G.vis.lep || G.vis.pools ? `<div class="pools">${POOLS.map(([k, l]) => `<div><small>${l}</small>${pool(m, k, l)}</div>`).join('')}</div>` : '<div class="pools" style="display:flex;justify-content:center;min-height:52px;align-items:center;color:var(--ink2);font-size:12px">Werte für Spieler nicht freigegeben</div>'}<div class="foot${m.cond.length ? ' on' : ''}">${mschips(m) || '<span>–</span>'}<span>${condText(m)}</span></div></div>`,
+    l: m => `<div class="tile tl"><span class="portrait-l" style="background-image:url('${m.img}')"></span><div class="tl-main"><div class="tl-head"><span class="nm2"><b>${esc(m.name)}</b><small>${m.ident} · Spieler: ${m.owner}</small></span><button type="button" class="open" data-toast="Öffnet den Bogen von ${esc(m.name)}">Bogen</button></div><div class="gorbs">${orbs(m)}${mschips(m)}</div>${sees(m, 'cond') ? conds(m) : ''}</div></div>`,
+  }[v];
+  return `<div class="tiles size-${v}">${G.members.map(tile).join('')}</div>`;
+}
+const btn = (l, toastText = `${l}: Dialog des Systems`) => `<button type="button" class="gmbtn" data-toast="${esc(toastText)}">${l}</button>`;
+const rbtn = (l, toastText) => `<button type="button" class="rbtn" data-toast="${esc(toastText)}">${l}</button>`;
+const ATTRS = [['MU', 'Mut'], ['KL', 'Klugheit'], ['IN', 'Intuition'], ['CH', 'Charisma'], ['FF', 'Fingerfertigkeit'], ['GE', 'Gewandtheit'], ['KO', 'Konstitution'], ['KK', 'Körperkraft']];
+// Eigenschaften als Würfel wie im Heldenbogen, im Würfel nur das Kürzel (Rückmeldung 2026-11-12)
+const attrRolls = () => `<span class="attrrolls">${ATTRS.map(([k, l]) => `<button type="button" class="adie" style="background-image:url('${SYS}/icons/dice/d20${k.toLowerCase()}.svg')" aria-label="Probe auf ${l} anfordern" title="Probe auf ${l} anfordern" data-toast="Anfrage ${l} im Chat – jeder würfelt selbst">${k}</button>`).join('')}</span>`;
+const TAB = {
+  cover: () => (state.device === 'phone' ? strip() + (isGM() ? `<section class="panel" style="padding:8px 12px"><div class="lbl" style="margin-bottom:4px;color:var(--ink2);font-size:11px;letter-spacing:.08em;text-transform:uppercase">Probe anfordern ${gmTag()}</div>${attrRolls()}</section>` : '') : '') + members() + '<div class="drop">Charakter, NSC oder Kreatur hierher ziehen, um ihn hinzuzufügen.</div>',
+  // Proben der SL wie im Systembogen: je Talent Gruppenprobe und Anfordern (Rückmeldung 2026-11-12)
+  skills: () => panel('Bester Wert der Gruppe', G.skills.map(([n, v, who]) => `<div class="row"><span class="grow">${n}<small>${who}</small></span><span class="v">${v}</span>${isGM() ? `<span class="rollbtns">${rbtn('Gruppe', `Gruppenprobe ${n}: Dialog des Systems`)}${rbtn('Anfordern', `Anfrage ${n} im Chat – jeder würfelt selbst`)}</span>` : ''}</div>`).join(''), isGM() ? gmTag('Proben nur SL') : ''),
+  inventory: () => G.depots.map(([n, meta, items, players]) => panel(n + (isGM() && !players ? ` ${gmTag('Spieler: nur ansehen')}` : ''), `<div class="sub">${meta}${!isGM() && !players ? ' · nur ansehen (keine Rechte am Depot)' : ''}</div>` + items.map(([i, q]) => `<div class="row"><img class="ico" src="${ICON('Equipment')}" alt=""><span class="grow">${i}</span><span class="v">${q}</span></div>`).join(''))).join('') + '<div class="drop">Fahrzeug-, Händler- oder Schatzakteur hierher ziehen.</div>',
+  travel: () => panel('Geschwindigkeit je Reiseart', G.travel.map(([n, v, mh, note]) => `<div class="row"><span class="grow">${n}${note ? `<small>${note}</small>` : ''}</span><span class="v">${mh}</span><span style="min-width:62px;color:var(--ink2);font-size:13px">Meilen/h</span></div>`).join('') + `<div class="row"><span class="grow">Gewaltmarsch</span><span class="v">0 %</span></div>`),
+  gm: () => panel('Alle Mitglieder', `<div class="gmgrid">${['Verdeckt würfeln', 'Regeneration', 'Zufälliges Mitglied', 'AP vergeben', 'Bezahlung', 'Lohn einfordern'].map(l => btn(l)).join('')}</div>`, 'nur SL')
+    + panel('Proben', `<div class="gmgrid">${btn('Gruppenprobe …')}${btn('Probe anfordern …')}${['MU', 'KL', 'IN', 'CH', 'FF', 'GE', 'KO', 'KK'].map(k => btn(k, `Eigenschaftsprobe ${k} für alle`)).join('')}</div>`)
+    + panel('Gruppe', `<div class="gmgrid"><button type="button" class="gmbtn" data-pressed aria-pressed="true">★ Hauptgruppe</button><button type="button" class="gmbtn" data-pressed aria-pressed="false">Besitz mit allen teilen</button></div>`)
+    + panel(`Spieler sehen bei anderen Mitgliedern ${gmTag()}`, `<div class="gmgrid"><span style="color:var(--ink2);font-size:13px;align-self:center">immer: Porträt, Name, Spezies</span>${[['identity', 'Kultur, Profession und Schips'], ['lep', 'LeP'], ['pools', 'AsP und KaP'], ['cond', 'Zustände']].map(([k, l]) => `<button type="button" class="gmbtn" data-vis="${k}" aria-pressed="${G.vis[k]}">${l}</button>`).join('')}</div>`),
+  camp: () => `<p style="margin:0 4px 10px;color:var(--ink2);font-size:14px">Die SL sieht alle Funktionen, Spieler nur die für alle (im System „Lager“); SL-Funktionen können Spieler anfragen.</p>` + (isGM() && G.requests.length ? panel(`Anfragen der Spieler ${gmTag()}`, G.requests.map((r, i) => `<div class="row"><span class="grow"><b>${r.who}</b> möchte: ${r.what}${r.note ? `<small style="display:block;color:var(--ink2);font-style:italic">„${esc(r.note)}“</small>` : ''}</span><button type="button" class="gmbtn" data-req="${i}" data-done="${r.what}: Dialog des Systems öffnet sich">Ausführen</button><button type="button" class="gmbtn" data-req="${i}" data-done="${r.who} erhält eine Absage">Ablehnen</button></div>`).join(''), String(G.requests.length)) : '')
+    + CAMP.map(([title, cards]) => panel(title, `<div class="camp">${cards.map(([ico, n, h, src, who]) => {
+      const ask = who === 'SL' && !isGM();
+      const pending = ask && G.requests.some(r => r.who === PLAYER && r.what === n);
+      return `<button type="button" class="campcard${ask ? ' ask' : ''}" ${ask ? `data-ask="${n}"` : `data-toast="${n}: ${src === 'neu' ? 'neue Funktion (Vorschlag)' : src === 'System' ? 'Dialog des Systems' : `Funktion aus „${src}“`}"`}><img src="${ico === 'd20' ? `${SYS}/icons/d20.svg` : ICON(ico)}" alt=""><b>${n} ${who === 'SL' ? gmTag('SL · Spieler fragen an') : ''}</b><small>${h}</small><span>${ask ? (pending ? 'Anfrage gesendet – wartet auf die SL' : 'Bei der SL anfragen') : src}</span></button>`;
+    }).join('')}</div>`)).join(''),
+  notes: () => panel('Biografie', '<p>Platzhalter: wie sich die Gruppe gefunden hat.</p>') + panel('Notizen', '<p>Platzhalter: offene Fäden, Schulden, Versprechen.</p>'),
+};
+const badges = () => [`${G.members.length} Mitglieder`, '★ Hauptgruppe', `zu Fuß ${G.travel[0][2]} Meilen/h`];
+function head() {
+  const ident = `<div class="ident">${badges().map(s => `<span>${s}</span>`).join('')}</div>`;
+  if (state.device === 'tablet') return `<header class="head"><div class="name" style="font-size:40px">${G.name}</div>${ident}</header>`;
+  return `<header class="head" style="padding-bottom:16px"><div class="top"><div class="portrait" style="background:url('${ICON('ability_command')}') center / 60% no-repeat, #d9c7a3"></div><div style="flex:1;min-width:0"><div class="name">${G.name}</div>${ident}</div><div class="winbtns"><button type="button" title="Fenstermenü">⋮</button><button type="button" title="Schließen">✕</button></div></div></header>`;
+}
+const tabTitle = () => tabs().find(([id]) => id === state.tab)[1];
+const navButtons = () => tabs().map(([id, label, ico]) => `<button type="button" data-tab="${id}" ${id === state.tab ? 'aria-current="page"' : ''}><img src="${ICON(ico)}" alt="">${label}</button>`).join('');
+// Kachelgröße rechts neben der Überschrift des Titelblatts (Rückmeldung 2026-11-12)
+const sizeSwitch = () => `<span class="sizesw">${[['s', 'Klein'], ['m', 'Mittel'], ['l', 'Groß']].map(([x, l]) => `<button type="button" data-size="${x}" aria-pressed="${x === state.variante}">${l}</button>`).join('')}</span>`;
+const content = () => `<div class="body" style="padding-top:14px"><div class="tabtitle">${tabTitle()}${state.tab === 'cover' ? sizeSwitch() : ''}</div>${TAB[state.tab]()}</div>`;
+function sideBlocks() {
+  const blk = (l, v) => `<div class="sblk"><span class="lbl">${l}</span>${v}</div>`;
+  const purse = `<span class="purse">${G.purse.map(([k, v]) => `<button type="button" class="coin" data-toast="Münzen ändern (Feld mit −/+, für alle mit Besitzerrechten)"><img src="${SYS}/icons/money-${k}.webp" alt="">${v}</button>`).join('')}</span>`;
+  const schips = `<span class="gschips">${Array.from({ length: G.schips.max }, (_, i) => { const used = i >= G.schips.max - G.schips.used; return `<button type="button" data-gschip="${used ? -1 : 1}" aria-label="${used ? 'Gruppen-Schip wiederherstellen' : 'Gruppen-Schip ausgeben'}"><img src="${SYS}/icons/${used ? 'gray_schip' : 'schip'}.webp" alt="" class="${used ? 'used' : ''}"></button>`; }).join('')}</span>`;
+  return blk('Gruppenkasse', purse) + (isGM() ? blk(`Gruppen-Schips ${gmTag()}`, schips) + blk(`Probe anfordern ${gmTag()}`, attrRolls()) : '') + blk('Reisetempo', `<button type="button" class="slink" data-tab="travel">zu Fuß ${G.travel[0][2]} Meilen/h</button>`);
+}
+function overview() {
+  const sum = k => G.members.filter(m => m[k]).reduce((a, m) => [a[0] + m[k][0], a[1] + m[k][1]], [0, 0]).join(' / ');
+  // Summen verraten fremde Werte: nur für die SL
+  return `<dl>${[['Mitglieder', G.members.length], ...(isGM() ? [['LeP gesamt', sum('lep')], ['AsP gesamt', sum('asp')], ['KaP gesamt', sum('kap')], ['Ø AP', '1 290']] : [])].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>`;
+}
+function render() {
+  if (!tabs().some(([id]) => id === state.tab)) state.tab = 'cover';
+  const stage = document.getElementById('stage');
+  if (state.device === 'phone') { stage.innerHTML = `<div class="device phone">${head()}<div class="scroll">${content()}</div><nav class="nav" aria-label="Reiter">${navButtons()}</nav></div>`; return; }
+  stage.innerHTML = `<div class="device tablet"><aside class="left"><div class="portrait" style="background:url('${ICON('ability_command')}') center / 60% no-repeat, #d9c7a3"></div><div class="side"><h4>Überblick</h4>${sideBlocks()}${overview()}</div></aside>
+    <main>${head()}<div class="scroll">${content()}</div></main><nav class="rail" aria-label="Reiter">${navButtons()}</nav></div>`;
+}
+// Anfrage mit Anlass (freiwillig) als Blatt von unten
+function askSheet(name) {
+  const device = document.querySelector('.device');
+  const wrap = document.createElement('div');
+  wrap.className = 'backdrop';
+  const hint = name === 'Schicksal und Verdammnis' ? 'z. B. Ich möchte einen Schicksalspunkt gegen einen Schip der Rondra tauschen.' : 'z. B. warum, wofür, für wen';
+  wrap.innerHTML = `<div class="asksheet" role="dialog" aria-label="Bei der SL anfragen: ${esc(name)}"><b>Bei der SL anfragen: ${esc(name)}</b><small>Anlass (freiwillig) – die SL sieht ihn mit der Anfrage</small><textarea rows="3" placeholder="${hint}"></textarea><div class="gmgrid" style="padding:0"><button type="button" class="gmbtn" aria-pressed="true" data-ask-send="${esc(name)}">Anfrage senden</button><button type="button" class="gmbtn" data-ask-cancel>Abbrechen</button></div></div>`;
+  device.append(wrap);
+  wrap.querySelector('textarea').focus();
+}
+function toast(text) {
+  const device = document.querySelector('.device');
+  device.querySelector('.toast')?.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = text;
+  device.append(t);
+  setTimeout(() => t.remove(), 1800);
+}
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('button');
+  if (!b || b.closest('.dummy-pages')) return;
+  const group = b.closest('fieldset')?.dataset.group;
+  if (group) { state[group] = b.dataset.v; b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); return render(); }
+  if (b.dataset.tab) { state.tab = b.dataset.tab; return render(); }
+  if (b.dataset.size) { state.variante = b.dataset.size; return render(); }
+  if (b.dataset.ask) {
+    if (G.requests.some(r => r.who === PLAYER && r.what === b.dataset.ask)) return toast('Diese Anfrage liegt der SL schon vor');
+    return askSheet(b.dataset.ask);
+  }
+  if (b.hasAttribute('data-ask-send')) {
+    const box = b.closest('.backdrop');
+    G.requests.push({ who: PLAYER, what: b.dataset.askSend, note: box.querySelector('textarea').value.trim() });
+    box.remove(); toast(`Anfrage „${b.dataset.askSend}“ an die SL gesendet`); return render();
+  }
+  if (b.hasAttribute('data-ask-cancel')) return b.closest('.backdrop').remove();
+  if (b.dataset.req) { G.requests.splice(Number(b.dataset.req), 1); toast(b.dataset.done); return render(); }
+  if (b.dataset.vis) { G.vis[b.dataset.vis] = !G.vis[b.dataset.vis]; return render(); }
+  if (b.dataset.gschip) { G.schips.used += Number(b.dataset.gschip); return render(); }
+  if (b.hasAttribute('data-pressed')) return b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+  if (b.dataset.toast) return toast(b.dataset.toast);
+});
+render();
+</script>
+<script src="tablet-plakette.js?v=2"></script>
+<script src="../pages.js?v=21"></script>
+</body>
+</html>

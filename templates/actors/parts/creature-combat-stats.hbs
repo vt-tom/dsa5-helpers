@@ -1,0 +1,9 @@
+{{!-- Kampfwerte der Kreatur über dem Kampf-Reiter (Click-Dummy creatureCombatStats): Ausweichen bzw. Verteidigung als
+      Würfel (Systemaktion chStatus wie in den Schnellaktionen), RS, Initiative, Aktionen, Geschwindigkeit. --}}
+<section class="panel dsa5h-creature-stats-panel"><div class="panel-title">{{localize 'DSA5HELPERS.Creature.CombatValues'}}</div><div class="dsa5h-creature-stats">
+<div class="dsa5h-creature-stat"><button type="button" class="dsa5h-combat-die dsa5h-die-dodge" data-action="chStatus" data-mod="dodge" aria-label="{{localize 'DSA5HELPERS.RollNamed' name=dsa5h.creature.defenseLabel}}">{{dsa5h.creature.defense}}</button><small>{{dsa5h.creature.defenseLabel}}</small></div>
+<div class="dsa5h-creature-stat"><strong>{{dsa5h.creature.armor}}</strong><small>{{localize 'protection'}}</small></div>
+<div class="dsa5h-creature-stat"><strong>{{dsa5h.initiative}}</strong><small>{{localize 'initiative'}}</small></div>
+<div class="dsa5h-creature-stat"><strong>{{dsa5h.creature.actions}}</strong><small>{{localize 'actionCount'}}</small></div>
+<div class="dsa5h-creature-stat"><strong>{{dsa5h.creature.speed}}</strong><small>{{localize 'speed'}}</small></div>
+</div></section>

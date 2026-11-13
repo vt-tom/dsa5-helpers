@@ -490,7 +490,7 @@ Bewusst noch nicht:
 
 ## 14. Feinschliff Heldenbogen Smartphone (Bestandsaufnahme 2026-10-15)
 
-Auftrag des Nutzers nach dem ersten Gerätetest: alles ausarbeiten, was den Bogen auf dem Smartphone gut bedienbar macht. Seiten dürfen dafür komplett umgebaut werden. Grundlage: Screenshots des echten Bogens in der Testinstanz (390 × 844, Held „Testitest“ mit Magie und Religion, „Wulfgrimm“ mit Gefährte, Spiel- und Bearbeitungsmodus) im Vergleich zu den Click-Dummy-Ansichten `clickdummy/mobile/screenshots/smartphone/07–20`.
+Auftrag des Nutzers nach dem ersten Gerätetest: alles ausarbeiten, was den Bogen auf dem Smartphone gut bedienbar macht. Seiten dürfen dafür komplett umgebaut werden. Grundlage: Screenshots des echten Bogens in der Testinstanz (390 × 844, Held „Testitest“ mit Magie und Religion, „Wulfgrimm“ mit Gefährte, Spiel- und Bearbeitungsmodus) im Vergleich zu den Click-Dummy-Ansichten `clickdummy/mobile/screenshots/smartphone/07–20` (Screenshots am 12.11.2026 entfernt, in der Git-Geschichte).
 
 ### 14.1 Grundsätze für den Umbau
 
@@ -665,3 +665,71 @@ Nebenbefunde: Beim Anmelden öffnen sich auf dem Handy von selbst das Modul-Chan
 **Probendialoge neu (Nutzerwunsch und -entscheidung 2026-10-28: Variante B „Wichtiges zuerst“, verworfen A „Aufgeräumt“ und C „Reiter“; alle Probendialoge, Smartphone und Tablet gleich):** Das gestreckte Pergament sah schlecht aus und die zweispaltige Desktop-Anordnung passte nicht. `scripts/mobile/roll-dialog.js` (aus `markWindow`) erkennt Probendialoge an der Klasse (`DSA5CombatDialog`, `DSA5SkillDialog`, `DSA5SpellDialog`) bzw. bei der Eigenschaftsprobe (`DSA5Dialog`) an `dialogData.source.type === 'char'`; Regeneration, Fallschaden usw. bleiben unberührt. Die Eingaben des Systems werden nur in `.dsa5h-rd` **umgehängt**, nichts nachgebaut: Kopf mit Zielwert (`dialogData.rollValue`, bei Talent/Zauber FW der Quelle, bei Eigenschaften deren Wert) und `.targets` des Systems (es ersetzt nur dessen Inhalt), `testModifier` (und TP) mit −/+, Zauberkosten-Tabelle, Manöver-Panel und `.specAbsContainer`, häufige Felder (`vision`, `testDifficulty`, `distance`, `defenseCount`), Rest eingeklappt (Kästchen als Chips, „Zauberdauer erhöhen/senken“ bleibt als Block, weil das System ihn neu füllt), Feinheiten (Eigenschaftswahl + `ch0…qs`), Würfelmodus. `.dsa5h-rd` liegt innerhalb von `.skill-test`, weil der Zauberdialog die Kosten über `parents('.skill-test')` sucht. Die Zahl an einer Gruppe zählt Eingaben, die von der Vorgabe des Templates abweichen (`defaultChecked`/`defaultSelected`/`defaultValue`, gemerkte Werte zählen mit). Das System zählt Zahlenfelder bei `mousedown` hoch (`RuleChaos.quantityClick`); mobil wird das im Capture abgefangen, damit Antippen nur zum Tippen fokussiert. In der Testinstanz geprüft: alle acht Dialogarten auf Smartphone und Tablet ohne Überlauf; Angriff mit +2 über den Regler und „Vorteilhafte Position“ als Chip landet im Wurf („Händisch 2“, „Vorteilhafte Position 2“). Testhinweis: `actor.setupWeapon` usw. sammelt nur, gewürfelt wird erst mit `basicTest`. Rückmeldungen Testliste 0.6.3 (2026-10-29): gewählter Chip mit heller Schrift bis ins Label (das System färbt Labels selbst); die Zeile „Maximale Modifikatorenanzahl“ (`.maxMods`, FW/4 + Boni) steht über den Chips (`.dsa5h-rd-maxmods`) – dass nur so viele Modifikationen wählbar sind, ist Systemverhalten (`recalcSpellModifiers` nimmt das Häkchen zurück). Am Tablet würfelt ein Tipp auf Favoriten- und Vorschlagskarten wie auf dem Smartphone (`tapToRoll` in `setupTabletSheet`, Listenzeilen der Reiter bleiben wie am Desktop). Design-Referenz: `clickdummy/mobile/probe.html` (nur noch B).
 
 **F2 Kraftspeicher (Nutzerentscheidung 2026-10-28: Variante B, verworfen A „Liste + Systemdialog“ und C „großes Rundmenü“):** Auf dem Smartphone fängt `setupPhoneSheet` den Klick auf `.dsa5h-power-satellite` ab und öffnet `openPowerSheet` (`scripts/mobile/mobile.js`): Blatt von unten im Muster des „⋮“-Menüs, je Segment aus `actor.powersource.segments` Name (Gegenstand, darunter der Effektname, wenn er abweicht), −/+ (44 px) und Balken, Summe im Kopf. Jeder Tipp speichert sofort über `setPowerCharge` (`scripts/compat/powersource-dialog.js`, gleicher Schreibweg wie der Ladedialog: Effekt-Update `system.powersource.value`, dann `actor.reset()` und Neuzeichnen), Schreibvorgänge laufen nacheinander. Seit 2026-10-29 auch am Tablet (Nutzerentscheidung nach der Testliste 0.6.3: dort öffnete ein Tipp Rundmenü und Ladedialog nacheinander): `powerSheetOnTap` in `setupTabletSheet`, das Blatt hängt dort an `body` (der Bogen ist ein verschiebbares Fenster), 640 px breit und mittig, und schließt mit dem Bogen (`closeApplicationV2`). Nur der Desktop behält das Rundmenü. Der Ladedialog des Systems scheiterte beim zweiten Öffnen, solange er offen war (DSA5 ruft `bringToTop()`, ApplicationV2 kennt nur `bringToFront()`); `openPowerSourceDialog` holt einen offenen Dialog deshalb selbst nach vorn. Design-Referenz: `clickdummy/mobile/kraftspeicher.html` (nur noch B). Hinweis Test: DSA5 meldet bei jedem Effekt-Update ohne angemeldete SL „Diese Funktion funktioniert nur mit einem eingeloggten Spielleiter“ (`updateActiveEffect` → `isActiveGM`), auch beim Ladedialog des Systems – in der Testwelt ohne SL erwartbar.
+
+## 16. Journal-Browser mobil (Planung 2026-11-12)
+
+Auftrag: den Journal-Browser des Systems (exklusive DSA5-Funktion, Taste J) auf Smartphone und Tablet nutzbar machen. Grundlage: Code von DSA5 8.2.1 und eine Live-Prüfung in der eigenen Testinstanz (Port 30077, Spieler „Player2“, 390 × 844 und 820 × 1180, Touch-Emulation; in der Testwelt ist nur die Spielanleitung als Buch vorhanden, Abenteuer- und Regelmodule fehlen).
+
+### 16.1 Was das System mitbringt
+
+- **Klasse:** ApplicationV2 als Einzelinstanz `game.dsa5.apps.journalBrowser` (Klassen `dsa5 largeDialog noscrollWizard bookWizardsheet`, 980 × 860). Vorlagen unter `systems/dsa5/templates/wizard/adventure/`: `adventure_wizard.hbs` (Gerüst), `adventure_intro.hbs` (Bibliothek), `adventure_library_sidebar.hbs` (Suche, Liste/Karten, zuletzt geöffnet), `adventure_toc.hbs` (Inhaltsverzeichnis mit Suche und Volltext-Schalter), `adventure_chapter.hbs` (Kapitel mit Szenen und Akteuren), `parts/book_library_*` (Bucheinträge).
+- **Aufbau:** links Inhaltsverzeichnis (`.tocSidebar`, max. 30 %, einklappbar über `tocCollapser` → `.tocCollapsing.expanded`), rechts Kapitel (`.chapter`, Schriftgröße über `increaseFontSize`); darüber Lesezeichen (`.book-pins`, `pinJournal`); unten Leiste mit vorige Seite, Verlauf zurück, Bibliothek, Schriftgröße, Verlauf vor, nächste Seite (`movePage`, `navigateHistory`, `library`).
+- **Neuzeichnen:** Wechsel von Buch, Kapitel und Seite laufen über `loadPage`, das nur `.tocList` und `.chapter` per jQuery ersetzt, ohne erneutes `render` – Mobil-Anpassungen per Render-Hook allein reichen also nicht.
+- **Öffnen:** Knopf „Journal-Browser“ oben im Journal-Verzeichnis (Hook `renderJournalDirectory`, `#openJournalBrowser`), Taste J (Keybinding nicht auf SL beschränkt), Willkommens- und Hilfetexte mit `openJournalBrowser`/`openBookInJournalBrowser`.
+- **Rechte:** Spieler sehen nur Bücher, die die SL freigibt (Augen-Schalter, `toggleBookVisibility`: Welt-Einstellung `expansionPermissions` und Kompendium-Rechte BEOBACHTER); die Spielanleitung ist immer sichtbar. Nur SL: Modul importieren/initialisieren (`importBook`), Szenen aktivieren (`activateScene`), Freigabe, eigene Kompendien (`addCustomBook`), Personen einrichten (`setupPersonae`), kostenlose Module ausblenden.
+- **Bilder:** Rechtsklick auf ein Bild im Kapitel → `showArtwork` (anzeigen, die SL kann es den Spielern zeigen). Das System prüft `button == 2` an Maus-Ereignissen; ein Langdruck auf dem Touchgerät löst das nicht aus.
+
+### 16.2 Befund heute (ohne Anpassung)
+
+| | Smartphone 390 × 844 | Tablet 820 × 1180 |
+|---|---|---|
+| Erreichbar | ja: Journal-Knopf der Shell → Verzeichnis, oben „Journal-Browser“ (350 × 40 px). Taste J fehlt mangels Tastatur | gleich |
+| Fenster | bildschirmfüllend (`dsa5h-m-window`), hell, unser Mobil-Fensterkopf | gleich |
+| Aufteilung | zwei Spalten nebeneinander: Inhaltsverzeichnis 107 px, Kapitel 251 px – Buchtitel und Kapitelnamen brechen mitten im Wort, Überschriften der Kapitel riesig (h1 vier Zeilen), Suchfeld nur 60 px breit | Inhaltsverzeichnis 236 px, Kapitel 552 px – gut lesbar |
+| Bedienung | 30 Ziele unter 44 px im Kapitel (Leiste unten 30 px, Einklapp-Pfeil, Lesezeichen/Auge, Links); Leiste bricht zweizeilig um | dieselben kleinen Ziele, Leiste einzeilig |
+| Bibliothek | Text, Bild und Abschnitte gequetscht neben der schmalen Suchspalte | brauchbar |
+| Bilder | Bildanzeige per Rechtsklick nicht erreichbar | gleich |
+| Fehler | keine Skriptfehler | keine |
+
+Ergebnis: Das Tablet braucht nur Feinschliff. Auf dem Smartphone ist der Browser erreichbar, aber praktisch nicht lesbar.
+
+### 16.3 Was es braucht (Vorschlag)
+
+Grundsatz wie bei allen Systemfenstern (15.4, E-F3): Vorlagen und Logik des Systems bleiben, wir hängen nur Klassen und CSS an und rufen dessen Aktionen auf; kein Nachbau.
+
+1. **Erkennung und Neuzeichnen (S):** `markWindow` kennzeichnet das Fenster zusätzlich (`dsa5h-m-jbrowser`). Ein `MutationObserver` auf `.chapter`/`.tocList` setzt nach jedem `loadPage` den Zustand (Bibliothek, Buch-Startseite, Kapitel) als Klasse und ergänzt unsere Leiste; kein Überschreiben von `loadPage`.
+2. **Smartphone: eine Spalte (M):**
+   - Bibliothek: Suche über die ganze Breite, Bücher als Liste (Cover klein links, Titel, Status), „Zuletzt geöffnet“ oben.
+   - Buch: Lesespalte über die ganze Breite; das Inhaltsverzeichnis wird zum Blatt von unten (wie die Seitenliste im Journal, 13.5) und öffnet über „Kapitel“ in der Leiste; Buch-Startseite zeigt das Inhaltsverzeichnis direkt unter dem Cover.
+   - Leiste unten 48 px wie im Journal: „‹ · Kapitel ▾ · ›“, dazu „⋮“ mit Verlauf zurück/vor, Bibliothek, Schriftgröße, Volltextsuche; Lesezeichen (`.book-pins`) als wischbare Chips oben.
+   - Lesbarkeit: Fließtext 16 px, Überschriften begrenzt (h1 ≈ 28 px), Bilder und Tabellen auf Bildschirmbreite (Tabellen waagerecht scrollbar).
+3. **Tablet: Feinschliff (S):** zwei Spalten behalten, Inhaltsverzeichnis per „Kapitel“ ein-/ausblendbar (Systemschalter `tocCollapser`), Leiste und Bedienelemente 44 px, Lesezeichen als Chips.
+4. **Touch-Ersatz (S):** Antippen eines Bilds öffnet `showArtwork` wie der Rechtsklick (SL kann es dort den Spielern zeigen); Verweise auf Akteure/Journale öffnen per Tippen (geht schon), Ziehen in die Szene entfällt mobil.
+5. **SL-Funktionen (S):** Lesen und Freigeben (Auge) auch mobil; Importieren, Szenen aktivieren, eigene Kompendien und Personen einrichten mit Hinweis „am Desktop“ (wie 5.3/15.2). Entscheidung E-J2.
+6. **Schnellzugriff (S, optional):** zusätzlicher Eintrag „Journal-Browser“ im Konto-Menü der Shell, weil Taste J fehlt. Entscheidung E-J3.
+
+Vorgehen nach dem Ablauf für neue Ansichten (AGENTS.md): (1) Mobil-Click-Dummy `clickdummy/mobile/journalbrowser.html` mit Bibliothek, Buch und Kapitel für Smartphone und Tablet, (2) Rückmeldung, (3) Umsetzung in `scripts/mobile/journal-browser.js` (neu, aus `initMobile`) und `styles/dsa5-helpers-mobile.css`; Prüfung in der Testinstanz mit Mess-Skript (Überlauf, Ziele < 44 px, Schrift < 14 px), möglichst auch mit einem echten Abenteuermodul (Szenen- und Akteurlisten, Bilder), Desktop unverändert. Grober Rahmen: Dummy 0,5–1 Tag, Umsetzung 1–2 Tage.
+
+Risiken: Das System baut Inhaltsverzeichnis und Kapitel als HTML-Strings mit eigenen Klassen; ändert sich das in einem DSA5-Update, greifen unsere Regeln nicht mehr (nur Aussehen, keine Funktion betroffen). Inhalte der Premium-Module sind HTML aus Kompendien und unterschiedlich gestaltet (breite Tabellen, schwebende Bilder); die Lesespalte muss das abfangen.
+
+### 16.4 Entscheidungen (Nutzer 2026-11-12)
+
+- **E-J1 Version:** 8.1.0.
+- **E-J2 SL am Handy:** die Freigabe für Spieler bleibt, wie das System sie anbietet; SL-Funktionen werden nicht ausgeblendet (sie laufen im Vollbild wie die übrigen Systemfenster).
+- **E-J3 Schnellzugriff:** vorerst nur über das Journal-Verzeichnis.
+- Ohne Click-Dummy direkt in Foundry umgesetzt (Nutzerauftrag).
+
+### 16.5 Umsetzung (2026-11-12)
+
+`scripts/mobile/journal-browser.js` (aus `initMobile` nach `initJournal`): erkennt das Fenster (`game.dsa5.apps.journalBrowser` bzw. `.bookWizardsheet`), setzt `dsa5h-m-jbrowser`, den Zustand `data-dsa5h-jb` (library/start/page, aus dem DOM: `.tocList .library-sidebar` = Bibliothek, `.chapter .cover` = Buch-Startseite) und `dsa5h-m-jb-library`; ein `MutationObserver` am Fenster aktualisiert nach `loadPage`/`showJournal` (eigene Leiste ausgenommen, gebündelt per `requestAnimationFrame`). Smartphone: Leiste `.dsa5h-m-jbnav` am Ende von `.window-content` („‹ · Inhalt ▾ · › · ⋮“, Mitte zeigt den Seitentitel aus `.chapter h1`), Knöpfe lösen die Systemknöpfe in `.tocPageNav` aus (`movePage`, `navigateHistory`, `library`, `increaseFontSize`; gesperrt, wenn der Systemknopf fehlt oder gesperrt ist). Inhaltsverzeichnis als Ebene (`dsa5h-m-jb-tocopen`): auf der Buch-Startseite offen, nach Seitenwechsel, Auswahl im Verzeichnis oder Menü zu. Bild im Text antippen → `DSA5_Utility.showArtwork` wie der Rechtsklick des Systems. CSS: Mobil-Stylesheet Abschnitt 14. Geprüft in der Testinstanz (Smartphone 390 × 844, Tablet 820 × 1180, Spieler, Spielanleitung): kein Überlauf, keine Skriptfehler, Blättern/Verlauf/Inhalt/Bildanzeige per echtem Tipp; Desktop ohne unsere Klassen. Offen: Prüfung mit einem echten Abenteuermodul (Szenen- und Akteurlisten, breite Tabellen) und als SL.
+
+### 16.6 Rückmeldung 2026-11-13 und Nachbesserung
+
+Rückmeldung (Tablet/Handy, mit Abenteuermodulen, als SL): Personen-, Freigabe- und Einklappknopf zu klein; Bücher nicht als antippbar erkennbar; am Tablet reagieren ‹ › nicht; der Knopf oben links zurück zur Übersicht ist unscheinbar.
+
+- **‹ › am Tablet:** `_movePage` des Systems kehrt still zurück, wenn kein Ziel existiert – auf der Buch-Startseite (vorher kein Kapitel gewählt, erstes Kapitel ist bei Abenteuern die Vorbereitung) sowie in den Kapiteln `prep`/`foundryUsage`. Am Handy waren unsere Knöpfe außerhalb normaler Seiten schon gesperrt, daher nur am Tablet aufgefallen. Jetzt prüft `canMove` (gleiche Logik wie DSA5 8.2.1 über `journals`, `bookData.chapters`, `selectedChapter`, `selectedSubChapter`; bei Fehler freigeben) beide Richtungen und setzt `disabled` an den Systemknöpfen; die Handy-Leiste übernimmt das. Annahme, nicht live bestätigt: Gemeint waren die Blätterknöpfe der Leiste, nicht der Einklapp-Pfeil.
+- **Zurück zur Übersicht:** der Buchtitel oben im Inhaltsverzeichnis (`.book-toc h2 > a[data-action="loadBook"]`) – jetzt Knopf „‹ Titel“, 48 px.
+- **Bücher:** `.book-list-link` (Liste und „Zuletzt geöffnet“) als Schaltfläche mit Rahmen und „›“; Selektoren mit sechs Klassen, weil das System bis zu fünf nutzt.
+- **SL-Knöpfe:** Personen, Freigabe, Entfernen, Abschnittsknöpfe und die Kartenansicht-Knöpfe 44 px mit Rahmen; Tablet: Einklapp-Pfeil 44 px rund, eingeklappte Spalte 56 px.
+- Geprüft nur statisch (Tests, Syntax); die Testinstanz war von einer anderen Sitzung belegt, ein Abenteuermodul liegt dort ohnehin nicht vor.
+- **Nachtrag 2026-11-13:** Gemeint war der Knopf oben links im Fensterkopf – der System-Knopf „Hauptverzeichnis“ (`majorButtons`, `button.header-control.fa-book[data-action="library"]` vor dem Titel), den der Mobil-Kopf wie das Fenstersymbol aussehen ließ. Jetzt Schaltfläche mit Rahmen, Symbol und Text „Bibliothek“ (`data-dsa5h-label` aus `journal-browser.js`, Text per `::after`); in der Bibliothek ausgeblendet, weil wirkungslos.

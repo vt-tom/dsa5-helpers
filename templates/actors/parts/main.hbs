@@ -1,21 +1,6 @@
       <div class="dsa5h-tab" data-tab-panel="main" {{#unless (eq dsa5h.currentTab "main")}}hidden{{/unless}}>
         
-        <div class="dsa5h-attr-tiles">
-          {{#each prepare.mentalAttrs as |ch|}}
-          <div class="dsa5h-attr-tile"><button type="button" class="dsa5h-attr-roll" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}">
-            <span class="dsa5h-attr-die" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span>
-            <span class="dsa5h-attr-key">{{attrAbbr ch}}</span></button>
-{{#if @root.dsa5h.advanceMode}}<div class="dsa5h-attribute-edit">{{#if @root.prepare.canAdvance}}<button type="button" data-action="advanceWrapper" data-fct="_refundAttributeAdvance" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize (concatUp 'CHAR.' ch))}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advanceAttribute" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize (concatUp 'CHAR.' ch))}}">+</button>{{/if}}{{#if @root.dsa5h.editMode}}<label>{{localize 'Initial'}}<input type="number" name="system.characteristics.{{ch}}.initial" value="{{getAttr @root.document ch 'initial'}}"></label><label>{{localize 'ABBR.advances'}}<input type="number" name="system.characteristics.{{ch}}.advances" value="{{getAttr @root.document ch 'advances'}}"></label>{{/if}}</div>{{/if}}
-          </div>
-          {{/each}}
-          {{#each prepare.bodyAttrs as |ch|}}
-          <div class="dsa5h-attr-tile"><button type="button" class="dsa5h-attr-roll" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}">
-            <span class="dsa5h-attr-die" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')">{{getAttr ../document ch "value"}}</span>
-            <span class="dsa5h-attr-key">{{attrAbbr ch}}</span></button>
-{{#if @root.dsa5h.advanceMode}}<div class="dsa5h-attribute-edit">{{#if @root.prepare.canAdvance}}<button type="button" data-action="advanceWrapper" data-fct="_refundAttributeAdvance" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.RefundNamed' name=(localize (concatUp 'CHAR.' ch))}}">−</button><button type="button" data-action="advanceWrapper" data-fct="_advanceAttribute" data-attr="{{ch}}" aria-label="{{localize 'DSA5HELPERS.AdvanceNamed' name=(localize (concatUp 'CHAR.' ch))}}">+</button>{{/if}}{{#if @root.dsa5h.editMode}}<label>{{localize 'Initial'}}<input type="number" name="system.characteristics.{{ch}}.initial" value="{{getAttr @root.document ch 'initial'}}"></label><label>{{localize 'ABBR.advances'}}<input type="number" name="system.characteristics.{{ch}}.advances" value="{{getAttr @root.document ch 'advances'}}"></label>{{/if}}</div>{{/if}}
-          </div>
-          {{/each}}
-        </div>
+        {{> "modules/dsa5-helpers/templates/actors/parts/attr-tiles.hbs"}}
 
         <div class="grid-2">
           <div class="col-gap">

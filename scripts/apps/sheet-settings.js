@@ -1,7 +1,7 @@
 /**
  * Untermenüs der Moduleinstellungen (Nutzer 2026-10-20: Einstellungen gruppieren, damit die Liste nicht
  * unübersichtlich wird; 2026-11-02: alle Einstellungen in Untermenüs, die Liste zeigt nur noch Knöpfe).
- * „Heldenbogen“ bündelt die Welt-Einstellungen des Bogens: Standard-Bogen (#13), Bearbeiten-Modus für Spieler (#34),
+ * „Heldenbogen“ bündelt die Welt-Einstellungen des Bogens: Standard-Bogen für Helden (#13) und Kreaturen (#54), Bearbeiten-Modus für Spieler (#34),
  * Reiter Aufträge/Personen (#39), Talent-Vorschläge (#75) und Ordner für Bannerbilder (#46). „Darstellung und Geräte“
  * bündelt Probendialoge am Desktop (#63) und das hybride Spiel auf Tablet/Smartphone; Welt-Einstellungen darin sieht nur,
  * wer sie ändern darf, Geräte-Einstellungen jeder. Die Einstellungen selbst sind mit config: false registriert; neue
@@ -17,6 +17,8 @@ const hybrid = () => game.settings.get(MODULE_ID, 'hybridPlay');
  */
 export const SHEET_SETTINGS = [
   { key: 'defaultSheet', kind: 'checkbox' },
+  // Kreaturbogen gibt es nur unter v14 (#54).
+  { key: 'defaultCreatureSheet', kind: 'checkbox', when: () => !isFoundry13() },
   { key: 'playersMayEdit', kind: 'checkbox' },
   { key: 'questsTab', kind: 'checkbox', when: () => !isFoundry13() },
   { key: 'personaeTab', kind: 'checkbox' },

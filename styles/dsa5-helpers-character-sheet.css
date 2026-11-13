@@ -1020,6 +1020,14 @@
   color: rgba(224, 192, 128, .5);
 }
 
+/* Kreaturbogen (#54): Größe und Anzahl als reiner Text neben der Kreaturklasse. */
+.dsa5-helpers-sheet .dsa5h-ident-text {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .dsa5-helpers-sheet .dsa5h-badge {
   display: flex;
   min-width: 0;
@@ -1669,6 +1677,24 @@
   padding: 14px;
   color: var(--muted);
   margin: 0;
+}
+
+/* --- Hinweisleiste (Händler-/Schatzmodus, #54) --- */
+
+.dsa5-helpers-sheet .dsa5h-notice {
+  flex: none;
+  margin: 8px 16px 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  line-height: 1.35;
+}
+
+.dsa5-helpers-sheet .dsa5h-limited > .dsa5h-notice {
+  margin: 0 0 12px;
 }
 
 /* --- Raster & Panels --- */
@@ -2444,8 +2470,8 @@
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
-  grid-template-rows: auto auto auto 1fr;
-  grid-template-areas: "sidebar head" "sidebar attrbar" "sidebar tabtitle" "sidebar content";
+  grid-template-rows: auto auto auto auto 1fr;
+  grid-template-areas: "sidebar head" "sidebar attrbar" "sidebar notice" "sidebar tabtitle" "sidebar content";
   min-height: 0;
 }
 
@@ -2475,6 +2501,10 @@
 
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-attr-overlay {
   grid-area: attrbar;
+}
+
+.dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main > .dsa5h-notice {
+  grid-area: notice;
 }
 
 .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-tab-title {
@@ -3208,6 +3238,51 @@
   min-height: 18px;
 }
 
+/* --- Kreatur (#54): Werkzeuge im Panel-Titel, Schalter in Wertezeilen --- */
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-panel-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-panel-tool, .dsa5h-defense-toggle) {
+  min-width: var(--hit-sm);
+  min-height: var(--hit-sm);
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-defense-toggle {
+  margin-left: 6px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-defense-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-panel-tool, .dsa5h-defense-toggle):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-indent {
+  padding-left: 14px;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-content :is(.dsa5h-panel-tool, .dsa5h-defense-toggle):hover {
+    border-color: var(--accent);
+  }
+}
+
 /* --- Abenteuerpunkte --- */
 
 .dsa5-helpers-sheet .dsa5h-content .xp-grid {
@@ -3509,6 +3584,52 @@
 /* ==========================================================================
    10. Kampf
    ========================================================================== */
+
+/* --- Kreatur (#54): Kampfwerte als Reihe, natürliche Rüstung --- */
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-creature-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-creature-stat {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 4px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-creature-stat strong {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  font-size: var(--fs-big);
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-creature-stat small {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+  text-align: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-die-dodge {
+  background-image: url('../../../systems/dsa5/icons/dice/d20ge.svg');
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-creature-armor-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-creature-armor-row img {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+}
 
 /* --- Kampftechnik-Verweis --- */
 
@@ -5487,6 +5608,11 @@
    11. Magie & Religion
    ========================================================================== */
 
+/* Kreaturbogen (#54): wie im Systembogen (creature-magic.hbs/creature-religion.hbs) ohne Traditionsleiste. */
+.dsa5-helpers-sheet.dsa5h-creature .dsa5h-tradition-header {
+  display: none;
+}
+
 /* --- Traditionsleiste --- */
 
 /* Niedriger als vorher (war padding:10px rundum + 5px Label-Abstand) — Nutzer-Feedback 2026-09-19: "sollte nicht
@@ -6871,8 +6997,8 @@
    Container-Regeln auf .dsa5h-main selbst, die nie griffen (und gegriffen schlechter aussahen). */
 .dsa5-helpers-sheet.dsa5h-narrow[data-tab="cover"] .dsa5h-main {
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto auto minmax(0, 1fr);
-  grid-template-areas: "head" "attrbar" "tabtitle" "content";
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  grid-template-areas: "head" "attrbar" "notice" "tabtitle" "content";
 }
 
 .dsa5-helpers-sheet.dsa5h-narrow[data-tab="cover"] [data-tab-panel="cover"] > .dsa5h-cover-sidebar {

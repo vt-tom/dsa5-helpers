@@ -57,8 +57,12 @@ Manifest-URL je Kanal: `https://github.com/vt-tom/dsa5-helpers/releases/download
   `8.0.<n>`; betrifft der Fehler auch v13, Schritt 3 mit `git merge --no-ff release/8.0.<n>` in `v13` und Tag `v7.0.<n>`
   (Version im v13-Paket rechnet `package-module.py` aus dem Tag). Danach `main` nachziehen, Bugfix nach `release/8.1.0`
   übernehmen und den nächsten Bugfix-Branch `release/8.0.<n+1>` aus dem neuen Tag anlegen.
-- **8.1.0 veröffentlichen:** wie Schritt 1, 2 und 4 unten mit `release/8.1.0`; Schritt 3 (v13) entfällt. Danach den
-  Bugfix-Branch `release/8.1.1` aus `v8.1.0` anlegen; `release/8.0.<n>` wird nicht weitergeführt.
+- **8.1.0 veröffentlichen (Nutzerentscheidung 12.11.2026: zuerst als Beta):** Schritt 1 wie unten mit `release/8.1.0`, dann
+  `gh release create v8.1.0 --verify-tag --prerelease --latest=false --title "v8.1.0 für Foundry v14 (Beta)" --notes-file notes-8.md`
+  → nur `foundry-v14-beta` (und alter Kanal `beta`) bekommen 8.1.0. Ist die Beta gut: `gh release edit v8.1.0
+  --prerelease=false --latest`, der Job baut dann `foundry-v14`; erst danach Schritt 4 (`main`) und den Bugfix-Branch
+  `release/8.1.1` aus `v8.1.0` anlegen. Korrekturen während der Beta als neue Pre-release `v8.1.1`. Schritt 3 (v13)
+  entfällt; `release/8.0.<n>` wird nach dem normalen 8.1.0 nicht weitergeführt.
 
 #### 8.0.0 und 7.0.0 veröffentlichen (am 12.11.2026 so durchgeführt)
 

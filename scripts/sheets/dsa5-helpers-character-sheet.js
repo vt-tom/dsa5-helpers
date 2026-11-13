@@ -1,5 +1,5 @@
 /** Alternative presentation; all rule actions and actor updates are inherited from DSA5. */
-import { systemApi, isFoundry13, contextMenuEntries } from '../compat/runtime.js';
+import { systemApi, isFoundry13, contextMenuEntries, MERCHANT_SHEETS } from '../compat/runtime.js';
 import { openPowerSourceDialog } from '../compat/powersource-dialog.js';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
@@ -7,6 +7,9 @@ import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance,
 import { openHouseRules } from '../apps/house-rules.js';
 import { almanacTabEnabled, loadQuests, loadPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
 import { buildSuggestions, suggestionCount, suggestionsCollapsed, COLLAPSED_SETTING, COUNT_FLAG, COUNT_MIN, COUNT_MAX } from '../skill-suggestions/context.js';
+
+// Händler-Modi des Systems (DSA5.merchantTypes ohne „none“) → Texte des Systems.
+const MERCHANT_TYPE_LABELS = { merchant: 'MERCHANT.typeMerchant', loot: 'MERCHANT.typeLoot', epic: 'MERCHANT.typeEpic' };
 const MODULE_ID = 'dsa5-helpers';
 // Unter dieser Inhaltsbreite (px) zeigt der Desktop-Bogen das Titelblatt einspaltig wie auf dem Smartphone.
 const NARROW_WIDTH = 560;
@@ -145,6 +148,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   _currentTab = 'cover';
   // Reiter im Kasten der Titelblatt-Leiste: 'conditions' | 'details' (Variante G, Issues #27/#31).
   _coverSideTab = 'conditions';
+  _coverSideTabs = ['conditions', 'details'];
   _subtabs = { skills: 'body', combat: 'body', magic: 'spells', religion: 'spells', notes: 'details', personae: 'dramatis' };
   _search = { talent: '', gear: '', combatskill: '' };
   _favoritePending = false;
@@ -254,6 +258,18 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     target.classList.add('dsa5h-just-changed');
   }
 
+  // Händler-/Schatzmodus (#54, Nutzerentscheidung 2026-11-13): Laden und Schatzkiste zeigt nur der Händlerbogen des
+  // Systems (eigene Bögen #77/#78). Unser Bogen ersetzt sie nicht, er sagt es nur; Typnamen aus den System-Texten.
+  _merchantNotice() {
+    const key = MERCHANT_TYPE_LABELS[this.actor.system.merchant?.merchantType];
+    if (!key) return null;
+    const type = game.i18n.localize(key);
+    if (!this.actor.isOwner) return game.i18n.format('DSA5HELPERS.MerchantNotice.Viewer', { type });
+    // Menüpunkt und Bogenname so, wie Foundry und die Übersetzung sie zeigen („Bogen anpassen“, „DSA5 - Händler/…“).
+    const sheet = CONFIG.Actor.sheetClasses?.[this.actor.type]?.[MERCHANT_SHEETS[this.actor.type]]?.label;
+    return game.i18n.format('DSA5HELPERS.MerchantNotice.Owner', { type, configure: game.i18n.localize('SHEETS.ConfigureSheet'), sheet: sheet ? game.i18n.localize(sheet) : type });
+  }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const limited = this.showLimited();
@@ -273,7 +289,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
         && (tab.id !== 'companion' || (typeof this.prepareCompanionTab === 'function' && !this.actor.getFlag?.(MODULE_ID, 'hideCompanionTab')))
         && (tab.id !== QUESTS_TAB || !isFoundry13())
         && ((tab.id !== QUESTS_TAB && tab.id !== PERSONAE_TAB) || (!limited && almanacTabEnabled(tab.id))))
-      .map(tab => ({ ...tab, label: localize('DSA5HELPERS.Tabs.' + tab.id), hint: localize('DSA5HELPERS.Hints.' + tab.id) }));
+      .map(tab => ({ ...tab, label: this._tabLabel(tab.id), hint: this._tabHint(tab.id) }));
     if (!tabs.some(tab => tab.id === this._currentTab)) this._currentTab = 'cover';
     // DSA5StatusEffects.prepareActiveEffects() hands us CONFIG.statusEffects in its raw config order (roughly by
     // severity/category) — the add-condition picker reads better alphabetically (Nutzer-Feedback 2026-09-19).
@@ -463,6 +479,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       autoDefense: !limited && this.actor.isOwner && isRuleActive('passiveDefense') ? { choices: defenseChoices(this.actor) } : null,
       body,
       happyTalentsCount: String(tradition.clerical.happyTalents ?? this.actor.system.happyTalents?.value ?? '').split(',').map(s => s.trim()).filter(Boolean).length,
+      merchantNotice: this._merchantNotice(),
     };
     // The original sheet prepares this only for its separate companion part.
     if (!limited && typeof this.prepareCompanionTab === 'function') await this.prepareCompanionTab(context);
@@ -1442,8 +1459,19 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   }
 
   static _setCoverSideTab(_event, target) {
-    this._coverSideTab = target.dataset.sideTab === 'details' ? 'details' : 'conditions';
+    // Erlaubte Reiter je Bogenart (_coverSideTabs; Kreatur: Werte | Zustände), Unbekanntes fällt auf den ersten zurück.
+    const tabs = this._coverSideTabs;
+    this._coverSideTab = tabs.includes(target.dataset.sideTab) ? target.dataset.sideTab : tabs[0];
     this._applyCurrentTab();
+  }
+
+  // Beschriftung und Hinweis eines Reiters; der Kreaturbogen überschreibt einzelne (Ausrüstung → Beute).
+  _tabLabel(id) {
+    return game.i18n.localize('DSA5HELPERS.Tabs.' + id);
+  }
+
+  _tabHint(id) {
+    return game.i18n.localize('DSA5HELPERS.Hints.' + id);
   }
 
   _aggregatedProgress(item) {
@@ -1601,11 +1629,10 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     // _onDropActor daran den Gefährten-Reiter und legt eine Kreatur auf der Favoriten-Fläche als Beschwörungs-
     // Favorit an statt als Begleiter (Issue #15); ebenso CreatureDropDialog und das Anlegen von Rüstung im Kampf.
     this.tabGroups.sheet = this._currentTab;
-    const localize = key => game.i18n.localize(key);
     const title = root.querySelector('[data-tab-title-label]');
-    if (title) title.textContent = localize('DSA5HELPERS.Tabs.' + this._currentTab);
+    if (title) title.textContent = this._tabLabel(this._currentTab);
     const hint = root.querySelector('[data-tab-hint]');
-    if (hint) hint.textContent = localize('DSA5HELPERS.Hints.' + this._currentTab);
+    if (hint) hint.textContent = this._tabHint(this._currentTab);
     root.querySelectorAll('[data-tab-panel]').forEach(el => { el.hidden = el.dataset.tabPanel !== this._currentTab; });
     root.querySelectorAll('[data-tab-rail-target]').forEach(el => {
       const active = el.dataset.tabRailTarget === this._currentTab;

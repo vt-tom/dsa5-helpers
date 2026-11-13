@@ -1,0 +1,9 @@
+{{!-- Titelblatt der Kreatur (Issue #54, Click-Dummy actor-types.js renderTypeCover/creatureCoverLists, Rückmeldung 2026-11-12):
+      Angriffe (natürliche aus den Eigenschaften, dazu ausgerüstete Waffen), alle Talente mit Wert – Sinnesschärfe und
+      Willenskraft immer oben –, Zauber/Rituale und Liturgien/Zeremonien, falls vorhanden. Ohne Anzahl-Regler und Favoriten. --}}
+<div class="dsa5h-tab" data-tab-panel="cover" hidden>
+<section class="panel dsa5h-short-weapons-panel"><div class="panel-title">{{localize 'DSA5HELPERS.Creature.Attacks'}}</div>{{#if dsa5h.creature.attacks.length}}<div class="dsa5h-short-weapons">{{#each dsa5h.creature.attacks}}{{> "modules/dsa5-helpers/templates/actors/parts/weapon-short.hbs" item=item ranged=ranged}}{{/each}}</div>{{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Creature.NoAttacks'}}</p>{{/if}}</section>
+{{#if dsa5h.creature.talents.length}}<section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Creature.TalentsCount' count=dsa5h.creature.talents.length}}</div><div class="dsa5h-fav-grid">{{#each dsa5h.creature.talents as |item|}}{{> "modules/dsa5-helpers/templates/actors/parts/creature-card.hbs" item=item}}{{/each}}</div></section>{{/if}}
+{{#if dsa5h.creature.spells.length}}<section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Creature.Spells'}}</div><div class="dsa5h-fav-grid">{{#each dsa5h.creature.spells as |item|}}{{> "modules/dsa5-helpers/templates/actors/parts/creature-card.hbs" item=item}}{{/each}}</div></section>{{/if}}
+{{#if dsa5h.creature.liturgies.length}}<section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Creature.Liturgies'}}</div><div class="dsa5h-fav-grid">{{#each dsa5h.creature.liturgies as |item|}}{{> "modules/dsa5-helpers/templates/actors/parts/creature-card.hbs" item=item}}{{/each}}</div></section>{{/if}}
+</div>

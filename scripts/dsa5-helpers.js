@@ -1,5 +1,6 @@
 import { initSkillSuggestions } from './skill-suggestions/tracking.js';
 import { Dsa5HelpersCharacterSheet as ImportedCharacterSheet, createCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
+import { Dsa5HelpersCreatureSheet as ImportedCreatureSheet, createCreatureSheet } from './sheets/dsa5-helpers-creature-sheet.js';
 import { clearCharacterBuilderFlag } from './compat/runtime.js';
 import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
 import { initSteigerungsplaner } from './compat/steigerungsplaner.js';
@@ -10,6 +11,7 @@ import { initHud } from './hud.js';
 import { registerAlmanacTabs } from './sheets/almanac.js';
 import { getHouseRulesApp, openHouseRules } from './apps/house-rules.js';
 import { initSheetSwitcher } from './sheet-switcher.js';
+import { initMerchantReturn } from './compat/merchant-return.js';
 import { initBagDrag } from './compat/bag-drag.js';
 import { initMobile, mobileMode } from './mobile/mobile.js';
 import { initRollDialogs } from './mobile/roll-dialog.js';
@@ -44,6 +46,8 @@ Hooks.once('init', async () => {
   // (config: false). Für alle offen (#75): Spieler sehen darin nur die Talent-Vorschläge, Welt-Einstellungen nur die SL.
   game.settings.registerMenu('dsa5-helpers', 'sheetSettings', { name: 'DSA5HELPERS.Settings.SheetMenu.Title', label: 'DSA5HELPERS.Settings.SheetMenu.Label', hint: 'DSA5HELPERS.Settings.SheetMenu.Hint', icon: 'fas fa-id-card', type: getSheetSettingsApp(), restricted: false });
   game.settings.register('dsa5-helpers', 'defaultSheet', { name: 'DSA5HELPERS.Settings.DefaultSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultSheet.Hint', scope: 'world', config: false, restricted: true, type: Boolean, default: false, requiresReload: true });
+  // Standard-Bogen für Kreaturen (#54, Nutzerwunsch 2026-11-13): wie beim Helden nur über makeDefault, nur v14 hat den Kreaturbogen.
+  game.settings.register('dsa5-helpers', 'defaultCreatureSheet', { name: 'DSA5HELPERS.Settings.DefaultCreatureSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultCreatureSheet.Hint', scope: 'world', config: false, restricted: true, type: Boolean, default: false, requiresReload: true });
   // Bannerbild ohne Dateibrowser (Issue #46): Standardordner der SL für Bilder der Spieler.
   registerBannerSettings();
   // Drei Modi (Issue #34): dürfen Spieler den Bearbeiten-Modus nutzen (Werte ohne AP ändern)? Die SL darf immer.
@@ -72,6 +76,7 @@ Hooks.once('init', async () => {
   initRollDialogs(mobileMode);
   // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
   initSheetSwitcher();
+  initMerchantReturn();
   initBagDrag();
   initSkillSuggestions();
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
@@ -96,6 +101,14 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/house-rules/passive-defense.hbs",
   "modules/dsa5-helpers/templates/actors/dsa5-helpers-character-sheet.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/attr-tiles.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/auto-defense.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/creature-card.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/creature-combat.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/creature-combat-stats.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/creature-cover.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/creature-main.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/creature-notes.hbs",
   "modules/dsa5-helpers/templates/actors/parts/energy-zone.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body-hand.hbs",
   "modules/dsa5-helpers/templates/actors/parts/ammo-pick.hbs",
@@ -142,6 +155,9 @@ Hooks.once('init', async () => {
   "systems/dsa5/templates/actors/parts/horse.hbs"
 ]);
   foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersCharacterSheet, { types: ['character'], makeDefault: game.settings.get('dsa5-helpers', 'defaultSheet'), label: 'DSA5HELPERS.SheetLabel' });
+  // Kreaturbogen (Issue #54): zusätzlich wählbar, per Einstellung Standard; erbt vom Kreaturbogen des Systems.
+  const Dsa5HelpersCreatureSheet = ImportedCreatureSheet ?? createCreatureSheet();
+  if (Dsa5HelpersCreatureSheet) foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersCreatureSheet, { types: ['creature'], makeDefault: game.settings.get('dsa5-helpers', 'defaultCreatureSheet'), label: 'DSA5HELPERS.CreatureSheetLabel' });
   // Reiter „Steigerungsplaner“, falls Lyynix' Planer aktiv ist (Issue #17).
   await initSteigerungsplaner();
 });

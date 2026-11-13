@@ -123,7 +123,7 @@ test('mobile (#64): own rolls as a bottom sheet, tablet setting, card buttons fo
  assert(read('styles/dsa5-helpers-mobile.css').includes(':is(#chat, #chat-notifications, .dsa5h-m-roll-card) .chat-message {'),'Kartenstil wie im Chat');
 });
 // Issue #7: Hover-Effekte nur in @media (hover: hover), damit sie auf Touch-Geräten nicht hängen bleiben (Modul und Click-Dummy).
-test('click dummy: every page loads the page menu and is listed there, with every link pointing at an existing page',()=>{const dir=path.join(root,'clickdummy');const pages=fs.readdirSync(dir,{recursive:true}).map(p=>p.split(path.sep).join('/')).filter(p=>p.endsWith('.html')&&!p.endsWith('.dc.html')&&!p.includes('vendor/'));const menu=read('clickdummy/pages.js');const listed=new Set([...menu.matchAll(/\["([\w/.-]+\.html)[?#"]/g)].map(m=>m[1]));for(const p of pages){assert.match(read('clickdummy/'+p),/<script src="(\.\.\/)?pages\.js(\?v=\d+)?"><\/script>/,p+' does not load pages.js');assert(listed.has(p),p+' missing in pages.js');}for(const p of listed)assert(pages.includes(p),'pages.js lists missing page '+p);});
+test('click dummy: every page loads the page menu and is listed there, with every link pointing at an existing page',()=>{const dir=path.join(root,'clickdummy');const pages=fs.readdirSync(dir,{recursive:true}).map(p=>p.split(path.sep).join('/')).filter(p=>p.endsWith('.html')&&!p.endsWith('.dc.html')&&!p.includes('vendor/'));const menu=read('clickdummy/pages.js');const listed=new Set([...menu.matchAll(/"([\w/.-]+\.html)[?#"]/g)].map(m=>m[1]));for(const p of pages){assert.match(read('clickdummy/'+p),/<script src="(\.\.\/)?pages\.js(\?v=\d+)?"><\/script>/,p+' does not load pages.js');assert(listed.has(p),p+' missing in pages.js');}for(const p of listed)assert(pages.includes(p),'pages.js lists missing page '+p);});
 test('every :hover rule sits inside @media (hover: hover)',()=>{for(const file of ['styles/dsa5-helpers-character-sheet.css','styles/dsa5-helpers-roll-dialog.css','clickdummy/style.css']){const bad=[];postcss.parse(read(file)).walkRules(rule=>{if(!/:hover\b/.test(rule.selector))return;let ok=false;for(let p=rule.parent;p&&p.type==='atrule';p=p.parent)if(p.name==='media'&&/\(\s*hover\s*:\s*hover\s*\)/.test(p.params))ok=true;if(!ok)bad.push(rule.selector.replace(/\s+/g,' '));});assert.deepEqual(bad,[],file+': :hover outside @media (hover: hover)');}});
 test('full hero renders all ten tabs, real item bindings and no duplicate form names',async()=>{const {context}=await prepare();const html=render(context);const panels=elements(html,el=>el.attribs?.['data-tab-panel']);assert.equal(panels.length,targetGeneration===13?9:10);assert(html.includes('data-action="rollAggregatedProbe"'));assert(html.includes('data-which="3"'));assert(!html.includes('data-item-id="bag-child"'),'bag contents belong to the DSA5 item sheet, not a sheet-side dialog');assert(html.includes('OWNER_SECRET'));assert(html.includes('GM_SECRET'));const names=elements(html,el=>el.attribs?.name).map(el=>el.attribs.name);assert.equal(names.length,new Set(names).size,'duplicate form field names');assert(!html.includes('TabInProgress'));});
 test('limited rendering excludes private actor data',async()=>{const {sheet}=await prepare();sheet.limited=true;const context=await sheet._prepareContext({});const html=render(context);assert(!html.includes('OWNER_SECRET'));assert(!html.includes('GM_SECRET'));assert(!html.includes('data-tab-panel'));assert(html.includes('Public biography'));assert.equal(Sheet.LIMITEDPARTS,Sheet.PARTS);});
@@ -456,6 +456,7 @@ test('changelog window and settings: template, localization and registration ord
  assert.equal(elements(full,el=>el.attribs?.['data-action']==='jumpTo').length,2);assert.deepEqual(details.map(d=>'open' in d.attribs),[true,false],'only the newest version starts open');assert.deepEqual([...missing],[]);
  const entry=read('scripts/dsa5-helpers.js');for(const key of ['defaultSheet','lastSeenVersion'])assert(entry.indexOf(`'${key}'`)<entry.indexOf('if (!Dsa5HelpersCharacterSheet)'),key+' must be registered even without the DSA5 sheet');
  assert(/makeDefault: game\.settings\.get\('dsa5-helpers', 'defaultSheet'\)/.test(entry));
+assert(/types: \['creature'\], makeDefault: game\.settings\.get\('dsa5-helpers', 'defaultCreatureSheet'\)/.test(entry),'creature sheet default via setting');assert(entry.indexOf("'defaultCreatureSheet'")<entry.indexOf('registerSheet('),'defaultCreatureSheet registered before sheets');assert(/key: 'defaultCreatureSheet', kind: 'checkbox', when: \(\) => !isFoundry13\(\)/.test(read('scripts/apps/sheet-settings.js')),'creature default in sheet menu, v14 only');for(const lang of ['de','en']){const l=JSON.parse(read(`lang/${lang}.json`)).DSA5HELPERS;assert(l.Settings.DefaultCreatureSheet.Name&&l.Settings.DefaultCreatureSheet.Hint,lang+' DefaultCreatureSheet');}
  for(const lang of ['de','en']){const l=JSON.parse(read(`lang/${lang}.json`)).DSA5HELPERS;for(const k of ['Title','Open','Hint','Updated','ShowAll','OnGitHub','Missing','Versions'])assert(l.Changelog[k],lang+' Changelog.'+k);assert(l.Settings.DefaultSheet.Name&&l.Settings.DefaultSheet.Hint);}
 });
 test('Steigerungsplaner (#17): advanceWrapper is inherited, planner tab only with the planner module',async()=>{
@@ -1220,6 +1221,56 @@ test('v13: factory resolves game.dsa5 after init and keeps existing sheet id, om
  } finally {global.game=savedGame;global.dsa5=savedSystem;}
 });
 
+test('Schatz/Händler: Rückweg führt auf den vorherigen Bogen (#54)', async () => {
+ const savedFoundry=global.foundry;
+ const get=(o,k)=>k.split('.').reduce((a,p)=>a?.[p],o);
+ const set=(o,k,v)=>{const ps=k.split('.');let a=o;for(const p of ps.slice(0,-1))a=a[p]??={};a[ps.at(-1)]=v;};
+ class ForcedDeletion {}
+ global.foundry={utils:{getProperty:get,setProperty:set,hasProperty:(o,k)=>get(o,k)!==undefined||k.split('.').slice(0,-1).reduce((a,p)=>a?.[p],o)?.hasOwnProperty(k.split('.').at(-1))},data:{operators:{ForcedDeletion}}};
+ try {
+  const {applyMerchantReturn}=await esm('scripts/compat/merchant-return.js');
+  const actor=(type,core,stored)=>({type,getFlag:(scope,key)=>scope==='core'?core:(key==='sheetBeforeMerchant'?stored:undefined)});
+  // Hinweg (dsa5-core „In Schatz umwandeln“): bisherigen Bogen merken, '' = Standard-Bogen
+  let ch={flags:{core:{sheetClass:'dsa5.CreatureMerchantSheetDSA5'}},system:{merchant:{merchantType:'loot'}}};
+  assert.equal(applyMerchantReturn(actor('creature','dsa5-helpers.Dsa5HelpersCreatureSheet'),ch),'remember');
+  assert.equal(ch.flags['dsa5-helpers'].sheetBeforeMerchant,'dsa5-helpers.Dsa5HelpersCreatureSheet');
+  ch={flags:{core:{sheetClass:'dsa5.CreatureMerchantSheetDSA5'}}};applyMerchantReturn(actor('creature',undefined),ch);assert.equal(ch.flags['dsa5-helpers'].sheetBeforeMerchant,'');
+  // Rückweg: System setzt fest den Systembogen → gemerkter Bogen, Merkzettel gelöscht
+  ch={flags:{core:{sheetClass:'dsa5.ActorSheetdsa5Creature'}},system:{merchant:{merchantType:'none'}}};
+  assert.equal(applyMerchantReturn(actor('creature','dsa5.CreatureMerchantSheetDSA5','dsa5-helpers.Dsa5HelpersCreatureSheet'),ch),'restore');
+  assert.equal(ch.flags.core.sheetClass,'dsa5-helpers.Dsa5HelpersCreatureSheet');assert(ch.flags['dsa5-helpers'].sheetBeforeMerchant instanceof ForcedDeletion);
+  // Ohne Merkzettel: Standard-Bogen nur, wenn unserer Standard ist
+  ch={flags:{core:{sheetClass:'dsa5.ActorSheetdsa5Creature'}}};assert.equal(applyMerchantReturn(actor('creature','dsa5.CreatureMerchantSheetDSA5'),ch,{},true),'restore');assert.equal(ch.flags.core.sheetClass,'');
+  ch={flags:{core:{sheetClass:'dsa5.ActorSheetdsa5Creature'}}};assert.equal(applyMerchantReturn(actor('creature','dsa5.CreatureMerchantSheetDSA5'),ch,{},false),undefined);assert.equal(ch.flags.core.sheetClass,'dsa5.ActorSheetdsa5Creature');
+  // Ausdrückliche Wahl über unseren Umschalter bleibt, Merkzettel wird trotzdem gelöscht
+  ch={flags:{core:{sheetClass:'dsa5.ActorSheetdsa5Creature'}}};assert.equal(applyMerchantReturn(actor('creature','dsa5.CreatureMerchantSheetDSA5','x'),ch,{dsa5hSheetChoice:true}),undefined);
+  assert.equal(ch.flags.core.sheetClass,'dsa5.ActorSheetdsa5Creature');assert(ch.flags['dsa5-helpers'].sheetBeforeMerchant instanceof ForcedDeletion);
+  // Helden ebenso, andere Typen und Updates ohne Bogenwechsel nicht
+  ch={flags:{core:{sheetClass:'dsa5.ActorSheetdsa5Character'}}};assert.equal(applyMerchantReturn(actor('character','dsa5.CharacterMerchantSheetDSA5',''),ch),'restore');assert.equal(ch.flags.core.sheetClass,'');
+  assert.equal(applyMerchantReturn(actor('npc','dsa5.MerchantSheetDSA5','x'),{flags:{core:{sheetClass:'dsa5.ActorSheetdsa5NPC'}}}),undefined);
+  assert.equal(applyMerchantReturn(actor('creature','dsa5.CreatureMerchantSheetDSA5','x'),{name:'Wolf'}),undefined);
+  // Systemvertrag DSA5 8.2.1 und dsa5-core: Klassennamen, Rückweg auf den Systembogen, Reihenfolge _preUpdate → Hook
+  // Händler-Automatik erst ab DSA5 8 (v14); 7.x wählt den Händlerbogen nur von Hand.
+  if(Number(JSON.parse(fs.readFileSync(path.join(dataRoot,'systems/dsa5/system.json'),'utf8')).version.split('.')[0])>=8){
+   const bundle=fs.readFileSync(systemBundle,'utf8');
+   assert(bundle.includes('creature:"CreatureMerchantSheetDSA5"')&&bundle.includes('creature:"ActorSheetdsa5Creature"'));
+   assert(/applySheetClassToChange\(this,\w\),super\._preUpdate/.test(bundle),'System stellt den Bogen in Actor._preUpdate um');
+   const loot=fs.readFileSync(path.join(dataRoot,'modules/dsa5-core/modules/loothelper.js'),'utf8');assert(loot.includes('"flags.core.sheetClass": `dsa5.${LootHelper.defaultSheetClasse[actor.type]}`'));
+   const backend=fs.readFileSync(path.join(app,'client/data/client-backend.mjs'),'utf8');assert(/await doc\._preUpdate\(changes, options, user\)[\s\S]{0,120}Hooks\.call\(`preUpdate\$\{type\}`/.test(backend));
+  }
+  // Umschalter: keine Händlerbögen, ausdrückliche Wahl als Option
+  const sw=read('scripts/sheet-switcher.js');assert(sw.includes('EXCLUDED = Object.values(MERCHANT_SHEETS)')&&sw.includes('{ dsa5hSheetChoice: true }'));
+  assert(read('scripts/dsa5-helpers.js').includes('initMerchantReturn();'));
+  // Hinweis im Helfer-Bogen bei Händler-/Schatzmodus (Nutzerentscheidung 2026-11-13): voller und eingeschränkter Bogen
+  const sheetSrc=read('scripts/sheets/dsa5-helpers-character-sheet.js');assert(sheetSrc.includes('merchantNotice: this._merchantNotice()')&&/loot: 'MERCHANT\.typeLoot'/.test(sheetSrc));
+  const tpl=read('templates/actors/dsa5-helpers-character-sheet.hbs');assert.equal((tpl.match(/<p class="dsa5h-notice" role="note">\{\{dsa5h\.merchantNotice\}\}<\/p>/g)||[]).length,2);
+  assert(tpl.indexOf('dsa5h.merchantNotice',tpl.indexOf('dsa5h-attr-overlay'))<tpl.indexOf('dsa5h-tab-title'),'Hinweis nach den Eigenschaftswürfeln, vor dem Reiter-Titel');
+  const sysLang=JSON.parse(fs.readFileSync(path.join(dataRoot,'systems/dsa5/lang/de.json'),'utf8'));for(const k of ['typeMerchant','typeLoot','typeEpic'])assert(sysLang.MERCHANT?.[k]??sysLang[`MERCHANT.${k}`],k);
+  for(const l of ['de','en']){const n=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.MerchantNotice;assert(['{type}','{configure}','{sheet}'].every(k=>n.Owner.includes(k))&&n.Viewer.includes('{type}'),l);}
+  const dummy=read('clickdummy/index.html');assert(dummy.includes('id="merchantModeToggle"')&&dummy.includes('id="merchantNotice"'));assert(read('clickdummy/pages.js').includes('["Händler/Schatz", "merchantModeToggle"]'));
+ } finally {global.foundry=savedFoundry;}
+});
+
 test('v13: context menu adapter and flag deletion use real older core contracts', async () => {
  const {contextMenuEntries,clearCharacterBuilderFlag}=await import(runtimeUrl);
  const savedGame=global.game,savedFoundry=global.foundry;
@@ -1532,4 +1583,37 @@ test('Talent-Vorschläge (#75): Einstellung unter „Heldenbogen einrichten“, 
  assert(SHEET_SETTINGS.some(s=>s.key==='skillSuggestions'),'im Menü Heldenbogen');
  assert(!DISPLAY_SETTINGS.some(s=>s.key==='skillSuggestions'),'nicht mehr unter Darstellung und Geräte');
  assert(/registerMenu\('dsa5-helpers', 'sheetSettings'.*restricted: false/.test(read('scripts/dsa5-helpers.js')),'Spieler erreichen ihre Benutzer-Einstellung');
+});
+test('Journal-Browser mobil (MOBILE.md 16): eingebunden, Texte vorhanden, nur Klassen und Systemknöpfe',()=>{
+ assert(read('scripts/mobile/mobile.js').includes("import { initJournalBrowser } from './journal-browser.js';"),'Import');
+ assert(/initJournal\(\);\s*initJournalBrowser\(\);/.test(read('scripts/mobile/mobile.js')),'Aufruf in initMobile');
+ const js=read('scripts/mobile/journal-browser.js');
+ assert(js.includes('MutationObserver'),'Zustand nach loadPage des Systems');
+ assert(!/loadPage\s*=|prototype\.loadPage/.test(js),'Systemmethoden nicht überschreiben');
+ for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`));const k=j.DSA5HELPERS.Mobile.JournalBrowser;for(const key of ['Contents','Prev','Next','More'])assert(k?.[key],`${l} ${key}`);}
+ const css=read('styles/dsa5-helpers-mobile.css');
+ assert(css.includes('14. Journal-Browser des Systems'),'Abschnitt im Inhaltsverzeichnis');
+ assert(/body\.dsa5h-phone \.dsa5h-m-jbrowser\.dsa5h-m-jb-tocopen \.tocSidebar \{/.test(css),'Inhaltsverzeichnis als Ebene auf dem Smartphone');
+});
+
+test('Kreaturbogen (#54): Titelseite mit Angriffen und Talenten, Werte links, Kampfwerte, Notizen der Kreatur, ohne AP-Band und Sterne', async()=>{
+ const {context}=await prepare();
+ const bite=Object.assign(item('bite','trait'),{parry:null});
+ context.document.system.creatureClass=valueField('Tier');
+ context.dsa5h.creature={size:'mittel',count:'1',attacks:[{item:bite,ranged:false}],naturalArmor:[item('fur','trait')],simpleCombat:true,talents:context.dsa5h.skillGroups.flatMap(g=>g.items),spells:[],liturgies:[],
+  values:[{short:'RS',label:'Rüstungsschutz',value:1}],defenseLabel:'Ausweichen',defense:7,armor:1,actions:1,speed:10,fatePoints:false,isAnimal:true};
+ const html=render(context);
+ for(const part of ['data-side-tab="values"','data-side-panel="values"','dsa5h-creature-stats','data-action="defenseToggle"','data-action="traitCompanionContextMenu"','name="system.creatureClass.value"','name="system.jagd.value"'])assert(html.includes(part),part);
+ for(const id of ['description','behaviour','flight','specialRules','notes','ownernotes'])assert(html.includes(`data-sub-panel="notes:${id}"`),id);
+ for(const part of ['data-side-tab="details"','dsa5h-ap-ribbon','data-action="dsa5hFavorite"','data-sub-panel="combat:body"','data-sub-panel="notes:biography"','GM_SECRET'])assert(!html.includes(part),part);
+ // Biss ohne Parade: nur der AT-Würfel
+ const row=html.slice(html.indexOf('data-item-id="bite"'));assert(!row.slice(0,row.indexOf('</div>')).includes('dsa5h-die-parry'));
+ // Humanoid mit Waffen: Kampf-Reiter des Helden mit Kampfwerten darüber
+ context.dsa5h.creature.simpleCombat=false;assert(render(context).includes('data-sub-panel="combat:body"'));
+ // Registrierung, Vorlagen, Texte, Bogen-Umschalter
+ const main=read('scripts/dsa5-helpers.js');assert(/registerSheet\([^)]*Dsa5HelpersCreatureSheet, \{ types: \['creature'\], makeDefault: game\.settings\.get\('dsa5-helpers', 'defaultCreatureSheet'\)/.test(main));
+ for(const f of fs.readdirSync(path.join(root,'templates/actors/parts')).filter(f=>/^(creature-|attr-tiles|auto-defense)/.test(f)))assert(main.includes(`templates/actors/parts/${f}`),f);
+ const src=read('scripts/sheets/dsa5-helpers-creature-sheet.js');assert(src.includes('ActorSheetdsa5Creature')&&src.includes("_coverSideTabs = ['values', 'conditions']"));assert(/get canLockSheet\(\) \{\s*return this\.actor\.isOwner;/.test(src),'Kreatur: Schloss (Spielen/Bearbeiten) auch ohne canAdvance');
+ assert(/SWITCH_TYPES = \['character', 'creature'\]/.test(read('scripts/sheet-switcher.js')));
+ for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;assert(j.CreatureSheetLabel,l);for(const k of ['Attacks','NoAttacks','TalentsCount','Spells','Liturgies','CombatValues','NaturalArmor','Values','DefenseToggle','Size','Count'])assert(j.Creature[k],`${l} ${k}`);assert(j.Creature.Tabs.inventory,l);}
 });

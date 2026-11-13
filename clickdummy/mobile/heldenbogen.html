@@ -8,8 +8,9 @@
      ersetzt den veralteten „Heldenbogen Mobil.dc.html“ aus Runde 3). Stand des Moduls 0.6.3: Kopf mit Wappenbanner,
      LeP/AsP/KaP-Kugeln und Kraftspeicher an den AsP, Eigenschaftswürfel mit Kürzel, klappt beim Scrollen ein (Smartphone);
      Reiterleiste unten (wischbar) bzw. Rail rechts (Tablet); Tippen auf eine Zeile würfelt, langes Drücken öffnet das
-     Blatt (Tablet: auch der Name). Einzelheiten haben eigene Seiten (probe, ressourcen, kraftspeicher, ausruestung,
-     wurfergebnis). ?embedded=1 füllt das Fenster ohne Umschalter (eingebettet in „Foundry Mobil“, app.html): ✕ meldet
+     Blatt (Tablet: auch der Name). Kugel antippen ändert LeP/AsP/KaP, KS-Kugel öffnet das Kraftspeicher-Blatt, Anzahl
+     antippen ändert die Menge (2026-11-12 aus den Seiten ressourcen/kraftspeicher/ausruestung übernommen). Probendialog
+     und Wurfergebnis haben eigene Seiten (Menü › Fenster & Dialoge). ?embedded=1 füllt das Fenster ohne Umschalter (eingebettet in „Foundry Mobil“, app.html): ✕ meldet
      sich per postMessage { dsa5h: 'back' }, Würfe per { dsa5h: 'roll', … } an den Chat der Oberfläche.
      Werte sind Platzhalter (Layariel wie in „Foundry Mobil“). Öffnen über clickdummy/start-server.bat →
      …/clickdummy/mobile/heldenbogen.html -->
@@ -184,6 +185,24 @@ body.embedded .device { width: 100vw; height: 100vh; border-radius: 0; box-shado
 .sheet .bar { display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 4px 0 14px; background: var(--phead), var(--paper); font: 20px 'Andalus', serif; }
 .sheet .bar button { width: 44px; height: 44px; border: 0; background: none; color: var(--ink); font-size: 22px; cursor: pointer; }
 .sheet p { margin: 0; padding: 12px 14px 20px; font-size: 15px; line-height: 1.45; color: var(--ink2); }
+/* Zahlenfeld an Kugel bzw. Anzahl (früher Seiten ressourcen.html/ausruestung.html): −/+, Eingabe, Schnellwerte; speichert sofort */
+.pop { position: absolute; z-index: 9; width: 250px; padding: 10px; border: 1px solid var(--line2); border-radius: 12px; background: var(--card); color: var(--ink); box-shadow: 0 8px 24px rgba(0, 0, 0, .35); }
+.pop::before { content: ''; position: absolute; top: -8px; left: calc(var(--tip, 30px) - 7px); width: 14px; height: 14px; transform: rotate(45deg); border-left: 1px solid var(--line2); border-top: 1px solid var(--line2); background: var(--card); }
+.pop.above::before { top: auto; bottom: -8px; transform: rotate(225deg); }
+.pop .ttl { display: flex; justify-content: space-between; margin-bottom: 8px; font: 17px 'Andalus', serif; }
+.pop .ttl small { font: 14px 'GentiumBasic', serif; color: var(--ink2); }
+.stepper { display: flex; align-items: center; gap: 6px; }
+.stepper button, .quick button { flex: none; min-width: 44px; height: 44px; padding: 0 8px; border: 1px solid var(--line2); border-radius: 22px; background: var(--field); color: var(--ink); font: 20px 'GentiumBasic', serif; cursor: pointer; }
+.stepper button:disabled { opacity: .35; }
+.stepper input { flex: 1; min-width: 0; height: 44px; border: 1px solid var(--line2); border-radius: 8px; background: var(--field); color: var(--ink); font: 700 18px 'GentiumBasic', serif; text-align: center; }
+.stepper output { min-width: 64px; text-align: center; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.quick { display: flex; gap: 6px; margin-top: 8px; }
+.quick button { flex: 1; font-size: 15px; }
+/* Kraftspeicher-Blatt (früher kraftspeicher.html): je Speicher −/+ und Füllstand */
+.ks-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; min-height: 60px; padding: 8px 14px; border-bottom: 1px solid var(--line); color: var(--ink); }
+.ks-row small { display: block; font-size: 14px; color: var(--ink2); }
+.ks-row .meter { grid-column: 1 / -1; height: 8px; overflow: hidden; border-radius: 4px; background: rgba(43, 39, 33, .12); }
+.ks-row .meter i { display: block; height: 100%; width: var(--p); background: var(--asp); }
 .toast { position: absolute; left: 50%; top: 14px; z-index: 11; max-width: 90%; padding: 8px 14px; border-radius: 18px; background: rgba(27, 23, 20, .92); color: #f4e8d6; font-size: 14px; transform: translateX(-50%); pointer-events: none; }
 </style>
 </head>
@@ -191,7 +210,7 @@ body.embedded .device { width: 100vw; height: 100vh; border-radius: 0; box-shado
 <div class="switch">
   <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
 </div>
-<p class="note">Heldenbogen im Stand von 0.6.3. Tippen auf eine Zeile, Karte oder einen Würfel würfelt, langes Drücken öffnet das Blatt des Eintrags (am Tablet auch ein Tipp auf den Namen). Am Smartphone klappt der Kopf beim Scrollen ein. Einzelheiten: Probendialog, LeP/AsP/KaP, Kraftspeicher, Ausrüstung und Wurfergebnis haben eigene Seiten im Menü.</p>
+<p class="note">Heldenbogen im Stand von 0.6.3. Tippen auf eine Zeile, Karte oder einen Würfel würfelt, langes Drücken öffnet das Blatt des Eintrags (am Tablet auch ein Tipp auf den Namen). Am Smartphone klappt der Kopf beim Scrollen ein. Kugel antippen ändert LeP/AsP/KaP, die KS-Kugel an den AsP öffnet die Kraftspeicher, ein Tipp auf die Anzahl ändert die Menge (Ausrüstung). Probendialog und Wurfergebnis: Menü › Fenster &amp; Dialoge.</p>
 <div id="stage"></div>
 
 <script>
@@ -203,6 +222,9 @@ const HERO = { name: 'Layariel Wipfelglanz', ident: ['Elf', 'Auelfen', 'Waldläu
 const ATTRS = { MU: 13, KL: 12, IN: 14, CH: 13, FF: 15, GE: 14, KO: 12, KK: 11 };
 const ATTR_NAMES = { MU: 'Mut', KL: 'Klugheit', IN: 'Intuition', CH: 'Charisma', FF: 'Fingerfertigkeit', GE: 'Gewandtheit', KO: 'Konstitution', KK: 'Körperkraft' };
 const RES = [['lep', 'LeP', 28, 32], ['asp', 'AsP', 24, 34], ['kap', 'KaP', 12, 18]];
+const RES_NAMES = { lep: 'Lebensenergie', asp: 'Astralenergie', kap: 'Karmaenergie' };
+// Kraftspeicher an der AsP-Kugel (#50): je Speicher −/+, Summe auf der KS-Kugel
+const POWER = [{ name: 'Kraftspeicher', item: 'Ring der Ahnen', value: 3, max: 10 }, { name: 'Kraftspeicher 2', item: 'Stab', value: 8, max: 10 }];
 const TABS = [['cover', 'Titelblatt', 'Spellextension'], ['main', 'Eigenschaften', 'DSA-Auge'], ['skills', 'Talente', 'Skill'], ['combat', 'Kampf', 'ability_combat'],
   ['magic', 'Magie', 'Spell'], ['religion', 'Religion', 'Liturgy'], ['inventory', 'Ausrüstung', 'Equipment'], ['status', 'Status', 'ability_ceremonial'],
   ['notes', 'Notizen', 'Ability_Language'], ['companions', 'Gefährten', 'ability_animal'], ['quests', 'Aufträge', 'Career'], ['persons', 'Personen', 'Weltliche']];
@@ -221,7 +243,7 @@ const COND = [['Schmerz', 1], ['Belastung', 0], ['Betäubung', 0], ['Furcht', 0]
 const FAVS = [['Talente', 'Skill', 'Sinnesschärfe', 'KL/IN/IN', 12], ['Zauber', 'Spell', 'Balsam Salabunde', 'KL/IN/CH', 8], ['Ausrüstung', 'Equipment', 'Heiltrank', null, '× 2']];
 const SUGG = [['Fährtensuchen', 'MU/IN/GE', 10, 'Spuren im Kampagnenjournal'], ['Wildnisleben', 'MU/GE/KO', 11, 'Lagerplatz gesucht'], ['Willenskraft', 'MU/IN/CH', 7, 'Furcht in der Nähe']];
 
-const state = { device: 'phone', tab: 'cover', group: 'Körper', collapsed: false };
+const state = { device: 'phone', tab: 'cover', group: 'Körper', collapsed: false, pop: null };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const panel = (title, inner, small = '') => `<section class="panel"><h3>${title}${small ? `<small>${small}</small>` : ''}</h3>${inner}</section>`;
 const probe = p => `<span class="probe">${p.split('/').map(k => `<span style="background-image:url('${DIE(k)}')">${k}</span>`).join('')}</span>`;
@@ -250,7 +272,7 @@ const TAB = {
     + panel('Rüstung', `<div class="row"><span class="grow">Lederrüstung<small>RS 2 · BE 1</small></span></div>`),
   magic: () => panel('Tradition', `<p>Elf · Leiteigenschaft IN · AsP 24 / 34, Kraftspeicher an der AsP-Kugel</p>`) + panel('Zauber', SPELLS.map(([n, p, fw, sub]) => rollRow(n, p, fw, sub, 'Spell')).join('')),
   religion: () => panel('Tradition', `<p>Laienpriesterin der Tsa · KaP 12 / 18</p>`) + panel('Liturgien', LITURGIES.map(([n, p, fw, sub]) => rollRow(n, p, fw, sub, 'Liturgy')).join('')),
-  inventory: () => panel('Geldbörse', `<div class="row"><span class="grow">3 D · 14 S · 6 H · 2 K</span></div>`) + ITEMS.map(([box, list]) => panel(box, list.map(([n, q, w]) => `<div class="row" data-open="${n}"><img class="ico" src="${ICON('Equipment')}" alt=""><span class="grow" data-name>${n}<small>${w} Stein</small></span><button type="button" class="qty">× ${q}</button><button type="button" class="more" aria-label="Menü">⋮</button></div>`).join(''))).join(''),
+  inventory: () => panel('Geldbörse', `<div class="row"><span class="grow">3 D · 14 S · 6 H · 2 K</span></div>`) + ITEMS.map(([box, list]) => panel(box, list.map(([n, q, w]) => `<div class="row" data-open="${n}"><img class="ico" src="${ICON('Equipment')}" alt=""><span class="grow" data-name>${n}<small>${w} Stein</small></span><button type="button" class="qty" data-qty="${esc(box)}|${esc(n)}">× ${q}</button><button type="button" class="more" aria-label="Menü">⋮</button></div>`).join(''))).join(''),
   status: () => panel('Auf einen Blick', `<div class="stats"><div><b>I</b><small>Schmerz</small></div><div><b>0</b><small>Belastung</small></div><div><b>11,9 / 22</b><small>Traglast</small></div></div>`)
     + panel('Zustände', COND.map(([n, f]) => `<div class="row"><span class="grow">${n}</span><span class="pips">${[0, 1, 2, 3].map(i => `<i class="${i < f ? 'on' : ''}"></i>`).join('')}</span></div>`).join('')),
   notes: () => [['Abenteuertagebuch', 'Platzhalter: Einträge der Spielabende.'], ['Persönliche Daten', 'Weiblich · 87 Jahre · 176 cm · Auwald am Born'], ['Biografie', 'Platzhalter.']].map(([t, x]) => panel(t, `<p>${x}</p>`)).join(''),
@@ -261,14 +283,14 @@ const TAB = {
 // Aufträge und Personen öffnen schon beim Tippen (Almanach-Blatt, #67)
 const TAP_OPENS = ['quests', 'persons', 'companions'];
 
-const orb = ([cls, label, cur, max]) => `<button type="button" class="orb ${cls}" style="--p:${Math.round(100 * cur / max)}%" data-toast="${label}: Feld mit −/+ (siehe Seite LeP/AsP/KaP)"><i></i><b><small>${label}</small>${cur}<small>/ ${max}</small></b></button>`;
-const orbs = () => `<div class="orbs">${orb(RES[0])}<div class="anchor">${orb(RES[1])}<button type="button" class="ks" data-toast="Kraftspeicher-Blatt (siehe Seite Kraftspeicher)" aria-label="Kraftspeicher"><span><small>KS</small>11</span></button></div>${orb(RES[2])}</div>`;
+const orb = ([cls, label, cur, max]) => `<button type="button" class="orb ${cls}" style="--p:${Math.round(100 * cur / max)}%" data-res="${cls}" aria-expanded="${state.pop?.key === cls}" aria-label="${RES_NAMES[cls]} ${cur} von ${max} – ändern"><i></i><b><small>${label}</small>${cur}<small>/ ${max}</small></b></button>`;
+const orbs = () => `<div class="orbs">${orb(RES[0])}<div class="anchor">${orb(RES[1])}<button type="button" class="ks" data-ks aria-haspopup="dialog" aria-label="Kraftspeicher"><span><small>KS</small>${POWER.reduce((a, p) => a + p.value, 0)}</span></button></div>${orb(RES[2])}</div>`;
 const schips = () => `<span class="schips">${[0, 1, 2].map(i => `<img src="${SYS}/icons/schip.webp" alt="" class="${i > 1 ? 'used' : ''}">`).join('')}</span>`;
 const dice = () => state.tab === 'main' ? '' : `<div class="dice">${Object.entries(ATTRS).map(([k, v]) => `<button type="button" class="die" style="background-image:url('${DIE(k)}')" data-roll="${ATTR_NAMES[k]}" data-sub="${k} ${v}"><small>${k}</small>${v}</button>`).join('')}</div>`;
 const winbtns = () => `<div class="winbtns"><button type="button" title="Fenstermenü" data-toast="Fenstermenü: Thema, Spieleransicht, Bogen konfigurieren …">⋮</button><button type="button" title="Schließen" data-close>✕</button></div>`;
 
 function head() {
-  if (state.device === 'tablet') return `<header class="head"><div class="top"><div><div class="name" style="font-size:40px">${HERO.name}</div><div class="ident">${HERO.ident.map(s => `<span>${s}</span>`).join('')}<span>${HERO.ap}</span></div></div>${winbtns()}</div>${dice()}</header>`;
+  if (state.device === 'tablet') return `<header class="head"><div class="top"><div><div class="name" style="font-size:40px">${HERO.name}</div><div class="ident">${HERO.ident.map(s => `<span>${s}</span>`).join('')}<span>${HERO.ap}</span></div></div></div>${dice()}</header>`;
   if (state.collapsed) return `<header class="head mini"><div class="top"><div class="portrait"></div><div class="name" style="flex:1;min-width:0">Layariel</div>${orbs()}${winbtns()}</div></header>`;
   return `<header class="head"><div class="top"><div class="portrait"></div><div style="flex:1;min-width:0"><div class="name">${HERO.name}</div><div class="ident">${HERO.ident.map(s => `<span>${s}</span>`).join('')}</div></div>${winbtns()}</div>${orbs()}${dice()}</header>`;
 }
@@ -287,13 +309,69 @@ function render(keepScroll) {
     <nav class="rail" aria-label="Reiter">${navButtons()}</nav></div>`;
   const scroll = stage.querySelector('.scroll');
   scroll.scrollTop = top;
+  renderPop();
   // Kopf klappt ab 90 px Scrollweg ein und unter 4 px wieder aus (wie im Modul)
   scroll.addEventListener('scroll', () => {
+    if (state.pop) { state.pop = null; document.querySelector('.pop')?.remove(); }
     if (state.device !== 'phone') return;
     const y = scroll.scrollTop;
     if (!state.collapsed && y > 90) { state.collapsed = true; render(true); }
     else if (state.collapsed && y < 4) { state.collapsed = false; render(true); }
   });
+}
+
+// Zahlenfeld an einer Kugel (LeP/AsP/KaP) oder an der Anzahl eines Gegenstands (früher eigene Seiten): unter dem Knopf,
+// darüber, wenn unten kein Platz ist; jede Änderung speichert sofort
+function popTarget() {
+  const p = state.pop;
+  if (!p) return null;
+  if (p.kind === 'res') {
+    const r = RES.find(([k]) => k === p.key);
+    return { title: RES_NAMES[r[0]], note: `max. ${r[3]}`, value: r[2], max: r[3], quick: [['−5', -5], ['0', 'min'], ['voll', 'max'], ['+5', 5]], set: v => { r[2] = v; } };
+  }
+  const [box, name] = p.key.split('|');
+  const item = ITEMS.find(([b]) => b === box)[1].find(([n]) => n === name);
+  return { title: name, note: 'Anzahl', value: item[1], max: Infinity, quick: [['−10', -10], ['+10', 10]], set: v => { item[1] = v; } };
+}
+function renderPop() {
+  const t = popTarget();
+  if (!t) return;
+  const device = document.querySelector('.device');
+  const anchor = device.querySelector(state.pop.kind === 'res' ? `.orb[data-res="${state.pop.key}"]` : `.qty[data-qty="${CSS.escape(state.pop.key)}"]`);
+  if (!anchor) { state.pop = null; return; }
+  const pop = document.createElement('div');
+  pop.className = 'pop';
+  pop.setAttribute('role', 'dialog');
+  pop.setAttribute('aria-label', t.title);
+  pop.innerHTML = `<div class="ttl">${esc(t.title)}<small>${t.note}</small></div><div class="stepper"><button type="button" data-step="-1" aria-label="verringern"${t.value <= 0 ? ' disabled' : ''}>−</button><input type="number" inputmode="numeric" min="0" data-in value="${t.value}" aria-label="${esc(t.title)}"><button type="button" data-step="1" aria-label="erhöhen"${t.value >= t.max ? ' disabled' : ''}>+</button></div>`
+    + `<div class="quick">${t.quick.map(([l, v]) => `<button type="button" data-${typeof v === 'number' ? 'step' : 'set'}="${v}">${l}</button>`).join('')}</div>`;
+  device.append(pop);
+  const dev = device.getBoundingClientRect(), btn = anchor.getBoundingClientRect();
+  const center = btn.left + btn.width / 2 - dev.left;
+  const left = Math.max(8, Math.min(dev.width - pop.offsetWidth - 8, center - pop.offsetWidth / 2));
+  const below = btn.bottom - dev.top + 10;
+  const above = below + pop.offsetHeight > dev.height - 8;
+  pop.classList.toggle('above', above);
+  pop.style.left = left + 'px';
+  pop.style.top = (above ? btn.top - dev.top - pop.offsetHeight - 10 : below) + 'px';
+  pop.style.setProperty('--tip', (center - left) + 'px');
+}
+function changePop(v) {
+  const t = popTarget();
+  t.set(Math.max(0, Math.min(t.max, Math.round(v))));
+  render(true);
+}
+// Kraftspeicher-Blatt (früher eigene Seite): je Speicher −/+, speichert sofort
+function openKs() {
+  const device = document.querySelector('.device');
+  device.querySelector('.backdrop.ks-sheet')?.remove();
+  const sum = POWER.reduce((a, p) => a + p.value, 0) + ' / ' + POWER.reduce((a, p) => a + p.max, 0) + ' AsP';
+  const wrap = document.createElement('div');
+  wrap.className = 'backdrop ks-sheet';
+  wrap.innerHTML = `<div class="sheet" role="dialog" aria-label="Kraftspeicher"><div class="bar">Kraftspeicher · ${sum}<button type="button" data-sheet-close aria-label="Schließen">✕</button></div>`
+    + POWER.map((p, i) => `<div class="ks-row"><span>${p.name}<small>${p.item}</small></span><span class="stepper"><button type="button" data-ks-step="-1" data-i="${i}" aria-label="${p.name} −1"${p.value <= 0 ? ' disabled' : ''}>−</button><output>${p.value} / ${p.max}</output><button type="button" data-ks-step="1" data-i="${i}" aria-label="${p.name} +1"${p.value >= p.max ? ' disabled' : ''}>+</button></span><span class="meter"><i style="--p:${p.value / p.max * 100}%"></i></span></div>`).join('')
+    + `<p>Änderungen werden sofort gespeichert.</p></div>`;
+  device.append(wrap);
 }
 
 function toast(text) {
@@ -317,7 +395,7 @@ function roll(el) {
   const name = el.dataset.roll;
   if (el.dataset.probe) {
     const d = [0, 0, 0].map(() => 1 + Math.floor(Math.random() * 20));
-    toast(`${name}: ${d.join(' · ')} – Probendialog siehe Seite „Probendialog“`);
+    toast(`${name}: ${d.join(' · ')} – Probendialog: Menü › Fenster & Dialoge`);
     if (EMBEDDED) parent.postMessage({ dsa5h: 'roll', title: name, sub: `Probe ${el.dataset.probe} · FW ${el.dataset.fw}`, dice: d }, '*');
     return;
   }
@@ -338,6 +416,11 @@ const endPress = () => { if (!press) return; clearTimeout(press.timer); press.ro
 document.addEventListener('pointerup', endPress);
 document.addEventListener('pointercancel', endPress);
 document.addEventListener('contextmenu', ev => { if (ev.target.closest('.device')) ev.preventDefault(); });
+// Tipp neben das Zahlenfeld schließt es; Eingabe ins Feld übernimmt den Wert
+document.addEventListener('pointerdown', ev => {
+  if (state.pop && !ev.target.closest('.pop, .orb, .qty')) { state.pop = null; render(true); }
+}, true);
+document.addEventListener('change', ev => { if (ev.target.matches('.pop [data-in]')) changePop(Number(ev.target.value) || 0); });
 
 document.addEventListener('click', ev => {
   if (press?.done) return;
@@ -354,9 +437,18 @@ document.addEventListener('click', ev => {
   if (b.dataset.groupSkill) { state.group = b.dataset.groupSkill; return render(true); }
   if (b.matches('[data-sheet-close]') || (b.matches('.backdrop') && ev.target === b)) return b.closest('.backdrop').remove();
   if (b.matches('[data-close]')) return EMBEDDED ? parent.postMessage({ dsa5h: 'back' }, '*') : toast('Schließt den Bogen');
+  if (b.dataset.res) { state.pop = state.pop?.key === b.dataset.res ? null : { kind: 'res', key: b.dataset.res }; return render(true); }
+  if (b.dataset.qty) { state.pop = state.pop?.key === b.dataset.qty ? null : { kind: 'qty', key: b.dataset.qty }; return render(true); }
+  if (b.closest('.pop')) {
+    const t = popTarget();
+    if (b.dataset.step) return changePop(t.value + Number(b.dataset.step));
+    if (b.dataset.set) return changePop(b.dataset.set === 'max' ? t.max : 0);
+    return;
+  }
+  if (b.matches('[data-ks]')) return openKs();
+  if (b.dataset.ksStep) { const p = POWER[b.dataset.i]; p.value = Math.max(0, Math.min(p.max, p.value + Number(b.dataset.ksStep))); render(true); return openKs(); }
   if (b.dataset.toast) return toast(b.dataset.toast);
   if (b.matches('.star')) return toast('Favorit umgeschaltet');
-  if (b.matches('.qty')) return toast('Anzahl: Feld mit −/+ (siehe Seite Ausrüstung)');
   if (b.matches('.more')) return toast('Menü des Gegenstands');
   if (b.dataset.open && (TAP_OPENS.includes(state.tab) || (state.device === 'tablet' && ev.target.closest('[data-name]')))) return openSheet(b.dataset.open);
   if (b.dataset.roll) return roll(b);
@@ -369,6 +461,7 @@ if (EMBEDDED) {
 }
 render();
 </script>
-<script src="../pages.js?v=7"></script>
+<script src="tablet-plakette.js?v=2"></script>
+<script src="../pages.js?v=21"></script>
 </body>
 </html>

@@ -1488,6 +1488,24 @@ button {
   overflow-y: auto;
 }
 
+/* --- Hinweisleiste (Händler-/Schatzmodus, #54) --- */
+
+.notice {
+  flex: none;
+  margin: 8px 16px 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  line-height: 1.35;
+}
+
+.notice[hidden] {
+  display: none;
+}
+
 /* --- Raster & Panels --- */
 
 .grid-2 {
@@ -2635,8 +2653,8 @@ button.probe-die:focus-visible,
 .sheet[data-tab="cover"] {
   display: grid;
   grid-template-columns: 268px 1fr;
-  grid-template-rows: auto auto auto 1fr;
-  grid-template-areas: "sidebar head" "sidebar attrbar" "sidebar tabtitle" "sidebar content";
+  grid-template-rows: auto auto auto auto 1fr;
+  grid-template-areas: "sidebar head" "sidebar attrbar" "sidebar notice" "sidebar tabtitle" "sidebar content";
 }
 
 .sheet[data-tab="cover"] .head {
@@ -2646,6 +2664,10 @@ button.probe-die:focus-visible,
 
 .sheet[data-tab="cover"] #attrOverlay {
   grid-area: attrbar;
+}
+
+.sheet[data-tab="cover"] #merchantNotice {
+  grid-area: notice;
 }
 
 .sheet[data-tab="cover"] .tab-title {
@@ -7218,8 +7240,8 @@ button.fav-chip-roll {
    Kopf oben wie auf den anderen Reitern, #coverSidebar (nur noch der Reiterkasten) im Inhalt unter den Favoriten. */
 .sheet.narrow[data-tab="cover"] {
   grid-template-columns: minmax(0,1fr);
-  grid-template-rows: auto auto auto minmax(0,1fr);
-  grid-template-areas: "head" "attrbar" "tabtitle" "content";
+  grid-template-rows: auto auto auto auto minmax(0,1fr);
+  grid-template-areas: "head" "attrbar" "notice" "tabtitle" "content";
 }
 
 /* Kopf im schmalen Fenster (alle Reiter, wie .dsa5h-narrow im Modul): kleinere Kugeln und Porträt, Spezies · Kultur ·
@@ -9014,5 +9036,731 @@ button.fav-chip-roll {
   .hudp-tile:hover,
   .hudp-mini:hover {
     background: rgba(224, 192, 128, .3);
+  }
+}
+
+/* --- Gruppenbogen-Entwurf (Issue #55, actor-types.js ?actor=gruppe) ---
+   Nur Click-Dummy, bis der Bogen entschieden ist; bei der Umsetzung in einen eigenen Abschnitt übernehmen.
+   Kopf ohne Kugeln, Schips-Plakette und Eigenschaftswürfel; die Gruppe hat keine eigenen Werte. Kasse, Gruppen-Schips und
+   Reisetempo stehen in der linken Spalte, die Mitglieder als Kacheln in drei Größen (S/M/L). */
+.sheet[data-actor="gruppe"] #bars,
+.sheet[data-actor="gruppe"] .head-plaque,
+.sheet[data-actor="gruppe"] #attrOverlay,
+.sheet[data-actor="gruppe"] .cover-resources {
+  display: none !important;
+}
+
+/* Linke Spalte (dunkel wie der Kopf): Kasse, Gruppen-Schips, Reisetempo über den Summen */
+.group-side-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(224, 192, 128, .2);
+  color: #f4e8d6;
+}
+
+.group-side-label {
+  color: #d6bd8a;
+  font-size: var(--fs-meta);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.group-side-link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px dotted rgba(244, 232, 214, .6);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.group-purse {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.group-purse span,
+.group-coin {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 700;
+}
+
+.group-coin {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px dotted transparent;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.group-coin:focus-visible {
+  outline: 2px solid #d6bd8a;
+  outline-offset: 1px;
+}
+
+.group-purse img {
+  width: 18px;
+  height: 18px;
+}
+
+.group-schips {
+  display: inline-flex;
+  gap: 1px;
+  align-items: center;
+}
+
+.group-schips img {
+  width: 15px;
+  height: 15px;
+}
+
+.group-schips.large img {
+  width: 22px;
+  height: 22px;
+}
+
+.group-schip {
+  width: var(--hit-sm, 24px);
+  height: var(--hit-sm, 24px);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* Bausteine der Kacheln */
+.group-member {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.group-portrait {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #b99a5c;
+  border-radius: 50%;
+  background: #e8dcc6 center / cover no-repeat;
+}
+
+.group-portrait.round {
+  justify-self: center;
+  width: 48px;
+  height: 48px;
+}
+
+.group-portrait.large {
+  width: 84px;
+  height: 100px;
+  border-width: 2px;
+  border-radius: 4px;
+}
+
+.group-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.group-name.center {
+  align-items: center;
+  text-align: center;
+}
+
+.group-name b {
+  overflow: hidden;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-name small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-pool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.group-pool.empty {
+  color: var(--muted);
+  cursor: default;
+}
+
+.group-pool-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.group-pool-num small {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.group-pool-bar {
+  width: 100%;
+  max-width: 60px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.group-pool-bar i {
+  display: block;
+  height: 100%;
+}
+
+.group-pool.lep .group-pool-bar i {
+  background: #b8291e;
+}
+
+.group-pool.asp .group-pool-bar i {
+  background: #2f5fbf;
+}
+
+.group-pool.kap .group-pool-bar i {
+  background: #c39a2c;
+}
+
+.group-cond {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--fs-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-cond.on {
+  color: var(--ink);
+}
+
+.group-cond-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  font-size: var(--fs-meta);
+  cursor: help;
+}
+
+.group-orb {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, #2c2622, #141110);
+  box-shadow: 0 0 0 2px #b99a5c;
+  color: #fff;
+  cursor: pointer;
+}
+
+.group-orb i {
+  position: absolute;
+  inset: auto 0 0;
+  height: var(--p);
+  background: var(--liq);
+}
+
+.group-orb b {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  font-size: 17px;
+  line-height: 1;
+  text-shadow: 0 1px 2px #000;
+}
+
+.group-orb small {
+  display: block;
+  font-size: 9px;
+  font-weight: 400;
+}
+
+.group-orb.orb-lep {
+  --liq: linear-gradient(180deg, #d33a2c, #7d1510);
+}
+
+.group-orb.orb-asp {
+  --liq: linear-gradient(180deg, #3d6fd0, #1c3f8f);
+}
+
+.group-orb.orb-kap {
+  --liq: linear-gradient(180deg, #e2b84a, #8f6a14);
+}
+
+.group-conds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: var(--fs-small);
+}
+
+/* Kacheln: drei Größen, je Größe alle gleich hoch */
+.group-tiles {
+  display: grid;
+  gap: 8px;
+}
+
+.group-tiles.size-s {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.group-tiles.size-m {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.group-tiles.size-l {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.group-tile {
+  display: grid;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+}
+
+.group-tile.size-s {
+  justify-items: center;
+  gap: 5px;
+  padding: 8px 6px;
+  font-size: var(--fs-small);
+}
+
+.group-tile.size-s .group-pool-bar {
+  max-width: 70px;
+}
+
+.group-tile.size-l {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.group-tile-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.group-tile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.group-tile.size-l .group-name b {
+  font: 19px/1.15 "Andalus", serif;
+  white-space: normal;
+}
+
+.group-tile-orbs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.group-tile-orbs .group-schips {
+  margin-left: 6px;
+}
+
+.group-tile-btn {
+  flex: none;
+  min-height: var(--hit-md, 26px);
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.group-tile-pools {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.group-tile-pools.hidden-values {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+}
+
+.group-tile-pools small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.group-tile-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 22px;
+}
+
+.group-mini-pools {
+  display: flex;
+  gap: 6px;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.group-mini.asp {
+  color: #2f5fbf;
+}
+
+.group-mini.kap {
+  color: #9a7618;
+}
+
+[data-theme="dark"] .group-mini.asp {
+  color: #7fa4ea;
+}
+
+[data-theme="dark"] .group-mini.kap {
+  color: #e2b84a;
+}
+
+/* Rollen: Kennzeichen „nur SL“ (sieht nur die Spielleitung), nur lesbare Werte fremder Mitglieder */
+.group-gm-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+  font: 400 var(--fs-meta) "GentiumBasic", Georgia, serif;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.group-side-block .group-gm-tag {
+  border-color: #d6bd8a;
+  color: #d6bd8a;
+}
+
+.group-pool.readonly,
+.group-orb.readonly {
+  cursor: default;
+}
+
+/* Kachelgröße wählt die Gruppe selbst (Umschalter über den Kacheln) */
+.group-size-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-small);
+}
+
+.group-size-switch span {
+  margin-right: 4px;
+}
+
+.group-size-switch button {
+  min-height: var(--hit-sm, 24px);
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.group-size-switch button[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.group-size-switch button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Anfragen der Spieler an die SL (Lager-Reiter) */
+.group-camp-card.ask .group-camp-who {
+  color: var(--ink);
+  text-decoration: underline dotted;
+}
+
+.group-request-row {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px;
+}
+
+.group-request-note {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-small);
+  font-style: italic;
+}
+
+.group-ask {
+  width: min(460px, calc(100vw - 40px));
+}
+
+.group-ask-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 0;
+}
+
+.group-ask-body textarea {
+  width: 100%;
+  min-height: 70px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.group-drop {
+  margin: 10px 0 0;
+  padding: 10px;
+  border: 2px dashed var(--line);
+  border-radius: 4px;
+  text-align: center;
+  font-style: italic;
+}
+
+.group-hint {
+  margin: 0 0 8px;
+  font-size: var(--fs-small);
+}
+
+.group-skill-row {
+  grid-template-columns: minmax(0, 1.4fr) 60px minmax(0, 1fr) minmax(0, 2fr);
+}
+
+.group-skill-row.gm {
+  grid-template-columns: minmax(0, 1.3fr) 50px minmax(0, 1fr) minmax(0, 1.5fr) auto;
+}
+
+/* Proben der SL: je Talent und Eigenschaften auf dem Titelblatt */
+.group-roll-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.group-roll-btn {
+  min-height: var(--hit-sm, 24px);
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.group-attr-rolls {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+.group-attr-die {
+  width: var(--hit-md, 26px);
+  height: var(--hit-md, 26px);
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  color: #fff;
+  font-family: 'GentiumBasic', serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .6);
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+
+.group-attr-die:focus-visible {
+  transform: scale(1.3);
+}
+
+@media (hover: hover) {
+  .group-attr-die:hover {
+    transform: scale(1.3);
+  }
+}
+
+.group-depot-row {
+  grid-template-columns: 26px minmax(0, 1fr) 50px 60px;
+}
+
+.group-depot-row img {
+  width: 24px;
+  height: 24px;
+}
+
+.group-travel-row {
+  grid-template-columns: minmax(0, 1.2fr) 60px 60px 80px minmax(0, 2fr);
+}
+
+.group-gm-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.group-gm-btn {
+  min-height: var(--hit-md, 26px);
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.group-gm-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.group-camp {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.group-camp-card {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 0 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.group-camp-card img {
+  grid-row: span 3;
+  width: 40px;
+  height: 40px;
+}
+
+.group-camp-card small {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.group-camp-who {
+  color: var(--accent);
+  font-size: var(--fs-meta);
+}
+
+.group-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  z-index: 50;
+  padding: 8px 14px;
+  border-radius: 18px;
+  background: rgba(27, 23, 20, .92);
+  color: #f4e8d6;
+  font-size: 14px;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.group-side-link:focus-visible,
+.group-tile-btn:focus-visible,
+.group-orb:focus-visible,
+.group-name:focus-visible,
+.group-pool:focus-visible,
+.group-camp-card:focus-visible,
+.group-gm-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .group-camp-card:hover,
+  .group-gm-btn:not([aria-pressed="true"]):hover,
+  .group-tile-btn:hover {
+    background: var(--field);
+  }
+
+  .group-coin:hover {
+    border-bottom-color: currentColor;
+  }
+
+  .group-name:hover b,
+  .group-side-link:hover {
+    text-decoration: underline;
   }
 }

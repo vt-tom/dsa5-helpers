@@ -1,0 +1,138 @@
+{{!-- Eigenschaften-Reiter der Kreatur (Click-Dummy renderCreatureMain, Systembogen creature-main.hbs mit
+      creature-derived-attributes-small.hbs): Eigenschaftskacheln, links Kreatur-Eigenschaften (traits), Vor-/Nachteile
+      und Sonderfertigkeiten, rechts die Werte der Kreatur. Felder wie im System, nur im Bearbeiten-Modus änderbar. --}}
+<div class="dsa5h-tab" data-tab-panel="main" hidden>
+  {{> "modules/dsa5-helpers/templates/actors/parts/attr-tiles.hbs"}}
+  <div class="grid-2">
+    <div class="col-gap">
+      <section class="panel">
+        <div class="panel-title flex"><span>{{localize "traits"}}</span><span class="dsa5h-panel-tools">{{#if dsa5h.editMode}}<button type="button" class="dsa5h-panel-tool" data-action="itemCreate" data-type="trait" item-section="trait" data-tooltip="SHEET.addItem" aria-label="{{localize 'SHEET.addItem'}}">+</button><button type="button" class="dsa5h-panel-tool" data-action="traitCompanionContextMenu" data-tooltip="COMPANIONS.TraitMenu.tooltip" aria-label="{{localize 'COMPANIONS.TraitMenu.tooltip'}}">⋮</button>{{/if}}<button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp 'traits'}}" aria-label="{{localize 'traits'}}">i</button></span></div>
+        <div class="chips dsa5h-chips-fill">
+          {{#each prepare.traits as |group|}}{{#each group as |item|}}
+          <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.at.value}}</a></span>{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}<span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button>{{#if @root.dsa5h.editMode}}<button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" data-tooltip="DSA5HELPERS.DeleteRefund" aria-label="{{localize 'DSA5HELPERS.DeleteRefund'}}">×</button>{{/if}}</span></span>
+          {{/each}}{{else}}<span class="muted">{{localize "DSA5HELPERS.Empty"}}</span>{{/each}}
+        </div>
+      </section>
+      {{#if (or prepare.advantages.length prepare.disadvantages.length)}}
+      {{#if prepare.advantages.length}}{{> "modules/dsa5-helpers/templates/actors/parts/chips.hbs" title="advantages" items=prepare.advantages}}{{/if}}
+      {{#if prepare.disadvantages.length}}{{> "modules/dsa5-helpers/templates/actors/parts/chips.hbs" title="disadvantages" items=prepare.disadvantages}}{{/if}}
+      {{/if}}
+      {{#if dsa5h.specGeneral.groups.length}}{{> "modules/dsa5-helpers/templates/actors/parts/specs.hbs" groups=dsa5h.specGeneral.groups}}{{else}}<section class="panel"><div class="panel-title">{{localize "SpecCategory.general"}}</div><div class="chips"><span class="muted">{{localize "DSA5HELPERS.Empty"}}</span></div></section>{{/if}}
+    </div>
+
+    <div class="col-gap">
+      <section class="panel">
+        <div class="panel-title">{{localize "DSA5HELPERS.Creature.Values"}}</div>
+        <div class="subhead">{{localize "DSA5HELPERS.Resources"}}</div>
+        <div class="row-head simple-row"><span></span><span>{{localize "DSA5HELPERS.ColBase"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.max"}}</span></div>
+        <div class="row simple-row" data-dsa5h-res="wounds">
+          <span class="left"><span data-tooltip="FORMULA.creature.wounds">{{localize "wounds"}}</span></span>
+          <span class="center">{{formInput systemFields.status.fields.wounds.fields.initial value=document.system.status.wounds.initial disabled=(not dsa5h.editMode)}}</span>
+          <span class="center">{{formInput systemFields.status.fields.wounds.fields.modifier value=document.system.status.wounds.modifier disabled=(not dsa5h.editMode)}}</span>
+          <span class="big center">{{document.system.status.wounds.max}}</span>
+        </div>
+        {{#if prepare.magic.hasSpells}}
+        <div class="row simple-row" data-dsa5h-res="astralenergy">
+          <span class="left"><span data-tooltip="FORMULA.creature.astralenergy">{{localize "astralenergy"}}</span></span>
+          <span class="center">{{formInput systemFields.status.fields.astralenergy.fields.initial value=document.system.status.astralenergy.initial disabled=(not dsa5h.editMode)}}</span>
+          <span class="center">{{formInput systemFields.status.fields.astralenergy.fields.modifier value=document.system.status.astralenergy.modifier disabled=(not dsa5h.editMode)}}</span>
+          <span class="big center">{{document.system.status.astralenergy.max}}</span>
+        </div>
+        {{/if}}
+        {{#if prepare.magic.hasPrayers}}
+        <div class="row simple-row" data-dsa5h-res="karmaenergy">
+          <span class="left"><span data-tooltip="FORMULA.creature.karmaenergy">{{localize "karmaenergy"}}</span></span>
+          <span class="center">{{formInput systemFields.status.fields.karmaenergy.fields.initial value=document.system.status.karmaenergy.initial disabled=(not dsa5h.editMode)}}</span>
+          <span class="center">{{formInput systemFields.status.fields.karmaenergy.fields.modifier value=document.system.status.karmaenergy.modifier disabled=(not dsa5h.editMode)}}</span>
+          <span class="big center">{{document.system.status.karmaenergy.max}}</span>
+        </div>
+        {{/if}}
+        <div class="row simple-row" data-dsa5h-res="fatePoints">
+          <span class="left"><span data-tooltip="FORMULA.fatePoints">{{localize "fatePoints"}}</span></span>
+          <span class="center">{{formInput systemFields.status.fields.fatePoints.fields.current value=document.system.status.fatePoints.current disabled=(not dsa5h.editMode)}}</span>
+          <span class="center">{{formInput systemFields.status.fields.fatePoints.fields.modifier value=document.system.status.fatePoints.modifier disabled=(not dsa5h.editMode)}}</span>
+          <span class="big center">{{document.system.status.fatePoints.max}}</span>
+        </div>
+
+        <div class="subhead">{{localize "DSA5HELPERS.Creature.Values"}}</div>
+        <div class="row-head simple-row"><span></span><span>{{localize "DSA5HELPERS.ColBase"}}</span><span>{{localize "ABBR.modifiers"}}</span><span>{{localize "ABBR.max"}}</span></div>
+        <div class="row simple-row">
+          <span class="left"><span data-tooltip="FORMULA.creature.soulpower">{{localize "soulpower"}}</span></span>
+          <span class="center">{{formInput systemFields.status.fields.soulpower.fields.value value=document.system.status.soulpower.value disabled=(not dsa5h.editMode)}}</span>
+          <span class="center">{{formInput systemFields.status.fields.soulpower.fields.modifier value=document.system.status.soulpower.modifier disabled=(not dsa5h.editMode)}}</span>
+          <span class="big center">{{document.system.status.soulpower.max}}</span>
+        </div>
+        <div class="row simple-row">
+          <span class="left"><span data-tooltip="FORMULA.creature.toughness">{{localize "toughness"}}</span></span>
+          <span class="center">{{formInput systemFields.status.fields.toughness.fields.value value=document.system.status.toughness.value disabled=(not dsa5h.editMode)}}</span>
+          <span class="center">{{formInput systemFields.status.fields.toughness.fields.modifier value=document.system.status.toughness.modifier disabled=(not dsa5h.editMode)}}</span>
+          <span class="big center">{{document.system.status.toughness.max}}</span>
+        </div>
+        {{!-- Ausweichen oder Verteidigung: Schalter des Systems (defenseToggle), nur im Bearbeiten-Modus. --}}
+        <div class="row simple-row">
+          <span class="left"><span data-tooltip="{{#if document.system.config.defense}}FORMULA.creature.defense{{else}}FORMULA.dodge{{/if}}">{{dsa5h.creature.defenseLabel}}</span>{{#if dsa5h.editMode}}<button type="button" class="dsa5h-defense-toggle" data-action="defenseToggle" aria-pressed="{{#if document.system.config.defense}}true{{else}}false{{/if}}" data-tooltip="DSA5HELPERS.Creature.DefenseToggle" aria-label="{{localize 'DSA5HELPERS.Creature.DefenseToggle'}}"><i class="fas fa-shield-alt" inert></i></button>{{/if}}</span>
+          <span class="muted center">{{document.system.status.dodge.value}}</span>
+          <span class="center">{{formInput systemFields.status.fields.dodge.fields.modifier value=document.system.status.dodge.modifier disabled=(not dsa5h.editMode)}}</span>
+          <span class="big center">{{document.system.status.dodge.max}}</span>
+        </div>
+        <div class="row simple-row">
+          <span class="left"><span data-tooltip="FORMULA.creature.speed">{{localize "speed"}}</span>{{#if dsa5h.editMode}}<button type="button" class="dsa5h-defense-toggle" data-action="addSpeedCategory" data-tooltip="TT.addSpeedCategory" aria-label="{{localize 'TT.addSpeedCategory'}}"><i class="fas fa-plus" inert></i></button>{{/if}}</span>
+          <span class="center">{{formInput systemFields.status.fields.speed.fields.initial value=document.system.status.speed.initial disabled=(not dsa5h.editMode)}}</span>
+          <span class="center">{{formInput systemFields.status.fields.speed.fields.modifier value=document.system.status.speed.modifier disabled=(not dsa5h.editMode)}}</span>
+          <span class="big center">{{document.system.status.speed.max}}</span>
+        </div>
+        {{#if document.system.status.speed.air}}
+        <div class="row simple-row">
+          <span class="left dsa5h-indent">{{localize "SPEEDSELECTOR.air"}}</span>
+          <span class="center">{{formInput systemFields.status.fields.speed.fields.air value=document.system.status.speed.air disabled=(not dsa5h.editMode)}}</span>
+          <span></span>
+          <span class="big center">{{document.system.status.speed.air}}</span>
+        </div>
+        {{/if}}
+        {{#if document.system.status.speed.water}}
+        <div class="row simple-row">
+          <span class="left dsa5h-indent">{{localize "SPEEDSELECTOR.water"}}</span>
+          <span class="center">{{formInput systemFields.status.fields.speed.fields.water value=document.system.status.speed.water disabled=(not dsa5h.editMode)}}</span>
+          <span></span>
+          <span class="big center">{{document.system.status.speed.water}}</span>
+        </div>
+        {{/if}}
+        <div class="row simple-row">
+          <span class="left"><span data-tooltip="FORMULA.creature.initiative">{{localize "initiative"}}</span></span>
+          <span class="center">{{formInput systemFields.status.fields.initiative.fields.current value=document.system.status.initiative.current disabled=(not dsa5h.editMode)}}</span>
+          <span class="center">{{formInput systemFields.status.fields.initiative.fields.modifier value=document.system.status.initiative.modifier disabled=(not dsa5h.editMode)}}</span>
+          <span class="big center">{{dsa5h.initiative}}</span>
+        </div>
+        <div class="row simple-row dsa5h-edit-only">
+          <span class="left"><span data-tooltip="FORMULA.initDie">{{localize "initDie"}}</span></span>
+          <span class="center" style="grid-column:2 / -1">{{formInput systemFields.status.fields.initiative.fields.die value=document.system.status.initiative.die disabled=(not dsa5h.editMode)}}</span>
+        </div>
+        <div class="row simple-row dsa5h-edit-only">
+          <span class="left"><span data-tooltip="FORMULA.initDieMod">{{localize "initDieMod"}}</span></span>
+          <span class="center" style="grid-column:2 / -1">{{formInput systemFields.status.fields.initiative.fields.diemodifier value=document.system.status.initiative.diemodifier disabled=(not dsa5h.editMode)}}</span>
+        </div>
+        <div class="row simple-row">
+          <span class="left"><span data-tooltip="FORMULA.creature.actionCount">{{localize "actionCount"}}</span></span>
+          <span class="center" style="grid-column:2 / -1">{{formInput systemFields.actionCount.fields.value value=document.system.actionCount.value disabled=(not dsa5h.editMode)}}</span>
+        </div>
+        <div class="row simple-row">
+          {{#if dsa5h.creature.isAnimal}}
+          <span class="left"><span>{{localize "jagd"}}</span></span>
+          <span class="center" style="grid-column:2 / -1">{{formInput systemFields.jagd.fields.value value=document.system.jagd.value disabled=(not dsa5h.editMode)}}</span>
+          {{else}}
+          <span class="left"><span data-tooltip="FORMULA.creature.conjuringDifficulty">{{localize "conjuringDifficulty"}}</span></span>
+          <span class="center" style="grid-column:2 / -1">{{formInput systemFields.conjuringDifficulty.fields.value value=document.system.conjuringDifficulty.value disabled=(not dsa5h.editMode)}}</span>
+          {{/if}}
+        </div>
+        <div class="row simple-row">
+          <span class="left"><span data-tooltip="FORMULA.creature.count">{{localize "count"}}</span></span>
+          <span class="center" style="grid-column:2 / -1">{{formInput systemFields.count.fields.value value=document.system.count.value disabled=(not dsa5h.editMode)}}</span>
+        </div>
+        <div class="row simple-row">
+          <span class="left"><span data-tooltip="FORMULA.sizeCategory">{{localize "sizeCategory"}}</span></span>
+          <span class="center" style="grid-column:2 / -1">{{formInput systemFields.status.fields.size.fields.value value=document.system.status.size.value localize=true disabled=(not dsa5h.editMode)}}</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,2 @@
+{{!-- Karte wie im Favoritenraster (Bild | Name | Probe | Wert), ohne Stern: auf der Kreatur-Titelseite steht alles fest. --}}
+<div class="dsa5h-fav-card item" data-item-id="{{item._id}}"><img class="dsa5h-fav-icon" src="{{item.img}}" alt=""><span class="dsa5h-fav-name-cell"><button type="button" class="dsa5h-fav-name" data-action="itemEdit" aria-label="{{localize 'DSA5HELPERS.OpenItem' name=item.name}}">{{item.name}}</button></span>{{> "modules/dsa5-helpers/templates/actors/parts/favorite-values.hbs" item=item}}<span class="dsa5h-fav-fixed" aria-hidden="true"></span></div>

@@ -28,8 +28,9 @@
 - Nur über `clickdummy/start-server.bat` öffnen, nicht per Doppelklick.
 - Bogen fest 770×740 px wie das Standard-Foundry-Fenster (an die Fensterhöhe angepasster Bogen ausprobiert und verworfen, 2026-09-25).
 - Nach CSS/JS-Änderungen die Cache-Version in `index.html` hochzählen (der Server schickt keine Cache-Header).
-- Design-Varianten: 2–3 Varianten per Umschalter im Click-Dummy zeigen, nach der Entscheidung Umschalter und Verlierer löschen.
-- Seitenmenü `clickdummy/pages.js` (Nutzerwunsch 2026-10-31): jede Dummy-Seite bindet es ein und steht dort als Hauptseite (nur Hauptseiten, Varianten wählt man auf der Seite; Knopf überall unten links, 2026-10-31). Wer eine Dummy-Seite anlegt, zieht das Menü im selben Zug nach. Ein Test prüft Einbindung und Eintrag.
+- Vorgehen für neue Bögen (Nutzerentscheidung 2026-11-12), je Bogentyp für Desktop, Tablet und Smartphone: (1) Click-Dummy bauen, falls noch keiner vorliegt, (2) Rückmeldung des Nutzers einarbeiten, (3) erst wenn der Dummy zufriedenstellend ist, den Bogen in Foundry umsetzen.
+- Design-Varianten: 2–3 Varianten per Umschalter im Click-Dummy zeigen, nach der Entscheidung Umschalter und Verlierer löschen; Seiten, die nur einer getroffenen Entscheidung dienten, ebenfalls (Inhalt vorher in die Hauptseite übernehmen).
+- Menü `clickdummy/pages.js` (Nutzerentscheidung 2026-11-12, ersetzt Seitenmenü und Werkzeugleiste): ein Knopf unten links mit Bogen × Gerät, Ansicht, Testdaten, Diese Seite, Fenster & Dialoge, Foundry mobil. Jede Dummy-Seite bindet es ein und steht dort (Matrix oder Liste); neue Schalter einer Seite erscheinen über `fieldset[data-group]` bzw. die Listen `VIEW`/`TESTDATA` von selbst als Stellvertreter. Wer eine Dummy-Seite anlegt, zieht das Menü im selben Zug nach. Ein Test prüft Einbindung und Eintrag.
 - Mobil: `clickdummy/mobile/` ist eine eigene Design-Referenz aus einem Design-Tool (Komponenten `*.dc.html` + Mini-Laufzeit `support.js` mit lokalem React). Das ist nur der Dummy; das Modul selbst bleibt bei Handlebars/Vanilla JS. Stand: Runde 4 mit der Rückmeldung von Lyynix (2026-10-15), Konzept in [MOBILE.md](docs/MOBILE.md) Abschnitt 13.
 
 ## Zusammenarbeit mit dem Agent

@@ -2760,7 +2760,10 @@ function coverSideTabs() {
     return b;
   }));
   let body;
-  if (COVER_SIDE_TAB === "conditions") {
+  // Eigene Bogenarten (actor-types.js: Werte bei NSC/Kreatur, Überblick der Gruppe) füllen einzelne Reiter selbst.
+  const custom = ACTOR_TYPE?.coverSideBody?.(COVER_SIDE_TAB);
+  if (custom) body = custom;
+  else if (COVER_SIDE_TAB === "conditions") {
     const list = buildConditionsPanel();
     list.querySelector(".panel-title").remove();
     const more = el("button", { type: "button", class: "show-all-btn" }, "Alle Zustände und Effekte → Status");
@@ -3906,6 +3909,17 @@ function initArmorToggles() {
   flag("armorOneToggle", () => ARMOR_ONE, (v) => { ARMOR_ONE = v; });
 }
 
+// #54: Testschalter „Als Schatz“ — Akteur im Händler-/Schatzmodus des Systems; der Bogen zeigt nur einen Hinweis.
+function initMerchantToggle() {
+  const btn = document.getElementById("merchantModeToggle");
+  btn.addEventListener("click", () => {
+    const on = btn.getAttribute("aria-pressed") !== "true";
+    btn.classList.toggle("active", on);
+    btn.setAttribute("aria-pressed", String(on));
+    document.getElementById("merchantNotice").hidden = !on;
+  });
+}
+
 // Ziehgriff unten rechts wie am Foundry-Fenster (Nutzerwunsch 2026-09-25): Standardgröße bleibt 770×740 (style.css
 // .sheet), der Griff setzt nur width/height inline; Doppelklick stellt die Standardgröße wieder her. Die Breite
 // wächst doppelt so schnell wie die Mausbewegung, weil .sheet-wrap Bogen + Rail zentriert (die rechte Kante wandert
@@ -3980,6 +3994,7 @@ initModeSwitch();
 initPageSwitches();
 initOnlyLepToggle();
 initArmorToggles();
+initMerchantToggle();
 new ResizeObserver(() => fitName()).observe(document.querySelector(".sheet"));
 document.fonts.ready.then(fitName);
 initWindowMenu();

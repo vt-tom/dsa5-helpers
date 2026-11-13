@@ -16,10 +16,10 @@
         <div class="dsa5h-portrait">
           <div class="dsa5h-portrait-inner"><img class="charimg" data-action="editImage" data-edit="img" src="{{document.img}}" alt="{{document.name}}" /></div>
         </div>
-        <div class="dsa5h-ap-ribbon" data-tooltip="{{localize 'DSA5HELPERS.ApRibbon' total=(dsa5hFormatNum document.system.details.experience.total) free=(dsa5hFormatNum document.system.details.experience.current)}}">
+        {{#unless dsa5h.creature}}<div class="dsa5h-ap-ribbon" data-tooltip="{{localize 'DSA5HELPERS.ApRibbon' total=(dsa5hFormatNum document.system.details.experience.total) free=(dsa5hFormatNum document.system.details.experience.current)}}">
           <span class="dsa5h-ap-ribbon-total">{{dsa5hFormatNum document.system.details.experience.total}} {{localize "DSA5HELPERS.APAbbrev"}}</span>
           <span class="dsa5h-ap-ribbon-free">{{dsa5hFormatNum document.system.details.experience.current}} {{localize "DSA5HELPERS.Free"}}</span>
-        </div>
+        </div>{{/unless}}
         {{#if dsa5h.editMode}}
         <div class="dsa5h-portrait-shapes" role="group" aria-label="{{localize 'DSA5HELPERS.PortraitShape'}}">
           <button type="button" data-action="dsa5hPortraitShape" data-shape="octagon" aria-pressed="{{#if dsa5h.portraitRound}}false{{else}}true{{/if}}" data-tooltip="DSA5HELPERS.PortraitOctagon" aria-label="{{localize 'DSA5HELPERS.PortraitOctagon'}}"><i class="dsa5h-shape-ico octagon" inert></i></button>
@@ -31,7 +31,7 @@
       <div class="dsa5h-head-main">
         <div class="dsa5h-head-top">
           <h1 class="dsa5h-name"{{#unless dsa5h.editMode}} data-tooltip="{{document.name}}"{{/unless}}>{{formInput fields.name value=document.name placeholder=(localize 'Name') disabled=(not dsa5h.editMode)}}</h1>
-          <span data-header-slot="fate" hidden></span><div class="dsa5h-fate-points" data-cover-move="fate">
+          <span data-header-slot="fate" hidden></span><div class="dsa5h-fate-points" data-cover-move="fate"{{#if dsa5h.creature}}{{#unless dsa5h.creature.fatePoints}} hidden{{/unless}}{{/if}}>
             {{#each prepare.schips as |item|}}
             <button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="schipUpdate" data-val="{{item.value}}" data-tooltip="fatePoints" aria-label="{{localize 'DSA5HELPERS.FatePointSet' value=item.value current=../document.system.status.fatePoints.value max=../document.system.status.fatePoints.max}}"></button>
             {{/each}}
@@ -43,6 +43,13 @@
                 Text als Tooltip (Issue #14), ein gesperrtes Feld (Spielmodus) bekommt keine Mausereignisse, der Wrapper schon.
                 Breite misst _sizeIdentity() (das autosizing des Systems rechnet ohne Großbuchstaben und Sperrung). --}}
           <div class="dsa5h-ident">
+            {{#if dsa5h.creature}}
+            {{!-- Kreatur (creature-header.hbs): Kreaturklasse statt Spezies · Kultur · Profession, dazu Größe und Anzahl als Text
+                  (Click-Dummy creatureBadges). Im System zeigt das Feld beim Überfahren die Beschreibung der Klasse. --}}
+            <span class="dsa5h-badge"{{#if document.system.creatureClass.value}} data-tooltip="{{document.system.creatureClass.value}}"{{/if}}>{{formInput systemFields.creatureClass.fields.value value=document.system.creatureClass.value placeholder=(localize 'creatureClass') disabled=(not dsa5h.editMode)}}</span>
+            {{#if dsa5h.creature.size}}<span class="dsa5h-ident-sep" aria-hidden="true">·</span><span class="dsa5h-ident-text">{{localize 'DSA5HELPERS.Creature.Size' size=dsa5h.creature.size}}</span>{{/if}}
+            {{#if dsa5h.creature.count}}<span class="dsa5h-ident-sep" aria-hidden="true">·</span><span class="dsa5h-ident-text" data-tooltip="{{localize 'DSA5HELPERS.Creature.Count' count=dsa5h.creature.count}}">{{localize 'DSA5HELPERS.Creature.Count' count=dsa5h.creature.count}}</span>{{/if}}
+            {{else}}
             {{!-- Wie im Systembogen (actor-header.hbs): ohne Spezies und mit installiertem Charakterbauer statt des Spezies-Feldes (Issue #10). --}}
             {{#if prepare.canBuild}}
             <button type="button" class="dsa5h-chargen" data-action="startCharacterBuilder" data-tooltip="CHARGEN.chargenTT"><i class="fas fa-user-edit"></i> {{localize "CHARGEN.chargen"}}</button>
@@ -53,6 +60,7 @@
             <span class="dsa5h-badge"{{#if document.system.details.culture.value}} data-tooltip="{{document.system.details.culture.value}}"{{/if}}>{{formInput systemFields.details.fields.culture.fields.value value=document.system.details.culture.value placeholder=(localize 'TYPES.Item.culture') disabled=(not dsa5h.editMode)}}</span>
             <span class="dsa5h-ident-sep" aria-hidden="true">·</span>
             <span class="dsa5h-badge"{{#if document.system.details.career.value}} data-tooltip="{{document.system.details.career.value}}"{{/if}}>{{formInput systemFields.details.fields.career.fields.value value=document.system.details.career.value placeholder=(localize 'TYPES.Item.career') disabled=(not dsa5h.editMode)}}</span>
+            {{/if}}
           </div>
 
           {{!-- LeP/AsP/KaP als Kugeln (Variante B): Füllstand per --pct, der aktuelle Wert bleibt ein Formularfeld (beide Modi). --}}

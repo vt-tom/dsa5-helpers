@@ -9,6 +9,7 @@ import { initCanvasTouch } from './canvas-touch.js';
 import { initTouchContext } from './touch-context.js';
 import { initChat } from './chat.js';
 import { initJournal } from './journal.js';
+import { initJournalBrowser } from './journal-browser.js';
 import { isFoundry13 } from '../compat/runtime.js';
 import { setPowerCharge } from '../compat/powersource-dialog.js';
 import { isRollDialog, setupRollDialog } from './roll-dialog.js';
@@ -73,7 +74,7 @@ function openMenuSheet(el, app) {
 }
 
 /**
- * Kraftspeicher auf Smartphone und Tablet (F2 Variante B, Nutzerentscheidung 2026-10-28, Tablet seit 2026-10-29; Dummy mobile/kraftspeicher.html):
+ * Kraftspeicher auf Smartphone und Tablet (F2 Variante B, Nutzerentscheidung 2026-10-28, Tablet seit 2026-10-29; Dummy mobile/heldenbogen.html):
  * statt des Rundmenüs ein Blatt von unten mit allen Speichern, je Zeile −/+ wie die LeP-Regler; jeder Tipp speichert
  * sofort (setPowerCharge). Die Anzeige folgt dem lokalen Stand, die Schreibvorgänge laufen nacheinander.
  */
@@ -356,7 +357,7 @@ function powerSheetOnTap(el, app) {
 }
 
 /**
- * LeP/AsP/KaP im Kopf auf Smartphone und Tablet (Variante B, Nutzerwahl 2026-10-30; Dummy mobile/ressourcen.html):
+ * LeP/AsP/KaP im Kopf auf Smartphone und Tablet (Variante B, Nutzerwahl 2026-10-30; Dummy mobile/heldenbogen.html):
  * Antippen einer Kugel öffnet ein kleines Feld darunter mit −/+, Eingabe und −5/0/voll/+5. Jede Änderung speichert
  * sofort (Actor-Update wie das Feld in der Kugel, das mobil nicht mehr antippbar ist). Die Knöpfe bleiben zwischen 0
  * und dem Maximum, eingetippt geht wie bisher auch mehr. Tipp daneben, Scrollen oder Schließen des Bogens schließt es.
@@ -392,7 +393,7 @@ function resourcePopOnTap(el, app) {
 }
 
 /**
- * Anzahl in der Ausrüstung (#65, Variante B, Nutzerwahl 2026-10-30; Dummy mobile/ausruestung.html): Das System zählt
+ * Anzahl in der Ausrüstung (#65, Variante B, Nutzerwahl 2026-10-30; Dummy mobile/heldenbogen.html): Das System zählt
  * mit Linksklick hoch und mit Rechtsklick herunter, auf Touch-Geräten fehlt also das Verringern. Antippen der Anzahl
  * öffnet stattdessen dasselbe Feld wie an den LeP-Kugeln mit −/+, Eingabe und −10/+10. Untergrenze 0 wie im System
  * (RuleChaos.increment), keine Obergrenze; Löschen bleibt im Menü „⋮“.
@@ -661,6 +662,7 @@ export function initMobile() {
   initTouchContext();
   initChat();
   initJournal();
+  initJournalBrowser();
   initRollResult(mode);
   // Anwendungen immer hell (Nutzerentscheidung 2026-10-28): DSA5 hängt seine dunklen Farben an body.theme-dark, auf
   // dem Pergament ist der Text dann kaum lesbar (auch am Desktop). Foundry setzt die Klasse bei jeder Änderung von

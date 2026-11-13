@@ -71,6 +71,7 @@ button { font: inherit; }
 
 /* Inhalt */
 .body { padding: 26px 10px 16px; }
+.notice { margin: 0 4px 10px; padding: 6px 10px; border-left: 3px solid var(--accent); border-radius: 3px; background: rgba(255, 255, 255, .4); font-size: 14px; line-height: 1.35; }
 .tabtitle { display: flex; align-items: center; gap: 10px; margin: 2px 4px 10px; font-family: 'Andalus', serif; font-size: 24px; }
 .tabtitle::after { content: ""; flex: 1; border-bottom: 1px solid var(--line2); }
 .panel { margin-bottom: 12px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); }
@@ -122,6 +123,9 @@ button { font: inherit; }
 .tablet .left { flex: none; display: flex; flex-direction: column; align-items: center; gap: 14px; width: 260px; padding: 20px 16px; background: var(--hdr); color: #f4e8d6; }
 .tablet .left .portrait { width: 180px; height: 216px; border-width: 4px; }
 .tablet .side { align-self: stretch; flex: 1; border: 1px solid rgba(224, 192, 128, .3); }
+.tablet .sidetabs { display: flex; border-bottom: 2px solid var(--gold); }
+.tablet .sidetabs button { flex: 1; min-height: 40px; border: 0; background: none; color: #d6bd8a; font-size: 14px; cursor: pointer; }
+.tablet .sidetabs button[aria-pressed="true"] { color: #f4e8d6; box-shadow: inset 0 -3px 0 var(--gold); }
 .tablet .side h4 { margin: 0; padding: 8px 10px; border-bottom: 2px solid var(--gold); font-size: 14px; text-align: center; }
 .tablet .side .row { min-height: 40px; border-color: rgba(224, 192, 128, .2); color: #f4e8d6; font-size: 14px; }
 .tablet main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -139,6 +143,9 @@ button { font: inherit; }
 <body>
 <div class="switch">
   <fieldset data-group="kind"><legend>Bogen</legend><button data-v="nsc" aria-pressed="true">NSC</button><button data-v="kreatur">Kreatur</button></fieldset>
+  <fieldset data-group="beispiel"><legend>Kreatur-Beispiel</legend><button data-v="tier" aria-pressed="true">Tier (Luchs)</button><button data-v="ork">Humanoid (Ork)</button></fieldset>
+  <!-- #54 (2026-11-13): Kreatur im Schatzmodus des Systems → nur Hinweis, Schatzkiste zeigt der Händlerbogen des Systems. -->
+  <fieldset data-group="haendler"><legend>Händler/Schatz (Kreatur)</legend><button data-v="none" aria-pressed="true">Normal</button><button data-v="loot">Als Schatz</button></fieldset>
   <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
 </div>
 <p class="note">Nur die Reiter des jeweiligen Systembogens. Titelseite: RS, INI, GS, SK, ZK, Angriffe der ausgerüsteten Waffen, Talente mit Wert (Anzahl mit − / +, Sinnesschärfe und Willenskraft immer), Weiteres über Favoriten. Am Smartphone wie beim Helden nur der Spielmodus.</p>
@@ -148,7 +155,7 @@ button { font: inherit; }
 const SYS = '../../../../systems/dsa5';
 const ICON = n => `${SYS}/icons/categories/${n}.webp`;
 const DIE = k => `${SYS}/icons/dice/d20${k.toLowerCase()}.svg`;
-const TAB_ICONS = { cover: 'Spellextension', main: 'DSA-Auge', skills: 'Skill', combat: 'ability_combat', inventory: 'Equipment', status: 'ability_ceremonial', notes: 'Ability_Language', companions: 'ability_animal' };
+const TAB_ICONS = { magic: 'Spell', cover: 'Spellextension', main: 'DSA-Auge', skills: 'Skill', combat: 'ability_combat', inventory: 'Equipment', status: 'ability_ceremonial', notes: 'Ability_Language', companions: 'ability_animal' };
 const ATTR_KEYS = ['MU', 'KL', 'IN', 'CH', 'FF', 'GE', 'KO', 'KK'];
 const COND = [['Schmerz', 0], ['Betäubung', 0], ['Furcht', 1], ['Verwirrung', 0]];
 
@@ -185,9 +192,29 @@ const TYPES = {
   },
 };
 
-const state = { kind: 'nsc', device: 'phone', tab: 'cover', talents: 6 };
+// Humanoide Kreatur (#54, Annahme 3 bestätigt 2026-11-12): Kreaturbogen mit Talenten, Kampftechniken und ausgerüsteten
+// Waffen; Titelseite und Kampf zeigen den natürlichen Angriff und die Waffen in den Händen. Werte frei erfunden.
+TYPES.ork = {
+  ...TYPES.kreatur,
+  name: 'Ork-Schamane', ident: ['Kulturschaffende', 'Größe mittel', 'Anzahl 1'], portrait: `url('${SYS}/icons/Maske.webp') center / 70% no-repeat, #d9c7a3`,
+  lep: [30, 30],
+  attrs: [13, 9, 12, 9, 11, 12, 14, 14],
+  chips: [['Kreatur-Eigenschaften', 'ability_general', ['Dunkelsicht I', 'Gute Nase']], ['Sonderfertigkeiten', 'ability_general', ['Wuchtschlag I', 'Belastungsgewöhnung I']]],
+  values: [['Werte'], ['Lebenskraft', '30 / 30'], ['Seelenkraft', 0], ['Zähigkeit', 1], ['Ausweichen', 6], ['Geschwindigkeit', 8], ['Initiative', 12], ['Aktionen', 1], ['Beschwörungsschwierigkeit', 2], ['Größenkategorie', 'mittel']],
+  skills: [['Einschüchtern', 'MU/IN/CH', 7], ['Kraftakt', 'KO/KK/KK', 7], ['Selbstbeherrschung', 'MU/MU/KO', 7], ['Wildnisleben', 'MU/GE/KO', 6], ['Körperbeherrschung', 'GE/GE/KO', 5], ['Sinnesschärfe', 'KL/IN/IN', 5], ['Fährtensuchen', 'MU/IN/GE', 5], ['Zechen', 'KL/KO/KK', 5], ['Willenskraft', 'MU/IN/CH', 4], ['Verbergen', 'MU/IN/GE', 4]],
+  cover: [['RS', 3], ['INI', 12], ['GS', 8], ['SK', 0], ['ZK', 1]],
+  stats: [['Ausweichen', 6, 'ge'], ['Rüstungsschutz', 3], ['Initiative', 12], ['Aktionen', 1], ['Geschwindigkeit', 8]],
+  weapons: [['Haupthand', 'Arbach', 'Säbel · KtW 12 · RW mittel', 12, 6, '1W6+4'], ['Nebenhand', 'Rundschild', 'Schilde · KtW 10 · RW kurz', 8, 10, '1W6+1']],
+  attacks: [['Faustschlag', 'RW kurz · natürlicher Angriff', 9, 5, '1W6']],
+  armor: [['Lederharnisch', 'RS 3 · BE 1']],
+  spells: [['Blitz dich find', 'KL/FF/KO', 6], ['Balsam Salabunde', 'KL/IN/KO', 4]],
+  tabs: [['cover', 'Titelseite'], ['main', 'Eigenschaften'], ['skills', 'Talente'], ['combat', 'Kampf'], ['magic', 'Magie'], ['inventory', 'Beute'], ['status', 'Status'], ['notes', 'Notizen']],
+  items: [['Wurfspeer', 1, '1,5'], ['Münzbeutel', 1, '0,2'], ['Knochenkette', 1, '0,1']],
+};
+
+const state = { kind: 'nsc', beispiel: 'tier', device: 'phone', tab: 'cover', talents: 6, side: 'values', haendler: 'none' };
 const FIXED_TALENTS = [['Sinnesschärfe', 'KL/IN/IN'], ['Willenskraft', 'MU/IN/CH']];
-const t = () => TYPES[state.kind];
+const t = () => TYPES[state.kind === 'kreatur' && state.beispiel === 'ork' ? 'ork' : state.kind];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const panel = (title, inner, small = '') => `<section class="panel"><h3>${title}${small ? `<small>${small}</small>` : ''}</h3>${inner}</section>`;
 const cdie = (v, k, label) => `<button type="button" class="cdie" style="background-image:url('${DIE(k)}')" title="${label}">${v}</button>`;
@@ -196,14 +223,23 @@ const probe = p => `<span class="probe">${p.split('/').map(k => `<span style="ba
 // Titelseite: Werte, Angriffe (NSC nur ausgerüstete Waffen, Kreatur natürliche Angriffe), Talente, Favoriten.
 function cover() {
   const x = t();
-  const stats = panel('Werte', `<div class="stats" style="grid-template-columns:repeat(5,minmax(0,1fr))">${x.cover.map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div>`);
-  const attacks = state.kind === 'nsc'
-    ? x.weapons.map(([hand, n, meta, at, pa, tp]) => `<div class="row"><img class="ico" src="${ICON('Combat_Skill')}" alt=""><span class="grow">${n}<small>${hand} · ${meta}</small></span>${cdie(at, 'mu', 'Attacke')}${cdie(pa, 'in', 'Parade')}<button type="button" class="tp">${tp}</button></div>`)
-    : x.attacks.map(([n, meta, at, pa, tp]) => `<div class="row"><img class="ico" src="${ICON('Combat_Skill')}" alt=""><span class="grow">${n}<small>${meta}</small></span>${cdie(at, 'mu', 'Attacke')}${pa != null ? cdie(pa, 'in', 'Parade') : ''}<button type="button" class="tp">${tp}</button></div>`);
+  // Werte: am Tablet links im Reiter „Werte“ (Rückmeldung 2026-11-12), am Smartphone (ohne linke Spalte) weiter hier.
+  const stats = state.device === 'tablet' ? '' : panel('Werte', `<div class="stats" style="grid-template-columns:repeat(5,minmax(0,1fr))">${x.cover.map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div>`);
+  const natural = (x.attacks ?? []).map(([n, meta, at, pa, tp]) => `<div class="row"><img class="ico" src="${ICON('Combat_Skill')}" alt=""><span class="grow">${n}<small>${meta}</small></span>${cdie(at, 'mu', 'Attacke')}${pa != null ? cdie(pa, 'in', 'Parade') : ''}<button type="button" class="tp">${tp}</button></div>`);
+  const weapons = (x.weapons ?? []).map(([hand, n, meta, at, pa, tp]) => `<div class="row"><img class="ico" src="${ICON('Combat_Skill')}" alt=""><span class="grow">${n}<small>${hand} · ${meta}</small></span>${cdie(at, 'mu', 'Attacke')}${cdie(pa, 'in', 'Parade')}<button type="button" class="tp">${tp}</button></div>`);
+  const attacks = [...natural, ...weapons];
   const fixed = FIXED_TALENTS.map(([n, p]) => [n, p, x.skills.find(([m]) => m === n)?.[2] ?? 0, true]);
   const rest = x.skills.filter(([n, , fw]) => fw > 0 && !FIXED_TALENTS.some(([m]) => m === n)).sort((a, b) => b[2] - a[2]).slice(0, state.talents);
   const talentRows = [...fixed, ...rest].map(([n, p, fw, isFixed]) => `<div class="row"><span class="grow">${n}</span>${probe(p)}<span class="v">${fw}</span><button type="button" class="star${isFixed ? ' fixed' : ''}" aria-label="Favorit">☆</button></div>`).join('');
   const count = `<span class="count"><button type="button" class="step" data-talents="-2" ${state.talents <= 2 ? 'disabled' : ''} aria-label="Weniger Talente">−</button>${state.talents}<button type="button" class="step" data-talents="2" ${state.talents >= 12 ? 'disabled' : ''} aria-label="Mehr Talente">+</button></span>`;
+  // Kreatur (Rückmeldung 2026-11-12): alle Talente mit Wert, Zauber/Liturgien, keine Anzahl, keine Favoriten.
+  if (state.kind === 'kreatur') {
+    const allRest = x.skills.filter(([n, , fw]) => fw > 0 && !FIXED_TALENTS.some(([m]) => m === n)).sort((a, b) => b[2] - a[2]);
+    const rowsAll = [...fixed, ...allRest].map(([n, p, fw]) => `<div class="row"><span class="grow">${n}</span>${probe(p)}<span class="v">${fw}</span></div>`).join('');
+    const spells = x.spells?.length ? panel('Zauber und Rituale', x.spells.map(([n, p, fw]) => `<div class="row"><img class="ico" src="${ICON('Spell')}" alt=""><span class="grow">${n}</span>${probe(p)}<span class="v">${fw}</span></div>`).join('')) : '';
+    const talentsAll = panel(`Talente <small>${fixed.length + allRest.length}</small>`, rowsAll);
+    return stats + panel('Angriffe', attacks.join('')) + (state.device === 'tablet' ? `<div class="cols"><div>${talentsAll}</div><div>${spells}</div></div>` : talentsAll + spells);
+  }
   const talents = `<section class="panel"><h3>Talente${count}</h3>${talentRows}</section>`;
   const favs = panel('Favoriten', x.favs.length
     ? x.favs.map(([group, ico, n]) => `<div class="sub">${group}</div><div class="row"><img class="ico" src="${ICON(ico)}" alt=""><span class="grow">${n}</span><button type="button" class="star" aria-label="Favorit entfernen">★</button></div>`).join('')
@@ -225,12 +261,14 @@ const TAB = {
     ? panel('Ausrüstung am Körper', t().weapons.map(([hand, n, meta, at, pa, tp]) => `<div class="weapon"><span class="hand">${hand}</span><div class="wname">${n}</div><div class="meta">${meta}</div><div class="roll">${cdie(at, 'mu', 'Attacke')}${cdie(pa, 'in', 'Parade')}<button type="button" class="tp">${tp}</button></div></div>`).join(''))
       + panel('Kampfwerte', `<div class="stats"><div>${cdie(6, 'ge', 'Ausweichen')}<small>Ausweichen</small></div><div><b>13</b><small>Initiative</small></div><div><b>1</b><small>Rüstungsschutz</small></div></div>`)
     : panel('Kampfwerte', `<div class="stats">${t().stats.map(([n, v, k]) => `<div>${k ? cdie(v, k, n) : `<b>${v}</b>`}<small>${n}</small></div>`).join('')}</div>`)
-      + panel('Angriffe', t().attacks.map(([n, meta, at, pa, tp]) => `<div class="row"><img class="ico" src="${ICON('Combat_Skill')}" alt=""><span class="grow">${n}<small>${meta}</small></span>${cdie(at, 'mu', 'Attacke')}${pa != null ? cdie(pa, 'in', 'Parade') : ''}<button type="button" class="tp">${tp}</button></div>`).join(''))
-      + panel('Natürliche Rüstung', t().armor.map(([n, v]) => `<div class="row"><span class="grow">${n}</span><span>${v}</span></div>`).join('')),
+      + (t().weapons ? panel('Ausrüstung am Körper', t().weapons.map(([hand, n, meta, at, pa, tp]) => `<div class="weapon"><span class="hand">${hand}</span><div class="wname">${n}</div><div class="meta">${meta}</div><div class="roll">${cdie(at, 'mu', 'Attacke')}${cdie(pa, 'in', 'Parade')}<button type="button" class="tp">${tp}</button></div></div>`).join('')) : '')
+      + panel(t().weapons ? 'Natürliche Angriffe' : 'Angriffe', t().attacks.map(([n, meta, at, pa, tp]) => `<div class="row"><img class="ico" src="${ICON('Combat_Skill')}" alt=""><span class="grow">${n}<small>${meta}</small></span>${cdie(at, 'mu', 'Attacke')}${pa != null ? cdie(pa, 'in', 'Parade') : ''}<button type="button" class="tp">${tp}</button></div>`).join(''))
+      + panel(t().weapons ? 'Rüstung' : 'Natürliche Rüstung', t().armor.map(([n, v]) => `<div class="row"><span class="grow">${n}</span><span>${v}</span></div>`).join('')),
   inventory: () => panel(state.kind === 'nsc' ? 'Ausrüstung' : 'Beute', `<div class="sub">Gegenstand · Anzahl · Gewicht</div>` + t().items.map(([n, q, w]) => `<div class="row"><img class="ico" src="${ICON('Equipment')}" alt=""><span class="grow">${n}</span><span class="v">${q}</span><span style="min-width:40px;text-align:right;color:var(--ink2)">${w}</span></div>`).join(''), state.kind === 'nsc' ? '' : 'für die Helden nach dem Kampf'),
   status: () => panel('Zustände', COND.map(([n, f]) => `<div class="row"><span class="grow">${n}</span><button type="button" class="step" aria-label="weniger">−</button><span class="pips">${[0, 1, 2, 3].map(i => `<i class="${i < f ? 'on' : ''}"></i>`).join('')}</span><button type="button" class="step" aria-label="mehr">+</button></div>`).join('')),
   notes: () => t().notes.map(([title, text]) => panel(title, `<p>${text ? esc(text) : '<em>leer</em>'}</p>`)).join(''),
   companions: () => panel('Gefährten', '<p>Wie im Heldenbogen (Reittier, Vertraute, Begleiter).</p>'),
+  magic: () => panel('Zauber', (t().spells || []).map(([n, p, fw]) => `<div class="row"><img class="ico" src="${ICON('Spell')}" alt=""><span class="grow">${n}</span>${probe(p)}<span class="v">${fw}</span></div>`).join('')),
 };
 
 function head() {
@@ -244,7 +282,8 @@ function head() {
 
 const tabTitle = () => t().tabs.find(([id]) => id === state.tab)[1];
 const navButtons = () => t().tabs.map(([id, label]) => `<button type="button" data-tab="${id}" ${id === state.tab ? 'aria-current="page"' : ''}><img src="${ICON(TAB_ICONS[id])}" alt="">${label}</button>`).join('');
-const content = () => `<div class="body"><div class="tabtitle">${tabTitle()}</div>${TAB[state.tab]()}</div>`;
+const merchantNotice = () => state.kind === 'kreatur' && state.haendler === 'loot' ? '<p class="notice" role="note">Dieser Akteur ist gerade „Schatz“. Laden und Schatzkiste zeigt nur der Händlerbogen des Systems – im Fenstermenü unter „Bogen anpassen“ den Bogen „DSA5 - Händler/Schatz/Garadan“ wählen.</p>' : '';
+const content = () => `<div class="body">${merchantNotice()}<div class="tabtitle">${tabTitle()}</div>${TAB[state.tab]()}</div>`;
 
 function render() {
   if (!t().tabs.some(([id]) => id === state.tab)) state.tab = 'cover';
@@ -258,7 +297,9 @@ function render() {
   stage.innerHTML = `<div class="device tablet">
     <aside class="left"><div class="portrait" style="background:${x.portrait}"></div>
       <div class="orbs"><div class="orb" style="--p:100%"><i></i><b><small>LeP</small>${x.lep[0]}<small>/ ${x.lep[1]}</small></b></div><button type="button" class="regen">☾</button></div>${schips}
-      <div class="side"><h4>Statuseffekte</h4>${COND.map(([n, f]) => `<div class="row"><span class="grow">${n}</span><span>${f}/4</span></div>`).join('')}</div></aside>
+      <div class="side"><div class="sidetabs">${[['values', 'Werte'], ['conditions', 'Statuseffekte']].map(([id, l]) => `<button type="button" data-side="${id}" aria-pressed="${state.side === id}">${l}</button>`).join('')}</div>${state.side === 'values'
+        ? x.cover.map(([k, v]) => `<div class="row"><span class="grow">${{ RS: 'Rüstungsschutz', INI: 'Initiative', GS: 'Geschwindigkeit', SK: 'Seelenkraft', ZK: 'Zähigkeit' }[k]} (${k})</span><span>${v}</span></div>`).join('')
+        : COND.map(([n, f]) => `<div class="row"><span class="grow">${n}</span><span>${f}/4</span></div>`).join('')}</div></aside>
     <main>${head()}<div class="scroll">${content()}</div></main>
     <nav class="rail" aria-label="Reiter">${navButtons()}</nav></div>`;
 }
@@ -272,11 +313,13 @@ document.addEventListener('click', ev => {
     b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   } else if (b.dataset.tab) state.tab = b.dataset.tab;
   else if (b.dataset.talents) state.talents += Number(b.dataset.talents);
+  else if (b.dataset.side) state.side = b.dataset.side;
   else return;
   render();
 });
 render();
 </script>
-<script src="../pages.js?v=7"></script>
+<script src="tablet-plakette.js?v=2"></script>
+<script src="../pages.js?v=21"></script>
 </body>
 </html>

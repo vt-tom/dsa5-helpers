@@ -3,13 +3,16 @@
 // über Foundrys eigenen Weg, das Flag `core.sheetClass` am Akteur (ClientDocument#_onUpdate → _onSheetChange schließt
 // den alten Bogen und öffnet den neuen). Die Wahl gilt wie im Foundry-Dialog für alle Nutzer dieses Akteurs.
 
-// Nicht im Umschalter: Händlerbogen und Charakterbauer (dsa5-core, auch die Vollbild-Variante) — kein Bogen zum
-// Spielen, der Bauer hat seinen eigenen Rückweg (preChargenSheet). „Default Sheet“ ('') taucht ohnehin nicht auf.
-import { contextMenuEntries } from './compat/runtime.js';
-const EXCLUDED = ['dsa5.CharacterMerchantSheetDSA5'];
+// Nicht im Umschalter: Händlerbögen (Held, Kreatur) und Charakterbauer (dsa5-core, auch die Vollbild-Variante) — kein
+// Bogen zum Spielen; den Händlerbogen setzt das System selbst mit dem Händler-/Schatzmodus (nur Bogen wechseln ließe den
+// Modus auf „Normale Person“), der Bauer hat seinen eigenen Rückweg (preChargenSheet). „Default Sheet“ ('') fehlt ohnehin.
+import { contextMenuEntries, MERCHANT_SHEETS } from './compat/runtime.js';
+const EXCLUDED = Object.values(MERCHANT_SHEETS);
 const EXCLUDED_PREFIX = 'dsa5.DSACharBuilder';
 // Der Systembogen heißt im Umschalter „Systemstandard“ statt „DSA5 - Held“.
-const RENAMED = { 'dsa5.ActorSheetdsa5Character': 'DSA5HELPERS.SheetSwitcher.SystemSheet' };
+const RENAMED = { 'dsa5.ActorSheetdsa5Character': 'DSA5HELPERS.SheetSwitcher.SystemSheet', 'dsa5.ActorSheetdsa5Creature': 'DSA5HELPERS.SheetSwitcher.SystemSheet' };
+// Bogenarten mit Umschalter: Helden und (seit dem Kreaturbogen, Issue #54) Kreaturen.
+const SWITCH_TYPES = ['character', 'creature'];
 
 // Linke obere Ecke des alten Fensters je Akteur — der neue Bogen öffnet sich an derselben Stelle statt in der Mitte.
 const pendingPosition = new Map();
@@ -27,7 +30,8 @@ async function switchSheet(app, id) {
   const actor = app.document;
   const { left, top } = app.position ?? {};
   if (Number.isFinite(left) && Number.isFinite(top)) pendingPosition.set(actor.uuid, { left, top });
-  await actor.setFlag('core', 'sheetClass', id);
+  // Ausdrückliche Wahl: der Rückweg aus dem Händler-/Schatzbogen (merchant-return.js) greift dann nicht.
+  await actor.update({ 'flags.core.sheetClass': id }, { dsa5hSheetChoice: true });
 }
 
 // Vorschau beim Darüberfahren (Nutzerwunsch 2026-10-05): Beim Öffnen des Menüs werden alle anderen Bögen einmal
@@ -133,7 +137,7 @@ export function openMenu(app, button) {
 function onRenderSheet(app, element, _context, options) {
   const actor = app.document;
   if (app.options.classes.includes(PREVIEW_CLASS)) return;
-  if (!options.isFirstRender || actor?.documentName !== 'Actor' || actor.type !== 'character') return;
+  if (!options.isFirstRender || actor?.documentName !== 'Actor' || !SWITCH_TYPES.includes(actor.type)) return;
 
   const position = pendingPosition.get(actor.uuid);
   if (position) {

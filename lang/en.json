@@ -3,6 +3,7 @@
     "RangedAttackShort": "RC",
     "SelectAmmo": "Select ammunition",
     "SheetLabel": "DSA5 Helpers Character Sheet",
+    "CreatureSheetLabel": "DSA5 Helpers Creature Sheet",
     "Free": "free",
     "AdvantagesDisadvantages": "Advantages & Disadvantages",
     "BaseValues": "Base Values",
@@ -186,6 +187,10 @@
         "Name": "Default sheet for heroes",
         "Hint": "Makes the DSA5 Helpers sheet the default for all heroes. Heroes with an explicitly chosen sheet keep it. Foundry reloads after changing this."
       },
+      "DefaultCreatureSheet": {
+        "Name": "Default sheet for creatures",
+        "Hint": "Makes the DSA5 Helpers creature sheet the default for all creatures. Creatures with an explicitly chosen sheet keep it. Foundry reloads after changing this."
+      },
       "PlayersMayEdit": {
         "Name": "Players: change values without AP (edit mode)",
         "Hint": "Allows players to use the hero sheet's “Edit” mode, where values can be changed directly without adventure points. When off, players can only play and advance with AP; the GM can always edit."
@@ -204,7 +209,7 @@
       "SheetMenu": {
         "Title": "Hero sheet",
         "Label": "Configure hero sheet",
-        "Hint": "Default sheet for heroes, edit mode for players, folder for banner images and skill suggestions on the cover page.",
+        "Hint": "Default sheet for heroes and creatures, edit mode for players, folder for banner images and skill suggestions on the cover page.",
         "Save": "Save"
       },
       "QuestsTab": {
@@ -736,6 +741,13 @@
         "PageOf": "Page {n} of {total}",
         "Prev": "Previous",
         "Next": "Next"
+      },
+      "JournalBrowser": {
+        "Contents": "Contents",
+        "Prev": "Previous page",
+        "Next": "Next page",
+        "More": "More functions",
+        "Library": "Library"
       }
     },
     "Mode": {
@@ -845,6 +857,26 @@
     },
     "AlsoWorn": "Also equipped",
     "AlsoWornHint": "These weapons are equipped but not assigned to a hand. You can still roll; “Take in hand” assigns them via the system's hand selection.",
-    "TakeInHand": "Take in hand"
+    "TakeInHand": "Take in hand",
+    "Creature": {
+      "Tabs": {
+        "inventory": "Loot"
+      },
+      "Attacks": "Attacks",
+      "NoAttacks": "No attacks and no weapon equipped.",
+      "TalentsCount": "Skills ({count})",
+      "Spells": "Spells and rituals",
+      "Liturgies": "Liturgies and ceremonies",
+      "CombatValues": "Combat values",
+      "NaturalArmor": "Natural armor",
+      "Values": "Values",
+      "DefenseToggle": "Dodge or defense",
+      "Size": "Size {size}",
+      "Count": "Count {count}"
+    },
+    "MerchantNotice": {
+      "Owner": "This actor is currently set to “{type}”. Only the system’s merchant sheet shows the shop or treasure – choose “{sheet}” under “{configure}” in the window menu.",
+      "Viewer": "This actor is currently set to “{type}”. Only the system’s merchant sheet shows the shop or treasure – the GM can switch to it."
+    }
   }
 }

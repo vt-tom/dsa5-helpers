@@ -1,0 +1,7 @@
+{{!-- Kampf-Reiter einer Kreatur ohne Waffen und Rüstung (Tier, Click-Dummy renderCreatureCombat): natürliche Angriffe als
+      Zeilen wie „Weitere Waffen“, natürliche Rüstung, Passive Verteidigung (Hausregel) und Kampf-Sonderfertigkeiten.
+      Keine Hände und keine Körperfigur. --}}
+<section class="panel dsa5h-short-weapons-panel"><div class="panel-title">{{localize 'DSA5HELPERS.Creature.Attacks'}}</div>{{#if dsa5h.creature.attacks.length}}<div class="dsa5h-short-weapons">{{#each dsa5h.creature.attacks}}{{> "modules/dsa5-helpers/templates/actors/parts/weapon-short.hbs" item=item ranged=ranged}}{{/each}}</div>{{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Creature.NoAttacks'}}</p>{{/if}}</section>
+{{#if dsa5h.creature.naturalArmor.length}}<section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Creature.NaturalArmor'}}</div>{{#each dsa5h.creature.naturalArmor as |item|}}<div class="row item dsa5h-creature-armor-row" data-item-id="{{item._id}}"><img src="{{item.img}}" alt=""><span class="left withContext"><a data-action="itemEdit">{{item.name}}</a></span><span class="muted center">{{localize 'CHARAbbrev.RS'}} {{item.system.at.value}}</span></div>{{/each}}</section>{{/if}}
+{{> "modules/dsa5-helpers/templates/actors/parts/auto-defense.hbs"}}
+{{> "modules/dsa5-helpers/templates/actors/parts/specs.hbs" groups=dsa5h.specs.combat}}

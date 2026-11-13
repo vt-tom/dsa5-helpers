@@ -1,7 +1,7 @@
 <div>
 {{! One root part; partials keep each tab independently maintainable. }}
 {{#if dsa5h.limited}}
-<div class="dsa5h-limited"><img src="{{document.img}}" alt="{{document.name}}"><h1>{{document.name}}</h1><div>{{{enrichedBiography}}}</div></div>
+<div class="dsa5h-limited">{{#if dsa5h.merchantNotice}}<p class="dsa5h-notice" role="note">{{dsa5h.merchantNotice}}</p>{{/if}}<img src="{{document.img}}" alt="{{document.name}}"><h1>{{document.name}}</h1><div>{{#if dsa5h.creature}}{{{enrichedDescription}}}{{else}}{{{enrichedBiography}}}{{/if}}</div></div>
 {{else}}
 <nav class="dsa5h-rail" aria-label="{{localize 'DSA5HELPERS.Navigation'}}">
 {{#each dsa5h.tabs}}<button type="button" class="dsa5h-rail-btn" data-action="dsa5hSetTab" data-tab="{{id}}" data-tab-rail-target="{{id}}" aria-label="{{label}}"><img src="{{icon}}" alt=""><span class="dsa5h-rail-label" aria-hidden="true">{{label}}</span></button>{{/each}}
@@ -13,6 +13,7 @@
     {{#each prepare.mentalAttrs as |ch|}}<button type="button" class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')"><span class="dsa5h-attr-mini-key" aria-hidden="true">{{attrAbbr ch}}</span><span>{{getAttr ../document ch "value"}}</span></span></button>{{/each}}
     {{#each prepare.bodyAttrs as |ch|}}<button type="button" class="dsa5h-attr-die-mini" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}"><span class="dsa5h-attr-die-mini-face" style="background-image:url('systems/dsa5/icons/dice/d20{{ch}}.svg')"><span class="dsa5h-attr-mini-key" aria-hidden="true">{{attrAbbr ch}}</span><span>{{getAttr ../document ch "value"}}</span></span></button>{{/each}}
   </div>
+  {{#if dsa5h.merchantNotice}}<p class="dsa5h-notice" role="note">{{dsa5h.merchantNotice}}</p>{{/if}}
   <div class="dsa5h-tab-title"><span data-tab-title-label>{{dsa5h.currentTabLabel}}</span>
     {{#each dsa5h.subnav}}<nav class="dsa5h-sub-tabs" data-subnav="{{tab}}" hidden>
       {{#each items}}<button type="button" data-action="dsa5hSetSubTab" data-parent-tab="{{../tab}}" data-subtab="{{id}}" aria-pressed="false">{{label}}</button>{{/each}}
@@ -20,16 +21,26 @@
     <span class="dsa5h-rule"></span><span data-tab-hint class="dsa5h-tab-hint"></span>
   </div>
   <div class="dsa5h-content">
+    {{!-- Kreaturbogen (Issue #54): eigene Teile für Titelblatt, Eigenschaften und Notizen, Kampf mit Kampfwerten. --}}
+    {{#if dsa5h.creature}}
+    {{> "modules/dsa5-helpers/templates/actors/parts/creature-cover.hbs"}}
+    {{> "modules/dsa5-helpers/templates/actors/parts/creature-main.hbs"}}
+    {{else}}
     {{> "modules/dsa5-helpers/templates/actors/parts/cover.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/main.hbs"}}
+    {{/if}}
     {{> "modules/dsa5-helpers/templates/actors/parts/skills.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/combat.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/magic.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/religion.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/inventory.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/status.hbs"}}
+    {{#if dsa5h.creature}}
+    {{> "modules/dsa5-helpers/templates/actors/parts/creature-notes.hbs"}}
+    {{else}}
     {{> "modules/dsa5-helpers/templates/actors/parts/notes.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/companion.hbs"}}
+    {{/if}}
     {{#if dsa5h.quests}}{{> "modules/dsa5-helpers/templates/actors/parts/quests.hbs"}}{{/if}}
     {{#if dsa5h.personae}}{{> "modules/dsa5-helpers/templates/actors/parts/personae.hbs"}}{{/if}}
     {{> "modules/dsa5-helpers/templates/actors/parts/planner.hbs"}}

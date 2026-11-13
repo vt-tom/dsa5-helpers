@@ -3,6 +3,7 @@
     "RangedAttackShort": "FK",
     "SelectAmmo": "Munition wählen",
     "SheetLabel": "DSA5 Helfer-Heldenbogen",
+    "CreatureSheetLabel": "DSA5 Helfer-Kreaturbogen",
     "Free": "frei",
     "AdvantagesDisadvantages": "Vor- & Nachteile",
     "BaseValues": "Grundwerte",
@@ -186,6 +187,10 @@
         "Name": "Standard-Bogen für Helden",
         "Hint": "Macht den DSA5-Helpers-Bogen zum Standard für alle Helden. Helden, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Nach dem Ändern wird Foundry neu geladen."
       },
+      "DefaultCreatureSheet": {
+        "Name": "Standard-Bogen für Kreaturen",
+        "Hint": "Macht den DSA5-Helpers-Kreaturbogen zum Standard für alle Kreaturen. Kreaturen, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Nach dem Ändern wird Foundry neu geladen."
+      },
       "PlayersMayEdit": {
         "Name": "Spieler: Werte ohne AP ändern (Bearbeiten-Modus)",
         "Hint": "Erlaubt Spielern im Heldenbogen den Modus „Bearbeiten“, in dem sich Werte direkt und ohne Abenteuerpunkte ändern lassen. Ausgeschaltet können Spieler nur spielen und mit AP steigern; die Spielleitung darf immer bearbeiten."
@@ -204,7 +209,7 @@
       "SheetMenu": {
         "Title": "Heldenbogen",
         "Label": "Heldenbogen einrichten",
-        "Hint": "Standard-Bogen für Helden, Bearbeiten-Modus für Spieler, Ordner für Bannerbilder und Talent-Vorschläge auf dem Titelblatt.",
+        "Hint": "Standard-Bogen für Helden und Kreaturen, Bearbeiten-Modus für Spieler, Ordner für Bannerbilder und Talent-Vorschläge auf dem Titelblatt.",
         "Save": "Speichern"
       },
       "QuestsTab": {
@@ -736,6 +741,13 @@
         "PageOf": "Seite {n} von {total}",
         "Prev": "Zurück",
         "Next": "Weiter"
+      },
+      "JournalBrowser": {
+        "Contents": "Inhalt",
+        "Prev": "Vorige Seite",
+        "Next": "Nächste Seite",
+        "More": "Weitere Funktionen",
+        "Library": "Bibliothek"
       }
     },
     "Mode": {
@@ -845,6 +857,26 @@
     },
     "AlsoWorn": "Ebenfalls angelegt",
     "AlsoWornHint": "Diese Waffen sind angelegt, aber keiner Hand zugeordnet. Würfeln geht trotzdem; „In die Hand“ ordnet sie über die Handwahl des Systems zu.",
-    "TakeInHand": "In die Hand nehmen"
+    "TakeInHand": "In die Hand nehmen",
+    "Creature": {
+      "Tabs": {
+        "inventory": "Beute"
+      },
+      "Attacks": "Angriffe",
+      "NoAttacks": "Keine Angriffe und keine Waffe ausgerüstet.",
+      "TalentsCount": "Talente ({count})",
+      "Spells": "Zauber und Rituale",
+      "Liturgies": "Liturgien und Zeremonien",
+      "CombatValues": "Kampfwerte",
+      "NaturalArmor": "Natürliche Rüstung",
+      "Values": "Werte",
+      "DefenseToggle": "Ausweichen oder Verteidigung",
+      "Size": "Größe {size}",
+      "Count": "Anzahl {count}"
+    },
+    "MerchantNotice": {
+      "Owner": "Dieser Akteur ist gerade „{type}“. Laden und Schatzkiste zeigt nur der Händlerbogen des Systems – im Fenstermenü unter „{configure}“ den Bogen „{sheet}“ wählen.",
+      "Viewer": "Dieser Akteur ist gerade „{type}“. Laden und Schatzkiste zeigt nur der Händlerbogen des Systems – die Spielleitung kann ihn einstellen."
+    }
   }
 }

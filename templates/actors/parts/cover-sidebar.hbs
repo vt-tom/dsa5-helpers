@@ -7,10 +7,17 @@
   <div class="dsa5h-cover-res-row"><div class="dsa5h-cover-fate" data-cover-slot="fate"></div><div data-cover-slot="regen"></div></div>
   <section class="panel dsa5h-side-tabs-panel">
     <div class="dsa5h-side-tabs" role="tablist" aria-label="{{localize 'DSA5HELPERS.Tabs.cover'}}">
-      <button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="conditions" aria-selected="true">{{localize 'statuseffects'}}</button>
-      <button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="details" aria-selected="false">{{localize 'personalDetails'}}</button>
+      {{!-- Kreatur (Rückmeldung 2026-11-12): Werte | Statuseffekte, keine persönlichen Daten. --}}
+      {{#if dsa5h.creature}}<button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="values" aria-selected="true">{{localize 'DSA5HELPERS.Creature.Values'}}</button>{{/if}}
+      <button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="conditions" aria-selected="{{#if dsa5h.creature}}false{{else}}true{{/if}}">{{localize 'statuseffects'}}</button>
+      {{#unless dsa5h.creature}}<button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="details" aria-selected="false">{{localize 'personalDetails'}}</button>{{/unless}}
     </div>
-    <div class="dsa5h-side-tabs-body" role="tabpanel" data-side-panel="conditions">
+    {{#if dsa5h.creature}}
+    <div class="dsa5h-side-tabs-body" role="tabpanel" data-side-panel="values">
+      <dl class="dsa5h-side-details">{{#each dsa5h.creature.values}}<div data-tooltip="{{label}}: {{value}}"><dt>{{label}} ({{short}})</dt><dd>{{value}}</dd></div>{{/each}}</dl>
+    </div>
+    {{/if}}
+    <div class="dsa5h-side-tabs-body" role="tabpanel" data-side-panel="conditions"{{#if dsa5h.creature}} hidden{{/if}}>
       {{#each conditions}}
       <div class="row dsa5h-cover-condition" data-id="{{_id}}" {{#if descriptor}}data-descriptor="{{descriptor}}"{{/if}}>
         <img src="{{img}}" alt="" />
@@ -22,6 +29,7 @@
       {{/each}}
       <button type="button" class="dsa5h-cover-more" data-action="dsa5hSetTab" data-tab="status">{{localize 'DSA5HELPERS.ConditionsToStatus'}}</button>
     </div>
+    {{#unless dsa5h.creature}}
     <div class="dsa5h-side-tabs-body" role="tabpanel" data-side-panel="details" hidden>
       {{#if dsa5h.personalDetails.length}}
       <dl class="dsa5h-side-details">{{#each dsa5h.personalDetails}}<div data-tooltip="{{label}}: {{value}}"><dt>{{label}}</dt><dd>{{value}}</dd></div>{{/each}}</dl>
@@ -30,5 +38,6 @@
       {{/if}}
       <button type="button" class="dsa5h-cover-more" data-action="dsa5hOpenDetails">{{localize 'DSA5HELPERS.EditInNotes'}}</button>
     </div>
+    {{/unless}}
   </section>
 </aside>

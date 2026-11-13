@@ -16,6 +16,7 @@
   11. Heldenbogen auf Smartphone und Tablet
   12. Chat im Modul-Design (Karten, Probenkarten, Eingabe)
   13. Journal im Modul-Design (Verzeichnis, Eintrag, Seitenliste)
+  14. Journal-Browser des Systems
    ========================================================================== */
 
 /* 1. Variablen ------------------------------------------------------------ */
@@ -525,8 +526,8 @@ body.dsa5h-phone .dsa5-helpers-sheet.dsa5h-m-compact .dsa5h-head .dsa5h-power-sa
 /* Titelblatt einspaltig: Kopf wie auf den anderen Reitern; der Kasten Statuseffekte/Persönliche Daten steht unter den
    Favoriten (mobile.js verschiebt ihn in den Titelblatt-Reiter), die Seitenleiste selbst entfällt. */
 body.dsa5h-phone .dsa5-helpers-sheet[data-tab="cover"] .dsa5h-main {
-  grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: auto auto auto minmax(0, 1fr) !important;
-  grid-template-areas: "head" "attrbar" "tabtitle" "content" !important;
+  grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: auto auto auto auto minmax(0, 1fr) !important;
+  grid-template-areas: "head" "attrbar" "notice" "tabtitle" "content" !important;
 }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-cover-sidebar { display: none !important; }
 body.dsa5h-phone .dsa5-helpers-sheet [data-tab-panel="cover"] > .dsa5h-side-tabs-panel { margin-top: 12px; overflow: hidden; }
@@ -1070,6 +1071,17 @@ body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat > i { 
 body.dsa5h-tablet[data-dsa5h-panel="chat"] .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat { background: rgba(224, 192, 128, .2) !important; box-shadow: inset 0 2px 0 #e0c48c; }
 body.dsa5h-tablet .dsa5-helpers-sheet nav.dsa5h-rail > .dsa5h-m-rail-chat .dsa5h-m-badge { top: 2px; right: 6px; }
 
+/* Tablet: Fensterknöpfe in der Plakette fingergroß (Issue #76, Variante „Größer“, Nutzerentscheidung 2026-11-13; Dummy
+   mobile/tablet-plakette.js). Alle Knöpfe bleiben, je 40 × 36 px statt 22 × 20 px, Symbol 18 px. Die Plakette beginnt
+   wie am Desktop 8 px über dem Rahmen und wächst nach unten (8 px in den Kopf, über den Banner-Knöpfen bei 10 px), damit
+   oben am Bildschirmrand nicht mehr abgeschnitten wird als bisher. */
+body.dsa5h-tablet .dsa5-helpers-sheet > .window-header { height: 40px !important; gap: 2px !important; }
+body.dsa5h-tablet .dsa5-helpers-sheet > .window-header .header-control {
+  --button-size: 40px; width: 40px !important; height: 36px !important; font-size: 18px !important;
+}
+body.dsa5h-tablet .dsa5-helpers-sheet > .window-header .header-control[data-action="toggleControls"] { background-size: 1px 24px; }
+body.dsa5h-tablet .dsa5-helpers-sheet.minimized > .window-header .window-title { font-size: 15px; }
+
 /* Tablet: Reiterleiste rechts im Fenster */
 body.dsa5h-tablet .dsa5-helpers-sheet .window-content { padding-right: 84px !important; }
 body.dsa5h-tablet .dsa5-helpers-sheet .window-content nav.dsa5h-rail {
@@ -1405,3 +1417,104 @@ body.dsa5h-phone .dsa5h-m-jnav > .dsa5h-m-jpick {
   background: var(--dsa5h-m-sub); color: var(--dsa5h-m-ink2); font-size: 13px;
 }
 .dsa5h-m-jpage-list > button[aria-current="true"] > b { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
+
+/* 14. Journal-Browser des Systems --------------------------------------------
+   docs/MOBILE.md 16 (Nutzerentscheidung 2026-11-12): Vorlagen des Systems bleiben, scripts/mobile/journal-browser.js
+   setzt nur Zustandsklassen (dsa5h-m-jbrowser, dsa5h-m-jb-library, dsa5h-m-jb-tocopen) und die Leiste unten.
+   Beide Geräte: Bedienelemente 44 px, Überschriften im Verhältnis zur Schriftgröße des Systems (Inline-Stil an
+   .chapter), Bilder und Tabellen auf Spaltenbreite. Smartphone: eine Spalte, Inhaltsverzeichnis als Ebene über dem
+   Text, in der Bibliothek untereinander. Tablet: zwei Spalten wie am Desktop. */
+body.dsa5h-mobile .dsa5h-m-jbrowser .window-content { display: flex; flex-direction: column; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard { flex: 1; min-height: 0; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .chapter { overflow-wrap: break-word; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .chapter h1 { font-size: 1.75em; line-height: 1.15; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .chapter h2 { font-size: 1.4em; line-height: 1.2; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .chapter h3 { font-size: 1.2em; line-height: 1.25; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .chapter img { max-width: 100%; height: auto; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .chapter table { display: block; max-width: 100%; overflow-x: auto; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .chapter h1.journalHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .chapter .jrnIcons { flex: none; display: flex; font-size: 18px; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .chapter .jrnIcons > a { display: grid; place-items: center; width: 44px; height: 44px; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .tocList :is(button.getChapter, button.subChapter) { min-height: 44px; font-size: 15px; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .tocList [data-action="goToHeading"] { display: flex; align-items: center; min-height: 40px; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .tocList input[type="search"] { flex: 1; min-width: 0; height: 40px; font-size: 16px; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .tocList :is([data-action="fulltextsearch"], [data-action="selectLibraryView"]) { flex: none; width: 44px; height: 44px; }
+/* Bücher als Schaltflächen mit „›“, SL-Knöpfe (Personen, Freigabe, Entfernen, Abschnittsknöpfe) 44 px mit Rahmen,
+   Buchtitel oben im Inhaltsverzeichnis als „‹ Titel“-Knopf zur Buch-Startseite (Rückmeldung 2026-11-13). Die
+   Selektoren sind so spezifisch wie die des Systems (bis zu fünf Klassen), sonst greifen sie nicht. */
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-list .book-entry .book-list-link {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 48px;
+  margin: 0 0 6px; padding: 6px 12px; border: 1px solid var(--dsa5h-m-line2); border-radius: 8px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-size: 16px; line-height: 1.25; text-align: left;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .12);
+}
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-list .book-entry .book-list-link::after { content: "›"; flex: none; font-size: 24px; line-height: 1; opacity: .6; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-list .book-entry .book-list-link.active { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-list .book-entry-row { align-items: center; gap: 6px; flex-wrap: nowrap; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-list .book-entry-row > .col:first-child { flex: 1; min-width: 0; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-list .book-entry-actions { flex: none; width: auto; gap: 6px; margin-bottom: 6px; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-library :is(.book-entry-actions > button, .book-section-header__action),
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-library .book-library-cards :is(.book-card__toggle, .book-card__personae, .book-card__remove) {
+  --button-size: 44px; display: grid; place-items: center; width: 44px; height: 44px; min-height: 44px; margin: 0; padding: 0;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 8px; background: var(--dsa5h-m-field); font-size: 20px;
+}
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-library .book-library-cards .book-card__personae { right: calc(.35rem + 50px); }
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-toc h2 > a[data-action="loadBook"] {
+  display: flex; align-items: center; gap: 10px; min-height: 48px; margin: 0 8px; padding: 4px 12px;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 8px; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink);
+  font-size: 17px; line-height: 1.2; text-align: left; box-shadow: 0 1px 2px rgba(0, 0, 0, .12);
+}
+body.dsa5h-mobile .dsa5h-m-jbrowser .adventureWizard .book-toc h2 > a[data-action="loadBook"]::before { content: "‹"; flex: none; font-size: 26px; line-height: 1; }
+/* Knopf „Hauptverzeichnis“ im Fensterkopf (System: nur Buch-Symbol vor dem Titel) als beschriftete Schaltfläche
+   (Symbol + „Bibliothek“, Rahmen); in der Bibliothek selbst bewirkt er nichts und entfällt (Rückmeldung 2026-11-13) */
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-jbrowser > .window-header button.header-control[data-action="library"] {
+  display: inline-flex; align-items: center; gap: 7px; width: auto; height: 36px; min-height: 36px; padding: 0 12px 0 10px;
+  border: 1px solid rgba(244, 232, 214, .55); border-radius: 18px; background: rgba(244, 232, 214, .14);
+  color: #f4e8d6; font-size: 15px;
+}
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-jbrowser > .window-header button.header-control[data-action="library"]::after {
+  content: attr(data-dsa5h-label); font-family: var(--font-body, var(--font-primary, sans-serif)); font-weight: 600; white-space: nowrap;
+}
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-jbrowser > .window-header button.header-control[data-action="library"]:not([data-dsa5h-label])::after { content: none; }
+body.dsa5h-mobile .dsa5h-m-window.dsa5h-m-jbrowser.dsa5h-m-jb-library > .window-header button.header-control[data-action="library"] { display: none; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .book-pins { display: flex; gap: 6px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+body.dsa5h-mobile .dsa5h-m-jbrowser .book-pins :is(a, button) { flex: none; min-height: 36px; display: inline-flex; align-items: center; }
+/* Tablet: Leiste und Einklapp-Pfeil des Systems in Fingergröße */
+body.dsa5h-tablet .dsa5h-m-jbrowser .tocPageNav { flex-wrap: nowrap; gap: 4px; padding: 6px 4px; }
+body.dsa5h-tablet .dsa5h-m-jbrowser .tocPageNav button { flex: 1 1 0; min-width: 0; height: 44px; margin: 0; padding: 0; }
+body.dsa5h-tablet .dsa5h-m-jbrowser .tocPageNav button:disabled { opacity: .35; }
+/* Einklapp-Pfeil als runder 44-px-Knopf mit Rahmen; eingeklappt bleibt eine 56 px breite Spalte statt 20 px */
+body.dsa5h-tablet .dsa5h-m-jbrowser .tocCollapser {
+  --button-size: 44px; right: -22px; width: 44px; height: 44px; min-height: 44px;
+  border: 1px solid var(--dsa5h-m-line2); border-radius: 50%; background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink);
+  font-size: 20px; box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
+}
+body.dsa5h-tablet .dsa5h-m-jbrowser .tocCollapsing.expanded .col.three { flex: 0 0 56px; min-width: 56px; }
+body.dsa5h-tablet .dsa5h-m-jbrowser .tocCollapsing.expanded .col.seventy { flex: 1 1 calc(100% - 56px); }
+body.dsa5h-tablet .dsa5h-m-jbnav { display: none; }
+/* Smartphone: eine Spalte; Leiste und Pfeil des Systems ersetzt die Leiste unten */
+body.dsa5h-phone .dsa5h-m-jbrowser :is(.tocCollapser, .tocPageNav, .library-preview) { display: none !important; }
+body.dsa5h-phone .dsa5h-m-jbrowser .tocCollapsing { position: relative; }
+body.dsa5h-phone .dsa5h-m-jbrowser .tocSidebar { display: none !important; }
+body.dsa5h-phone .dsa5h-m-jbrowser .tocCollapsing > .chapter { flex: 1 1 100% !important; width: 100%; max-width: 100%; margin: 0; padding: 12px 14px; }
+body.dsa5h-phone .dsa5h-m-jbrowser.dsa5h-m-jb-tocopen .tocSidebar {
+  display: flex !important; position: absolute; inset: 0; z-index: 5; width: 100%; max-width: none !important;
+  background: var(--dsa5h-m-paper); box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+}
+body.dsa5h-phone .dsa5h-m-jbrowser.dsa5h-m-jb-library .tocCollapsing { flex-direction: column; overflow-y: auto; }
+body.dsa5h-phone .dsa5h-m-jbrowser.dsa5h-m-jb-library .tocSidebar { display: flex !important; flex: none; position: static; width: 100%; max-width: none !important; }
+body.dsa5h-phone .dsa5h-m-jbrowser.dsa5h-m-jb-library .tocList { overflow: visible; }
+body.dsa5h-phone .dsa5h-m-jbrowser.dsa5h-m-jb-library .tocCollapsing > .chapter { flex: none !important; overflow: visible; }
+.dsa5h-m-jbnav { flex: none; display: flex; gap: 8px; padding: 8px 12px calc(10px + var(--dsa5h-m-safe-b)); border-top: 1px solid rgba(185, 154, 92, .4); background: var(--dsa5h-m-paper); }
+.dsa5h-m-jbnav[hidden] { display: none; }
+body.dsa5h-mobile .dsa5h-m-jbnav > button {
+  flex: 0 0 48px; height: 44px; margin: 0; padding: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 6px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font-family: inherit; font-size: 24px; line-height: 1;
+}
+body.dsa5h-mobile .dsa5h-m-jbnav > button:disabled { opacity: .4; }
+body.dsa5h-mobile .dsa5h-m-jbnav > .dsa5h-m-jbtoc {
+  flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px;
+  border-color: rgba(185, 154, 92, .6); border-radius: 22px; background: rgba(255, 255, 255, .6); font-size: 15px;
+}
+.dsa5h-m-jbtoc > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.dsa5h-mobile .dsa5h-m-jbnav > .dsa5h-m-jbtoc[aria-expanded="true"] { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
