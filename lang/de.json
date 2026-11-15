@@ -832,7 +832,8 @@
       "Page": "{page} / {pages} · {count} Speicher",
       "SaveFailed": "Kraftspeicher konnten nicht gespeichert werden. Bitte den Dialog erneut öffnen und noch einmal versuchen.",
       "OpenFailed": "Der Kraftspeicherdialog konnte nicht geöffnet werden.",
-      "SavedAtOnce": "Änderungen werden sofort gespeichert."
+      "SavedAtOnce": "Änderungen werden sofort gespeichert.",
+      "Stacked": "{name} (Anzahl {count}) zählt als ein einziger Speicher. Für jeden weiteren Speicher einen eigenen Gegenstand anlegen."
     },
     "EnergyZones": {
       "Summary": "{name}: {value} von {max} Zonen-LeP",

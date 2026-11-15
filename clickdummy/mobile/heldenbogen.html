@@ -224,7 +224,7 @@ const ATTR_NAMES = { MU: 'Mut', KL: 'Klugheit', IN: 'Intuition', CH: 'Charisma',
 const RES = [['lep', 'LeP', 28, 32], ['asp', 'AsP', 24, 34], ['kap', 'KaP', 12, 18]];
 const RES_NAMES = { lep: 'Lebensenergie', asp: 'Astralenergie', kap: 'Karmaenergie' };
 // Kraftspeicher an der AsP-Kugel (#50): je Speicher −/+, Summe auf der KS-Kugel
-const POWER = [{ name: 'Kraftspeicher', item: 'Ring der Ahnen', value: 3, max: 10 }, { name: 'Kraftspeicher 2', item: 'Stab', value: 8, max: 10 }];
+const POWER = [{ name: 'Kraftspeicher', item: 'Ring der Ahnen', value: 3, max: 10 }, { name: 'Kraftspeicher 2', item: 'Edelsteine', value: 8, max: 10 }];
 const TABS = [['cover', 'Titelblatt', 'Spellextension'], ['main', 'Eigenschaften', 'DSA-Auge'], ['skills', 'Talente', 'Skill'], ['combat', 'Kampf', 'ability_combat'],
   ['magic', 'Magie', 'Spell'], ['religion', 'Religion', 'Liturgy'], ['inventory', 'Ausrüstung', 'Equipment'], ['status', 'Status', 'ability_ceremonial'],
   ['notes', 'Notizen', 'Ability_Language'], ['companions', 'Gefährten', 'ability_animal'], ['quests', 'Aufträge', 'Career'], ['persons', 'Personen', 'Weltliche']];
@@ -370,6 +370,7 @@ function openKs() {
   wrap.className = 'backdrop ks-sheet';
   wrap.innerHTML = `<div class="sheet" role="dialog" aria-label="Kraftspeicher"><div class="bar">Kraftspeicher · ${sum}<button type="button" data-sheet-close aria-label="Schließen">✕</button></div>`
     + POWER.map((p, i) => `<div class="ks-row"><span>${p.name}<small>${p.item}</small></span><span class="stepper"><button type="button" data-ks-step="-1" data-i="${i}" aria-label="${p.name} −1"${p.value <= 0 ? ' disabled' : ''}>−</button><output>${p.value} / ${p.max}</output><button type="button" data-ks-step="1" data-i="${i}" aria-label="${p.name} +1"${p.value >= p.max ? ' disabled' : ''}>+</button></span><span class="meter"><i style="--p:${p.value / p.max * 100}%"></i></span></div>`).join('')
+    + `<p>Edelsteine (Anzahl 3) zählt als ein einziger Speicher. Für jeden weiteren Speicher einen eigenen Gegenstand anlegen.</p>`
     + `<p>Änderungen werden sofort gespeichert.</p></div>`;
   device.append(wrap);
 }

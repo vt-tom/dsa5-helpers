@@ -24,6 +24,17 @@ nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
 
 - **[nur v14]** Tablet: Die Fensterknöpfe der Helfer-Bögen oben rechts (Spieleransicht, Sperre, Thema, Bogen wechseln, ⋮, ✕) sind jetzt fingergroß, etwa doppelt so groß wie bisher ([#76](https://github.com/vt-tom/dsa5-helpers/issues/76)). Am Desktop bleibt alles wie gehabt.
 
+## [8.0.1] — unveröffentlicht
+
+### Behoben
+
+- **[v13/v14]** Waffenwechsel an der Hand (Kampf › Körper, [#79](https://github.com/vt-tom/dsa5-helpers/issues/79)): Bei Helden mit der Einstellung „Handbeschränkung ignorieren“ (Kampf-Reiter des Systembogens) blieb nach dem Wechsel die alte Waffe in der Hand stehen, die neue landete unter „Ebenfalls angelegt“. Jetzt zeigt die Hand die gewählte Waffe; die bisherige bleibt, wie die Einstellung es erlaubt, angelegt und steht unter „Ebenfalls angelegt“. Gilt für die Handauswahl, das Rechtsklick-Menü am Ausrüsten-Schild und den Griffwechsel.
+
+### Geändert
+
+- **[v13/v14]** Behältnisse (Ausrüstung, [#80](https://github.com/vt-tom/dsa5-helpers/issues/80)): Ein Klick auf eine Behälter-Kachel öffnet das Behältnis gleich auf dem Reiter mit seinem Inhalt statt auf „Beschreibung“. Dort steht unter jedem Feld jetzt der Name des Gegenstands (lange Namen auf zwei Zeilen gekürzt), statt nur das Bild.
+- **[v13/v14]** Kraftspeicher ([#86](https://github.com/vt-tom/dsa5-helpers/issues/86)): Hat ein Gegenstand mit Kraftspeicher eine Anzahl größer als 1 (etwa drei gestapelte Edelsteine), weist das Kraftspeicher-Menü darauf hin, dass er nur als ein Speicher zählt, und empfiehlt einen eigenen Gegenstand je Speicher. So rechnet das DSA5-System, auch beim Bezahlen von Zaubern.
+
 ## [8.0.0] — 2026-11-12
 
 Erste stabile Version für **Foundry v14** (Desktop, Tablet und Smartphone). Sie enthält alles aus den Betas 0.6.0 bis 0.6.3;

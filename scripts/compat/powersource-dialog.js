@@ -12,6 +12,22 @@ export function powerSourceUpdates(sources, values) {
   return updates;
 }
 
+// Issue #86: Das System zählt einen Gegenstand mit Kraftspeicher-Effekt als genau einen Speicher, die Anzahl des
+// Gegenstands spielt keine Rolle (auch nicht beim Bezahlen). Ein gestapelter Gegenstand (Anzahl > 1) sieht nach
+// mehreren Speichern aus, ist aber nur einer; diese Gegenstände nennen die Kraftspeicher-Anzeigen als Hinweis.
+export function stackedPowerSources(actor, segments) {
+  const seen = new Set();
+  const stacked = [];
+  for (const segment of segments ?? []) {
+    if (seen.has(segment.itemId)) continue;
+    seen.add(segment.itemId);
+    const item = actor?.items?.get?.(segment.itemId);
+    const count = Number(item?.system?.quantity?.value) || 0;
+    if (count > 1) stacked.push({ name: item.name, count });
+  }
+  return stacked;
+}
+
 // Systemklasse nicht direkt aus /systems/... importieren: DSA5 wird als Bundle geladen.
 // Ein zusätzlicher Import der Quelldateien startet einen zweiten, zyklischen Modulgraphen.
 export async function savePowerCharges(event) {
