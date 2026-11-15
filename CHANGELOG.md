@@ -15,7 +15,8 @@ nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
 
 ### Geändert
 
-- **[v13/v14]** Behältnisse (Ausrüstung, [#80](https://github.com/vt-tom/dsa5-helpers/issues/80)): Ein Klick auf eine Behälter-Kachel öffnet das Behältnis gleich auf dem Reiter mit seinem Inhalt statt auf „Beschreibung“.
+- **[v13/v14]** Behältnisse (Ausrüstung, [#80](https://github.com/vt-tom/dsa5-helpers/issues/80)): Ein Klick auf eine Behälter-Kachel öffnet das Behältnis gleich auf dem Reiter mit seinem Inhalt statt auf „Beschreibung“. Dort steht unter jedem Feld jetzt der Name des Gegenstands (lange Namen auf zwei Zeilen gekürzt), statt nur das Bild.
+- **[v13/v14]** Kraftspeicher ([#86](https://github.com/vt-tom/dsa5-helpers/issues/86)): Hat ein Gegenstand mit Kraftspeicher eine Anzahl größer als 1 (etwa drei gestapelte Edelsteine), weist das Kraftspeicher-Menü darauf hin, dass er nur als ein Speicher zählt, und empfiehlt einen eigenen Gegenstand je Speicher. So rechnet das DSA5-System, auch beim Bezahlen von Zaubern.
 
 ## [8.0.0] — 2026-11-12
 

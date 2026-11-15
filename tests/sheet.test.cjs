@@ -1178,6 +1178,20 @@ test('#47: real armory display data, capability gate, independent edit controls 
 });
 
 
+test('#86: stacked power source items are named in a hint (one item counts as one store)',async()=>{
+ const {stackedPowerSources}=await import(dataUrl(read('scripts/compat/powersource-dialog.js')));
+ const items=new Map([['gems',{name:'Edelsteine',system:{quantity:{value:3}}}],['ring',{name:'Ring',system:{quantity:{value:1}}}]]);
+ const actor={items};
+ const segments=[{itemId:'gems',effectId:'a'},{itemId:'gems',effectId:'b'},{itemId:'ring',effectId:'c'},{itemId:'gone',effectId:'d'}];
+ assert.deepEqual(stackedPowerSources(actor,segments),[{name:'Edelsteine',count:3}],'each stacked item once, single items and missing items ignored');
+ assert.deepEqual(stackedPowerSources(actor,[]),[]);
+ const de=JSON.parse(read('lang/de.json')).DSA5HELPERS.PowerSources.Stacked,en=JSON.parse(read('lang/en.json')).DSA5HELPERS.PowerSources.Stacked;
+ for(const text of [de,en])assert(text.includes('{name}')&&text.includes('{count}'));
+ const sheetJs=read('scripts/sheets/dsa5-helpers-character-sheet.js'),mobileJs=read('scripts/mobile/mobile.js');
+ assert.match(sheetJs,/stackedPowerSources\(this\.actor, sources\.segments\)[\s\S]*?loc\('Stacked', entry\)/,'desktop radial shows the hint');
+ assert.match(mobileJs,/stackedPowerSources\(actor, segments\)[\s\S]*?PowerSources\.Stacked/,'mobile sheet shows the hint');
+});
+
 test('#50: charge updates distinguish identical effect IDs on different items',async()=>{
  const {powerSourceUpdates}=await import(dataUrl(read('scripts/compat/powersource-dialog.js')));
  const sources=[{itemId:'first',effectId:'copied-effect',value:10,max:10},{itemId:'second',effectId:'copied-effect',value:10,max:10}];
@@ -1493,7 +1507,7 @@ test('passive defense (#56): d20 against chosen or best defense, per-actor mode 
  assert.equal(pd.defenseMode(actor('character','best')),'best');assert.equal(pd.defenseMode(actor('npc','manual')),'manual');
  assert.deepEqual([actor('character'),actor('npc'),actor('creature','dodge'),actor('vehicle')].map(pd.appliesTo),[false,true,true,false]);
 });
-test('bag window (#72): slots become draggable with system drag data, left click opens on click',async()=>{
+test('bag window (#72, #80): slots show their name, become draggable with system drag data, left click opens on click',async()=>{
  const template=fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/items/item-containercontent.hbs'),'utf8');
  assert.match(template,/class='slot[^']*'\s+data-item-id=/,'System renders bag contents as .slot[data-item-id]');
  let hook;const prevHooks=global.Hooks;global.Hooks={on:(name,fn)=>{if(name==='renderItemSheetV2')hook=fn;}};
@@ -1501,14 +1515,20 @@ test('bag window (#72): slots become draggable with system drag data, left click
   (await import(dataUrl(read('scripts/compat/bag-drag.js')))).initBagDrag();
   assert.equal(typeof hook,'function');
   const el=()=>{const l={};return {l,dataset:{},addEventListener:(t,f,c)=>{(l[t]??=[]).push({f,c});}};};
-  const slot=Object.assign(el(),{dataset:{itemId:'i1'},draggable:false,closest:sel=>sel.startsWith('.slot')?slot:null});
-  const root=Object.assign(el(),{querySelectorAll:()=>[slot]});
+  const kids=[];const slot=Object.assign(el(),{dataset:{itemId:'i1',name:'Seil (10 Schritt)'},draggable:false,closest:sel=>sel.startsWith('.slot')?slot:null,querySelector:()=>kids[0]??null,append:k=>kids.push(k)});
+  const bagsCls=new Set();const bags={classList:{add:c=>bagsCls.add(c)}};
+  const root=Object.assign(el(),{querySelectorAll:sel=>sel==='.bags'?[bags]:[slot]});
   global.HTMLElement??=class{};
   let opened=0;const item={toDragData:()=>({type:'Item',uuid:'Actor.a.Item.i1'}),sheet:{render:()=>opened++}};
   const ours=class{static DEFAULT_OPTIONS={classes:['dsa5-helpers-sheet']}};
   const actor={isOwner:true,_getSheetClass:()=>ours,items:{get:id=>id==='i1'?item:null}};
-  const prevDoc=global.document;global.document={querySelectorAll:()=>[]};
+  const prevDoc=global.document;global.document={querySelectorAll:()=>[],createElement:()=>({dataset:{}})};
   hook({item:{actor,system:{isBagWithContents:true}}},[root]);
+  assert(bagsCls.has('dsa5h-bag-names'),'#80: bag list gets the name layout');
+  assert.equal(kids.length,1);assert.equal(kids[0].className,'dsa5h-slot-name');assert.equal(kids[0].textContent,'Seil (10 Schritt)');
+  hook({item:{actor,system:{isBagWithContents:true}}},[root]);assert.equal(kids.length,1,'re-render adds no second name');
+  const css=read('styles/dsa5-helpers-character-sheet.css');
+  assert.match(css,/\.bags\.dsa5h-bag-names \.dsa5h-slot-name \{[^}]*-webkit-line-clamp: 2;/,'#80: names are cut to two lines');
   assert.equal(slot.draggable,true);
   const data={};slot.l.dragstart[0].f({dataTransfer:{setData:(k,v)=>data[k]=v}});
   assert.deepEqual(JSON.parse(data['text/plain']),{type:'Item',uuid:'Actor.a.Item.i1'});

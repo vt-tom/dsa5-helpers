@@ -1,6 +1,6 @@
 /** Alternative presentation; all rule actions and actor updates are inherited from DSA5. */
 import { systemApi, isFoundry13, contextMenuEntries } from '../compat/runtime.js';
-import { openPowerSourceDialog } from '../compat/powersource-dialog.js';
+import { openPowerSourceDialog, stackedPowerSources } from '../compat/powersource-dialog.js';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
 import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
 import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, distractFoe, maneuverSheetData, defenseChoices, setDefenseMode } from '../house-rules/rules.js';
@@ -999,6 +999,17 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       pager.style.width = '204px';
       pager.style.top = `${Math.max(8, Math.min(innerHeight - 48, pagerY)) - (cy - 150)}px`;
       panel.append(pager);
+    }
+    const stacked = stackedPowerSources(this.actor, sources.segments);
+    if (stacked.length) {
+      const hint = make('p', 'dsa5h-power-stack-hint', stacked.map(entry => loc('Stacked', entry)).join(' '));
+      const hintX = Math.max(8, Math.min(innerWidth - 252, cx - 122));
+      // Unter dem Kreis (und unter dem Blätterband), am unteren Rand darüber.
+      const below = cy <= innerHeight - 260;
+      const hintY = below ? cy + 128 + (pages > 1 ? 40 : 0) : cy - 214 - (pages > 1 ? 40 : 0);
+      hint.style.left = `${hintX - (cx - 150)}px`;
+      hint.style.top = `${Math.max(8, Math.min(innerHeight - 80, hintY)) - (cy - 150)}px`;
+      panel.append(hint);
     }
     this.element.append(panel);
     panel.showPopover();

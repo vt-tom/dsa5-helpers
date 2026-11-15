@@ -814,7 +814,8 @@
       "Page": "{page} / {pages} · {count} sources",
       "SaveFailed": "Power sources could not be saved. Please reopen the dialog and try again.",
       "OpenFailed": "The power source dialog could not be opened.",
-      "SavedAtOnce": "Changes are saved immediately."
+      "SavedAtOnce": "Changes are saved immediately.",
+      "Stacked": "{name} (quantity {count}) counts as a single store. Create a separate item for each further store."
     },
     "EnergyZones": {
       "Summary": "{name}: {value} of {max} zone LP",

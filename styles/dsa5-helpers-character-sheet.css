@@ -1424,6 +1424,19 @@
   background: var(--head);
   color: #f4e8d6;
 }
+/* Hinweis auf gestapelte Kraftspeicher (Issue #86) */
+.dsa5-helpers-sheet .dsa5h-power-stack-hint {
+  position: absolute;
+  width: 244px;
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--head);
+  color: #f4e8d6;
+  font-size: var(--fs-meta);
+  line-height: 1.3;
+  pointer-events: auto;
+}
 @media (prefers-reduced-motion: no-preference) {
   .dsa5-helpers-sheet .dsa5h-power-source {
     animation: dsa5h-source-open .2s ease-out both;
@@ -6120,6 +6133,36 @@
   .dsa5-helpers-sheet .dsa5h-content button.dsa5h-equip-toggle:hover .dsa5h-icon-equip {
     opacity: 1;
   }
+}
+
+/* --- Behälterfenster des Systems: Name unter jedem Feld (Issue #80) --- */
+
+/* Eigenes Fenster des Systems, die Tokens des Bogens gelten dort nicht: darum mit Rückfallwert. */
+.bags.dsa5h-bag-names {
+  gap: 4px 10px;
+  align-items: flex-start;
+}
+
+.bags.dsa5h-bag-names .slot {
+  position: relative;
+  margin-bottom: calc(2 * 1.15 * var(--fs-meta, 12px) + 4px);
+}
+
+.bags.dsa5h-bag-names .dsa5h-slot-name {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: -5px;
+  right: -5px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: var(--fs-meta, 12px);
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  background: none;
 }
 
 /* ==========================================================================
