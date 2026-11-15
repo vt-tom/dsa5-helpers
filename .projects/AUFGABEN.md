@@ -36,20 +36,30 @@ Zwei Branches aus dem Tag `v8.0.0` (Nutzerentscheidung 12.11.2026): `release/8.1
 
 ## Eingang
 
-Rückmeldungen der Runde von illowt (13.11.2026) und eigene Issues; je Eintrag Version wählen (8.0.1, 8.1.0 oder Später).
+Rückmeldungen der Runde von illowt (13.11.2026) und eigene Issues, geplant und geschätzt am 15.11.2026 (Aufwand klein = wenige Stunden,
+mittel = etwa ein Tag, groß = mehrere Tage). Je Eintrag Version wählen (8.0.1, 8.1.0 oder Später) und offene Frage beantworten.
 
-- Du: **Eigenschaften im Kopf einheitlich** · #85 · 8.0.1? — im Spielmodus sieht die Eigenschaftsleiste auf der Eigenschaftsseite anders aus als auf den übrigen Seiten.
-- Du: **Bannerbild-Format beantworten** · #87 — Frage nach empfohlenem Format; Antwort im Issue (ggf. Hinweis in Einstellung/Doku).
-- Du: **Hausregeln-Feedback** · #83 — Wundeinschätzung entbehrlich (Health Estimate), passive Verteidigung geteilt (lieber selbst entscheiden).
-  Folgerung? z. B. passive Verteidigung je Spieler abschaltbar.
-- Du: **Favoriten für Vor-/Nachteile** · #81 — Vor- und Nachteile als Favoriten markieren können.
-- Du: **Sprachen und Schriften auf dem Titelblatt** · #82 — mit Stufe in der linken Randleiste, alternativ als Favoriten markierbar.
-- Du: **Zauber-Erweiterungen aufklappen** · #84 — auf der Magieseite per +/− einblenden statt Zauber öffnen; ebenso Liturgien.
-- Du: **Götterschips vollständig** · #89 — neue Funktion des Systems noch nicht ganz unterstützt; Umfang festlegen.
-- Du: **Automatische Parade: unpassende Parade** · #90 — illowt bevorzugt Regeln, die unmögliche/ungünstige Paraden verhindern (statt Rückgängig).
-- Du: **Dramatis Personae verbessern** · #91 — Suche, Aufteilung nach Fraktionen, Filter, Ansichten; Umfang festlegen.
-- Du: **Hausregel „Grundmanöver statt gleichwertiger SF“** · #92 — zuschaltbarer Text bei den Grundmanövern; gedeckte SF (z. B. Wuchtschlag) zählt als Voraussetzung.
-- Du: **NSC- und Kreaturenbögen** · #88 — Dublette zu #53/#54 (in 8.1.0); Issue mit Verweis schließen?
+- Du: **Götterschips im Kopf** · #89 · klein · 8.0.1 — System liefert Zusatz-Schips (`prepare.extraSchips`, Aktion `extraSchipUpdate`, z. B. aus
+  „Götter Aventuriens 2“), unser Kopf zeigt sie nicht; neben die Schips setzen (Desktop, mobil, NSC). Live-Test braucht Kopie des Moduls: ok?
+- Du: **Eigenschaften im Kopf einheitlich** · #85 · klein · 8.0.1 — Eigenschaften-Reiter zeigt große Kacheln, übrige Reiter die Mini-Würfel im
+  Kopf. Welche Darstellung überall? Vorschlag: Mini-Würfel auch dort, Kacheln nur im Bearbeiten-/Steigern-Modus; vorher im Click-Dummy.
+- Du: **Favoriten für Vor-/Nachteile** · #81 · klein · 8.0.1 — Stern an jedem Vor-/Nachteil (Eigenschaften-Reiter), auf dem Titelblatt eigene
+  Gruppe „Vor- und Nachteile“; Klick öffnet das Item. Nur Freigabe nötig.
+- Du: **Sprachen und Schriften auf dem Titelblatt** · #82 · klein · 8.0.1 — Vorschlag: als Favoriten markierbar (Stern wie #81, eigene Gruppe
+  mit Stufe), dann entscheidet jeder selbst; feste Randleisten-Anzeige wäre zusätzlich mittel. A Favoriten, B Randleiste, C beides?
+- Du: **Zauber-Erweiterungen aufklappen** · #84 · mittel · 8.1.0 — +/− an Zaubern/Liturgien mit gelernten Erweiterungen, darunter Name und
+  Kurzwirkung der Erweiterungs-Items des Helden; Klick öffnet sie. Erst Click-Dummy (Desktop, Tablet, Handy), dann Foundry.
+- Du: **Dramatis Personae verbessern** · #91 · mittel · 8.1.0 — Daten (Fraktion, wichtig, verborgen) liegen schon vor: Suchfeld, Gruppierung nach
+  Fraktion, Filter „wichtig“/„für Spieler verborgen“ (SL), Umschalter Kacheln/Liste. Umfang wählen, dann Click-Dummy mit Varianten.
+- Du: **Automatische Parade: unmögliche Paraden** · #90 · mittel bis groß · 8.1.0 — Regeln statt Rückgängig (illowt). Erst prüfen, welche
+  Einschränkungen das System selbst kennt (Größe, Waffenlos gegen Waffe, nicht parierbare Angriffe); welche Fälle sollen rein? Liste von dir.
+- Du: **Hausregel „Grundmanöver statt gleichwertiger SF“** · #92 · Text klein, Voraussetzung automatisch groß · 8.1.0 — Text als zuschaltbare
+  Ergänzung im Hausregelbuch (ohne Werte aus dem Regelwerk); Voraussetzungsprüfung beim SF-Kauf erst klären, ob das System dafür einen Weg hat.
+- Du: **Hausregeln-Feedback beantworten** · #83 · nur Antwort — passive Verteidigung ist schon je Held wählbar (Spieler würfeln ohne Wahl
+  selbst), Wundeinschätzung ist abschaltbar; so im Issue antworten und schließen?
+- Du: **Bannerbild-Format beantworten** · #87 · nur Antwort — Banner am Desktop etwa 710×92 px (≈ 8:1), Smartphone ≈ 6:1, mittig beschnitten;
+  Empfehlung 1600×200 px, Wichtiges in die Mitte. So antworten, ggf. als Hinweis beim Hochladen?
+- Du: **NSC- und Kreaturenbögen** · #88 · nur Verwaltung — Dublette zu #53/#54 (in 8.1.0); als Dublette schließen?
 
 ## 1. Ausdefinieren
 
@@ -138,7 +148,7 @@ Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 
 <!-- GITHUB-ISSUES:START -->
 ## Überblick (erzeugt)
 
-_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-15T09:53:43.206Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
+_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-15T10:07:16.997Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
 
 | Abschnitt | Du | KI | Einträge |
 |---|---|---|---|
