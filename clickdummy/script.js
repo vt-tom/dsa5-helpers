@@ -1,5 +1,8 @@
 // Generationsvorschau ohne Foundry: ?foundry=13
 const DUMMY_V13 = new URLSearchParams(location.search).get("foundry") === "13";
+// Issue #89: Zusatz-Schips (Götterschips) im Kopf zeigen, siehe fatePointsRow().
+const GOD_SCHIPS_DEMO = new URLSearchParams(location.search).has("godSchips");
+const GOD_SCHIPS = [{ name: "Götterschip", full: true }, { name: "Götterschip", full: false }];
 // Click-Dummy Renderer — reine Darstellungslogik, kein Foundry-Datenmodell.
 
 function el(tag, attrs = {}, children = []) {
@@ -743,9 +746,9 @@ function renderMain() {
   const traitsPanel = el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Vor- & Nachteile"),
     subheadWithHelp("Vorteile"),
-    el("div", { class: "chips chips-fill" }, ADVANTAGES.map((t) => deletableChip(A.advantage, t, ADVANTAGES, t))),
+    el("div", { class: "chips chips-fill" }, ADVANTAGES.map((t) => deletableChip(A.advantage, t, ADVANTAGES, t, specFavStar(t)))),
     subheadWithHelp("Nachteile"),
-    el("div", { class: "chips chips-fill" }, DISADVANTAGES.map((t) => deletableChip(A.disadvantage, t, DISADVANTAGES, t))),
+    el("div", { class: "chips chips-fill" }, DISADVANTAGES.map((t) => deletableChip(A.disadvantage, t, DISADVANTAGES, t, specFavStar(t)))),
   ]);
 
   const specialsPanel = specialsBlock("Allgemeine Sonderfertigkeiten", SPECIALS, true);
@@ -762,13 +765,14 @@ function renderMain() {
       LANGUAGE_POINTS ? el("small", {}, `Sprachpunkte ${LANGUAGE_POINTS.used}/${LANGUAGE_POINTS.value}`) : null,
     ]),
     el("div", { class: "subhead" }, "Sprachen"),
-    el("div", { class: "chips chips-fill" }, LANGUAGES.map((l) => deletableChip(A.abilityLanguage, l, LANGUAGES, l))),
+    el("div", { class: "chips chips-fill" }, LANGUAGES.map((l) => deletableChip(A.abilityLanguage, l, LANGUAGES, l, specFavStar(l)))),
     el("div", { class: "subhead" }, "Schriften"),
-    el("div", { class: "chips chips-fill" }, SCRIPTS.map((s) => deletableChip(A.abilityLanguage, s, SCRIPTS, s))),
+    el("div", { class: "chips chips-fill" }, SCRIPTS.map((s) => deletableChip(A.abilityLanguage, s, SCRIPTS, s, specFavStar(s)))),
   ]);
 
   return el("div", {}, [
-    buildAttrTiles(),
+    // Issue #85: Kacheln nur beim Bearbeiten/Steigern, im Spielmodus die Würfelleiste wie auf allen Reitern.
+    sheetMode() === "play" ? null : buildAttrTiles(),
     buildAttrDetailPanel(),
     el("div", { class: "grid-2" }, [
       el("div", { class: "col-gap" }, [traitsPanel, specialsPanel, imprintPanel, languagesPanel]),
@@ -3218,7 +3222,15 @@ function collectFavorites() {
     specials: [...SPECIALS, ...COMBAT_SPECIALS, ...MAGIC_SPECIALS, ...RELIGION_SPECIALS]
       .flatMap((g) => g.items).filter((n) => FAV_SPECIALS.has(n))
       .map((n) => ({ name: n, img: A.abilityGeneral, rule: SPEC_RULES[n] || "Kein Regeltext hinterlegt." })),
+    // Issues #81, #82: Vor-/Nachteile sowie Sprachen und Schriften, Stufe als Wert (römische Ziffer am Namensende).
+    traits: [...ADVANTAGES.map((n) => rankEntry(n, A.advantage)), ...DISADVANTAGES.map((n) => rankEntry(n, A.disadvantage))].filter((e) => FAV_SPECIALS.has(e.key)),
+    languages: [...LANGUAGES, ...SCRIPTS].map((n) => rankEntry(n, A.abilityLanguage)).filter((e) => FAV_SPECIALS.has(e.key)),
   };
+}
+
+function rankEntry(key, img) {
+  const m = key.match(/^(.*?)\s([IVX]+)$/);
+  return { key, name: m ? m[1] : key, rank: m ? m[2] : "", img };
 }
 
 // Favoriten-Zeile (Paket E, UI/UX-Review 2026-09-25 Punkt 5 + GitHub-Issue #5): statt unterschiedlich langer
@@ -3258,6 +3270,9 @@ function favCard(item, kind) {
     }
     roll = el("span", { class: "fav-card-roll" }, [use]);
     value = el("span", { class: "fav-card-value", title: "Anzahl" }, `×${item.qty}`);
+  } else if (kind === "rank") {
+    roll = el("span", { class: "fav-card-roll" });
+    value = el("span", { class: "fav-card-value" }, item.rank);
   } else if (kind === "special") {
     roll = el("span", { class: "fav-card-roll" }, [onUseBtn(item.name)]);
     value = el("span", { class: "fav-card-value" });
@@ -3268,7 +3283,7 @@ function favCard(item, kind) {
     roll = el("span", { class: "fav-card-roll" }, [dice]);
   }
   // Reihenfolge Name | Probe | Wert | Stern (Nutzer-Feedback 2026-09-28); Waffen: AT/FK-Würfel als Probe, TP als Wert.
-  const star = kind === "special" ? specFavStar(item.name) : favStar(item);
+  const star = kind === "special" ? specFavStar(item.name) : kind === "rank" ? specFavStar(item.key) : favStar(item);
   // Hausregel Wundeinschätzung: Herz neben Heilkunde Wunden auch hier (Rückmeldung 2026-10-05).
   const nameCell = el("span", { class: "fav-card-name-cell" }, [name, kind === "talent" ? woundCheckHint(item, true) : null]);
   return el("div", { class: "fav-card" }, [icon, nameCell, roll, value, star]);
@@ -3303,13 +3318,15 @@ function favoritesPanel() {
     { label: "Liturgien", items: fav.liturgies, kind: "liturgy" },
     { label: "Ausrüstung", items: fav.equipment, kind: "equipment" },
     { label: "Sonderfertigkeiten", items: fav.specials, kind: "special" },
+    { label: "Vor- & Nachteile", items: fav.traits, kind: "rank" },
+    { label: "Sprache und Schrift", items: fav.languages, kind: "rank" },
   ];
   const active = groups.filter((g) => g.items.length);
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Favoriten"),
     ...(active.length
       ? active.flatMap((g) => [el("div", { class: "subhead" }, g.label), el("div", { class: "fav-grid" }, g.items.map((it) => favCard(it, g.kind)))])
-      : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern, Liturgien, Ausrüstung oder Sonderfertigkeiten anklicken")]),
+      : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern, Liturgien, Ausrüstung, Sonderfertigkeiten, Vor- und Nachteilen oder Sprachen anklicken")]),
   ]);
 }
 
@@ -3379,6 +3396,16 @@ function fatePointsRow() {
     });
     wrap.appendChild(btn);
   }
+  // Issue #89: Zusatz-Schips anderer Module (z. B. Götterschips aus „Götter Aventuriens 2“) hinter den eigenen;
+  // Bild und Leer-Darstellung bringt das Modul mit, hier Stellvertreter aus dem System-Schip. Nur mit ?godSchips.
+  if (GOD_SCHIPS_DEMO) GOD_SCHIPS.forEach((g, i) => {
+    const label = `${g.name} ${i + 1}: ${g.full ? "ausgeben" : "wiederherstellen"}`;
+    const btn = el("button", { type: "button", class: "fate-point-btn god-schip", title: label, "aria-label": label, "data-fkey": `god:${i}` }, [
+      el("img", { src: "../../../systems/dsa5/icons/schip.webp", alt: "", class: g.full ? "" : "dim" }),
+    ]);
+    btn.addEventListener("click", () => { g.full = !g.full; renderHeader(); renderContent(); });
+    wrap.appendChild(btn);
+  });
   return wrap;
 }
 
@@ -3726,15 +3753,14 @@ function flashChanged() {
 }
 
 // Befüllt #attrOverlay (siehe index.html) mit denselben Werten wie buildAttrTiles(), nur kompakter
-// (.attr-die-mini) — auf jedem Tab sichtbar AUSSER dem Eigenschaften-Tab selbst (dort stehen die Eigenschaften
-// bereits fest als volle Kacheln, Nutzer-Feedback 2026-09-15: "Baue die Eigenschaftswürfel überall ein, nur auf
-// der Eigenschaftenseite nicht"). Auf dem Titelblatt bekommt #attrOverlay über
+// (.attr-die-mini) — auf jedem Tab sichtbar; auf dem Eigenschaften-Tab nur im Spielmodus, beim Bearbeiten und
+// Steigern stehen dort die vollen Kacheln (Issue #85, 2026-11-15; vorher fehlte die Leiste dort ganz). Auf dem Titelblatt bekommt #attrOverlay über
 // [data-tab="cover"] #attrOverlay{grid-area:attrbar} (style.css) eine eigene Grid-Zeile zwischen Kopf und
 // Tab-Titel, sonst würde es dort in die Grid-Spalte von #coverSidebar rutschen.
 function renderAttrOverlay() {
   const host = document.getElementById("attrOverlay");
   if (!host) return;
-  const show = currentTab !== "main";
+  const show = currentTab !== "main" || sheetMode() === "play";
   host.classList.toggle("show", show);
   host.innerHTML = "";
   if (!show) return;
@@ -3795,7 +3821,7 @@ function setMode(mode) {
   // Mehrere Editierbarkeiten hängen vom Modus ab (Name in der Kopfzeile, Mod/Zukauf/Trefferzone/Löschen im
   // Content-Bereich) und müssen beim Umschalten sofort neu gerendert werden, nicht erst beim nächsten Klick.
   renderHeader();
-  renderContent();
+  renderContent();  renderAttrOverlay();
 }
 
 function initModeSwitch() {

@@ -1,8 +1,8 @@
 {{!-- Eigenschaften-Reiter der Kreatur (Click-Dummy renderCreatureMain, Systembogen creature-main.hbs mit
-      creature-derived-attributes-small.hbs): Eigenschaftskacheln, links Kreatur-Eigenschaften (traits), Vor-/Nachteile
+      creature-derived-attributes-small.hbs): Eigenschaftskacheln (nur Bearbeiten, sonst Würfelleiste im Kopf, Issue #85), links Kreatur-Eigenschaften (traits), Vor-/Nachteile
       und Sonderfertigkeiten, rechts die Werte der Kreatur. Felder wie im System, nur im Bearbeiten-Modus änderbar. --}}
 <div class="dsa5h-tab" data-tab-panel="main" hidden>
-  {{> "modules/dsa5-helpers/templates/actors/parts/attr-tiles.hbs"}}
+  {{#if dsa5h.advanceMode}}{{> "modules/dsa5-helpers/templates/actors/parts/attr-tiles.hbs"}}{{/if}}
   <div class="grid-2">
     <div class="col-gap">
       <section class="panel">

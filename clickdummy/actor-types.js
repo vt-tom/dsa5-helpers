@@ -339,7 +339,7 @@ function renderCreatureMain() {
     el("div", { class: "chips chips-fill" }, CREATURE.traits.map((t) => deletableChip(A.abilityGeneral, t, CREATURE.traits, t))),
   ]);
   return el("div", {}, [
-    buildAttrTiles(),
+    sheetMode() === "play" ? null : buildAttrTiles(), // Issue #85
     buildAttrDetailPanel(),
     el("div", { class: "grid-2" }, [
       el("div", { class: "col-gap" }, [traits, specialsBlock("Sonderfertigkeiten", CREATURE.specials, true)]),

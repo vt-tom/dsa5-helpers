@@ -35,6 +35,9 @@
             {{#each prepare.schips as |item|}}
             <button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="schipUpdate" data-val="{{item.value}}" data-tooltip="fatePoints" aria-label="{{localize 'DSA5HELPERS.FatePointSet' value=item.value current=../document.system.status.fatePoints.value max=../document.system.status.fatePoints.max}}"></button>
             {{/each}}
+            {{#each prepare.extraSchips as |item|}}
+            <button type="button" class="dsa5h-fatepoint dsa5h-extra-schip {{item.cssClass}}" data-action="extraSchipUpdate" data-val="{{item.val}}" data-path="{{item.path}}" data-tooltip="{{item.tooltip}}" data-tooltip-class="{{item.tooltipClass}}" style="{{item.style}}" aria-label="{{localize item.tooltip}} {{item.val}}"></button>
+            {{/each}}
           </div>
         </div>
 

@@ -319,6 +319,42 @@ test('favorites render as grid cards with value, roll and star; weapon damage is
  for(const card of cards){assert(card.attribs['data-item-id']);assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',card.children).length,1);}
  const damage=elements(html,el=>el.attribs?.['data-mode']==='damage');assert(damage.length>=2);for(const b of damage)assert(String(b.attribs.class).includes('dsa5h-damage'));
 });
+test('extra schips (#89): schips from other modules (dsa5.prepareActorSchips) render after the own ones with the system handler',async()=>{
+ const C=await loadSheet(),f=fixture(),sheet=new C();
+ f.context.prepare.schips=[{value:1,cssClass:'fullSchip'}];
+ f.context.prepare.extraSchips=[{val:1,path:'flags.dsa5.specialPoints.praios.current',tooltip:'GODS.praios',tooltipClass:'gods-rules-tooltip',cssClass:'fullSchip gods-schip',style:"background-image: url('x.webp');"},{val:2,path:'flags.dsa5.specialPoints.praios.current',tooltip:'GODS.praios',tooltipClass:'gods-rules-tooltip',cssClass:'emptySchip gods-schip',style:"background-image: url('x.webp'); filter: grayscale(100%);"}];
+ Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});
+ const html=render(await sheet._prepareContext({}));
+ const extra=elements(html,el=>el.attribs?.['data-action']==='extraSchipUpdate');assert.equal(extra.length,2);
+ assert.equal(extra[1].attribs['data-val'],'2');assert.equal(extra[1].attribs['data-path'],'flags.dsa5.specialPoints.praios.current');assert.match(extra[1].attribs.style,/grayscale/);
+ assert(String(extra[0].attribs.class).includes('dsa5h-fatepoint'));for(const b of extra)assert(String(b.parent.attribs.class).includes('dsa5h-fate-points'),'same row as the own schips');
+ assert.match(read('scripts/sheets/dsa5-helpers-character-sheet.js'),/typeof this\._extraSchipUpdate === 'function' \? \{ extraSchipUpdate: this\._extraSchipUpdate \}/,'inherited system handler, only where the system has it');
+});
+test('attribute bar (#85): in play mode the attributes tab uses the same dice bar as all other tabs, tiles only when editing',async()=>{
+ const {sheet,context}=await prepare();assert.equal(context.dsa5h.mode,'edit');
+ const tiles=html=>elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-attr-tiles')).length;
+ assert.equal(tiles(render(context)),1,'edit mode keeps the tiles with their advance buttons');
+ sheet.context.prepare.sheetLocked=true;try{const play=await sheet._prepareContext({});assert.equal(play.dsa5h.mode,'play');assert.equal(tiles(render(play)),0);}finally{sheet.context.prepare.sheetLocked=false;}
+ assert.match(read('scripts/sheets/dsa5-helpers-character-sheet.js'),/\[data-attr-overlay\]'\)\?\.toggleAttribute\('hidden', this\._currentTab === 'main' && root\.dataset\.mode !== 'play'\)/);
+});
+test('favorites for advantages, disadvantages and languages (#81, #82): stars on the chips, cover group with level, no roll',async()=>{
+ const C=await loadSheet(),f=fixture(),sheet=new C();
+ const adv=Object.assign(item('adv','advantage'),{name:'Dunkelsicht',system:{step:{value:2},max:{value:2}}});
+ const dis=Object.assign(item('dis','disadvantage'),{name:'Pech',system:{step:{value:1},max:{value:3}}});
+ const lang=Object.assign(item('lang','specialability'),{name:'Sprache (Garethi)',system:{step:{value:3},maxRank:{value:3},category:{value:'language'}}});
+ f.context.prepare.advantages=[adv];f.context.prepare.disadvantages=[dis];f.context.prepare.specAbs={...f.context.prepare.specAbs,language:[lang]};
+ for(const i of [adv,dis,lang])f.actor.items.set(i._id,i);
+ f.actor.flags.favorites=['adv','lang'];Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});
+ const context=await sheet._prepareContext({});const groups=Object.fromEntries(context.dsa5h.favoriteGroups.map(g=>[g.label,g]));
+ assert.deepEqual(groups['DSA5HELPERS.AdvantagesDisadvantages'].items.map(i=>i._id),['adv']);assert.equal(groups['DSA5HELPERS.AdvantagesDisadvantages'].rank,true);
+ assert.deepEqual(groups['SpecCategory.language'].items.map(i=>i._id),['lang']);
+ assert.equal(groups['DSA5HELPERS.SpecialAbilities']?.items.some(i=>i._id==='lang')??false,false,'languages are not doubled under special abilities');
+ const html=render(context);
+ for(const id of ['adv','dis','lang'])assert.equal(elements(html,el=>el.attribs?.['data-action']==='dsa5hFavorite'&&el.attribs['data-item-id']===id&&String(el.attribs.class).includes('dsa5h-chip-fav')).length,1,id);
+ const card=id=>elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-card')&&el.attribs['data-item-id']===id)[0];
+ for(const [id,level] of [['adv','II'],['lang','III']]){const c=card(id);assert(c,id);const value=dom.findOne(el=>String(el.attribs?.class??'').includes('dsa5h-fav-card-value'),c.children);assert.equal(dom.textContent(value).trim(),level);
+  assert.equal(dom.findAll(el=>['skillSelect','chRollCombat','dsa5hConsume'].includes(el.attribs?.['data-action']),c.children).length,0,'no roll on trait cards');}
+});
 test('favorites for equipment and special abilities (#30): stars on inventory rows and SF chips, consume via the system, names open the item sheet',async()=>{
  const C=await loadSheet(),f=fixture(),sheet=new C();
  const potion=item('potion','consumable');f.context.prepare.inventory.consumables={show:true,dataType:'consumable',items:[potion]};f.actor.items.set('potion',potion);for(const i of [f.context.prepare.inventory.tools.items[0],...Object.values(f.context.prepare.specAbs).flat()])f.actor.items.set(i._id,i);

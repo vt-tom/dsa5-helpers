@@ -78,6 +78,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     ownerActions: {
       dsa5hEditPowerSources: this._editPowerSources,
       schipUpdate: this._schipUdate,
+      // Issue #89: Zusatz-Schips anderer Module (Hook dsa5.prepareActorSchips, z. B. Götterschips), Handler des Systems.
+      ...(typeof this._extraSchipUpdate === 'function' ? { extraSchipUpdate: this._extraSchipUpdate } : {}),
       startCharacterBuilder: this._startCharacterBuilder,
       deleteItem: this._deleteItemAction,
       // advanceWrapper bewusst NICHT hier: ActorSheetDsa5 deklariert ihn selbst und ApplicationV2 führt die
@@ -343,6 +345,13 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const equipment = withChildren(Object.values(prepare.inventory ?? {}).flatMap(section => section?.items ?? []))
       .filter(item => !['meleeweapon', 'rangeweapon'].includes(item.type))
       .map(item => Object.assign(item, { dsa5hConsumable: ['consumable', 'plant'].includes(item.type) }));
+    // Stufe wie der roman-Helfer des Systems: nur bei mehrstufigen Einträgen (Vorteile max, Sonderfertigkeiten maxRank).
+    const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+    const withLevel = items => items.map(item => {
+      const max = Number(item.system?.maxRank?.value ?? item.system?.max?.value);
+      const level = Number.isFinite(max) && max < 2 ? '' : ROMAN[Number(item.system?.step?.value) - 1] ?? '';
+      return Object.assign(item, { dsa5hLevel: level });
+    });
     const favoriteGroups = [
       { label: 'skills', items: skillGroups.flatMap(group => group.items) },
       { label: 'DSA5HELPERS.Weapons', weapon: true, items: [...weaponGroups.flatMap(group => group.items), ...(body?.others ?? []).map(other => other.item)] },
@@ -350,6 +359,9 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       { label: 'liturgies', items: [...(magic.liturgy ?? []), ...(magic.ceremony ?? [])] },
       { label: 'DSA5HELPERS.Tabs.inventory', equipment: true, items: equipment },
       { label: 'DSA5HELPERS.SpecialAbilities', special: true, items: Object.values(specs).flatMap(groups => groups.flatMap(group => group.items)) },
+      // Issues #81, #82: Vor-/Nachteile sowie Sprachen und Schriften mit Stufe, ohne Wurf.
+      { label: 'DSA5HELPERS.AdvantagesDisadvantages', rank: true, items: withLevel([...(prepare.advantages ?? []), ...(prepare.disadvantages ?? [])]) },
+      { label: 'SpecCategory.language', rank: true, items: withLevel(prepare.specAbs?.language ?? []) },
     ].map(group => ({ ...group, items: unique(group.items.filter(item => favorites[item._id])) })).filter(group => group.items.length);
     // Talent-Vorschläge (Titelblatt, parts/suggestions.hbs): nur für Owner, die letzte Liste wirkt als leichter Bonus,
     // damit Karten nicht bei jedem Neuzeichnen springen.
@@ -1707,7 +1719,9 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     if (happyField) happyField.hidden = !happyExpanded;
     root.querySelectorAll('[data-side-tab]').forEach(el => el.setAttribute('aria-selected', String(el.dataset.sideTab === this._coverSideTab)));
     root.querySelectorAll('[data-side-panel]').forEach(el => { el.hidden = el.dataset.sidePanel !== this._coverSideTab; });
-    root.querySelector('[data-attr-overlay]')?.toggleAttribute('hidden', this._currentTab === 'main');
+    // Issue #85: im Spielmodus überall dieselbe Würfelleiste, auch auf dem Eigenschaften-Reiter; dessen Kacheln
+    // (mit Steigern/Senken) nur beim Bearbeiten und Steigern.
+    root.querySelector('[data-attr-overlay]')?.toggleAttribute('hidden', this._currentTab === 'main' && root.dataset.mode !== 'play');
     // Move the same controls, so the overview never duplicates named form fields. Smartphone (Mobile Support): Porträt,
     // Ressourcen und Schips bleiben auf allen Reitern im Kopf (MOBILE.md 14, Ü2).
     // Schmales Fenster am Desktop ebenso (_applyNarrow).

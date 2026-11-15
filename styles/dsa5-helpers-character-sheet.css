@@ -1000,6 +1000,16 @@
   opacity: .45;
 }
 
+/* Zusatz-Schips anderer Module (Issue #89, z. B. Götterschips): Bild und Leer-Darstellung bringt das Modul im
+   style-Attribut mit, darum hier nur Größe und keine eigene Abblendung. */
+.dsa5-helpers-sheet .dsa5h-fatepoint.dsa5h-extra-schip {
+  background-size: 23px 23px;
+}
+
+.dsa5-helpers-sheet .dsa5h-fatepoint.dsa5h-extra-schip.emptySchip {
+  opacity: 1;
+}
+
 /* --- Band: Spezies · Kultur · Profession & Heldenerschaffung --- */
 
 /* Gesperrte Kapitälchen-Zeile mit Trennpunkten statt gerahmter Badges (Variante A). Die Felder bleiben die
