@@ -39,14 +39,6 @@ Zwei Branches aus dem Tag `v8.0.0` (Nutzerentscheidung 12.11.2026): `release/8.1
 Rückmeldungen der Runde von illowt (13.11.2026) und eigene Issues, geplant und geschätzt am 15.11.2026 (Aufwand klein = wenige Stunden,
 mittel = etwa ein Tag, groß = mehrere Tage). Je Eintrag Version wählen (8.0.1, 8.1.0 oder Später) und offene Frage beantworten.
 
-- Du: **Götterschips im Kopf** · #89 · klein · 8.0.1 — System liefert Zusatz-Schips (`prepare.extraSchips`, Aktion `extraSchipUpdate`, z. B. aus
-  „Götter Aventuriens 2“), unser Kopf zeigt sie nicht; neben die Schips setzen (Desktop, mobil, NSC). Live-Test braucht Kopie des Moduls: ok?
-- Du: **Eigenschaften im Kopf einheitlich** · #85 · klein · 8.0.1 — Eigenschaften-Reiter zeigt große Kacheln, übrige Reiter die Mini-Würfel im
-  Kopf. Welche Darstellung überall? Vorschlag: Mini-Würfel auch dort, Kacheln nur im Bearbeiten-/Steigern-Modus; vorher im Click-Dummy.
-- Du: **Favoriten für Vor-/Nachteile** · #81 · klein · 8.0.1 — Stern an jedem Vor-/Nachteil (Eigenschaften-Reiter), auf dem Titelblatt eigene
-  Gruppe „Vor- und Nachteile“; Klick öffnet das Item. Nur Freigabe nötig.
-- Du: **Sprachen und Schriften auf dem Titelblatt** · #82 · klein · 8.0.1 — Vorschlag: als Favoriten markierbar (Stern wie #81, eigene Gruppe
-  mit Stufe), dann entscheidet jeder selbst; feste Randleisten-Anzeige wäre zusätzlich mittel. A Favoriten, B Randleiste, C beides?
 - Du: **Zauber-Erweiterungen aufklappen** · #84 · mittel · 8.1.0 — +/− an Zaubern/Liturgien mit gelernten Erweiterungen, darunter Name und
   Kurzwirkung der Erweiterungs-Items des Helden; Klick öffnet sie. Erst Click-Dummy (Desktop, Tablet, Handy), dann Foundry.
 - Du: **Dramatis Personae verbessern** · #91 · mittel · 8.1.0 — Daten (Fraktion, wichtig, verborgen) liegen schon vor: Suchfeld, Gruppierung nach
@@ -108,7 +100,7 @@ neue Pre-release `v8.1.1`. Nur v14 (kein 7.1.0), nur nach Auftrag; Ablauf in [RE
 ## Bugfixes 8.0.x
 
 Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 15.11.2026): Fix dort committen, dann in
-`release/8.1.0` per `git merge --no-ff release/8.0.1` übernehmen. Stand 15.11.: #79, #80, #86 auf 8.0.1, nach 8.1.0 gemergt.
+`release/8.1.0` per `git merge --no-ff release/8.0.1` übernehmen. Stand 15.11.: #79, #80, #81, #82, #85, #86, #89 auf 8.0.1, nach 8.1.0 gemergt.
 
 - [ ] Du: **Waffenwechsel bei „Handbeschränkung ignorieren“** · #79 — Grombrak (Haken in seinem Kampf-Reiter des Systembogens), Kampf › Körper:
   Haupthand auf Eisenwalder → Eisenwalder in der Hand, Lindwurmschläger unter „Ebenfalls angelegt“; ebenso per Rechtsklick aufs Schild.
@@ -117,6 +109,12 @@ Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 
   Name, lange Namen auf zwei Zeilen gekürzt; Ziehen und Rechtsklick (herausnehmen) gehen weiter.
 - [ ] Du: **Hinweis gestapelter Kraftspeicher** · #86 — Kraftspeicher-Gegenstand auf Anzahl 3 stellen, KS-Kugel anklicken (Desktop und
   Smartphone) → Hinweis „… (Anzahl 3) zählt als ein einziger Speicher …“; bei Anzahl 1 kein Hinweis. Erklärung steht im Issue.
+- [ ] Du: **Götterschips im Kopf** · #89 · Desktop, Handy — Held mit Götterschips (Götter Aventuriens 2) → hinter den Schips im Kopf, Klick
+  gibt aus bzw. stellt wieder her. Live geprüft (Testinstanz, Praios, Desktop und Handy); viele Götter auf dem Handy nicht geprüft.
+- [ ] Du: **Eigenschaften im Kopf einheitlich** · #85 — Spielmodus, Reiter Eigenschaften → Würfelleiste im Kopf wie überall, keine Kacheln;
+  Bearbeiten/Steigern → Kacheln mit +/−, keine Leiste. Ebenso Kreaturbogen (8.1.0). Live geprüft am Desktop (Held).
+- [ ] Du: **Vor-/Nachteile und Sprachen als Favoriten** · #81 #82 — Stern an Vorteil, Nachteil, Sprache/Schrift → Titelblatt-Gruppen
+  „Vor- & Nachteile“ und „Sprache“ mit Stufe (z. B. III), kein Würfel. Live geprüft am Desktop.
 
 - [ ] Du: **Bogen unabhängig vom DSA-Design** (in 8.0.0 enthalten, Nachtest) — Desktop, Tablet, Handy: je Design (auch mit dunklem Foundry)
   Bogen im Bearbeiten-Modus, Eigenschaften und Notizen → Felder, Rahmen, Plakette, Griff unten rechts überall gleich, auch bei dunklem Bogen.
@@ -148,17 +146,17 @@ Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 
 <!-- GITHUB-ISSUES:START -->
 ## Überblick (erzeugt)
 
-_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-15T10:07:16.997Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
+_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-15T10:21:28.922Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
 
 | Abschnitt | Du | KI | Einträge |
 |---|---|---|---|
 | Bestehende Aufgaben im Detail | – | – | 5 |
-| Eingang | 11 | – | 11 |
+| Eingang | 7 | – | 7 |
 | Ausdefinieren | 3 | – | 3 |
 | Bereit zur Umsetzung | – | – | 0 |
 | Umgesetzt – testen | 11 | – | 11 |
 | Fertig für Release | – | – | 0 |
-| Bugfixes 8.0.x | 5 | – | 5 |
+| Bugfixes 8.0.x | 8 | – | 8 |
 | Später – Nächste Version | 2 | – | 2 |
 | Später – Wartet auf Dritte | – | – | 1 |
 | Später – Ideen | – | – | 5 |
@@ -181,15 +179,15 @@ _Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-15T10:07:1
 | [#78](https://github.com/vt-tom/dsa5-helpers/issues/78) | feat: Schatzbogen im DSA Helpers Design | 8.1.0 | enhancement | Ausdefinieren |
 | [#79](https://github.com/vt-tom/dsa5-helpers/issues/79) | Kampfkarte (Fehlermeldung) | – | – | Bugfixes 8.0.x |
 | [#80](https://github.com/vt-tom/dsa5-helpers/issues/80) | Behältnisse (Optimierungwunsch) | – | – | Bugfixes 8.0.x |
-| [#81](https://github.com/vt-tom/dsa5-helpers/issues/81) | Vor- & Nachteile (Optimierungswunsch) | – | – | Eingang |
-| [#82](https://github.com/vt-tom/dsa5-helpers/issues/82) | Sprachen (Optimierungswunsch) | – | – | Eingang |
+| [#81](https://github.com/vt-tom/dsa5-helpers/issues/81) | Vor- & Nachteile (Optimierungswunsch) | – | – | Bugfixes 8.0.x |
+| [#82](https://github.com/vt-tom/dsa5-helpers/issues/82) | Sprachen (Optimierungswunsch) | – | – | Bugfixes 8.0.x |
 | [#83](https://github.com/vt-tom/dsa5-helpers/issues/83) | Hausregeln (Feedback) | – | – | Eingang |
 | [#84](https://github.com/vt-tom/dsa5-helpers/issues/84) | Magie (Optimierungswunsch) | – | – | Eingang |
-| [#85](https://github.com/vt-tom/dsa5-helpers/issues/85) | Optik (Optimierungswunsch) | – | – | Eingang |
+| [#85](https://github.com/vt-tom/dsa5-helpers/issues/85) | Optik (Optimierungswunsch) | – | – | Bugfixes 8.0.x |
 | [#86](https://github.com/vt-tom/dsa5-helpers/issues/86) | Kraftspeicher (Optimierungswunsch) | – | – | Bugfixes 8.0.x |
 | [#87](https://github.com/vt-tom/dsa5-helpers/issues/87) | Bannerbild (Frage) | – | – | Eingang |
 | [#88](https://github.com/vt-tom/dsa5-helpers/issues/88) | NSC- und Kreaturenbögen (Optimierungswunsch) | – | – | Eingang |
-| [#89](https://github.com/vt-tom/dsa5-helpers/issues/89) | feat: Götterschips unterstützung | – | – | Eingang |
+| [#89](https://github.com/vt-tom/dsa5-helpers/issues/89) | feat: Götterschips unterstützung | – | – | Bugfixes 8.0.x |
 | [#90](https://github.com/vt-tom/dsa5-helpers/issues/90) | Automatische Parade - Verbesserung | – | – | Eingang |
 | [#91](https://github.com/vt-tom/dsa5-helpers/issues/91) | Dramatis Personae Tab - Verbesserungen | – | – | Eingang |
 | [#92](https://github.com/vt-tom/dsa5-helpers/issues/92) | Grundmanöver statt gleichwertiger Sonderfertigkeiten (Optimierungswunsch) | – | – | Eingang |
