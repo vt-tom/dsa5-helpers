@@ -812,9 +812,31 @@ button {
   opacity: .45;
 }
 
-/* Stellvertreter für Götterschips (Issue #89): im Modul bringt das Inhaltsmodul eigene Bilder mit. */
-.fate-point-btn.god-schip img {
-  filter: hue-rotate(160deg) saturate(1.6);
+/* Götterschips, Varianten (Issue #89, fatePointsRow()): Färbung als Stellvertreter im style-Attribut. B = zweite Reihe
+   unter den eigenen Schips, C = je Gott ein Symbol mit „verfügbar/gesamt“. */
+.fate-points.god-rows {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.fate-row {
+  display: flex;
+}
+
+.fate-row-gods img {
+  width: 19px;
+  height: 19px;
+}
+
+.fate-point-btn.god-count {
+  align-items: center;
+  gap: 2px;
+  padding: 3px 5px 3px 3px;
+  border-radius: 14px;
+  color: #f4e8d6;
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
 }
 
 @media (hover: hover) {

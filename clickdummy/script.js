@@ -1,8 +1,15 @@
 // Generationsvorschau ohne Foundry: ?foundry=13
 const DUMMY_V13 = new URLSearchParams(location.search).get("foundry") === "13";
-// Issue #89: Zusatz-Schips (Götterschips) im Kopf zeigen, siehe fatePointsRow().
-const GOD_SCHIPS_DEMO = new URLSearchParams(location.search).has("godSchips");
-const GOD_SCHIPS = [{ name: "Götterschip", full: true }, { name: "Götterschip", full: false }];
+// Issue #89, Design-Varianten (2026-11-15): Götterschips im Kopf, Umschalter „Götterschips“ (Menü › Diese Seite):
+// none = ohne, a = eine Reihe hinter den eigenen, b = eigene Reihe darunter, c = je Gott ein Symbol mit Zahl.
+// Drei Götter mit zusammen 6 Schips als Härtefall; Bilder sind Stellvertreter (System-Schip eingefärbt), im Modul
+// bringt „Götter Aventuriens 2“ eigene mit.
+let GOD_VARIANT = "none";
+const GODS = [
+  { name: "Praios", hue: 10, value: 2, current: 1 },
+  { name: "Rondra", hue: 300, value: 1, current: 1 },
+  { name: "Phex", hue: 170, value: 3, current: 2 },
+];
 // Click-Dummy Renderer — reine Darstellungslogik, kein Foundry-Datenmodell.
 
 function el(tag, attrs = {}, children = []) {
@@ -3396,16 +3403,37 @@ function fatePointsRow() {
     });
     wrap.appendChild(btn);
   }
-  // Issue #89: Zusatz-Schips anderer Module (z. B. Götterschips aus „Götter Aventuriens 2“) hinter den eigenen;
-  // Bild und Leer-Darstellung bringt das Modul mit, hier Stellvertreter aus dem System-Schip. Nur mit ?godSchips.
-  if (GOD_SCHIPS_DEMO) GOD_SCHIPS.forEach((g, i) => {
-    const label = `${g.name} ${i + 1}: ${g.full ? "ausgeben" : "wiederherstellen"}`;
-    const btn = el("button", { type: "button", class: "fate-point-btn god-schip", title: label, "aria-label": label, "data-fkey": `god:${i}` }, [
-      el("img", { src: "../../../systems/dsa5/icons/schip.webp", alt: "", class: g.full ? "" : "dim" }),
-    ]);
-    btn.addEventListener("click", () => { g.full = !g.full; renderHeader(); renderContent(); });
-    wrap.appendChild(btn);
-  });
+  if (GOD_VARIANT === "none") return wrap;
+  const godImg = (g, full) => el("img", { src: "../../../systems/dsa5/icons/schip.webp", alt: "", class: full ? "" : "dim", style: `filter: hue-rotate(${g.hue}deg) saturate(1.8)${full ? "" : " grayscale(1)"}` });
+  const rerender = () => { renderHeader(); renderContent(); };
+  if (GOD_VARIANT === "c") {
+    // Variante C: je Gott ein Symbol mit „verfügbar/gesamt“; Klick gibt aus, Rechtsklick stellt wieder her.
+    GODS.forEach((g) => {
+      const label = `${g.name}-Schips: ${g.current} von ${g.value}. Klick gibt einen aus, Rechtsklick stellt einen wieder her`;
+      const btn = el("button", { type: "button", class: "fate-point-btn god-count", title: label, "aria-label": label }, [godImg(g, g.current > 0), el("small", {}, `${g.current}/${g.value}`)]);
+      btn.addEventListener("click", () => { if (g.current > 0) g.current -= 1; rerender(); });
+      btn.addEventListener("contextmenu", (e) => { e.preventDefault(); if (g.current < g.value) g.current += 1; rerender(); });
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+  // Varianten A und B: jeder Götterschip einzeln wie im Systembogen; Klick auf den n-ten setzt „verfügbar“ auf n
+  // bzw. darunter, wenn er schon voll war.
+  const gods = GODS.flatMap((g) => Array.from({ length: g.value }, (_, i) => {
+    const full = i < g.current;
+    const label = `${g.name}-Schip ${i + 1}: ${full ? "ausgeben" : "wiederherstellen"}`;
+    const btn = el("button", { type: "button", class: "fate-point-btn god-schip", title: label, "aria-label": label }, [godImg(g, full)]);
+    btn.addEventListener("click", () => { g.current = full ? i : i + 1; rerender(); });
+    return btn;
+  }));
+  if (GOD_VARIANT === "a") {
+    gods.forEach((b) => wrap.appendChild(b));
+    return wrap;
+  }
+  // Variante B: eigene Schips oben, Götterschips in einer eigenen Reihe darunter.
+  const own = el("div", { class: "fate-row" }, [...wrap.childNodes]);
+  wrap.classList.add("god-rows");
+  wrap.append(own, el("div", { class: "fate-row fate-row-gods" }, gods));
   return wrap;
 }
 
@@ -3824,6 +3852,17 @@ function setMode(mode) {
   renderContent();  renderAttrOverlay();
 }
 
+function initGodVariant() {
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest?.('fieldset[data-group="godschips"] button[data-v]');
+    if (!b) return;
+    GOD_VARIANT = b.dataset.v;
+    b.parentElement.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    renderHeader();
+    renderContent();
+  });
+}
+
 function initModeSwitch() {
   document.getElementById("modeSwitch").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-mode]");
@@ -4018,6 +4057,7 @@ initHeadBadges();
 renderHeader();
 initThemeToggle();
 initModeSwitch();
+initGodVariant();
 initPageSwitches();
 initOnlyLepToggle();
 initArmorToggles();

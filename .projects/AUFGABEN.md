@@ -55,6 +55,9 @@ mittel = etwa ein Tag, groß = mehrere Tage). Je Eintrag Version wählen (8.0.1,
 
 ## 1. Ausdefinieren
 
+- Du: **Götterschips: Darstellung wählen** · #89 — Click-Dummy, Menü › Diese Seite › „Götterschips“ (Desktop `index.html`, Smartphone
+  `mobile/heldenbogen.html`): A eine Reihe (jetzt im Modul), B zweite Reihe, C je Gott Symbol mit Zahl. Variante wählen.
+
 - Du: **Gruppenbogen: Platz für Schicksal und Verdammnis** · #55 — Click-Dummy `?actor=gruppe`, Menü › Diese Seite: A linke Spalte,
   B in den Kacheln (Vorschlag: im System schon angelegt), C eigenes Panel. Variante wählen; erst danach Foundry.
 - Du: **Reiter „Lager“ im Gruppenbogen** · #55 — in Foundry vorerst nur Helfer der Inhaltsmodule plus Würfelstatistik/Hausregelbuch;

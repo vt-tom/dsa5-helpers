@@ -70,6 +70,12 @@ body.embedded .device { width: 100vw; height: 100vh; border-radius: 0; box-shado
 .schips { display: flex; gap: 4px; padding: 3px 8px; border: 1px solid rgba(224, 192, 128, .4); border-radius: 14px; }
 .schips img { width: 20px; height: 20px; }
 .schips img.used { opacity: .35; }
+/* Götterschips, Varianten (Issue #89): Färbung als Stellvertreter; B = zweite Reihe, C = je Gott Symbol mit Zahl */
+.schips button { display: inline-flex; align-items: center; gap: 2px; padding: 0; border: 0; background: none; color: inherit; font-size: 12px; cursor: pointer; }
+.schips.rows { flex-direction: column; align-items: flex-start; gap: 2px; }
+.schips .srow { display: flex; gap: 4px; }
+.schips .srow.gods img { width: 17px; height: 17px; }
+.head .schips { width: max-content; max-width: 100%; margin-top: 6px; }
 .orbs { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 10px; }
 .orb { position: relative; width: 58px; height: 58px; flex: none; overflow: hidden; border: 0; padding: 0; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2c2622, #141110); box-shadow: 0 0 0 2px #2b2721, 0 0 0 4px var(--gold); color: #fff; cursor: pointer; }
 .orb i { position: absolute; inset: auto 0 0; height: var(--p); background: var(--liq); }
@@ -209,6 +215,7 @@ body.embedded .device { width: 100vw; height: 100vh; border-radius: 0; box-shado
 <body>
 <div class="switch">
   <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+  <fieldset data-group="godschips"><legend>Götterschips</legend><button data-v="none" aria-pressed="true">Keine</button><button data-v="a">A Eine Reihe</button><button data-v="b">B Zweite Reihe</button><button data-v="c">C Je Gott mit Zahl</button></fieldset>
 </div>
 <p class="note">Heldenbogen im Stand von 0.6.3. Tippen auf eine Zeile, Karte oder einen Würfel würfelt, langes Drücken öffnet das Blatt des Eintrags (am Tablet auch ein Tipp auf den Namen). Am Smartphone klappt der Kopf beim Scrollen ein. Kugel antippen ändert LeP/AsP/KaP, die KS-Kugel an den AsP öffnet die Kraftspeicher, ein Tipp auf die Anzahl ändert die Menge (Ausrüstung). Probendialog und Wurfergebnis: Menü › Fenster &amp; Dialoge.</p>
 <div id="stage"></div>
@@ -243,7 +250,7 @@ const COND = [['Schmerz', 1], ['Belastung', 0], ['Betäubung', 0], ['Furcht', 0]
 const FAVS = [['Talente', 'Skill', 'Sinnesschärfe', 'KL/IN/IN', 12], ['Zauber', 'Spell', 'Balsam Salabunde', 'KL/IN/CH', 8], ['Ausrüstung', 'Equipment', 'Heiltrank', null, '× 2']];
 const SUGG = [['Fährtensuchen', 'MU/IN/GE', 10, 'Spuren im Kampagnenjournal'], ['Wildnisleben', 'MU/GE/KO', 11, 'Lagerplatz gesucht'], ['Willenskraft', 'MU/IN/CH', 7, 'Furcht in der Nähe']];
 
-const state = { device: 'phone', tab: 'cover', group: 'Körper', collapsed: false, pop: null };
+const state = { godschips: 'none', device: 'phone', tab: 'cover', group: 'Körper', collapsed: false, pop: null };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const panel = (title, inner, small = '') => `<section class="panel"><h3>${title}${small ? `<small>${small}</small>` : ''}</h3>${inner}</section>`;
 const probe = p => `<span class="probe">${p.split('/').map(k => `<span style="background-image:url('${DIE(k)}')">${k}</span>`).join('')}</span>`;
@@ -285,14 +292,25 @@ const TAP_OPENS = ['quests', 'persons', 'companions'];
 
 const orb = ([cls, label, cur, max]) => `<button type="button" class="orb ${cls}" style="--p:${Math.round(100 * cur / max)}%" data-res="${cls}" aria-expanded="${state.pop?.key === cls}" aria-label="${RES_NAMES[cls]} ${cur} von ${max} – ändern"><i></i><b><small>${label}</small>${cur}<small>/ ${max}</small></b></button>`;
 const orbs = () => `<div class="orbs">${orb(RES[0])}<div class="anchor">${orb(RES[1])}<button type="button" class="ks" data-ks aria-haspopup="dialog" aria-label="Kraftspeicher"><span><small>KS</small>${POWER.reduce((a, p) => a + p.value, 0)}</span></button></div>${orb(RES[2])}</div>`;
-const schips = () => `<span class="schips">${[0, 1, 2].map(i => `<img src="${SYS}/icons/schip.webp" alt="" class="${i > 1 ? 'used' : ''}">`).join('')}</span>`;
+// Götterschips (Issue #89): drei Götter mit zusammen 6 Schips als Härtefall, Varianten über state.godschips.
+const GODS = [{ name: 'Praios', hue: 10, value: 2, current: 1 }, { name: 'Rondra', hue: 300, value: 1, current: 1 }, { name: 'Phex', hue: 170, value: 3, current: 2 }];
+const godImg = (g, full) => `<img src="${SYS}/icons/schip.webp" alt="" class="${full ? '' : 'used'}" style="filter:hue-rotate(${g.hue}deg) saturate(1.8)${full ? '' : ' grayscale(1)'}">`;
+const ownSchips = () => [0, 1, 2].map(i => `<img src="${SYS}/icons/schip.webp" alt="" class="${i > 1 ? 'used' : ''}">`).join('');
+const godSchips = () => GODS.map((g, gi) => Array.from({ length: g.value }, (_, i) => `<button type="button" data-god="${gi}" data-i="${i}" aria-label="${g.name}-Schip ${i + 1}">${godImg(g, i < g.current)}</button>`).join('')).join('');
+const schips = () => {
+  const v = state.godschips;
+  if (v === 'a') return `<span class="schips">${ownSchips()}${godSchips()}</span>`;
+  if (v === 'b') return `<span class="schips rows"><span class="srow">${ownSchips()}</span><span class="srow gods">${godSchips()}</span></span>`;
+  if (v === 'c') return `<span class="schips">${ownSchips()}${GODS.map((g, gi) => `<button type="button" data-god-count="${gi}" aria-label="${g.name}-Schips ${g.current} von ${g.value}, tippen gibt einen aus, lange drücken stellt einen wieder her">${godImg(g, g.current > 0)}<small>${g.current}/${g.value}</small></button>`).join('')}</span>`;
+  return `<span class="schips">${ownSchips()}</span>`;
+};
 const dice = () => state.tab === 'main' ? '' : `<div class="dice">${Object.entries(ATTRS).map(([k, v]) => `<button type="button" class="die" style="background-image:url('${DIE(k)}')" data-roll="${ATTR_NAMES[k]}" data-sub="${k} ${v}"><small>${k}</small>${v}</button>`).join('')}</div>`;
 const winbtns = () => `<div class="winbtns"><button type="button" title="Fenstermenü" data-toast="Fenstermenü: Thema, Spieleransicht, Bogen konfigurieren …">⋮</button><button type="button" title="Schließen" data-close>✕</button></div>`;
 
 function head() {
   if (state.device === 'tablet') return `<header class="head"><div class="top"><div><div class="name" style="font-size:40px">${HERO.name}</div><div class="ident">${HERO.ident.map(s => `<span>${s}</span>`).join('')}<span>${HERO.ap}</span></div></div></div>${dice()}</header>`;
   if (state.collapsed) return `<header class="head mini"><div class="top"><div class="portrait"></div><div class="name" style="flex:1;min-width:0">Layariel</div>${orbs()}${winbtns()}</div></header>`;
-  return `<header class="head"><div class="top"><div class="portrait"></div><div style="flex:1;min-width:0"><div class="name">${HERO.name}</div><div class="ident">${HERO.ident.map(s => `<span>${s}</span>`).join('')}</div></div>${winbtns()}</div>${orbs()}${dice()}</header>`;
+  return `<header class="head"><div class="top"><div class="portrait"></div><div style="flex:1;min-width:0"><div class="name">${HERO.name}</div><div class="ident">${HERO.ident.map(s => `<span>${s}</span>`).join('')}</div>${state.godschips === 'none' ? '' : schips()}</div>${winbtns()}</div>${orbs()}${dice()}</header>`;
 }
 const tabTitle = () => TABS.find(([id]) => id === state.tab)[1];
 const navButtons = () => TABS.map(([id, label, ico]) => `<button type="button" data-tab="${id}" ${id === state.tab ? 'aria-current="page"' : ''}><img src="${ICON(ico)}" alt="">${label}</button>`).join('');
@@ -417,6 +435,16 @@ const endPress = () => { if (!press) return; clearTimeout(press.timer); press.ro
 document.addEventListener('pointerup', endPress);
 document.addEventListener('pointercancel', endPress);
 document.addEventListener('contextmenu', ev => { if (ev.target.closest('.device')) ev.preventDefault(); });
+// Götterschips Variante C: langes Drücken stellt einen Schip des Gottes wieder her
+let godPress = null;
+document.addEventListener('pointerdown', ev => {
+  const b = ev.target.closest('[data-god-count]');
+  if (!b) return;
+  godPress = { done: false, timer: setTimeout(() => { godPress.done = true; const g = GODS[b.dataset.godCount]; if (g.current < g.value) g.current += 1; render(); }, 500) };
+});
+const endGodPress = () => { if (godPress && !godPress.done) { clearTimeout(godPress.timer); godPress = null; } };
+document.addEventListener('pointerup', endGodPress);
+document.addEventListener('pointercancel', endGodPress);
 // Tipp neben das Zahlenfeld schließt es; Eingabe ins Feld übernimmt den Wert
 document.addEventListener('pointerdown', ev => {
   if (state.pop && !ev.target.closest('.pop, .orb, .qty')) { state.pop = null; render(true); }
@@ -425,6 +453,7 @@ document.addEventListener('change', ev => { if (ev.target.matches('.pop [data-in
 
 document.addEventListener('click', ev => {
   if (press?.done) return;
+  if (godPress?.done) { godPress = null; return; }
   const b = ev.target.closest('button, [data-roll], [data-open], .backdrop');
   if (!b || b.closest('.dummy-pages')) return;
   const group = b.closest('fieldset')?.dataset.group;
@@ -434,6 +463,8 @@ document.addEventListener('click', ev => {
     b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     return render();
   }
+  if (b.dataset.god) { const g = GODS[b.dataset.god], i = Number(b.dataset.i); g.current = i < g.current ? i : i + 1; return render(); }
+  if (b.dataset.godCount) { const g = GODS[b.dataset.godCount]; if (g.current > 0) g.current -= 1; return render(); }
   if (b.dataset.tab) { state.tab = b.dataset.tab; state.collapsed = false; return render(); }
   if (b.dataset.groupSkill) { state.group = b.dataset.groupSkill; return render(true); }
   if (b.matches('[data-sheet-close]') || (b.matches('.backdrop') && ev.target === b)) return b.closest('.backdrop').remove();
