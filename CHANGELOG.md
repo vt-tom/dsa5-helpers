@@ -7,6 +7,16 @@ Kennzeichnung: **[v13/v14]** gilt für Foundry v13 und v14, **[nur v14]** bzw. *
 Ab 7.0.0/8.0.0 gibt es getrennte Linien: **8.x für Foundry v14**, **7.x für Foundry v13**. Das installierte Modul zeigt
 nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
 
+## [8.0.1] — unveröffentlicht
+
+### Behoben
+
+- **[v13/v14]** Waffenwechsel an der Hand (Kampf › Körper, [#79](https://github.com/vt-tom/dsa5-helpers/issues/79)): Bei Helden mit der Einstellung „Handbeschränkung ignorieren“ (Kampf-Reiter des Systembogens) blieb nach dem Wechsel die alte Waffe in der Hand stehen, die neue landete unter „Ebenfalls angelegt“. Jetzt zeigt die Hand die gewählte Waffe; die bisherige bleibt, wie die Einstellung es erlaubt, angelegt und steht unter „Ebenfalls angelegt“. Gilt für die Handauswahl, das Rechtsklick-Menü am Ausrüsten-Schild und den Griffwechsel.
+
+### Geändert
+
+- **[v13/v14]** Behältnisse (Ausrüstung, [#80](https://github.com/vt-tom/dsa5-helpers/issues/80)): Ein Klick auf eine Behälter-Kachel öffnet das Behältnis gleich auf dem Reiter mit seinem Inhalt statt auf „Beschreibung“.
+
 ## [8.0.0] — 2026-11-12
 
 Erste stabile Version für **Foundry v14** (Desktop, Tablet und Smartphone). Sie enthält alles aus den Betas 0.6.0 bis 0.6.3;

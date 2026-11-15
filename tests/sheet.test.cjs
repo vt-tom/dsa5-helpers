@@ -415,6 +415,23 @@ test('body tab: a free off hand renders compactly below the main hand, its tile 
  context=await sheet._prepareContext({});html=render(context);assert(!context.dsa5h.body.offFree);assert(!html.includes('dsa5h-hand-free'));
 });
 
+test('body tab (#79): with ignored hand limits the hand shows the weapon chosen last, the other stays worn',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;
+ const a=item('a','meleeweapon');a.system.worn={value:true,offHand:false};const b=item('b','rangeweapon');b.system.worn={value:true,offHand:false,requiresBothHands:true};
+ p.wornMeleeWeapons=[a];p.wornRangedWeapons=[b];actor.items.set('a',a);actor.items.set('b',b);
+ let body=(await sheet._prepareContext({})).dsa5h.body;assert.equal(body.hands[0].item._id,'a','without a choice the first worn weapon');
+ actor.flags.handChoice={main:'b'};body=(await sheet._prepareContext({})).dsa5h.body;
+ assert.equal(body.hands[0].item._id,'b','chosen weapon in the hand');assert(body.alsoWorn.some(w=>w.item._id==='a'),'previous weapon stays worn');
+ actor.saved=undefined;actor._ignoresWeaponHandLimits=()=>false;await sheet._rememberHand('a','main');assert.equal(actor.saved,undefined,'nothing stored with normal hand limits');
+ actor._ignoresWeaponHandLimits=()=>true;await sheet._rememberHand('a','offhand');assert.deepEqual(actor.saved.value,{main:'b',offhand:'a'});
+});
+test('bag tiles open the bag on its content tab (#80)',async()=>{
+ const {context}=await prepare();const html=render(context);const open=elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-bag-open'))[0];
+ assert.equal(open.attribs['data-action'],'dsa5hOpenBag');const C=await loadSheet();assert.equal(typeof C.DEFAULT_OPTIONS.actions.dsa5hOpenBag,'function');
+ let opened=0;const sheetStub={tabGroups:{},rendered:false};const self={actor:{items:new Map([['bag',{system:{isBagWithContents:true},sheet:sheetStub}]])},_getItemId:()=>'bag',constructor:{_itemEdit(){opened++;}}};
+ C.DEFAULT_OPTIONS.actions.dsa5hOpenBag.call(self,{},{});assert.equal(sheetStub.tabGroups.sheet,'containerContent');assert.equal(opened,1);
+});
+
 test('character builder button replaces the species field only when the system allows building (issue #10)',async()=>{
  const {sheet}=await prepare();let html=render(await sheet._prepareContext({}));
  assert(!html.includes('data-action="startCharacterBuilder"'));assert(html.includes('name="system.details.species.value"'));
