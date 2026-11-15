@@ -13,8 +13,15 @@ nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
 
 - **[v13/v14]** Waffenwechsel an der Hand (Kampf › Körper, [#79](https://github.com/vt-tom/dsa5-helpers/issues/79)): Bei Helden mit der Einstellung „Handbeschränkung ignorieren“ (Kampf-Reiter des Systembogens) blieb nach dem Wechsel die alte Waffe in der Hand stehen, die neue landete unter „Ebenfalls angelegt“. Jetzt zeigt die Hand die gewählte Waffe; die bisherige bleibt, wie die Einstellung es erlaubt, angelegt und steht unter „Ebenfalls angelegt“. Gilt für die Handauswahl, das Rechtsklick-Menü am Ausrüsten-Schild und den Griffwechsel.
 
+### Neu
+
+- **[v13/v14]** Götterschips und andere Zusatz-Schips ([#89](https://github.com/vt-tom/dsa5-helpers/issues/89)): Schips, die andere Module dem Helden geben (etwa die Götterschips aus „Götter Aventuriens 2“), stehen jetzt im Kopf hinter den eigenen Schips und lassen sich wie im Systembogen per Klick ausgeben und wiederherstellen.
+- **[v13/v14]** Vor- und Nachteile als Favoriten ([#81](https://github.com/vt-tom/dsa5-helpers/issues/81)): Auch Vor- und Nachteile haben auf dem Reiter Eigenschaften einen Stern. Markierte stehen auf dem Titelblatt in der Gruppe „Vor- und Nachteile“, mit Stufe.
+- **[v13/v14]** Sprachen und Schriften als Favoriten ([#82](https://github.com/vt-tom/dsa5-helpers/issues/82)): Sprachen und Schriften lassen sich ebenso markieren und stehen dann mit ihrer Stufe auf dem Titelblatt.
+
 ### Geändert
 
+- **[v13/v14]** Eigenschaften im Kopf einheitlich ([#85](https://github.com/vt-tom/dsa5-helpers/issues/85)): Im Spielmodus zeigt auch der Reiter Eigenschaften die Würfelleiste im Kopf wie alle anderen Reiter. Die großen Eigenschaftskacheln mit Steigern und Senken erscheinen dort nur noch beim Bearbeiten und Steigern.
 - **[v13/v14]** Behältnisse (Ausrüstung, [#80](https://github.com/vt-tom/dsa5-helpers/issues/80)): Ein Klick auf eine Behälter-Kachel öffnet das Behältnis gleich auf dem Reiter mit seinem Inhalt statt auf „Beschreibung“. Dort steht unter jedem Feld jetzt der Name des Gegenstands (lange Namen auf zwei Zeilen gekürzt), statt nur das Bild.
 - **[v13/v14]** Kraftspeicher ([#86](https://github.com/vt-tom/dsa5-helpers/issues/86)): Hat ein Gegenstand mit Kraftspeicher eine Anzahl größer als 1 (etwa drei gestapelte Edelsteine), weist das Kraftspeicher-Menü darauf hin, dass er nur als ein Speicher zählt, und empfiehlt einen eigenen Gegenstand je Speicher. So rechnet das DSA5-System, auch beim Bezahlen von Zaubern.
 

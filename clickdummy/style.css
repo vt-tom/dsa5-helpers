@@ -812,6 +812,11 @@ button {
   opacity: .45;
 }
 
+/* Stellvertreter für Götterschips (Issue #89): im Modul bringt das Inhaltsmodul eigene Bilder mit. */
+.fate-point-btn.god-schip img {
+  filter: hue-rotate(160deg) saturate(1.6);
+}
+
 @media (hover: hover) {
   .fate-point-btn:hover img {
     filter: brightness(1.15);
