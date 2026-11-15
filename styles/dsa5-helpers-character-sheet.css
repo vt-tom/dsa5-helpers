@@ -2451,6 +2451,45 @@
   animation: dsa5h-just-changed .9s ease-out;
 }
 
+/* --- Tooltips im Bogen (#52) ---
+   Die Karte kommt vom System (GlobalToolTipHandler, scripts/sheets/item-tooltips.js) und liegt außerhalb des Bogens
+   (#tooltip im body), daher ohne Bogen-Tokens. Die Klasse dsa5h-tt setzt nur unser Bogen: Inhalt in der Höhe begrenzt,
+   Hinweis darunter, wenn Text abgeschnitten ist. Angeheftet (Mittelklick) ist der Inhalt scrollbar. */
+#tooltip.dsa5h-tt,
+.locked-tooltip.dsa5h-tt {
+  max-height: none;
+}
+
+#tooltip.dsa5h-tt > :first-child,
+.locked-tooltip.dsa5h-tt > :first-child {
+  max-height: 60vh;
+  overflow: hidden;
+}
+
+.locked-tooltip.dsa5h-tt {
+  pointer-events: auto !important;
+}
+
+.locked-tooltip.dsa5h-tt > :first-child {
+  overflow-y: auto;
+}
+
+.dsa5h-tt .dsa5h-tt-more {
+  margin: 0;
+  padding: 3px 8px;
+  border-top: 1px solid #8a7058;
+  border-radius: 0 0 4px 4px;
+  background: #16110d;
+  color: #e1d3c6;
+  font-size: 12px;
+  font-style: italic;
+  text-align: center;
+}
+
+.locked-tooltip.dsa5h-tt .dsa5h-tt-more {
+  display: none;
+}
+
 /* ==========================================================================
    7. Titelblatt
    ========================================================================== */
@@ -3086,6 +3125,669 @@
   font-weight: 700;
 }
 
+/* --- Gruppenbogen (#55): Kopf, linke Spalte, Kacheln, Spielleitung, Lager ---
+   Gerüst des Heldenbogens (dsa5-helpers-group-sheet.hbs). Kopf ohne Kugeln und Schips; links Kasse, Gruppen-Schips,
+   Probe anfordern, Reisetempo und Summen; rechts die Mitglieder als Kacheln S/M/L (Click-Dummy actor-types.js). */
+.dsa5h-group .dsa5h-group-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
+.dsa5h-group .dsa5h-tab-title .dsa5h-group-title-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.dsa5h-group .dsa5h-group-size {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.dsa5h-group .dsa5h-group-size button,
+.dsa5h-group .dsa5h-group-edit {
+  min-height: var(--hit-sm);
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--field);
+  color: var(--ink);
+  font-family: 'GentiumBasic', serif;
+  font-size: var(--fs-small);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dsa5h-group .dsa5h-group-size button[aria-pressed="true"],
+.dsa5h-group .dsa5h-group-edit[aria-pressed="true"],
+.dsa5h-group .dsa5h-group-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+}
+
+/* Linke Spalte (dunkel wie der Kopf) */
+.dsa5h-group .dsa5h-cover-sidebar .dsa5h-group-overview {
+  display: flex;
+  flex-direction: column;
+}
+
+.dsa5h-group .dsa5h-group-side-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(224, 192, 128, .2);
+  color: var(--headink);
+}
+
+.dsa5h-group .dsa5h-group-side-label {
+  color: #d6bd8a;
+  font-size: var(--fs-meta);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dsa5h-group .dsa5h-group-side-link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px dotted rgba(244, 232, 214, .6);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa5h-group .dsa5h-group-purse {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.dsa5h-group .dsa5h-group-coin {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dsa5h-group .dsa5h-group-coin img {
+  width: 18px;
+  height: 18px;
+  border: 0;
+}
+
+.dsa5h-group .dsa5h-group-coin input {
+  width: 46px;
+  height: var(--hit-sm);
+  padding: 0 2px;
+  border: 1px solid rgba(224, 192, 128, .35);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, .08);
+  color: var(--headink);
+  font-weight: 700;
+  text-align: center;
+}
+
+.dsa5h-group .dsa5h-group-schips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+}
+
+.dsa5h-group .dsa5h-group-schips .dsa5h-step {
+  width: var(--hit-sm);
+  height: var(--hit-sm);
+  color: var(--headink);
+}
+
+.dsa5h-group .dsa5h-group-attr-rolls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.dsa5h-group .dsa5h-group-attr-die {
+  width: var(--hit-md);
+  height: var(--hit-md);
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  color: #fff;
+  font-family: 'GentiumBasic', serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .6);
+  cursor: pointer;
+  transition: transform .15s ease;
+}
+
+.dsa5h-group .dsa5h-group-gm-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+  font: 400 var(--fs-meta) 'GentiumBasic', Georgia, serif;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.dsa5h-group .dsa5h-group-side-block .dsa5h-group-gm-tag {
+  border-color: #d6bd8a;
+  color: #d6bd8a;
+}
+
+/* Kacheln: drei Größen, je Größe alle gleich hoch */
+.dsa5h-group .dsa5h-group-tiles {
+  display: grid;
+  gap: 8px;
+}
+
+.dsa5h-group .dsa5h-group-tiles.size-s {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dsa5h-group .dsa5h-group-tiles.size-m {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dsa5h-group .dsa5h-group-tiles.size-l {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dsa5h-group .dsa5h-group-tile {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+}
+
+/* Rasterelemente dürfen schmaler als ihr Inhalt werden, sonst ragen volle Kacheln aus ihrer Spalte. */
+.dsa5h-group .dsa5h-group-tile,
+.dsa5h-group .dsa5h-group-tile > * {
+  min-width: 0;
+}
+
+.dsa5h-group .dsa5h-group-tile.size-s {
+  justify-items: center;
+  gap: 5px;
+  padding: 8px 6px;
+  font-size: var(--fs-small);
+}
+
+.dsa5h-group .dsa5h-group-tile.size-l {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.dsa5h-group .dsa5h-group-member {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dsa5h-group .dsa5h-group-portrait {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #b99a5c;
+  border-radius: 50%;
+  background: #e8dcc6 center / cover no-repeat;
+}
+
+.dsa5h-group .dsa5h-group-portrait.round {
+  width: 48px;
+  height: 48px;
+}
+
+.dsa5h-group .dsa5h-group-portrait.large {
+  width: 84px;
+  height: 100px;
+  border-width: 2px;
+  border-radius: 4px;
+}
+
+.dsa5h-group .dsa5h-group-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa5h-group .dsa5h-group-name.center {
+  align-items: center;
+  max-width: 100%;
+  text-align: center;
+}
+
+.dsa5h-group .dsa5h-group-name b {
+  overflow: hidden;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dsa5h-group .dsa5h-group-name small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dsa5h-group .dsa5h-group-tile.size-l .dsa5h-group-name b {
+  font: 19px/1.15 'Andalus', serif;
+  white-space: normal;
+}
+
+.dsa5h-group .dsa5h-group-pool {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  color: var(--ink);
+}
+
+.dsa5h-group .dsa5h-group-pool.empty {
+  color: var(--muted);
+}
+
+.dsa5h-group .dsa5h-group-pool-num {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsa5h-group .dsa5h-group-pool-num input {
+  width: 40px;
+  height: var(--hit-sm);
+  padding: 0 2px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--field);
+  color: var(--ink);
+  font-weight: 700;
+  text-align: center;
+}
+
+.dsa5h-group .dsa5h-group-pool-num small {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.dsa5h-group .dsa5h-group-pool-bar {
+  width: 100%;
+  max-width: 70px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.dsa5h-group .dsa5h-group-pool-bar i {
+  display: block;
+  height: 100%;
+}
+
+.dsa5h-group .dsa5h-group-pool.wounds .dsa5h-group-pool-bar i {
+  background: #b8291e;
+}
+
+.dsa5h-group .dsa5h-group-pool.astralenergy .dsa5h-group-pool-bar i {
+  background: #2f5fbf;
+}
+
+.dsa5h-group .dsa5h-group-pool.karmaenergy .dsa5h-group-pool-bar i {
+  background: #c39a2c;
+}
+
+.dsa5h-group .dsa5h-group-tile-main {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dsa5h-group .dsa5h-group-tile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dsa5h-group .dsa5h-group-tile-pools {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.dsa5h-group .dsa5h-group-tile-pools.hidden-values {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+}
+
+.dsa5h-group .dsa5h-group-tile-pools small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.dsa5h-group .dsa5h-group-tile-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 22px;
+}
+
+.dsa5h-group .dsa5h-group-member-schips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 1px;
+}
+
+.dsa5h-group .dsa5h-group-member-schips .dsa5h-fatepoint {
+  width: 18px;
+  height: 18px;
+}
+
+.dsa5h-group .dsa5h-group-mini-pools {
+  display: flex;
+  gap: 6px;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.dsa5h-group .dsa5h-group-mini.astralenergy {
+  color: #2f5fbf;
+}
+
+.dsa5h-group .dsa5h-group-mini.karmaenergy {
+  color: #9a7618;
+}
+
+.dsa5h-group[data-theme="dark"] .dsa5h-group-mini.astralenergy {
+  color: #7fa4ea;
+}
+
+.dsa5h-group[data-theme="dark"] .dsa5h-group-mini.karmaenergy {
+  color: #e2b84a;
+}
+
+.dsa5h-group .dsa5h-group-cond {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--fs-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dsa5h-group .dsa5h-group-cond.on {
+  color: var(--ink);
+}
+
+.dsa5h-group .dsa5h-group-cond-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  font-size: var(--fs-meta);
+  cursor: help;
+}
+
+.dsa5h-group .dsa5h-group-conds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: var(--fs-small);
+}
+
+.dsa5h-group .dsa5h-group-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px 1px 2px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+}
+
+.dsa5h-group .dsa5h-group-chip img {
+  width: 18px;
+  height: 18px;
+  border: 0;
+}
+
+.dsa5h-group .dsa5h-group-tile-tools {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  gap: 2px;
+}
+
+.dsa5h-group .dsa5h-group-tile-tools button {
+  width: var(--hit-sm);
+  height: var(--hit-sm);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.dsa5h-group .dsa5h-group-drop {
+  margin: 10px 0 0;
+  padding: 10px;
+  border: 2px dashed var(--line);
+  border-radius: 4px;
+  text-align: center;
+  font-style: italic;
+}
+
+.dsa5h-group .dsa5h-group-hint {
+  margin: 0 0 8px;
+  font-size: var(--fs-small);
+}
+
+/* Knöpfe der Spielleitung, Freigaben, Lager */
+.dsa5h-group .dsa5h-group-btn-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.dsa5h-group .dsa5h-group-btn {
+  min-height: var(--hit-md);
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font-family: 'GentiumBasic', serif;
+  font-size: var(--fs-small);
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.dsa5h-group .dsa5h-group-camp {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.dsa5h-group .dsa5h-group-camp-card {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-content: start;
+  gap: 0 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink);
+  font-family: 'GentiumBasic', serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dsa5h-group .dsa5h-group-camp-card > img,
+.dsa5h-group .dsa5h-group-camp-card > i {
+  grid-row: span 3;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  font-size: 28px;
+  text-align: center;
+}
+
+.dsa5h-group .dsa5h-group-camp-card small {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.dsa5h-group .dsa5h-group-camp-who {
+  color: var(--accent);
+  font-size: var(--fs-meta);
+}
+
+.dsa5h-group .dsa5h-group-camp-card.ask .dsa5h-group-camp-who {
+  color: var(--ink);
+  text-decoration: underline dotted;
+}
+
+.dsa5h-group .dsa5h-group-camp-card[aria-disabled="true"] {
+  opacity: .7;
+  cursor: default;
+}
+
+.dsa5h-group .dsa5h-group-request-row {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 6px;
+}
+
+.dsa5h-group .dsa5h-group-request-note {
+  display: block;
+  color: var(--muted);
+  font-size: var(--fs-small);
+  font-style: italic;
+}
+
+/* Inventar und Reise: Vorlagen des Systems im Rahmen des Bogens; .tab wäre sonst ohne „active“ versteckt. */
+.dsa5h-group .dsa5h-group-system > .tab {
+  display: block;
+  overflow: visible;
+}
+
+/* Überschriften der Systemvorlagen sind für dunkle Designs hell gesetzt; im hellen Bogen dunkel wie unsere Panels. */
+.dsa5h-group .dsa5h-group-system .table-title,
+.dsa5h-group .dsa5h-group-system .table-title .dsadesignbutton,
+.dsa5h-group .dsa5h-group-system .table-title a {
+  color: var(--ink);
+}
+
+.dsa5h-group .dsa5h-group-system .groupbox > .table-title {
+  background: var(--title);
+}
+
+.dsa5h-group .dsa5h-group-note .editor,
+.dsa5h-group .dsa5h-group-note prose-mirror {
+  min-height: 160px;
+  padding: 6px 10px;
+}
+
+.dsa5h-group .dsa5h-group-size button:focus-visible,
+.dsa5h-group .dsa5h-group-edit:focus-visible,
+.dsa5h-group .dsa5h-group-btn:focus-visible,
+.dsa5h-group .dsa5h-group-name:focus-visible,
+.dsa5h-group .dsa5h-group-side-link:focus-visible,
+.dsa5h-group .dsa5h-group-camp-card:focus-visible,
+.dsa5h-group .dsa5h-group-attr-die:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.dsa5h-group .dsa5h-group-attr-die:focus-visible {
+  transform: scale(1.3);
+}
+
+@media (hover: hover) {
+  .dsa5h-group .dsa5h-group-attr-die:hover {
+    transform: scale(1.3);
+  }
+
+  .dsa5h-group .dsa5h-group-name:hover b,
+  .dsa5h-group .dsa5h-group-side-link:hover {
+    text-decoration: underline;
+  }
+
+  .dsa5h-group .dsa5h-group-camp-card:not([aria-disabled="true"]):hover,
+  .dsa5h-group .dsa5h-group-btn:not([aria-pressed="true"]):hover {
+    border-color: var(--accent);
+  }
+
+  .dsa5h-group .dsa5h-group-tile-tools button:hover {
+    color: var(--ink);
+  }
+}
+
+/* Anfrage an die SL: Dialog des Moduls (DialogV2) und Chatkarte */
+.dsa5h-ask-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dsa5h-ask-body textarea {
+  width: 100%;
+  min-height: 70px;
+  resize: vertical;
+}
+
+.dsa5h-request-card .dsa5h-request-note {
+  font-style: italic;
+}
+
+.dsa5h-request-card .dsa5h-request-actions {
+  display: flex;
+  gap: 6px;
+}
+
 /* ==========================================================================
    8. Eigenschaften
    ========================================================================== */
@@ -3326,6 +4028,26 @@
 /* ==========================================================================
    9. Talente
    ========================================================================== */
+
+/* --- Gruppenbogen (#55): Talente der Gruppe --- */
+.dsa5h-group .dsa5h-content .dsa5h-group-skill-row {
+  grid-template-columns: minmax(0, 1.4fr) 60px minmax(0, 1fr) minmax(0, 2fr);
+}
+
+/* Feste Breite für die Knöpfe der SL: mit „auto“ wäre die Spalte im Kopf leer und schmal, die Spalten verrutschten. */
+.dsa5h-group .dsa5h-content .dsa5h-group-skill-row.gm {
+  grid-template-columns: minmax(0, 1.3fr) 50px minmax(0, 1fr) minmax(0, 1.5fr) 184px;
+}
+
+.dsa5h-group .dsa5h-group-roll-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.dsa5h-group .dsa5h-group-roll-btns .dsa5h-group-btn {
+  min-height: var(--hit-sm);
+  padding: 0 7px;
+}
 
 /* --- Talentgruppen & Zeilen --- */
 
@@ -6989,6 +7711,56 @@
   .dsa5-helpers-sheet .dsa5h-head-dup {
     display: none;
   }
+}
+
+/* --- Gruppenbogen (#55) auf dem Smartphone und im schmalen Fenster (.dsa5h-group-compact, _applyCompact()) ---
+   Die Übersicht (Kasse, Schips, Proben, Reisetempo) steht oben im Titelblatt auf hellem Grund, mittlere Kacheln
+   einspaltig, Talentzeilen zweizeilig (Übrige und Knöpfe der SL darunter). */
+.dsa5h-group.dsa5h-group-compact [data-group-overview-slot] .dsa5h-group-overview {
+  --headink: var(--ink);
+  --headmuted: var(--muted);
+  margin: 0 0 10px;
+}
+
+.dsa5h-group.dsa5h-group-compact [data-group-overview-slot] .dsa5h-group-side-block {
+  border-bottom-color: var(--line);
+}
+
+.dsa5h-group.dsa5h-group-compact [data-group-overview-slot] .dsa5h-group-side-label,
+.dsa5h-group.dsa5h-group-compact [data-group-overview-slot] .dsa5h-group-side-block .dsa5h-group-gm-tag {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.dsa5h-group.dsa5h-group-compact [data-group-overview-slot] .dsa5h-group-coin input {
+  border-color: var(--line);
+  background: var(--field);
+}
+
+.dsa5h-group.dsa5h-group-compact [data-group-overview-slot] .dsa5h-group-side-link {
+  border-bottom-color: var(--muted);
+}
+
+.dsa5h-group.dsa5h-group-compact .dsa5h-group-tiles.size-m {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dsa5h-group.dsa5h-group-compact .dsa5h-content .dsa5h-group-skill-row,
+.dsa5h-group.dsa5h-group-compact .dsa5h-content .dsa5h-group-skill-row.gm {
+  grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr);
+  row-gap: 2px;
+}
+
+.dsa5h-group.dsa5h-group-compact .dsa5h-content .row.dsa5h-group-skill-row > :nth-child(n+4) {
+  grid-column: 1 / -1;
+}
+
+.dsa5h-group.dsa5h-group-compact .dsa5h-content .row-head.dsa5h-group-skill-row > :nth-child(n+4) {
+  display: none;
+}
+
+.dsa5h-group.dsa5h-group-compact .dsa5h-group-camp {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* --- Schmales Fenster: Titelblatt einspaltig (.dsa5h-narrow, _applyNarrow(), Nutzer-Entscheidung 2026-10-20) ---

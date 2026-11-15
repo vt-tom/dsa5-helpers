@@ -1,0 +1,58 @@
+{{!-- Titelblatt = Mitglieder (Click-Dummy renderGroupCover, dritte Runde 2026-11-12): Kacheln S/M/L, festes Raster, „–“
+      für fehlende oder nicht freigegebene Werte, Farbe nur für Füllstände, Spieler im Tooltip. Eigene Helden (SL oder
+      Besitzer) ändern LeP/AsP/KaP direkt; fremde nur nach Freigabe der SL sichtbar (dsa5h.vis). Aktionen des Systems:
+      heroLink (Bogen öffnen), heroSchip, removeMember, memberContextMenu. --}}
+{{#*inline "dsa5hPool"}}
+{{#if pool.visible}}
+<span class="dsa5h-group-pool {{pool.key}}" data-tooltip="{{pool.abbr}} {{pool.value}} / {{pool.max}}">
+  <span class="dsa5h-group-pool-num">{{#if pool.own}}<input type="number" min="0" value="{{pool.value}}" data-dsa5h-member-pool="{{pool.key}}" data-uuid="{{uuid}}" aria-label="{{pool.abbr}} {{name}}">{{else}}<b>{{pool.value}}</b>{{/if}}<small>/ {{pool.max}}</small></span>
+  <span class="dsa5h-group-pool-bar"><i style="width:{{pool.pct}}%"></i></span>
+</span>
+{{else}}<span class="dsa5h-group-pool empty" data-tooltip="DSA5HELPERS.Group.Hidden">–</span>{{/if}}
+{{/inline}}
+{{#*inline "dsa5hSchips"}}
+{{#if member.showSchips}}{{#if member.schips.length}}<span class="dsa5h-group-member-schips">{{#each member.schips as |item|}}{{#if ../member.own}}<button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="heroSchip" data-val="{{item.value}}"{{#if item.path}} data-path="{{item.path}}"{{/if}}{{#if item.tooltip}} data-tooltip="{{item.tooltip}}"{{/if}}{{#if item.tooltipClass}} data-tooltip-class="{{item.tooltipClass}}"{{/if}}{{#if item.style}} style="{{item.style}}"{{/if}} aria-label="{{localize 'fatePoints'}} {{item.value}}"></button>{{else}}<span class="dsa5h-fatepoint {{item.cssClass}}"{{#if item.tooltip}} data-tooltip="{{item.tooltip}}"{{/if}}{{#if item.tooltipClass}} data-tooltip-class="{{item.tooltipClass}}"{{/if}}{{#if item.style}} style="{{item.style}}"{{/if}}></span>{{/if}}{{/each}}</span>{{else}}<span class="dsa5h-group-pool empty">–</span>{{/if}}{{else}}<span class="dsa5h-group-pool empty" data-tooltip="DSA5HELPERS.Group.Hidden">–</span>{{/if}}
+{{/inline}}
+<div class="dsa5h-tab" data-tab-panel="cover" hidden>
+  {{!-- Smartphone und schmales Fenster: Kasse, Schips, Proben und Reisetempo hier statt in der linken Spalte (_applyCompact). --}}
+  <div data-group-overview-slot></div>
+  {{#if dsa5h.editMode}}
+  {{!-- Freigaben der SL (Rückmeldung 2026-11-12): Desktop im Bearbeiten-Modus hier, mobil im Reiter Spielleitung. --}}
+  <section class="panel dsa5h-group-vis">
+    <div class="panel-title flex"><span>{{localize 'DSA5HELPERS.Group.VisTitle'}}</span><span class="dsa5h-group-gm-tag" data-tooltip="DSA5HELPERS.Group.GmTagHint">{{localize 'DSA5HELPERS.Group.GmTag'}}</span></div>
+    <div class="dsa5h-group-btn-grid"><span class="dsa5h-muted">{{localize 'DSA5HELPERS.Group.VisAlways'}}</span>{{#each dsa5h.visOptions}}<button type="button" class="dsa5h-group-btn" data-action="dsa5hGroupVis" data-vis="{{id}}" aria-pressed="{{#if active}}true{{else}}false{{/if}}">{{label}}</button>{{/each}}</div>
+  </section>
+  {{/if}}
+  {{#if dsa5h.members.length}}
+  <div class="dsa5h-group-tiles size-{{dsa5h.size}}">
+    {{#each dsa5h.members as |member|}}
+    <div class="dsa5h-group-tile size-{{@root.dsa5h.size}}" data-member-key="{{member.key}}" data-uuid="{{member.uuid}}" data-id="{{member.id}}">
+      {{#if (eq @root.dsa5h.size 's')}}
+      <span class="dsa5h-group-portrait round" style="background-image:url('{{member.img}}')" data-tooltip="{{member.name}}{{#if member.ownerName}} · {{localize 'DSA5HELPERS.Group.Player' name=member.ownerName}}{{/if}}"></span>
+      <button type="button" class="dsa5h-group-name center" data-action="heroLink" data-tooltip="{{member.name}}{{#if member.ident}} · {{member.ident}}{{/if}}"><b>{{member.firstName}}</b></button>
+      {{#if member.lep}}{{> dsa5hPool pool=member.lep uuid=member.uuid name=member.name}}{{else}}<span class="dsa5h-group-pool empty">–</span>{{/if}}
+      <span class="dsa5h-group-tile-foot">
+        <span class="dsa5h-group-mini-pools">{{#each member.extraPools as |pool|}}{{#if pool.visible}}<span class="dsa5h-group-mini {{pool.key}}" data-tooltip="{{pool.abbr}} {{pool.value}} / {{pool.max}}">{{pool.abbr}} {{pool.value}}</span>{{/if}}{{/each}}</span>
+        {{#if member.conditionsVisible}}{{#if member.conditions.length}}<span class="dsa5h-group-cond-count" data-tooltip="{{member.conditionText}}">{{member.conditions.length}}</span>{{else}}<span class="dsa5h-group-pool empty" data-tooltip="DSA5HELPERS.Group.NoConditions">–</span>{{/if}}{{else}}<span class="dsa5h-group-pool empty" data-tooltip="DSA5HELPERS.Group.Hidden">–</span>{{/if}}
+      </span>
+      {{else if (eq @root.dsa5h.size 'l')}}
+      <span class="dsa5h-group-portrait large" style="background-image:url('{{member.img}}')"></span>
+      <div class="dsa5h-group-tile-main">
+        <div class="dsa5h-group-tile-head"><div class="dsa5h-group-name"><b>{{member.name}}</b><small>{{member.ident}}{{#if member.ownerName}} · {{localize 'DSA5HELPERS.Group.Player' name=member.ownerName}}{{/if}}</small></div><button type="button" class="dsa5h-group-btn" data-action="heroLink">{{localize 'DSA5HELPERS.Group.OpenSheet'}}</button></div>
+        <div class="dsa5h-group-tile-pools">{{#if member.anyValues}}{{#each member.pools as |pool|}}<div><small>{{pool.abbr}}</small>{{> dsa5hPool pool=pool uuid=member.uuid name=member.name}}</div>{{/each}}{{else}}<small class="dsa5h-muted">{{localize 'DSA5HELPERS.Group.ValuesHidden'}}</small>{{/if}}</div>
+        <div class="dsa5h-group-tile-foot">{{> dsa5hSchips member=member}}</div>
+        {{#if member.conditionsVisible}}<div class="dsa5h-group-conds">{{#each member.conditions}}<span class="dsa5h-group-chip" data-dsa5h-tt="effect" data-id="{{id}}" data-actor-id="{{actorId}}"><img src="{{img}}" alt="">{{name}}{{#if level}} {{level}}{{/if}}</span>{{else}}<span class="dsa5h-muted">{{localize 'DSA5HELPERS.Group.NoConditions'}}</span>{{/each}}</div>{{/if}}
+      </div>
+      {{else}}
+      <div class="dsa5h-group-member"><span class="dsa5h-group-portrait" style="background-image:url('{{member.img}}')" data-tooltip="{{member.name}}{{#if member.ownerName}} · {{localize 'DSA5HELPERS.Group.Player' name=member.ownerName}}{{/if}}"></span><button type="button" class="dsa5h-group-name" data-action="heroLink" data-tooltip="DSA5HELPERS.Group.OpenSheet"><b>{{member.name}}</b><small>{{member.ident}}</small></button></div>
+      {{#if member.anyValues}}<div class="dsa5h-group-tile-pools">{{#each member.pools as |pool|}}<div><small>{{pool.abbr}}</small>{{> dsa5hPool pool=pool uuid=member.uuid name=member.name}}</div>{{/each}}</div>
+      {{else}}<div class="dsa5h-group-tile-pools hidden-values"><small>{{localize 'DSA5HELPERS.Group.ValuesHidden'}}</small></div>{{/if}}
+      <div class="dsa5h-group-tile-foot">{{> dsa5hSchips member=member}}{{#if member.conditionsVisible}}<span class="dsa5h-group-cond{{#if member.conditions.length}} on{{/if}}">{{#if member.conditions.length}}{{member.conditionText}}{{else}}{{localize 'DSA5HELPERS.Group.NoConditions'}}{{/if}}</span>{{/if}}</div>
+      {{/if}}
+      {{#if @root.dsa5h.editMode}}<span class="dsa5h-group-tile-tools"><button type="button" data-action="memberContextMenu" data-tooltip="DSA5HELPERS.Group.MemberMenu" aria-label="{{localize 'DSA5HELPERS.Group.MemberMenu'}}"><i class="fas fa-ellipsis-vertical" inert></i></button><button type="button" data-action="removeMember" data-tooltip="DSA5HELPERS.Group.RemoveMember" aria-label="{{localize 'DSA5HELPERS.Group.RemoveMember'}}"><i class="fas fa-times" inert></i></button></span>{{/if}}
+    </div>
+    {{/each}}
+  </div>
+  {{/if}}
+  <p class="dsa5h-empty dsa5h-group-drop">{{localize 'GROUP.dropMembersHint'}}</p>
+</div>

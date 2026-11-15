@@ -28,7 +28,7 @@ export async function clearOpposedFor(OpposeDSA, actor, startMessageId) {
 
 // Händlerbögen des Systems je Akteurtyp (MerchantConfig.SHEET_CLASS_NAMES, DSA5 8.2): Rückweg aus Schatz/Händler
 // (merchant-return.js), Bogen-Umschalter und Hinweis im Bogen.
-export const MERCHANT_SHEETS = { character: 'dsa5.CharacterMerchantSheetDSA5', creature: 'dsa5.CreatureMerchantSheetDSA5' };
+export const MERCHANT_SHEETS = { character: 'dsa5.CharacterMerchantSheetDSA5', npc: 'dsa5.MerchantSheetDSA5', creature: 'dsa5.CreatureMerchantSheetDSA5' };
 
 // Modul-Flag innerhalb eines laufenden Updates löschen: v14 kennt ForcedDeletion, v13 nur den Schlüssel „-=name“.
 export function clearModuleFlag(changes, key) {

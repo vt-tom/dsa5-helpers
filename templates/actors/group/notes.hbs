@@ -1,0 +1,5 @@
+{{!-- Notizen der Gruppe (Systemfelder details.biography / details.notes, Editor wie im System group-notes.hbs). --}}
+<div class="dsa5h-tab" data-tab-panel="notes" hidden>
+  <section class="panel dsa5h-group-note"><div class="panel-title">{{localize 'biography'}}</div>{{formInput systemFields.details.fields.biography value=document.system.details.biography toggled=true enriched=enrichedBiography}}</section>
+  <section class="panel dsa5h-group-note"><div class="panel-title">{{localize 'Notes'}}</div>{{formInput systemFields.details.fields.notes value=document.system.details.notes toggled=true enriched=enrichedNotes}}</section>
+</div>

@@ -4,6 +4,8 @@
     "SelectAmmo": "Select ammunition",
     "SheetLabel": "DSA5 Helpers Character Sheet",
     "CreatureSheetLabel": "DSA5 Helpers Creature Sheet",
+    "NpcSheetLabel": "DSA5 Helpers NPC Sheet",
+    "GroupSheetLabel": "DSA5 Helpers Group Sheet",
     "Free": "free",
     "AdvantagesDisadvantages": "Advantages & Disadvantages",
     "BaseValues": "Base Values",
@@ -202,7 +204,7 @@
       "DisplayMenu": {
         "Title": "Display and devices",
         "Label": "Configure display",
-        "GroupSheet": "Roll dialogs",
+        "GroupSheet": "Sheet and roll dialogs",
         "GroupMobile": "Tablet and smartphone",
         "Hint": "Roll dialogs on desktop and hybrid play on tablet and phone (interface and roll result per device)."
       },
@@ -224,6 +226,10 @@
         "Name": "Skill suggestions on the cover page",
         "Hint": "How many skills are suggested above the favorites; adjustable per hero on the sheet with − / +. Applies to you only.",
         "Off": "Off"
+      },
+      "ItemTooltips": {
+        "Name": "Tooltips on hover",
+        "Hint": "Hovering a name on the sheet (skills, spells, equipment, conditions …) shows the system's card. Applies only to you; there are no tooltips on tablet and phone."
       }
     },
     "Changelog": {
@@ -877,6 +883,108 @@
     "MerchantNotice": {
       "Owner": "This actor is currently set to “{type}”. Only the system’s merchant sheet shows the shop or treasure – choose “{sheet}” under “{configure}” in the window menu.",
       "Viewer": "This actor is currently set to “{type}”. Only the system’s merchant sheet shows the shop or treasure – the GM can switch to it."
+    },
+    "Npc": {
+      "Hints": {
+        "main": "Base values"
+      },
+      "SideStatus": "Status",
+      "SidePerson": "Person",
+      "NoWeapon": "No weapon equipped.",
+      "TalentCount": "Number of skills",
+      "TalentsFewer": "Fewer skills",
+      "TalentsMore": "More skills"
+    },
+    "Group": {
+      "Tabs": {
+        "cover": "Cover",
+        "skills": "Skills",
+        "inventory": "Inventory",
+        "travel": "Travel",
+        "gm": "Game master",
+        "camp": "Camp",
+        "notes": "Notes"
+      },
+      "MemberCount": "{count} members",
+      "FootSpeed": "on foot {value} miles/h",
+      "TravelSpeed": "Travel speed",
+      "GroupSchips": "Group fate points",
+      "GroupSchip": "Group fate point {value}",
+      "RequestRoll": "Request roll",
+      "RequestAttribute": "Request a {name} roll from the group",
+      "GmTag": "GM only",
+      "GmTagHint": "Players cannot see or change this",
+      "SumLeP": "LP total",
+      "SumAsP": "AE total",
+      "SumKaP": "KP total",
+      "Size": {
+        "Label": "Tile size",
+        "s": "Small",
+        "m": "Medium",
+        "l": "Large"
+      },
+      "EditHint": "Edit: set what players see, remove members",
+      "Vis": {
+        "identity": "Culture, profession and fate points",
+        "lep": "LP",
+        "pools": "AE and KP",
+        "cond": "Conditions"
+      },
+      "VisTitle": "Players see of other members",
+      "VisAlways": "always: portrait, name, species ·",
+      "Hidden": "not shared with players",
+      "ValuesHidden": "Values not shared with players",
+      "NoConditions": "no conditions",
+      "Player": "Player: {name}",
+      "OpenSheet": "Open sheet",
+      "MemberMenu": "Member: more actions",
+      "RemoveMember": "Remove from group",
+      "SkillsHint": "Best value of the group per skill.",
+      "SkillsHintGm": "Best value of the group per skill. Group check: the group rolls together; Request: request in chat, everyone rolls.",
+      "Best": "Best",
+      "Member": "Member",
+      "Others": "Others",
+      "GroupCheck": "Group check",
+      "Request": "Request",
+      "GmHint": "Players do not see this tab.",
+      "AllMembers": "All members",
+      "RollBlind": "Roll blind",
+      "AttributeRolls": "Request attribute rolls",
+      "SkillRollsWhere": "Skill rolls per skill in the Skills tab",
+      "GroupSection": "Group",
+      "ShareOwnership": "Share ownership with everyone",
+      "CampHint": "Functions for the group. Ask the GM for those only the GM may run.",
+      "CampHintGm": "Functions content modules provide for the group, and tools of this module. Players only see functions for everyone and can ask you for the others.",
+      "CampSystem": "From DSA5 content modules",
+      "CampModule": "Tools of this module",
+      "NoHelpers": "No functions available – they come with the content modules (e.g. core rules, compendium).",
+      "GmPlayersAsk": "GM only · players ask",
+      "Requests": "Player requests ({count})",
+      "DiceStatsHint": "Rolls of the group by day",
+      "HouseRulesHint": "Read the house rules",
+      "Ask": {
+        "Title": "Ask the GM: {label}",
+        "NoteLabel": "Reason (optional) – the GM sees it with the request",
+        "NotePlaceholder": "e.g. why, what for, for whom",
+        "Send": "Send request",
+        "Sent": "Request “{label}” sent to the GM.",
+        "Pending": "Request sent – waiting for the GM",
+        "Card": "Ask the GM",
+        "Wants": "asks for: {label} (group {group})",
+        "WantsShort": "asks for: {label}",
+        "Execute": "Run",
+        "Decline": "Decline",
+        "Status": {
+          "open": "Open",
+          "done": "Run by the GM",
+          "declined": "Declined by the GM"
+        }
+      },
+      "RandomMember": "Random member",
+      "RandomMemberHint": "Pick a random member; right-click without bad-luck magnet, Shift shows the result to everyone"
+    },
+    "Tooltip": {
+      "More": "More text: middle-click pins, click opens everything"
     }
   }
 }

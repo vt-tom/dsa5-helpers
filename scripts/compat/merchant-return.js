@@ -7,7 +7,7 @@
 import { clearModuleFlag, MERCHANT_SHEETS } from './runtime.js';
 
 const FLAG = 'sheetBeforeMerchant';
-const SYSTEM_SHEETS = { character: 'dsa5.ActorSheetdsa5Character', creature: 'dsa5.ActorSheetdsa5Creature' };
+const SYSTEM_SHEETS = { character: 'dsa5.ActorSheetdsa5Character', npc: 'dsa5.ActorSheetdsa5NPC', creature: 'dsa5.ActorSheetdsa5Creature' };
 const DEFAULT_SETTINGS = { character: 'defaultSheet', creature: 'defaultCreatureSheet' };
 
 // Rückgabe nur für Tests: 'remember' | 'restore' | undefined.

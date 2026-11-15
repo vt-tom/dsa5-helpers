@@ -10,9 +10,9 @@ import { contextMenuEntries, MERCHANT_SHEETS } from './compat/runtime.js';
 const EXCLUDED = Object.values(MERCHANT_SHEETS);
 const EXCLUDED_PREFIX = 'dsa5.DSACharBuilder';
 // Der Systembogen heißt im Umschalter „Systemstandard“ statt „DSA5 - Held“.
-const RENAMED = { 'dsa5.ActorSheetdsa5Character': 'DSA5HELPERS.SheetSwitcher.SystemSheet', 'dsa5.ActorSheetdsa5Creature': 'DSA5HELPERS.SheetSwitcher.SystemSheet' };
-// Bogenarten mit Umschalter: Helden und (seit dem Kreaturbogen, Issue #54) Kreaturen.
-const SWITCH_TYPES = ['character', 'creature'];
+const RENAMED = { 'dsa5.ActorSheetdsa5Character': 'DSA5HELPERS.SheetSwitcher.SystemSheet', 'dsa5.ActorSheetdsa5NPC': 'DSA5HELPERS.SheetSwitcher.SystemSheet', 'dsa5.ActorSheetdsa5Creature': 'DSA5HELPERS.SheetSwitcher.SystemSheet', 'dsa5.GroupActorSheet': 'DSA5HELPERS.SheetSwitcher.SystemSheet' };
+// Bogenarten mit Umschalter: Helden, Kreaturen (#54), NSC (#53) und Gruppen (#55).
+const SWITCH_TYPES = ['character', 'npc', 'creature', 'group'];
 
 // Linke obere Ecke des alten Fensters je Akteur — der neue Bogen öffnet sich an derselben Stelle statt in der Mitte.
 const pendingPosition = new Map();

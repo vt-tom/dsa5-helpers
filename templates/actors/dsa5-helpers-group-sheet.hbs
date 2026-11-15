@@ -1,0 +1,51 @@
+<div>
+{{!-- Gruppenbogen (Issue #55, Click-Dummy index.html?actor=gruppe): Gerüst des Heldenbogens – Reiterleiste, Kopf, linke
+      Spalte auf dem Titelblatt, ein Inhaltsbereich mit allen Reitern (der aktive ohne hidden, scripts/sheets/
+      dsa5-helpers-group-sheet.js _applyCurrentTab). Daten und Aktionen kommen aus dem Gruppenbogen des Systems. --}}
+<nav class="dsa5h-rail" aria-label="{{localize 'DSA5HELPERS.Navigation'}}">
+{{#each dsa5h.tabs}}<button type="button" class="dsa5h-rail-btn" data-action="dsa5hSetTab" data-tab="{{id}}" data-tab-rail-target="{{id}}" aria-label="{{label}}"><img src="{{icon}}" alt=""><span class="dsa5h-rail-label" aria-hidden="true">{{label}}</span></button>{{/each}}
+</nav>
+<div class="dsa5h-main">
+  <aside class="dsa5h-cover-sidebar dsa5h-group-side" data-cover-sidebar>
+    <div data-cover-slot="portrait"></div>
+    {{> "modules/dsa5-helpers/templates/actors/group/overview.hbs"}}
+  </aside>
+  <header class="dsa5h-head">
+    <div class="dsa5h-banner"></div>
+    <span data-header-slot="portrait" hidden></span><div class="dsa5h-portrait-medal shape-round" data-cover-move="portrait">
+      <div class="dsa5h-portrait">
+        <div class="dsa5h-portrait-inner"><img class="charimg" data-action="editImage" data-edit="img" src="{{document.img}}" alt="{{document.name}}" /></div>
+      </div>
+    </div>
+    <div class="dsa5h-head-main">
+      <div class="dsa5h-head-top">
+        <h1 class="dsa5h-name" data-tooltip="{{document.name}}">{{formInput fields.name value=document.name placeholder=(localize 'Name') disabled=(not isOwner)}}</h1>
+      </div>
+      <div class="dsa5h-head-band">
+        <div class="dsa5h-ident dsa5h-group-badges">
+          <span class="dsa5h-ident-text">{{localize 'DSA5HELPERS.Group.MemberCount' count=memberCount}}</span>
+          {{#if isPrimaryParty}}<span class="dsa5h-ident-sep" aria-hidden="true">·</span><span class="dsa5h-ident-text">★ {{localize 'GROUP.primaryParty'}}</span>{{/if}}
+          {{#if dsa5h.travelFoot}}<span class="dsa5h-ident-sep" aria-hidden="true">·</span><span class="dsa5h-ident-text">{{localize 'DSA5HELPERS.Group.FootSpeed' value=dsa5h.travelFoot.meilen}}</span>{{/if}}
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="dsa5h-tab-title"><span data-tab-title-label>{{dsa5h.currentTabLabel}}</span>
+    <span class="dsa5h-rule"></span>
+    {{!-- Kachelgröße rechts neben „Mitglieder“ (Rückmeldung 2026-11-12, je Benutzer), für die SL dazu Bearbeiten. --}}
+    <span class="dsa5h-group-title-tools" data-tab-only="cover">
+      <span class="dsa5h-group-size" role="group" aria-label="{{localize 'DSA5HELPERS.Group.Size.Label'}}">{{#each dsa5h.sizes}}<button type="button" data-action="dsa5hTileSize" data-size="{{id}}" aria-pressed="{{#if active}}true{{else}}false{{/if}}">{{label}}</button>{{/each}}</span>
+      {{#if dsa5h.isGM}}<button type="button" class="dsa5h-group-edit" data-action="dsa5hGroupEdit" aria-pressed="{{#if dsa5h.editMode}}true{{else}}false{{/if}}" data-tooltip="DSA5HELPERS.Group.EditHint"><i class="fas fa-pen" inert></i> {{localize 'DSA5HELPERS.Mode.edit'}}</button>{{/if}}
+    </span>
+  </div>
+  <div class="dsa5h-content">
+    {{> "modules/dsa5-helpers/templates/actors/group/members.hbs"}}
+    {{> "modules/dsa5-helpers/templates/actors/group/skills.hbs"}}
+    <div class="dsa5h-tab dsa5h-group-system" data-tab-panel="inventory" hidden>{{> "systems/dsa5/templates/actors/group/group-inventory.hbs"}}</div>
+    <div class="dsa5h-tab dsa5h-group-system" data-tab-panel="travel" hidden>{{> "systems/dsa5/templates/actors/group/group-travel.hbs"}}</div>
+    {{#if dsa5h.isGM}}{{> "modules/dsa5-helpers/templates/actors/group/gm.hbs"}}{{/if}}
+    {{> "modules/dsa5-helpers/templates/actors/group/camp.hbs"}}
+    {{> "modules/dsa5-helpers/templates/actors/group/notes.hbs"}}
+  </div>
+</div>
+</div>

@@ -3231,7 +3231,8 @@ function favCard(item, kind) {
   // Klick auf den Namen öffnet das Foundry-Fenster des Eintrags (Item-Sheet, Systemaktion itemEdit) — für alle
   // Favoriten gleich (Nutzer-Entscheidung 2026-10-05, Issue #30; statt Tooltip/Aufklappen/eigenem Fenster für den
   // SF-Regeltext). Der Click-Dummy zeigt stellvertretend eine Vorschau (openItemWindow()).
-  const name = el("button", { type: "button", class: "fav-card-name", title: `${item.name} öffnen` }, item.name);
+  // Beim Überfahren zeigt der Name seit #52 die Karte des Systems (item-tooltips.js), kein title mehr.
+  const name = el("button", { type: "button", class: "fav-card-name", "aria-label": `${item.name} öffnen` }, item.name);
   name.addEventListener("click", () => openItemWindow(item));
   let value;
   let roll;
@@ -3508,7 +3509,7 @@ function suggestionsPanel() {
   const picks = SKILL_GROUPS.flatMap((g) => g.items).filter((s) => !s.fav && s.fw > 0).sort((a, b) => b.fw - a.fw).slice(0, suggestionCountDemo);
   if (!picks.length) return null;
   const cards = picks.map((item, i) => {
-    const name = el("button", { type: "button", class: "fav-card-name", title: `${item.name} öffnen` }, item.name);
+    const name = el("button", { type: "button", class: "fav-card-name", "aria-label": `${item.name} öffnen` }, item.name);
     name.addEventListener("click", () => openItemWindow(item));
     const dice = probeDice(item.probe, item.name);
     dice.classList.add("fav-chip-roll");

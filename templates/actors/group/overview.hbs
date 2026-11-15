@@ -1,0 +1,31 @@
+{{!-- Linke Spalte des Titelblatts (Click-Dummy groupOverview, dritte Runde 2026-11-12): Gruppenkasse (alle mit
+      Besitzerrechten; Feld wie im System .group-money-change), Gruppen-Schips und Probe anfordern (nur SL, Aktionen des
+      Systems changeGroupSchip/addGroupSchipCount/requestAttributeRoll), Reisetempo, darunter die Summen (nur SL). --}}
+<section class="panel dsa5h-group-overview">
+  <div class="dsa5h-group-side-block">
+    <span class="dsa5h-group-side-label">{{localize 'GROUP.sharedPurse'}}</span>
+    {{#if groupCoins.length}}
+    <span class="dsa5h-group-purse">{{#each groupCoins as |coin|}}<span class="dsa5h-group-coin item" data-item-id="{{coin._id}}" data-tooltip="{{localize coin.name}}"><img src="{{coin.img}}" alt=""><input class="group-money-change" type="number" min="0" value="{{coin.quantity}}" aria-label="{{localize coin.name}}"{{#unless @root.isOwner}} disabled{{/unless}}></span>{{/each}}</span>
+    {{else}}<span class="dsa5h-empty">–</span>{{/if}}
+  </div>
+  {{#if dsa5h.isGM}}
+  <div class="dsa5h-group-side-block">
+    <span class="dsa5h-group-side-label">{{localize 'DSA5HELPERS.Group.GroupSchips'}} <span class="dsa5h-group-gm-tag" data-tooltip="DSA5HELPERS.Group.GmTagHint">{{localize 'DSA5HELPERS.Group.GmTag'}}</span></span>
+    <span class="dsa5h-group-schips">{{#each groupSchips as |item|}}<button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="changeGroupSchip" data-val="{{item.value}}" aria-label="{{localize 'DSA5HELPERS.Group.GroupSchip' value=item.value}}"></button>{{/each}}<button type="button" class="dsa5h-step" data-action="addGroupSchipCount" data-value="-1" data-tooltip="SHEET.removeSchip" aria-label="{{localize 'SHEET.removeSchip'}}">−</button><button type="button" class="dsa5h-step" data-action="addGroupSchipCount" data-value="1" data-tooltip="SHEET.addSchip" aria-label="{{localize 'SHEET.addSchip'}}">+</button></span>
+  </div>
+  <div class="dsa5h-group-side-block">
+    <span class="dsa5h-group-side-label">{{localize 'DSA5HELPERS.Group.RequestRoll'}} <span class="dsa5h-group-gm-tag" data-tooltip="DSA5HELPERS.Group.GmTagHint">{{localize 'DSA5HELPERS.Group.GmTag'}}</span></span>
+    <span class="dsa5h-group-attr-rolls">{{#each characteristics as |ch|}}<button type="button" class="dsa5h-group-attr-die" data-action="requestAttributeRoll" data-attr="{{ch.key}}" style="background-image:url('systems/dsa5/icons/dice/d20{{ch.key}}.svg')" data-tooltip="{{localize 'DSA5HELPERS.Group.RequestAttribute' name=ch.name}}" aria-label="{{localize 'DSA5HELPERS.Group.RequestAttribute' name=ch.name}}">{{ch.abbr}}</button>{{/each}}</span>
+  </div>
+  {{/if}}
+  {{#if dsa5h.travelFoot}}
+  <div class="dsa5h-group-side-block">
+    <span class="dsa5h-group-side-label">{{localize 'DSA5HELPERS.Group.TravelSpeed'}}</span>
+    <button type="button" class="dsa5h-group-side-link" data-action="dsa5hSetTab" data-tab="travel">{{localize 'DSA5HELPERS.Group.FootSpeed' value=dsa5h.travelFoot.meilen}}</button>
+  </div>
+  {{/if}}
+  <dl class="dsa5h-side-details">
+    <div><dt>{{localize 'GROUP.memberCount'}}</dt><dd>{{memberCount}}</dd></div>
+    {{#each dsa5h.sums}}<div><dt>{{label}}</dt><dd>{{value}}</dd></div>{{/each}}
+  </dl>
+</section>

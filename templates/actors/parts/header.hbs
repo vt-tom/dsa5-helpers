@@ -16,7 +16,7 @@
         <div class="dsa5h-portrait">
           <div class="dsa5h-portrait-inner"><img class="charimg" data-action="editImage" data-edit="img" src="{{document.img}}" alt="{{document.name}}" /></div>
         </div>
-        {{#unless dsa5h.creature}}<div class="dsa5h-ap-ribbon" data-tooltip="{{localize 'DSA5HELPERS.ApRibbon' total=(dsa5hFormatNum document.system.details.experience.total) free=(dsa5hFormatNum document.system.details.experience.current)}}">
+        {{#unless (or dsa5h.creature dsa5h.npc)}}<div class="dsa5h-ap-ribbon" data-tooltip="{{localize 'DSA5HELPERS.ApRibbon' total=(dsa5hFormatNum document.system.details.experience.total) free=(dsa5hFormatNum document.system.details.experience.current)}}">
           <span class="dsa5h-ap-ribbon-total">{{dsa5hFormatNum document.system.details.experience.total}} {{localize "DSA5HELPERS.APAbbrev"}}</span>
           <span class="dsa5h-ap-ribbon-free">{{dsa5hFormatNum document.system.details.experience.current}} {{localize "DSA5HELPERS.Free"}}</span>
         </div>{{/unless}}
@@ -31,7 +31,7 @@
       <div class="dsa5h-head-main">
         <div class="dsa5h-head-top">
           <h1 class="dsa5h-name"{{#unless dsa5h.editMode}} data-tooltip="{{document.name}}"{{/unless}}>{{formInput fields.name value=document.name placeholder=(localize 'Name') disabled=(not dsa5h.editMode)}}</h1>
-          <span data-header-slot="fate" hidden></span><div class="dsa5h-fate-points" data-cover-move="fate"{{#if dsa5h.creature}}{{#unless dsa5h.creature.fatePoints}} hidden{{/unless}}{{/if}}>
+          <span data-header-slot="fate" hidden></span><div class="dsa5h-fate-points" data-cover-move="fate"{{#if dsa5h.hideFate}} hidden{{/if}}>
             {{#each prepare.schips as |item|}}
             <button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="schipUpdate" data-val="{{item.value}}" data-tooltip="fatePoints" aria-label="{{localize 'DSA5HELPERS.FatePointSet' value=item.value current=../document.system.status.fatePoints.value max=../document.system.status.fatePoints.max}}"></button>
             {{/each}}

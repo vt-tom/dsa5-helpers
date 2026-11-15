@@ -1,0 +1,25 @@
+{{!-- Spielleitung (Click-Dummy renderGroupGm, Entscheidung 2: eigener Reiter, fehlt bei Spielern): alle Werkzeuge des
+      Systembogens an einer Stelle, jeweils dessen Aktion (rollAllBlind, rollRegeneration, randomMember, awardAP,
+      groupPayment, groupGetPaid, requestAttributeRoll, setPrimaryParty, shareOwnership, createEventsJournal). Die
+      Freigaben für Spieler stehen hier für alle Geräte (mobil gibt es keinen Bearbeiten-Modus). --}}
+<div class="dsa5h-tab" data-tab-panel="gm" hidden>
+  <p class="dsa5h-muted dsa5h-group-hint">{{localize 'DSA5HELPERS.Group.GmHint'}} <span class="dsa5h-group-gm-tag" data-tooltip="DSA5HELPERS.Group.GmTagHint">{{localize 'DSA5HELPERS.Group.GmTag'}}</span></p>
+  <section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Group.AllMembers'}}</div><div class="dsa5h-group-btn-grid">
+    <button type="button" class="dsa5h-group-btn" data-action="rollAllBlind"><i class="fas fa-dice" inert></i> {{localize 'DSA5HELPERS.Group.RollBlind'}}</button>
+    <button type="button" class="dsa5h-group-btn" data-action="rollRegeneration"><i class="fas fa-bed" inert></i> {{localize 'regenerate'}}</button>
+    <button type="button" class="dsa5h-group-btn" data-action="randomMember" data-tooltip="DSA5HELPERS.Group.RandomMemberHint"><i class="fas fa-shuffle" inert></i> {{localize 'DSA5HELPERS.Group.RandomMember'}}</button>
+    <button type="button" class="dsa5h-group-btn" data-action="awardAP"><i class="fas fa-trophy" inert></i> {{localize 'MASTER.awardXP'}}</button>
+    <button type="button" class="dsa5h-group-btn" data-action="groupPayment"><i class="fas fa-coins" inert></i> {{localize 'MASTER.payTT'}}</button>
+    <button type="button" class="dsa5h-group-btn" data-action="groupGetPaid"><i class="fas fa-piggy-bank" inert></i> {{localize 'PAYMENT.wage'}}</button>
+  </div></section>
+  <section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Group.AttributeRolls'}}</div><div class="dsa5h-group-btn-grid">
+    {{#each characteristics as |ch|}}<button type="button" class="dsa5h-group-attr-die" data-action="requestAttributeRoll" data-attr="{{ch.key}}" style="background-image:url('systems/dsa5/icons/dice/d20{{ch.key}}.svg')" data-tooltip="{{localize 'DSA5HELPERS.Group.RequestAttribute' name=ch.name}}" aria-label="{{localize 'DSA5HELPERS.Group.RequestAttribute' name=ch.name}}">{{ch.abbr}}</button>{{/each}}
+    <span class="dsa5h-muted">{{localize 'DSA5HELPERS.Group.SkillRollsWhere'}}</span>
+  </div></section>
+  <section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Group.GroupSection'}}</div><div class="dsa5h-group-btn-grid">
+    <button type="button" class="dsa5h-group-btn" data-action="setPrimaryParty" aria-pressed="{{#if isPrimaryParty}}true{{else}}false{{/if}}">★ {{localize 'GROUP.primaryParty'}}</button>
+    <button type="button" class="dsa5h-group-btn" data-action="shareOwnership" data-tooltip="GROUP.shareOwnership"><i class="fas fa-users-cog" inert></i> {{localize 'DSA5HELPERS.Group.ShareOwnership'}}</button>
+    <button type="button" class="dsa5h-group-btn" data-action="createEventsJournal"><i class="fas fa-book-open" inert></i> {{localize 'GROUP.createEventsJournal'}}</button>
+  </div></section>
+  <section class="panel dsa5h-group-vis"><div class="panel-title">{{localize 'DSA5HELPERS.Group.VisTitle'}}</div><div class="dsa5h-group-btn-grid"><span class="dsa5h-muted">{{localize 'DSA5HELPERS.Group.VisAlways'}}</span>{{#each dsa5h.visOptions}}<button type="button" class="dsa5h-group-btn" data-action="dsa5hGroupVis" data-vis="{{id}}" aria-pressed="{{#if active}}true{{else}}false{{/if}}">{{label}}</button>{{/each}}</div></section>
+</div>

@@ -1,6 +1,6 @@
 /* Ein Menü für den ganzen Click-Dummy (Nutzerentscheidung 2026-11-12, ersetzt Seitenmenü und Werkzeugleiste): ein Knopf
    unten links öffnet ein Panel mit
-     - Bogen × Gerät: jeder Bogentyp (Held, NSC, Kreatur, Gruppe) für Desktop, Tablet und Smartphone,
+     - Bogen × Gerät: jeder Bogentyp (Held, NSC, Kreatur, Gruppe, Händler, Schatz) für Desktop, Tablet und Smartphone,
      - Ansicht und Testdaten (Schalter des Desktop-Bogens),
      - Diese Seite (übrige Umschalter einer Einzelseite),
      - Fenster & Dialoge und die Foundry-Oberfläche mobil.
@@ -25,11 +25,13 @@
     ["Kreatur (Tier)", ["index.html?actor=kreatur", "mobile/nsc-kreatur.html?kind=kreatur&beispiel=tier&device=tablet", "mobile/nsc-kreatur.html?kind=kreatur&beispiel=tier&device=phone"]],
     ["Kreatur, humanoid (Ork)", ["index.html?actor=kreatur&beispiel=ork", "mobile/nsc-kreatur.html?kind=kreatur&beispiel=ork&device=tablet", "mobile/nsc-kreatur.html?kind=kreatur&beispiel=ork&device=phone"]],
     ["Gruppe (#55)", ["index.html?actor=gruppe", "mobile/gruppe.html?device=tablet", "mobile/gruppe.html?device=phone"]],
+    ["Händler (#77)", ["index.html?actor=haendler", null, null]],
+    ["Schatz (#78)", ["index.html?actor=schatz", null, null]],
   ];
   // Diese Umschalter einer Seite stecken schon in der Matrix und werden nicht doppelt gezeigt.
   const COVERED = { "mobile/heldenbogen.html": ["device"], "mobile/nsc-kreatur.html": ["device", "kind", "beispiel"], "mobile/gruppe.html": ["device"] };
   // Schalter des Desktop-Bogens (index.html, Elemente der früheren Werkzeugleiste)
-  const VIEW = [["Modus", "modeSwitch"], ["Thema", "themeToggle"], ["Foundry", "foundrySwitch"], ["Rolle", "asPlayerToggle"], ["Welt", "playersEditToggle"]];
+  const VIEW = [["Modus", "modeSwitch"], ["Thema", "themeToggle"], ["Foundry", "foundrySwitch"], ["Rolle", "asPlayerToggle"], ["Welt", "playersEditToggle"], ["Tooltips", "tooltipToggle"]];
   const TESTDATA = [["Ressourcen", "onlyLepToggle"], ["Rüstung", "armorOneToggle"], ["Händler/Schatz", "merchantModeToggle"]];
   const WINDOWS = [
     ["mobile/probe.html", "Probendialog (auch Desktop, #63)"],
@@ -100,7 +102,7 @@ html.dp-docked body { margin-left: 360px; }
   function currentCell() {
     if (pagePath === "index.html") {
       const actor = here.searchParams.get("actor");
-      return [actor === "nsc" ? 1 : actor === "kreatur" ? (here.searchParams.get("beispiel") === "ork" ? 3 : 2) : actor === "gruppe" ? 4 : 0, 0];
+      return [actor === "nsc" ? 1 : actor === "kreatur" ? (here.searchParams.get("beispiel") === "ork" ? 3 : 2) : actor === "gruppe" ? 4 : actor === "haendler" ? 5 : actor === "schatz" ? 6 : 0, 0];
     }
     const col = pressed("device") === "tablet" ? 1 : 2;
     if (pagePath === "mobile/heldenbogen.html") return [0, col];

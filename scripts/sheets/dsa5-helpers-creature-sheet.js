@@ -113,6 +113,10 @@ export function createCreatureSheet(BaseCreatureSheet = systemApi()?.sheets?.Act
         actions: system.actionCount?.value ?? 1,
         speed: status.speed?.max ?? 0,
       };
+      // Linke Spalte, Reiter „Werte“ (cover-sidebar.hbs, gemeinsam mit dem NSC-Bogen).
+      dsa5h.sideValues = dsa5h.creature.values;
+      // Schips-Plakette nur mit Schicksalspunkten (header.hbs, gemeinsam mit dem NSC-Bogen).
+      dsa5h.hideFate = !dsa5h.creature.fatePoints;
       // Notizen der Kreatur (creature-notes.hbs): Beschreibung, Verhalten, Flucht, Sonderregeln, Notizen, private Notizen.
       const notes = dsa5h.subnav.find(nav => nav.tab === 'notes');
       if (notes) {

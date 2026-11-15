@@ -4,6 +4,8 @@
     "SelectAmmo": "Munition wählen",
     "SheetLabel": "DSA5 Helfer-Heldenbogen",
     "CreatureSheetLabel": "DSA5 Helfer-Kreaturbogen",
+    "NpcSheetLabel": "DSA5 Helfer-NSC-Bogen",
+    "GroupSheetLabel": "DSA5 Helfer-Gruppenbogen",
     "Free": "frei",
     "AdvantagesDisadvantages": "Vor- & Nachteile",
     "BaseValues": "Grundwerte",
@@ -202,7 +204,7 @@
       "DisplayMenu": {
         "Title": "Darstellung und Geräte",
         "Label": "Darstellung einrichten",
-        "GroupSheet": "Probendialoge",
+        "GroupSheet": "Bogen und Probendialoge",
         "GroupMobile": "Tablet und Smartphone",
         "Hint": "Probendialoge am Desktop und hybrides Spiel auf Tablet und Smartphone (Oberfläche und Wurfergebnis je Gerät)."
       },
@@ -224,6 +226,10 @@
         "Name": "Talent-Vorschläge auf dem Titelblatt",
         "Hint": "Wie viele Talente über den Favoriten vorgeschlagen werden; je Held im Bogen mit − / + änderbar. Gilt nur für dich.",
         "Off": "Aus"
+      },
+      "ItemTooltips": {
+        "Name": "Tooltips beim Überfahren",
+        "Hint": "Zeigt beim Überfahren eines Namens im Bogen (Talente, Zauber, Ausrüstung, Zustände …) die Karte des Systems. Gilt nur für dich; auf Tablet und Smartphone gibt es keine Tooltips."
       }
     },
     "Changelog": {
@@ -877,6 +883,108 @@
     "MerchantNotice": {
       "Owner": "Dieser Akteur ist gerade „{type}“. Laden und Schatzkiste zeigt nur der Händlerbogen des Systems – im Fenstermenü unter „{configure}“ den Bogen „{sheet}“ wählen.",
       "Viewer": "Dieser Akteur ist gerade „{type}“. Laden und Schatzkiste zeigt nur der Händlerbogen des Systems – die Spielleitung kann ihn einstellen."
+    },
+    "Npc": {
+      "Hints": {
+        "main": "Grundwerte"
+      },
+      "SideStatus": "Status",
+      "SidePerson": "Person",
+      "NoWeapon": "Keine Waffe ausgerüstet.",
+      "TalentCount": "Anzahl der Talente",
+      "TalentsFewer": "Weniger Talente",
+      "TalentsMore": "Mehr Talente"
+    },
+    "Group": {
+      "Tabs": {
+        "cover": "Titelblatt",
+        "skills": "Talente",
+        "inventory": "Inventar",
+        "travel": "Reise",
+        "gm": "Spielleitung",
+        "camp": "Lager",
+        "notes": "Notizen"
+      },
+      "MemberCount": "{count} Mitglieder",
+      "FootSpeed": "zu Fuß {value} Meilen/h",
+      "TravelSpeed": "Reisetempo",
+      "GroupSchips": "Gruppen-Schips",
+      "GroupSchip": "Gruppen-Schip {value}",
+      "RequestRoll": "Probe anfordern",
+      "RequestAttribute": "Probe auf {name} bei der Gruppe anfordern",
+      "GmTag": "nur SL",
+      "GmTagHint": "Spieler sehen bzw. ändern das nicht",
+      "SumLeP": "LeP gesamt",
+      "SumAsP": "AsP gesamt",
+      "SumKaP": "KaP gesamt",
+      "Size": {
+        "Label": "Größe der Kacheln",
+        "s": "Klein",
+        "m": "Mittel",
+        "l": "Groß"
+      },
+      "EditHint": "Bearbeiten: Freigaben für Spieler einstellen, Mitglieder entfernen",
+      "Vis": {
+        "identity": "Kultur, Profession und Schips",
+        "lep": "LeP",
+        "pools": "AsP und KaP",
+        "cond": "Zustände"
+      },
+      "VisTitle": "Spieler sehen bei anderen Mitgliedern",
+      "VisAlways": "immer: Porträt, Name, Spezies ·",
+      "Hidden": "für Spieler nicht freigegeben",
+      "ValuesHidden": "Werte für Spieler nicht freigegeben",
+      "NoConditions": "keine Zustände",
+      "Player": "Spieler: {name}",
+      "OpenSheet": "Bogen öffnen",
+      "MemberMenu": "Mitglied: weitere Aktionen",
+      "RemoveMember": "Aus der Gruppe entfernen",
+      "SkillsHint": "Je Talent der beste Wert der Gruppe.",
+      "SkillsHintGm": "Je Talent der beste Wert der Gruppe. Gruppenprobe: Sammelprobe der Gruppe; Anfordern: Anfrage im Chat, jeder würfelt selbst.",
+      "Best": "Bester",
+      "Member": "Mitglied",
+      "Others": "Übrige",
+      "GroupCheck": "Gruppenprobe",
+      "Request": "Anfordern",
+      "GmHint": "Der ganze Reiter fehlt bei Spielern.",
+      "AllMembers": "Alle Mitglieder",
+      "RollBlind": "Verdeckt würfeln",
+      "AttributeRolls": "Eigenschaftsproben anfordern",
+      "SkillRollsWhere": "Talentproben je Talent im Reiter Talente",
+      "GroupSection": "Gruppe",
+      "ShareOwnership": "Besitz mit allen teilen",
+      "CampHint": "Funktionen für die Gruppe. Was nur die SL ausführen darf, könnt ihr bei der SL anfragen.",
+      "CampHintGm": "Funktionen, die Inhaltsmodule für die Gruppe bereitstellen, und Werkzeuge des Moduls. Spieler sehen nur die Funktionen für alle und können die übrigen bei dir anfragen.",
+      "CampSystem": "Aus DSA5-Inhaltsmodulen",
+      "CampModule": "Werkzeuge des Moduls",
+      "NoHelpers": "Keine Funktionen vorhanden – sie kommen mit den Inhaltsmodulen (z. B. Grundregelwerk, Kompendium).",
+      "GmPlayersAsk": "nur SL · Spieler fragen an",
+      "Requests": "Anfragen der Spieler ({count})",
+      "DiceStatsHint": "Würfe der Runde nach Tag",
+      "HouseRulesHint": "Regeln der Runde nachlesen",
+      "Ask": {
+        "Title": "Bei der SL anfragen: {label}",
+        "NoteLabel": "Anlass (freiwillig) – die SL sieht ihn mit der Anfrage",
+        "NotePlaceholder": "z. B. warum, wofür, für wen",
+        "Send": "Anfrage senden",
+        "Sent": "Anfrage „{label}“ an die SL gesendet.",
+        "Pending": "Anfrage gesendet – wartet auf die SL",
+        "Card": "Bei der SL anfragen",
+        "Wants": "möchte: {label} (Gruppe {group})",
+        "WantsShort": "möchte: {label}",
+        "Execute": "Ausführen",
+        "Decline": "Ablehnen",
+        "Status": {
+          "open": "Offen",
+          "done": "Von der SL ausgeführt",
+          "declined": "Von der SL abgelehnt"
+        }
+      },
+      "RandomMember": "Zufälliges Mitglied",
+      "RandomMemberHint": "Ein Mitglied zufällig wählen; Rechtsklick ohne Pechmagnet, Umschalt zeigt das Ergebnis allen"
+    },
+    "Tooltip": {
+      "More": "Weiterer Text: Mittelklick heftet an, Klick öffnet alles"
     }
   }
 }

@@ -1,6 +1,9 @@
 import { initSkillSuggestions } from './skill-suggestions/tracking.js';
 import { Dsa5HelpersCharacterSheet as ImportedCharacterSheet, createCharacterSheet } from './sheets/dsa5-helpers-character-sheet.js';
 import { Dsa5HelpersCreatureSheet as ImportedCreatureSheet, createCreatureSheet } from './sheets/dsa5-helpers-creature-sheet.js';
+import { Dsa5HelpersNpcSheet as ImportedNpcSheet, createNpcSheet } from './sheets/dsa5-helpers-npc-sheet.js';
+import { createGroupSheet } from './sheets/dsa5-helpers-group-sheet.js';
+import { initGroupRequests } from './sheets/group-requests.js';
 import { clearCharacterBuilderFlag } from './compat/runtime.js';
 import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
 import { initSteigerungsplaner } from './compat/steigerungsplaner.js';
@@ -17,6 +20,7 @@ import { initMobile, mobileMode } from './mobile/mobile.js';
 import { initRollDialogs } from './mobile/roll-dialog.js';
 import { registerBannerSettings, initBannerSocket } from './banner-upload.js';
 import { getSheetSettingsApp, getDisplaySettingsApp } from './apps/sheet-settings.js';
+import { registerItemTooltipSetting } from './sheets/item-tooltips.js';
 
 // Freitext-Traditionsfelder (system.tradition.magical/.clerical) haben im System keine feste Werteliste (siehe
 // lang/de.json "traditionMagical": "z. B. Gildenmagier, Hexen." / "traditionClerical": "z. B. Praioskirche.") —
@@ -74,11 +78,15 @@ Hooks.once('init', async () => {
   initMobile();
   // Probendialoge im Modul-Design (mobil und Desktop, Issue #63)
   initRollDialogs(mobileMode);
+  // Tooltips im Bogen (#52): Benutzer-Einstellung unter „Darstellung und Geräte“.
+  registerItemTooltipSetting();
   // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
   initSheetSwitcher();
   initMerchantReturn();
   initBagDrag();
   initSkillSuggestions();
+  // Anfragen der Spieler an die SL aus dem Gruppenbogen (#55): Chatkarte mit Ausführen/Ablehnen.
+  initGroupRequests();
   if (!Dsa5HelpersCharacterSheet) { console.error('DSA5 Helpers | DSA5 character sheet unavailable.'); return; }
   Handlebars.registerHelper('dsa5hPercent', (value, max) => Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
   Handlebars.registerHelper('dsa5hFormatNum', value => String(value ?? 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' '));
@@ -110,6 +118,17 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/parts/creature-main.hbs",
   "modules/dsa5-helpers/templates/actors/parts/creature-notes.hbs",
   "modules/dsa5-helpers/templates/actors/parts/energy-zone.hbs",
+  "modules/dsa5-helpers/templates/actors/parts/npc-cover.hbs",
+  "modules/dsa5-helpers/templates/actors/dsa5-helpers-group-sheet.hbs",
+  "modules/dsa5-helpers/templates/actors/group/members.hbs",
+  "modules/dsa5-helpers/templates/actors/group/overview.hbs",
+  "modules/dsa5-helpers/templates/actors/group/skills.hbs",
+  "modules/dsa5-helpers/templates/actors/group/gm.hbs",
+  "modules/dsa5-helpers/templates/actors/group/camp.hbs",
+  "modules/dsa5-helpers/templates/actors/group/notes.hbs",
+  // Inventar und Reise des Gruppenbogens zeigen vorerst die Vorlagen des Systems in unserem Rahmen.
+  "systems/dsa5/templates/actors/group/group-inventory.hbs",
+  "systems/dsa5/templates/actors/group/group-travel.hbs",
   "modules/dsa5-helpers/templates/actors/parts/body-hand.hbs",
   "modules/dsa5-helpers/templates/actors/parts/ammo-pick.hbs",
   "modules/dsa5-helpers/templates/actors/parts/cast-list.hbs",
@@ -158,11 +177,24 @@ Hooks.once('init', async () => {
   // Kreaturbogen (Issue #54): zusätzlich wählbar, per Einstellung Standard; erbt vom Kreaturbogen des Systems.
   const Dsa5HelpersCreatureSheet = ImportedCreatureSheet ?? createCreatureSheet();
   if (Dsa5HelpersCreatureSheet) foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersCreatureSheet, { types: ['creature'], makeDefault: game.settings.get('dsa5-helpers', 'defaultCreatureSheet'), label: 'DSA5HELPERS.CreatureSheetLabel' });
+  // NSC- und Gruppenbogen (Issues #53/#55): zusätzlich wählbar über den Bogen-Umschalter bzw. „Bogen konfigurieren“.
+  const Dsa5HelpersNpcSheet = ImportedNpcSheet ?? createNpcSheet();
+  if (Dsa5HelpersNpcSheet) foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersNpcSheet, { types: ['npc'], makeDefault: false, label: 'DSA5HELPERS.NpcSheetLabel' });
   // Reiter „Steigerungsplaner“, falls Lyynix' Planer aktiv ist (Issue #17).
   await initSteigerungsplaner();
 });
 
+// Gruppenbogen (#55): Der Gruppenbogen des Systems (GroupActorSheet) steht nicht in game.dsa5.sheets. Foundry v14 sammelt
+// Registrierungen aus init/setup und trägt sie erst vor „ready“ ein (DocumentSheetConfig.initializeSheets, live geprüft
+// 13.11.2026) – die Klasse ist also erst hier erreichbar; ab game.ready registriert Foundry sofort.
+export function registerGroupSheet() {
+  const Dsa5HelpersGroupSheet = createGroupSheet(CONFIG.Actor.sheetClasses?.group?.['dsa5.GroupActorSheet']?.cls);
+  if (Dsa5HelpersGroupSheet) foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersGroupSheet, { types: ['group'], makeDefault: false, label: 'DSA5HELPERS.GroupSheetLabel' });
+  else console.warn('DSA5 Helpers | Gruppenbogen des Systems nicht gefunden, eigener Gruppenbogen nicht verfügbar.');
+}
+
 Hooks.once('ready', () => {
+  registerGroupSheet();
   initBannerSocket();
   showChangelogIfUpdated();
   readyDiceStats();

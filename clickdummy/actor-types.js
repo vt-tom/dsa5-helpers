@@ -6,7 +6,7 @@
    Weitere über Favoriten (Sterne wie beim Helden). Kreatur seit 2026-11-12 ohne Anzahl und Favoriten: alle Talente mit Wert,
    dazu Zauber und Liturgien (creatureCoverLists).
 
-   Aufruf: index.html?actor=nsc, ?actor=kreatur (&beispiel=ork) bzw. ?actor=gruppe (&variante=s|m|l setzt die Kachelgröße beim Laden); ohne Parameter der Heldenbogen. Diese Datei lädt nach data.js
+   Aufruf: index.html?actor=nsc, ?actor=kreatur (&beispiel=ork), ?actor=haendler, ?actor=schatz (merchant.js) bzw. ?actor=gruppe (&variante=s|m|l setzt die Kachelgröße beim Laden); ohne Parameter der Heldenbogen. Diese Datei lädt nach data.js
    und vor script.js: Daten werden hier ersetzt, setup() läuft am Ende von script.js vor dem ersten Rendern und hängt
    die abweichenden Reiter ein. Alle Werte und Texte sind frei erfundene Platzhalter. */
 
@@ -500,10 +500,10 @@ const GROUP = {
   ],
   forcedMarch: 0,
   members: [
-    { name: "Layariel Wipfelglanz", img: `${ICONS}/species/Elf.webp`, ident: "Elf · Waldläuferin", owner: "Anna", color: "#4a7fc0", lep: [28, 32], asp: [24, 34], cond: [["Schmerz", 1]], schips: [3, 1], ap: "1 320" },
+    { name: "Layariel Wipfelglanz", img: `${ICONS}/species/Elf.webp`, ident: "Elf · Waldläuferin", owner: "Anna", color: "#4a7fc0", lep: [28, 32], asp: [24, 34], cond: [["Schmerz", 1]], schips: [3, 1], ap: "1 320", special: [["Firun", 2, 1]] },
     { name: "Alrik Grimmwald", img: `${ICONS}/species/Mensch.webp`, ident: "Mensch · Söldner", owner: "Ben", color: "#b0563c", lep: [38, 38], cond: [], schips: [3, 0], ap: "1 280" },
-    { name: "Rhulana Kirschweiler", img: `${ICONS}/species/Mensch.webp`, ident: "Mensch · Geweihte der Travia", owner: "Clara", color: "#4f8a3e", lep: [22, 29], kap: [18, 24], cond: [["Furcht", 1]], schips: [3, 2], ap: "1 300" },
-    { name: "Thorgrim Sohn des Thorbosch", img: `${ICONS}/species/Zwerg.webp`, ident: "Zwerg · Kämpfer", owner: "David", color: "#8a6a2e", lep: [14, 41], cond: [["Schmerz", 2], ["Betäubung", 1]], schips: [3, 3], ap: "1 260" },
+    { name: "Rhulana Kirschweiler", img: `${ICONS}/species/Mensch.webp`, ident: "Mensch · Geweihte der Travia", owner: "Clara", color: "#4f8a3e", lep: [22, 29], kap: [18, 24], cond: [["Furcht", 1]], schips: [3, 2], ap: "1 300", special: [["Travia", 2, 2]] },
+    { name: "Thorgrim Sohn des Thorbosch", img: `${ICONS}/species/Zwerg.webp`, ident: "Zwerg · Kämpfer", owner: "David", color: "#8a6a2e", lep: [14, 41], cond: [["Schmerz", 2], ["Betäubung", 1]], schips: [3, 3], ap: "1 260", special: [["Ingerimm", 1, 1], ["Belhalhar", 1, 0]] },
     { name: "Sturmwind", img: `${ICONS}/categories/Tiere.webp`, ident: "Elfenpferd · Reittier von Layariel", owner: "Anna", color: "#4a7fc0", lep: [52, 52], cond: [], schips: null, ap: null },
   ],
   skills: [
@@ -576,8 +576,65 @@ const groupOrb = (m, k, label) => {
   if (own) b.addEventListener("click", () => groupToast(`${m.name}: ${label} ändern (Feld mit −/+ wie im Heldenbogen)`));
   return b;
 };
-const groupSchips = (m) => (!groupSees(m, "identity") ? el("span", { class: "group-pool empty", title: groupHiddenTitle }, "–") : m.schips ? el("span", { class: "group-schips", title: `Schicksalspunkte ${m.schips[0] - m.schips[1]} von ${m.schips[0]}` },
+const groupSchipsOnly = (m) => (!groupSees(m, "identity") ? el("span", { class: "group-pool empty", title: groupHiddenTitle }, "–") : m.schips ? el("span", { class: "group-schips", title: `Schicksalspunkte ${m.schips[0] - m.schips[1]} von ${m.schips[0]}` },
   Array.from({ length: m.schips[0] }, (_, i) => el("img", { src: `${ICONS}/${i >= m.schips[0] - m.schips[1] ? "gray_schip" : "schip"}.webp`, alt: "" }))) : el("span", { class: "group-pool empty" }, "–"));
+// Variante B: Götter-/Erzdämonen-Schips direkt hinter den eigenen Schips (wie sie das System in Foundry schon anhängt).
+const groupSchips = (m) => {
+  const own = groupSchipsOnly(m);
+  const special = GROUP_SCHIP_VARIANT === "b" ? groupSpecial(m) : null;
+  return special ? el("span", { class: "group-schips-with-special" }, [own, special]) : own;
+};
+/* Schicksal und Verdammnis (Platzsuche 2026-11-13, kommt noch nicht nach Foundry): Götter- und Erzdämonen-Schips aus
+   „Götter Aventuriens 2“ (dsa5-godsofaventuria2, Flag flags.dsa5.specialPoints.<Name> = {value, current} am Helden). Das
+   System hängt sie in Foundry schon an die Schips des Helden an (Hook dsa5.prepareActorSchips → schipsWithExtras), der
+   Gruppenbogen bekommt sie dort also ohne eigenen Code. Drei Plätze zum Vergleich (Menü › Diese Seite, ?schips=a|b|c):
+   A linke Spalte unter den Gruppen-Schips, B in den Kacheln neben den Schips des Helden, C eigenes Panel über den
+   Kacheln. Bilder: im Modul die Schips des Inhaltsmoduls; hier Götter aus systems/dsa5/icons/months, Erzdämonen mit
+   einem Zaubersymbol des Systems als Platzhalter. Sichtbar wie die Schips: eigene Helden immer, fremde mit der Freigabe
+   „Kultur, Profession und Schips“. */
+let GROUP_SCHIP_VARIANT = "b";
+const DEMONS = ["Agrimoth", "Amazeroth", "Aphasmayra", "Aphestadil", "Asfaloth", "Belhalhar", "Belkelel", "Blakharaz", "Charyptoroth", "Heskatet", "Lolgramoth", "Mishkara", "Nagrach", "Tasfarel", "Thargunitoth"];
+const specialImg = (key) => (DEMONS.includes(key) ? `${ICONS}/spellicons/spells/pandaemonium.webp` : `${ICONS}/months/${key}.webp`);
+const specialTitle = (key, max, cur) => `${DEMONS.includes(key) ? "Verdammnis-Schip" : "Schicksals-Schip"} ${DEMONS.includes(key) ? "des Erzdämons" : "der Gottheit"} ${key}: ${cur} von ${max}`;
+function groupSpecial(m, cls = "") {
+  if (!m.special?.length || !groupSees(m, "identity")) return null;
+  return el("span", { class: "group-special " + cls }, m.special.flatMap(([key, max, cur]) => Array.from({ length: max }, (_, i) =>
+    el("img", { src: specialImg(key), alt: "", class: (i < cur ? "" : "used ") + (DEMONS.includes(key) ? "demon" : "god"), title: specialTitle(key, max, cur) }))));
+}
+// Gruppen-Schips als Knöpfe (linke Spalte bzw. Panel in Variante C)
+function groupSchipButtons() {
+  return el("span", { class: "group-schips large" }, Array.from({ length: GROUP.schips.max }, (_, i) => {
+    const used = i >= GROUP.schips.max - GROUP.schips.used;
+    const b = el("button", { type: "button", class: "group-schip", title: used ? "Gruppen-Schip wiederherstellen" : "Gruppen-Schip ausgeben" }, el("img", { src: `${ICONS}/${used ? "gray_schip" : "schip"}.webp`, alt: "" }));
+    b.addEventListener("click", () => { GROUP.schips.used += used ? -1 : 1; renderContent(); });
+    return b;
+  }));
+}
+// Liste „Wer hat welche Götter-/Erzdämonen-Schips“ (Varianten A und C)
+function groupSpecialRows(compact) {
+  const rows = GROUP.members.map((m) => {
+    const icons = groupSpecial(m, compact ? "small" : "");
+    return icons ? el("div", { class: "group-special-row" }, [el("span", { class: "group-special-name", title: m.name }, m.name.split(" ")[0]), icons]) : null;
+  }).filter(Boolean);
+  return rows.length ? rows : [el("span", { class: "muted" }, "keine Götter- oder Erzdämonen-Schips")];
+}
+function groupFateAction() {
+  const gm = groupIsGM();
+  const b = el("button", { type: "button", class: "group-gm-btn" }, gm ? "Schips zuweisen …" : "Schip tauschen anfragen …");
+  b.addEventListener("click", () => (gm ? groupToast("Schicksal und Verdammnis: Fenster des Inhaltsmoduls") : groupAskDialog("Schicksal und Verdammnis")));
+  return b;
+}
+function groupFatePanel() {
+  return el("div", { class: "panel group-fate-panel" }, [
+    el("div", { class: "panel-title flex" }, [el("span", {}, "Schicksal und Verdammnis"), el("small", {}, "Götter Aventuriens 2")]),
+    el("div", { class: "group-fate-body" }, [
+      groupIsGM() ? el("div", { class: "group-fate-group" }, [el("span", { class: "group-side-label dark" }, ["Gruppen-Schips ", gmTag()]), groupSchipButtons()]) : null,
+      el("div", { class: "group-fate-members" }, groupSpecialRows(false)),
+      el("div", { class: "group-fate-foot" }, [groupFateAction()]),
+    ]),
+  ]);
+}
+
 const groupIdent = (m) => (groupSees(m, "identity") ? m.ident : m.ident.split(" · ")[0]);
 const groupName = (m) => {
   const b = el("button", { type: "button", class: "group-name", title: `Bogen von ${m.name} öffnen` }, [el("b", {}, m.name), el("small", {}, groupIdent(m))]);
@@ -654,6 +711,7 @@ function renderGroupCover() {
   document.getElementById("tabHint").replaceChildren(groupSizeSwitch());
   return el("div", {}, [
     groupVisibilityPanel(),
+    GROUP_SCHIP_VARIANT === "c" ? groupFatePanel() : null,
     el("div", { class: `group-tiles size-${GROUP_VARIANT}` }, GROUP.members.map(tile)),
     el("p", { class: "muted group-drop" }, "Charakter, NSC oder Kreatur hierher ziehen, um ihn zur Gruppe hinzuzufügen."),
   ]);
@@ -668,12 +726,7 @@ function groupOverview() {
     b.addEventListener("click", () => groupToast(`${n} ändern (Feld mit −/+, für alle mit Besitzerrechten)`));
     return b;
   }));
-  const schips = el("span", { class: "group-schips large" }, Array.from({ length: GROUP.schips.max }, (_, i) => {
-    const used = i >= GROUP.schips.max - GROUP.schips.used;
-    const b = el("button", { type: "button", class: "group-schip", title: used ? "Gruppen-Schip wiederherstellen" : "Gruppen-Schip ausgeben" }, el("img", { src: `${ICONS}/${used ? "gray_schip" : "schip"}.webp`, alt: "" }));
-    b.addEventListener("click", () => { GROUP.schips.used += used ? -1 : 1; renderContent(); });
-    return b;
-  }));
+  const schips = groupSchipButtons();
   const foot = GROUP.travel[0];
   const travel = el("button", { type: "button", class: "group-side-link", title: `${foot.note} – alle Reisearten unter „Reise“` }, `zu Fuß ${foot.meilen} Meilen/h`);
   travel.addEventListener("click", () => setTab("travel"));
@@ -683,7 +736,9 @@ function groupOverview() {
     ["Schips der Helden", `${heroes.reduce((a, m) => a + m.schips[0] - m.schips[1], 0)} / ${heroes.reduce((a, m) => a + m.schips[0], 0)}`], ["Ø AP", "1 290"]] : [])];
   return [
     block("Gruppenkasse", purse),
-    groupIsGM() ? el("div", { class: "group-side-block" }, [el("span", { class: "group-side-label" }, ["Gruppen-Schips ", gmTag()]), schips]) : null,
+    groupIsGM() && GROUP_SCHIP_VARIANT !== "c" ? el("div", { class: "group-side-block" }, [el("span", { class: "group-side-label" }, ["Gruppen-Schips ", gmTag()]), schips]) : null,
+    // Variante A: Götter- und Erzdämonen-Schips der Mitglieder direkt unter den Gruppen-Schips
+    GROUP_SCHIP_VARIANT === "a" ? el("div", { class: "group-side-block" }, [el("span", { class: "group-side-label" }, "Schicksal und Verdammnis"), ...groupSpecialRows(true), groupFateAction()]) : null,
     groupIsGM() ? el("div", { class: "group-side-block" }, [el("span", { class: "group-side-label" }, ["Probe anfordern ", gmTag()]), groupAttrRolls()]) : null,
     block("Reisetempo", travel),
     el("dl", { class: "side-details" }, rows.map(([k, v]) => el("div", {}, [el("dt", {}, k), el("dd", {}, v)]))),
@@ -781,6 +836,12 @@ function renderGroupGm() {
       b.addEventListener("click", () => { GROUP.vis.identity = b.getAttribute("aria-pressed") !== "true"; });
       return b;
     })(), btn("Ereignisjournal erstellen", "Journal für Ereignisse der Gruppe")]),
+    // Wie im Modul (13.11.2026): Freigaben für Spieler auch hier, auf allen Geräten (mobil gibt es keinen Bearbeiten-Modus).
+    section("Spieler sehen bei anderen Mitgliedern", [el("span", { class: "muted" }, "immer: Porträt, Name, Spezies ·"), ...GROUP_VIS_OPTIONS.map(([key, label]) => {
+      const b = el("button", { type: "button", class: "group-gm-btn", "aria-pressed": String(GROUP.vis[key]) }, label);
+      b.addEventListener("click", () => { GROUP.vis[key] = !GROUP.vis[key]; renderContent(); });
+      return b;
+    })]),
   ]);
 }
 
@@ -881,6 +942,17 @@ function groupSetup() {
   nonHeroSetup();
   const params = new URLSearchParams(location.search);
   if (["s", "m", "l"].includes(params.get("variante"))) GROUP_VARIANT = params.get("variante");
+  // Platz für Schicksal und Verdammnis (Varianten A/B/C, pages.js zeigt den Umschalter unter „Diese Seite“ und setzt ?schips=)
+  const fate = el("fieldset", { "data-group": "schips" }, [el("legend", {}, "Schicksal und Verdammnis"),
+    ...[["a", "A · Linke Spalte"], ["b", "B · In den Kacheln"], ["c", "C · Eigenes Panel"]].map(([v, label]) => el("button", { type: "button", "data-v": v, "aria-pressed": String(v === GROUP_SCHIP_VARIANT) }, label))]);
+  fate.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-v]");
+    if (!b) return;
+    GROUP_SCHIP_VARIANT = b.dataset.v;
+    fate.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    renderContent();
+  });
+  document.querySelector(".toolbar")?.append(fate);
   RENDERERS.cover = renderGroupCover;
   RENDERERS.skills = renderGroupSkills;
   RENDERERS.inventory = renderGroupDepots;
@@ -961,6 +1033,12 @@ ACTOR_TYPES.gruppe = {
 };
 
 if (CREATURE_EXAMPLE === "ork") Object.assign(ACTOR_TYPES.kreatur, { toolbar: "Kreaturbogen, humanoid · Click-Dummy", data: orcData, setup: orcSetup, tabs: ["cover", "main", "skills", "combat", "magic", "inventory", "status", "notes"] });
+
+// Händler und Schatz (#77/#78, merchant.js): Kopf und Titelblatt wie NSC bzw. Kreatur, abweichend nur Reiter und Setup.
+if (typeof MERCHANT_TYPES !== "undefined") {
+  ACTOR_TYPES.haendler = { ...ACTOR_TYPES.nsc, ...MERCHANT_TYPES.haendler };
+  ACTOR_TYPES.schatz = { ...ACTOR_TYPES.kreatur, ...MERCHANT_TYPES.schatz };
+}
 
 const ACTOR_TYPE = ACTOR_TYPES[ACTOR_KIND] || null;
 if (ACTOR_TYPE) {

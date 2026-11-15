@@ -7,17 +7,18 @@
   <div class="dsa5h-cover-res-row"><div class="dsa5h-cover-fate" data-cover-slot="fate"></div><div data-cover-slot="regen"></div></div>
   <section class="panel dsa5h-side-tabs-panel">
     <div class="dsa5h-side-tabs" role="tablist" aria-label="{{localize 'DSA5HELPERS.Tabs.cover'}}">
-      {{!-- Kreatur (Rückmeldung 2026-11-12): Werte | Statuseffekte, keine persönlichen Daten. --}}
-      {{#if dsa5h.creature}}<button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="values" aria-selected="true">{{localize 'DSA5HELPERS.Creature.Values'}}</button>{{/if}}
-      <button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="conditions" aria-selected="{{#if dsa5h.creature}}false{{else}}true{{/if}}">{{localize 'statuseffects'}}</button>
-      {{#unless dsa5h.creature}}<button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="details" aria-selected="false">{{localize 'personalDetails'}}</button>{{/unless}}
+      {{!-- Kreatur (Rückmeldung 2026-11-12): Werte | Statuseffekte, keine persönlichen Daten. NSC (#53): Werte | Status |
+            Person – kurze Namen, drei Reiter passen sonst kaum in die schmale Spalte. --}}
+      {{#if dsa5h.sideValues}}<button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="values" aria-selected="true">{{localize 'DSA5HELPERS.Creature.Values'}}</button>{{/if}}
+      <button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="conditions" aria-selected="{{#if dsa5h.sideValues}}false{{else}}true{{/if}}">{{#if dsa5h.npc}}{{localize 'DSA5HELPERS.Npc.SideStatus'}}{{else}}{{localize 'statuseffects'}}{{/if}}</button>
+      {{#unless dsa5h.creature}}<button type="button" role="tab" class="dsa5h-side-tab" data-action="dsa5hCoverSideTab" data-side-tab="details" aria-selected="false">{{#if dsa5h.npc}}{{localize 'DSA5HELPERS.Npc.SidePerson'}}{{else}}{{localize 'personalDetails'}}{{/if}}</button>{{/unless}}
     </div>
-    {{#if dsa5h.creature}}
+    {{#if dsa5h.sideValues}}
     <div class="dsa5h-side-tabs-body" role="tabpanel" data-side-panel="values">
-      <dl class="dsa5h-side-details">{{#each dsa5h.creature.values}}<div data-tooltip="{{label}}: {{value}}"><dt>{{label}} ({{short}})</dt><dd>{{value}}</dd></div>{{/each}}</dl>
+      <dl class="dsa5h-side-details">{{#each dsa5h.sideValues}}<div data-tooltip="{{label}}: {{value}}"><dt>{{label}} ({{short}})</dt><dd>{{value}}</dd></div>{{/each}}</dl>
     </div>
     {{/if}}
-    <div class="dsa5h-side-tabs-body" role="tabpanel" data-side-panel="conditions"{{#if dsa5h.creature}} hidden{{/if}}>
+    <div class="dsa5h-side-tabs-body" role="tabpanel" data-side-panel="conditions"{{#if dsa5h.sideValues}} hidden{{/if}}>
       {{#each conditions}}
       <div class="row dsa5h-cover-condition" data-id="{{_id}}" {{#if descriptor}}data-descriptor="{{descriptor}}"{{/if}}>
         <img src="{{img}}" alt="" />

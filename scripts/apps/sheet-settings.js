@@ -3,7 +3,7 @@
  * unübersichtlich wird; 2026-11-02: alle Einstellungen in Untermenüs, die Liste zeigt nur noch Knöpfe).
  * „Heldenbogen“ bündelt die Welt-Einstellungen des Bogens: Standard-Bogen für Helden (#13) und Kreaturen (#54), Bearbeiten-Modus für Spieler (#34),
  * Reiter Aufträge/Personen (#39), Talent-Vorschläge (#75) und Ordner für Bannerbilder (#46). „Darstellung und Geräte“
- * bündelt Probendialoge am Desktop (#63) und das hybride Spiel auf Tablet/Smartphone; Welt-Einstellungen darin sieht nur,
+ * bündelt Probendialoge am Desktop (#63), Tooltips im Bogen (#52) und das hybride Spiel auf Tablet/Smartphone; Welt-Einstellungen darin sieht nur,
  * wer sie ändern darf, Geräte-Einstellungen jeder. Die Einstellungen selbst sind mit config: false registriert; neue
  * gehören in die passende Liste unten. Die Würfelstatistik hat ihre Einstellungen im eigenen Fenster.
  */
@@ -29,6 +29,8 @@ export const SHEET_SETTINGS = [
 
 export const DISPLAY_SETTINGS = [
   { key: 'rollDialogDesktopStyle', kind: 'select', group: 'DSA5HELPERS.Settings.DisplayMenu.GroupSheet' },
+  // Benutzer-Einstellung (#52): Karte des Systems beim Überfahren von Namen im Bogen.
+  { key: 'itemTooltips', kind: 'checkbox', group: 'DSA5HELPERS.Settings.DisplayMenu.GroupSheet' },
   { key: 'hybridPlay', kind: 'checkbox', group: 'DSA5HELPERS.Settings.DisplayMenu.GroupMobile' },
   { key: 'uiMode', kind: 'select', when: hybrid, group: 'DSA5HELPERS.Settings.DisplayMenu.GroupMobile' },
   { key: 'rollResultTablet', kind: 'checkbox', when: hybrid, group: 'DSA5HELPERS.Settings.DisplayMenu.GroupMobile' },

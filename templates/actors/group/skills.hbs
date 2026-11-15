@@ -1,0 +1,25 @@
+{{!-- Talente der Gruppe (Click-Dummy renderGroupSkills): je Talent der beste Wert mit Mitglied und die übrigen; Werte
+      fremder Helden nur mit Beobachterrecht, sonst „?“ (wie der Tooltip des Systems). Für die SL je Talent
+      „Gruppenprobe“ (rollGroupCheck, Dialog des Systems) und „Anfordern“ (requestSkillRoll, Anfrage-Karte im Chat).
+      Suche wie im System (.skillSearch / .allSkills, gebunden in dessen _onRender). --}}
+<div class="dsa5h-tab" data-tab-panel="skills" hidden>
+  <p class="dsa5h-muted dsa5h-group-hint">{{#if dsa5h.isGM}}{{localize 'DSA5HELPERS.Group.SkillsHintGm'}} <span class="dsa5h-group-gm-tag" data-tooltip="DSA5HELPERS.Group.GmTagHint">{{localize 'DSA5HELPERS.Group.GmTag'}}</span>{{else}}{{localize 'DSA5HELPERS.Group.SkillsHint'}}{{/if}}</p>
+  <div class="dsa5h-search-bar"><input type="search" class="skillSearch" placeholder="{{localize 'searchTalents'}}" aria-label="{{localize 'searchTalents'}}"></div>
+  <div class="allSkills">
+  {{#each dsa5h.skillCategories as |category|}}
+  <section class="panel">
+    <div class="panel-title table-header">{{category.label}}</div>
+    <div class="row-head dsa5h-group-skill-row table-title{{#if @root.dsa5h.isGM}} gm{{/if}}"><span>{{localize 'TYPES.Item.skill'}}</span><span>{{localize 'DSA5HELPERS.Group.Best'}}</span><span>{{localize 'DSA5HELPERS.Group.Member'}}</span><span>{{localize 'DSA5HELPERS.Group.Others'}}</span>{{#if @root.dsa5h.isGM}}<span></span>{{/if}}</div>
+    {{#each category.rows as |row|}}
+    <div class="row dsa5h-group-skill-row item{{#if @root.dsa5h.isGM}} gm{{/if}}" data-skill="{{row.name}}">
+      <span class="left talentName">{{row.name}}</span><b class="center">{{row.best.value}}</b><span>{{row.best.name}}</span>
+      <span class="dsa5h-muted">{{#each row.others}}{{#unless @first}} · {{/unless}}{{name}} {{value}}{{else}}–{{/each}}</span>
+      {{#if @root.dsa5h.isGM}}<span class="dsa5h-group-roll-btns"><button type="button" class="dsa5h-group-btn" data-action="rollGroupCheck" data-skill="{{row.name}}" data-tooltip="HELP.groupcheck">{{localize 'DSA5HELPERS.Group.GroupCheck'}}</button><button type="button" class="dsa5h-group-btn" data-action="requestSkillRoll" data-skill="{{row.name}}" data-tooltip="HELP.request">{{localize 'DSA5HELPERS.Group.Request'}}</button></span>{{/if}}
+    </div>
+    {{/each}}
+  </section>
+  {{else}}
+  <p class="dsa5h-empty">{{localize 'GROUP.noSkills'}}</p>
+  {{/each}}
+  </div>
+</div>

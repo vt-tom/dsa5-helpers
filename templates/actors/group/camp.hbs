@@ -1,0 +1,33 @@
+{{!-- Lager (Click-Dummy renderGroupCamp, Rückmeldung 2026-11-12): Helfer, die Inhaltsmodule über
+      game.dsa5.apps.GroupAPI im Gruppenbogen des Systems einhängen (z. B. Widrige Umstände, Nahrungssuche, Jagd, Schicksal
+      und Verdammnis), dieselbe Aktion groupHelperAction wie im System; ein geöffneter Helfer steht wie dort als eigene
+      Fläche (data-group-helper-panel, collapseGroupHelper). Spieler fragen Helfer der SL an (group-requests.js); die SL
+      sieht offene Anfragen oben. Dazu die Werkzeuge des Moduls. --}}
+<div class="dsa5h-tab" data-tab-panel="camp" hidden>
+  {{#if dsa5h.camp.expanded}}
+  <section class="panel dsa5h-group-helper-open">
+    <div class="panel-title flex"><span>{{localize dsa5h.camp.expanded.label}}</span><button type="button" class="dsa5h-group-btn" data-action="collapseGroupHelper"><i class="fas fa-times" inert></i> {{localize 'GROUP.closeHelper'}}</button></div>
+    <div class="group-helper-panel" data-group-helper-panel="{{dsa5h.camp.expanded.id}}" data-group-helper="{{dsa5h.camp.expanded.id}}">{{{dsa5h.camp.expanded.html}}}</div>
+  </section>
+  {{else}}
+  <p class="dsa5h-muted dsa5h-group-hint">{{#if dsa5h.isGM}}{{localize 'DSA5HELPERS.Group.CampHintGm'}}{{else}}{{localize 'DSA5HELPERS.Group.CampHint'}}{{/if}}</p>
+  {{#if dsa5h.camp.requests.length}}
+  <section class="panel dsa5h-group-requests">
+    <div class="panel-title flex"><span>{{localize 'DSA5HELPERS.Group.Requests' count=dsa5h.camp.requests.length}}</span><span class="dsa5h-group-gm-tag" data-tooltip="DSA5HELPERS.Group.GmTagHint">{{localize 'DSA5HELPERS.Group.GmTag'}}</span></div>
+    {{#each dsa5h.camp.requests}}<div class="row dsa5h-group-request-row"><span class="left"><b>{{who}}</b> {{localize 'DSA5HELPERS.Group.Ask.WantsShort' label=label}}{{#if note}}<small class="dsa5h-group-request-note">„{{note}}“</small>{{/if}}</span><button type="button" class="dsa5h-group-btn" data-action="dsa5hRequestExecute" data-message-id="{{messageId}}">{{localize 'DSA5HELPERS.Group.Ask.Execute'}}</button><button type="button" class="dsa5h-group-btn" data-action="dsa5hRequestDecline" data-message-id="{{messageId}}">{{localize 'DSA5HELPERS.Group.Ask.Decline'}}</button></div>{{/each}}
+  </section>
+  {{/if}}
+  <section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Group.CampSystem'}}</div>
+    {{#if (or dsa5h.camp.cards.length dsa5h.camp.askable.length)}}
+    <div class="dsa5h-group-camp">
+      {{#each dsa5h.camp.cards as |helper|}}<button type="button" class="dsa5h-group-camp-card" data-action="groupHelperAction" data-group-helper="{{helper.id}}">{{#if helper.iconIsImg}}<img src="{{helper.icon}}" alt="">{{else}}<i class="{{helper.icon}}" aria-hidden="true"></i>{{/if}}<b>{{localize helper.label}}</b>{{#if helper.hint}}<small>{{localize helper.hint}}</small>{{/if}}{{#if helper.gmOnly}}<span class="dsa5h-group-camp-who">{{localize 'DSA5HELPERS.Group.GmPlayersAsk'}}</span>{{/if}}</button>{{/each}}
+      {{#each dsa5h.camp.askable as |helper|}}<button type="button" class="dsa5h-group-camp-card ask" data-action="dsa5hAskGm" data-group-helper="{{helper.id}}"{{#if helper.pending}} aria-disabled="true"{{/if}}>{{#if helper.iconIsImg}}<img src="{{helper.icon}}" alt="">{{else}}<i class="{{helper.icon}}" aria-hidden="true"></i>{{/if}}<b>{{localize helper.label}}</b>{{#if helper.hint}}<small>{{localize helper.hint}}</small>{{/if}}<span class="dsa5h-group-camp-who">{{#if helper.pending}}{{localize 'DSA5HELPERS.Group.Ask.Pending'}}{{else}}{{localize 'DSA5HELPERS.Group.Ask.Card'}}{{/if}}</span></button>{{/each}}
+    </div>
+    {{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Group.NoHelpers'}}</p>{{/if}}
+  </section>
+  <section class="panel"><div class="panel-title">{{localize 'DSA5HELPERS.Group.CampModule'}}</div><div class="dsa5h-group-camp">
+    <button type="button" class="dsa5h-group-camp-card" data-action="dsa5hDiceStats"><img src="systems/dsa5/icons/d20.svg" alt=""><b>{{localize 'DSA5HELPERS.DiceStats.Title'}}</b><small>{{localize 'DSA5HELPERS.Group.DiceStatsHint'}}</small></button>
+    <button type="button" class="dsa5h-group-camp-card" data-action="dsa5hHouseRules"><img src="systems/dsa5/icons/categories/Spellextension.webp" alt=""><b>{{localize 'DSA5HELPERS.HouseRules.Title'}}</b><small>{{localize 'DSA5HELPERS.Group.HouseRulesHint'}}</small></button>
+  </div></section>
+  {{/if}}
+</div>

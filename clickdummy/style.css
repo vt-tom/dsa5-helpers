@@ -2912,8 +2912,8 @@ button.probe-die:focus-visible,
 
 .house-hint.house-hint-icon {
   flex: none;
-  width: var(--hit-sm);
-  height: var(--hit-sm);
+  width: var(--hit-sm, 26px);
+  height: var(--hit-sm, 26px);
   margin: 0;
   padding: 0;
   border-radius: 50%;
@@ -6567,6 +6567,388 @@ button.fav-chip-roll {
   }
 }
 
+/* --- Händler und Schatz (#77/#78, Click-Dummy Runde 1) --- */
+
+/* Kundensicht: kein Ressourcen- und Würfelband im Kopf (System: merchant_limited_header.hbs) */
+.sheet[data-customer] #bars,
+.sheet[data-customer] .head-plaque,
+.sheet[data-customer] #attrOverlay {
+  display: none;
+}
+
+.shop-btn {
+  min-height: var(--hit-sm, 26px);
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.shop-btn.small {
+  padding: 1px 8px;
+}
+
+.shop-btn.accent,
+.shop-btn[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--paper);
+}
+
+.shop-btn:focus-visible,
+.shop-flag:focus-visible,
+.shop-name:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+#shopBackBtn {
+  margin-left: auto;
+}
+
+.seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.shop-parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.shop-party {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 11px;
+}
+
+.shop-party.buyer {
+  border-left: 1px solid var(--line);
+}
+
+.shop-party img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.shop-party > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.shop-party b {
+  font-family: 'Andalus',serif;
+  font-size: var(--fs-panel-title, 17px);
+  font-weight: normal;
+}
+
+.shop-purse {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: var(--fs-small);
+}
+
+.shop-coin {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.shop-coin img {
+  width: 16px;
+  height: 16px;
+}
+
+.shop-blocker {
+  margin: 8px 0 0;
+}
+
+.shop-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.shop-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.shop-toolbar .search-bar {
+  flex: 1 1 180px;
+  margin: 0;
+}
+
+.shop-toolbar select {
+  min-height: var(--hit-sm, 26px);
+}
+
+.shop-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.shop-chip {
+  border-radius: 12px;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.shop-specials .shop-grid {
+  margin: 8px;
+}
+
+.shop-tile {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 2px 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+}
+
+.shop-tile.featured {
+  border-color: var(--accent);
+}
+
+.shop-tile.poor {
+  opacity: .6;
+}
+
+.shop-tile img {
+  grid-row: span 2;
+  width: 36px;
+  height: 36px;
+}
+
+.shop-tile-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shop-tile-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: var(--fs-small);
+}
+
+.shop-tile .shop-btn {
+  grid-column: 2 / 4;
+  justify-self: end;
+}
+
+.shop-name {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.shop-star {
+  color: var(--accent);
+}
+
+.shop-row {
+  grid-template-columns: 30px 1fr 52px 58px 86px 82px;
+}
+
+.shop-row.loot {
+  grid-template-columns: 30px 1fr 52px 58px 82px;
+}
+
+.shop-row img {
+  width: 28px;
+  height: 28px;
+}
+
+.shop-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.shop-split .shop-row {
+  grid-template-columns: 26px minmax(0, 1fr) 46px 62px 72px;
+  gap: 6px;
+  padding-inline: 8px;
+}
+
+.shop-split .shop-row.loot {
+  grid-template-columns: 26px minmax(0, 1fr) 46px 72px;
+}
+
+/* Spalte Gewicht entfällt in der schmalen Doppelspalte */
+.shop-split .shop-row > :nth-child(4) {
+  display: none;
+}
+
+.shop-col-title {
+  margin: 0 0 6px;
+  font-family: 'Andalus',serif;
+  font-size: var(--fs-panel-title, 17px);
+  font-weight: normal;
+}
+
+.shop-drawer .shop-grid {
+  margin: 8px;
+}
+
+.shop-log-row {
+  grid-template-columns: 90px 1fr 90px;
+}
+
+/* SL-Ansicht: Bestand, Einstellungen, Zugang */
+.shop-gm-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 11px;
+}
+
+.stock-row {
+  grid-template-columns: 30px 1fr 62px 62px 46px 52px 196px;
+}
+
+.stock-row.loot {
+  grid-template-columns: 30px 1fr 46px 52px 132px;
+}
+
+.stock-row img {
+  width: 28px;
+  height: 28px;
+}
+
+.stock-row.is-hidden > :not(.shop-flags) {
+  opacity: .5;
+}
+
+.stock-row.is-locked .left {
+  text-decoration: line-through;
+}
+
+.shop-flags {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.shop-flag {
+  min-height: var(--hit-sm, 26px);
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+
+.shop-flag.on {
+  border-color: var(--accent);
+  color: var(--ink);
+  background: var(--field);
+}
+
+.shop-setting {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 6px 11px;
+  border-top: 1px solid var(--line);
+}
+
+.shop-setting > small {
+  grid-column: 2;
+}
+
+.shop-setting-label {
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.shop-setting input[type="text"],
+.shop-setting input[type="number"],
+.shop-setting select {
+  min-height: var(--hit-sm, 26px);
+  border: 1px solid var(--line);
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+}
+
+.shop-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding: 6px 11px;
+}
+
+.shop-setting .shop-checks {
+  padding: 0;
+}
+
+.shop-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-small);
+}
+
+.shop-hint {
+  margin: 0;
+  padding: 6px 11px;
+  font-size: var(--fs-small);
+}
+
+.shop-perm-row {
+  grid-template-columns: 1fr 140px;
+}
+
+@media (hover: hover) {
+  .shop-btn:hover,
+  .shop-flag:hover {
+    border-color: var(--accent);
+  }
+
+  .shop-name:hover {
+    color: var(--accent);
+  }
+}
+
 /* ==========================================================================
    13. Status
    ========================================================================== */
@@ -8892,7 +9274,7 @@ button.fav-chip-roll {
 }
 
 .hudp-controls button {
-  min-height: var(--hit-sm);
+  min-height: var(--hit-sm, 26px);
   padding: 0 8px;
   border: 1px solid rgba(224, 192, 128, .45);
   border-radius: 6px;
@@ -9500,6 +9882,103 @@ button.fav-chip-roll {
   cursor: default;
 }
 
+/* Schicksal und Verdammnis (Platzsuche 2026-11-13, Varianten A/B/C, actor-types.js GROUP_SCHIP_VARIANT): Götter-Schips mit
+   goldenem, Erzdämonen-Schips mit rotem Ring; verbrauchte blass wie die Schips des Helden. */
+.group-special {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+}
+.group-special img {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.group-special img.god {
+  box-shadow: 0 0 0 1px #b99a5c;
+}
+.group-special img.demon {
+  box-shadow: 0 0 0 1px #a3261b;
+}
+.group-special img.used {
+  opacity: .35;
+  filter: grayscale(1);
+}
+.group-special.small img {
+  width: 16px;
+  height: 16px;
+}
+.group-schips-with-special {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+}
+.group-schips-with-special .group-special {
+  flex-wrap: nowrap;
+}
+.group-tile,
+.group-tile > * {
+  min-width: 0;
+}
+.group-tile-foot:has(.group-schips-with-special) .group-cond {
+  flex: 1 1 0;
+  min-width: 0;
+  text-align: right;
+}
+.group-schips-with-special .group-special {
+  padding-left: 6px;
+  border-left: 1px solid var(--line);
+}
+.group-special-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--fs-small);
+}
+.group-special-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.group-side-block .group-gm-btn {
+  align-self: flex-start;
+  border-color: rgba(224, 192, 128, .4);
+  background: rgba(255, 255, 255, .06);
+  color: #f4e8d6;
+}
+.group-fate-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 16px;
+  align-items: start;
+  padding: 8px 10px;
+}
+.group-fate-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.group-side-label.dark {
+  color: var(--accent);
+}
+.group-fate-members {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 16px;
+}
+.group-fate-members:only-child,
+.group-fate-body > .group-fate-members:first-child {
+  grid-column: 1 / -1;
+}
+.group-fate-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
 /* Kachelgröße wählt die Gruppe selbst (Umschalter über den Kacheln) */
 .group-size-switch {
   display: inline-flex;

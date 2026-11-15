@@ -70,7 +70,7 @@ function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').rep
 function houseRulesAppUrl(){return dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())));}
 // Echter Anzeigehelfer aus der installierten Rüstkammer II, keine nachgebaute Berechnung.
 function energyZonesUrl(){const dir=path.join(dataRoot,'modules/dsa5-armory2/modules');if(!fs.existsSync(path.join(dir,'energyzones.js')))return 'file:///unavailable-armory-test-module.js';return dataUrl(fs.readFileSync(path.join(dir,'energyzones.js'),'utf8').replace(/['"]\.\/hitlocation\.js['"]/,JSON.stringify(dataUrl(fs.readFileSync(path.join(dir,'hitlocation.js'),'utf8')))));}
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={release:{generation:targetGeneration},i18n:{localize,has:key=>(lookup(own,key)??lookup(de,key))!==undefined},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};if(targetGeneration===13)delete global.dsa5.sheets.ActorSheetdsa5Character.prototype.prepareCompanionTab;({Dsa5HelpersCharacterSheet:Sheet,createCharacterSheet:createSheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/powersource-dialog.js'",JSON.stringify(dataUrl(read('scripts/compat/powersource-dialog.js')))).replace("foundry.utils.getRoute('modules/dsa5-armory2/modules/energyzones.js')",JSON.stringify(energyZonesUrl())).replace("'../skill-suggestions/context.js'",JSON.stringify(suggestionsUrl())).replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'./almanac.js'",JSON.stringify(dataUrl(read('scripts/sheets/almanac.js')))).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={release:{generation:targetGeneration},i18n:{localize,has:key=>(lookup(own,key)??lookup(de,key))!==undefined},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};if(targetGeneration===13)delete global.dsa5.sheets.ActorSheetdsa5Character.prototype.prepareCompanionTab;({Dsa5HelpersCharacterSheet:Sheet,createCharacterSheet:createSheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/powersource-dialog.js'",JSON.stringify(dataUrl(read('scripts/compat/powersource-dialog.js')))).replace("foundry.utils.getRoute('modules/dsa5-armory2/modules/energyzones.js')",JSON.stringify(energyZonesUrl())).replace("'../skill-suggestions/context.js'",JSON.stringify(suggestionsUrl())).replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'./almanac.js'",JSON.stringify(dataUrl(read('scripts/sheets/almanac.js')))).replace("'./item-tooltips.js'",JSON.stringify(dataUrl(read('scripts/sheets/item-tooltips.js')))).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
@@ -198,7 +198,7 @@ test('play mode disables FW correction, preserves rolls',async()=>{const {sheet}
 test('favorites use actor flags, remove missing items and enforce ownership',async()=>{const {sheet,actor,context}=await prepare();assert.equal(context.dsa5h.favorites.missing,undefined);assert.equal(context.dsa5h.favoriteGroups.length,2);await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'skill'}});assert.deepEqual(actor.saved.value,['weapon']);delete actor.saved;sheet.isEditable=false;await Sheet.DEFAULT_OPTIONS.actions.dsa5hFavorite.call(sheet,{}, {dataset:{itemId:'spell'}});assert.equal(actor.saved,undefined);});
 test('empty character still renders every tab',async()=>{const {sheet}=await prepare();sheet.context.prepare={};sheet.context.conditions=[];const html=render(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']).length,targetGeneration===13?9:10);assert(html.includes(localize('DSA5HELPERS.NoFavorites')));});
 test('companion context is prepared for the custom root',async()=>{const {sheet}=await prepare();assert.equal(!!sheet.companionPrepared,targetGeneration>=14);});
-test('every static action exists in module, Foundry or DSA5 action tables',()=>{const sources=[read('scripts/sheets/dsa5-helpers-character-sheet.js'),...systemJs(['actor/actor-sheet.js','actor/character-sheet.js',...(targetGeneration>=14?['actor/companions/companion-handler-class.js']:[])]),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');for(const p of modulePaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');});
+test('every static action exists in module, Foundry or DSA5 action tables',()=>{const sources=[read('scripts/sheets/dsa5-helpers-character-sheet.js'),read('scripts/sheets/dsa5-helpers-npc-sheet.js'),...systemJs(['actor/actor-sheet.js','actor/character-sheet.js',...(targetGeneration>=14?['actor/companions/companion-handler-class.js']:[])]),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');for(const p of modulePaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');});
 test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');const bundle=fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8'):'';const inSchema=field=>{if(field==='systemFields.happyTalents.fields.value')return /happyTalents:new \w+\(\{value:new \w+\(\{initial:""/.test(bundle);const m=field.match(/^systemFields\.(tradition|guidevalue|energyfactor)\.fields\.(magical|clerical)$/);return !!m&&new RegExp(m[1]+':new \\w+\\(\\{magical:new \\w+\\(\\{initial:[^}]*label:"'+m[1]+'"[^}]*\\}\\),clerical:').test(bundle);};for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field)||inSchema(field),'unverified system schema path: '+field);});
 test('localization keys used by nonempty hero resolve',async()=>{missing.clear();const {context}=await prepare();render(context);const unresolved=[...missing].filter(k=>k && !['Swords','Test coin'].includes(k));assert.deepEqual(unresolved,[]);});
 
@@ -1247,7 +1247,9 @@ test('Schatz/Händler: Rückweg führt auf den vorherigen Bogen (#54)', async ()
   assert.equal(ch.flags.core.sheetClass,'dsa5.ActorSheetdsa5Creature');assert(ch.flags['dsa5-helpers'].sheetBeforeMerchant instanceof ForcedDeletion);
   // Helden ebenso, andere Typen und Updates ohne Bogenwechsel nicht
   ch={flags:{core:{sheetClass:'dsa5.ActorSheetdsa5Character'}}};assert.equal(applyMerchantReturn(actor('character','dsa5.CharacterMerchantSheetDSA5',''),ch),'restore');assert.equal(ch.flags.core.sheetClass,'');
-  assert.equal(applyMerchantReturn(actor('npc','dsa5.MerchantSheetDSA5','x'),{flags:{core:{sheetClass:'dsa5.ActorSheetdsa5NPC'}}}),undefined);
+  // NSC (#53, eigener Bogen seit 13.11.2026) ebenso
+  ch={flags:{core:{sheetClass:'dsa5.ActorSheetdsa5NPC'}}};assert.equal(applyMerchantReturn(actor('npc','dsa5.MerchantSheetDSA5','dsa5-helpers.Dsa5HelpersNpcSheet'),ch),'restore');assert.equal(ch.flags.core.sheetClass,'dsa5-helpers.Dsa5HelpersNpcSheet');
+  assert.equal(applyMerchantReturn(actor('vehicle','x','y'),{flags:{core:{sheetClass:'dsa5.ActorSheetdsa5Vehicle'}}}),undefined);
   assert.equal(applyMerchantReturn(actor('creature','dsa5.CreatureMerchantSheetDSA5','x'),{name:'Wolf'}),undefined);
   // Systemvertrag DSA5 8.2.1 und dsa5-core: Klassennamen, Rückweg auf den Systembogen, Reihenfolge _preUpdate → Hook
   // Händler-Automatik erst ab DSA5 8 (v14); 7.x wählt den Händlerbogen nur von Hand.
@@ -1602,6 +1604,7 @@ test('Kreaturbogen (#54): Titelseite mit Angriffen und Talenten, Werte links, Ka
  context.document.system.creatureClass=valueField('Tier');
  context.dsa5h.creature={size:'mittel',count:'1',attacks:[{item:bite,ranged:false}],naturalArmor:[item('fur','trait')],simpleCombat:true,talents:context.dsa5h.skillGroups.flatMap(g=>g.items),spells:[],liturgies:[],
   values:[{short:'RS',label:'Rüstungsschutz',value:1}],defenseLabel:'Ausweichen',defense:7,armor:1,actions:1,speed:10,fatePoints:false,isAnimal:true};
+ context.dsa5h.sideValues=context.dsa5h.creature.values;
  const html=render(context);
  for(const part of ['data-side-tab="values"','data-side-panel="values"','dsa5h-creature-stats','data-action="defenseToggle"','data-action="traitCompanionContextMenu"','name="system.creatureClass.value"','name="system.jagd.value"'])assert(html.includes(part),part);
  for(const id of ['description','behaviour','flight','specialRules','notes','ownernotes'])assert(html.includes(`data-sub-panel="notes:${id}"`),id);
@@ -1614,6 +1617,116 @@ test('Kreaturbogen (#54): Titelseite mit Angriffen und Talenten, Werte links, Ka
  const main=read('scripts/dsa5-helpers.js');assert(/registerSheet\([^)]*Dsa5HelpersCreatureSheet, \{ types: \['creature'\], makeDefault: game\.settings\.get\('dsa5-helpers', 'defaultCreatureSheet'\)/.test(main));
  for(const f of fs.readdirSync(path.join(root,'templates/actors/parts')).filter(f=>/^(creature-|attr-tiles|auto-defense)/.test(f)))assert(main.includes(`templates/actors/parts/${f}`),f);
  const src=read('scripts/sheets/dsa5-helpers-creature-sheet.js');assert(src.includes('ActorSheetdsa5Creature')&&src.includes("_coverSideTabs = ['values', 'conditions']"));assert(/get canLockSheet\(\) \{\s*return this\.actor\.isOwner;/.test(src),'Kreatur: Schloss (Spielen/Bearbeiten) auch ohne canAdvance');
- assert(/SWITCH_TYPES = \['character', 'creature'\]/.test(read('scripts/sheet-switcher.js')));
+ assert(/SWITCH_TYPES = \['character', 'npc', 'creature', 'group'\]/.test(read('scripts/sheet-switcher.js')));
  for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;assert(j.CreatureSheetLabel,l);for(const k of ['Attacks','NoAttacks','TalentsCount','Spells','Liturgies','CombatValues','NaturalArmor','Values','DefenseToggle','Size','Count'])assert(j.Creature[k],`${l} ${k}`);assert(j.Creature.Tabs.inventory,l);}
+});
+
+test('NSC-Bogen (#53): Titelseite mit Angriffen, Talenten (Anzahl − / +) und Favoriten, links Werte · Status · Person, ohne Erfahrung und AP-Band', async()=>{
+ const {context}=await prepare();
+ const skills=context.dsa5h.skillGroups.flatMap(g=>g.items);
+ context.dsa5h.npc={attacks:[{item:item('sword','meleeweapon'),ranged:false}],fixedTalents:skills.slice(0,1),talents:skills,talentCount:6,talentsFewer:true,talentsMore:true};
+ context.dsa5h.sideValues=[{short:'RS',label:'Rüstungsschutz',value:1}];
+ context.dsa5h.suggestions=[];
+ const html=render(context);
+ for(const part of ['data-side-tab="values"','data-side-panel="values"','data-side-tab="details"','data-action="dsa5hNpcTalentCount"','data-action="dsa5hFavorite"',localize('DSA5HELPERS.Npc.SidePerson'),localize('DSA5HELPERS.Npc.SideStatus')])assert(html.includes(part),part);
+ for(const part of ['dsa5h-ap-ribbon','xp-grid','dsa5h-suggest-grid'])assert(!html.includes(part),part);
+ const main=read('scripts/dsa5-helpers.js');
+ assert(/registerSheet\([^)]*Dsa5HelpersNpcSheet, \{ types: \['npc'\]/.test(main),'NSC registriert');
+ assert(main.includes('templates/actors/parts/npc-cover.hbs'),'Vorlage geladen');
+ const src=read('scripts/sheets/dsa5-helpers-npc-sheet.js');
+ assert(src.includes('ActorSheetdsa5NPC')&&src.includes("_coverSideTabs = ['values', 'conditions', 'details']"));
+ assert(/get canLockSheet\(\) \{\s*return this\.actor\.isOwner;/.test(src),'NSC: Schloss (Spielen/Bearbeiten)');
+ assert(/MERCHANT_SHEETS = \{[^}]*npc: 'dsa5\.MerchantSheetDSA5'/.test(read('scripts/compat/runtime.js')),'Händlerbogen des NSC');
+ assert(fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8').includes('npc:"MerchantSheetDSA5"'):true,'Systemvertrag Händlerbogen NSC');
+ for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;assert(j.NpcSheetLabel,l);for(const k of ['SideStatus','SidePerson','NoWeapon','TalentCount','TalentsFewer','TalentsMore'])assert(j.Npc[k],`${l} ${k}`);}
+});
+
+test('Gruppenbogen (#55): Kacheln S/M/L, Rechte wie im System, Freigaben der SL, Aktionen des Systembogens', async()=>{
+ const groupPaths=['templates/actors/dsa5-helpers-group-sheet.hbs',...fs.readdirSync(path.join(root,'templates/actors/group')).map(f=>'templates/actors/group/'+f)];
+ for(const p of groupPaths)H.registerPartial('modules/dsa5-helpers/'+p,read(p));
+ for(const f of ['group-inventory','group-travel'])H.registerPartial(`systems/dsa5/templates/actors/group/${f}.hbs`,fs.readFileSync(path.join(dataRoot,`systems/dsa5/templates/actors/group/${f}.hbs`),'utf8'));
+ H.registerHelper('numberFormat',v=>String(v));
+ const renderGroup=H.compile(read(groupPaths[0]));
+ // memberView ohne die Fenster-Importe (dice-stats/house-rules brauchen Foundry)
+ const stub=dataUrl('export const openDiceStats=()=>{};export const openHouseRules=()=>{};');
+ const reqStub=dataUrl('export const openRequests=()=>[];export const pendingRequest=()=>null;export const sendRequestDialog=()=>{};export const executeRequest=()=>{};export const declineRequest=()=>{};');
+ const savedGame=global.game;global.game={...(savedGame??{}),i18n:{localize,has:()=>true,lang:'de'},user:{isGM:false}};
+ try {
+  const G=await import(dataUrl(read('scripts/sheets/dsa5-helpers-group-sheet.js').replace("'../apps/dice-stats.js'",JSON.stringify(stub)).replace("'../apps/house-rules.js'",JSON.stringify(stub)).replace("'./group-requests.js'",JSON.stringify(reqStub)).replace("'./item-tooltips.js'",JSON.stringify(dataUrl(read('scripts/sheets/item-tooltips.js'))))));
+  const raw=(own,identity)=>({key:'k'+own,uuid:'Actor.'+own,id:String(own),name:'Alrik Grimmwald',img:'x.webp',type:'character',ownerName:'Ben',canViewPrivateDetails:own,canViewForeignIdentity:identity,schips:[{value:1,cssClass:'fullSchip'}],system:{status:{wounds:{value:20,max:40},astralenergy:{value:5,max:10},karmaenergy:{value:0,max:0}},isMage:true,isPriest:false,details:{species:'Mensch',culture:identity?'Mittelreicher':'',career:identity?'Söldner':''}}});
+  const vis={identity:true,lep:false,pools:false,cond:false};
+  const mine=G.memberView(raw(true,true),vis,{effects:[{statuses:new Set(['inpain']),disabled:false,name:'Schmerz',getFlag:()=>2,img:'p.webp'}]});
+  assert.equal(mine.lep.visible,true);assert.equal(mine.lep.pct,50);assert.equal(mine.extraPools.length,1,'AsP beim Zauberer, kein KaP');assert.equal(mine.conditionText,'Schmerz 2');
+  const foreign=G.memberView(raw(false,false),vis,{effects:[{statuses:new Set(['inpain']),disabled:false,name:'Schmerz',getFlag:()=>1}]});
+  assert.equal(foreign.lep.visible,false);assert.equal(foreign.anyValues,false);assert.deepEqual(foreign.conditions,[],'Zustände fremder nicht ohne Freigabe');assert.deepEqual(foreign.schips,[]);assert.equal(foreign.ident,'Mensch');
+  const shared=G.memberView(raw(false,true),{identity:true,lep:true,pools:false,cond:true},{effects:[]});
+  assert.equal(shared.lep.visible,true);assert.equal(shared.lep.own,false);assert.equal(shared.extraPools[0].visible,false);assert.equal(shared.conditionsVisible,true);
+  assert.deepEqual(G.GROUP_TABS.map(t=>t.id),['cover','skills','inventory','travel','gm','camp','notes']);
+  // Darstellung: SL in Mittel mit Bearbeiten, Spieler in Klein
+  const base=gm=>({document:{name:'Gruppe',img:'g.webp',system:{details:{biography:'',notes:''},travel:{speed:{},forcedMarchPercent:0}}},fields:{name:{path:'name'}},systemFields:{details:{fields:{biography:{path:'system.details.biography'},notes:{path:'system.details.notes'}}}},isOwner:true,isGM:gm,memberCount:2,isPrimaryParty:true,
+   groupCoins:[{_id:'c1',name:'Dukat',img:'d.webp',quantity:3}],groupSchips:[{value:1,cssClass:'fullSchip'}],characteristics:[{key:'mu',abbr:'MU',name:'Mut'}],tabs:{inventory:{cssClass:''},travel:{cssClass:''}},locations:[],travelLocations:[],travelSpeeds:{},travel:{},vehicleTypes:{},
+   dsa5h:{group:true,isGM:gm,tabs:G.GROUP_TABS.filter(t=>gm||!t.gmOnly).map(t=>({...t,label:t.id})),currentTabLabel:'cover',editMode:gm,size:gm?'m':'s',sizes:G.TILE_SIZES.map(id=>({id,label:id,active:id===(gm?'m':'s')})),vis,visOptions:[{id:'lep',label:'LeP',active:false}],members:[mine,foreign],travelFoot:{meilen:'3,5'},sums:[],skillCategories:[{id:'body',label:'Körper',rows:[{name:'Klettern',best:{name:'Alrik',value:7},others:[{name:'Rhulana',value:'?'}]}]}],camp:{cards:[{id:'h1',label:'Jagd',icon:'fas fa-paw',gmOnly:true}],askable:gm?[]:[{id:'h2',label:'Nahrungssuche',icon:'fas fa-leaf',pending:true}],expanded:null,requests:gm?[{messageId:'m1',who:'Ben',label:'Nahrungssuche',note:'Proviant'}]:[]}}});
+  const gmHtml=renderGroup(base(true));
+  for(const part of ['data-tab-panel="gm"','data-action="rollGroupCheck"','data-action="requestSkillRoll"','data-action="requestAttributeRoll"','data-action="changeGroupSchip"','data-action="dsa5hGroupVis"','data-action="removeMember"','data-action="dsa5hRequestExecute"','data-action="setPrimaryParty"','data-action="shareOwnership"','data-action="rollAllBlind"','data-action="awardAP"','class="group-money-change"','data-dsa5h-member-pool="wounds"','data-action="heroSchip"','data-action="groupHelperAction"','data-tab-panel="inventory"','data-tab-panel="travel"'])assert(gmHtml.includes(part),'SL: '+part);
+  const playerHtml=renderGroup(base(false));
+  for(const part of ['data-tab-panel="gm"','data-action="rollGroupCheck"','data-action="requestAttributeRoll"','data-action="changeGroupSchip"','data-action="dsa5hGroupVis"','data-action="removeMember"','data-action="dsa5hRequestExecute"'])assert(!playerHtml.includes(part),'Spieler ohne '+part);
+  assert(playerHtml.includes('data-action="dsa5hAskGm"')&&playerHtml.includes('aria-disabled="true"'),'Spieler fragt an, offene Anfrage gesperrt');
+  assert(playerHtml.includes('dsa5h-group-tile size-s'));
+  // Jede Aktion in den Gruppenvorlagen gibt es im Modul oder im Gruppenbogen des Systems.
+  const sources=[read('scripts/sheets/dsa5-helpers-group-sheet.js'),...systemJs([]),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');
+  for(const p of groupPaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');
+  // Registrierung, Vorlagen, Texte
+  const main=read('scripts/dsa5-helpers.js');
+  assert(main.includes("CONFIG.Actor.sheetClasses?.group?.['dsa5.GroupActorSheet']?.cls"),'Systemklasse aus den registrierten Bögen');
+  assert(fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8').includes('d(this,"GroupActorSheet")'):true,'Systemvertrag GroupActorSheet');
+  for(const p of groupPaths)assert(main.includes('modules/dsa5-helpers/'+p),p+' geladen');
+  assert(main.includes('initGroupRequests();'));
+  for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;assert(j.GroupSheetLabel,l);for(const k of ['MemberCount','FootSpeed','GroupSchips','VisTitle','Hidden','GroupCheck','Request','CampSystem','CampModule'])assert(j.Group[k],`${l} ${k}`);for(const t of G.GROUP_TABS)assert(j.Group.Tabs[t.id],`${l} Tab ${t.id}`);for(const k of ['open','done','declined'])assert(j.Group.Ask.Status[k],`${l} ${k}`);}
+ } finally { global.game=savedGame; }
+});
+
+test('Tooltips im Bogen (#52): Karte des Systems an Namen und Zuständen, Einstellung je Benutzer, mobil aus, Höhe begrenzt', async()=>{
+ const savedGame=global.game;
+ const items=new Map([['s1',{type:'skill'}],['c1',{type:'combatskill'}],['l1',{type:'liturgy'}],['w1',{type:'meleeweapon'}],['a1',{type:'armor'}],['m1',{type:'money'}],['d1',{type:'disadvantage'}]]);
+ const actor={items,effects:new Map()};const member={items:new Map(),effects:new Map()};
+ global.game={...(savedGame??{}),actors:new Map([['mem',member]])};
+ try {
+  const T=await import(dataUrl(read('scripts/sheets/item-tooltips.js')));
+  // Kleines Element-Modell: dataset + closest über eine Elternkette
+  const node=(dataset,parent=null)=>({dataset,parent,closest(sel){const m=/^\[data-([\w-]+)\]$/.exec(sel);const key=m[1].replace(/-(\w)/g,(_,c)=>c.toUpperCase());let n=this;while(n){if(n.dataset[key]!==undefined)return n;n=n.parent;}return null;}});
+  const inRow=(id,ds={action:'itemEdit'})=>node(ds,node({itemId:id}));
+  assert.deepEqual(T.describeTarget(inRow('s1'),actor),{actor,category:'skill',id:'s1'});
+  assert.equal(T.describeTarget(inRow('c1'),actor).category,'skill','Kampftechnik');
+  assert.equal(T.describeTarget(inRow('l1'),actor).category,'spell','Liturgie');
+  assert.equal(T.describeTarget(inRow('w1'),actor).category,'inventory','Waffe');
+  assert.equal(T.describeTarget(inRow('a1',{dsa5hTt:''}),actor).category,'inventory','Name unter dem Wappenschild');
+  assert.equal(T.describeTarget(inRow('d1'),actor).category,'disadvantage');
+  assert.equal(T.describeTarget(inRow('m1'),actor),null,'Münzen ohne Karte');
+  assert.equal(T.describeTarget(inRow('xx'),actor),null,'unbekanntes Item');
+  assert.deepEqual(T.describeTarget(node({action:'conditionShow',id:'inpain'}),actor),{actor,category:'effect',id:'inpain'});
+  assert.deepEqual(T.describeTarget(node({dsa5hTt:'effect',id:'e1',actorId:'mem'}),actor),{actor:member,category:'effect',id:'e1'},'Gruppenbogen: Zustand des Mitglieds');
+  const depot={items:new Map([['x1',{type:'equipment'}]])};const depotItem={id:'x1',type:'equipment',parent:depot};const savedUuid=global.fromUuidSync;global.fromUuidSync=uuid=>uuid==='Actor.d.Item.x1'?depotItem:null;
+  try{assert.deepEqual(T.describeTarget(node({action:'openLocationItem',uuid:'Actor.d.Item.x1'}),actor),{actor:depot,category:'inventory',id:'x1'},'Gruppeninventar: Item des Lagerorts');}finally{global.fromUuidSync=savedUuid;}
+  for(const sel of ['[data-action="itemEdit"]','[data-action="conditionShow"]','[data-action="openLocationItem"]','[data-dsa5h-tt]'])assert(T.TOOLTIP_TARGETS.includes(sel),sel);
+ } finally { global.game=savedGame; }
+ const js=read('scripts/sheets/item-tooltips.js');
+ assert(/pointerType === 'touch'/.test(js)&&js.includes("'dsa5h-phone'")&&js.includes("'dsa5h-tablet'"),'Touch, Tablet und Smartphone ohne Tooltips');
+ assert(/scope: 'user'/.test(js)&&/default: true/.test(js),'Benutzer-Einstellung, Standard an');
+ assert(js.includes("game.settings.get(MODULE_ID, TOOLTIP_SETTING)"),'zur Laufzeit geprüft (sofort, ohne Neuladen)');
+ assert(js.includes('GlobalToolTipHandler')&&!/innerHTML\s*=/.test(js),'Karte des Systems, keine eigenen Texte');
+ if(fs.existsSync(systemBundle)){const b=fs.readFileSync(systemBundle,'utf8');assert(b.includes('GlobalToolTipHandler:pa')||/GlobalToolTipHandler:\w+/.test(b),'Systemvertrag: dsa5.apps.GlobalToolTipHandler');assert(b.includes('static async handleTooltip(e,t)'),'Systemvertrag: handleTooltip(event, actor)');}
+ for(const p of ['scripts/sheets/dsa5-helpers-character-sheet.js','scripts/sheets/dsa5-helpers-group-sheet.js'])assert(read(p).includes('bindItemTooltips(this);'),p);
+ const {DISPLAY_SETTINGS}=await import(dataUrl(read('scripts/apps/sheet-settings.js')));
+ assert(DISPLAY_SETTINGS.some(s=>s.key==='itemTooltips'&&s.kind==='checkbox'),'unter Darstellung und Geräte');
+ assert(read('scripts/dsa5-helpers.js').includes('registerItemTooltipSetting();'));
+ for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;assert(j.Settings.ItemTooltips.Name&&j.Settings.ItemTooltips.Hint&&j.Tooltip.More,l);}
+ // Markierung an allen Orten: Zustände mit data-id, Wappenschild-Name, Zustände im Gruppenbogen
+ const parts=fs.readdirSync(path.join(root,'templates/actors/parts')).map(f=>read('templates/actors/parts/'+f)).join('\n');
+ for(const m of parts.matchAll(/<a data-action="conditionShow"[^>]*>/g))assert(/data-id="/.test(m[0]),m[0]);
+ assert(read('templates/actors/parts/body.hbs').includes('<div class="dsa5h-armor-crest-name" data-dsa5h-tt>'));
+ assert(read('templates/actors/group/members.hbs').includes('data-dsa5h-tt="effect" data-id="{{id}}" data-actor-id="{{actorId}}"'));
+ const css=read('styles/dsa5-helpers-character-sheet.css');
+ const at=css.indexOf('/* --- Tooltips im Bogen (#52)');
+ assert(at>css.indexOf('6. Inhaltsbereich & gemeinsame Bausteine')&&at<css.indexOf('   7. Titelblatt\n'),'CSS in Abschnitt 6');
+ assert(/#tooltip\.dsa5h-tt > :first-child,\n\.locked-tooltip\.dsa5h-tt > :first-child \{\n  max-height: 60vh;/.test(css),'Höhe begrenzt');
 });

@@ -25,6 +25,10 @@
     {{#if dsa5h.creature}}
     {{> "modules/dsa5-helpers/templates/actors/parts/creature-cover.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/creature-main.hbs"}}
+    {{else if dsa5h.npc}}
+    {{!-- NSC-Bogen (Issue #53): eigene Titelseite, Eigenschaften des Helden ohne Erfahrung. --}}
+    {{> "modules/dsa5-helpers/templates/actors/parts/npc-cover.hbs"}}
+    {{> "modules/dsa5-helpers/templates/actors/parts/main.hbs"}}
     {{else}}
     {{> "modules/dsa5-helpers/templates/actors/parts/cover.hbs"}}
     {{> "modules/dsa5-helpers/templates/actors/parts/main.hbs"}}

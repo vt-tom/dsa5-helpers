@@ -214,6 +214,8 @@
             </div>
 
             
+            {{!-- NSC (#53): ohne Erfahrung wie npc-main.hbs des Systems. --}}
+            {{#unless dsa5h.npc}}
             <div class="panel" style="margin-top:16px">
               <div class="panel-title flex">
                 <span>{{localize "Experience"}}</span>
@@ -225,6 +227,7 @@
                 <div class="xp-item"><div class="xp-num">{{#if dsa5h.editMode}}{{formInput systemFields.details.fields.experience.fields.spent value=document.system.details.experience.spent}}{{else}}{{dsa5hFormatNum document.system.details.experience.spent}}{{/if}}</div><div class="xp-label">{{localize "Spent"}}</div></div>
               </div>
             </div>
+            {{/unless}}
           </div>
         </div>
       </div>
