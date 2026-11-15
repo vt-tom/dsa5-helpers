@@ -97,16 +97,16 @@ neue Pre-release `v8.1.1`. Nur v14 (kein 7.1.0), nur nach Auftrag; Ablauf in [RE
 
 ## Bugfixes 8.0.x
 
-Branch `release/8.0.1` (eigener Arbeitsbaum `D:\Development\dsa5-helpers-8.0.1`, Commit bf1e7af, nicht gepusht). Fixes stehen als Patch
-auch im 8.1.0-Arbeitsstand; der förmliche `git merge --no-ff release/8.0.1` folgt, sobald 8.1.0 eingecheckt ist.
+Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 15.11.2026): Fix dort committen, dann in
+`release/8.1.0` per `git merge --no-ff release/8.0.1` übernehmen. Stand 15.11.: #79, #80, #86 auf 8.0.1, nach 8.1.0 gemergt.
 
 - [ ] Du: **Waffenwechsel bei „Handbeschränkung ignorieren“** · #79 — Grombrak (Haken in seinem Kampf-Reiter des Systembogens), Kampf › Körper:
   Haupthand auf Eisenwalder → Eisenwalder in der Hand, Lindwurmschläger unter „Ebenfalls angelegt“; ebenso per Rechtsklick aufs Schild.
 - [ ] Du: **Behältnis öffnet mit Inhalt** · #80 — Ausrüstung › Behältnisse, Klick auf Lederrucksack → Fenster öffnet auf Reiter „Behältnis“.
-- Du: **Behältnis: Namen sichtbar** · #80 — Namen im Behälterfenster des Systems: A Name unter jedem Feld (gekürzt) oder B Liste
-  Icon + Name + Anzahl? Danach KI: umsetzen (Anpassung in `scripts/compat/bag-drag.js`).
-- Du: **Kraftspeicher zählt Anzahl** · #86 — Systemgrenze: ein Kraftspeicher-Effekt = ein Speicher mit einer Ladung, auch beim Bezahlen.
-  Vorschlag: im Issue erklären (je Stein ein Gegenstand), optional Hinweis im Kraftspeicher-Menü bei Anzahl > 1. Entscheiden.
+- [ ] Du: **Behältnis: Namen sichtbar** · #80 (Variante A) — Behälterfenster auf Reiter „Behältnis“ → unter jedem Feld steht der
+  Name, lange Namen auf zwei Zeilen gekürzt; Ziehen und Rechtsklick (herausnehmen) gehen weiter.
+- [ ] Du: **Hinweis gestapelter Kraftspeicher** · #86 — Kraftspeicher-Gegenstand auf Anzahl 3 stellen, KS-Kugel anklicken (Desktop und
+  Smartphone) → Hinweis „… (Anzahl 3) zählt als ein einziger Speicher …“; bei Anzahl 1 kein Hinweis. Erklärung steht im Issue.
 
 - [ ] Du: **Bogen unabhängig vom DSA-Design** (in 8.0.0 enthalten, Nachtest) — Desktop, Tablet, Handy: je Design (auch mit dunklem Foundry)
   Bogen im Bearbeiten-Modus, Eigenschaften und Notizen → Felder, Rahmen, Plakette, Griff unten rechts überall gleich, auch bei dunklem Bogen.
@@ -138,7 +138,7 @@ auch im 8.1.0-Arbeitsstand; der förmliche `git merge --no-ff release/8.0.1` fol
 <!-- GITHUB-ISSUES:START -->
 ## Überblick (erzeugt)
 
-_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-15T08:44:41.171Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
+_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-15T09:53:43.206Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
 
 | Abschnitt | Du | KI | Einträge |
 |---|---|---|---|
