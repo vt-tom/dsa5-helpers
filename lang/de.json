@@ -632,7 +632,7 @@
           "Note3": "Kritische Paraden, Paradepatzer und Fähigkeiten, die eine kritische Parade voraussetzen, entfallen bei der automatischen Verteidigung.",
           "Note4": "Die Spielleitung muss angemeldet sein und die Szene des Ziels ansehen. Ohne markiertes Ziel und bei Gelegenheitsangriffen gilt der normale Ablauf.",
           "Note5": "Raufen gegen Waffen: Wehrt die Automatik eine Waffe waffenlos ab, erscheint eine Hinweiskarte mit dem vollen Schaden für den Verteidiger; wehrt sie eine waffenlose Attacke mit einer Waffe ab, eine mit dem halben Waffenschaden für den Angreifer. Angewendet wird der Schaden erst über den Knopf auf der Karte.",
-          "Note6": "Nur zulässige Verteidigungen: gegen große Gegner nur Schild oder Ausweichen, gegen riesige nur Ausweichen; mit Kettenwaffen und Peitschen keine Parade; Dolche und Fechtwaffen parieren keine Kettenwaffen, Stangenwaffen, Zweihandhiebwaffen und Zweihandschwerter. Fächer prüft das Modul nicht. Geht die fest gewählte Verteidigung nicht, nimmt die Automatik die beste zulässige und nennt den Grund.",
+          "Note6": "Nur zulässige Verteidigungen: gegen große Gegner nur Schild oder Ausweichen, gegen riesige nur Ausweichen; mit Kettenwaffen und Peitschen keine Parade; Dolche und Fechtwaffen parieren keine Kettenwaffen, Stangenwaffen, Zweihandhiebwaffen und Zweihandschwerter. Fächer prüft das Modul nicht. Geht die fest gewählte oder die beste Verteidigung nicht, nimmt die Automatik die beste zulässige und nennt auf der Karte den Grund.",
           "Note7": "„Selbst verteidigen“ auf der Karte (Spielleitung und Besitzer des Verteidigers) nimmt das automatische Ergebnis zurück; danach reagiert der Verteidiger wie gewohnt über den Knopf des Systems."
         },
         "Blocked": {

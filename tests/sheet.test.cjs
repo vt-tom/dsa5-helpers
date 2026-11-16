@@ -161,6 +161,10 @@ test('three modes (#34): lock closed = play, open = advance or edit (actor flag)
 test('banner upload (#46): hints without folder or GM, the GM client uploads for owners only and sets the flag',async()=>{
  const saved={game:global.game,ui:global.ui,foundry:global.foundry,fetch:global.fetch,File:global.File};
  const B=await import(dataUrl(read('scripts/banner-upload.js')));
+ // #87: Apostroph u. a. im Dateinamen dürfen url('…') im style-Attribut nicht beenden
+ assert.equal(B.cssUrlPath("worlds/x/Al'Anfa (2) bild.webp"),'worlds/x/Al%27Anfa%20%282%29%20bild.webp');
+ assert.equal(B.cssUrlPath('worlds/x/held%20eins.webp'),'worlds/x/held%20eins.webp','schon kodierte Pfade bleiben');assert.equal(B.cssUrlPath(undefined),'');
+ assert(/banner: cssUrlPath\(/.test(read('scripts/sheets/dsa5-helpers-character-sheet.js')),'Bogen setzt den Bannerpfad CSS-sicher ein');
  const notes=[];let handler=null;const emitted=[];const uploads=[];let flag=null;
  const actor={id:'a1',name:'Wulf',testUserPermission:(u,l)=>u.id==='owner'&&l==='OWNER',setFlag:async(m,k,v)=>{flag=[m,k,v];}};
  let path='';const gm={id:'gm',isGM:true};
@@ -472,6 +476,7 @@ test('body tab (#79): with ignored hand limits the hand shows the weapon chosen 
  assert.equal(body.hands[0].item._id,'b','chosen weapon in the hand');assert(body.alsoWorn.some(w=>w.item._id==='a'),'previous weapon stays worn');
  actor.saved=undefined;actor._ignoresWeaponHandLimits=()=>false;await sheet._rememberHand('a','main');assert.equal(actor.saved,undefined,'nothing stored with normal hand limits');
  actor._ignoresWeaponHandLimits=()=>true;await sheet._rememberHand('a','offhand');assert.deepEqual(actor.saved.value,{main:'b',offhand:'a'});
+ delete actor._ignoresWeaponHandLimits;actor.system.config={ignoreWeaponHandLimits:true};actor.saved=undefined;await sheet._rememberHand('c','main');assert.deepEqual(actor.saved?.value?.main,'c','DSA7 (v13): Einstellung ohne Hilfsmethode');
 });
 test('bag tiles open the bag on its content tab (#80)',async()=>{
  const {context}=await prepare();const html=render(context);const open=elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-bag-open'))[0];
@@ -1624,6 +1629,13 @@ test('passive defense (#56): d20 against chosen or best defense, per-actor mode 
  assert.equal(pd.blockedReason(dagger,{attackTechnique:'Two-Handed Swords'},ct),'heavy');assert.equal(pd.blockedReason(dagger,{attackTechnique:'Swords'},ct),null);
  assert.equal(pd.blockedReason(opt('f','Fencing Weapons'),{attackTechnique:'Polearms'},ct),'heavy');
  assert.equal(pd.blockedReason(swordOpt,{ranged:true,attackerSize:'giant'},ct),null,'Fernkampf regelt baseOptions');
+ // Hinweis auf der Karte auch bei „beste Verteidigung“ (Rückmeldung 2026-11-16)
+ const sw={id:'w',name:'Schwert',value:14,blocked:'big'},dg={id:'dodge',name:'Ausweichen',value:8,blocked:null},sh={id:'s',name:'Schild',value:10,blocked:null};
+ assert.deepEqual(pd.blockedNote([sw,dg],dg,'best'),{option:'Schwert',reason:'big',chosen:'Ausweichen'},'beste wäre gesperrt gewesen');
+ assert.deepEqual(pd.blockedNote([sw,dg],dg,'w'),{option:'Schwert',reason:'big',chosen:'Ausweichen'},'fest gewählt und gesperrt');
+ assert.equal(pd.blockedNote([sw,sh,dg],sh,'dodge'),null,'fest gewählte Option zulässig: kein Hinweis');
+ assert.equal(pd.blockedNote([{...sw,value:6},sh,dg],sh,'best'),null,'beste war ohnehin zulässig');
+ assert.equal(pd.blockedNote([sw,dg],null,'best'),null);
  const src=read('scripts/house-rules/passive-defense.js');assert(src.includes("type: 'passiveManual'")&&src.includes('opposeUpdateData'),'#90 B: Rücknahme über SL und Wartezustand des Systems');}
  const actor=(type,flag)=>({type,getFlag:(_m,k)=>k==='autoDefense'?flag:undefined});
  assert.deepEqual(['character','npc','creature'].map(t=>pd.defenseMode(actor(t))),['manual','best','best'],'Vorbelegung je Typ');

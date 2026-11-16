@@ -632,7 +632,7 @@
           "Note3": "Critical parries, parry botches and abilities requiring a critical parry do not apply to the automatic defense.",
           "Note4": "The GM must be logged in and view the target's scene. Without a target and for attacks of opportunity the normal flow applies.",
           "Note5": "Brawling against weapons: if the automation fends off a weapon unarmed, a notice card shows the full damage for the defender; if it fends off an unarmed attack with a weapon, one shows half the weapon damage for the attacker. The damage is only applied via the button on the card.",
-          "Note6": "Only permitted defenses: against large opponents only shield or dodge, against huge ones only dodge; no parry with chain weapons and whips; daggers and fencing weapons cannot parry chain weapons, polearms, two-handed impact weapons and two-handed swords. Fans are not checked. If the chosen defense is not possible, the automation uses the best permitted one and states why.",
+          "Note6": "Only permitted defenses: against large opponents only shield or dodge, against huge ones only dodge; no parry with chain weapons and whips; daggers and fencing weapons cannot parry chain weapons, polearms, two-handed impact weapons and two-handed swords. Fans are not checked. If the chosen or the best defense is not possible, the automation uses the best permitted one and states why on the card.",
           "Note7": "“Defend manually” on the card (GM and owner of the defender) withdraws the automatic result; the defender then reacts as usual via the system's button."
         },
         "Blocked": {
