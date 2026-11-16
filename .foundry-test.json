@@ -1,0 +1,39 @@
+{
+  "project": "dsa5-helpers",
+  "port": 30077,
+  "defaultProfile": "v14",
+  "profiles": {
+    "v14": {
+      "generation": 14,
+      "world": "dsa5",
+      "system": "dsa5",
+      "link": [
+        {
+          "type": "module",
+          "id": "dsa5-helpers",
+          "path": "."
+        }
+      ],
+      "copy": [
+        {
+          "type": "module",
+          "id": "dsa5-godsofaventuria2"
+        }
+      ]
+    },
+    "v13": {
+      "generation": 13,
+      "world": "dsa",
+      "system": "dsa5",
+      "prepare": "python tools/package-module.py --foundry 13",
+      "link": [
+        {
+          "type": "module",
+          "id": "dsa5-helpers",
+          "path": ".deploy/packages/v13-*/dsa5-helpers"
+        }
+      ],
+      "copy": []
+    }
+  }
+}

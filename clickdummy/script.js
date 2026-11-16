@@ -1927,11 +1927,10 @@ function advanceCharge(item) {
 }
 
 function magicIcon(item) {
-  if (!item.extensions && !(item.LZ > 1)) return el("img", { src: item.img, alt: "" });
+  if (!(item.LZ > 1)) return el("img", { src: item.img, alt: "" });
   const charging = item.LZ > 1 && item.progress < item.LZ;
   const wrap = el("div", { class: "magic-icon" }, [
     el("img", { src: item.img, alt: "" }),
-    item.extensions ? el("span", { class: "ext-badge", role: "img", tabindex: "0", title: `Zaubererweiterung gelernt: ${item.extensions}`, "aria-label": `Zaubererweiterung gelernt: ${item.extensions}` }, "✦") : null,
     item.LZ > 1
       ? (() => {
           const pct = Math.min(100, (item.progress / item.LZ) * 100);
@@ -1989,6 +1988,44 @@ function rowActionsCell(list, item, lead = null) {
 // Spalten für alle vier Proben-Listen: Bild/Name/Probe/FW(+/-)/Kosten/Wirkungsdauer/Reichweite. FW direkt
 // editierbar UND per AP-gekoppeltem Stepper steigerbar (item.stf, echt aus dem Kompendium bzw. den vorgefertigten
 // Akteuren der dsa5-magic-*-Module ausgelesen, siehe SPELLS-Kommentar in data.js), analog zu Talenten/Kampftalenten.
+// Gelernte Erweiterungen aufklappen (#84, 2026-11-16): Knopf „✦ n“ mit +/− hinter dem Namen, aufgeklappt stehen die
+// Erweiterungen des Helden mit Beschreibung unter der Zeile; Klick auf den Namen öffnet die Erweiterung (Modul:
+// itemEdit). Der Zustand gilt je Zauber und bleibt beim Neuzeichnen erhalten (Modul: im Bogen gemerkt wie die
+// Unterreiter). Ersetzt das ✦-Abzeichen am Bild mit Tooltip.
+const EXT_OPEN = new Set();
+
+function extToggle(item) {
+  const open = EXT_OPEN.has(item.name);
+  const n = item.extensions.length;
+  const label = `${n} ${n === 1 ? "Erweiterung" : "Erweiterungen"} ${open ? "zuklappen" : "aufklappen"}`;
+  const btn = el("button", { type: "button", class: "ext-toggle", "aria-expanded": String(open), title: label, "aria-label": label }, [
+    el("span", { class: "ext-star", "aria-hidden": "true" }, "✦"),
+    el("span", {}, String(n)),
+    el("span", { class: "ext-sign", "aria-hidden": "true" }, open ? "−" : "+"),
+  ]);
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (open) EXT_OPEN.delete(item.name);
+    else EXT_OPEN.add(item.name);
+    renderContent();
+  });
+  return btn;
+}
+
+function extList(item) {
+  return el("div", { class: "ext-list" }, item.extensions.map((ext) =>
+    el("div", { class: "ext-item" }, [
+      el("span", { class: "ext-star", "aria-hidden": "true" }, "✦"),
+      (() => {
+        const b = el("button", { type: "button", class: "ext-name", title: "Erweiterung öffnen" }, ext.name);
+        b.addEventListener("click", (e) => { e.stopPropagation(); openItemWindow({ name: ext.name, img: item.img, rule: ext.desc }); });
+        return b;
+      })(),
+      el("span", { class: "ext-desc" }, ext.desc),
+    ])
+  ));
+}
+
 function magicRow(item, list) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
   const [minus, plus] = advanceStepper(() => item.fw, (v) => { item.fw = v; }, item.stf, 0, () => { renderContent(); renderHeader(); }, item.name);
@@ -1996,7 +2033,7 @@ function magicRow(item, list) {
   if (mode === "edit") makeEditable(fwSpan, item.fw, (v) => { item.fw = v; renderContent(); renderHeader(); }, { type: "number", min: 0, max: 99 });
   return el("div", { class: "row magic-row" }, [
     magicIcon(item),
-    el("span", { class: "left" }, item.name),
+    el("span", { class: "left magic-name" }, [el("span", {}, item.name), item.extensions ? extToggle(item) : null]),
     probeDice(item.probe, item.name),
     el("span", { class: "skill-fw" }, [minus, fwSpan, plus]),
     el("span", { class: "center" }, String(item.cost)),
@@ -2007,14 +2044,19 @@ function magicRow(item, list) {
   ]);
 }
 
+function magicRows(item, list) {
+  const row = magicRow(item, list);
+  return item.extensions && EXT_OPEN.has(item.name) ? [row, extList(item)] : [row];
+}
+
 function magicTable(title, items) {
   // Legende nur, wenn überhaupt ein Eintrag das ✦ trägt (UI/UX-Review 2026-09-25: Zeichen zugänglich erklären).
   const hasExt = items.some((it) => it.extensions);
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, title),
     el("div", { class: "row-head magic-row" }, head("", "Name", "Probe", "FW", "Kosten", "Aktionsdauer", "Reichweite", "", "")),
-    ...items.map((it) => magicRow(it, items)),
-    hasExt ? el("div", { class: "table-legend" }, [el("span", { class: "ext-badge-inline", "aria-hidden": "true" }, "✦"), " = Zaubererweiterung gelernt (Zeichen antippen oder mit der Maus darauf zeigen für Details)"]) : null,
+    ...items.flatMap((it) => magicRows(it, items)),
+    hasExt ? el("div", { class: "table-legend" }, [el("span", { class: "ext-badge-inline", "aria-hidden": "true" }, "✦"), " = gelernte Erweiterungen, „+“ klappt sie unter dem Eintrag auf"]) : null,
   ]);
 }
 
@@ -3661,26 +3703,111 @@ function renderQuests() {
   ]);
 }
 
+// Personen-Reiter (#91, 2026-11-16): Suche (Name, Untertitel, Fraktion), Filter Alle/Wichtige/Verborgene (Verborgene
+// nur für die SL), Gruppen nach Fraktion (Schalter) und Ansicht Kacheln/Liste. Die Werkzeugleiste klebt oben wie die
+// Talentsuche; die Einstellungen gelten für beide Abschnitte (Dramatis Personae, Bestiarium). Modul: Zustand im Bogen
+// gemerkt wie die Unterreiter, Daten aus loadPersonae() (faction/important/hidden liegen dort schon vor).
+let personaeQuery = "";
+let personaeFilter = "all";
+let personaeByFaction = true;
+let personaeView = "tiles";
+const NO_FACTION = "Ohne Fraktion";
+
 function personaCard(p) {
-  const card = el("button", { type: "button", class: "almanac-tile persona-card", title: p.name }, [
-    el("img", { src: p.img, alt: "" }),
-    el("span", { class: "tile-text" }, [
-      el("strong", {}, [p.name, p.important ? el("span", { class: "persona-important", title: "Wichtig" }, " ★") : null]),
-      p.subtitle ? el("small", {}, p.subtitle) : null,
-    ]),
-  ]);
+  // ★ vor dem Namen und „verborgen“ vor dem Untertitel, damit die Kürzung mit „…“ sie nicht verschluckt.
+  const star = p.important ? el("span", { class: "persona-important", title: "Wichtig" }, "★ ") : null;
+  const hiddenMark = p.hidden ? el("span", { class: "persona-hidden", title: "Für Spieler nicht freigegeben" }, "verborgen") : null;
+  const sub = [hiddenMark, hiddenMark && p.subtitle ? " · " : null, p.subtitle || null];
+  const list = personaeView === "list";
+  const card = el("button", { type: "button", class: (list ? "persona-row" : "almanac-tile persona-card") + (p.hidden ? " is-hidden" : ""), title: p.name }, list
+    ? [
+        el("img", { src: p.img, alt: "" }),
+        el("strong", {}, [star, p.name]),
+        el("small", {}, sub),
+        personaeByFaction ? null : el("small", { class: "persona-faction" }, p.faction || ""),
+      ]
+    : [
+        el("img", { src: p.img, alt: "" }),
+        el("span", { class: "tile-text" }, [el("strong", {}, [star, p.name]), p.subtitle || p.hidden ? el("small", {}, sub) : null]),
+      ]);
   card.addEventListener("click", () => openInAlmanac(p.type ? "Bestiarium" : "Dramatis Personae", p.name));
   return card;
 }
 
+function personaeMatches(p) {
+  if (p.hidden && AS_PLAYER) return false;
+  if (personaeFilter === "important" && !p.important) return false;
+  if (personaeFilter === "hidden" && !p.hidden) return false;
+  const q = personaeQuery.trim().toLowerCase();
+  return !q || [p.name, p.subtitle, p.faction].some((v) => (v || "").toLowerCase().includes(q));
+}
+
+function personaeCollection(people) {
+  const grid = (items) => el("div", { class: personaeView === "list" ? "persona-list" : "tile-grid" }, items.map(personaCard));
+  if (!personaeByFaction) return grid(people);
+  const groups = new Map();
+  for (const p of people) {
+    const key = p.faction || NO_FACTION;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+  const keys = [...groups.keys()].sort((a, b) => (a === NO_FACTION) - (b === NO_FACTION) || a.localeCompare(b, "de"));
+  return el("div", {}, keys.map((k) => el("div", { class: "persona-group" }, [
+    el("div", { class: "persona-group-title" }, [k, el("span", { class: "muted" }, ` (${groups.get(k).length})`)]),
+    grid(groups.get(k)),
+  ])));
+}
+
+function segmented(label, options, value, onChange) {
+  return el("div", { class: "seg-group", role: "group", "aria-label": label }, options.map(([v, text]) => {
+    const btn = el("button", { type: "button", class: "seg-btn", "aria-pressed": String(v === value) }, text);
+    btn.addEventListener("click", () => { onChange(v); renderContent(); });
+    return btn;
+  }));
+}
+
 function renderPersonae() {
-  const list = (type) => el("div", { class: "tile-grid" }, PERSONAE.filter((p) => p.type === type).map(personaCard));
   const almanac = el("button", { type: "button", class: "almanac-btn" }, "📖 Almanach öffnen");
   almanac.addEventListener("click", () => openInAlmanac("Reiter", "Dramatis Personae"));
+  if (AS_PLAYER && personaeFilter === "hidden") personaeFilter = "all";
+
+  const search = el("input", { type: "search", id: "personaeSearch", placeholder: "Name, Fraktion …", value: personaeQuery, "aria-label": "Personen durchsuchen" });
+  search.addEventListener("input", () => {
+    personaeQuery = search.value;
+    const pos = search.selectionStart;
+    renderContent();
+    const fresh = document.getElementById("personaeSearch");
+    fresh.focus();
+    fresh.setSelectionRange(pos, pos);
+  });
+  const factionSwitch = el("button", { type: "button", class: "filter-switch" + (personaeByFaction ? " on" : ""), role: "switch", "aria-checked": String(personaeByFaction) }, [
+    el("span", { class: "filter-switch-track", "aria-hidden": "true" }, [el("span", { class: "filter-switch-thumb" })]),
+    "Nach Fraktion",
+  ]);
+  factionSwitch.addEventListener("click", () => { personaeByFaction = !personaeByFaction; renderContent(); });
+  const filters = [["all", "Alle"], ["important", "★ Wichtige"]];
+  if (!AS_PLAYER) filters.push(["hidden", "Verborgene"]);
+  const tools = el("div", { class: "search-bar personae-tools" }, [
+    search,
+    segmented("Filter", filters, personaeFilter, (v) => { personaeFilter = v; }),
+    factionSwitch,
+    segmented("Ansicht", [["tiles", "Kacheln"], ["list", "Liste"]], personaeView, (v) => { personaeView = v; }),
+  ]);
+
+  const block = (key, title, type) => {
+    const all = PERSONAE.filter((p) => p.type === type && (!p.hidden || !AS_PLAYER));
+    const shown = all.filter(personaeMatches).sort((a, b) => (!!b.important - !!a.important) || a.name.localeCompare(b.name, "de"));
+    const count = shown.length === all.length ? `${all.length}` : `${shown.length} von ${all.length}`;
+    const body = shown.length
+      ? personaeCollection(shown)
+      : el("p", { class: "persona-empty" }, personaeQuery.trim() ? `Keine Treffer für „${personaeQuery.trim()}“.` : "Keine Einträge für diesen Filter.");
+    return section(key, [el("div", { class: "panel" }, [el("div", { class: "panel-title flex" }, [el("span", {}, title), el("small", { class: "panel-count" }, count)]), body])]);
+  };
   return el("div", {}, [
     el("div", { class: "almanac-bar" }, [el("small", { class: "muted" }, "Freigegebene Personen und Wesen. Notizen der Gruppe im Almanach."), almanac]),
-    section("dramatis", [el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Dramatis Personae"), list(0)])]),
-    section("bestiary", [el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Bestiarium"), list(1)])]),
+    tools,
+    block("dramatis", "Dramatis Personae", 0),
+    block("bestiary", "Bestiarium", 1),
   ]);
 }
 

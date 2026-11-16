@@ -44,6 +44,25 @@ export function bestDefense(options) {
   return options.reduce((best, option) => (!best || option.value > best.value ? option : best), null);
 }
 
+/** Kampftechnik Raufen, wie das System prüft (LocalizedCTs.<Kampftechnik> === 'Brawling'). */
+export function isBrawlWeapon(item, localize = key => game.i18n.localize(key)) {
+  return item?.type === 'meleeweapon' && localize(`LocalizedCTs.${item.system?.combatskill?.value}`) === 'Brawling';
+}
+
+/**
+ * Raufen gegen Waffen (#90, Nutzer 2026-11-16, Kodex des Schwertes, wie OpposeDSA.#s/#t des Systems): Eine gelungene
+ * Raufen-Parade gegen eine Waffe schützt nicht vor dem Schaden ('parryHurts', voller Schaden für den Verteidiger), eine
+ * mit einer Waffe abgewehrte Raufen-Attacke verletzt den Angreifer ('attackHurts', halber Waffenschaden). Ausnahme
+ * jeweils: Raufwaffen mit preventsBrawlParryDamage bzw. preventsBrawlAttackDamage.
+ */
+export function brawlCase(attackSource, option, isBrawl = item => isBrawlWeapon(item)) {
+  if (!attackSource || !option) return null;
+  const parryBrawl = option.id === 'parryWeaponless' || (isBrawl(option.item) && !option.item.system?.preventsBrawlParryDamage);
+  if (attackSource.type === 'meleeweapon' && !isBrawl(attackSource) && parryBrawl) return 'parryHurts';
+  if (isBrawl(attackSource) && !attackSource.system?.preventsBrawlAttackDamage && option.item?.type === 'meleeweapon' && !isBrawl(option.item)) return 'attackHurts';
+  return null;
+}
+
 /** Gewählte Option, wenn sie gegen diesen Angriff zulässig ist, sonst die beste. */
 export function chooseDefense(options, mode) {
   return options.find(option => option.id === mode) ?? bestDefense(options);
@@ -118,7 +137,7 @@ export async function defenseOptions(actor, speaker, attackMessage) {
     } catch (error) { console.warn(`${MODULE_ID} | Passive Verteidigung: Zustände`, error); }
     const multiple = count * (Number(RuleChaos?.multipleDefenseValue(actor, option.item)) || -3);
     const total = (option.value + conditions + multiple + malus) * (postData.halfDefense ? 0.5 : 1);
-    return { id: option.id, name: option.name, base: option.value, conditions, multiple, malus, half: !!postData.halfDefense, value: Math.round(total) };
+    return { id: option.id, name: option.name, item: option.item, base: option.value, conditions, multiple, malus, half: !!postData.halfDefense, value: Math.round(total) };
   });
 }
 
@@ -184,6 +203,14 @@ export async function evaluate(startMessage, { reroll = false } = {}) {
   }
   const attacker = attackMessage.speaker?.alias ?? attackMessage.alias;
   const defender = startMessage.flags.unopposeData.targetSpeaker?.alias ?? actor.name;
+  // Raufen gegen Waffen: Hinweis mit Schadensknopf statt stiller Abwehr; beim Schip-Neuwurf die alte Karte ersetzen.
+  if (previous?.brawlId) await game.messages.get(previous.brawlId)?.delete();
+  let brawlId = null;
+  const brawl = result.outcome === 'defended' ? brawlCase(attackMessage.flags.data.preData?.source, chosen) : null;
+  if (brawl) {
+    try { brawlId = await brawlNotice(brawl, { OpposeDSA, attackMessage, speaker, chosen, attacker, defender }); }
+    catch (error) { console.error(`${MODULE_ID} | Passive Verteidigung: Raufen-Hinweis`, error); }
+  }
   let resultId = null;
   if (result.outcome === 'hit') {
     await OpposeDSA.resolveUndefended(startMessage, game.i18n.format(P + 'Chat.Roll', { roll: result.roll }));
@@ -200,7 +227,7 @@ export async function evaluate(startMessage, { reroll = false } = {}) {
   const content = publicContent(result.outcome, attacker, defender, result);
   if (card) await card.update({ content });
   else await ChatMessage.create({ _id: cardId, content, speaker: attackMessage.speaker }, { keepId: true });
-  await startMessage.setFlag(MODULE_ID, FLAG, { outcome: result.outcome, cardId, resultId });
+  await startMessage.setFlag(MODULE_ID, FLAG, { outcome: result.outcome, cardId, resultId, brawlId });
   // Spät eintreffender Wartezustand (Spielerangriff über den Socket des Systems): wieder lösen.
   if (result.outcome !== 'hit') setTimeout(() => {
     if (isOpposePending(targetOf(startMessage).actor, startMessage.id)) clearOpposedFor(OpposeDSA, actor, startMessage.id);
@@ -208,6 +235,50 @@ export async function evaluate(startMessage, { reroll = false } = {}) {
 }
 
 /** Rechnung an der Karte, nur im Client der SL. */
+/**
+ * Hinweiskarte zu Raufen gegen Waffen mit dem Knopf „Schaden“ des Systems (.applyDamage, wendet nach Besitzrecht an):
+ * nichts wird automatisch abgezogen (Nutzer 2026-11-16). Schaden wie im System: bei 'parryHurts' der Treffer mit
+ * Rüstung (OpposeDSA._calculateOpposedDamage), bei 'attackHurts' die Hälfte eines Wurfs mit dem Schaden der Waffe.
+ */
+async function brawlNotice(kind, { OpposeDSA, attackMessage, speaker, chosen, attacker, defender }) {
+  const postData = attackMessage.flags.data.postData;
+  const B = P + 'Chat.Brawl.';
+  let damage;
+  let line;
+  let hurt;
+  if (kind === 'parryHurts') {
+    hurt = speaker;
+    const tp = Number(postData.damage) || 0;
+    damage = { value: tp, sp: tp };
+    line = game.i18n.format(B + 'DamageRaw', { tp });
+    try {
+      const attackerTest = { ...foundry.utils.deepClone(postData), source: attackMessage.flags.data.preData.source, speaker: attackMessage.speaker };
+      const calc = OpposeDSA._calculateOpposedDamage?.(attackerTest, { speaker, source: chosen.item }, {});
+      if (calc && Number.isFinite(calc.sum)) {
+        damage = { value: Math.max(0, calc.sum), sp: calc.damage };
+        line = game.i18n.format(B + 'DamageArmor', { tp: calc.damage, armor: calc.armor, sp: damage.value });
+      }
+    } catch (error) { console.warn(`${MODULE_ID} | Passive Verteidigung: Schaden der Raufen-Parade`, error); }
+  } else {
+    hurt = attackMessage.speaker;
+    const formula = String(chosen.item.system?.damage?.value ?? '').replace(/(\d*)[wW](\d+)/g, '$1d$2');
+    if (!formula) return null;
+    const roll = await new Roll(formula).evaluate();
+    const value = Math.round(roll.total * 0.5);
+    damage = { value, sp: value };
+    line = game.i18n.format(B + 'DamageHalf', { roll: roll.total, value });
+  }
+  const text = game.i18n.format(B + kind, { attacker: escape(attacker), defender: escape(defender), weapon: escape(chosen.name) });
+  const content = `<div class="dsa5 chat-card"><div class="opposed-card dsa5h-pd-brawl"><p><b>${game.i18n.localize(B + 'Title')}</b></p><p>${text}</p>
+    <p>${line}</p><div class="row-section center"><button type="button" class="applyDamage selfButton smallChatButton" data-mode="value"><i class="fas fa-shield-alt" inert></i> ${game.i18n.localize(B + 'Apply')}</button></div></div></div>`;
+  const message = await ChatMessage.create({
+    content,
+    speaker: attackMessage.speaker,
+    flags: { opposeData: { speakerDefend: hurt, damage }, dsa5: { opposedMeta: kind === 'parryHurts' ? { attackerMessageId: attackMessage.id } : {} } },
+  });
+  return message?.id ?? null;
+}
+
 function decorateCard(message, html) {
   const detail = game.user.isGM && gmDetails.get(message.id);
   if (!detail) return;
