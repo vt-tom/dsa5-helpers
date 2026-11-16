@@ -6,7 +6,7 @@
    Weitere über Favoriten (Sterne wie beim Helden). Kreatur seit 2026-11-12 ohne Anzahl und Favoriten: alle Talente mit Wert,
    dazu Zauber und Liturgien (creatureCoverLists).
 
-   Aufruf: index.html?actor=nsc, ?actor=kreatur (&beispiel=ork), ?actor=haendler, ?actor=schatz (merchant.js) bzw. ?actor=gruppe (&variante=s|m|l setzt die Kachelgröße beim Laden); ohne Parameter der Heldenbogen. Diese Datei lädt nach data.js
+   Aufruf: index.html?actor=nsc, ?actor=kreatur (&beispiel=ork), ?actor=haendler, ?actor=schatz (merchant.js) bzw. ?actor=gruppe (&variante=s|m|l setzt die Kachelgröße beim Laden), ?actor=fahrzeug (vehicle.js); ohne Parameter der Heldenbogen. Diese Datei lädt nach data.js
    und vor script.js: Daten werden hier ersetzt, setup() läuft am Ende von script.js vor dem ersten Rendern und hängt
    die abweichenden Reiter ein. Alle Werte und Texte sind frei erfundene Platzhalter. */
 
@@ -1039,6 +1039,9 @@ if (typeof MERCHANT_TYPES !== "undefined") {
   ACTOR_TYPES.haendler = { ...ACTOR_TYPES.nsc, ...MERCHANT_TYPES.haendler };
   ACTOR_TYPES.schatz = { ...ACTOR_TYPES.kreatur, ...MERCHANT_TYPES.schatz };
 }
+
+// Fahrzeug (#93, vehicle.js): eigene Reiter wie die Gruppe, Konzept bis zur Rückmeldung der Community.
+if (typeof VEHICLE_TYPE !== "undefined") ACTOR_TYPES.fahrzeug = VEHICLE_TYPE;
 
 const ACTOR_TYPE = ACTOR_TYPES[ACTOR_KIND] || null;
 if (ACTOR_TYPE) {

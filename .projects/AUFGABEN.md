@@ -47,6 +47,9 @@ Zwei Branches aus dem Tag `v8.0.0` (Nutzerentscheidung 12.11.2026): `release/8.1
 - Du: **Händler- und Schatzbogen** · #77 #78 — Click-Dummy `?actor=haendler` bzw. `?actor=schatz`, Desktop: SL-Reiter „Laden“, Rolle Spieler →
   Kundensicht; Menü › Diese Seite: A Kacheln, B Liste, C Ware und Beutel. Variante wählen, Rückmeldung; danach Tablet/Smartphone, dann Foundry.
 
+- Du: **Fahrzeugbogen (Konzept)** · #93 — Click-Dummy `?actor=fahrzeug` (nur Desktop), Menü › Diese Seite: Titelblatt A Seekampf, B Reise und
+  Ladung. Ansehen, Issue in der Community teilen; Tablet/Smartphone und Foundry erst nach deren Rückmeldung.
+
 ## 2. Bereit zur Umsetzung
 
 
@@ -127,6 +130,7 @@ Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 
 ### Wartet auf Dritte
 
 - **Bannerbild** — Rückmeldungen der Nutzer zu Tablet/Handy und The Forge (`forgevtt`); ein Fehler wird ein neues Issue.
+- **Fahrzeugbogen** · #93 — Rückmeldung der Community: wofür Fahrzeuge am Tisch genutzt werden (Seekampf, Reise, Lager); danach Variante wählen.
 
 ### Ideen
 

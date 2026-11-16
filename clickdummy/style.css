@@ -10524,3 +10524,220 @@ button.fav-chip-roll {
     text-decoration: underline;
   }
 }
+
+/* --- Fahrzeugbogen-Entwurf (Issue #93, vehicle.js ?actor=fahrzeug) ---
+   Konzept, wartet auf Rückmeldung der Community; bei der Umsetzung in eigene Abschnitte übernehmen. Kopf ohne Kugeln,
+   Schips-Plakette und Eigenschaftswürfel wie bei der Gruppe; links Strukturpunkte und Besatzung als Leisten. */
+.sheet[data-actor="fahrzeug"] #bars,
+.sheet[data-actor="fahrzeug"] .head-plaque,
+.sheet[data-actor="fahrzeug"] #attrOverlay,
+.sheet[data-actor="fahrzeug"] .cover-resources {
+  display: none !important;
+}
+
+.vehicle-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(224, 192, 128, .2);
+  color: #f4e8d6;
+}
+
+.vehicle-bar-row {
+  display: grid;
+  grid-template-columns: var(--hit-sm, 24px) minmax(0, 1fr) var(--hit-sm, 24px);
+  gap: 6px;
+  align-items: center;
+}
+
+.vehicle-bar-step {
+  width: var(--hit-sm, 24px);
+  height: var(--hit-sm, 24px);
+  padding: 0;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 4px;
+  background: transparent;
+  color: #f4e8d6;
+  font: inherit;
+  cursor: pointer;
+}
+
+.vehicle-bar-track {
+  position: relative;
+  height: 20px;
+  overflow: hidden;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, .35);
+}
+
+.vehicle-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #7a5a2e;
+}
+
+.vehicle-bar.crew .vehicle-bar-fill {
+  background: #3f6a8a;
+}
+
+.vehicle-bar-track b {
+  position: relative;
+  display: block;
+  font-size: var(--fs-small);
+  line-height: 18px;
+  text-align: center;
+}
+
+.vehicle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.vehicle-action {
+  min-height: var(--hit-md, 26px);
+  padding: 2px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.vehicle-weapon-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) 44px 96px 92px;
+  gap: 8px;
+  align-items: center;
+}
+
+.vehicle-weapon-row > img {
+  width: 28px;
+  height: 28px;
+}
+
+.vehicle-weapon-row.unloaded .die-qs {
+  opacity: .45;
+}
+
+.vehicle-damage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.vehicle-damage small,
+.vehicle-crew-op small {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.vehicle-crew-op {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.vehicle-crew-add {
+  min-height: var(--hit-sm, 24px);
+  padding: 0 6px;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.vehicle-skill-row,
+.vehicle-stat-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 48px;
+  gap: 8px;
+  align-items: center;
+}
+
+.vehicle-stat-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.vehicle-probe {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.vehicle-travel {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.chip.off {
+  opacity: .45;
+  text-decoration: line-through;
+}
+
+.vehicle-cargo-track {
+  height: 10px;
+  margin: 8px 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--field);
+}
+
+.vehicle-cargo-track > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.vehicle-cargo-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.vehicle-cargo-row > img {
+  width: 24px;
+  height: 24px;
+}
+
+.vehicle-crew-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 10px;
+}
+
+.vehicle-crew-role {
+  color: var(--accent);
+  font-size: var(--fs-small);
+}
+
+.vehicle-bar-step:focus-visible,
+.vehicle-action:focus-visible,
+.vehicle-crew-add:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .vehicle-action:hover,
+  .vehicle-crew-add:hover {
+    background: var(--field);
+  }
+
+  .vehicle-bar-step:hover {
+    background: rgba(224, 192, 128, .2);
+  }
+}
