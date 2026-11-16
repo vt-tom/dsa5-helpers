@@ -6,7 +6,7 @@ Redaktioneller Kurzstand für die Projektübersicht. Bestehende Aufgaben, Entsch
 
 ## Nächster Einstieg
 
-8.0.0 (v14) und 7.0.0 (v13) am 12.11.2026 veröffentlicht, `main` nachgezogen, #68/#73/#74/#75 geschlossen. Planung 8.1.0 (nur v14) auf `release/8.1.0`: NSC-, Kreatur- und Gruppenbogen (#53, #54, #55). Bugfixes 8.0.x auf `release/8.0.1`.
+8.0.1 (v14) und 7.0.1 (v13) am 16.11.2026 veröffentlicht, `main` nachgezogen, Meilenstein 8.0.1 geschlossen. Planung 8.1.0 (nur v14) auf `release/8.1.0`: NSC-, Kreatur- und Gruppenbogen (#53, #54, #55). Bugfixes 8.0.x auf `release/8.0.2`.
 
 ## Bei dir offen
 
@@ -83,42 +83,10 @@ neue Pre-release `v8.1.1`. Nur v14 (kein 7.1.0), nur nach Auftrag; Ablauf in [RE
 
 ## Bugfixes 8.0.x
 
-Branch `release/8.0.1` im Hauptordner (`release/8.1.0` liegt in `D:/Development/dsa5-helpers-8.1.0`): Fix dort committen, dann in
-`release/8.1.0` per `git merge --no-ff release/8.0.1` übernehmen. Stand 16.11.: #79, #80, #81, #82, #85, #86, #89 auf 8.0.1, nach 8.1.0 gemergt; #84, #87, #90, #91, #92 auf 8.0.1, nach 8.1.0 gemergt (16.11.).
-
-- [X] Du: **Waffenwechsel bei „Handbeschränkung ignorieren“** · #79 — Grombrak (Haken in seinem Kampf-Reiter des Systembogens), Kampf › Körper:
-  Haupthand auf Eisenwalder → Eisenwalder in der Hand, Lindwurmschläger unter „Ebenfalls angelegt“; ebenso per Rechtsklick aufs Schild.
-- [X] Du: **Behältnis öffnet mit Inhalt** · #80 — Ausrüstung › Behältnisse, Klick auf Lederrucksack → Fenster öffnet auf Reiter „Behältnis“.
-- [X] Du: **Behältnis: Namen sichtbar** · #80 (Variante A) — Behälterfenster auf Reiter „Behältnis“ → unter jedem Feld steht der
-  Name, lange Namen auf zwei Zeilen gekürzt; Ziehen und Rechtsklick (herausnehmen) gehen weiter.
-- [X] Du: **Hinweis gestapelter Kraftspeicher** · #86 — Kraftspeicher-Gegenstand auf Anzahl 3 stellen, KS-Kugel anklicken (Desktop und
-  Smartphone) → Hinweis „… (Anzahl 3) zählt als ein einziger Speicher …“; bei Anzahl 1 kein Hinweis. Erklärung steht im Issue.
-- [X] Du: **Götterschips im Kopf** · #89 · Desktop, Handy — Held mit Götterschips (Götter Aventuriens 2) → hinter den Schips im Kopf, Klick
-  gibt aus bzw. stellt wieder her. Live geprüft (Testinstanz, Praios, Desktop und Handy); viele Götter auf dem Handy nicht geprüft.
-- [X] Du: **Eigenschaften im Kopf einheitlich** · #85 — Spielmodus, Reiter Eigenschaften → Würfelleiste im Kopf wie überall, keine Kacheln;
-  Bearbeiten/Steigern → Kacheln mit +/−, keine Leiste. Ebenso Kreaturbogen (8.1.0). Live geprüft am Desktop (Held).
-- [X] Du: **Vor-/Nachteile und Sprachen als Favoriten** · #81 #82 — Stern an Vorteil, Nachteil, Sprache/Schrift → Titelblatt-Gruppen
-  „Vor- & Nachteile“ und „Sprache“ mit Stufe (z. B. III), kein Würfel. Live geprüft am Desktop.
-- [X] Du: **Format-Hinweis Bannerbild** · #87 — Bearbeiten-Modus, Maus auf den Bild-Knopf im Banner → Tooltip nennt 1600 × 200 px;
-  Einstellungen › Heldenbogen einrichten → Hinweis bei „Standardordner für Bannerbilder“. Issue beantwortet und geschlossen.
-- [X] Du: **Bannerbild mit Apostroph im Namen** · #87 — Bild „Al'Anfa (2).webp“ über den Foundry-Dateibrowser als Banner wählen → Bild erscheint
-  im Kopf (vorher dunkel). Nur statisch geprüft; Ursache aus dem Dateinamen der Rückmeldung abgeleitet, beim Melder bestätigen.
-- [X] Du: **Hinweis gleichwertige SF** · #92 — Hausregelbuch › Grundmanöver › „So funktioniert es im Modul“ → letzter Punkt „Hinweis zu
-  gleichwertigen Sonderfertigkeiten“ (de und en). Issue bleibt offen und sammelt Rückmeldungen.
-- [X] Du: **Zauber-Erweiterungen aufklappen** · #84 · Desktop, Tablet, Handy — Held mit gelernter Erweiterung, Magie/Religion → „✦ n +“ hinter dem
-  Namen klappt Name und Beschreibung auf, Name öffnet die Erweiterung. Live geprüft am Desktop (Testinstanz); Tablet/Handy nicht.
-- [X] Du: **Personen-Reiter** · #91 · Desktop, Tablet, Handy — Reiter Personen: Suche, Alle/Wichtige/Verborgene (nur SL), „Nach Fraktion“,
-  Kacheln/Liste; am Handy ohne Ansichtswahl. Live geprüft am Desktop als SL; Spieler, Tablet und Handy nicht.
-- [X] Du: **Raufen gegen Waffe (passive Verteidigung)** · #90 — Waffe greift an, Ziel wehrt automatisch waffenlos ab → zusätzliche Karte mit
-  vollem Schaden nach RS; Raufen-Angriff gegen Waffen-Parade → Karte mit halbem Waffenschaden für den Angreifer; Knopf zieht ab. Live geprüft (SL).
-- [X] Du: **Nur zulässige Verteidigung, Grund im Chat** · #90 — Verteidiger auf „beste Verteidigung“ (NSC ohne Wahl), großer Angreifer → Karte:
-  „Schwert geht hier nicht (großer Gegner …), stattdessen Ausweichen“; ebenso bei fest gewählter Waffe. Nachbesserung nur statisch geprüft.
-- [X] Du: **„Selbst verteidigen“** · #90 — Knopf auf der Karte → Reaktionsknopf wieder da, eigene Reaktion läuft normal. Live geprüft als SL.
-- [X] Du: **Bogen unabhängig vom DSA-Design** (in 8.0.0 enthalten, Nachtest) — Desktop, Tablet, Handy: je Design (auch mit dunklem Foundry)
-  Bogen im Bearbeiten-Modus, Eigenschaften und Notizen → Felder, Rahmen, Plakette, Griff unten rechts überall gleich, auch bei dunklem Bogen.
-- [ ] Du: **7.0.1 für v13** · #79 #87 — v13-Testwelt, Paket aus Branch `v13`: Waffenwechsel wie oben → gewählte Waffe in der Hand; Banner mit
-  Apostroph im Dateinamen → Bild erscheint. Nur die zwei Fixes, lokal auf `v13` committet, nicht gepusht; Tests gegen v13 grün, live nicht geprüft.
-- Du: **Release 8.0.1 / 7.0.1** — zurückgehalten bis zu deiner Freigabe. Danach Issues des Meilensteins 8.0.1 schließen.
+[8.0.1](https://github.com/vt-tom/dsa5-helpers/releases/tag/v8.0.1) und [7.0.1](https://github.com/vt-tom/dsa5-helpers/releases/tag/v7.0.1)
+am 16.11.2026 veröffentlicht (#79–#91, v13 nur #79 und #87), Issues und Meilenstein 8.0.1 geschlossen, `main` nachgezogen.
+Nächste Fehlerkorrekturen auf `release/8.0.2` im Hauptordner (`release/8.1.0` liegt in `D:/Development/dsa5-helpers-8.1.0`):
+Fix dort committen, dann in `release/8.1.0` per `git merge --no-ff release/8.0.2` übernehmen.
 
 ## Später
 
@@ -147,6 +115,7 @@ Branch `release/8.0.1` im Hauptordner (`release/8.1.0` liegt in `D:/Development/
 ---
 
 <!-- GITHUB-ISSUES:START -->
+
 ## Überblick (erzeugt)
 
 _Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T10:00:41.540Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
@@ -194,13 +163,14 @@ _Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T10:00:4
 
 **Geschlossen, aber noch in der Liste**
 
-| # | Titel | Meilenstein | Labels | In der Liste |
-|---|---|---|---|---|
-| [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) | feat: Grundmanöver „Stören und Ablenken“ (Paladose) | 0.6.3 | enhancement | Später – Ideen · Achtung: geschlossen, steht noch hier |
-| [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) | feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) | – | enhancement | Nächster Einstieg · Achtung: geschlossen, steht noch hier |
-| [#87](https://github.com/vt-tom/dsa5-helpers/issues/87) | Bannerbild (Frage) | 8.0.1 | – | Bugfixes 8.0.x · Achtung: geschlossen, steht noch hier |
+| #                                                      | Titel                                                                            | Meilenstein | Labels      | In der Liste                                                |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------- | ----------- | ----------- | ----------------------------------------------------------- |
+| [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) | feat: Grundmanöver „Stören und Ablenken“ (Paladose)                          | 0.6.3       | enhancement | Später – Ideen · Achtung: geschlossen, steht noch hier   |
+| [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) | feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) | –          | enhancement | Nächster Einstieg · Achtung: geschlossen, steht noch hier |
+| [#87](https://github.com/vt-tom/dsa5-helpers/issues/87) | Bannerbild (Frage)                                                               | 8.0.1       | –          | Bugfixes 8.0.x · Achtung: geschlossen, steht noch hier     |
 
 **Kürzlich geschlossen (14 Tage: 16)**
 
 [#87](https://github.com/vt-tom/dsa5-helpers/issues/87) Bannerbild (Frage) (erledigt, 16.11.) · [#83](https://github.com/vt-tom/dsa5-helpers/issues/83) Hausregeln (Feedback) (erledigt, 16.11.) · [#88](https://github.com/vt-tom/dsa5-helpers/issues/88) NSC- und Kreaturenbögen (Optimierungswunsch) (geschlossen (nicht geplant), 16.11.) · [#75](https://github.com/vt-tom/dsa5-helpers/issues/75) Einstellung „Talent-Vorschläge auf dem Titelblatt“ gehört unter „Heldenbogen einrichten“ (erledigt, 12.11.) · [#74](https://github.com/vt-tom/dsa5-helpers/issues/74) bug: Tablet und Smartphone - Munitionsauswahl kann nicht verwendet werden, Auswahl nicht sichtbar. (erledigt, 12.11.) · [#73](https://github.com/vt-tom/dsa5-helpers/issues/73) bug: Kraftspeicher öffnet sich immer beim Mouseover (erledigt, 12.11.) · [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) (erledigt, 12.11.) · [#72](https://github.com/vt-tom/dsa5-helpers/issues/72) fix: Gegenstände lassen sich nicht aus einem Behälter verschieben (erledigt, 02.11.) · … und 8 weitere
+
 <!-- GITHUB-ISSUES:END -->

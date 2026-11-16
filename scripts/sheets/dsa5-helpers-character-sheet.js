@@ -7,6 +7,7 @@ import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance,
 import { openHouseRules } from '../apps/house-rules.js';
 import { bindItemTooltips } from './item-tooltips.js';
 import { almanacTabEnabled, loadQuests, loadPersonae, groupPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
+import { groupGodSchips, changeGodSchip, fitGodSchips, openGodOverview, closeGodOverview, renderGodOverview, godOverviewOpenFor } from './god-schips.js';
 import { buildSuggestions, suggestionCount, suggestionsCollapsed, COLLAPSED_SETTING, COUNT_FLAG, COUNT_MIN, COUNT_MAX } from '../skill-suggestions/context.js';
 
 // Händler-Modi des Systems (DSA5.merchantTypes ohne „none“) → Texte des Systems.
@@ -82,8 +83,10 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     ownerActions: {
       dsa5hEditPowerSources: this._editPowerSources,
       schipUpdate: this._schipUdate,
-      // Issue #89: Zusatz-Schips anderer Module (Hook dsa5.prepareActorSchips, z. B. Götterschips), Handler des Systems.
-      ...(typeof this._extraSchipUpdate === 'function' ? { extraSchipUpdate: this._extraSchipUpdate } : {}),
+      // Issue #89: Zusatz-Schips anderer Module (Hook dsa5.prepareActorSchips, z. B. Götterschips) je Gott mit Zahl;
+      // Klick gibt einen aus, Rechtsklick stellt einen wieder her; „+n“ öffnet die Übersicht (god-schips.js).
+      dsa5hGodSchip: { handler: this._godSchip, buttons: [0, 2] },
+      dsa5hGodOverview: this._godOverview,
       startCharacterBuilder: this._startCharacterBuilder,
       deleteItem: this._deleteItemAction,
       // advanceWrapper bewusst NICHT hier: ActorSheetDsa5 deklariert ihn selbst und ApplicationV2 führt die
@@ -210,7 +213,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // Fensteranfang, mehrfaches +/− per Tastatur wäre unmöglich (UI/UX-Review 2026-09-25, Punkt 4). Gemerkt wird
   // die Aktion plus die Daten, die das Element eindeutig machen (Item, Zustand, Eigenschaft, Wert …), nach dem
   // Rendern wird das passende neue Element wieder fokussiert.
-  static RIGHT_CLICK_ACTIONS = ['loadWeapon', 'quantityClick', 'chargeSpell', 'conditionValue', 'statusAdd', 'rollAggregatedProbe', 'traditionPayCost', 'onUseItem', 'dsa5hEquip']
+  static RIGHT_CLICK_ACTIONS = ['dsa5hGodSchip', 'loadWeapon', 'quantityClick', 'chargeSpell', 'conditionValue', 'statusAdd', 'rollAggregatedProbe', 'traditionPayCost', 'onUseItem', 'dsa5hEquip']
     .map(action => `[data-action="${action}"]`).join(', ');
   // Alles, was im Kopf selbst bedienbar ist, startet kein Fenster-Ziehen (siehe pointerdown in _onRender).
   static DRAG_EXCLUDE = 'button, a, input:not([disabled]), select, textarea, label, details, [data-action], [contenteditable], [draggable="true"]';
@@ -437,6 +440,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       // Traglast wie im Ausrüstungs-Reiter.
       statusTiles: phone ? ['inpain', 'encumbered'].map(id => ({ id, value: (context.conditions ?? []).find(c => c.descriptor === id)?.value ?? 0 })) : [],
       currentTab: this._currentTab,
+      godSchips: groupGodSchips(prepare.extraSchips, this.actor),
       // Kopf „Wappenbanner“ (2026-10-19): Bannerbild und Porträtform je Held als Actor-Flags.
       // Pfad CSS-sicher (#87): Apostroph im Dateinamen ließ das Banner leer.
       banner: cssUrlPath(this.actor.getFlag?.(MODULE_ID, 'bannerImg') || ''),
@@ -550,6 +554,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     this._applyCurrentTab();
     // Karte des Systems beim Überfahren von Namen (#52).
     bindItemTooltips(this);
+    this._observeGodSchips();
     // Kraftspeicher-Rundmenü nur per Klick oder Pfeil nach unten, nicht beim Überfahren (#73: verdeckte sonst den Bogen).
     const sourceAnchor = this.element.querySelector('.dsa5h-power-satellite');
     sourceAnchor?.addEventListener('keydown', event => {
@@ -966,6 +971,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
 
   async close(options) {
     this._closePowerSources();
+    this._godObserver?.disconnect();
+    if (godOverviewOpenFor(this)) closeGodOverview();
     return super.close(options);
   }
 
@@ -1270,6 +1277,37 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static async _setBodyFigure(_event, target) {
     if (!this.isEditable) return;
     await this.actor.setFlag(MODULE_ID, 'bodyFigure', target.dataset.figure === 'portrait' ? 'portrait' : 'placeholder');
+  }
+
+  // Götterschips (#89): Zeile nach jedem Rendern und bei jeder Größenänderung einpassen (Kopf, Titelblatt-Leiste und
+  // Smartphone haben unterschiedlich Platz; die Zeile wandert mit dem Reiter), offene Übersicht nachziehen. Überfahren
+  // von „+n“ zeigt die Übersicht ohne Knöpfe (nur mit Maus), Klick heftet sie an (Aktion dsa5hGodOverview).
+  _observeGodSchips() {
+    this._godObserver?.disconnect();
+    const row = this.element?.querySelector('.dsa5h-fate-points');
+    const more = row?.querySelector('.dsa5h-god-more');
+    if (!more) {
+      if (godOverviewOpenFor(this)) closeGodOverview();
+      return;
+    }
+    fitGodSchips(row);
+    this._godObserver = new ResizeObserver(() => fitGodSchips(row));
+    this._godObserver.observe(row);
+    if (godOverviewOpenFor(this)) renderGodOverview(this);
+    more.addEventListener('mouseenter', () => {
+      if (globalThis.matchMedia?.('(hover: hover)').matches && !godOverviewOpenFor(this)) openGodOverview(this, more, false);
+    });
+    more.addEventListener('mouseleave', () => setTimeout(() => {
+      if (godOverviewOpenFor(this, { pinned: false }) && !document.querySelector('.dsa5h-god-pop:hover')) closeGodOverview();
+    }, 150));
+  }
+
+  static async _godSchip(event, target) {
+    await changeGodSchip(this.actor, target.dataset.path, event.button === 2 ? 1 : -1);
+  }
+
+  static _godOverview(event, target) {
+    openGodOverview(this, target, true);
   }
 
   // Bannerbild im Kopf (2026-10-19): Pfad als Actor-Flag bannerImg. Kein mitgeliefertes Bild — ohne eigenes Bild bleibt

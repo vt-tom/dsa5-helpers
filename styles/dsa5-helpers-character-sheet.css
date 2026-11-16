@@ -1000,14 +1000,144 @@
   opacity: .45;
 }
 
-/* Zusatz-Schips anderer Module (Issue #89, z. B. Götterschips): Bild und Leer-Darstellung bringt das Modul im
-   style-Attribut mit, darum hier nur Größe und keine eigene Abblendung. */
-.dsa5-helpers-sheet .dsa5h-fatepoint.dsa5h-extra-schip {
-  background-size: 23px 23px;
+/* Götterschips (Issue #89, Variante C, god-schips.js): je Gott ein Symbol mit „verfügbar/gesamt“. Bild und
+   Leer-Darstellung bringt das liefernde Modul im style-Attribut mit, darum keine eigene Abblendung. Reicht der Platz
+   nicht, blendet fitGodSchips() hintere Götter aus und zeigt „+n“; dafür ist die Plakette im Kopf begrenzt
+   (--dsa5h-fate-max) und die Zeile darf schrumpfen. Übersicht .dsa5h-god-pop (Popover im Bogen). */
+.dsa5-helpers-sheet .dsa5h-fate-points {
+  min-width: 0;
+  max-width: 100%;
 }
 
-.dsa5-helpers-sheet .dsa5h-fatepoint.dsa5h-extra-schip.emptySchip {
-  opacity: 1;
+.dsa5-helpers-sheet .dsa5h-head .dsa5h-fate-points {
+  max-width: var(--dsa5h-fate-max, 260px);
+}
+
+.dsa5-helpers-sheet .dsa5h-god-schip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  height: 29px;
+  margin: -3px 0;
+  padding: 0 5px 0 3px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: #f4e8d6;
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-ico {
+  display: block;
+  width: 23px;
+  height: 23px;
+  background: center / contain no-repeat;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-more {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--hit-sm);
+  height: var(--hit-sm);
+  margin: 0 0 0 2px;
+  padding: 0 6px;
+  border: 1px solid rgba(224, 192, 128, .55);
+  border-radius: 12px;
+  background: none;
+  color: #f4e8d6;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet :is(.dsa5h-god-schip, .dsa5h-god-more)[hidden] {
+  display: none;
+}
+
+.dsa5-helpers-sheet :is(.dsa5h-god-schip, .dsa5h-god-more):focus-visible {
+  outline: 2px solid #e0c080;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-pop {
+  position: fixed;
+  inset: auto;
+  min-width: 200px;
+  margin: 0;
+  padding: 6px 0;
+  border: 1px solid rgba(224, 192, 128, .55);
+  border-radius: 6px;
+  background: #2b2520;
+  color: #f4e8d6;
+  font-size: var(--fs-base);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .5);
+}
+
+.dsa5-helpers-sheet .dsa5h-god-pop-title {
+  padding: 2px 12px 6px;
+  color: #d6bd8a;
+  font-size: var(--fs-meta);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-pop-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--hit-lg);
+  padding: 2px 12px;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-pop-row .dsa5h-god-ico {
+  width: 22px;
+  height: 22px;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-pop-name {
+  flex: 1;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-pop-row b {
+  min-width: 30px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-step {
+  flex: none;
+  width: var(--hit-md);
+  height: var(--hit-md);
+  padding: 0;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 50%;
+  background: none;
+  color: #f4e8d6;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-step:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.dsa5-helpers-sheet .dsa5h-god-pop-hint {
+  display: block;
+  padding: 4px 12px 0;
+  color: #b9ad9b;
+  font-size: var(--fs-meta);
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet :is(.dsa5h-god-schip, .dsa5h-god-more):hover,
+  .dsa5-helpers-sheet .dsa5h-god-step:not(:disabled):hover {
+    background: rgba(224, 192, 128, .2);
+  }
 }
 
 /* --- Band: Spezies · Kultur · Profession & Heldenerschaffung --- */
@@ -2647,6 +2777,11 @@
   gap: 8px;
   margin-top: -6px;
   padding: 0 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-cover-fate {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .dsa5-helpers-sheet .dsa5h-cover-fate .dsa5h-fate-points {
