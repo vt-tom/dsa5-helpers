@@ -161,6 +161,10 @@ test('three modes (#34): lock closed = play, open = advance or edit (actor flag)
 test('banner upload (#46): hints without folder or GM, the GM client uploads for owners only and sets the flag',async()=>{
  const saved={game:global.game,ui:global.ui,foundry:global.foundry,fetch:global.fetch,File:global.File};
  const B=await import(dataUrl(read('scripts/banner-upload.js')));
+ // #87: Apostroph u. a. im Dateinamen dürfen url('…') im style-Attribut nicht beenden
+ assert.equal(B.cssUrlPath("worlds/x/Al'Anfa (2) bild.webp"),'worlds/x/Al%27Anfa%20%282%29%20bild.webp');
+ assert.equal(B.cssUrlPath('worlds/x/held%20eins.webp'),'worlds/x/held%20eins.webp','schon kodierte Pfade bleiben');assert.equal(B.cssUrlPath(undefined),'');
+ assert(/banner: cssUrlPath\(/.test(read('scripts/sheets/dsa5-helpers-character-sheet.js')),'Bogen setzt den Bannerpfad CSS-sicher ein');
  const notes=[];let handler=null;const emitted=[];const uploads=[];let flag=null;
  const actor={id:'a1',name:'Wulf',testUserPermission:(u,l)=>u.id==='owner'&&l==='OWNER',setFlag:async(m,k,v)=>{flag=[m,k,v];}};
  let path='';const gm={id:'gm',isGM:true};
@@ -413,6 +417,18 @@ test('body tab: a free off hand renders compactly below the main hand, its tile 
  const select=dom.findAll(el=>el.name==='select'&&el.attribs['data-dsa5h-hand']==='offhand',free.children);assert.equal(select.length,1);assert(select[0].attribs['aria-label']);
  const off=item('off','meleeweapon');off.system.worn={value:true,offHand:true};p.wornMeleeWeapons=[main,off];actor.items.set('off',off);
  context=await sheet._prepareContext({});html=render(context);assert(!context.dsa5h.body.offFree);assert(!html.includes('dsa5h-hand-free'));
+});
+
+test('body tab (#79): with ignored hand limits the hand shows the weapon chosen last, the other stays worn',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;
+ const a=item('a','meleeweapon');a.system.worn={value:true,offHand:false};const b=item('b','rangeweapon');b.system.worn={value:true,offHand:false,requiresBothHands:true};
+ p.wornMeleeWeapons=[a];p.wornRangedWeapons=[b];actor.items.set('a',a);actor.items.set('b',b);
+ let body=(await sheet._prepareContext({})).dsa5h.body;assert.equal(body.hands[0].item._id,'a','without a choice the first worn weapon');
+ actor.flags.handChoice={main:'b'};body=(await sheet._prepareContext({})).dsa5h.body;
+ assert.equal(body.hands[0].item._id,'b','chosen weapon in the hand');assert(body.alsoWorn.some(w=>w.item._id==='a'),'previous weapon stays worn');
+ actor.saved=undefined;actor._ignoresWeaponHandLimits=()=>false;await sheet._rememberHand('a','main');assert.equal(actor.saved,undefined,'nothing stored with normal hand limits');
+ actor._ignoresWeaponHandLimits=()=>true;await sheet._rememberHand('a','offhand');assert.deepEqual(actor.saved.value,{main:'b',offhand:'a'});
+ delete actor._ignoresWeaponHandLimits;actor.system.config={ignoreWeaponHandLimits:true};actor.saved=undefined;await sheet._rememberHand('c','main');assert.deepEqual(actor.saved?.value?.main,'c','DSA7 (v13): Einstellung ohne Hilfsmethode');
 });
 
 test('character builder button replaces the species field only when the system allows building (issue #10)',async()=>{

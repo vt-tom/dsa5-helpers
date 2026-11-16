@@ -2,7 +2,7 @@
 import { systemApi, isFoundry13, contextMenuEntries } from '../compat/runtime.js';
 import { openPowerSourceDialog } from '../compat/powersource-dialog.js';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
-import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
+import { bannerPath, canBrowseFiles, cssUrlPath, uploadBannerFromComputer } from '../banner-upload.js';
 import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, distractFoe, maneuverSheetData, defenseChoices, setDefenseMode } from '../house-rules/rules.js';
 import { openHouseRules } from '../apps/house-rules.js';
 import { almanacTabEnabled, loadQuests, loadPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
@@ -400,7 +400,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       statusTiles: phone ? ['inpain', 'encumbered'].map(id => ({ id, value: (context.conditions ?? []).find(c => c.descriptor === id)?.value ?? 0 })) : [],
       currentTab: this._currentTab,
       // Kopf „Wappenbanner“ (2026-10-19): Bannerbild und Porträtform je Held als Actor-Flags.
-      banner: this.actor.getFlag?.(MODULE_ID, 'bannerImg') || '',
+      // Pfad CSS-sicher (#87): Apostroph im Dateinamen ließ das Banner leer.
+      banner: cssUrlPath(this.actor.getFlag?.(MODULE_ID, 'bannerImg') || ''),
       portraitRound: this.actor.getFlag?.(MODULE_ID, 'portraitShape') === 'round',
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
       // Drei Modi (Issue #34): Schloss des Systems zu = Spielen; offen = Steigern oder Bearbeiten (Actor-Flag sheetMode).
@@ -562,7 +563,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
         if (!select) return;
         event.stopPropagation();
         const hand = select.dataset.dsa5hHand;
-        if (select.value) this._takeOutOfContainer(select.value).then(() => this.actor.equipWeaponToHand(select.value, { hand, equip: true }));
+        const id = select.value;
+        if (id) this._takeOutOfContainer(id).then(() => this.actor.equipWeaponToHand(id, { hand, equip: true })).then(() => this._rememberHand(id, hand));
         else if (select.dataset.current) this.actor.equipWeaponToHand(select.dataset.current, { equip: false });
       }, { capture: true });
       // Zauber-/Liturgie-Dialog im Reiter „Körper“: showModal() legt ihn in den Top-Layer über alles, auch über Foundrys
@@ -717,9 +719,16 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       ? (RuleChaos ? RuleChaos.isWieldedTwohanded(item) : !!item.wieldedTwoHand)
       : item.system?.worn?.requiresBothHands !== false;
     const worn = [...(prepare.wornMeleeWeapons ?? []), ...(prepare.wornRangedWeapons ?? [])];
-    const main = worn.find(w => !w.system?.worn?.offHand) ?? null;
+    // Mit „Handbeschränkung ignorieren“ können mehrere Waffen in derselben Hand angelegt sein: dann zuerst die zuletzt
+    // für diese Hand gewählte (Issue #79, _rememberHand), sonst wie bisher die erste.
+    const choice = this.actor.getFlag?.(MODULE_ID, 'handChoice') ?? {};
+    const inHand = (offHand, exclude) => {
+      const candidates = worn.filter(w => w !== exclude && !!w.system?.worn?.offHand === offHand);
+      return candidates.find(w => w._id === choice[offHand ? 'offhand' : 'main']) ?? candidates[0] ?? null;
+    };
+    const main = inHand(false);
     const mainTwoHanded = !!main && twoHanded(this.actor.items.get(main._id) ?? main);
-    const off = mainTwoHanded ? null : worn.find(w => w !== main && w.system?.worn?.offHand) ?? null;
+    const off = mainTwoHanded ? null : inHand(true, main);
     const weapons = [...(this.actor.items?.values?.() ?? [])].filter(item => ['meleeweapon', 'rangeweapon'].includes(item.type))
       .sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang));
     // Griffwechsel ein-/beidhändig an der Hand (Rückmeldung 2026-10-05): nur Nahkampfwaffen, die das System umschalten
@@ -1029,6 +1038,21 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     if (this._containerOf(item)) await item.update({ 'system.parent_id': '' });
   }
 
+  // Issue #79: Mit der Akteur-Einstellung „Handbeschränkung ignorieren“ (system.config.ignoreWeaponHandLimits; gilt im
+  // System auch für Akteure ohne Helden-Datenvorbereitung) legt equipWeaponToHand die bisherige Waffe nicht ab — beide
+  // stehen dann in derselben Hand, und der Bogen zeigte weiter die alte. Die Einstellung erlaubt mehrere angelegte
+  // Waffen bewusst; daher bleibt die alte angelegt („Ebenfalls angelegt“), die gewählte merkt sich der Bogen für die Hand.
+  async _rememberHand(itemId, hand) {
+    // DSA7 (v13) kennt _ignoresWeaponHandLimits nicht, nur die Einstellung selbst (7.0.1).
+    const ignores = typeof this.actor._ignoresWeaponHandLimits === 'function'
+      ? this.actor._ignoresWeaponHandLimits()
+      : !!this.actor.system?.config?.ignoreWeaponHandLimits;
+    if (!ignores) return;
+    const key = hand === 'offhand' ? 'offhand' : 'main';
+    const choice = { ...(this.actor.getFlag(MODULE_ID, 'handChoice') ?? {}), [key]: itemId };
+    await this.actor.setFlag(MODULE_ID, 'handChoice', choice);
+  }
+
   // Freie Stelle im dunklen Kopf oder oberes Rahmenband: beide verschieben das Fenster / minimieren per Doppelklick.
   _isDragHandle(event) {
     const target = event.target;
@@ -1250,7 +1274,10 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const item = this.actor.items.get(this._getItemId(target));
     if (!this.actor.isOwner || item?.type !== 'meleeweapon') return;
     await item.system.swapNumberWeaponHands();
-    if (item.system.worn.value && systemApi().apps.RuleChaos.isWieldedTwohanded(item)) await this.actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
+    if (item.system.worn.value && systemApi().apps.RuleChaos.isWieldedTwohanded(item)) {
+      await this.actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
+      await this._rememberHand(item.id, 'main');
+    }
   }
 
   // Charakterbauer (#10): wie im System, merkt sich aber die bisherige Bogenwahl ('' = Standard), die der
@@ -1341,6 +1368,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       if (twoHanded && gripSwitchable) await item.system.swapNumberWeaponHands();
       if (worn) await actor.swapWeaponHandSlot(item.id, hand);
       else await actor.equipWeaponToHand(item.id, { hand, equip: true });
+      await this._rememberHand(item.id, hand);
     };
     const icon = (active, fallback) => `<i class="fas fa-${active ? 'check' : fallback} fa-fw"></i>`;
     const menu = new foundry.applications.ux.ContextMenu(this.element, '', contextMenuEntries([
@@ -1352,6 +1380,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
           await this._takeOutOfContainer(item.id);
           if (!twoHanded) await item.system.swapNumberWeaponHands();
           if (!worn) await actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
+          await this._rememberHand(item.id, 'main');
         },
       },
       { label: 'SHEET.UnEquipItem', icon: '<i class="fas fa-xmark fa-fw"></i>', visible: worn, onClick: () => actor.equipWeaponToHand(item.id, { equip: false }) },

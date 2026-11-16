@@ -25,6 +25,15 @@ const FilePickerClass = () => foundry.applications.apps?.FilePicker?.implementat
 // Speicherort wie Foundrys Dateiauswahl: Forge-Installationen laden in ihren eigenen Speicher.
 const storage = () => (typeof ForgeVTT !== 'undefined' && ForgeVTT.usingTheForge ? 'forgevtt' : 'data');
 
+/**
+ * Bildpfad für url('…') in einem style-Attribut (#87, Rückmeldung 2026-11-16): Ein Apostroph im Dateinamen
+ * („Al'Anfa.webp“, über den Foundry-Dateibrowser gewählt) beendete die Zeichenkette, die Regel war ungültig und das
+ * Banner leer. Anführungszeichen, Klammern, Backslash und Leerraum prozentkodiert; der Server dekodiert sie wieder.
+ */
+export function cssUrlPath(path) {
+  return String(path ?? '').replace(/['"()\\\s]/g, char => '%' + char.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'));
+}
+
 export function bannerPath() {
   try { return String(game.settings.get(MODULE_ID, 'bannerPath') ?? '').trim().replace(/\/+$/, ''); } catch { return ''; }
 }
