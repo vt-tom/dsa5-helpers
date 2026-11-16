@@ -1,8 +1,21 @@
 // Generationsvorschau ohne Foundry: ?foundry=13
 const DUMMY_V13 = new URLSearchParams(location.search).get("foundry") === "13";
-// Issue #89: Zusatz-Schips (Götterschips) im Kopf zeigen, siehe fatePointsRow().
-const GOD_SCHIPS_DEMO = new URLSearchParams(location.search).has("godSchips");
-const GOD_SCHIPS = [{ name: "Götterschip", full: true }, { name: "Götterschip", full: false }];
+// Issue #89, Götterschips im Kopf: Variante C „je Gott ein Symbol mit Zahl“ (Nutzerentscheidung 2026-11-16, A/B
+// verworfen). Testdaten über die Adresse: ?godschips=3 bzw. =7 (zu breit), ?godSchips wie bisher = 3 Götter. Reicht der Platz nicht, verschwinden
+// die hinteren Götter hinter „+n“; Überfahren (Desktop) bzw. Antippen zeigt die Übersicht aller Götter (fitGodSchips()).
+// Bilder sind Stellvertreter (System-Schip eingefärbt), im Modul bringt „Götter Aventuriens 2“ eigene mit.
+const GOD_PARAMS = new URLSearchParams(location.search);
+let GOD_COUNT = Number(GOD_PARAMS.get("godschips")) || (GOD_PARAMS.has("godSchips") ? 3 : 0);
+const ALL_GODS = [
+  { name: "Praios", hue: 10, value: 2, current: 1 },
+  { name: "Rondra", hue: 300, value: 1, current: 1 },
+  { name: "Phex", hue: 170, value: 3, current: 2 },
+  { name: "Efferd", hue: 200, value: 2, current: 2 },
+  { name: "Travia", hue: 330, value: 1, current: 0 },
+  { name: "Boron", hue: 240, value: 2, current: 1 },
+  { name: "Hesinde", hue: 90, value: 1, current: 1 },
+];
+const GODS = () => ALL_GODS.slice(0, GOD_COUNT);
 // Click-Dummy Renderer — reine Darstellungslogik, kein Foundry-Datenmodell.
 
 function el(tag, attrs = {}, children = []) {
@@ -3434,18 +3447,97 @@ function fatePointsRow() {
     });
     wrap.appendChild(btn);
   }
-  // Issue #89: Zusatz-Schips anderer Module (z. B. Götterschips aus „Götter Aventuriens 2“) hinter den eigenen;
-  // Bild und Leer-Darstellung bringt das Modul mit, hier Stellvertreter aus dem System-Schip. Nur mit ?godSchips.
-  if (GOD_SCHIPS_DEMO) GOD_SCHIPS.forEach((g, i) => {
-    const label = `${g.name} ${i + 1}: ${g.full ? "ausgeben" : "wiederherstellen"}`;
-    const btn = el("button", { type: "button", class: "fate-point-btn god-schip", title: label, "aria-label": label, "data-fkey": `god:${i}` }, [
-      el("img", { src: "../../../systems/dsa5/icons/schip.webp", alt: "", class: g.full ? "" : "dim" }),
-    ]);
-    btn.addEventListener("click", () => { g.full = !g.full; renderHeader(); renderContent(); });
+  if (!GOD_COUNT) return wrap;
+  // Je Gott ein Symbol mit „verfügbar/gesamt“; Klick gibt einen aus, Rechtsklick stellt einen wieder her.
+  GODS().forEach((g) => {
+    const label = `${g.name}-Schips: ${g.current} von ${g.value}. Klick gibt einen aus, Rechtsklick stellt einen wieder her`;
+    const btn = el("button", { type: "button", class: "fate-point-btn god-count", title: label, "aria-label": label }, [godImg(g, g.current > 0), el("small", {}, `${g.current}/${g.value}`)]);
+    btn.addEventListener("click", () => { if (g.current > 0) g.current -= 1; rerenderGods(); });
+    btn.addEventListener("contextmenu", (e) => { e.preventDefault(); if (g.current < g.value) g.current += 1; rerenderGods(); });
     wrap.appendChild(btn);
   });
+  const more = el("button", { type: "button", class: "fate-point-btn god-more", hidden: "", "aria-haspopup": "dialog" }, "");
+  more.addEventListener("click", (e) => { e.stopPropagation(); openGodOverview(more, true); });
+  more.addEventListener("mouseenter", () => { if (matchMedia("(hover: hover)").matches && !godPop?.pinned) openGodOverview(more, false); });
+  more.addEventListener("mouseleave", () => { if (!godPop?.pinned) setTimeout(() => { if (!godPop?.pinned && !godPop?.node.matches(":hover")) closeGodOverview(); }, 150); });
+  wrap.appendChild(more);
+  // Erst im Dokument lässt sich messen; bei jeder Größenänderung neu verteilen.
+  requestAnimationFrame(() => fitGodSchips(wrap));
+  godObservers = godObservers.filter(([w, ro]) => (w.isConnected ? true : (ro.disconnect(), false)));
+  const ro = new ResizeObserver(() => fitGodSchips(wrap));
+  ro.observe(wrap);
+  godObservers.push([wrap, ro]);
   return wrap;
 }
+
+let godObservers = [];
+const godImg = (g, full) => el("img", { src: "../../../systems/dsa5/icons/schip.webp", alt: "", class: full ? "" : "dim", style: `filter: hue-rotate(${g.hue}deg) saturate(1.8)${full ? "" : " grayscale(1)"}` });
+function rerenderGods() {
+  renderHeader();
+  renderContent();
+  if (godPop?.pinned) refreshGodOverview();
+}
+
+// Platz reicht nicht (Plakette im Kopf, Schips-Zeile im Titelblatt): hintere Götter ausblenden, „+n“ zeigt wie viele.
+// Die eigenen Schips bleiben immer sichtbar. Modul: dieselbe Messung nach dem Rendern (ResizeObserver).
+function fitGodSchips(wrap) {
+  if (!wrap.isConnected) return;
+  const gods = [...wrap.querySelectorAll(".god-count")];
+  const more = wrap.querySelector(".god-more");
+  gods.forEach((b) => { b.hidden = false; });
+  more.hidden = true;
+  const over = () => wrap.scrollWidth > wrap.clientWidth + 1;
+  let hidden = 0;
+  while (over() && hidden < gods.length) {
+    gods[gods.length - 1 - hidden].hidden = true;
+    hidden += 1;
+    more.hidden = false;
+    more.textContent = `+${hidden}`;
+  }
+  const list = GODS().map((g) => `${g.name} ${g.current}/${g.value}`).join(", ");
+  more.setAttribute("aria-label", `${hidden} weitere Götter. Übersicht aller Götterschips: ${list}`);
+}
+
+// Übersicht aller Götterschips: beim Überfahren als Tooltip, per Klick/Tippen angeheftet mit − / + je Gott.
+let godPop = null;
+function openGodOverview(anchor, pin) {
+  if (godPop && godPop.pinned && pin) return closeGodOverview();
+  closeGodOverview();
+  const node = el("div", { class: "god-pop", role: "dialog", "aria-label": "Götterschips" });
+  node.addEventListener("mouseleave", () => { if (!godPop?.pinned) closeGodOverview(); });
+  node.addEventListener("click", (e) => e.stopPropagation());
+  document.body.append(node);
+  godPop = { node, anchor, pinned: pin };
+  refreshGodOverview();
+}
+function refreshGodOverview() {
+  const { node, anchor, pinned } = godPop;
+  const step = (g, d) => {
+    const b = el("button", { type: "button", class: "god-step", "aria-label": `${g.name}: ${d < 0 ? "einen ausgeben" : "einen wiederherstellen"}` }, d < 0 ? "−" : "+");
+    if ((d < 0 && !g.current) || (d > 0 && g.current >= g.value)) b.disabled = true;
+    b.addEventListener("click", () => { g.current += d; rerenderGods(); });
+    return b;
+  };
+  node.replaceChildren(...[
+    el("div", { class: "god-pop-title" }, "Götterschips"),
+    ...GODS().map((g) => el("div", { class: "god-pop-row" }, [godImg(g, g.current > 0), el("span", { class: "god-pop-name" }, g.name),
+      pinned ? step(g, -1) : null, el("b", {}, `${g.current}/${g.value}`), pinned ? step(g, 1) : null])),
+    pinned ? null : el("small", { class: "god-pop-hint" }, "Klicken heftet an, dann − / + je Gott"),
+  ].filter(Boolean));
+  // Anker kann nach dem Neu-Rendern ersetzt sein: neuen „+n“-Knopf suchen.
+  const a = anchor.isConnected ? anchor : document.querySelector(".god-more:not([hidden])");
+  if (!a) return closeGodOverview();
+  godPop.anchor = a;
+  const r = a.getBoundingClientRect();
+  node.style.top = `${r.bottom + 6}px`;
+  node.style.left = `${Math.max(8, Math.min(innerWidth - node.offsetWidth - 8, r.right - node.offsetWidth))}px`;
+}
+function closeGodOverview() {
+  godPop?.node.remove();
+  godPop = null;
+}
+document.addEventListener("click", () => { if (godPop?.pinned) closeGodOverview(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeGodOverview(); });
 
 // Porträt-Medaillon (#portrait): Bild in der gewählten Form (PORTRAIT_SHAPE: eckig mit Goldfassung oder rund mit
 // Goldring, Kopf-Varianten A/B 2026-10-19), darunter das AP-Band (Element aus Variante B) mit AP-Wert und freien AP —

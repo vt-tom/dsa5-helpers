@@ -812,9 +812,130 @@ button {
   opacity: .45;
 }
 
-/* Stellvertreter für Götterschips (Issue #89): im Modul bringt das Inhaltsmodul eigene Bilder mit. */
-.fate-point-btn.god-schip img {
-  filter: hue-rotate(160deg) saturate(1.6);
+/* Götterschips (Issue #89, fatePointsRow(), Variante C 2026-11-16): je Gott ein Symbol mit „verfügbar/gesamt“, Färbung
+   als Stellvertreter im style-Attribut. Reicht der Platz nicht, blendet fitGodSchips() hintere Götter aus und zeigt
+   „+n“; die Übersicht (.god-pop) erscheint beim Überfahren und angeheftet per Klick. Die Plakette im Kopf ist dafür
+   auf --god-plaque-max begrenzt, die Schips-Zeile im Titelblatt auf die Breite der Leiste. */
+.head-plaque {
+  max-width: var(--god-plaque-max, 260px);
+  min-width: 0;
+}
+
+.fate-points {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.fate-point-btn.god-count {
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 5px 3px 3px;
+  border-radius: 14px;
+  color: #f4e8d6;
+  font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.fate-point-btn.god-more {
+  flex: none;
+  align-items: center;
+  min-width: var(--hit-sm, 24px);
+  height: var(--hit-sm, 24px);
+  margin: -1px 0 -1px 2px;
+  padding: 0 6px;
+  border: 1px solid rgba(224,192,128,.55);
+  border-radius: 12px;
+  color: #f4e8d6;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+}
+
+.fate-point-btn.god-more[hidden],
+.fate-point-btn.god-count[hidden] {
+  display: none;
+}
+
+.fate-point-btn.god-more:focus-visible {
+  outline: 2px solid #e0c080;
+}
+
+.god-pop {
+  position: fixed;
+  z-index: 1000;
+  min-width: 190px;
+  padding: 6px 0;
+  border: 1px solid rgba(224,192,128,.55);
+  border-radius: 6px;
+  background: #2b2520;
+  color: #f4e8d6;
+  font-size: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.5);
+}
+
+.god-pop-title {
+  padding: 2px 12px 6px;
+  color: #d6bd8a;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.god-pop-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--hit-md, 26px);
+  padding: 2px 12px;
+}
+
+.god-pop-row img {
+  width: 22px;
+  height: 22px;
+}
+
+.god-pop-row img.dim {
+  opacity: .45;
+}
+
+.god-pop-name {
+  flex: 1;
+}
+
+.god-pop-row b {
+  min-width: 30px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.god-step {
+  width: var(--hit-sm, 24px);
+  height: var(--hit-sm, 24px);
+  padding: 0;
+  border: 1px solid rgba(224,192,128,.45);
+  border-radius: 50%;
+  background: none;
+  color: #f4e8d6;
+  cursor: pointer;
+}
+
+.god-step:disabled {
+  opacity: .35;
+  cursor: default;
+}
+
+.god-pop-hint {
+  display: block;
+  padding: 4px 12px 0;
+  color: #b9ad9b;
+  font-size: 12px;
+}
+
+@media (hover: hover) {
+  .fate-point-btn.god-more:hover,
+  .god-step:not(:disabled):hover {
+    background: rgba(224,192,128,.2);
+  }
 }
 
 @media (hover: hover) {
