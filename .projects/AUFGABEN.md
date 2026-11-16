@@ -52,7 +52,7 @@ Veröffentlichung nur nach Auftrag, nur v14 (kein 7.1.0); Ablauf in [RELEASE.md]
 ## Bugfixes 8.0.x
 
 Branch `release/8.0.1` im Hauptordner (`release/8.1.0` liegt in `D:/Development/dsa5-helpers-8.1.0`): Fix dort committen, dann in
-`release/8.1.0` per `git merge --no-ff release/8.0.1` übernehmen. Stand 16.11.: #79, #80, #81, #82, #85, #86, #89 auf 8.0.1, nach 8.1.0 gemergt; #84, #87, #90, #91, #92 auf 8.0.1 (16.11.).
+`release/8.1.0` per `git merge --no-ff release/8.0.1` übernehmen. Stand 16.11.: #79, #80, #81, #82, #85, #86, #89 auf 8.0.1, nach 8.1.0 gemergt; #84, #87, #90, #91, #92 auf 8.0.1, nach 8.1.0 gemergt (16.11.).
 
 - [X] Du: **Waffenwechsel bei „Handbeschränkung ignorieren“** · #79 — Grombrak (Haken in seinem Kampf-Reiter des Systembogens), Kampf › Körper:
   Haupthand auf Eisenwalder → Eisenwalder in der Hand, Lindwurmschläger unter „Ebenfalls angelegt“; ebenso per Rechtsklick aufs Schild.
@@ -86,8 +86,6 @@ Branch `release/8.0.1` im Hauptordner (`release/8.1.0` liegt in `D:/Development/
   Bogen im Bearbeiten-Modus, Eigenschaften und Notizen → Felder, Rahmen, Plakette, Griff unten rechts überall gleich, auch bei dunklem Bogen.
 - [ ] Du: **7.0.1 für v13** · #79 #87 — v13-Testwelt, Paket aus Branch `v13`: Waffenwechsel wie oben → gewählte Waffe in der Hand; Banner mit
   Apostroph im Dateinamen → Bild erscheint. Nur die zwei Fixes, lokal auf `v13` committet, nicht gepusht; Tests gegen v13 grün, live nicht geprüft.
-- KI: **8.0.1 nach 8.1.0 übernehmen** — Commits e4d9289 und e87a0d9 fehlen noch in `release/8.1.0`; dessen Arbeitsbaum
-  (`D:/Development/dsa5-helpers-8.1.0`) hat offene Änderungen, Merge erst danach.
 - Du: **Release 8.0.1 / 7.0.1** — zurückgehalten bis zu deiner Freigabe. Danach Issues des Meilensteins 8.0.1 schließen.
 
 ## Später
@@ -119,7 +117,7 @@ Branch `release/8.0.1` im Hauptordner (`release/8.1.0` liegt in `D:/Development/
 <!-- GITHUB-ISSUES:START -->
 ## Überblick (erzeugt)
 
-_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T09:56:45.079Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
+_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T10:00:42.814Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
 
 | Abschnitt | Du | KI | Einträge |
 |---|---|---|---|
@@ -128,7 +126,7 @@ _Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T09:56:4
 | Bereit zur Umsetzung | – | – | 0 |
 | Umgesetzt – testen | – | – | 0 |
 | Fertig für Release | – | – | 0 |
-| Bugfixes 8.0.x | 18 | 1 | 19 |
+| Bugfixes 8.0.x | 18 | – | 18 |
 | Später – Nächste Version | 2 | – | 2 |
 | Später – Wartet auf Dritte | – | – | 1 |
 | Später – Ideen | – | – | 7 |
