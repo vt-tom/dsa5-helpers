@@ -7401,6 +7401,23 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   cursor: pointer;
   font-size: var(--font-size-12, 12px);
 }
+/* #90: Grund, wenn die gewählte Verteidigung nicht zulässig war; gesperrte Zeilen in der SL-Rechnung; Knopf
+   „Selbst verteidigen“ unter der Karte (volle Breite), Karte nach der Rücknahme neutral. */
+.chat-message .dsa5h-pd-card .dsa5h-pd-note {
+  grid-column: 2;
+  font-style: italic;
+  opacity: .85;
+}
+.chat-message .dsa5h-pd-table .dsa5h-pd-blocked {
+  opacity: .55;
+  text-decoration: line-through;
+}
+.chat-message .dsa5h-pd-card.dsa5h-pd-manual { --pd: #8b6f3f; }
+.chat-message button.dsa5h-pd-self {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  font-size: var(--font-size-12, 12px);
+}
 
 /* Hausregeln im Standardbogen des Systems (Issue #44, scripts/house-rules/system-sheet.js): kleines Symbol hinter dem
    Talentnamen statt Foundrys großem Standardknopf. */

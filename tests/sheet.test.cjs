@@ -1560,6 +1560,18 @@ test('passive defense (#56): d20 against chosen or best defense, per-actor mode 
  assert.equal(pd.brawlCase(sword,{id:'s',item:sword},isB),null,'Waffe gegen Waffe');
  assert.equal(pd.brawlCase(brawlItem,{id:'dodge',item:{type:'dodge'}},isB),null,'Ausweichen');
  assert.equal(pd.isBrawlWeapon(brawlItem,k=>k==='LocalizedCTs.brawl'?'Brawling':k),true);
+ {// Zulässige Verteidigung (#90, Kodex des Schwertes): Größe des Angreifers, Kampftechnik-Besonderheiten
+ const ct=i=>i?.ct??null,opt=(id,ct)=>({id,item:ct?{ct}:{type:'combatskill'}});
+ const dodge=opt('dodge'),shield=opt('s','Shields'),swordOpt=opt('w','Swords'),dagger=opt('d','Daggers'),chain=opt('c','Chain Weapons'),whip=opt('p','Whips'),fist=opt('parryWeaponless');
+ assert.equal(pd.blockedReason(dodge,{attackerSize:'giant'},ct),null,'Ausweichen geht immer');
+ assert.equal(pd.blockedReason(shield,{attackerSize:'giant'},ct),'giant');assert.equal(pd.blockedReason(shield,{attackerSize:'big'},ct),null,'groß: Schild geht');
+ assert.equal(pd.blockedReason(swordOpt,{attackerSize:'big'},ct),'big');assert.equal(pd.blockedReason(fist,{attackerSize:'big'},ct),'big');
+ assert.equal(pd.blockedReason(swordOpt,{attackerSize:'average'},ct),null);
+ assert.equal(pd.blockedReason(chain,{},ct),'noParry');assert.equal(pd.blockedReason(whip,{},ct),'noParry');
+ assert.equal(pd.blockedReason(dagger,{attackTechnique:'Two-Handed Swords'},ct),'heavy');assert.equal(pd.blockedReason(dagger,{attackTechnique:'Swords'},ct),null);
+ assert.equal(pd.blockedReason(opt('f','Fencing Weapons'),{attackTechnique:'Polearms'},ct),'heavy');
+ assert.equal(pd.blockedReason(swordOpt,{ranged:true,attackerSize:'giant'},ct),null,'Fernkampf regelt baseOptions');
+ const src=read('scripts/house-rules/passive-defense.js');assert(src.includes("type: 'passiveManual'")&&src.includes('opposeUpdateData'),'#90 B: Rücknahme über SL und Wartezustand des Systems');}
  const actor=(type,flag)=>({type,getFlag:(_m,k)=>k==='autoDefense'?flag:undefined});
  assert.deepEqual(['character','npc','creature'].map(t=>pd.defenseMode(actor(t))),['manual','best','best'],'Vorbelegung je Typ');
  assert.equal(pd.defenseMode(actor('character','best')),'best');assert.equal(pd.defenseMode(actor('npc','manual')),'manual');

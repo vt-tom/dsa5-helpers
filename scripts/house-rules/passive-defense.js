@@ -63,6 +63,32 @@ export function brawlCase(attackSource, option, isBrawl = item => isBrawlWeapon(
   return null;
 }
 
+/** Kampftechnik einer Nahkampfwaffe als englischer Schlüssel des Systems (LocalizedCTs: 'Daggers', 'Shields' …). */
+export function techniqueOf(item, localize = key => game.i18n.localize(key)) {
+  return item?.type === 'meleeweapon' ? localize(`LocalizedCTs.${item.system?.combatskill?.value}`) : null;
+}
+
+// Kodex des Schwertes, Kampftechniken (Besonderheiten) und Ausweichen (#90, Nutzer 2026-11-16).
+const NO_PARRY_TECHNIQUES = ['Chain Weapons', 'Whips'];
+const LIGHT_PARRY_TECHNIQUES = ['Daggers', 'Fencing Weapons'];
+const HEAVY_ATTACK_TECHNIQUES = ['Chain Weapons', 'Polearms', 'Two-Handed Impact Weapons', 'Two-Handed Swords'];
+
+/**
+ * Warum eine Verteidigungsoption gegen diesen Angriff nicht geht (#90), sonst null. Ausweichen geht immer; gegen Fernkampf
+ * bleiben ohnehin nur Ausweichen und Schilde (baseOptions). Nahkampf: großer Angreifer nur Schild oder Ausweichen,
+ * riesiger nur Ausweichen; mit Kettenwaffen und Peitschen keine Parade; Dolche und Fechtwaffen parieren keine
+ * Kettenwaffen, Stangenwaffen, Zweihandhiebwaffen und Zweihandschwerter. Fächer (offen/geschlossen) prüft das Modul nicht.
+ */
+export function blockedReason(option, { ranged = false, attackerSize = null, attackTechnique = null } = {}, technique = item => techniqueOf(item)) {
+  if (!option || option.id === 'dodge' || ranged) return null;
+  const tech = technique(option.item);
+  if (attackerSize === 'giant') return 'giant';
+  if (attackerSize === 'big' && tech !== 'Shields') return 'big';
+  if (NO_PARRY_TECHNIQUES.includes(tech)) return 'noParry';
+  if (LIGHT_PARRY_TECHNIQUES.includes(tech) && HEAVY_ATTACK_TECHNIQUES.includes(attackTechnique)) return 'heavy';
+  return null;
+}
+
 /** Gewählte Option, wenn sie gegen diesen Angriff zulässig ist, sonst die beste. */
 export function chooseDefense(options, mode) {
   return options.find(option => option.id === mode) ?? bestDefense(options);
@@ -151,17 +177,27 @@ const escape = text => foundry.utils.escapeHTML(String(text ?? ''));
 
 // Ergebnis auf einen Blick (Issue #62, Variante B „Symbol und Wort“, Nutzerwahl 2026-10-30; Dummy passive-verteidigung.html):
 // rundes Symbol, darüber klein der Titel, das Ergebnis als großes Wort, darunter Satz und Verteidigungswurf.
-const OUTCOME_ICONS = { hit: 'fa-sword', defended: 'fa-shield', miss: 'fa-xmark' };
-function publicContent(outcome, attacker, defender, result) {
+const OUTCOME_ICONS = { hit: 'fa-sword', defended: 'fa-shield', miss: 'fa-xmark', manual: 'fa-dice-d20' };
+function publicContent(outcome, attacker, defender, result, note = null) {
   const text = game.i18n.format(P + 'Chat.' + outcome, { attacker: escape(attacker), defender: escape(defender) });
   const roll = result.roll ? ` <span class="dsa5h-pd-roll">${game.i18n.format(P + 'Chat.Roll', { roll: result.roll })}</span>` : '';
+  // Gewählte Verteidigung hier nicht zulässig (#90): Grund und Ersatz nennen.
+  const blocked = note ? `<p class="dsa5h-pd-note">${game.i18n.format(P + 'Chat.Blocked', { option: escape(note.option), reason: game.i18n.localize(P + 'Blocked.' + note.reason), chosen: escape(note.chosen) })}</p>` : '';
   return `<div class="dsa5h-pd-card dsa5h-pd-${outcome}"><span class="dsa5h-pd-icon"><i class="fa-solid ${OUTCOME_ICONS[outcome]}" inert></i></span>
     <small class="dsa5h-pd-title">${game.i18n.localize(P + 'Title')}</small><span class="dsa5h-pd-word">${game.i18n.localize(P + 'Chat.Word.' + outcome)}</span>
-    <p>${text}${roll}</p></div>`;
+    <p>${text}${roll}</p>${blocked}</div>`;
+}
+
+/** Angreifer-Größe und Kampftechnik der Angriffswaffe für blockedReason (#90). */
+function attackContext(attackMessage) {
+  const preData = attackMessage.flags.data.preData;
+  const sp = attackMessage.speaker ?? {};
+  const attacker = game.scenes.get(sp.scene)?.tokens.get(sp.token)?.actor ?? game.actors.get(sp.actor);
+  return { ranged: isRangedAttack(preData), attackerSize: attacker?.system?.status?.size?.value ?? null, attackTechnique: techniqueOf(preData?.source) };
 }
 
 function gmContent(result, options, chosen, at, d20) {
-  const rows = options.map(option => `<tr${option === chosen ? ' class="dsa5h-pd-chosen"' : ''}><td>${escape(option.name)}</td><td>${option.base}</td><td>${option.conditions + option.multiple + option.malus}${option.half ? ' ×½' : ''}</td><td><b>${option.value}</b></td></tr>`).join('');
+  const rows = options.map(option => `<tr${option === chosen ? ' class="dsa5h-pd-chosen"' : option.blocked ? ' class="dsa5h-pd-blocked"' : ''}><td>${escape(option.name)}${option.blocked ? ` <small>(${game.i18n.localize(P + 'Blocked.' + option.blocked)})</small>` : ''}</td><td>${option.base}</td><td>${option.conditions + option.multiple + option.malus}${option.half ? ' ×½' : ''}</td><td><b>${option.value}</b></td></tr>`).join('');
   return `<p>${game.i18n.format(P + 'Chat.GMLine', { at, d20, defense: chosen?.value ?? 0, option: escape(chosen?.name), roll: result.roll })}</p>
     <table class="dsa5h-pd-table"><thead><tr><th>${game.i18n.localize(P + 'Chat.Option')}</th><th>${game.i18n.localize(P + 'Chat.Base')}</th><th>${game.i18n.localize(P + 'Chat.Mods')}</th><th>V</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
@@ -183,9 +219,17 @@ export async function evaluate(startMessage, { reroll = false } = {}) {
   let result = { outcome: 'miss' };
   let options = [];
   let chosen = null;
+  let note = null;
+  if (previous?.manual) return;
   if (postData.successLevel > 0) {
     options = await defenseOptions(actor, speaker, attackMessage);
-    chosen = chooseDefense(options, defenseMode(actor));
+    // Unzulässige Optionen (#90) fallen weg; war die fest gewählte darunter, nennt die Karte den Grund.
+    const context = attackContext(attackMessage);
+    for (const option of options) option.blocked = blockedReason(option, context);
+    const allowed = options.filter(option => !option.blocked);
+    const wanted = options.find(option => option.id === defenseMode(actor));
+    chosen = chooseDefense(allowed, defenseMode(actor));
+    if (wanted?.blocked && chosen) note = { option: wanted.name, reason: wanted.blocked, chosen: chosen.name };
     const roll = (await new Roll('1d20').evaluate()).total;
     result = resolveDefense({ successLevel: postData.successLevel, roll, defense: chosen?.value ?? 0 });
     // Verbraucht, wenn die AT gelungen ist (Nutzer 2026-10-28) — wie im System, wo man nur gelungene Angriffe abwehrt.
@@ -224,10 +268,11 @@ export async function evaluate(startMessage, { reroll = false } = {}) {
   const cardId = card?.id ?? foundry.utils.randomID();
   if (result.roll) gmDetails.set(cardId, gmContent(result, options, chosen, die.tar, die.res));
   else gmDetails.delete(cardId);
-  const content = publicContent(result.outcome, attacker, defender, result);
-  if (card) await card.update({ content });
-  else await ChatMessage.create({ _id: cardId, content, speaker: attackMessage.speaker }, { keepId: true });
+  const content = publicContent(result.outcome, attacker, defender, result, note);
+  // Ergebnis vor der Karte speichern: der Knopf „Selbst verteidigen“ (addManualButton) liest es beim Zeichnen.
   await startMessage.setFlag(MODULE_ID, FLAG, { outcome: result.outcome, cardId, resultId, brawlId });
+  if (card) await card.update({ content });
+  else await ChatMessage.create({ _id: cardId, content, speaker: attackMessage.speaker, flags: { [MODULE_ID]: { passiveStart: startMessage.id } } }, { keepId: true });
   // Spät eintreffender Wartezustand (Spielerangriff über den Socket des Systems): wieder lösen.
   if (result.outcome !== 'hit') setTimeout(() => {
     if (isOpposePending(targetOf(startMessage).actor, startMessage.id)) clearOpposedFor(OpposeDSA, actor, startMessage.id);
@@ -280,6 +325,7 @@ async function brawlNotice(kind, { OpposeDSA, attackMessage, speaker, chosen, at
 }
 
 function decorateCard(message, html) {
+  addManualButton(message, html);
   const detail = game.user.isGM && gmDetails.get(message.id);
   if (!detail) return;
   const card = html.querySelector('.dsa5h-pd-card');
@@ -288,6 +334,71 @@ function decorateCard(message, html) {
   box.className = 'dsa5h-pd-gm';
   box.innerHTML = `<summary>${game.i18n.localize(P + 'Chat.GMTitle')}</summary>${detail}`;
   card.append(box);
+}
+
+/**
+ * Knopf „Selbst verteidigen“ (#90 B) auf der Karte der automatischen Verteidigung: für die SL und den Besitzer des
+ * Verteidigers, solange abgewehrt oder getroffen wurde und die Verteidigung nicht schon zurückgenommen ist.
+ */
+function addManualButton(message, html) {
+  const startId = message.flags?.[MODULE_ID]?.passiveStart;
+  const start = startId && game.messages.get(startId);
+  const state = start?.getFlag(MODULE_ID, FLAG);
+  if (!state || !['hit', 'defended'].includes(state.outcome)) return;
+  const actor = targetOf(start).actor;
+  if (!game.user.isGM && !actor?.isOwner) return;
+  const card = html.querySelector('.dsa5h-pd-card');
+  if (!card || card.querySelector('.dsa5h-pd-self')) return;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'dsa5h-pd-self';
+  button.innerHTML = `<i class="fa-solid fa-rotate-left" inert></i> ${game.i18n.localize(P + 'Manual.Button')}`;
+  button.dataset.tooltip = game.i18n.localize(P + 'Manual.Hint');
+  button.addEventListener('click', event => {
+    event.preventDefault();
+    button.disabled = true;
+    if (game.user === game.users.activeGM) manualDefense(start).catch(error => console.error(`${MODULE_ID} | Passive Verteidigung: Rücknahme`, error));
+    else game.socket.emit(SOCKET, { type: 'passiveManual', startMessageId: start.id, userId: game.user.id });
+  });
+  card.append(button);
+}
+
+/**
+ * Automatische Verteidigung zurücknehmen (#90 B, nur aktive SL): Ergebnis- und Raufen-Karte weg (nicht, wenn Schaden
+ * schon angewendet ist), Verteidigungszähler zurück, Wartezustand des Systems und Reaktionsknopf wiederherstellen, damit
+ * der Verteidiger wie gewohnt selbst reagiert.
+ */
+async function manualDefense(start, user = game.user) {
+  const OpposeDSA = systemApi()?.apps?.OpposeDSA;
+  const state = start?.getFlag(MODULE_ID, FLAG);
+  const attackMessage = game.messages.get(start?.flags?.unopposeData?.attackMessageId);
+  const { actor, speaker } = targetOf(start ?? {});
+  if (!OpposeDSA || !state || !attackMessage || !actor || !['hit', 'defended'].includes(state.outcome)) return;
+  if (!user?.isGM && !actor.testUserPermission(user, 'OWNER')) return;
+  const linked = state.outcome === 'hit' && typeof OpposeDSA.findOpposedResultMessage === 'function'
+    ? OpposeDSA.findOpposedResultMessage({ attackerMessageId: attackMessage.id, startMessageId: start.id }) : null;
+  const related = [linked, game.messages.get(state.resultId), game.messages.get(state.brawlId)].filter(Boolean);
+  if (related.some(message => JSON.stringify(message.flags ?? {}).includes('damageApplied'))) {
+    ui.notifications.warn(P + 'Manual.Applied', { localize: true });
+    return;
+  }
+  for (const message of related) await message.delete();
+  const combatant = game.combat?.getCombatantFromActor?.(speaker);
+  if (combatant && !combatant.actor?.system?.config?.defense && combatant.system.defenseCount > 0) {
+    await combatant.update({ 'system.defenseCount': combatant.system.defenseCount - 1 });
+  }
+  const opposeFlag = { speaker: attackMessage.speaker, messageId: attackMessage.id, startMessageId: start.id };
+  await actor.update(typeof OpposeDSA.opposeUpdateData === 'function' ? OpposeDSA.opposeUpdateData(opposeFlag) : { 'flags.oppose': opposeFlag });
+  if (attackMessage.flags.data.unopposedStartMessage === start.id) await attackMessage.update({ 'flags.data.unopposedStartMessage': null });
+  if (!start.content.includes('unopposed-button')) {
+    await start.update({ content: `${start.content}<div class="flexrow"><button class="unopposed-button small-button chat-button-target" data-target="true">${game.i18n.localize('Unopposed')}</button></div>` });
+  }
+  await start.setFlag(MODULE_ID, FLAG, { ...state, outcome: 'manual', manual: true, resultId: null, brawlId: null });
+  const card = game.messages.get(state.cardId);
+  gmDetails.delete(state.cardId);
+  const attacker = attackMessage.speaker?.alias ?? attackMessage.alias;
+  const defender = start.flags.unopposeData.targetSpeaker?.alias ?? actor.name;
+  await card?.update({ content: publicContent('manual', attacker, defender, {}) });
 }
 
 /** Startnachrichten eines Angriffs, die schon passiv ausgewertet wurden. */
@@ -299,7 +410,8 @@ function passiveStarts(attackMessage) {
   for (const message of game.messages.contents.slice(-200)) {
     if (message.flags?.unopposeData?.attackMessageId === attackMessage.id) ids.add(message.id);
   }
-  return [...ids].map(id => game.messages.get(id)).filter(message => message?.getFlag(MODULE_ID, FLAG));
+  // Zurückgenommene (#90 B) verteidigt der Held selbst; deren Schip-Neuwurf läuft wieder über das System.
+  return [...ids].map(id => game.messages.get(id)).filter(message => { const state = message?.getFlag(MODULE_ID, FLAG); return state && !state.manual; });
 }
 
 async function reevaluate(attackMessageId) {
@@ -357,6 +469,9 @@ export function initPassiveDefense(isActive) {
   Hooks.on('renderChatMessageHTML', decorateCard);
   game.socket.on(SOCKET, message => {
     if (message?.type === 'passiveReevaluate' && game.user === game.users.activeGM && isActive()) reevaluate(message.attackMessageId);
+    if (message?.type === 'passiveManual' && game.user === game.users.activeGM) {
+      manualDefense(game.messages.get(message.startMessageId), game.users.get(message.userId)).catch(error => console.error(`${MODULE_ID} | Passive Verteidigung: Rücknahme`, error));
+    }
   });
   Hooks.once('ready', () => {
     const OpposeDSA = systemApi()?.apps?.OpposeDSA;
