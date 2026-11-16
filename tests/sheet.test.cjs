@@ -476,6 +476,7 @@ test('body tab (#79): with ignored hand limits the hand shows the weapon chosen 
  assert.equal(body.hands[0].item._id,'b','chosen weapon in the hand');assert(body.alsoWorn.some(w=>w.item._id==='a'),'previous weapon stays worn');
  actor.saved=undefined;actor._ignoresWeaponHandLimits=()=>false;await sheet._rememberHand('a','main');assert.equal(actor.saved,undefined,'nothing stored with normal hand limits');
  actor._ignoresWeaponHandLimits=()=>true;await sheet._rememberHand('a','offhand');assert.deepEqual(actor.saved.value,{main:'b',offhand:'a'});
+ delete actor._ignoresWeaponHandLimits;actor.system.config={ignoreWeaponHandLimits:true};actor.saved=undefined;await sheet._rememberHand('c','main');assert.deepEqual(actor.saved?.value?.main,'c','DSA7 (v13): Einstellung ohne Hilfsmethode');
 });
 test('bag tiles open the bag on its content tab (#80)',async()=>{
  const {context}=await prepare();const html=render(context);const open=elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-bag-open'))[0];

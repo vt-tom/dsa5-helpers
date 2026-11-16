@@ -1099,7 +1099,11 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // stehen dann in derselben Hand, und der Bogen zeigte weiter die alte. Die Einstellung erlaubt mehrere angelegte
   // Waffen bewusst; daher bleibt die alte angelegt („Ebenfalls angelegt“), die gewählte merkt sich der Bogen für die Hand.
   async _rememberHand(itemId, hand) {
-    if (!this.actor._ignoresWeaponHandLimits?.()) return;
+    // DSA7 (v13) kennt _ignoresWeaponHandLimits nicht, nur die Einstellung selbst (7.0.1).
+    const ignores = typeof this.actor._ignoresWeaponHandLimits === 'function'
+      ? this.actor._ignoresWeaponHandLimits()
+      : !!this.actor.system?.config?.ignoreWeaponHandLimits;
+    if (!ignores) return;
     const key = hand === 'offhand' ? 'offhand' : 'main';
     const choice = { ...(this.actor.getFlag(MODULE_ID, 'handChoice') ?? {}), [key]: itemId };
     await this.actor.setFlag(MODULE_ID, 'handChoice', choice);
