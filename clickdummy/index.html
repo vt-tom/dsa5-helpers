@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=275">
+<link rel="stylesheet" href="style.css?v=276">
 </head>
 <body>
 
@@ -48,8 +48,8 @@
   <button type="button" id="themeToggle">Dunkles Thema</button>
   <!-- #52: Benutzer-Einstellung „Tooltips beim Überfahren“, siehe item-tooltips.js. -->
   <button type="button" id="tooltipToggle" aria-pressed="false">Tooltips aus (Benutzer)</button>
-  <!-- Issue #89, Design-Varianten Götterschips (2026-11-15), siehe fatePointsRow()/initGodVariant(). -->
-  <fieldset data-group="godschips"><legend>Götterschips</legend><button type="button" data-v="none" aria-pressed="true">Keine</button><button type="button" data-v="a" aria-pressed="false">A Eine Reihe</button><button type="button" data-v="b" aria-pressed="false">B Zweite Reihe</button><button type="button" data-v="c" aria-pressed="false">C Je Gott mit Zahl</button></fieldset>
+  <!-- Issue #89, Götterschips Variante C (2026-11-16), Testdaten: Anzahl der Götter; siehe fatePointsRow()/fitGodSchips(). -->
+  <fieldset data-group="godschips"><legend>Götterschips</legend><button type="button" data-v="0" aria-pressed="true">Keine</button><button type="button" data-v="3" aria-pressed="false">3 Götter</button><button type="button" data-v="7" aria-pressed="false">7 Götter (zu breit)</button></fieldset>
 </div>
 
 <div class="sheet-wrap">
@@ -158,11 +158,11 @@
 <script src="merchant.js?v=2"></script>
 <script src="vehicle.js?v=1"></script>
 <script src="actor-types.js?v=26"></script>
-<script src="pages.js?v=25"></script>
+<script src="pages.js?v=26"></script>
 <script src="preview-062.js?v=13"></script>
 <script src="hud-preview.js?v=2" defer></script>
 <script src="item-tooltips.js?v=4" defer></script>
-<script src="script.js?v=185"></script>
+<script src="script.js?v=186"></script>
 <script type="module" src="dice-stats.js?v=7"></script>
 <script type="module" src="house-rules.js?v=8"></script>
 </body>

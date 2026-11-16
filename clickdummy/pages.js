@@ -25,12 +25,12 @@
     ["Kreatur (Tier)", ["index.html?actor=kreatur", "mobile/nsc-kreatur.html?kind=kreatur&beispiel=tier&device=tablet", "mobile/nsc-kreatur.html?kind=kreatur&beispiel=tier&device=phone"]],
     ["Kreatur, humanoid (Ork)", ["index.html?actor=kreatur&beispiel=ork", "mobile/nsc-kreatur.html?kind=kreatur&beispiel=ork&device=tablet", "mobile/nsc-kreatur.html?kind=kreatur&beispiel=ork&device=phone"]],
     ["Gruppe (#55)", ["index.html?actor=gruppe", "mobile/gruppe.html?device=tablet", "mobile/gruppe.html?device=phone"]],
-    ["Händler (#77)", ["index.html?actor=haendler", null, null]],
-    ["Schatz (#78)", ["index.html?actor=schatz", null, null]],
-    ["Fahrzeug (#93, Konzept)", ["index.html?actor=fahrzeug", null, null]],
+    ["Händler (#77)", ["index.html?actor=haendler", "mobile/haendler-schatz.html?kind=haendler&device=tablet", "mobile/haendler-schatz.html?kind=haendler&device=phone"]],
+    ["Schatz (#78)", ["index.html?actor=schatz", "mobile/haendler-schatz.html?kind=schatz&device=tablet", "mobile/haendler-schatz.html?kind=schatz&device=phone"]],
+    ["Fahrzeug (#93, Konzept)", ["index.html?actor=fahrzeug", "mobile/fahrzeug.html?device=tablet", "mobile/fahrzeug.html?device=phone"]],
   ];
   // Diese Umschalter einer Seite stecken schon in der Matrix und werden nicht doppelt gezeigt.
-  const COVERED = { "mobile/heldenbogen.html": ["device"], "mobile/nsc-kreatur.html": ["device", "kind", "beispiel"], "mobile/gruppe.html": ["device"] };
+  const COVERED = { "mobile/heldenbogen.html": ["device"], "mobile/nsc-kreatur.html": ["device", "kind", "beispiel"], "mobile/gruppe.html": ["device"], "mobile/haendler-schatz.html": ["device", "kind"], "mobile/fahrzeug.html": ["device"] };
   // Schalter des Desktop-Bogens (index.html, Elemente der früheren Werkzeugleiste)
   const VIEW = [["Modus", "modeSwitch"], ["Thema", "themeToggle"], ["Foundry", "foundrySwitch"], ["Rolle", "asPlayerToggle"], ["Welt", "playersEditToggle"], ["Tooltips", "tooltipToggle"]];
   const TESTDATA = [["Ressourcen", "onlyLepToggle"], ["Rüstung", "armorOneToggle"], ["Händler/Schatz", "merchantModeToggle"]];
@@ -108,6 +108,8 @@ html.dp-docked body { margin-left: 360px; }
     const col = pressed("device") === "tablet" ? 1 : 2;
     if (pagePath === "mobile/heldenbogen.html") return [0, col];
     if (pagePath === "mobile/gruppe.html") return [4, col];
+    if (pagePath === "mobile/haendler-schatz.html") return [pressed("kind") === "schatz" ? 6 : 5, col];
+    if (pagePath === "mobile/fahrzeug.html") return [7, col];
     if (pagePath === "mobile/nsc-kreatur.html") return [pressed("kind") === "kreatur" ? (pressed("beispiel") === "ork" ? 3 : 2) : 1, col];
     return null;
   }

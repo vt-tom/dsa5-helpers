@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fahrzeug mobil</title>
+<!-- Fahrzeugbogen auf Smartphone und Tablet (Issue #93, Konzept, Click-Dummy Runde 1, 2026-11-16). Gleiche Inhalte wie
+     der Desktop-Dummy (../index.html?actor=fahrzeug, vehicle.js): Reiter des Systembogens (Kampf, Besatzung, Ladung,
+     Status, Beschreibung) plus Titelseite in zwei Varianten (Menü › Diese Seite, ?titel=a|b): A Seekampf, B Reise und
+     Ladung. Kopf ohne Kugeln, Schips und Eigenschaftswürfel; statt dessen die Leisten Strukturpunkte und Besatzung
+     (Smartphone im Kopf, Tablet in der linken Spalte mit dem Überblick). Besatzung per Ziehen gibt es am Touchgerät
+     nicht: „+ Besatzung“ und „+ Bediener“ öffnen eine Auswahl. Aktionen und Würfe kommen im Modul vom System
+     (navalHeroAction, navalBoarding, navalBroadside …). Werte und Namen sind frei erfundene Platzhalter.
+     Öffnen über clickdummy/start-server.bat → …/clickdummy/mobile/fahrzeug.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --gold: #c2a267;
+  --dmg: #a3221a;
+  --stp: #8a5a2b;
+  --crew: #3f6a8a;
+  --hdr: linear-gradient(180deg, #3a322b, #272320);
+  --dark: #2b2520;
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+button { font: inherit; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font-size: 14px; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.note { max-width: 780px; margin: 0 auto 16px; font-size: 14px; line-height: 1.45; color: #cbbba3; text-align: center; }
+
+/* Geräte */
+.device { position: relative; display: flex; margin: 0 auto; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.phone { flex-direction: column; width: 390px; max-width: 100%; height: 844px; border-radius: 28px; }
+.tablet { width: 1180px; height: 820px; border-radius: 22px; }
+.scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/* Kopf */
+.head { position: relative; flex: none; padding: 14px; background: var(--hdr); color: #f4e8d6; }
+.head .top { display: flex; align-items: flex-start; gap: 12px; }
+.portrait { width: 72px; height: 86px; flex: none; border: 3px solid var(--gold); clip-path: polygon(14% 0, 86% 0, 100% 12%, 100% 88%, 86% 100%, 14% 100%, 0 88%, 0 12%); background: #f4ecdc center / 70% no-repeat; }
+.name { font-family: 'Andalus', serif; font-size: 26px; line-height: 1.1; }
+.ident { margin-top: 4px; font-size: 12px; line-height: 1.5; letter-spacing: .1em; text-transform: uppercase; color: #d6bd8a; }
+.ident span + span::before { content: " · "; color: rgba(224, 192, 128, .5); }
+.winbtns { display: flex; gap: 2px; margin-left: auto; }
+.winbtns button { width: 40px; height: 40px; padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 22px; cursor: pointer; }
+/* Leisten Strukturpunkte und Besatzung (System: vehicle-healthbar.hbs), − / + fingergroß */
+.bars { display: grid; gap: 8px; margin-top: 12px; }
+.bar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 6px; }
+.bar .lbl { grid-column: 1 / -1; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #d6bd8a; }
+.bar button { width: 40px; height: 40px; border: 1px solid rgba(224, 192, 128, .5); border-radius: 20px; background: rgba(0, 0, 0, .25); color: #f4e8d6; font-size: 20px; cursor: pointer; }
+.track { position: relative; height: 28px; overflow: hidden; border: 1px solid rgba(224, 192, 128, .5); border-radius: 14px; background: #1c1916; }
+.track i { position: absolute; inset: 0 auto 0 0; width: var(--p); background: var(--c); }
+.track b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 15px; color: #fff; text-shadow: 0 1px 2px #000; }
+
+/* Inhalt */
+.body { padding: 14px 10px 16px; }
+.tabtitle { display: flex; align-items: center; gap: 10px; margin: 2px 4px 10px; font-family: 'Andalus', serif; font-size: 24px; }
+.tabtitle::after { content: ""; flex: 1; border-bottom: 1px solid var(--line2); }
+.panel { margin-bottom: 12px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); }
+.panel h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0; padding: 8px 12px; background: var(--phead); font: 19px 'Andalus', serif; font-weight: 400; }
+.panel h3 small { font: 13px 'GentiumBasic', serif; color: var(--ink2); text-align: right; }
+.panel p { margin: 0; padding: 12px; color: var(--ink2); font-size: 15px; line-height: 1.45; }
+.sub { padding: 4px 12px; background: rgba(43, 39, 33, .06); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.row { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px; border-top: 1px solid var(--line); font-size: 16px; }
+.row .grow { flex: 1; min-width: 0; }
+.row .grow small { display: block; color: var(--ink2); font-size: 13px; }
+.row .v { min-width: 34px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.row img.ico { width: 32px; height: 32px; flex: none; border-radius: 3px; }
+.row.unloaded { background: rgba(163, 34, 26, .05); }
+.row.unloaded .cdie { opacity: .5; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 6px; padding: 12px 8px; text-align: center; }
+.stats div { display: grid; justify-items: center; gap: 2px; }
+.stats b { display: grid; place-items: center; height: 32px; font-size: 20px; }
+.stats small { font-size: 13px; color: var(--ink2); }
+.cdie { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border: 0; background: center / contain no-repeat; color: #fff; font-size: 15px; font-weight: 700; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; cursor: pointer; }
+.probe { display: flex; gap: 2px; }
+.probe .cdie { width: 34px; height: 34px; font-size: 11px; }
+.tp { display: grid; justify-items: center; gap: 1px; flex: none; min-width: 64px; }
+.tp button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid var(--dmg); border-radius: 6px; background: #f6dcd8; color: var(--dmg); font-weight: 700; cursor: pointer; }
+.tp button::before { content: ""; width: 10px; height: 10px; border-radius: 2px; background: var(--dmg); }
+.tp small { color: var(--ink2); font-size: 12px; }
+.op { display: grid; justify-items: center; gap: 1px; flex: none; width: 56px; padding: 0; border: 0; background: none; color: var(--ink); font-size: 12px; cursor: pointer; }
+.op img { width: 36px; height: 36px; border: 2px solid var(--c, var(--gold)); border-radius: 50%; background: #d9c7a3; object-fit: cover; }
+.op.new span { display: grid; place-items: center; width: 40px; height: 40px; border: 1px dashed var(--line2); border-radius: 50%; color: var(--ink2); font-size: 20px; }
+.actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 10px; }
+.tablet .actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.act { min-height: 48px; padding: 4px 8px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); color: var(--ink); font-size: 16px; text-align: left; cursor: pointer; }
+.act small { display: block; color: var(--ink2); font-size: 12px; }
+.modes { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 12px; }
+.mode { padding: 4px 10px; border: 1px solid var(--line2); border-radius: 14px; background: var(--field); font-size: 14px; }
+.mode.off { color: var(--ink2); text-decoration: line-through; opacity: .7; }
+.cargo { height: 12px; margin: 10px 12px; overflow: hidden; border-radius: 6px; background: rgba(43, 39, 33, .12); }
+.cargo i { display: block; height: 100%; width: var(--p); background: var(--accent); }
+.crewstrip { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+.more { display: block; width: calc(100% - 24px); min-height: 44px; margin: 0 12px 12px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); color: var(--ink); cursor: pointer; }
+.cards { display: grid; gap: 8px; padding: 10px; }
+.tablet .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.card { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 4px 10px; align-items: center; padding: 10px; border: 1px solid var(--line); border-left: 4px solid var(--c); border-radius: 4px; background: var(--paper); }
+.card img { grid-row: span 2; width: 48px; height: 48px; border: 2px solid var(--c); border-radius: 50%; background: #d9c7a3; object-fit: cover; }
+.card b { font-weight: 400; font-size: 16px; }
+.card small { color: var(--ink2); font-size: 13px; }
+.add { display: block; width: calc(100% - 20px); min-height: 48px; margin: 0 10px 10px; border: 1px dashed var(--line2); border-radius: 6px; background: none; color: var(--ink2); font-size: 15px; cursor: pointer; }
+
+/* Reiterleiste unten (Smartphone) */
+.nav { flex: none; display: flex; gap: 2px; overflow-x: auto; padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); background: #211c18; scrollbar-width: none; }
+.nav button { display: grid; justify-items: center; align-content: center; gap: 2px; min-width: 74px; height: 58px; padding: 0 4px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 12px; cursor: pointer; }
+.nav button img { width: 28px; height: 28px; }
+.nav button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+
+/* Tablet: linke Spalte (Bild, Leisten, Überblick), Inhalt, Rail rechts */
+.tablet .left { flex: none; display: flex; flex-direction: column; align-items: stretch; gap: 14px; width: 260px; padding: 20px 16px; background: var(--hdr); color: #f4e8d6; }
+.tablet .left .portrait { align-self: center; width: 180px; height: 216px; border-width: 4px; }
+.tablet .left .bars { margin: 0; }
+.tablet .side { flex: 1; border: 1px solid rgba(224, 192, 128, .3); }
+.tablet .side h4 { margin: 0; padding: 8px 10px; border-bottom: 2px solid var(--gold); font-size: 14px; text-align: center; }
+.tablet .side .row { min-height: 36px; border-color: rgba(224, 192, 128, .2); color: #f4e8d6; font-size: 14px; }
+.tablet main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tablet .head { padding: 26px 24px 18px; }
+.tablet .body { padding: 18px 18px 18px; }
+.tablet .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; align-items: start; }
+.tablet .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.rail { flex: none; display: flex; flex-direction: column; gap: 4px; width: 84px; margin: 90px 8px 20px 0; padding: 6px 4px; border-radius: 6px; background: #211c18; }
+.rail button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 11px; cursor: pointer; }
+.rail button img { width: 28px; height: 28px; }
+.rail button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+.toast { position: absolute; left: 50%; top: 14px; z-index: 11; max-width: 90%; padding: 8px 14px; border-radius: 18px; background: rgba(27, 23, 20, .92); color: #f4e8d6; font-size: 14px; transform: translateX(-50%); pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="titel"><legend>Titelseite</legend><button data-v="a" aria-pressed="true">A · Seekampf</button><button data-v="b">B · Reise und Ladung</button></fieldset>
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+</div>
+<p class="note">Konzept, wartet auf Rückmeldung der Community (#93). Kopf mit den Leisten Strukturpunkte und Besatzung (− / +), Würfel und TP antippen würfelt, Aktionen öffnen den Dialog des Systems. Am Smartphone wie bei den anderen Bögen nur der Spielmodus.</p>
+<div id="stage"></div>
+
+<script>
+const SYS = '../../../../systems/dsa5';
+const ICON = n => `${SYS}/icons/categories/${n}.webp`;
+const DIE = k => `${SYS}/icons/dice/d20${k.toLowerCase()}.svg`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const IMG = `${SYS}/icons/talents/BootSchifffe.webp`;
+const V = {
+  name: 'Seeschwalbe', type: 'Kogge', size: 'groß', propulsion: 'Segel',
+  travelModes: [['Wasser', true], ['Land', false], ['Luft', false]],
+  stp: { value: 46, max: 60 }, crew: { initial: 18, value: 14, wounded: 2 },
+  hullArmor: 3, speed: { base: 6, ram: 4, water: 6, air: 0 }, gunnery: 10, initiative: 9, actions: 1, distance: 3,
+  cargo: { used: 18.5, capacity: 40 }, price: '2 400 D',
+  heroActions: [['Reparieren', 'Strukturpunkte'], ['Segeln', 'Fortbewegung'], ['Kommandos', 'Befehle an die Besatzung'], ['Heilen', 'verwundete Besatzung'], ['Entern', 'gegen ein Fahrzeug'], ['Breitseite', 'alle Bordwaffen einer Seite']],
+  ranged: [
+    { name: 'Hornisse (leicht)', skill: 'Geschütze', at: 11, tp: '2W6+4', stp: '1W6 StP', ammo: 'Bolzen 12', op: 'Alrik Grimmwald', img: ICON('Rangeweapon') },
+    { name: 'Aal (Rotze)', skill: 'Geschütze', at: 9, tp: '3W6', stp: '2W6 StP', ammo: 'Steinkugeln 6', op: null, reload: 'lädt nach (1)', img: ICON('Rangeweapon') },
+  ],
+  ram: { name: 'Rammsporn', skill: 'Boote & Schiffe', at: 8, tp: '2W6', stp: '3W6 StP', op: 'Thorgrim Sohn des Thorbosch', img: ICON('Combat_Skill'), die: 'ko' },
+  melee: [{ name: 'Enterhaken', skill: 'Hiebwaffen', at: 10, tp: '1W6+2', op: null, img: ICON('Meleeweapon') }],
+  locomotion: [{ name: 'Boote & Schiffe', probe: ['FF', 'GE', 'KK'], fw: 8 }],
+  armor: [{ name: 'Eichenplanken', rs: 3 }],
+  crewMembers: [
+    { name: 'Alrik Grimmwald', img: `${SYS}/icons/species/Mensch.webp`, ident: 'Mensch · Söldner', owner: 'Ben', c: '#b0563c', role: 'Hornisse' },
+    { name: 'Thorgrim Sohn des Thorbosch', img: `${SYS}/icons/species/Zwerg.webp`, ident: 'Zwerg · Kämpfer', owner: 'David', c: '#8a6a2e', role: 'Rammsporn' },
+    { name: 'Kapitänin Efferdane', img: `${SYS}/icons/species/Mensch.webp`, ident: 'Mensch · Seefahrerin', owner: 'SL', c: '#5a6a7a', role: 'Steuer' },
+    { name: 'Matrosen (11)', img: ICON('ability_command'), ident: 'Besatzung · NSC', owner: 'SL', c: '#5a6a7a', role: '' },
+  ],
+  cargoItems: [['Fass Trinkwasser', 6, '3,0', ICON('Equipment')], ['Proviant (Woche)', 2, '1,5', ICON('consumable')], ['Ersatzsegel', 1, '1,0', ICON('Armor')], ['Bolzen für Hornisse', 12, '0,1', ICON('Rangeweapon')]],
+};
+const TABS = [['cover', 'Titelseite', 'Spellextension'], ['combat', 'Kampf', 'ability_combat'], ['crew', 'Besatzung', 'ability_command'], ['inventory', 'Ladung', 'Equipment'], ['status', 'Status', 'ability_ceremonial'], ['notes', 'Beschreibung', 'Ability_Language']];
+const state = { titel: 'a', device: 'phone', tab: 'cover' };
+const available = () => Math.max(0, V.crew.value - V.crew.wounded);
+const pct = (a, b) => Math.round(100 * a / b);
+const num = n => String(n).replace('.', ',');
+const panel = (title, inner, small = '') => `<section class="panel"><h3>${title}${small ? `<small>${small}</small>` : ''}</h3>${inner}</section>`;
+const cdie = (v, k, label) => `<button type="button" class="cdie" style="background-image:url('${DIE(k)}')" data-toast="${esc(label)}: Wurf des Systems">${v}</button>`;
+
+/* ---------------------------------------------------------- Bausteine ---- */
+const bar = (key, label, cur, max, color) => `<div class="bar"><span class="lbl">${label}</span><button type="button" data-bar="${key}" data-d="-1" aria-label="${label} senken">−</button><div class="track" style="--p:${pct(cur, max)}%;--c:${color}" title="${label}: ${cur} von ${max}"><i></i><b>${cur} / ${max}</b></div><button type="button" data-bar="${key}" data-d="1" aria-label="${label} erhöhen">+</button></div>`;
+const bars = () => `<div class="bars">${bar('stp', 'Strukturpunkte', V.stp.value, V.stp.max, 'var(--stp)')}${bar('crew', 'Besatzung', V.crew.value, V.crew.initial, 'var(--crew)')}</div>`;
+function operator(name) {
+  const m = V.crewMembers.find(x => x.name === name);
+  if (!m) return `<button type="button" class="op new" data-toast="Bediener wählen: Auswahl der Besatzung öffnet sich (System)"><span>+</span>Bediener</button>`;
+  return `<button type="button" class="op" style="--c:${m.c}" data-toast="Bediener: ${esc(m.name)} – antippen wechselt"><img src="${m.img}" alt="">${esc(m.name.split(' ')[0])}</button>`;
+}
+const weaponRow = w => `<div class="row${w.reload ? ' unloaded' : ''}"><img class="ico" src="${w.img}" alt=""><span class="grow">${esc(w.name)}<small>${[w.skill, w.ammo, w.reload].filter(Boolean).join(' · ')}</small></span>${cdie(w.at, w.die ?? 'mu', `${w.name} ${w.die ? 'rammen' : 'abfeuern'}`)}<span class="tp"><button type="button" data-toast="Schaden ${w.tp}: Wurf des Systems">${w.tp}</button>${w.stp ? `<small>${w.stp}</small>` : ''}</span>${operator(w.op)}</div>`;
+const weapons = (title, list, small = '') => panel(title, list.length ? list.map(weaponRow).join('') : '<p>Keine Bordwaffen angelegt.</p>', small);
+const actions = () => panel('Aktionen der Helden', `<div class="actions">${V.heroActions.filter(([n]) => n !== 'Segeln' || V.propulsion === 'Segel').map(([n, h]) => `<button type="button" class="act" data-toast="${n}: Dialog des Systems">${n}<small>${h}</small></button>`).join('')}</div>`, 'würfelt dein Held');
+const locomotion = () => panel('Fortbewegung', V.locomotion.map(t => `<div class="row"><span class="grow">${t.name}</span><span class="probe">${t.probe.map(a => cdie(a, a, `Probe auf ${t.name}`)).join('')}</span><span class="v">${t.fw}</span></div>`).join(''));
+const overviewRows = () => [['einsatzbereit', `${available()} von ${V.crew.initial}`], ['verwundet', V.crew.wounded], ['Rumpfschutz', V.hullArmor], ['Tempo', `${V.speed.base} (Rammen ${V.speed.ram})`], ['Initiative', V.initiative], ['Aktionen', V.actions], ['Distanz', `${V.distance} RE`], ['Ladung', `${num(V.cargo.used)} / ${V.cargo.capacity} Stein`]];
+const avatar = m => `<button type="button" class="op" style="--c:${m.c}" data-toast="${esc(m.name)} · ${m.ident}${m.role ? ` · ${m.role}` : ''}"><img src="${m.img}" alt="">${esc(m.name.split(' ')[0])}</button>`;
+
+/* ---------------------------------------------------------- Titelseite ---- */
+function cover() {
+  // Smartphone ohne linke Spalte: der Überblick steht oben als Werte-Kasten (wie beim NSC).
+  const overview = state.device === 'phone' ? panel('Werte', `<div class="stats">${[['RS', V.hullArmor], ['Tempo', V.speed.base], ['INI', V.initiative], ['bereit', `${available()}/${V.crew.initial}`], ['verwundet', V.crew.wounded], ['Ladung', `${pct(V.cargo.used, V.cargo.capacity)} %`]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div>`) : '';
+  if (state.titel === 'a') {
+    const right = weapons('Rammen', [V.ram]) + locomotion();
+    return overview + actions() + weapons('Bordwaffen', [...V.ranged, ...V.melee], 'Fern- und Nahkampf') + (state.device === 'tablet' ? `<div class="cols"><div>${weapons('Rammen', [V.ram])}</div><div>${locomotion()}</div></div>` : right);
+  }
+  const travel = panel('Reise', `<div class="stats">${[['Grundtempo', V.speed.base], ['zu Wasser', V.speed.water], ['in der Luft', V.speed.air || '–'], ['Rammtempo', V.speed.ram]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div><div class="modes">${V.travelModes.map(([l, on]) => `<span class="mode${on ? '' : ' off'}">${l}</span>`).join('')}</div>`);
+  const cargo = panel('Ladung', `<div class="cargo" style="--p:${pct(V.cargo.used, V.cargo.capacity)}%"><i></i></div>${V.cargoItems.slice(0, 3).map(([n, q, , img]) => `<div class="row"><img class="ico" src="${img}" alt=""><span class="grow">${n}</span><span class="v">× ${q}</span></div>`).join('')}<button type="button" class="more" data-tab="inventory">Ganze Ladung</button>`, `${num(V.cargo.used)} von ${V.cargo.capacity} Stein`);
+  const crew = panel('An Bord', `<div class="crewstrip">${V.crewMembers.map(avatar).join('')}</div>`, `${available()} von ${V.crew.initial} einsatzbereit`);
+  return overview + (state.device === 'tablet' ? `<div class="cols"><div>${travel}${crew}</div><div>${cargo}</div></div>` : travel + cargo + crew);
+}
+
+/* -------------------------------------------------------------- Reiter ---- */
+const statPanel = (title, rows) => panel(title, rows.map(([k, v]) => `<div class="row"><span class="grow">${k}</span><span class="v">${v}</span></div>`).join(''));
+function combat() {
+  const values = [statPanel('Einstufung', [['Antrieb', V.propulsion], ['Größenkategorie', V.size]]), statPanel('Tempo', [['Grundtempo', V.speed.base], ['Rammtempo', V.speed.ram], ['zu Wasser', V.speed.water], ['in der Luft', V.speed.air]]),
+    statPanel('Kampf', [['Geschützkunde', V.gunnery], ['Initiative', V.initiative], ['Aktionen', V.actions], ['Distanz (RE)', V.distance]]), statPanel('Logistik', [['Ladekapazität', `${V.cargo.capacity} Stein`], ['Preis', V.price]])];
+  const gun = panel('Geschützkunde', `<div class="row"><span class="grow">Geschütze</span>${cdie(V.gunnery, 'mu', 'Geschützkunde')}</div>`);
+  const hull = panel('Rumpfschutz', V.armor.map(a => `<div class="row"><span class="grow">${a.name}</span><span class="v">RS ${a.rs}</span></div>`).join(''), `RS ${V.hullArmor}`);
+  const main = actions() + weapons('Bordwaffen Fernkampf', V.ranged) + weapons('Rammen', [V.ram]) + weapons('Bordwaffen Nahkampf', V.melee);
+  if (state.device === 'tablet') return main + `<div class="cols"><div>${gun}${hull}${locomotion()}</div><div>${values.join('')}</div></div>`;
+  return main + gun + hull + locomotion() + values.join('');
+}
+const crew = () => panel('Stärke', `<div class="stats" style="grid-template-columns:repeat(4,minmax(0,1fr))">${[['Sollstärke', V.crew.initial], ['an Bord', V.crew.value], ['verwundet', V.crew.wounded], ['einsatzbereit', available()]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div>`)
+  + panel('Mitglieder der Besatzung', `<div class="cards">${V.crewMembers.map(m => `<div class="card" style="--c:${m.c}"><img src="${m.img}" alt=""><b>${esc(m.name)}</b><small>${m.ident} · ${m.role ? `bedient: ${m.role}` : 'ohne Posten'} · Spieler: ${m.owner}</small></div>`).join('')}</div><button type="button" class="add" data-toast="Auswahl öffnet sich: Charakter, NSC oder Kreatur (am Touchgerät statt Ziehen)">+ Besatzung hinzufügen</button>`);
+const inventory = () => panel('Ladung', `<div class="cargo" style="--p:${pct(V.cargo.used, V.cargo.capacity)}%"><i></i></div><div class="sub">Gegenstand · Anzahl · Gewicht</div>${V.cargoItems.map(([n, q, w, img]) => `<div class="row"><img class="ico" src="${img}" alt=""><span class="grow">${n}</span><span class="v">${q}</span><span style="min-width:40px;text-align:right;color:var(--ink2)">${w}</span></div>`).join('')}`, `${num(V.cargo.used)} von ${V.cargo.capacity} Stein · ${pct(V.cargo.used, V.cargo.capacity)} %`);
+const status = () => panel('Zustände und Effekte', '<p>Keine aktiven Effekte. Wie im Heldenbogen: Zustände mit − / +, Effekte des Systems als Liste.</p>');
+const notes = () => panel('Beschreibung', '<p>Platzhalter: Bauart, Geschichte und Eigenheiten des Fahrzeugs.</p>');
+const TAB = { cover, combat, crew, inventory, status, notes };
+
+/* --------------------------------------------------------------- Rahmen ---- */
+function head() {
+  const ident = `<div class="ident"><span>${V.type}</span><span>Größe ${V.size}</span><span>${V.propulsion}</span></div>`;
+  if (state.device === 'tablet') return `<header class="head"><div class="name" style="font-size:40px">${V.name}</div>${ident}</header>`;
+  return `<header class="head"><div class="top"><div class="portrait" style="background-image:url('${IMG}')"></div><div style="flex:1;min-width:0"><div class="name">${V.name}</div>${ident}</div><div class="winbtns"><button type="button" title="Fenstermenü" data-toast="Fenstermenü">⋮</button><button type="button" title="Schließen" data-toast="Schließt den Bogen">✕</button></div></div>${bars()}</header>`;
+}
+const tabTitle = () => TABS.find(([id]) => id === state.tab)[1];
+const navButtons = () => TABS.map(([id, label, ico]) => `<button type="button" data-tab="${id}" ${id === state.tab ? 'aria-current="page"' : ''}><img src="${ICON(ico)}" alt="">${label}</button>`).join('');
+const content = () => `<div class="body"><div class="tabtitle">${tabTitle()}</div>${TAB[state.tab]()}</div>`;
+
+function render(keepScroll) {
+  const stage = document.getElementById('stage');
+  const top = keepScroll ? stage.querySelector('.scroll')?.scrollTop ?? 0 : 0;
+  if (state.device === 'phone') stage.innerHTML = `<div class="device phone">${head()}<div class="scroll">${content()}</div><nav class="nav" aria-label="Reiter">${navButtons()}</nav></div>`;
+  else stage.innerHTML = `<div class="device tablet"><aside class="left"><div class="portrait" style="background-image:url('${IMG}')"></div>${bars()}
+      <div class="side"><h4>Überblick</h4>${overviewRows().map(([k, v]) => `<div class="row"><span class="grow">${k}</span><span>${v}</span></div>`).join('')}</div></aside>
+    <main>${head()}<div class="scroll">${content()}</div></main><nav class="rail" aria-label="Reiter">${navButtons()}</nav></div>`;
+  stage.querySelector('.scroll').scrollTop = top;
+}
+
+function toast(text) {
+  const device = document.querySelector('.device');
+  device.querySelector('.toast')?.remove();
+  const t = Object.assign(document.createElement('div'), { className: 'toast', textContent: text });
+  device.append(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('button');
+  if (!b || b.closest('.dummy-pages')) return;
+  const group = b.closest('fieldset')?.dataset.group;
+  if (group) {
+    state[group] = b.dataset.v;
+    b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    if (group === 'titel') state.tab = 'cover';
+    return render();
+  }
+  if (b.dataset.toast) return toast(b.dataset.toast);
+  if (b.dataset.tab) { state.tab = b.dataset.tab; return render(); }
+  if (b.dataset.bar) {
+    const d = Number(b.dataset.d);
+    if (b.dataset.bar === 'stp') V.stp.value = Math.max(0, Math.min(V.stp.max, V.stp.value + d));
+    else V.crew.value = Math.max(0, Math.min(V.crew.initial, V.crew.value + d));
+    return render(true);
+  }
+});
+render();
+</script>
+<script src="tablet-plakette.js?v=2"></script>
+<script src="../pages.js?v=26"></script>
+</body>
+</html>

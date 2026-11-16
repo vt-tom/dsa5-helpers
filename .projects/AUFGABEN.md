@@ -36,19 +36,16 @@ Zwei Branches aus dem Tag `v8.0.0` (Nutzerentscheidung 12.11.2026): `release/8.1
 
 ## 1. Ausdefinieren
 
-- Du: **Götterschips: Darstellung wählen** · #89 — Click-Dummy, Menü › Diese Seite › „Götterschips“ (Desktop `index.html`, Smartphone
-  `mobile/heldenbogen.html`): A eine Reihe (jetzt im Modul), B zweite Reihe, C je Gott Symbol mit Zahl. Variante wählen.
-
 - Du: **Gruppenbogen: Platz für Schicksal und Verdammnis** · #55 — Click-Dummy `?actor=gruppe`, Menü › Diese Seite: A linke Spalte,
   B in den Kacheln (Vorschlag: im System schon angelegt), C eigenes Panel. Variante wählen; erst danach Foundry.
 - Du: **Reiter „Lager“ im Gruppenbogen** · #55 — in Foundry vorerst nur Helfer der Inhaltsmodule plus Würfelstatistik/Hausregelbuch;
   Vorschläge (Rasten, Wetter, Wache, Kräutersuche) noch nicht gebaut. Auswahl prüfen, Rückmeldung der Runde einholen.
 
-- Du: **Händler- und Schatzbogen** · #77 #78 — Click-Dummy `?actor=haendler` bzw. `?actor=schatz`, Desktop: SL-Reiter „Laden“, Rolle Spieler →
-  Kundensicht; Menü › Diese Seite: A Kacheln, B Liste, C Ware und Beutel. Variante wählen, Rückmeldung; danach Tablet/Smartphone, dann Foundry.
+- Du: **Händler- und Schatzbogen** · #77 #78 — Click-Dummy Desktop `?actor=haendler|schatz`, Tablet/Smartphone `mobile/haendler-schatz.html` (16.11.):
+  Rolle Spieler → Laden, SL → Reiter „Laden“; Menü › Diese Seite: A Kacheln, B Liste, C Ware und Beutel. Variante wählen, dann Foundry.
 
-- Du: **Fahrzeugbogen (Konzept)** · #93 — Click-Dummy `?actor=fahrzeug` (nur Desktop), Menü › Diese Seite: Titelblatt A Seekampf, B Reise und
-  Ladung. Ansehen, Issue in der Community teilen; Tablet/Smartphone und Foundry erst nach deren Rückmeldung.
+- Du: **Fahrzeugbogen (Konzept)** · #93 — Click-Dummy Desktop `?actor=fahrzeug`, Tablet/Smartphone `mobile/fahrzeug.html` (16.11.), Menü › Diese
+  Seite: Titelblatt A Seekampf, B Reise und Ladung. Ansehen, Issue in der Community teilen; Foundry erst nach deren Rückmeldung.
 
 ## 2. Bereit zur Umsetzung
 

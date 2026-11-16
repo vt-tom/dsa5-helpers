@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Händler und Schatz mobil</title>
+<!-- Händler- und Schatzbogen auf Smartphone und Tablet (Issues #77/#78, Click-Dummy Runde 1, 2026-11-16).
+     Gleiche Bedienung wie der Desktop-Dummy (../index.html?actor=haendler bzw. ?actor=schatz, merchant.js):
+       - Kunde (Spieler mit eingeschränktem Zugriff oder SL in der Kundensicht): nur der Laden bzw. die Schatzkiste,
+         Kundensicht in drei Varianten (Menü › Diese Seite, ?laden=a|b|c): A Kacheln, B Liste, C Ware und Beutel
+         (Smartphone: Umschalter Ware | Mein Beutel, Tablet: nebeneinander).
+       - SL/Besitzer: der gewohnte NSC- bzw. Kreaturbogen (nsc-kreatur.html), nur der Inventar-Reiter wird „Laden“ bzw.
+         „Schatz“ mit den Abschnitten Bestand · Einstellungen (nur Händler) · Zugang.
+     Kaufen, Verkaufen, Preise, Füllen und Ladentag kommen im Modul vom System (MerchantSheetMixin); hier nur die Bedienung.
+     Ziehen gibt es am Touchgerät nicht: „+ Gegenstand“ statt Ablagefläche, Verkaufen über den eigenen Beutel.
+     Werte, Namen und Preise sind frei erfundene Platzhalter.
+     Öffnen über clickdummy/start-server.bat → …/clickdummy/mobile/haendler-schatz.html -->
+<style>
+@font-face { font-family: 'Andalus'; src: url('../../../../systems/dsa5/fonts/andlso.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasR.woff2') format('woff2'); }
+@font-face { font-family: 'GentiumBasic'; src: url('../../../../systems/dsa5/fonts/GenBasB.woff2') format('woff2'); font-weight: 700; }
+:root {
+  --paper: #ece2d2;
+  --card: #f7f1e6;
+  --ink: #2b2721;
+  --ink2: rgba(43, 39, 33, .72);
+  --line: rgba(43, 39, 33, .14);
+  --line2: rgba(43, 39, 33, .28);
+  --field: rgba(255, 255, 255, .64);
+  --accent: #8b6f3f;
+  --gold: #c2a267;
+  --dmg: #a3221a;
+  --hdr: linear-gradient(180deg, #3a322b, #272320);
+  --dark: #2b2520;
+  --phead: linear-gradient(90deg, rgba(147, 123, 72, .9), rgba(147, 123, 72, .06));
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-family: 'GentiumBasic', Georgia, serif; }
+button, input, select { font: inherit; }
+
+/* Umschalter (nur Click-Dummy) */
+.switch { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; margin: 0 auto 14px; max-width: 900px; }
+.switch fieldset { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; border: 0; }
+.switch legend { float: left; margin-right: 6px; padding-top: 7px; font-size: 13px; color: #d6bd8a; }
+.switch button { height: 34px; padding: 0 12px; border: 1px solid #5a4d3e; border-radius: 17px; background: #2b2520; color: #f4e8d6; font-size: 14px; cursor: pointer; }
+.switch button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: #1b1714; }
+.note { max-width: 780px; margin: 0 auto 16px; font-size: 14px; line-height: 1.45; color: #cbbba3; text-align: center; }
+
+/* Geräte */
+.device { position: relative; display: flex; margin: 0 auto; overflow: hidden; background: var(--paper); color: var(--ink); box-shadow: 0 0 0 10px #000, 0 20px 50px rgba(0, 0, 0, .6); }
+.phone { flex-direction: column; width: 390px; max-width: 100%; height: 844px; border-radius: 28px; }
+.tablet { width: 1180px; height: 820px; border-radius: 22px; }
+.scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
+/* Kopf wie im Modul */
+.head { position: relative; flex: none; padding: 14px 14px 30px; background: var(--hdr); color: #f4e8d6; }
+.head .top { display: flex; align-items: flex-start; gap: 12px; }
+.portrait { width: 72px; height: 86px; flex: none; border: 3px solid var(--gold); clip-path: polygon(14% 0, 86% 0, 100% 12%, 100% 88%, 86% 100%, 14% 100%, 0 88%, 0 12%); background: #d9c7a3 center / cover no-repeat; }
+.name { font-family: 'Andalus', serif; font-size: 26px; line-height: 1.1; }
+.ident { margin-top: 4px; font-size: 12px; line-height: 1.5; letter-spacing: .1em; text-transform: uppercase; color: #d6bd8a; }
+.ident span + span::before { content: " · "; color: rgba(224, 192, 128, .5); }
+.winbtns { display: flex; gap: 2px; margin-left: auto; }
+.winbtns button { width: 40px; height: 40px; padding: 0; border: 0; background: none; color: #f4e8d6; font-size: 22px; cursor: pointer; }
+.orbs { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 10px; }
+.orb { position: relative; width: 58px; height: 58px; flex: none; overflow: hidden; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #2c2622, #141110); box-shadow: 0 0 0 2px #2b2721, 0 0 0 4px var(--gold); }
+.orb i { position: absolute; inset: auto 0 0; height: var(--p); background: linear-gradient(180deg, #d33a2c, #7d1510); }
+.orb b { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; font-size: 19px; line-height: 1; color: #fff; }
+.orb b small { display: block; font-size: 9px; letter-spacing: .08em; opacity: .85; }
+.dice { position: absolute; left: 0; right: 0; bottom: -17px; display: flex; justify-content: center; gap: 4px; }
+.die { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 6px; background: #2b2721 center / 28px no-repeat; box-shadow: 0 0 0 2px var(--gold); color: #fff; font-size: 13px; font-weight: 700; text-shadow: 0 0 1px #140f0b, 1px 0 0 #140f0b, -1px 0 0 #140f0b, 0 1px 0 #140f0b, 0 -1px 0 #140f0b; }
+/* Kopf der Kundensicht: kein Würfelband, Kasse bzw. Zustand der Truhe unter dem Namen */
+.head.shop { padding-bottom: 14px; }
+.head.shop .portrait { width: 60px; height: 72px; }
+
+/* Inhalt */
+.body { padding: 26px 10px 16px; }
+.head.shop + .scroll .body { padding-top: 12px; }
+.notice { margin: 0 4px 10px; padding: 8px 10px; border-left: 3px solid var(--accent); border-radius: 3px; background: rgba(255, 255, 255, .4); font-size: 14px; line-height: 1.35; }
+.notice.block { border-left-color: var(--dmg); }
+.tabtitle { display: flex; align-items: center; gap: 10px; margin: 2px 4px 10px; font-family: 'Andalus', serif; font-size: 24px; }
+.tabtitle::after { content: ""; flex: 1; border-bottom: 1px solid var(--line2); }
+.panel { margin-bottom: 12px; border: 1px solid var(--line2); border-radius: 4px; background: var(--card); }
+.panel h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0; padding: 8px 12px; background: var(--phead); font: 19px 'Andalus', serif; font-weight: 400; }
+.panel h3 small { font: 13px 'GentiumBasic', serif; color: var(--ink2); }
+.panel p { margin: 0; padding: 12px; color: var(--ink2); font-size: 15px; line-height: 1.45; }
+.sub { padding: 4px 12px; background: rgba(43, 39, 33, .06); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+.row { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px; border-top: 1px solid var(--line); font-size: 16px; }
+.row .grow { flex: 1; min-width: 0; }
+.row .grow small { display: block; color: var(--ink2); font-size: 13px; }
+.row .v { min-width: 34px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.row img.ico { width: 34px; height: 34px; flex: none; border-radius: 3px; }
+
+/* Reiterleiste unten (Smartphone) und Rail (Tablet) */
+.nav { flex: none; display: flex; gap: 2px; overflow-x: auto; padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); background: #211c18; scrollbar-width: none; }
+.nav button { display: grid; justify-items: center; align-content: center; gap: 2px; min-width: 74px; height: 58px; padding: 0 4px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 12px; cursor: pointer; }
+.nav button img { width: 28px; height: 28px; }
+.nav button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+.tablet .left { flex: none; display: flex; flex-direction: column; align-items: center; gap: 14px; width: 260px; padding: 20px 16px; background: var(--hdr); color: #f4e8d6; }
+.tablet .left .portrait { width: 180px; height: 216px; border-width: 4px; }
+.tablet .side { align-self: stretch; flex: 1; border: 1px solid rgba(224, 192, 128, .3); }
+.tablet .side h4 { margin: 0; padding: 8px 10px; border-bottom: 2px solid var(--gold); font-size: 14px; text-align: center; }
+.tablet .side .row { min-height: 40px; border-color: rgba(224, 192, 128, .2); color: #f4e8d6; font-size: 14px; }
+.tablet main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tablet .head { padding: 26px 24px 30px; }
+.tablet .head.shop { padding: 20px 24px 16px; }
+.tablet .body { padding: 26px 18px 18px; }
+.tablet .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; align-items: start; }
+.rail { flex: none; display: flex; flex-direction: column; gap: 4px; width: 84px; margin: 90px 8px 20px 0; padding: 6px 4px; border-radius: 6px; background: #211c18; }
+.rail button { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; border: 1px solid transparent; border-radius: 6px; background: none; color: #f4e8d6; font-size: 11px; cursor: pointer; }
+.rail button img { width: 28px; height: 28px; }
+.rail button[aria-current="page"] { border-color: #e0844f; background: #3a322b; }
+
+/* Laden: Geld, Käufer, Suche, Filter */
+.purse { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.purse span { display: inline-flex; align-items: center; gap: 3px; }
+.purse img { width: 18px; height: 18px; }
+.head .purse { margin-top: 6px; color: #f4e8d6; }
+.buyer { display: flex; align-items: center; gap: 10px; padding: 8px 10px; }
+.buyer img.av { width: 44px; height: 44px; flex: none; border: 2px solid var(--gold); border-radius: 50%; background: #d9c7a3; object-fit: cover; }
+.buyer .grow { flex: 1; min-width: 0; }
+.buyer .grow b { display: block; font-weight: 400; font-size: 16px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); color: var(--ink); font-size: 15px; cursor: pointer; }
+.btn.small { min-height: 40px; padding: 0 10px; font-size: 14px; }
+.btn.accent { border-color: var(--accent); background: var(--accent); color: #fff; }
+.btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+.btn:disabled { opacity: .45; cursor: default; }
+.tools { display: flex; gap: 6px; margin: 0 2px 10px; }
+.tools input[type="search"] { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); color: var(--ink); font-size: 16px; }
+.tools select { flex: none; width: 128px; height: 44px; padding: 0 6px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); color: var(--ink); font-size: 14px; }
+.chips { display: flex; gap: 6px; margin: 0 -10px 10px; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
+.tablet .chips { flex-wrap: wrap; margin: 0 2px 10px; padding: 0; }
+.chip { flex: none; min-height: 40px; padding: 0 14px; border: 1px solid var(--line2); border-radius: 20px; background: var(--field); color: var(--ink); font-size: 15px; cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+.seg { display: flex; margin: 0 2px 10px; border: 1px solid var(--accent); border-radius: 8px; overflow: hidden; }
+.seg button { flex: 1; min-height: 44px; border: 0; background: var(--field); color: var(--ink); font-size: 15px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--accent); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+
+/* Variante A: Kacheln */
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0 0 12px; }
+.tablet .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.tablet .split .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.panel .tiles { padding: 10px; }
+.tile { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 6px 8px; padding: 10px; border: 1px solid var(--line2); border-radius: 6px; background: var(--card); }
+.tile.featured { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.tile.poor { opacity: .6; }
+.tile img { width: 40px; height: 40px; }
+.tile .nm { min-width: 0; overflow-wrap: anywhere; hyphens: auto; font-size: 15px; line-height: 1.2; }
+.tile .nm small { display: block; color: var(--ink2); font-size: 12px; }
+.tile .meta { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; }
+.tile .meta b { font-variant-numeric: tabular-nums; }
+.tile .meta span { color: var(--ink2); }
+.tile .btn { grid-column: 1 / -1; min-height: 40px; }
+/* Variante B/C: Liste */
+.goods .row .price { min-width: 64px; text-align: right; font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+.goods .row .btn { min-width: 84px; }
+.goods .row.featured .grow::after { content: "Angebot"; display: inline-block; margin-top: 2px; padding: 0 6px; border-radius: 3px; background: var(--accent); color: #fff; font-size: 11px; letter-spacing: .06em; }
+.split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.coltitle { margin: 0 2px 8px; font: 19px 'Andalus', serif; font-weight: 400; }
+.empty { margin: 0 0 12px; padding: 22px 12px; border: 1px dashed var(--line2); border-radius: 6px; color: var(--ink2); text-align: center; }
+.log .row { font-size: 15px; }
+.log .row .when { flex: none; width: 82px; color: var(--ink2); font-size: 13px; }
+
+/* SL: Bestand, Einstellungen, Zugang */
+.sect { position: sticky; top: 0; z-index: 2; display: flex; gap: 6px; margin: -8px -10px 10px; padding: 8px 10px; background: var(--paper); border-bottom: 1px solid var(--line2); }
+.tablet .sect { margin: -8px -18px 12px; padding: 8px 18px; }
+.gmbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+.stock .row { flex-wrap: wrap; row-gap: 6px; }
+.stock .row.hiddenToday .grow b, .stock .row.locked .grow b { color: var(--ink2); }
+.stock .row .grow b { font-weight: 400; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; }
+.stepper button { width: 40px; height: 40px; border: 1px solid var(--line2); border-radius: 20px; background: var(--field); color: var(--ink); font-size: 20px; cursor: pointer; }
+.stepper b { min-width: 28px; text-align: center; font-variant-numeric: tabular-nums; }
+.flags { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; padding-left: 44px; }
+.flag { min-height: 34px; padding: 0 10px; border: 1px solid var(--line2); border-radius: 17px; background: var(--field); color: var(--ink2); font-size: 13px; cursor: pointer; }
+.flag[aria-pressed="true"] { border-color: var(--accent); background: rgba(139, 111, 63, .16); color: var(--ink); }
+.setting { display: grid; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.setting > span { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink2); }
+.setting input[type="text"], .setting input[type="number"], .setting select { height: 44px; padding: 0 10px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); color: var(--ink); font-size: 16px; }
+.setting input[type="range"] { width: 100%; height: 32px; accent-color: var(--accent); }
+.setting small { color: var(--ink2); font-size: 13px; }
+.setting .seg { margin: 0; flex-wrap: wrap; }
+.setting .seg button { min-width: 33%; }
+.checks { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.check { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); font-size: 15px; cursor: pointer; }
+.check input { width: 20px; height: 20px; accent-color: var(--accent); }
+.perm select { width: 140px; height: 40px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); color: var(--ink); font-size: 15px; }
+.backbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px 10px; padding: 6px 6px 6px 12px; border-radius: 6px; background: var(--dark); color: #f4e8d6; font-size: 14px; }
+.toast { position: absolute; left: 50%; top: 14px; z-index: 11; max-width: 90%; padding: 8px 14px; border-radius: 18px; background: rgba(27, 23, 20, .92); color: #f4e8d6; font-size: 14px; transform: translateX(-50%); pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="switch">
+  <fieldset data-group="kind"><legend>Bogen</legend><button data-v="haendler" aria-pressed="true">Händler</button><button data-v="schatz">Schatz</button></fieldset>
+  <fieldset data-group="rolle"><legend>Rolle</legend><button data-v="kunde" aria-pressed="true">Spieler (Kunde)</button><button data-v="sl">SL (Besitzer)</button></fieldset>
+  <fieldset data-group="laden"><legend>Kundensicht</legend><button data-v="a" aria-pressed="true">A · Kacheln</button><button data-v="b">B · Liste</button><button data-v="c">C · Ware und Beutel</button></fieldset>
+  <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
+</div>
+<p class="note">Spieler sehen nur den Laden bzw. die Schatzkiste, die SL den gewohnten NSC- oder Kreaturbogen mit dem Reiter „Laden“ bzw. „Schatz“ (Bestand · Einstellungen · Zugang). Kundensicht wie am Desktop in drei Varianten. Antippen eines Namens öffnet den Gegenstand, „Kaufen“ / „Nehmen“ gibt ein Stück.</p>
+<div id="stage"></div>
+
+<script>
+const SYS = '../../../../systems/dsa5';
+const ICON = n => `${SYS}/icons/categories/${n}.webp`;
+const DIE = k => `${SYS}/icons/dice/d20${k.toLowerCase()}.svg`;
+const COINS = [['d', 'D', 'Dukaten', 10], ['s', 'S', 'Silbertaler', 1], ['h', 'H', 'Heller', 0.1], ['k', 'K', 'Kreuzer', 0.01]];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const TIER_FACTORS = [0.6, 0.8, 1, 1.25, 1.6];
+const BUY_FACTORS = [0.25, 0.4, 0.5, 0.6, 0.75];
+const TIER_NAMES = ['sehr günstig', 'günstig', 'normal', 'teuer', 'sehr teuer'];
+
+const SHOPS = {
+  haendler: {
+    shopName: 'Schmiede am Grafenplatz', owner: 'Hagen Eisenfaust', ident: ['Mensch', 'Mittelreicher', 'Schmied'],
+    portrait: `url('${SYS}/icons/species/Mensch.webp') 22% 4% / 230% auto no-repeat, #d9c7a3`,
+    tabs: [['cover', 'Titelseite', 'Spellextension'], ['main', 'Eigenschaften', 'DSA-Auge'], ['skills', 'Talente', 'Skill'], ['combat', 'Kampf', 'ability_combat'], ['shop', 'Laden', 'Equipment'], ['status', 'Status', 'ability_ceremonial'], ['notes', 'Notizen', 'Ability_Language']],
+    goods: [
+      { name: 'Schmiedehammer', cat: 'Waffen', img: ICON('Rangeweapon'), price: 6, qty: 2, weight: '1,5', featured: true },
+      { name: 'Langschwert', cat: 'Waffen', img: ICON('Meleeweapon'), price: 180, qty: 1, weight: '1,6', hook: 'Meisterarbeit' },
+      { name: 'Dolch', cat: 'Waffen', img: ICON('Meleeweapon'), price: 20, qty: 4, weight: '0,5' },
+      { name: 'Wurfmesser', cat: 'Waffen', img: ICON('Rangeweapon'), price: 8, qty: 6, weight: '0,3' },
+      { name: 'Kettenhemd', cat: 'Rüstungen', img: ICON('Armor'), price: 300, qty: 1, weight: '6,0' },
+      { name: 'Lederrüstung', cat: 'Rüstungen', img: ICON('Armor'), price: 80, qty: 2, weight: '4,0', hidden: true },
+      { name: 'Hufeisen', cat: 'Werkzeug', img: ICON('Equipment'), price: 1.5, qty: 12, weight: '0,5' },
+      { name: 'Seil, 10 Schritt', cat: 'Werkzeug', img: ICON('Equipment'), price: 4.5, qty: 3, weight: '1,5', featured: true },
+      { name: 'Schleifstein', cat: 'Werkzeug', img: ICON('Equipment'), price: 2, qty: 5, weight: '0,3', tradeLocked: true },
+      { name: 'Proviant, 1 Tag', cat: 'Proviant', img: ICON('consumable'), price: 0.5, qty: 20, weight: '1,0' },
+    ],
+  },
+  schatz: {
+    shopName: 'Beute: Luchs', owner: 'Luchs (erlegt)', ident: ['Tier', 'Größe mittel', 'Schatz'],
+    portrait: `url('${ICON('Tiere')}') center / cover no-repeat, #d9c7a3`,
+    tabs: [['cover', 'Titelseite', 'Spellextension'], ['main', 'Eigenschaften', 'DSA-Auge'], ['skills', 'Talente', 'Skill'], ['combat', 'Kampf', 'ability_combat'], ['shop', 'Schatz', 'trap'], ['status', 'Status', 'ability_ceremonial'], ['notes', 'Notizen', 'Ability_Language']],
+    goods: [
+      { name: 'Luchsfell', cat: 'Beute', img: ICON('Armor'), qty: 1, weight: '2,0' },
+      { name: 'Krallen', cat: 'Beute', img: ICON('Meleeweapon'), qty: 8, weight: '0,1' },
+      { name: 'Fleisch', cat: 'Proviant', img: ICON('consumable'), qty: 4, weight: '1,0' },
+      { name: 'Pfeile', cat: 'Munition', img: ICON('arrow'), qty: 3, weight: '0,1' },
+      { name: 'Silbertaler', cat: 'Geld', img: `${SYS}/icons/money-S.webp`, qty: 12, weight: '0,0' },
+    ],
+  },
+};
+const BUYER = { name: 'Alrik Grimmwald', img: ICON('Weltliche'), wallet: { d: 1, s: 14, h: 6, k: 0 } };
+const BAG = [
+  { name: 'Wolfsfell', cat: 'Beute', img: ICON('Armor'), price: 4, qty: 2, weight: '2,0' },
+  { name: 'Waldläuferdolch', cat: 'Waffen', img: ICON('Meleeweapon'), price: 12, qty: 1, weight: '0,5' },
+  { name: 'Kräuterbündel', cat: 'Kräuter', img: ICON('plant'), price: 1, qty: 5, weight: '0,1' },
+];
+const SHOP = { wallet: { d: 4, s: 37, h: 12, k: 5 }, priceTier: 3, buyTier: 2, presentation: false, hideMoney: false, allowDetails: true, hidePlayer: false, locked: false, temporary: true,
+  players: [['Spieler 1 (Alrik)', 'Begrenzt'], ['Spieler 2 (Yasmina)', 'Begrenzt'], ['Spieler 3 (Gerion)', 'Keine']],
+  categories: [['Waffen', true], ['Rüstungen', true], ['Werkzeug', true], ['Kleidung', false], ['Proviant', true], ['Alchimie', false], ['Kräuter', false], ['Bücher', false]],
+  log: [['Gestern', 'Yasmina kauft Wurfmesser (2)', '−1 S 6 H'], ['Gestern', 'Gerion verkauft Wolfsfell', '+4 S'], ['Vor 3 Tagen', 'Alrik kauft Seil, 10 Schritt', '−4 S 5 H']] };
+
+const state = { kind: 'haendler', rolle: 'kunde', laden: 'a', device: 'phone', tab: 'shop', ctab: 'shop', section: 'stock', side: 'ware', sell: false, chip: 'all', q: '', sort: 'featured', affordable: false, playerView: false };
+const S = () => SHOPS[state.kind];
+const loot = () => state.kind === 'schatz';
+const customer = () => state.rolle === 'kunde' || state.playerView;
+
+/* ----------------------------------------------------------- Geld ---- */
+function money(silver) {
+  let k = Math.round(silver * 100);
+  const parts = [];
+  for (const [abbr, n] of [['D', 1000], ['S', 100], ['H', 10], ['K', 1]]) { const v = Math.floor(k / n); k -= v * n; if (v) parts.push(`${v} ${abbr}`); }
+  return parts.join(' ') || '0 K';
+}
+const silverOf = w => w.d * 10 + w.s + w.h / 10 + w.k / 100;
+function setSilver(w, silver) {
+  let k = Math.max(0, Math.round(silver * 100));
+  w.d = Math.floor(k / 1000); k -= w.d * 1000; w.s = Math.floor(k / 100); k -= w.s * 100; w.h = Math.floor(k / 10); w.k = k - w.h * 10;
+}
+const purse = (w, label) => `<span class="purse" aria-label="${label}: ${money(silverOf(w))}">${COINS.map(([f, , n]) => `<span title="${n}"><img src="${SYS}/icons/money-${f.toUpperCase()}.webp" alt="">${w[f]}</span>`).join('')}</span>`;
+const shopPrice = g => g.price * TIER_FACTORS[SHOP.priceTier - 1];
+const buyPrice = g => g.price * BUY_FACTORS[SHOP.buyTier - 1];
+
+/* ---------------------------------------------------- Kundensicht ---- */
+function visibleGoods() {
+  const q = state.q.trim().toLowerCase();
+  let list = S().goods.filter(g => g.qty > 0 && !g.tradeLocked && !g.hidden);
+  if (state.chip === 'specials') list = list.filter(g => g.featured);
+  else if (state.chip !== 'all') list = list.filter(g => g.cat === state.chip);
+  if (state.affordable) list = list.filter(g => shopPrice(g) <= silverOf(BUYER.wallet));
+  if (q) list = list.filter(g => g.name.toLowerCase().includes(q));
+  const sorted = [...list];
+  if (state.sort === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name));
+  if (state.sort === 'priceAsc') sorted.sort((a, b) => a.price - b.price);
+  if (state.sort === 'priceDesc') sorted.sort((a, b) => b.price - a.price);
+  if (state.sort === 'featured') sorted.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+  return sorted;
+}
+const nameBtn = g => SHOP.allowDetails ? `<span data-open="${esc(g.name)}">${esc(g.name)}</span>` : esc(g.name);
+const actLabel = give => give ? (loot() ? 'Hineinlegen' : 'Verkaufen') : (loot() ? 'Nehmen' : 'Kaufen');
+function tile(g, give, i) {
+  const price = loot() ? null : give ? buyPrice(g) : shopPrice(g);
+  const poor = !give && price !== null && price > silverOf(BUYER.wallet);
+  return `<div class="tile${g.featured && !give ? ' featured' : ''}${poor ? ' poor' : ''}"><img src="${g.img}" alt=""><div class="nm">${nameBtn(g)}${g.hook ? `<small>${g.hook}</small>` : ''}</div>`
+    + `<div class="meta">${price !== null ? `<b>${money(price)}</b>` : '<span></span>'}<span>×${g.qty}</span></div><button type="button" class="btn small" data-${give ? 'give' : 'take'}="${i}">${actLabel(give)}</button></div>`;
+}
+function listRow(g, give, i) {
+  const price = loot() ? null : give ? buyPrice(g) : shopPrice(g);
+  return `<div class="row${g.featured && !give ? ' featured' : ''}"><img class="ico" src="${g.img}" alt=""><span class="grow">${nameBtn(g)}<small>×${g.qty} · ${g.weight} Stein</small></span>${price !== null ? `<span class="price">${money(price)}</span>` : ''}<button type="button" class="btn small" data-${give ? 'give' : 'take'}="${i}">${actLabel(give)}</button></div>`;
+}
+function goodsBlock(list, give, layout) {
+  const src = give ? BAG : S().goods;
+  if (!list.length) return `<div class="empty">${give ? 'Nichts dabei' : loot() ? 'Der Schatz ist leer' : 'Keine passende Ware'}</div>`;
+  if (layout === 'tiles') return `<div class="tiles">${list.map(g => tile(g, give, src.indexOf(g))).join('')}</div>`;
+  const cats = [...new Set(list.map(g => g.cat))];
+  return `<div class="goods">${cats.map(c => `<section class="panel"><h3>${c}</h3>${list.filter(g => g.cat === c).map(g => listRow(g, give, src.indexOf(g))).join('')}</section>`).join('')}</div>`;
+}
+function filters() {
+  const sorts = [['featured', 'Empfohlen'], ['name', 'Name'], ['priceAsc', 'Preis ↑'], ['priceDesc', 'Preis ↓']].filter(([v]) => !loot() || v === 'featured' || v === 'name');
+  const cats = [...new Set(S().goods.filter(g => g.qty && !g.tradeLocked && !g.hidden).map(g => g.cat))];
+  const chip = (key, label, on) => `<button type="button" class="chip" data-chip="${key}" aria-pressed="${on}">${label}</button>`;
+  return `<div class="tools"><input type="search" id="q" placeholder="${loot() ? 'Schatz durchsuchen …' : 'Ware suchen …'}" value="${esc(state.q)}" aria-label="Suchen"><select id="sort" aria-label="Sortieren">${sorts.map(([v, l]) => `<option value="${v}"${state.sort === v ? ' selected' : ''}>${l}</option>`).join('')}</select></div>`
+    + `<div class="chips">${chip('all', 'Alle', state.chip === 'all')}${cats.map(c => chip(c, c, state.chip === c)).join('')}${loot() ? '' : `<button type="button" class="chip" data-afford aria-pressed="${state.affordable}">Bezahlbar</button>`}${S().goods.some(g => g.featured) ? chip('specials', 'Angebote', state.chip === 'specials') : ''}</div>`;
+}
+function buyerCard() {
+  return `<section class="panel"><div class="buyer"><img class="av" src="${BUYER.img}" alt=""><span class="grow"><b>${BUYER.name}</b>${purse(BUYER.wallet, 'Geldbeutel')}</span><button type="button" class="btn small" data-toast="Käufer wählen: eigener Held oder markiertes Token (System)">Wechseln</button></div></section>`;
+}
+function shopCustomer() {
+  const blockers = [];
+  if (SHOP.presentation && !loot()) blockers.push('Die SL präsentiert gerade Ware: alle sehen dasselbe, Kaufen ist gesperrt.');
+  if (loot() && SHOP.locked) blockers.push('Die Truhe ist verschlossen. Erst nach dem Öffnen (SL oder Probe) lässt sich etwas nehmen.');
+  const head = buyerCard() + blockers.map(b => `<p class="notice block" role="note">${b}</p>`).join('');
+  const goods = visibleGoods();
+  const bag = BAG.filter(g => g.qty > 0);
+  const bagTitle = loot() ? 'Hineinlegen aus deinem Beutel' : 'Verkaufen aus deinem Beutel';
+  if (state.laden === 'c') {
+    // C: Tablet nebeneinander, Smartphone Umschalter Ware | Mein Beutel.
+    if (state.device === 'tablet') return head + filters() + `<div class="split"><div><h3 class="coltitle">${loot() ? 'Im Schatz' : 'Ware des Ladens'}</h3>${goodsBlock(goods, false, 'list')}</div><div><h3 class="coltitle">${bagTitle}</h3>${goodsBlock(bag, true, 'list')}</div></div>`;
+    const seg = `<div class="seg" role="group" aria-label="Ansicht"><button type="button" data-side="ware" aria-pressed="${state.side === 'ware'}">${loot() ? 'Im Schatz' : 'Ware'}</button><button type="button" data-side="beutel" aria-pressed="${state.side === 'beutel'}">Mein Beutel (${bag.length})</button></div>`;
+    return head + seg + (state.side === 'ware' ? filters() + goodsBlock(goods, false, 'list') : goodsBlock(bag, true, 'list'));
+  }
+  const layout = state.laden === 'b' ? 'list' : 'tiles';
+  const sellBtn = `<div class="tools"><button type="button" class="btn" style="flex:1" data-sell aria-pressed="${state.sell}">${state.sell ? 'Zurück zur Ware' : loot() ? 'Hineinlegen …' : 'Verkaufen …'}</button></div>`;
+  if (state.sell) return head + sellBtn + `<h3 class="coltitle">${bagTitle}</h3>` + goodsBlock(bag, true, layout);
+  const specials = layout === 'tiles' && state.chip === 'all' ? goods.filter(g => g.featured) : [];
+  return head + filters() + sellBtn
+    + (specials.length ? `<section class="panel"><h3>Angebote</h3>${goodsBlock(specials, false, 'tiles')}</section>` : '')
+    + goodsBlock(specials.length ? goods.filter(g => !g.featured) : goods, false, layout);
+}
+const shopLog = () => `<section class="panel log"><h3>Kassenbuch</h3>${SHOP.log.map(([w, what, sum]) => `<div class="row"><span class="when">${w}</span><span class="grow">${esc(what)}</span><span class="v">${sum}</span></div>`).join('')}</section>`;
+const shopNotes = () => `<section class="panel"><h3>Notizen</h3><p>Platzhalter: was der Händler erzählt, Öffnungszeiten, Gerüchte.</p></section>`;
+
+/* ----------------------------------------------------- SL-Ansicht ---- */
+const SECTIONS = () => loot() ? [['stock', 'Bestand'], ['access', 'Zugang']] : [['stock', 'Bestand'], ['settings', 'Einstellungen'], ['access', 'Zugang']];
+function stock() {
+  const tools = loot()
+    ? [['Gegenstände hinzufügen', 'Bibliothek des Systems öffnet sich'], ['Alles entfernen', 'Rückfrage des Systems']]
+    : [['Füllen …', 'Dialog des Systems: Ware nach Region und Kategorien'], ['Nachfüllen', 'Ware nach den Vorgaben ergänzt'], ['Ladentag', 'Ein Teil der Ware ist heute nicht im Laden'], ['Leeren', 'Rückfrage des Systems']];
+  const bar = `<section class="panel"><h3>${loot() ? 'Schatz verwalten' : 'Ware'}<small>nur SL und Besitzer</small></h3><div class="gmbar">${tools.map(([l, m]) => `<button type="button" class="btn small" data-toast="${l}: ${m}">${l}</button>`).join('')}`
+    + (loot() ? '' : `<button type="button" class="btn small" data-present aria-pressed="${SHOP.presentation}">Präsentation: ${SHOP.presentation ? 'an' : 'aus'}</button>`)
+    + `<button type="button" class="btn small accent" data-playerview>Kundensicht</button></div>${loot() ? '' : `<div class="row"><span class="grow">Kasse</span>${purse(SHOP.wallet, 'Kasse')}</div>`}</section>`;
+  const cats = [...new Set(S().goods.map(g => g.cat))];
+  const row = (g, i) => {
+    const flag = (key, on, off) => `<button type="button" class="flag" data-flag="${key}" data-i="${i}" aria-pressed="${!!g[key]}">${g[key] ? on : off}</button>`;
+    return `<div class="row${g.hidden ? ' hiddenToday' : ''}${g.tradeLocked ? ' locked' : ''}"><img class="ico" src="${g.img}" alt=""><span class="grow"><b data-open="${esc(g.name)}">${esc(g.name)}</b>${loot() ? `<small>${g.weight} Stein</small>` : `<small>Liste ${money(g.price)} · Laden ${money(shopPrice(g))}</small>`}</span>`
+      + `<span class="stepper"><button type="button" data-qty="${i}" data-d="-1" aria-label="${esc(g.name)}: weniger">−</button><b>${g.qty}</b><button type="button" data-qty="${i}" data-d="1" aria-label="${esc(g.name)}: mehr">+</button></span>`
+      + `<span class="flags">${loot() ? '' : flag('featured', 'Angebot', 'Kein Angebot')}${flag('hidden', 'Heute weg', 'Heute da')}${flag('tradeLocked', 'Gesperrt', 'Handelbar')}</span></div>`;
+  };
+  return bar + cats.map(c => `<section class="panel stock"><h3>${c}</h3>${S().goods.map((g, i) => [g, i]).filter(([g]) => g.cat === c).map(([g, i]) => row(g, i)).join('')}</section>`).join('')
+    + `<div class="tools"><button type="button" class="btn" style="flex:1" data-toast="Auswahl öffnet sich: Bibliothek oder eigene Ausrüstung (am Touchgerät statt Ziehen)">+ Gegenstand ${loot() ? 'hineinlegen' : 'anbieten'}</button></div>`;
+}
+const seg = (label, value, names, key) => `<div class="seg" role="group" aria-label="${label}">${names.map((n, i) => `<button type="button" data-${key}="${i + 1}" aria-pressed="${value === i + 1}">${n}</button>`).join('')}</div>`;
+const check = (label, on, key) => `<label class="check"><input type="checkbox" data-check="${key}"${on ? ' checked' : ''}>${label}</label>`;
+function settings() {
+  return `<section class="panel"><h3>Ladenschild</h3><label class="setting"><span>Name des Ladens</span><input type="text" value="${esc(S().shopName)}"></label>`
+    + `<div class="setting"><span>Ladenbild</span><div class="gmbar" style="padding:0">${['Bild wählen', 'Allen zeigen', 'Bild des Akteurs'].map(l => `<button type="button" class="btn small" data-toast="${l} (System)">${l}</button>`).join('')}</div></div></section>`
+    + `<section class="panel"><h3>Preise</h3><div class="setting"><span>Verkauf</span>${seg('Verkauf', SHOP.priceTier, TIER_NAMES, 'tier')}<small>Listenpreis × ${String(TIER_FACTORS[SHOP.priceTier - 1]).replace('.', ',')}</small></div>`
+    + `<div class="setting"><span>Ankauf</span>${seg('Ankauf', SHOP.buyTier, TIER_NAMES, 'buytier')}<small>Listenpreis × ${String(BUY_FACTORS[SHOP.buyTier - 1]).replace('.', ',')}</small></div>`
+    + `<p>Beispiel: ein Gegenstand für 10 S kostet im Laden ${money(10 * TIER_FACTORS[SHOP.priceTier - 1])}, der Laden zahlt ${money(10 * BUY_FACTORS[SHOP.buyTier - 1])}.</p></section>`
+    + `<section class="panel"><h3>Vorgaben für das Füllen</h3><label class="setting"><span>Region</span><input type="text" value="Kosch"></label><label class="setting"><span>Höchstpreis (S)</span><input type="number" value="400" min="0" inputmode="numeric"></label>`
+    + `<label class="setting"><span>Chance auf Besonderes</span><input type="range" min="0" max="100" value="10"></label><label class="setting"><span>Auffüllen</span><select><option>Von Hand</option><option>Täglich</option><option>Wöchentlich</option></select></label>`
+    + `<div class="checks">${check('Nur handelbare Ware', true, 'x')}${check('Doppelte erlauben', false, 'x')}</div><div class="setting"><span>Warengruppen</span></div><div class="chips" style="flex-wrap:wrap;margin:0;padding:0 12px 12px">${SHOP.categories.map(([c, on], i) => `<button type="button" class="chip" data-cat="${i}" aria-pressed="${on}">${c}</button>`).join('')}</div></section>`
+    + `<section class="panel"><h3>Ladentag</h3><label class="setting"><span>Heute nicht im Laden</span><input type="range" min="0" max="100" value="20"></label><label class="setting"><span>Preisschwankung</span><input type="range" min="0" max="50" value="10"></label></section>`;
+}
+function access() {
+  const kinds = [['none', 'Kein'], ['haendler', 'Händler'], ['schatz', 'Schatz'], ['epic', 'Episch']];
+  const art = `<div class="seg" role="group" aria-label="Art">${kinds.map(([k, l]) => `<button type="button" data-art="${k}" aria-pressed="${k === state.kind}">${l}</button>`).join('')}</div>`;
+  const opts = [check('Für Spieler verbergen', SHOP.hidePlayer, 'hidePlayer'), check('Spieler dürfen Gegenstände ansehen', SHOP.allowDetails, 'allowDetails'),
+    ...(loot() ? [check('Verschlossen', SHOP.locked, 'locked'), check('Nach dem Leeren löschen', SHOP.temporary, 'temporary')] : [check('Kasse verdecken', SHOP.hideMoney, 'hideMoney')])];
+  return `<section class="panel"><h3>Art des Akteurs<small>nur SL und Besitzer</small></h3><div class="setting">${art}</div><div class="checks">${opts.join('')}</div></section>`
+    + `<section class="panel"><h3>Wer darf hinein</h3><p>„Begrenzt“ zeigt den Laden bzw. die Schatzkiste, „Beobachter“ dazu den Bogen, „Besitzer“ alles.</p>`
+    + SHOP.players.map(([n, v], i) => `<div class="row perm"><span class="grow">${n}</span><select data-perm="${i}" aria-label="Zugang ${n}">${['Keine', 'Begrenzt', 'Beobachter', 'Besitzer'].map(o => `<option${o === v ? ' selected' : ''}>${o}</option>`).join('')}</select></div>`).join('') + '</section>';
+}
+function shopOwner() {
+  const sect = `<div class="sect" role="tablist">${SECTIONS().map(([id, l]) => `<button type="button" class="chip" data-section="${id}" aria-pressed="${state.section === id}">${l}</button>`).join('')}</div>`;
+  return sect + ({ stock, settings, access }[state.section] ?? stock)();
+}
+const otherTab = label => `<section class="panel"><h3>${label}</h3><p>Wie im ${loot() ? 'Kreaturbogen' : 'NSC-Bogen'}: <a href="nsc-kreatur.html?kind=${loot() ? 'kreatur' : 'nsc'}&device=${state.device}">nsc-kreatur.html</a>. Nur der Reiter „${S().tabs.find(([id]) => id === 'shop')[1]}“ ist neu.</p></section>`;
+
+/* --------------------------------------------------------- Rahmen ---- */
+function customerTabs() {
+  return loot() ? [] : [['shop', 'Laden', 'Equipment'], ['log', 'Kassenbuch', 'ability_general'], ['notes', 'Notizen', 'Ability_Language']];
+}
+function head() {
+  const x = S();
+  if (customer()) {
+    const sub = loot() ? `<div class="ident"><span>${SHOP.locked ? 'verschlossen' : 'offen'}</span><span>${x.owner}</span></div>` : `<div class="ident"><span>${x.owner}</span><span>${x.ident[2]}</span></div>${SHOP.hideMoney ? '' : purse(SHOP.wallet, 'Kasse des Ladens')}`;
+    return `<header class="head shop"><div class="top"><div class="portrait" style="background:${x.portrait}"></div><div style="flex:1;min-width:0"><div class="name"${state.device === 'tablet' ? ' style="font-size:34px"' : ''}>${esc(x.shopName)}</div>${sub}</div>${state.device === 'phone' ? '<div class="winbtns"><button type="button" title="Fenstermenü" data-toast="Fenstermenü">⋮</button><button type="button" title="Schließen" data-toast="Schließt den Laden">✕</button></div>' : ''}</div></header>`;
+  }
+  const dice = `<div class="dice">${['MU', 'KL', 'IN', 'CH', 'FF', 'GE', 'KO', 'KK'].map((k, i) => `<span class="die" style="background-image:url('${DIE(k)}')">${(loot() ? [12, 2, 13, 8, 2, 13, 12, 12] : [13, 11, 12, 11, 14, 11, 14, 15])[i]}</span>`).join('')}</div>`;
+  if (state.device === 'tablet') return `<header class="head"><div class="name" style="font-size:40px">${esc(x.owner)}</div><div class="ident">${x.ident.map(s => `<span>${s}</span>`).join('')}</div>${dice}</header>`;
+  return `<header class="head"><div class="top"><div class="portrait" style="background:${x.portrait}"></div><div style="flex:1;min-width:0"><div class="name">${esc(x.owner)}</div><div class="ident">${x.ident.map(s => `<span>${s}</span>`).join('')}</div></div><div class="winbtns"><button type="button" title="Fenstermenü" data-toast="Fenstermenü">⋮</button><button type="button" title="Schließen" data-toast="Schließt den Bogen">✕</button></div></div>`
+    + `<div class="orbs"><div class="orb" style="--p:100%"><i></i><b><small>LeP</small>${loot() ? 21 : 34}<small>/ ${loot() ? 21 : 34}</small></b></div></div>${dice}</header>`;
+}
+function content() {
+  if (customer()) {
+    const back = state.playerView && state.rolle === 'sl' ? `<div class="backbar">Kundensicht der SL<button type="button" class="btn small" data-playerview>Zurück zur SL-Ansicht</button></div>` : '';
+    const tab = loot() ? 'shop' : state.ctab;
+    const title = { shop: loot() ? 'Schatzkiste' : 'Laden', log: 'Kassenbuch', notes: 'Notizen' }[tab];
+    return `<div class="body">${back}${state.device === 'tablet' ? `<div class="tabtitle">${title}</div>` : ''}${{ shop: shopCustomer, log: shopLog, notes: shopNotes }[tab]()}</div>`;
+  }
+  const [, label] = S().tabs.find(([id]) => id === state.tab);
+  return `<div class="body"><div class="tabtitle">${label}</div>${state.tab === 'shop' ? shopOwner() : otherTab(label)}</div>`;
+}
+const navButtons = (tabs, cur, key) => tabs.map(([id, label, ico]) => `<button type="button" data-${key}="${id}" ${id === cur ? 'aria-current="page"' : ''}><img src="${ICON(ico)}" alt="">${label}</button>`).join('');
+
+function render(keepScroll) {
+  const stage = document.getElementById('stage');
+  const top = keepScroll ? stage.querySelector('.scroll')?.scrollTop ?? 0 : 0;
+  const tabs = customer() ? customerTabs() : S().tabs;
+  const cur = customer() ? state.ctab : state.tab, key = customer() ? 'ctab' : 'tab';
+  if (state.device === 'phone') {
+    stage.innerHTML = `<div class="device phone">${head()}<div class="scroll">${content()}</div>${tabs.length ? `<nav class="nav" aria-label="Reiter">${navButtons(tabs, cur, key)}</nav>` : ''}</div>`;
+  } else if (customer()) {
+    stage.innerHTML = `<div class="device tablet"><main>${head()}<div class="scroll">${content()}</div></main>${tabs.length ? `<nav class="rail" aria-label="Reiter">${navButtons(tabs, cur, key)}</nav>` : ''}</div>`;
+  } else {
+    const x = S();
+    stage.innerHTML = `<div class="device tablet"><aside class="left"><div class="portrait" style="background:${x.portrait}"></div><div class="orbs"><div class="orb" style="--p:100%"><i></i><b><small>LeP</small>${loot() ? 21 : 34}<small>/ ${loot() ? 21 : 34}</small></b></div></div>`
+      + `<div class="side"><h4>Werte</h4>${[['Rüstungsschutz (RS)', loot() ? 1 : 1], ['Initiative (INI)', 13], ['Geschwindigkeit (GS)', loot() ? 10 : 8]].map(([k, v]) => `<div class="row"><span class="grow">${k}</span><span>${v}</span></div>`).join('')}</div></aside>`
+      + `<main>${head()}<div class="scroll">${content()}</div></main><nav class="rail" aria-label="Reiter">${navButtons(tabs, cur, key)}</nav></div>`;
+  }
+  stage.querySelector('.scroll').scrollTop = top;
+}
+
+function toast(text) {
+  const device = document.querySelector('.device');
+  device.querySelector('.toast')?.remove();
+  const t = Object.assign(document.createElement('div'), { className: 'toast', textContent: text });
+  device.append(t);
+  setTimeout(() => t.remove(), 2200);
+}
+
+/* ------------------------------------------------------ Handlungen ---- */
+function take(i) {
+  const g = S().goods[i];
+  if (SHOP.presentation && !loot()) return toast('Präsentation läuft: Kaufen ist gesperrt');
+  if (loot() && SHOP.locked) return toast('Die Truhe ist verschlossen');
+  const price = loot() ? 0 : shopPrice(g);
+  if (price > silverOf(BUYER.wallet)) return toast(`${BUYER.name} kann ${g.name} nicht bezahlen`);
+  g.qty -= 1;
+  setSilver(BUYER.wallet, silverOf(BUYER.wallet) - price);
+  setSilver(SHOP.wallet, silverOf(SHOP.wallet) + price);
+  const mine = BAG.find(b => b.name === g.name);
+  if (mine) mine.qty += 1; else BAG.push({ ...g, qty: 1, price: g.price ?? 1 });
+  SHOP.log.unshift(['Eben', `${BUYER.name} ${loot() ? 'nimmt' : 'kauft'} ${g.name}`, loot() ? '' : `−${money(price)}`]);
+  toast(loot() ? `${g.name} genommen` : `${g.name} gekauft für ${money(price)}`);
+  render(true);
+}
+function give(i) {
+  const g = BAG[i];
+  const price = loot() ? 0 : buyPrice(g);
+  if (price > silverOf(SHOP.wallet)) return toast('Der Händler hat nicht genug Geld');
+  g.qty -= 1;
+  if (!g.qty) BAG.splice(i, 1);
+  setSilver(SHOP.wallet, silverOf(SHOP.wallet) - price);
+  setSilver(BUYER.wallet, silverOf(BUYER.wallet) + price);
+  const there = S().goods.find(x => x.name === g.name);
+  if (there) there.qty += 1; else S().goods.push({ ...g, qty: 1 });
+  SHOP.log.unshift(['Eben', `${BUYER.name} ${loot() ? 'legt hinein' : 'verkauft'}: ${g.name}`, loot() ? '' : `+${money(price)}`]);
+  toast(loot() ? `${g.name} hineingelegt` : `${g.name} verkauft für ${money(price)}`);
+  render(true);
+}
+
+document.addEventListener('click', ev => {
+  const open = ev.target.closest('[data-open]');
+  if (open && open.closest('.device')) return toast(`${open.dataset.open}: Gegenstand öffnet sich (System)`);
+  const b = ev.target.closest('button');
+  if (!b || b.closest('.dummy-pages')) return;
+  const group = b.closest('fieldset')?.dataset.group;
+  const d = b.dataset;
+  if (group) {
+    state[group] = d.v;
+    b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    state.sell = false; state.playerView = false; state.chip = 'all';
+    if (group === 'kind' || group === 'rolle') { state.tab = 'shop'; state.ctab = 'shop'; state.section = 'stock'; }
+    return render();
+  }
+  if (d.toast) return toast(d.toast);
+  if (d.take) return take(Number(d.take));
+  if (d.give) return give(Number(d.give));
+  if (d.tab) { state.tab = d.tab; return render(); }
+  if (d.ctab) { state.ctab = d.ctab; return render(); }
+  if (d.section) { state.section = d.section; return render(); }
+  if (d.side) { state.side = d.side; return render(true); }
+  if (d.chip) { state.chip = d.chip; return render(true); }
+  if ('afford' in d) { state.affordable = !state.affordable; return render(true); }
+  if ('sell' in d) { state.sell = !state.sell; return render(); }
+  if ('playerview' in d) { state.playerView = !state.playerView; state.ctab = 'shop'; return render(); }
+  if ('present' in d) { SHOP.presentation = !SHOP.presentation; return render(true); }
+  if (d.qty) { const g = S().goods[d.qty]; g.qty = Math.max(0, g.qty + Number(d.d)); return render(true); }
+  if (d.flag) { const g = S().goods[d.i]; g[d.flag] = !g[d.flag]; return render(true); }
+  if (d.tier) { SHOP.priceTier = Number(d.tier); return render(true); }
+  if (d.buytier) { SHOP.buyTier = Number(d.buytier); return render(true); }
+  if (d.cat) { SHOP.categories[d.cat][1] = !SHOP.categories[d.cat][1]; return render(true); }
+  if (d.art) {
+    if (d.art === state.kind) return;
+    if (d.art === 'none') return toast('Art „Kein“: wieder NSC bzw. Kreatur, unser Hook führt in den vorherigen Bogen zurück (#54)');
+    if (d.art === 'epic') return toast('Episch (Garadan): nur eine Karte, kommt mit #77');
+    document.querySelector(`fieldset[data-group="kind"] button[data-v="${d.art}"]`).click();
+  }
+});
+document.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.id === 'sort') { state.sort = t.value; render(true); }
+  if (t.dataset.check) { SHOP[t.dataset.check] = t.checked; render(true); }
+  if (t.dataset.perm) SHOP.players[t.dataset.perm][1] = t.value;
+});
+document.addEventListener('input', ev => {
+  if (ev.target.id !== 'q') return;
+  state.q = ev.target.value;
+  const pos = ev.target.selectionStart;
+  render(true);
+  const fresh = document.getElementById('q');
+  fresh.focus();
+  fresh.setSelectionRange(pos, pos);
+});
+render();
+</script>
+<script src="tablet-plakette.js?v=2"></script>
+<script src="../pages.js?v=26"></script>
+</body>
+</html>
