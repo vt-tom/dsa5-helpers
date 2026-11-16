@@ -7,7 +7,7 @@ Kennzeichnung: **[v13/v14]** gilt für Foundry v13 und v14, **[nur v14]** bzw. *
 Ab 7.0.0/8.0.0 gibt es getrennte Linien: **8.x für Foundry v14**, **7.x für Foundry v13**. Das installierte Modul zeigt
 nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
 
-## [7.0.1] — unveröffentlicht
+## [7.0.1] — 2026-11-16
 
 Fehlerkorrekturen aus 8.0.1 für Foundry v13.
 
@@ -309,6 +309,7 @@ Erste Version, installierbar über die Manifest-URL.
 - **[v13/v14]** Deutsch und Englisch.
 
 [8.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.3...v8.0.0
+[7.0.1]: https://github.com/vt-tom/dsa5-helpers/compare/v7.0.0...v7.0.1
 [7.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v13-0.6.3...v7.0.0
 [0.6.3]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.1...v0.6.2
