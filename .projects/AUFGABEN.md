@@ -81,11 +81,14 @@ Zwei Branches aus dem Tag `v8.0.0` (Nutzerentscheidung 12.11.2026): `release/8.1
 Erst als **Beta** (Pre-release `v8.1.0`, Kanal `foundry-v14-beta`), nach Rückmeldung dasselbe Release zum normalen erklären; Korrekturen als
 neue Pre-release `v8.1.1`. Nur v14 (kein 7.1.0), nur nach Auftrag; Ablauf in [RELEASE.md](../docs/RELEASE.md).
 
+- Du: **Video zu 8.1.0** — Inhalte aus CHANGELOG `[8.1.0]` plus alle 8.0.x-Abschnitte (ab 8.0.1); planen mit `/vttom-video-workflow`,
+  sobald 8.1.0 steht. Szenen, Testdaten und Beispielhelden dabei festlegen.
+
 ## Bugfixes 8.0.x
 
 [8.0.1](https://github.com/vt-tom/dsa5-helpers/releases/tag/v8.0.1) und [7.0.1](https://github.com/vt-tom/dsa5-helpers/releases/tag/v7.0.1)
 am 16.11.2026 veröffentlicht (#79–#91, v13 nur #79 und #87), Issues und Meilenstein 8.0.1 geschlossen, `main` nachgezogen.
-Nächste Fehlerkorrekturen auf `release/8.0.2` im Hauptordner (`release/8.1.0` liegt in `D:/Development/dsa5-helpers-8.1.0`):
+Hauptordner seit 16.11. auf `release/8.1.0`. Nächste Fehlerkorrekturen auf `release/8.0.2` (bei Bedarf eigener Arbeitsordner):
 Fix dort committen, dann in `release/8.1.0` per `git merge --no-ff release/8.0.2` übernehmen.
 
 ## Später
