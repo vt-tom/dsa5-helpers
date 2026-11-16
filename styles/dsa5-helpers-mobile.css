@@ -763,6 +763,16 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(5):not(:empty)::after { content: '\a0' attr(data-dsa5h-unit); }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6)::before { content: '\a0·\a0' attr(data-dsa5h-label) '\a0'; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(7):not(:empty)::before { content: '\a0·\a0'; }
+/* Gelernte Erweiterungen (#84): Knopf und Namen fingerfreundlich, Liste auf die Namensspalte eingerückt. */
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ext-toggle { height: auto; min-height: 32px; padding: 0 10px; border-radius: 16px; font-size: 14px; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ext-item { grid-template-columns: 12px minmax(0, 1fr); padding: 2px 0 4px; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ext-item .dsa5h-ext-desc { grid-column: 2; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ext-name { display: inline-flex; align-items: center; min-height: 30px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-ext-list { padding-left: 52px; }
+/* Personen-Reiter (#91): am Smartphone keine Ansichtswahl (Kacheln stehen dort ohnehin einspaltig), Bedienelemente 40 px. */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-persona-views { display: none; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-personae-tools input { flex-basis: 100%; min-height: 40px; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-seg > button { min-height: 40px; padding: 0 14px; font-size: 15px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6) button { height: 28px; margin-left: 4px; padding: 0 6px; font-size: 13px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :is(:nth-child(3), :nth-child(4), :nth-child(8)) { grid-row: 1 / span 2; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(3) { grid-column: 5; margin-left: 6px; }

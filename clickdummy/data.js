@@ -78,13 +78,23 @@ const QUESTS = [
   { title: "Die Brücke am Fluss", priority: 1, status: 1, summary: "Die Brücke ist repariert, die Händler ziehen wieder.", objectives: [{ text: "Holz besorgen", status: 1 }] },
 ];
 
-// Demo-Personen wie DSAPersonaEntry (system.personae): type 0 Dramatis Personae, 1 Bestiarium; important = wichtig.
+// Demo-Personen wie DSAPersonaEntry (system.personae): type 0 Dramatis Personae, 1 Bestiarium; important = wichtig,
+// hidden = für Spieler nicht freigegeben (nur die SL sieht sie, mit Hinweis). Seit #91 (2026-11-16) mehr Einträge und
+// Fraktionen, damit Suche, Filter und Gruppen etwas zu tun haben; ohne faction = „Ohne Fraktion“.
 const PERSONAE = [
   { name: "Baron Ugdalf von Gratenfels", type: 0, important: true, subtitle: "Lehnsherr", faction: "Haus Gratenfels", img: ICONS + "/species/Mensch.webp" },
+  { name: "Baronin Rondriga von Gratenfels", type: 0, subtitle: "Gemahlin des Barons", faction: "Haus Gratenfels", img: ICONS + "/species/Mensch.webp" },
+  { name: "Hauptmann Leomar", type: 0, subtitle: "Burgwache, misstrauisch", faction: "Haus Gratenfels", img: ICONS + "/species/Mensch.webp" },
   { name: "Notar Elgor Brandeisen", type: 0, subtitle: "Schreiber, nervös", faction: "Gratenfels", img: ICONS + "/species/Zwerg.webp" },
+  { name: "Wirtin Alrike", type: 0, subtitle: "„Zum Goldenen Krug“", faction: "Gratenfels", img: ICONS + "/species/Mensch.webp" },
+  { name: "Der Mann mit dem Siegelring", type: 0, important: true, hidden: true, subtitle: "Fälscher des Testaments", faction: "Haus Gratenfels", img: ICONS + "/species/Mensch.webp" },
   { name: "Förster Answin", type: 0, subtitle: "Auftraggeber", faction: "Rodaschquell", img: ICONS + "/species/Mensch.webp" },
+  { name: "Schäferin Ilma", type: 0, subtitle: "Hat das Rudel gesehen", faction: "Rodaschquell", img: ICONS + "/species/Mensch.webp" },
+  { name: "Firunja", type: 0, subtitle: "Jägerin, reist mit der Gruppe", img: ICONS + "/species/Elf.webp" },
   { name: "Grauwolf", type: 1, subtitle: "Rudeltier", faction: "Forst", img: ICONS + "/categories/Tiere.webp" },
+  { name: "Leitwolf Narbenohr", type: 1, important: true, subtitle: "Führt das Rudel", faction: "Forst", img: ICONS + "/categories/Tiere.webp" },
   { name: "Waldschrat", type: 1, important: true, subtitle: "Gerüchte im Dorf", faction: "Forst", img: ICONS + "/categories/Tiere.webp" },
+  { name: "Irrlicht", type: 1, hidden: true, subtitle: "Im Moor gesichtet", img: ICONS + "/categories/Tiere.webp" },
 ];
 
 // Spezies/Kultur/Profession als eigene Item-Referenzen (system.details.species/culture/career im echten System
@@ -480,7 +490,9 @@ const COMBAT_SKILLS = [
 // Liturgien/Zeremonien) haben im System identische Spalten (Bild/Name/Probe/FW/Kosten/Wirkungsdauer/Reichweite,
 // kein "Merkmal" als eigene Spalte — spell-section.hbs zeigt es nicht inline).
 
-// Vorschlag 2026-09-13 (bisher deferred): Erweiterungen (item.extensions, Overlay-Icon) und Mehrrunden-Auflade-
+// Erweiterungen (#84, 2026-11-16): item.extensions = gelernte Erweiterungen des Helden {name, desc}; die Texte sind
+// erfundene Platzhalter (im Modul: Beschreibung des Erweiterungs-Items über das System, keine Regeltexte im Modul).
+// Vorschlag 2026-09-13: Mehrrunden-Auflade-
 // Anzeige (item.LZ/item.progress, spell-section.hbs "showCharge") — siehe chargeBar()/extensionIcon() in script.js.
 // stf ("Steigerungsfaktor" A–D) für Zauber/Rituale/Liturgien/Zeremonien: die dsa5-Basis-Systempackung selbst
 // enthält keinen eigenen Zauber-/Liturgien-Kompendium-Pack (der ist Teil der kostenpflichtigen dsa5-magic-*-
@@ -488,11 +500,18 @@ const COMBAT_SKILLS = [
 // dem jeweiligen Item), nicht selbst erfunden; mehrfach über verschiedene Akteure hinweg mit demselben Ergebnis
 // gegengeprüft, siehe [[project-dsa5-gap-analysis]] Notizen.
 const SPELLS = [
-  { name: "Balsam Salabunde", probe: "KL/IN/KO", cost: 8, fw: 8, dauer: "1 Aktion", reach: "Berührung", img: A.spell("balsam-salabunde"), stf: "B" },
+  { name: "Balsam Salabunde", probe: "KL/IN/KO", cost: 8, fw: 8, dauer: "1 Aktion", reach: "Berührung", img: A.spell("balsam-salabunde"), extensions: [
+    { name: "Sanfte Hand", desc: "Die Kosten sinken um 2 AsP." },
+    { name: "Heilung auf Abstand", desc: "Reichweite 4 Schritt statt Berührung." },
+    { name: "Tiefer Schlaf", desc: "Der Behandelte schläft danach eine Stunde fest." },
+  ], stf: "B" },
   { name: "Flim Flam", probe: "KL/CH/FF", cost: 4, fw: 6, dauer: "1 Aktion", reach: "32 Schritt", img: A.spell("flim-flam"), stf: "A" },
   { name: "Blitz dich find", probe: "KL/FF/KO", cost: 8, fw: 5, dauer: "1 Aktion", reach: "Selbst", img: A.spell("blitz-dich-find"), stf: "A" },
   { name: "Axxeleratus", probe: "MU/KL/FF", cost: 8, fw: 4, dauer: "1 Aktion", reach: "Berührung", img: A.spell("axxeleratus"), stf: "B" },
-  { name: "Duplicatus", probe: "KL/CH/FF", cost: 8, fw: 6, dauer: "3 Aktionen", reach: "8 Schritt", img: A.spell("duplicatus"), extensions: "Ipsos Zapt (Reichweite verdoppelt)", fav: true, stf: "C" },
+  { name: "Duplicatus", probe: "KL/CH/FF", cost: 8, fw: 6, dauer: "3 Aktionen", reach: "8 Schritt", img: A.spell("duplicatus"), extensions: [
+    { name: "Ipsos Zapt", desc: "Die Reichweite des Zaubers verdoppelt sich." },
+    { name: "Spiegelbild im Wasser", desc: "Ein zusätzliches Trugbild erscheint; es verschwindet, sobald der Held sich schneller als im Schritttempo bewegt. Gerade lange Beschreibungen zeigen, wie die aufgeklappte Liste mit mehrzeiligem Text umgeht." },
+  ], fav: true, stf: "C" },
 ];
 
 const RITUALS = [
@@ -556,7 +575,9 @@ const MAGIC_TRADITION = { tradition: "Elfen", guidevalue: "Intuition", feature: 
 
 const LITURGIES = [
   { name: "Heilsegen", probe: "MU/KL/IN", cost: 4, fw: 8, dauer: "1 Aktion", reach: "Berührung", img: A.liturgy("heilsegen"), fav: true, stf: "B" },
-  { name: "Bann der Furcht", probe: "MU/CH/CH", cost: 6, fw: 4, dauer: "1 Aktion", reach: "16 Schritt", img: A.liturgy("bann-der-furcht"), extensions: "Wirkung auf Gruppe erweitert", stf: "B" },
+  { name: "Bann der Furcht", probe: "MU/CH/CH", cost: 6, fw: 4, dauer: "1 Aktion", reach: "16 Schritt", img: A.liturgy("bann-der-furcht"), extensions: [
+    { name: "Mut der Gemeinschaft", desc: "Wirkt auf bis zu drei Personen in Reichweite." },
+  ], stf: "B" },
 ];
 
 const CEREMONIES = [

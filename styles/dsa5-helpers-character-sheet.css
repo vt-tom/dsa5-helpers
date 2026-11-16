@@ -6586,30 +6586,118 @@
   grid-template-columns: 44px 1fr 1fr 80px 24px;
 }
 
-/* Kleines Erweiterungs-Badge klar außerhalb der Zauber-/Talent-Grafik statt sie zu überlappen (Nutzer-Feedback
-   2026-09-16: "Icon ist viel zu nah am Bild"). */
-.dsa5-helpers-sheet .dsa5h-extensions {
-  position: absolute;
-  right: -6px;
-  top: -6px;
-  width: 15px;
-  height: 15px;
-  line-height: 15px;
-  font-size: 10px;
-  text-align: center;
-  color: #1c1917;
-  background: #e0c080;
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px var(--paper);
-  cursor: help;
+/* Gelernte Erweiterungen aufklappen (#84, 2026-11-16, ersetzt das ✦-Abzeichen am Bild): Knopf „✦ n +“ in der
+   Namenszelle (dort, damit die Zellenfolge der Zeile – mobil per nth-child angeordnet – gleich bleibt), aufgeklappt
+   eine Liste unter der Zeile mit Name (öffnet das Item) und Beschreibung, eingerückt auf die Namensspalte. */
+.dsa5-helpers-sheet .dsa5h-magic-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+  min-width: 0;
 }
 
-.dsa5-helpers-sheet .dsa5h-extensions:focus-visible {
+.dsa5-helpers-sheet .dsa5h-ext-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  width: auto;
+  height: var(--hit-sm);
+  min-height: 0;
+  margin: 0;
+  padding: 0 7px;
+  border: 1px solid rgba(176, 134, 58, .55);
+  border-radius: 12px;
+  background: rgba(224, 192, 128, .16);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-toggle .dsa5h-ext-star {
+  color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-toggle .dsa5h-ext-sign {
+  min-width: 8px;
+  font-weight: 700;
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-toggle[aria-expanded="true"] {
+  border-color: #b0863a;
+  background: #e0c080;
+  color: #1c1917;
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-toggle[aria-expanded="true"] .dsa5h-ext-star {
+  color: #1c1917;
+}
+
+.dsa5-helpers-sheet :is(.dsa5h-ext-toggle, .dsa5h-ext-name):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
-/* ✦-Legende nur unter Tabellen, in denen mindestens ein Eintrag eine gelernte Erweiterung hat (Paket G). */
+.dsa5-helpers-sheet .dsa5h-ext-list {
+  padding: 4px 11px 8px 55px;
+  border-top: 1px dashed var(--line);
+  background: rgba(224, 192, 128, .08);
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-list[hidden] {
+  display: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-item {
+  display: grid;
+  grid-template-columns: 12px max-content minmax(0, 1fr);
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 3px 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-item .dsa5h-ext-star {
+  color: var(--accent);
+  font-size: var(--fs-meta);
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-name {
+  color: var(--ink);
+  font-size: var(--fs-small);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-desc {
+  color: var(--muted);
+  font-size: var(--fs-small);
+  line-height: 1.35;
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-desc > :first-child {
+  margin-top: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-ext-desc > :last-child {
+  margin-bottom: 0;
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet .dsa5h-ext-toggle:not([aria-expanded="true"]):hover {
+    border-color: #b0863a;
+    background: rgba(224, 192, 128, .35);
+  }
+
+  .dsa5-helpers-sheet .dsa5h-ext-name:hover {
+    text-decoration: underline;
+  }
+}
+
+/* ✦-Legende nur unter Tabellen, in denen mindestens ein Eintrag gelernte Erweiterungen hat (Paket G, #84). */
 .dsa5-helpers-sheet .dsa5h-table-legend {
   padding: 5px 11px;
   border-top: 1px solid var(--line);
@@ -6617,7 +6705,7 @@
   color: var(--muted);
 }
 
-.dsa5-helpers-sheet .panel:not(:has(.dsa5h-extensions)) > .dsa5h-table-legend {
+.dsa5-helpers-sheet .panel:not(:has(.dsa5h-ext-toggle)) > .dsa5h-table-legend {
   display: none;
 }
 
@@ -8211,6 +8299,23 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
   cursor: pointer;
   font-size: var(--font-size-12, 12px);
 }
+/* #90: Grund, wenn die gewählte Verteidigung nicht zulässig war; gesperrte Zeilen in der SL-Rechnung; Knopf
+   „Selbst verteidigen“ unter der Karte (volle Breite), Karte nach der Rücknahme neutral. */
+.chat-message .dsa5h-pd-card .dsa5h-pd-note {
+  grid-column: 2;
+  font-style: italic;
+  opacity: .85;
+}
+.chat-message .dsa5h-pd-table .dsa5h-pd-blocked {
+  opacity: .55;
+  text-decoration: line-through;
+}
+.chat-message .dsa5h-pd-card.dsa5h-pd-manual { --pd: #8b6f3f; }
+.chat-message button.dsa5h-pd-self {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  font-size: var(--font-size-12, 12px);
+}
 
 /* Hausregeln im Standardbogen des Systems (Issue #44, scripts/house-rules/system-sheet.js): kleines Symbol hinter dem
    Talentnamen statt Foundrys großem Standardknopf. */
@@ -9651,7 +9756,88 @@ body.theme-dark .application .dsa5h-maneuver-panel .dsa5h-maneuver-row.active { 
 }
 .dsa5-helpers-sheet .dsa5h-quest-closed > summary { cursor: pointer; }
 .dsa5-helpers-sheet .dsa5h-persona-important { color: var(--accent); }
-.dsa5-helpers-sheet :is(.dsa5h-almanac-tile, .dsa5h-almanac-btn):focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* Personen-Reiter (#91, 2026-11-16, Click-Dummy renderPersonae()): Werkzeugleiste klebt oben wie die Talentsuche,
+   Filter und Ansicht als Segmentknöpfe, Gruppen nach Fraktion als Zwischenüberschrift; „Liste“ macht aus den Kacheln
+   kompakte Zeilen (Bild | Name | Untertitel | Fraktion, die Fraktion nur ohne Gruppen). */
+.dsa5-helpers-sheet [data-tab-panel="personae"] > .dsa5h-personae-tools {
+  position: sticky;
+  top: 0;
+  z-index: 7;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 6px 0;
+  background: var(--paper);
+  box-shadow: 0 6px 6px -6px rgba(0,0,0,.3);
+}
+.dsa5-helpers-sheet .dsa5h-personae-tools input { flex: 1 1 180px; min-width: 150px; text-align: left; }
+.dsa5-helpers-sheet .dsa5h-seg {
+  display: inline-flex;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.dsa5-helpers-sheet .dsa5h-seg > button {
+  width: auto;
+  min-height: var(--hit-md);
+  margin: 0;
+  padding: 0 10px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--field);
+  box-shadow: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.dsa5-helpers-sheet .dsa5h-seg > button:first-child { border-left: 0; }
+.dsa5-helpers-sheet .dsa5h-seg > button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.dsa5-helpers-sheet .dsa5h-panel-count { margin-left: auto; color: var(--muted); font-size: var(--fs-meta); }
+.dsa5-helpers-sheet .dsa5h-persona-group[hidden] { display: none; }
+.dsa5-helpers-sheet .dsa5h-persona-group + .dsa5h-persona-group { border-top: 1px solid var(--line); }
+.dsa5-helpers-sheet .dsa5h-persona-group-title {
+  padding: 8px 11px 0;
+  color: var(--accent);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.dsa5-helpers-sheet .dsa5h-persona-group-title .dsa5h-muted { font-weight: 400; letter-spacing: 0; }
+.dsa5-helpers-sheet .dsa5h-persona-card[hidden] { display: none; }
+.dsa5-helpers-sheet .dsa5h-persona-card.is-hidden img { opacity: .6; }
+.dsa5-helpers-sheet .dsa5h-persona-hidden { color: var(--muted); font-style: italic; }
+.dsa5-helpers-sheet .dsa5h-persona-faction { display: none; }
+.dsa5-helpers-sheet [data-persona-view="list"] .dsa5h-persona-items { display: flex; flex-direction: column; gap: 0; padding: 4px 0; }
+.dsa5-helpers-sheet [data-persona-view="list"] .dsa5h-persona-card {
+  grid-template-columns: 32px minmax(0, 1fr);
+  height: auto;
+  min-height: 40px;
+  padding: 4px 11px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+}
+.dsa5-helpers-sheet [data-persona-view="list"] .dsa5h-persona-card:first-child { border-top: 0; }
+.dsa5-helpers-sheet [data-persona-view="list"] .dsa5h-persona-card img { width: 32px; height: 32px; }
+.dsa5-helpers-sheet [data-persona-view="list"] .dsa5h-persona-card .dsa5h-tile-text {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, .8fr);
+  align-items: center;
+  gap: 10px;
+}
+.dsa5-helpers-sheet [data-persona-view="list"] .dsa5h-persona-card .dsa5h-tile-text small { font-size: var(--fs-small); }
+.dsa5-helpers-sheet [data-persona-view="list"] .dsa5h-persona-items .dsa5h-persona-faction { display: block; }
+.dsa5-helpers-sheet [data-persona-view="list"] .dsa5h-persona-group-title + .dsa5h-persona-items .dsa5h-persona-faction { display: none; }
+.dsa5-helpers-sheet :is(.dsa5h-almanac-tile, .dsa5h-almanac-btn):focus-visible,
+.dsa5-helpers-sheet .dsa5h-seg > button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 @media (hover: hover) {
   .dsa5-helpers-sheet :is(.dsa5h-almanac-tile, .dsa5h-almanac-btn):hover { border-color: var(--accent); }
+  .dsa5-helpers-sheet [data-persona-view="list"] .dsa5h-persona-card:hover { background: var(--odd); }
+  .dsa5-helpers-sheet .dsa5h-seg > button[aria-pressed="false"]:hover { background: var(--odd); }
 }

@@ -124,6 +124,25 @@ body.embedded .device { width: 100vw; height: 100vh; border-radius: 0; box-shado
 .row .grow small { display: block; color: var(--ink2); font-size: 13px; }
 .row .v { min-width: 34px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
 .row img.ico { width: 30px; height: 30px; border-radius: 3px; }
+/* Erweiterungen aufklappen (#84) */
+/* Personen (#91) */
+.ptools { position: sticky; top: 0; z-index: 3; margin: 0 -10px 10px; padding: 8px 10px 4px; background: var(--paper); box-shadow: 0 6px 6px -6px rgba(0, 0, 0, .3); }
+.ptools input { box-sizing: border-box; width: 100%; min-height: 44px; margin-bottom: 8px; padding: 0 12px; border: 1px solid var(--line2); border-radius: 4px; background: var(--field); color: var(--ink); font: 16px 'GentiumBasic', serif; }
+.ptools .groups { margin: 0; flex-wrap: wrap; }
+.imp { color: #8b6f3f; }
+.ptiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; padding: 10px; }
+.ptile { display: flex; align-items: center; gap: 10px; height: 66px; padding: 6px; border: 1px solid var(--line2); border-radius: 6px; background: var(--field); cursor: pointer; overflow: hidden; }
+.ptile .pic { width: 52px; height: 52px; flex: none; border-radius: 50%; background: #d9c7a3 center / cover no-repeat; }
+.ptile .grow { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ptile small { display: block; overflow: hidden; text-overflow: ellipsis; color: var(--ink2); font-size: 13px; }
+.ext-toggle { display: inline-flex; flex: none; align-items: center; gap: 3px; min-height: 32px; margin-top: 4px; padding: 0 10px; border: 1px solid rgba(176, 134, 58, .55); border-radius: 18px; background: rgba(224, 192, 128, .16); color: var(--ink); font: 14px 'GentiumBasic', serif; cursor: pointer; }
+.ext-toggle .ext-star { color: #8b6f3f; }
+.ext-toggle .ext-sign { min-width: 9px; font-weight: 700; }
+.ext-toggle[aria-expanded="true"] { border-color: #b0863a; background: #e0c080; color: #1c1917; }
+.ext-toggle[aria-expanded="true"] .ext-star { color: #1c1917; }
+.ext-list { padding: 2px 12px 8px 52px; border-top: 1px dashed var(--line); background: rgba(224, 192, 128, .08); }
+.ext-item { display: grid; padding: 2px 0 4px; font-size: 14px; line-height: 1.35; color: var(--ink2); }
+.ext-name { justify-self: start; min-height: 30px; padding: 0; border: 0; background: none; color: var(--ink); font: 700 15px 'GentiumBasic', serif; text-align: left; cursor: pointer; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 10px; border: 1px solid var(--line2); border-radius: 4px; background: var(--field); font-size: 15px; }
 .chip img { width: 20px; height: 20px; }
@@ -242,21 +261,28 @@ const SKILLS = {
   'Wissen': [['Magiekunde', 'KL/KL/IN', 4], ['Sagen & Legenden', 'KL/KL/IN', 3]],
   'Handwerk': [['Heilkunde Wunden', 'KL/FF/FF', 6], ['Holzbearbeitung', 'FF/GE/KK', 4]],
 };
-const SPELLS = [['Adlerauge', 'KL/IN/FF', 7, '4 AsP · 2 Aktionen · selbst'], ['Axxeleratus', 'KL/GE/KO', 6, '8 AsP · 1 Aktion · Berührung'], ['Balsam Salabunde', 'KL/IN/CH', 8, '4 AsP · 2 Aktionen · Berührung'], ['Visibili', 'KL/IN/GE', 5, '8 AsP · 1 Aktion · selbst']];
-const LITURGIES = [['Ruf in den Schlaf', 'MU/IN/CH', 4, '4 KaP · 2 Aktionen · 4 Schritt'], ['Wundsegen', 'MU/IN/CH', 6, '4 KaP · 2 Aktionen · Berührung']];
+// Fünfter Eintrag: gelernte Erweiterungen [Name, Beschreibung] (#84, 2026-11-16; erfundene Platzhaltertexte)
+const SPELLS = [['Adlerauge', 'KL/IN/FF', 7, '4 AsP · 2 Aktionen · selbst'], ['Axxeleratus', 'KL/GE/KO', 6, '8 AsP · 1 Aktion · Berührung'],
+  ['Balsam Salabunde', 'KL/IN/CH', 8, '4 AsP · 2 Aktionen · Berührung', [['Sanfte Hand', 'Die Kosten sinken um 2 AsP.'], ['Heilung auf Abstand', 'Reichweite 4 Schritt statt Berührung.'], ['Tiefer Schlaf', 'Der Behandelte schläft danach eine Stunde fest.']]],
+  ['Visibili', 'KL/IN/GE', 5, '8 AsP · 1 Aktion · selbst', [['Lautlos', 'Auch die Schritte des Helden sind nicht zu hören. Längere Beschreibungen brechen auf mehrere Zeilen um.']]]];
+const LITURGIES = [['Ruf in den Schlaf', 'MU/IN/CH', 4, '4 KaP · 2 Aktionen · 4 Schritt'], ['Wundsegen', 'MU/IN/CH', 6, '4 KaP · 2 Aktionen · Berührung', [['Segen der Gemeinschaft', 'Wirkt auf bis zu drei Personen in Reichweite.']]]];
 const WEAPONS = [['Haupthand', 'Elfenbogen', 'Bögen · FK 15 · RW 20/100/200 · 18 Pfeile', [['FK', 15, 'ff']], '1W6+5'], ['Nebenhand', 'Wolfsmesser', 'Dolche · KtW 13 · RW kurz', [['AT', 13, 'mu'], ['PA', 7, 'in']], '1W6+2']];
 const ITEMS = [['Am Körper', [['Elfenbogen', 1, '1,0'], ['Wolfsmesser', 1, '0,6'], ['Lederrüstung', 1, '3,0']]], ['Rucksack', [['Pfeile', 18, '0,1'], ['Heiltrank', 2, '0,2'], ['Proviant (Tag)', 3, '0,5'], ['Seil (10 Schritt)', 1, '1,5']]]];
 const COND = [['Schmerz', 1], ['Belastung', 0], ['Betäubung', 0], ['Furcht', 0], ['Verwirrung', 0]];
 const FAVS = [['Talente', 'Skill', 'Sinnesschärfe', 'KL/IN/IN', 12], ['Zauber', 'Spell', 'Balsam Salabunde', 'KL/IN/CH', 8], ['Ausrüstung', 'Equipment', 'Heiltrank', null, '× 2']];
 const SUGG = [['Fährtensuchen', 'MU/IN/GE', 10, 'Spuren im Kampagnenjournal'], ['Wildnisleben', 'MU/GE/KO', 11, 'Lagerplatz gesucht'], ['Willenskraft', 'MU/IN/CH', 7, 'Furcht in der Nähe']];
 
-const state = { godschips: 'none', device: 'phone', tab: 'cover', group: 'Körper', collapsed: false, pop: null };
+const state = { godschips: 'none', device: 'phone', tab: 'cover', group: 'Körper', collapsed: false, pop: null, extOpen: new Set(), pq: '', pf: 'all', pg: true, pv: 'tiles' };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const panel = (title, inner, small = '') => `<section class="panel"><h3>${title}${small ? `<small>${small}</small>` : ''}</h3>${inner}</section>`;
 const probe = p => `<span class="probe">${p.split('/').map(k => `<span style="background-image:url('${DIE(k)}')">${k}</span>`).join('')}</span>`;
 const cdie = (label, v, k, name) => `<button type="button" class="cdie" style="background-image:url('${DIE(k)}')" data-roll="${esc(name)} · ${label}" data-sub="${label} ${v}" title="${label}">${v}</button>`;
 // Zeile, die beim Tippen würfelt und beim langen Drücken das Blatt öffnet
-const rollRow = (name, p, fw, extra = '', ico = '') => `<div class="row" data-roll="${esc(name)}" data-probe="${p}" data-fw="${fw}" data-open="${esc(name)}">${ico ? `<img class="ico" src="${ICON(ico)}" alt="">` : ''}<span class="grow"><span data-name>${esc(name)}</span>${extra ? `<small>${extra}</small>` : ''}</span>${probe(p)}<span class="v">${fw}</span><button type="button" class="star" aria-label="Favorit">☆</button></div>`;
+const rollRow = (name, p, fw, extra = '', ico = '', ext = null) => `<div class="row" data-roll="${esc(name)}" data-probe="${p}" data-fw="${fw}" data-open="${esc(name)}">${ico ? `<img class="ico" src="${ICON(ico)}" alt="">` : ''}<span class="grow"><span data-name>${esc(name)}</span>${extra ? `<small>${extra}</small>` : ''}${ext ? extToggle(name, ext) : ''}</span>${probe(p)}<span class="v">${fw}</span><button type="button" class="star" aria-label="Favorit">☆</button></div>${ext && state.extOpen.has(name) ? extList(ext) : ''}`;
+// Gelernte Erweiterungen aufklappen (#84): „✦ n +“ unter Name und Unterzeile, Tippen klappt die Liste unter der Zeile auf;
+// Tippen auf den Namen einer Erweiterung öffnet sie als Blatt.
+const extToggle = (name, ext) => { const open = state.extOpen.has(name); const label = `${ext.length} ${ext.length === 1 ? 'Erweiterung' : 'Erweiterungen'} ${open ? 'zuklappen' : 'aufklappen'}`; return `<button type="button" class="ext-toggle" data-ext="${esc(name)}" aria-expanded="${open}" aria-label="${label}"><span class="ext-star" aria-hidden="true">✦</span>${ext.length}<span class="ext-sign" aria-hidden="true">${open ? '−' : '+'}</span></button>`; };
+const extList = ext => `<div class="ext-list">${ext.map(([n, d]) => `<div class="ext-item"><button type="button" class="ext-name" data-ext-open="${esc(n)}">✦ ${esc(n)}</button><span>${esc(d)}</span></div>`).join('')}</div>`;
 
 const TAB = {
   cover: () => {
@@ -277,18 +303,60 @@ const TAB = {
   combat: () => panel('Waffen', WEAPONS.map(([hand, n, meta, rolls, tp]) => `<div class="weapon"><span class="hand">${hand}</span><div class="wname">${n}</div><div class="meta">${meta}</div><div class="roll">${rolls.map(([l, v, k]) => cdie(l, v, k, n)).join('')}<button type="button" class="tp" data-roll="${n} · Schaden" data-sub="TP ${tp}">${tp}</button></div></div>`).join(''))
     + panel('Kampfwerte', `<div class="stats"><div>${cdie('Ausweichen', 7, 'ge', 'Ausweichen')}<small>Ausweichen</small></div><div><b>13</b><small>Initiative</small></div><div><b>2</b><small>Rüstungsschutz</small></div></div>`)
     + panel('Rüstung', `<div class="row"><span class="grow">Lederrüstung<small>RS 2 · BE 1</small></span></div>`),
-  magic: () => panel('Tradition', `<p>Elf · Leiteigenschaft IN · AsP 24 / 34, Kraftspeicher an der AsP-Kugel</p>`) + panel('Zauber', SPELLS.map(([n, p, fw, sub]) => rollRow(n, p, fw, sub, 'Spell')).join('')),
-  religion: () => panel('Tradition', `<p>Laienpriesterin der Tsa · KaP 12 / 18</p>`) + panel('Liturgien', LITURGIES.map(([n, p, fw, sub]) => rollRow(n, p, fw, sub, 'Liturgy')).join('')),
+  magic: () => panel('Tradition', `<p>Elf · Leiteigenschaft IN · AsP 24 / 34, Kraftspeicher an der AsP-Kugel</p>`) + panel('Zauber', SPELLS.map(([n, p, fw, sub, ext]) => rollRow(n, p, fw, sub, 'Spell', ext)).join('')),
+  religion: () => panel('Tradition', `<p>Laienpriesterin der Tsa · KaP 12 / 18</p>`) + panel('Liturgien', LITURGIES.map(([n, p, fw, sub, ext]) => rollRow(n, p, fw, sub, 'Liturgy', ext)).join('')),
   inventory: () => panel('Geldbörse', `<div class="row"><span class="grow">3 D · 14 S · 6 H · 2 K</span></div>`) + ITEMS.map(([box, list]) => panel(box, list.map(([n, q, w]) => `<div class="row" data-open="${n}"><img class="ico" src="${ICON('Equipment')}" alt=""><span class="grow" data-name>${n}<small>${w} Stein</small></span><button type="button" class="qty" data-qty="${esc(box)}|${esc(n)}">× ${q}</button><button type="button" class="more" aria-label="Menü">⋮</button></div>`).join(''))).join(''),
   status: () => panel('Auf einen Blick', `<div class="stats"><div><b>I</b><small>Schmerz</small></div><div><b>0</b><small>Belastung</small></div><div><b>11,9 / 22</b><small>Traglast</small></div></div>`)
     + panel('Zustände', COND.map(([n, f]) => `<div class="row"><span class="grow">${n}</span><span class="pips">${[0, 1, 2, 3].map(i => `<i class="${i < f ? 'on' : ''}"></i>`).join('')}</span></div>`).join('')),
   notes: () => [['Abenteuertagebuch', 'Platzhalter: Einträge der Spielabende.'], ['Persönliche Daten', 'Weiblich · 87 Jahre · 176 cm · Auwald am Born'], ['Biografie', 'Platzhalter.']].map(([t, x]) => panel(t, `<p>${x}</p>`)).join(''),
   companions: () => panel('Gefährten', `<div class="card" data-open="Sturmwind"><span class="pic" style="background-image:url('${ICON('ability_animal')}')"></span><span class="grow" data-name>Sturmwind<small>Elfenpferd · LeP 52 / 52</small></span></div>`),
   quests: () => panel('Aufträge', [['Die verschwundene Karawane', 'Offen · Ziele 1 / 3'], ['Ein Brief für Gareth', 'Erledigt']].map(([n, s]) => `<div class="card" data-open="${n}"><span class="pic" style="background-image:url('${ICON('Career')}')"></span><span class="grow" data-name>${n}<small>${s}</small></span></div>`).join(''), 'Tipp zeigt den Eintrag'),
-  persons: () => panel('Personen', [['Alrik vom Bärenstein', 'Wirt · Gratenfels'], ['Firunja', 'Jägerin · Auftraggeberin']].map(([n, s]) => `<div class="card" data-open="${n}"><span class="pic" style="background-image:url('${ICON('Weltliche')}')"></span><span class="grow" data-name>${n}<small>${s}</small></span></div>`).join(''), 'Tipp zeigt den Eintrag'),
+  persons: () => personsTab(),
 };
 // Aufträge und Personen öffnen schon beim Tippen (Almanach-Blatt, #67)
 const TAP_OPENS = ['quests', 'persons', 'companions'];
+
+// Personen (#91, 2026-11-16): Suche, Filter Alle/Wichtige, Gruppen nach Fraktion; am Tablet zusätzlich Ansicht
+// Kacheln/Liste, am Smartphone immer Liste. Spielersicht (verborgene Einträge sieht nur die SL, siehe Desktop-Dummy).
+// [Name, Untertitel, Fraktion, wichtig, Bestiarium]
+const PERSONS = [['Baron Ugdalf von Gratenfels', 'Lehnsherr', 'Haus Gratenfels', true], ['Baronin Rondriga von Gratenfels', 'Gemahlin des Barons', 'Haus Gratenfels'],
+  ['Hauptmann Leomar', 'Burgwache, misstrauisch', 'Haus Gratenfels'], ['Notar Elgor Brandeisen', 'Schreiber, nervös', 'Gratenfels'], ['Wirtin Alrike', '„Zum Goldenen Krug“', 'Gratenfels'],
+  ['Förster Answin', 'Auftraggeber', 'Rodaschquell'], ['Schäferin Ilma', 'Hat das Rudel gesehen', 'Rodaschquell'], ['Firunja', 'Jägerin, reist mit der Gruppe', ''],
+  ['Grauwolf', 'Rudeltier', 'Forst', false, true], ['Leitwolf Narbenohr', 'Führt das Rudel', 'Forst', true, true], ['Waldschrat', 'Gerüchte im Dorf', 'Forst', true, true]];
+function personsTab() {
+  const q = state.pq.trim().toLowerCase();
+  const tiles = state.device === 'tablet' && state.pv === 'tiles';
+  const card = ([n, sub, , imp]) => `<div class="${tiles ? 'ptile' : 'card'}" data-open="${esc(n)}"><span class="pic" style="background-image:url('${ICON('Weltliche')}')"></span><span class="grow" data-name>${imp ? '<b class="imp">★</b> ' : ''}${esc(n)}<small>${esc(sub)}</small></span></div>`;
+  const wrap = list => tiles ? `<div class="ptiles">${list.map(card).join('')}</div>` : list.map(card).join('');
+  const block = (title, beast) => {
+    const all = PERSONS.filter(p => !!p[4] === beast);
+    const shown = all.filter(([n, sub, fac, imp]) => (state.pf !== 'important' || imp) && (!q || [n, sub, fac].some(v => (v || '').toLowerCase().includes(q))))
+      .sort((a, b) => (!!b[3] - !!a[3]) || a[0].localeCompare(b[0], 'de'));
+    let body;
+    if (!shown.length) body = `<p>${q ? `Keine Treffer für „${esc(state.pq.trim())}“.` : 'Keine Einträge für diesen Filter.'}</p>`;
+    else if (!state.pg) body = wrap(shown);
+    else {
+      const groups = {};
+      for (const p of shown) (groups[p[2] || 'Ohne Fraktion'] ??= []).push(p);
+      body = Object.keys(groups).sort((a, b) => (a === 'Ohne Fraktion') - (b === 'Ohne Fraktion') || a.localeCompare(b, 'de'))
+        .map(k => `<div class="sub">${esc(k)} (${groups[k].length})</div>${wrap(groups[k])}`).join('');
+    }
+    return panel(title, body, shown.length === all.length ? String(all.length) : `${shown.length} von ${all.length}`);
+  };
+  const seg = (key, opts) => opts.map(([v, t]) => `<button type="button" data-pset="${key}" data-pval="${v}" aria-pressed="${state[key] === v}">${t}</button>`).join('');
+  const tools = `<div class="ptools"><input type="search" id="pq" placeholder="Name oder Fraktion suchen …" value="${esc(state.pq)}" aria-label="Personen durchsuchen">
+    <div class="groups">${seg('pf', [['all', 'Alle'], ['important', '★ Wichtige']])}<button type="button" data-pset="pg" aria-pressed="${state.pg}">Nach Fraktion</button>${state.device === 'tablet' ? seg('pv', [['tiles', 'Kacheln'], ['list', 'Liste']]) : ''}</div></div>`;
+  return tools + block('Dramatis Personae', false) + block('Bestiarium', true);
+}
+document.addEventListener('input', ev => {
+  if (ev.target.id !== 'pq') return;
+  state.pq = ev.target.value;
+  const pos = ev.target.selectionStart;
+  render(true);
+  const fresh = document.getElementById('pq');
+  fresh.focus();
+  fresh.setSelectionRange(pos, pos);
+});
 
 const orb = ([cls, label, cur, max]) => `<button type="button" class="orb ${cls}" style="--p:${Math.round(100 * cur / max)}%" data-res="${cls}" aria-expanded="${state.pop?.key === cls}" aria-label="${RES_NAMES[cls]} ${cur} von ${max} – ändern"><i></i><b><small>${label}</small>${cur}<small>/ ${max}</small></b></button>`;
 const orbs = () => `<div class="orbs">${orb(RES[0])}<div class="anchor">${orb(RES[1])}<button type="button" class="ks" data-ks aria-haspopup="dialog" aria-label="Kraftspeicher"><span><small>KS</small>${POWER.reduce((a, p) => a + p.value, 0)}</span></button></div>${orb(RES[2])}</div>`;
@@ -427,7 +495,7 @@ function roll(el) {
 let press = null;
 document.addEventListener('pointerdown', ev => {
   const row = ev.target.closest('[data-open]');
-  if (!row || ev.target.closest('.star, .qty, .more, .cdie')) return;
+  if (!row || ev.target.closest('.star, .qty, .more, .cdie, .ext-toggle')) return;
   row.classList.add('pressing');
   press = { row, timer: setTimeout(() => { press.done = true; row.classList.remove('pressing'); openSheet(row.dataset.open); }, 500) };
 });
@@ -481,6 +549,9 @@ document.addEventListener('click', ev => {
   if (b.dataset.ksStep) { const p = POWER[b.dataset.i]; p.value = Math.max(0, Math.min(p.max, p.value + Number(b.dataset.ksStep))); render(true); return openKs(); }
   if (b.dataset.toast) return toast(b.dataset.toast);
   if (b.matches('.star')) return toast('Favorit umgeschaltet');
+  if (b.dataset.ext) { const n = b.dataset.ext; state.extOpen.has(n) ? state.extOpen.delete(n) : state.extOpen.add(n); return render(true); }
+  if (b.dataset.extOpen) return openSheet(b.dataset.extOpen);
+  if (b.dataset.pset) { state[b.dataset.pset] = b.dataset.pset === 'pg' ? !state.pg : b.dataset.pval; return render(true); }
   if (b.matches('.more')) return toast('Menü des Gegenstands');
   if (b.dataset.open && (TAP_OPENS.includes(state.tab) || (state.device === 'tablet' && ev.target.closest('[data-name]')))) return openSheet(b.dataset.open);
   if (b.dataset.roll) return roll(b);

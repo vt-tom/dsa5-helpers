@@ -6,7 +6,7 @@ import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-
 import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, distractFoe, maneuverSheetData, defenseChoices, setDefenseMode } from '../house-rules/rules.js';
 import { openHouseRules } from '../apps/house-rules.js';
 import { bindItemTooltips } from './item-tooltips.js';
-import { almanacTabEnabled, loadQuests, loadPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
+import { almanacTabEnabled, loadQuests, loadPersonae, groupPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
 import { buildSuggestions, suggestionCount, suggestionsCollapsed, COLLAPSED_SETTING, COUNT_FLAG, COUNT_MIN, COUNT_MAX } from '../skill-suggestions/context.js';
 
 // Händler-Modi des Systems (DSA5.merchantTypes ohne „none“) → Texte des Systems.
@@ -38,6 +38,10 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       dsa5hToggleCompanionTab: this._toggleCompanionTab,
       dsa5hFavorite: this._toggleFavorite,
       dsa5hToggleHappyTalents: this._toggleHappyTalents,
+      dsa5hToggleExtensions: this._toggleExtensions,
+      dsa5hPersonaeFilter: this._personaeFilter,
+      dsa5hPersonaeFaction: this._personaeFaction,
+      dsa5hPersonaeView: this._personaeView,
       dsa5hToggleSuggestions: this._toggleSuggestions,
       dsa5hSuggestionCount: this._changeSuggestionCount,
       dsa5hOnlyLearned: this._toggleOnlyLearned,
@@ -154,7 +158,9 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   _coverSideTab = 'conditions';
   _coverSideTabs = ['conditions', 'details'];
   _subtabs = { skills: 'body', combat: 'body', magic: 'spells', religion: 'spells', notes: 'details', personae: 'dramatis' };
-  _search = { talent: '', gear: '', combatskill: '' };
+  _search = { talent: '', gear: '', combatskill: '', personae: '' };
+  // Personen-Reiter (#91): Filter all|important|hidden, Gruppen nach Fraktion, Ansicht tiles|list — nur auf der Instanz.
+  _personae = { filter: 'all', byFaction: true, view: 'tiles' };
   _favoritePending = false;
   // Wohlgefällige Talente (Religion-Tab) starten eingeklappt im Spielmodus, Klick blendet den vollen Text ein —
   // Nutzerentscheidung 2026-09-19 nach Click-Dummy-Vergleich dreier Varianten ("B · Einklappbar" gewählt, nahm
@@ -162,6 +168,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // _subtabs auf der Instanz gehalten und über _applyCurrentTab() ins DOM übertragen, statt für einen simplen
   // Auf/Zu-Klick das ganze Sheet neu zu rendern.
   _happyTalentsExpanded = false;
+  // Aufgeklappte Erweiterungen je Zauber/Liturgie (#84), wie _happyTalentsExpanded nur auf der Instanz gemerkt.
+  _openExtensions = new Set();
   // "Nur gesteigerte" (Talente): blendet FW-0-Talente aus wie der Filter im System (actor-talents.hbs .notLearned),
   // aber über row.hidden statt der System-Klasse — .notLearned ist im System-CSS global display:none.
   _onlyLearned = false;
@@ -498,8 +506,20 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     // The original sheet prepares this only for its separate companion part.
     if (!limited && typeof this.prepareCompanionTab === 'function') await this.prepareCompanionTab(context);
     // Aufträge/Personen (#39): Listen aus den Almanach-Journalen, nur wenn der Reiter da ist.
+    // Gelernte Erweiterungen je Zauber/Ritual/Liturgie/Zeremonie (#84) zum Aufklappen unter der Zeile.
+    context.dsa5h.spellExtensions = limited ? {} : await this._spellExtensions();
     if (tabs.some(tab => tab.id === QUESTS_TAB)) context.dsa5h.quests = await loadQuests();
-    if (tabs.some(tab => tab.id === PERSONAE_TAB)) context.dsa5h.personae = await loadPersonae();
+    if (tabs.some(tab => tab.id === PERSONAE_TAB)) {
+      const personae = await loadPersonae();
+      const byFaction = this._personae.byFaction;
+      context.dsa5h.personae = {
+        ...personae,
+        byFaction,
+        canSeeHidden: !!game.user?.isGM,
+        sections: [['dramatis', 'DSA5HELPERS.Personae.Dramatis'], ['bestiary', 'DSA5HELPERS.Personae.Bestiary']]
+          .map(([id, label]) => ({ id, label, total: personae[id].length, groups: groupPersonae(personae[id], byFaction) })),
+      };
+    }
     // Daten des Planer-Reiters (plannerSections/-TotalCost/-AvailableXP) direkt vom Planer; `tabs` braucht sein
     // Template für die Klasse `active` (parts/planner.hbs).
     if (planner) {
@@ -636,8 +656,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       this.attachCompanionTabListeners(companion);
       this._labelCompanionButtons(companion);
     }
-    const searchHandlers = { talent: () => this._applyCurrentTab(), gear: () => this._applyGearSearch(), combatskill: () => this._applyCombatSkillSearch() };
-    for (const [kind, selector] of Object.entries({ talent: '.talentSearch', gear: '.gearSearch', combatskill: '.combatSkillSearch' })) {
+    const searchHandlers = { talent: () => this._applyCurrentTab(), gear: () => this._applyGearSearch(), combatskill: () => this._applyCombatSkillSearch(), personae: () => this._applyPersonae() };
+    for (const [kind, selector] of Object.entries({ talent: '.talentSearch', gear: '.gearSearch', combatskill: '.combatSkillSearch', personae: '.personaeSearch' })) {
       const input = this.element.querySelector(selector);
       if (!input) continue;
       input.value = this._search[kind];
@@ -1589,7 +1609,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   }
 
   _jumpStickyOffset(tab, content) {
-    return tab === 'skills' ? content.querySelector('[data-tab-panel="skills"] > .dsa5h-search-bar')?.offsetHeight ?? 0 : 0;
+    // Klebende Werkzeugleisten (Talente, Personen #91) verdecken sonst das Sprungziel.
+    return ['skills', 'personae'].includes(tab) ? content.querySelector(`[data-tab-panel="${tab}"] > .dsa5h-search-bar`)?.offsetHeight ?? 0 : 0;
   }
 
   _jumpTo(tab, id) {
@@ -1677,6 +1698,100 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     this.render();
   }
 
+  /**
+   * Erweiterungen je Zauber-Item (#84): wie SpellExtension.forSource des Systems (Typ spellextension, system.source =
+   * Name, system.category = Typ; sortiert nach FW-Voraussetzung, dann Name), Beschreibung des Items angereichert.
+   */
+  async _spellExtensions() {
+    const extensions = this.actor.items.filter(item => item.type === 'spellextension');
+    if (!extensions.length) return {};
+    const TextEditor = globalThis.foundry?.applications?.ux?.TextEditor?.implementation ?? globalThis.TextEditor;
+    const enrich = (html, ext) => TextEditor?.enrichHTML ? TextEditor.enrichHTML(html, { relativeTo: ext, secrets: this.actor.isOwner }) : html;
+    const result = {};
+    for (const spell of this.actor.items) {
+      if (!['spell', 'ritual', 'liturgy', 'ceremony'].includes(spell.type)) continue;
+      const own = extensions.filter(ext => ext.system.source === spell.name && ext.system.category === spell.type)
+        .sort((a, b) => (Number(a.system.talentValue) || 0) - (Number(b.system.talentValue) || 0) || a.name.localeCompare(b.name, game.i18n.lang));
+      if (!own.length) continue;
+      result[spell.id] = await Promise.all(own.map(async ext => ({
+        id: ext.id,
+        name: ext.name,
+        description: await enrich(ext.system.description?.value ?? '', ext),
+      })));
+    }
+    return result;
+  }
+
+  static _toggleExtensions(event, target) {
+    const id = target.dataset.extFor;
+    if (this._openExtensions.has(id)) this._openExtensions.delete(id);
+    else this._openExtensions.add(id);
+    this._applyExtensions();
+  }
+
+  _applyExtensions() {
+    const root = this.element;
+    if (!root) return;
+    root.querySelectorAll('[data-ext-for]').forEach(button => {
+      const open = this._openExtensions.has(button.dataset.extFor);
+      button.setAttribute('aria-expanded', String(open));
+      const sign = button.querySelector('.dsa5h-ext-sign');
+      if (sign) sign.textContent = open ? '−' : '+';
+    });
+    root.querySelectorAll('[data-ext-list]').forEach(list => { list.hidden = !this._openExtensions.has(list.dataset.extList); });
+  }
+
+  static _personaeFilter(event, target) {
+    this._personae.filter = target.dataset.personaFilter || 'all';
+    this._applyPersonae();
+  }
+
+  static _personaeView(event, target) {
+    this._personae.view = target.dataset.personaViewChoice === 'list' ? 'list' : 'tiles';
+    this._applyPersonae();
+  }
+
+  static _personaeFaction() {
+    this._personae.byFaction = !this._personae.byFaction;
+    this.render();
+  }
+
+  /** Personen-Reiter (#91): Suche (Name, Untertitel, Fraktion), Filter und Ansicht ohne Neuzeichnen; Zähler je Abschnitt. */
+  _applyPersonae() {
+    const tab = this.element?.querySelector('[data-tab-panel="personae"]');
+    if (!tab) return;
+    const { filter, view } = this._personae;
+    tab.dataset.personaView = view;
+    tab.querySelectorAll('[data-persona-filter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.personaFilter === filter)));
+    tab.querySelectorAll('[data-persona-view-choice]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.personaViewChoice === view)));
+    const raw = this._search.personae.trim();
+    const query = raw.toLowerCase();
+    tab.querySelectorAll('[data-persona-section]').forEach(section => {
+      const cards = [...section.querySelectorAll('.dsa5h-persona-card')];
+      let shown = 0;
+      for (const card of cards) {
+        const visible = (filter !== 'important' || card.hasAttribute('data-persona-important'))
+          && (filter !== 'hidden' || card.hasAttribute('data-persona-hidden'))
+          && (!query || (card.dataset.personaSearch ?? '').toLowerCase().includes(query));
+        card.hidden = !visible;
+        if (visible) shown++;
+      }
+      section.querySelectorAll('[data-persona-group]').forEach(group => {
+        const count = group.querySelectorAll('.dsa5h-persona-card:not([hidden])').length;
+        group.hidden = !count;
+        const label = group.querySelector('[data-group-count]');
+        if (label) label.textContent = `(${count})`;
+      });
+      const counter = section.querySelector('[data-persona-count]');
+      if (counter) counter.textContent = cards.length && shown !== cards.length ? game.i18n.format('DSA5HELPERS.Personae.Count', { shown, total: cards.length }) : String(cards.length);
+      const noMatch = section.querySelector('[data-persona-nomatch]');
+      if (noMatch) {
+        noMatch.hidden = !cards.length || !!shown;
+        noMatch.textContent = raw ? game.i18n.format('DSA5HELPERS.Personae.NoMatch', { query: raw }) : game.i18n.localize('DSA5HELPERS.Personae.NoneForFilter');
+      }
+    });
+  }
+
   static _toggleHappyTalents() {
     this._happyTalentsExpanded = !this._happyTalentsExpanded;
     this._applyCurrentTab();
@@ -1717,6 +1832,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     }
     const happyField = root.querySelector('[data-happy-talents-field]');
     if (happyField) happyField.hidden = !happyExpanded;
+    this._applyExtensions();
+    this._applyPersonae();
     root.querySelectorAll('[data-side-tab]').forEach(el => el.setAttribute('aria-selected', String(el.dataset.sideTab === this._coverSideTab)));
     root.querySelectorAll('[data-side-panel]').forEach(el => { el.hidden = el.dataset.sidePanel !== this._coverSideTab; });
     // Issue #85: im Spielmodus überall dieselbe Würfelleiste, auch auf dem Eigenschaften-Reiter; dessen Kacheln

@@ -91,7 +91,8 @@
     "ColCurrent": "Aktuell",
     "ColBase": "Basis",
     "ExtensionLearned": "Erweiterung gelernt: {ext}",
-    "ExtensionLegend": "= Erweiterung gelernt (mit der Maus auf das Zeichen zeigen für Details)",
+    "ExtensionLegend": "= gelernte Erweiterungen, „+“ klappt sie unter dem Eintrag auf",
+    "ExtensionToggle": "Gelernte Erweiterungen ({count}) auf- oder zuklappen",
     "WeightUnit": "Stein",
     "Worn": "Angelegt",
     "VisibleAll": "Sichtbar für alle, die den Bogen sehen dürfen.",
@@ -139,6 +140,7 @@
     "BodyFigurePlaceholder": "Platzhalter",
     "BodyFigurePortrait": "Akteur-Porträt",
     "BannerPick": "Bannerbild wählen",
+    "BannerPickHint": "Bannerbild wählen (empfohlen 1600 × 200 px, Motiv in die Mitte: je nach Reiter und Gerät werden die Seiten beschnitten)",
     "BannerClear": "Bannerbild entfernen",
     "PortraitShape": "Porträtform",
     "PortraitRound": "Porträt rund",
@@ -199,7 +201,7 @@
       },
       "BannerPath": {
         "Name": "Standardordner für Bannerbilder",
-        "Hint": "Hier speichert das Modul Bannerbilder, die Spieler von ihrem Computer hochladen. Spieler brauchen dafür kein Recht auf den Dateibrowser; eine Spielleitung muss angemeldet sein."
+        "Hint": "Hier speichert das Modul Bannerbilder, die Spieler von ihrem Computer hochladen. Spieler brauchen dafür kein Recht auf den Dateibrowser; eine Spielleitung muss angemeldet sein. Empfohlenes Bildformat: 1600 × 200 px (8:1). Der Bogen zeigt das Bild je nach Reiter und Gerät mit 5:1 bis 8:1 und beschneidet es mittig, das Motiv gehört daher in die Mitte; unten links liegt der Heldenname."
       },
       "DisplayMenu": {
         "Title": "Darstellung und Geräte",
@@ -592,17 +594,29 @@
           "hit": "{attacker} trifft {defender}.",
           "defended": "{defender} wehrt den Angriff von {attacker} ab.",
           "miss": "Der Angriff von {attacker} auf {defender} misslingt.",
+          "Brawl": {
+            "Title": "Raufen gegen Waffe",
+            "parryHurts": "{defender} pariert die Waffe von {attacker} mit {weapon}. Eine waffenlose Parade schützt nicht vor dem Schaden einer Waffe: {defender} erleidet den Treffer trotzdem.",
+            "attackHurts": "{defender} wehrt den waffenlosen Angriff von {attacker} mit {weapon} ab. {attacker} verletzt sich dabei an der Waffe.",
+            "DamageArmor": "Schaden: {tp} TP − {armor} RS = {sp} SP",
+            "DamageRaw": "Schaden: {tp} TP (Rüstung beim Anwenden beachten)",
+            "DamageHalf": "Schaden: halber Waffenschaden, gewürfelt {roll} → {value}",
+            "Apply": "Schaden anwenden"
+          },
           "Roll": "Verteidigung (W20): {roll}",
           "Word": {
             "hit": "Treffer",
             "defended": "Abgewehrt",
-            "miss": "Verfehlt"
+            "miss": "Verfehlt",
+            "manual": "Selbst"
           },
           "GMTitle": "Passive Verteidigung (nur SL)",
           "GMLine": "AT {at} gelungen (W20 {d20}). Verteidigung mit {option}: V {defense}, gewürfelt {roll} – abgewehrt bei {defense} oder weniger (1 immer, 20 nie).",
           "Option": "Verteidigung",
           "Base": "Basis",
-          "Mods": "Mod."
+          "Mods": "Mod.",
+          "manual": "{defender} verteidigt sich selbst gegen {attacker}, die automatische Verteidigung ist zurückgenommen.",
+          "Blocked": "{option} geht hier nicht ({reason}), stattdessen {chosen}."
         },
         "Page": {
           "Intro": "Kämpfe gehen schneller, wenn nicht jeder Angriff einen Reaktionsdialog braucht. Mit dieser Hausregel verteidigen Akteure auf Wunsch automatisch: Der Angreifer markiert sein Ziel und würfelt die Attacke wie gewohnt. Gelingt sie, würfelt das Modul sofort und offen einen W20 gegen die Verteidigung des Ziels.",
@@ -616,7 +630,21 @@
           "Note1": "Eine Verteidigung zählt als verbraucht, wenn die Attacke gelungen ist.",
           "Note2": "Ein Schip auf die Attacke würfelt auch die Verteidigung neu; eine alte Trefferkarte verschwindet, wenn der Angriff jetzt abgewehrt wird. Bereits angewendeter Schaden muss dann von Hand korrigiert werden.",
           "Note3": "Kritische Paraden, Paradepatzer und Fähigkeiten, die eine kritische Parade voraussetzen, entfallen bei der automatischen Verteidigung.",
-          "Note4": "Die Spielleitung muss angemeldet sein und die Szene des Ziels ansehen. Ohne markiertes Ziel und bei Gelegenheitsangriffen gilt der normale Ablauf."
+          "Note4": "Die Spielleitung muss angemeldet sein und die Szene des Ziels ansehen. Ohne markiertes Ziel und bei Gelegenheitsangriffen gilt der normale Ablauf.",
+          "Note5": "Raufen gegen Waffen: Wehrt die Automatik eine Waffe waffenlos ab, erscheint eine Hinweiskarte mit dem vollen Schaden für den Verteidiger; wehrt sie eine waffenlose Attacke mit einer Waffe ab, eine mit dem halben Waffenschaden für den Angreifer. Angewendet wird der Schaden erst über den Knopf auf der Karte.",
+          "Note6": "Nur zulässige Verteidigungen: gegen große Gegner nur Schild oder Ausweichen, gegen riesige nur Ausweichen; mit Kettenwaffen und Peitschen keine Parade; Dolche und Fechtwaffen parieren keine Kettenwaffen, Stangenwaffen, Zweihandhiebwaffen und Zweihandschwerter. Fächer prüft das Modul nicht. Geht die fest gewählte Verteidigung nicht, nimmt die Automatik die beste zulässige und nennt den Grund.",
+          "Note7": "„Selbst verteidigen“ auf der Karte (Spielleitung und Besitzer des Verteidigers) nimmt das automatische Ergebnis zurück; danach reagiert der Verteidiger wie gewohnt über den Knopf des Systems."
+        },
+        "Blocked": {
+          "big": "großer Gegner: nur Schild oder Ausweichen",
+          "giant": "riesiger Gegner: nur Ausweichen",
+          "noParry": "mit dieser Kampftechnik keine Parade",
+          "heavy": "diese Waffe pariert die Angriffswaffe nicht"
+        },
+        "Manual": {
+          "Button": "Selbst verteidigen",
+          "Hint": "Automatische Verteidigung zurücknehmen und wie gewohnt selbst reagieren",
+          "Applied": "Der Schaden wurde schon angewendet. Bitte erst von Hand korrigieren, dann selbst verteidigen."
         }
       }
     },
@@ -819,7 +847,21 @@
       "Dramatis": "Dramatis Personae",
       "Bestiary": "Bestiarium",
       "Important": "Wichtig",
-      "Empty": "Noch niemand freigegeben."
+      "Empty": "Noch niemand freigegeben.",
+      "Search": "Name, Fraktion …",
+      "Filter": "Filter",
+      "All": "Alle",
+      "ImportantOnly": "Wichtige",
+      "HiddenOnly": "Verborgene",
+      "HiddenMark": "verborgen",
+      "ByFaction": "Nach Fraktion",
+      "View": "Ansicht",
+      "Tiles": "Kacheln",
+      "List": "Liste",
+      "NoFaction": "Ohne Fraktion",
+      "Count": "{shown} von {total}",
+      "NoMatch": "Keine Treffer für „{query}“.",
+      "NoneForFilter": "Keine Einträge für diesen Filter."
     },
     "PowerSources": {
       "Title": "Kraftspeicher",

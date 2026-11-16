@@ -6228,6 +6228,111 @@ button.fav-chip-roll {
   outline-offset: 1px;
 }
 
+/* Gelernte Erweiterungen aufklappen (#84, 2026-11-16, extToggle()/extList() in script.js): Knopf „✦ n +“ hinter dem
+   Namen, aufgeklappt eine Liste unter der Zeile, eingerückt auf die Namensspalte. */
+.magic-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.magic-name > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ext-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 3px;
+  height: var(--hit-sm, 24px);
+  padding: 0 7px;
+  border: 1px solid rgba(176,134,58,.55);
+  border-radius: 12px;
+  background: rgba(224,192,128,.16);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-meta);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ext-toggle .ext-star {
+  color: var(--accent);
+}
+
+.ext-toggle .ext-sign {
+  min-width: 8px;
+  font-weight: 700;
+}
+
+.ext-toggle[aria-expanded="true"] {
+  border-color: #b0863a;
+  background: #e0c080;
+  color: #1c1917;
+}
+
+.ext-toggle[aria-expanded="true"] .ext-star {
+  color: #1c1917;
+}
+
+.ext-toggle:focus-visible,
+.ext-name:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.ext-list {
+  padding: 4px 11px 8px 44px;
+  border-top: 1px dashed var(--line);
+  background: rgba(224,192,128,.08);
+}
+
+.ext-item {
+  display: grid;
+  grid-template-columns: 12px max-content minmax(0,1fr);
+  align-items: baseline;
+  gap: 2px 8px;
+  padding: 3px 0;
+}
+
+.ext-item .ext-star {
+  color: var(--accent);
+  font-size: var(--fs-meta);
+}
+
+.ext-name {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ext-desc {
+  color: var(--muted);
+  font-size: var(--fs-small);
+  line-height: 1.35;
+}
+
+@media (hover: hover) {
+  .ext-toggle:not([aria-expanded="true"]):hover {
+    border-color: #b0863a;
+    background: rgba(224,192,128,.35);
+  }
+
+  .ext-name:hover {
+    text-decoration: underline;
+  }
+}
+
 /* --- Sonderfertigkeiten, Patron, Tricks/Segnungen zweispaltig (Issue #38) ---
    Wie im Modul (.dsa5h-panel-cols): kurze Chip-Panels nebeneinander, ein allein stehendes letztes über die ganze Zeile. */
 .panel-cols {
@@ -7500,7 +7605,148 @@ button.fav-chip-roll {
   color: var(--accent);
 }
 
-:is(.almanac-tile, .almanac-btn):focus-visible {
+/* Personen-Reiter (#91, 2026-11-16, renderPersonae()): Werkzeugleiste klebt oben wie die Talentsuche; Filter und
+   Ansicht als Segmentknöpfe, Gruppen nach Fraktion als Zwischenüberschrift, Liste als kompakte Zeilen. */
+.personae-tools {
+  position: sticky;
+  top: -8px;
+  z-index: 7;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  padding: 8px 0 6px;
+  background: var(--paper);
+  box-shadow: 0 6px 6px -6px rgba(0,0,0,.3);
+}
+
+.personae-tools input {
+  flex: 1 1 200px;
+  min-width: 160px;
+}
+
+.seg-group {
+  display: inline-flex;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.seg-btn {
+  min-height: var(--hit-md, 26px);
+  padding: 0 10px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: var(--field);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.seg-btn:first-child {
+  border-left: 0;
+}
+
+.seg-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: #fff;
+}
+
+.panel-count {
+  margin-left: auto;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.persona-group + .persona-group {
+  border-top: 1px solid var(--line);
+}
+
+.persona-group-title {
+  padding: 8px 11px 0;
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.persona-group-title .muted {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.persona-list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.persona-row {
+  display: grid;
+  grid-template-columns: 32px minmax(0,1.2fr) minmax(0,1fr) minmax(0,.8fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 4px 11px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.persona-row:first-child {
+  border-top: 0;
+}
+
+.persona-row img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.persona-row > :is(strong, small) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.persona-row strong {
+  font-size: var(--fs-data);
+}
+
+.persona-row small {
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+.persona-hidden {
+  font-size: var(--fs-meta);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.is-hidden img {
+  opacity: .6;
+}
+
+.persona-empty {
+  margin: 0;
+  padding: 12px 11px;
+  font-style: italic;
+  font-size: var(--fs-small);
+  color: var(--muted);
+}
+
+:is(.almanac-tile, .almanac-btn):focus-visible,
+.persona-row:focus-visible,
+.seg-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
@@ -7508,6 +7754,14 @@ button.fav-chip-roll {
 @media (hover: hover) {
   :is(.almanac-tile, .almanac-btn):hover {
     border-color: var(--accent);
+  }
+
+  .persona-row:hover {
+    background: var(--odd);
+  }
+
+  .seg-btn[aria-pressed="false"]:hover {
+    background: var(--odd);
   }
 }
 

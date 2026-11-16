@@ -34,25 +34,6 @@ Zwei Branches aus dem Tag `v8.0.0` (Nutzerentscheidung 12.11.2026): `release/8.1
 - Rückmeldung als eingerückter Unterpunkt unter dem Eintrag: `- passt` (Test bestanden → Phase 4) oder ein Kommentar. Nur du erklärst etwas für bestanden.
 - Der Überblick ganz unten (Zähler je Phase, Issues, Unstimmigkeiten) wird beim Sitzungsstart erzeugt.
 
-## Eingang
-
-Rückmeldungen der Runde von illowt (13.11.2026) und eigene Issues, geplant und geschätzt am 15.11.2026 (Aufwand klein = wenige Stunden,
-mittel = etwa ein Tag, groß = mehrere Tage). Je Eintrag Version wählen (8.0.1, 8.1.0 oder Später) und offene Frage beantworten.
-
-- Du: **Zauber-Erweiterungen aufklappen** · #84 · mittel · 8.1.0 — +/− an Zaubern/Liturgien mit gelernten Erweiterungen, darunter Name und
-  Kurzwirkung der Erweiterungs-Items des Helden; Klick öffnet sie. Erst Click-Dummy (Desktop, Tablet, Handy), dann Foundry.
-- Du: **Dramatis Personae verbessern** · #91 · mittel · 8.1.0 — Daten (Fraktion, wichtig, verborgen) liegen schon vor: Suchfeld, Gruppierung nach
-  Fraktion, Filter „wichtig“/„für Spieler verborgen“ (SL), Umschalter Kacheln/Liste. Umfang wählen, dann Click-Dummy mit Varianten.
-- Du: **Automatische Parade: unmögliche Paraden** · #90 · mittel bis groß · 8.1.0 — Regeln statt Rückgängig (illowt). Erst prüfen, welche
-  Einschränkungen das System selbst kennt (Größe, Waffenlos gegen Waffe, nicht parierbare Angriffe); welche Fälle sollen rein? Liste von dir.
-- Du: **Hausregel „Grundmanöver statt gleichwertiger SF“** · #92 · Text klein, Voraussetzung automatisch groß · 8.1.0 — Text als zuschaltbare
-  Ergänzung im Hausregelbuch (ohne Werte aus dem Regelwerk); Voraussetzungsprüfung beim SF-Kauf erst klären, ob das System dafür einen Weg hat.
-- Du: **Hausregeln-Feedback beantworten** · #83 · nur Antwort — passive Verteidigung ist schon je Held wählbar (Spieler würfeln ohne Wahl
-  selbst), Wundeinschätzung ist abschaltbar; so im Issue antworten und schließen?
-- Du: **Bannerbild-Format beantworten** · #87 · nur Antwort — Banner am Desktop etwa 710×92 px (≈ 8:1), Smartphone ≈ 6:1, mittig beschnitten;
-  Empfehlung 1600×200 px, Wichtiges in die Mitte. So antworten, ggf. als Hinweis beim Hochladen?
-- Du: **NSC- und Kreaturenbögen** · #88 · nur Verwaltung — Dublette zu #53/#54 (in 8.1.0); als Dublette schließen?
-
 ## 1. Ausdefinieren
 
 - Du: **Götterschips: Darstellung wählen** · #89 — Click-Dummy, Menü › Diese Seite › „Götterschips“ (Desktop `index.html`, Smartphone
@@ -103,7 +84,7 @@ neue Pre-release `v8.1.1`. Nur v14 (kein 7.1.0), nur nach Auftrag; Ablauf in [RE
 ## Bugfixes 8.0.x
 
 Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 15.11.2026): Fix dort committen, dann in
-`release/8.1.0` per `git merge --no-ff release/8.0.1` übernehmen. Stand 15.11.: #79, #80, #81, #82, #85, #86, #89 auf 8.0.1, nach 8.1.0 gemergt.
+`release/8.1.0` per `git merge --no-ff release/8.0.1` übernehmen. Stand 16.11.: #79, #80, #81, #82, #85, #86, #89 auf 8.0.1, nach 8.1.0 gemergt; #84, #87, #90, #91, #92 auf 8.0.1 (16.11.).
 
 - [ ] Du: **Waffenwechsel bei „Handbeschränkung ignorieren“** · #79 — Grombrak (Haken in seinem Kampf-Reiter des Systembogens), Kampf › Körper:
   Haupthand auf Eisenwalder → Eisenwalder in der Hand, Lindwurmschläger unter „Ebenfalls angelegt“; ebenso per Rechtsklick aufs Schild.
@@ -118,6 +99,18 @@ Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 
   Bearbeiten/Steigern → Kacheln mit +/−, keine Leiste. Ebenso Kreaturbogen (8.1.0). Live geprüft am Desktop (Held).
 - [ ] Du: **Vor-/Nachteile und Sprachen als Favoriten** · #81 #82 — Stern an Vorteil, Nachteil, Sprache/Schrift → Titelblatt-Gruppen
   „Vor- & Nachteile“ und „Sprache“ mit Stufe (z. B. III), kein Würfel. Live geprüft am Desktop.
+- [ ] Du: **Format-Hinweis Bannerbild** · #87 — Bearbeiten-Modus, Maus auf den Bild-Knopf im Banner → Tooltip nennt 1600 × 200 px;
+  Einstellungen › Heldenbogen einrichten → Hinweis bei „Standardordner für Bannerbilder“. Issue beantwortet und geschlossen.
+- [ ] Du: **Hinweis gleichwertige SF** · #92 — Hausregelbuch › Grundmanöver › „So funktioniert es im Modul“ → letzter Punkt „Hinweis zu
+  gleichwertigen Sonderfertigkeiten“ (de und en). Issue bleibt offen und sammelt Rückmeldungen.
+- [ ] Du: **Zauber-Erweiterungen aufklappen** · #84 · Desktop, Tablet, Handy — Held mit gelernter Erweiterung, Magie/Religion → „✦ n +“ hinter dem
+  Namen klappt Name und Beschreibung auf, Name öffnet die Erweiterung. Live geprüft am Desktop (Testinstanz); Tablet/Handy nicht.
+- [ ] Du: **Personen-Reiter** · #91 · Desktop, Tablet, Handy — Reiter Personen: Suche, Alle/Wichtige/Verborgene (nur SL), „Nach Fraktion“,
+  Kacheln/Liste; am Handy ohne Ansichtswahl. Live geprüft am Desktop als SL; Spieler, Tablet und Handy nicht.
+- [ ] Du: **Raufen gegen Waffe (passive Verteidigung)** · #90 — Waffe greift an, Ziel wehrt automatisch waffenlos ab → zusätzliche Karte mit
+  vollem Schaden nach RS; Raufen-Angriff gegen Waffen-Parade → Karte mit halbem Waffenschaden für den Angreifer; Knopf zieht ab. Live geprüft (SL).
+- [ ] Du: **Nur zulässige Verteidigung, „Selbst verteidigen“** · #90 — Angreifer groß/riesig, Dolch gegen Zweihänder → Karte nennt Grund und Ersatz;
+  „Selbst verteidigen“ → Reaktionsknopf wieder da, eigene Reaktion läuft normal. Live geprüft als SL; als Spieler (über die SL) nicht.
 
 - [ ] Du: **Bogen unabhängig vom DSA-Design** (in 8.0.0 enthalten, Nachtest) — Desktop, Tablet, Handy: je Design (auch mit dunklem Foundry)
   Bogen im Bearbeiten-Modus, Eigenschaften und Notizen → Felder, Rahmen, Plakette, Griff unten rechts überall gleich, auch bei dunklem Bogen.
@@ -137,6 +130,8 @@ Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 
 
 ### Ideen
 
+- **Grundmanöver statt gleichwertiger SF** · #92 — Hinweis kommt mit 8.0.1, das Issue sammelt weitere Rückmeldungen und Ideen.
+
 - **Kampf-Aktionen** · #60 — Schnellzugriff im Kampf ohne Bogen (Angriffe, waffenlos, Zauber, Liturgien, Gegenstände, Zug verschieben). Offen: Umfang, nur mobil oder auch Desktop.
 - **Dunkles Thema mobil** · #61 — echtes dunkles Thema für Systemfenster, Dialoge und Panels (seit 0.6.3 mobil immer hell). Ausgangspunkt: MOBILE.md 15.5.
 - **Geldbörse erweitern** · #57 — weitere Währungen mit Umrechnen. Offen: Herkunft der Währungen (Rechte), Datenmodell.
@@ -149,27 +144,26 @@ Branch `release/8.0.1` im selben Ordner (kein zweiter Arbeitsbaum, Nutzerwunsch 
 <!-- GITHUB-ISSUES:START -->
 ## Überblick (erzeugt)
 
-_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T05:23:43.758Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
+_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T07:27:59.870Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
 
 | Abschnitt | Du | KI | Einträge |
 |---|---|---|---|
 | Bestehende Aufgaben im Detail | – | – | 5 |
-| Eingang | 7 | – | 7 |
 | Ausdefinieren | 4 | – | 4 |
 | Bereit zur Umsetzung | – | – | 0 |
 | Umgesetzt – testen | 11 | – | 11 |
 | Fertig für Release | – | – | 0 |
-| Bugfixes 8.0.x | 8 | – | 8 |
+| Bugfixes 8.0.x | 14 | – | 14 |
 | Später – Nächste Version | 2 | – | 2 |
 | Später – Wartet auf Dritte | – | – | 1 |
-| Später – Ideen | – | – | 5 |
+| Später – Ideen | – | – | 6 |
 
-**Offene Issues (26)**
+**Offene Issues (23)**
 
 | # | Titel | Meilenstein | Labels | In der Liste |
 |---|---|---|---|---|
 | [#52](https://github.com/vt-tom/dsa5-helpers/issues/52) | feat: Tooltips | – | – | Umgesetzt – testen · Achtung: Meilenstein 8.1.0 fehlt |
-| [#53](https://github.com/vt-tom/dsa5-helpers/issues/53) | feat: NSC Sheet im DSA Helpers Design | 8.1.0 | – | Nächster Einstieg, Eingang, Umgesetzt – testen |
+| [#53](https://github.com/vt-tom/dsa5-helpers/issues/53) | feat: NSC Sheet im DSA Helpers Design | 8.1.0 | – | Nächster Einstieg, Umgesetzt – testen |
 | [#54](https://github.com/vt-tom/dsa5-helpers/issues/54) | feat: Kreatur Sheet im DSA Helpers Design | 8.1.0 | – | Nächster Einstieg, Umgesetzt – testen |
 | [#55](https://github.com/vt-tom/dsa5-helpers/issues/55) | feat: Gruppen Sheet im DSA Helpers Design | 8.1.0 | – | Nächster Einstieg, Ausdefinieren, Umgesetzt – testen |
 | [#57](https://github.com/vt-tom/dsa5-helpers/issues/57) | feat: Geldbörse erweitern | – | – | Später – Ideen |
@@ -184,16 +178,13 @@ _Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T05:23:4
 | [#80](https://github.com/vt-tom/dsa5-helpers/issues/80) | Behältnisse (Optimierungwunsch) | – | – | Bugfixes 8.0.x |
 | [#81](https://github.com/vt-tom/dsa5-helpers/issues/81) | Vor- & Nachteile (Optimierungswunsch) | – | – | Bugfixes 8.0.x |
 | [#82](https://github.com/vt-tom/dsa5-helpers/issues/82) | Sprachen (Optimierungswunsch) | – | – | Bugfixes 8.0.x |
-| [#83](https://github.com/vt-tom/dsa5-helpers/issues/83) | Hausregeln (Feedback) | – | – | Eingang |
-| [#84](https://github.com/vt-tom/dsa5-helpers/issues/84) | Magie (Optimierungswunsch) | – | – | Eingang |
+| [#84](https://github.com/vt-tom/dsa5-helpers/issues/84) | Magie (Optimierungswunsch) | – | – | Bugfixes 8.0.x |
 | [#85](https://github.com/vt-tom/dsa5-helpers/issues/85) | Optik (Optimierungswunsch) | – | – | Bugfixes 8.0.x |
 | [#86](https://github.com/vt-tom/dsa5-helpers/issues/86) | Kraftspeicher (Optimierungswunsch) | – | – | Bugfixes 8.0.x |
-| [#87](https://github.com/vt-tom/dsa5-helpers/issues/87) | Bannerbild (Frage) | – | – | Eingang |
-| [#88](https://github.com/vt-tom/dsa5-helpers/issues/88) | NSC- und Kreaturenbögen (Optimierungswunsch) | – | – | Eingang |
 | [#89](https://github.com/vt-tom/dsa5-helpers/issues/89) | feat: Götterschips unterstützung | – | – | Ausdefinieren, Bugfixes 8.0.x · Achtung: Meilenstein 8.1.0 fehlt |
-| [#90](https://github.com/vt-tom/dsa5-helpers/issues/90) | Automatische Parade - Verbesserung | – | – | Eingang |
-| [#91](https://github.com/vt-tom/dsa5-helpers/issues/91) | Dramatis Personae Tab - Verbesserungen | – | – | Eingang |
-| [#92](https://github.com/vt-tom/dsa5-helpers/issues/92) | Grundmanöver statt gleichwertiger Sonderfertigkeiten (Optimierungswunsch) | – | – | Eingang |
+| [#90](https://github.com/vt-tom/dsa5-helpers/issues/90) | Automatische Parade - Verbesserung | – | – | Bugfixes 8.0.x |
+| [#91](https://github.com/vt-tom/dsa5-helpers/issues/91) | Dramatis Personae Tab - Verbesserungen | – | – | Bugfixes 8.0.x |
+| [#92](https://github.com/vt-tom/dsa5-helpers/issues/92) | Grundmanöver statt gleichwertiger Sonderfertigkeiten (Optimierungswunsch) | – | – | Bugfixes 8.0.x, Später – Ideen |
 
 **Geschlossen, aber noch in der Liste**
 
@@ -201,8 +192,9 @@ _Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T05:23:4
 |---|---|---|---|---|
 | [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) | feat: Grundmanöver „Stören und Ablenken“ (Paladose) | 0.6.3 | enhancement | Später – Ideen · Achtung: geschlossen, steht noch hier |
 | [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) | feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) | – | enhancement | Nächster Einstieg · Achtung: geschlossen, steht noch hier |
+| [#87](https://github.com/vt-tom/dsa5-helpers/issues/87) | Bannerbild (Frage) | – | – | Bugfixes 8.0.x · Achtung: geschlossen, steht noch hier |
 
-**Kürzlich geschlossen (14 Tage: 13)**
+**Kürzlich geschlossen (14 Tage: 16)**
 
-[#75](https://github.com/vt-tom/dsa5-helpers/issues/75) Einstellung „Talent-Vorschläge auf dem Titelblatt“ gehört unter „Heldenbogen einrichten“ (erledigt, 12.11.) · [#74](https://github.com/vt-tom/dsa5-helpers/issues/74) bug: Tablet und Smartphone - Munitionsauswahl kann nicht verwendet werden, Auswahl nicht sichtbar. (erledigt, 12.11.) · [#73](https://github.com/vt-tom/dsa5-helpers/issues/73) bug: Kraftspeicher öffnet sich immer beim Mouseover (erledigt, 12.11.) · [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) (erledigt, 12.11.) · [#72](https://github.com/vt-tom/dsa5-helpers/issues/72) fix: Gegenstände lassen sich nicht aus einem Behälter verschieben (erledigt, 02.11.) · [#71](https://github.com/vt-tom/dsa5-helpers/issues/71) feat: Eigenschaftsleiste – Kürzel MU, KL, IN … an den Würfeln anzeigen (erledigt, 02.11.) · [#63](https://github.com/vt-tom/dsa5-helpers/issues/63) feat: Neue Probendialoge auch am Desktop (erledigt, 02.11.) · [#67](https://github.com/vt-tom/dsa5-helpers/issues/67) feat: Mobil – Almanach-Eintrag (Person/Auftrag) als Blatt öffnen (erledigt, 02.11.) · … und 5 weitere
+[#87](https://github.com/vt-tom/dsa5-helpers/issues/87) Bannerbild (Frage) (erledigt, 16.11.) · [#83](https://github.com/vt-tom/dsa5-helpers/issues/83) Hausregeln (Feedback) (erledigt, 16.11.) · [#88](https://github.com/vt-tom/dsa5-helpers/issues/88) NSC- und Kreaturenbögen (Optimierungswunsch) (geschlossen (nicht geplant), 16.11.) · [#75](https://github.com/vt-tom/dsa5-helpers/issues/75) Einstellung „Talent-Vorschläge auf dem Titelblatt“ gehört unter „Heldenbogen einrichten“ (erledigt, 12.11.) · [#74](https://github.com/vt-tom/dsa5-helpers/issues/74) bug: Tablet und Smartphone - Munitionsauswahl kann nicht verwendet werden, Auswahl nicht sichtbar. (erledigt, 12.11.) · [#73](https://github.com/vt-tom/dsa5-helpers/issues/73) bug: Kraftspeicher öffnet sich immer beim Mouseover (erledigt, 12.11.) · [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) (erledigt, 12.11.) · [#72](https://github.com/vt-tom/dsa5-helpers/issues/72) fix: Gegenstände lassen sich nicht aus einem Behälter verschieben (erledigt, 02.11.) · … und 8 weitere
 <!-- GITHUB-ISSUES:END -->

@@ -202,14 +202,26 @@ test('every static action exists in module, Foundry or DSA5 action tables',()=>{
 test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');const bundle=fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8'):'';const inSchema=field=>{if(field==='systemFields.happyTalents.fields.value')return /happyTalents:new \w+\(\{value:new \w+\(\{initial:""/.test(bundle);const m=field.match(/^systemFields\.(tradition|guidevalue|energyfactor)\.fields\.(magical|clerical)$/);return !!m&&new RegExp(m[1]+':new \\w+\\(\\{magical:new \\w+\\(\\{initial:[^}]*label:"'+m[1]+'"[^}]*\\}\\),clerical:').test(bundle);};for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field)||inSchema(field),'unverified system schema path: '+field);});
 test('localization keys used by nonempty hero resolve',async()=>{missing.clear();const {context}=await prepare();render(context);const unresolved=[...missing].filter(k=>k && !['Swords','Test coin'].includes(k));assert.deepEqual(unresolved,[]);});
 
+test('spell extensions are matched like SpellExtension.forSource (#84)',async()=>{
+ const {sheet}=await prepare();
+ const items=[{id:'s1',type:'spell',name:'Spell A'},{id:'l1',type:'liturgy',name:'Spell A'},
+  {id:'e1',type:'spellextension',name:'B ext',system:{source:'Spell A',category:'spell',talentValue:12,description:{value:'<p>b</p>'}}},
+  {id:'e2',type:'spellextension',name:'A ext',system:{source:'Spell A',category:'spell',talentValue:8,description:{value:'<p>a</p>'}}},
+  {id:'e3',type:'spellextension',name:'Lit ext',system:{source:'Spell A',category:'liturgy',description:{value:''}}},
+  {id:'e4',type:'spellextension',name:'Other',system:{source:'Spell B',category:'spell',description:{value:''}}}];
+ const ext=await sheet._spellExtensions.call({actor:{isOwner:true,items}});
+ assert.deepEqual(ext.s1.map(e=>e.id),['e2','e1'],'nach FW-Voraussetzung sortiert, nur passende Kategorie');
+ assert.deepEqual(ext.l1.map(e=>e.id),['e3']);assert.equal(Object.keys(ext).length,2);
+ assert.deepEqual(await sheet._spellExtensions.call({actor:{isOwner:true,items:[items[0]]}}),{});
+});
 test('ranged weapons, charged magic, tradition items and companions render populated',async()=>{
  const {sheet}=await prepare();const p=sheet.context.prepare;
  const ranged=item('ranged','rangeweapon');ranged.LZ=3;ranged.progress=1;ranged.ammo=[{pickId:'ammo-id',name:'Bolts',selected:true}];p.wornMeleeWeapons=[];p.wornRangedWeapons=[ranged];
- const spell=p.magic.spellList[0];spell.LZ=2;spell.progress=1;spell.extensions='Test extension';
+ const spell=p.magic.spellList[0];spell.LZ=2;spell.progress=1;spell.extensions='Test extension';sheet._spellExtensions=async()=>({[spell._id]:[{id:'ext-id',name:'Test extension',description:'<p>Extension text</p>'}]});
  p.magic.ritualList=[item('ritual','ritual')];p.magic.ceremony=[item('ceremony','ceremony')];
  const artifact=item('staff','specialability');artifact.system.artifact='staff';artifact.abilities=[{...item('ability','specialability'),AEpayable:true,OnUseEffect:true}];p.traditionArtifacts=[artifact];
  sheet.context.companionSections=[{visible:true,label:'COMPANIONS.Companion',contents:[{uuid:'Actor.companion',name:'Companion',img:'icons/svg/pawprint.svg',system:sheet.actor.system,prepareCompanion:{}}]}];sheet.context.hasCompanions=true;
- const html=render(await sheet._prepareContext({}));assert(html.includes(targetGeneration===13?'class="ammo-selector"':'data-ammo-id="ammo-id"'));assert(html.includes('data-action="chargeSpell"'));assert(html.includes('data-action="traditionPayCost"'));assert.equal(html.includes('data-action="memberCardLink"'),targetGeneration>=14);assert(html.includes('Test extension'));
+ const html=render(await sheet._prepareContext({}));assert(html.includes(targetGeneration===13?'class="ammo-selector"':'data-ammo-id="ammo-id"'));assert(html.includes('data-action="chargeSpell"'));assert(html.includes('data-action="traditionPayCost"'));assert.equal(html.includes('data-action="memberCardLink"'),targetGeneration>=14);assert(html.includes('Test extension'));assert(html.includes('data-action="dsa5hToggleExtensions"'),'#84 Knopf');assert(html.includes('data-ext-list="'+spell._id+'"')&&html.includes('Extension text'),'#84 Liste mit Beschreibung');
 });
 test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the off hand, figure flag and cast dialogs',async()=>{
  const {sheet,actor}=await prepare();const p=sheet.context.prepare;
@@ -1148,7 +1160,7 @@ test('Aufträge und Personen (#39): Almanach-Journale, Sichtbarkeit wie im Syste
   const html=render(await sheet._prepareContext({}));
   for(const t of ['quests','personae'])assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']===t).length,1,t);
   const cards=elements(html,el=>el.attribs?.['data-action']==='dsa5hOpenAlmanac'&&el.attribs['data-entry-key']);assert.deepEqual(cards.map(c=>c.attribs['data-entry-key']),['a','b','c','x','y']);
-  assert(cards.every(c=>c.attribs.class.includes('dsa5h-almanac-tile')),'gleich große Kacheln');assert(!html.includes('Gratenfels')&&!html.includes('>Haus<'),'nur das Nötigste: kein Ort, keine Fraktion');
+  assert(cards.every(c=>c.attribs.class.includes('dsa5h-almanac-tile')),'gleich große Kacheln');assert(!html.includes('Gratenfels'),'nur das Nötigste: kein Ort');assert(html.includes('dsa5h-persona-group-title')&&/>Haus <span/.test(html),'#91: Fraktion als Gruppenüberschrift');assert(html.includes('class="personaeSearch"')&&html.includes('data-action="dsa5hPersonaeFaction"')&&html.includes('data-persona-view-choice="list"'),'#91: Werkzeugleiste');assert(!html.includes('data-persona-filter="hidden"')||game.user.isGM,'#91: Verborgene nur für die SL');for(const a of ['dsa5hPersonaeFilter','dsa5hPersonaeFaction','dsa5hPersonaeView'])assert.equal(typeof Sheet.DEFAULT_OPTIONS.actions[a],'function',a);assert.deepEqual(A.groupPersonae([{name:'a',faction:'Z'},{name:'b'},{name:'c',faction:'A'},{name:'d',faction:'Z'}],true,'de').map(g=>[g.label,g.items.map(i=>i.name)]),[['A',['c']],['Z',['a','d']],['',['b']]],'#91: Fraktionen alphabetisch, ohne zuletzt');assert.deepEqual(A.groupPersonae([{name:'a',faction:'Z'}],false).map(g=>g.label),[''],'#91: ungeteilt');assert.deepEqual(A.groupPersonae([],false),[]);
   assert(html.includes('data-sub-panel="personae:dramatis"')&&html.includes('data-sub-panel="personae:bestiary"'));assert.equal(typeof Sheet.DEFAULT_OPTIONS.actions.dsa5hOpenAlmanac,'function');
   settings.questsTab=false;const off=render(await sheet._prepareContext({}));assert.equal(elements(off,el=>el.attribs?.['data-tab-panel']==='quests').length,0,'Reiter abgeschaltet');
   const st=read('scripts/apps/sheet-settings.js');assert(st.includes("'questsTab'")&&st.includes("'personaeTab'"),'im Untermenü Heldenbogen');
@@ -1591,6 +1603,28 @@ test('passive defense (#56): d20 against chosen or best defense, per-actor mode 
  assert.deepEqual(pd.bestDefense(opts),{id:'shield',value:14},'highest, no sum or average');assert.equal(pd.bestDefense([]),null);
  assert.equal(pd.chooseDefense(opts,'dodge').id,'dodge','chosen option');assert.equal(pd.chooseDefense(opts,'best').id,'shield');
  assert.equal(pd.chooseDefense(opts,'gone').id,'shield','abgelegte Waffe: beste erlaubte');
+ // Raufen gegen Waffen (#90): Hinweis mit Schadensknopf, wie OpposeDSA.#s/#t des Systems
+ const brawlItem={type:'meleeweapon',system:{combatskill:{value:'brawl'}}},sword={type:'meleeweapon',system:{combatskill:{value:'swords'}}},isB=i=>i?.system?.combatskill?.value==='brawl';
+ assert.equal(pd.brawlCase(sword,{id:'parryWeaponless',item:{type:'combatskill'}},isB),'parryHurts','waffenlose Parade gegen Schwert');
+ assert.equal(pd.brawlCase(sword,{id:'x',item:brawlItem},isB),'parryHurts','Raufwaffe pariert Schwert');
+ assert.equal(pd.brawlCase(sword,{id:'x',item:{...brawlItem,system:{...brawlItem.system,preventsBrawlParryDamage:true}}},isB),null,'Raufwaffe, die Waffen parieren darf');
+ assert.equal(pd.brawlCase(brawlItem,{id:'s',item:sword},isB),'attackHurts','Raufen-AT gegen Schwert-PA');
+ assert.equal(pd.brawlCase({...brawlItem,system:{...brawlItem.system,preventsBrawlAttackDamage:true}},{id:'s',item:sword},isB),null);
+ assert.equal(pd.brawlCase(sword,{id:'s',item:sword},isB),null,'Waffe gegen Waffe');
+ assert.equal(pd.brawlCase(brawlItem,{id:'dodge',item:{type:'dodge'}},isB),null,'Ausweichen');
+ assert.equal(pd.isBrawlWeapon(brawlItem,k=>k==='LocalizedCTs.brawl'?'Brawling':k),true);
+ {// Zulässige Verteidigung (#90, Kodex des Schwertes): Größe des Angreifers, Kampftechnik-Besonderheiten
+ const ct=i=>i?.ct??null,opt=(id,ct)=>({id,item:ct?{ct}:{type:'combatskill'}});
+ const dodge=opt('dodge'),shield=opt('s','Shields'),swordOpt=opt('w','Swords'),dagger=opt('d','Daggers'),chain=opt('c','Chain Weapons'),whip=opt('p','Whips'),fist=opt('parryWeaponless');
+ assert.equal(pd.blockedReason(dodge,{attackerSize:'giant'},ct),null,'Ausweichen geht immer');
+ assert.equal(pd.blockedReason(shield,{attackerSize:'giant'},ct),'giant');assert.equal(pd.blockedReason(shield,{attackerSize:'big'},ct),null,'groß: Schild geht');
+ assert.equal(pd.blockedReason(swordOpt,{attackerSize:'big'},ct),'big');assert.equal(pd.blockedReason(fist,{attackerSize:'big'},ct),'big');
+ assert.equal(pd.blockedReason(swordOpt,{attackerSize:'average'},ct),null);
+ assert.equal(pd.blockedReason(chain,{},ct),'noParry');assert.equal(pd.blockedReason(whip,{},ct),'noParry');
+ assert.equal(pd.blockedReason(dagger,{attackTechnique:'Two-Handed Swords'},ct),'heavy');assert.equal(pd.blockedReason(dagger,{attackTechnique:'Swords'},ct),null);
+ assert.equal(pd.blockedReason(opt('f','Fencing Weapons'),{attackTechnique:'Polearms'},ct),'heavy');
+ assert.equal(pd.blockedReason(swordOpt,{ranged:true,attackerSize:'giant'},ct),null,'Fernkampf regelt baseOptions');
+ const src=read('scripts/house-rules/passive-defense.js');assert(src.includes("type: 'passiveManual'")&&src.includes('opposeUpdateData'),'#90 B: Rücknahme über SL und Wartezustand des Systems');}
  const actor=(type,flag)=>({type,getFlag:(_m,k)=>k==='autoDefense'?flag:undefined});
  assert.deepEqual(['character','npc','creature'].map(t=>pd.defenseMode(actor(t))),['manual','best','best'],'Vorbelegung je Typ');
  assert.equal(pd.defenseMode(actor('character','best')),'best');assert.equal(pd.defenseMode(actor('npc','manual')),'manual');

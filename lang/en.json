@@ -91,7 +91,8 @@
     "ColCurrent": "Current",
     "ColBase": "Base",
     "ExtensionLearned": "Extension learned: {ext}",
-    "ExtensionLegend": "= extension learned (hover the mark for details)",
+    "ExtensionLegend": "= learned extensions, “+” shows them below the entry",
+    "ExtensionToggle": "Show or hide learned extensions ({count})",
     "WeightUnit": "stone",
     "Worn": "Worn",
     "VisibleAll": "Visible to everyone who may view this sheet.",
@@ -139,6 +140,7 @@
     "BodyFigurePlaceholder": "Placeholder",
     "BodyFigurePortrait": "Actor portrait",
     "BannerPick": "Choose banner image",
+    "BannerPickHint": "Choose banner image (recommended 1600 × 200 px, subject in the middle: the sides are cropped depending on tab and device)",
     "BannerClear": "Remove banner image",
     "PortraitShape": "Portrait shape",
     "PortraitRound": "Round portrait",
@@ -199,7 +201,7 @@
       },
       "BannerPath": {
         "Name": "Default folder for banner images",
-        "Hint": "The module stores banner images uploaded by players from their computers here. Players do not need file browser permission for this; a GM has to be logged in."
+        "Hint": "The module stores banner images uploaded by players from their computers here. Players do not need file browser permission for this; a GM has to be logged in. Recommended image format: 1600 × 200 px (8:1). Depending on tab and device the sheet shows the image at 5:1 to 8:1 and crops it around the centre, so keep the subject in the middle; the hero name sits at the bottom left."
       },
       "DisplayMenu": {
         "Title": "Display and devices",
@@ -592,17 +594,29 @@
           "hit": "{attacker} hits {defender}.",
           "defended": "{defender} fends off the attack of {attacker}.",
           "miss": "The attack of {attacker} on {defender} fails.",
+          "Brawl": {
+            "Title": "Brawling against a weapon",
+            "parryHurts": "{defender} parries the weapon of {attacker} with {weapon}. An unarmed parry does not protect against weapon damage: {defender} still takes the hit.",
+            "attackHurts": "{defender} fends off the unarmed attack of {attacker} with {weapon}. {attacker} gets hurt on the weapon.",
+            "DamageArmor": "Damage: {tp} DP − {armor} PRO = {sp} DP",
+            "DamageRaw": "Damage: {tp} DP (consider armor when applying)",
+            "DamageHalf": "Damage: half weapon damage, rolled {roll} → {value}",
+            "Apply": "Apply damage"
+          },
           "Roll": "Defense (d20): {roll}",
           "Word": {
             "hit": "Hit",
             "defended": "Fended off",
-            "miss": "Missed"
+            "miss": "Missed",
+            "manual": "Manual"
           },
           "GMTitle": "Passive defense (GM only)",
           "GMLine": "AT {at} succeeded (d20 {d20}). Defense with {option}: D {defense}, rolled {roll} – fended off at {defense} or less (always on 1, never on 20).",
           "Option": "Defense",
           "Base": "Base",
-          "Mods": "Mod."
+          "Mods": "Mod.",
+          "manual": "{defender} defends against {attacker} manually, the automatic defense was withdrawn.",
+          "Blocked": "{option} is not possible here ({reason}), {chosen} instead."
         },
         "Page": {
           "Intro": "Fights run faster when not every attack needs a reaction dialog. With this house rule actors can defend automatically: the attacker targets and rolls the attack as usual. If it succeeds, the module immediately and openly rolls a d20 against the target's defense.",
@@ -616,7 +630,21 @@
           "Note1": "A defense counts as used when the attack roll succeeded.",
           "Note2": "A fate point on the attack also rerolls the defense; an old hit card disappears if the attack is now fended off. Damage already applied must then be corrected by hand.",
           "Note3": "Critical parries, parry botches and abilities requiring a critical parry do not apply to the automatic defense.",
-          "Note4": "The GM must be logged in and view the target's scene. Without a target and for attacks of opportunity the normal flow applies."
+          "Note4": "The GM must be logged in and view the target's scene. Without a target and for attacks of opportunity the normal flow applies.",
+          "Note5": "Brawling against weapons: if the automation fends off a weapon unarmed, a notice card shows the full damage for the defender; if it fends off an unarmed attack with a weapon, one shows half the weapon damage for the attacker. The damage is only applied via the button on the card.",
+          "Note6": "Only permitted defenses: against large opponents only shield or dodge, against huge ones only dodge; no parry with chain weapons and whips; daggers and fencing weapons cannot parry chain weapons, polearms, two-handed impact weapons and two-handed swords. Fans are not checked. If the chosen defense is not possible, the automation uses the best permitted one and states why.",
+          "Note7": "“Defend manually” on the card (GM and owner of the defender) withdraws the automatic result; the defender then reacts as usual via the system's button."
+        },
+        "Blocked": {
+          "big": "large opponent: only shield or dodge",
+          "giant": "huge opponent: dodge only",
+          "noParry": "this combat technique cannot parry",
+          "heavy": "this weapon cannot parry the attacking weapon"
+        },
+        "Manual": {
+          "Button": "Defend manually",
+          "Hint": "Withdraw the automatic defense and react as usual",
+          "Applied": "Damage was already applied. Please correct it manually first, then defend manually."
         }
       }
     },
@@ -819,7 +847,21 @@
       "Dramatis": "Dramatis Personae",
       "Bestiary": "Bestiary",
       "Important": "Important",
-      "Empty": "Nobody shared yet."
+      "Empty": "Nobody shared yet.",
+      "Search": "Name, faction …",
+      "Filter": "Filter",
+      "All": "All",
+      "ImportantOnly": "Important",
+      "HiddenOnly": "Hidden",
+      "HiddenMark": "hidden",
+      "ByFaction": "By faction",
+      "View": "View",
+      "Tiles": "Tiles",
+      "List": "List",
+      "NoFaction": "No faction",
+      "Count": "{shown} of {total}",
+      "NoMatch": "No matches for “{query}”.",
+      "NoneForFilter": "No entries for this filter."
     },
     "PowerSources": {
       "Title": "Power sources",
