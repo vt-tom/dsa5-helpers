@@ -11,8 +11,8 @@ danach bei jedem Release genau diese Schritte.
 
 Nutzerentscheidung 26.10.2026: **7.X.X für Foundry v13**, **8.X.X für v14**, künftig 9.X.X für v15. V13 nur Desktop mit
 vorhandenen Systemfunktionen, v14 einschließlich Mobil. Zweite Zahl: Weiterentwicklung, dritte: Fehlerkorrektur innerhalb
-der Linie. Gleiche Modul-ID `dsa5-helpers`, gemeinsamer Quellstand, getrennte Pakete und Updatekanäle. Vorbereitet am
-03.11.2026 (Branch `release/8.0.0`), noch nichts davon veröffentlicht.
+der Linie. Gleiche Modul-ID `dsa5-helpers`, gemeinsamer Quellstand, getrennte Pakete und Updatekanäle. 8.0.0 und 7.0.0
+am 12.11.2026 veröffentlicht.
 
 | Linie | Tag | Quelle | ZIPs am Release | Kanäle (feste Pre-releases) |
 |---|---|---|---|---|
@@ -44,7 +44,23 @@ Manifest-URL je Kanal: `https://github.com/vt-tom/dsa5-helpers/releases/download
   `gh release edit v8.<letzte> --latest` und den Lauf wiederholen.
 - Einstellungen, Flags und Bogenwahl hängen an der Modul-ID und bleiben erhalten; keine Weltmigration.
 
-#### 8.0.0 und 7.0.0 veröffentlichen (erst nach Auftrag)
+#### Branches ab 8.0.0 (Nutzerentscheidung 12.11.2026)
+
+| Branch | Inhalt | Tag | v13 |
+|---|---|---|---|
+| `release/8.0.<n>` | nur Fehlerkorrekturen der laufenden Version | `v8.0.<n>` (v14), bei Bedarf `v7.0.<n>` (v13) | `v13` übernimmt ihn |
+| `release/8.1.0` | neue Funktionen (nur v14) | `v8.1.0` | **nie** nach `v13` |
+
+- Beide Branches entstehen aus dem Tag der zuletzt veröffentlichten Version. Jeder Bugfix wird auch nach `release/8.1.0`
+  übernommen (`git checkout release/8.1.0 && git merge --no-ff release/8.0.<n>`), sonst fehlt er in 8.1.0.
+- **8.0.x veröffentlichen:** Ablauf wie unten („8.0.0 und 7.0.0 veröffentlichen“) mit `release/8.0.<n>`, Version und Tag
+  `8.0.<n>`; betrifft der Fehler auch v13, Schritt 3 mit `git merge --no-ff release/8.0.<n>` in `v13` und Tag `v7.0.<n>`
+  (Version im v13-Paket rechnet `package-module.py` aus dem Tag). Danach `main` nachziehen, Bugfix nach `release/8.1.0`
+  übernehmen und den nächsten Bugfix-Branch `release/8.0.<n+1>` aus dem neuen Tag anlegen.
+- **8.1.0 veröffentlichen:** wie Schritt 1, 2 und 4 unten mit `release/8.1.0`; Schritt 3 (v13) entfällt. Danach den
+  Bugfix-Branch `release/8.1.1` aus `v8.1.0` anlegen; `release/8.0.<n>` wird nicht weitergeführt.
+
+#### 8.0.0 und 7.0.0 veröffentlichen (am 12.11.2026 so durchgeführt)
 
 Reihenfolge: zuerst 8.0.0 (damit `latest` sofort auf die v14-Linie zeigt), dann 7.0.0.
 

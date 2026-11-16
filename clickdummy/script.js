@@ -1,5 +1,21 @@
 // Generationsvorschau ohne Foundry: ?foundry=13
 const DUMMY_V13 = new URLSearchParams(location.search).get("foundry") === "13";
+// Issue #89, Götterschips im Kopf: Variante C „je Gott ein Symbol mit Zahl“ (Nutzerentscheidung 2026-11-16, A/B
+// verworfen). Testdaten über die Adresse: ?godschips=3 bzw. =7 (zu breit), ?godSchips wie bisher = 3 Götter. Reicht der Platz nicht, verschwinden
+// die hinteren Götter hinter „+n“; Überfahren (Desktop) bzw. Antippen zeigt die Übersicht aller Götter (fitGodSchips()).
+// Bilder sind Stellvertreter (System-Schip eingefärbt), im Modul bringt „Götter Aventuriens 2“ eigene mit.
+const GOD_PARAMS = new URLSearchParams(location.search);
+let GOD_COUNT = Number(GOD_PARAMS.get("godschips")) || (GOD_PARAMS.has("godSchips") ? 3 : 0);
+const ALL_GODS = [
+  { name: "Praios", hue: 10, value: 2, current: 1 },
+  { name: "Rondra", hue: 300, value: 1, current: 1 },
+  { name: "Phex", hue: 170, value: 3, current: 2 },
+  { name: "Efferd", hue: 200, value: 2, current: 2 },
+  { name: "Travia", hue: 330, value: 1, current: 0 },
+  { name: "Boron", hue: 240, value: 2, current: 1 },
+  { name: "Hesinde", hue: 90, value: 1, current: 1 },
+];
+const GODS = () => ALL_GODS.slice(0, GOD_COUNT);
 // Click-Dummy Renderer — reine Darstellungslogik, kein Foundry-Datenmodell.
 
 function el(tag, attrs = {}, children = []) {
@@ -743,9 +759,9 @@ function renderMain() {
   const traitsPanel = el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Vor- & Nachteile"),
     subheadWithHelp("Vorteile"),
-    el("div", { class: "chips chips-fill" }, ADVANTAGES.map((t) => deletableChip(A.advantage, t, ADVANTAGES, t))),
+    el("div", { class: "chips chips-fill" }, ADVANTAGES.map((t) => deletableChip(A.advantage, t, ADVANTAGES, t, specFavStar(t)))),
     subheadWithHelp("Nachteile"),
-    el("div", { class: "chips chips-fill" }, DISADVANTAGES.map((t) => deletableChip(A.disadvantage, t, DISADVANTAGES, t))),
+    el("div", { class: "chips chips-fill" }, DISADVANTAGES.map((t) => deletableChip(A.disadvantage, t, DISADVANTAGES, t, specFavStar(t)))),
   ]);
 
   const specialsPanel = specialsBlock("Allgemeine Sonderfertigkeiten", SPECIALS, true);
@@ -762,13 +778,14 @@ function renderMain() {
       LANGUAGE_POINTS ? el("small", {}, `Sprachpunkte ${LANGUAGE_POINTS.used}/${LANGUAGE_POINTS.value}`) : null,
     ]),
     el("div", { class: "subhead" }, "Sprachen"),
-    el("div", { class: "chips chips-fill" }, LANGUAGES.map((l) => deletableChip(A.abilityLanguage, l, LANGUAGES, l))),
+    el("div", { class: "chips chips-fill" }, LANGUAGES.map((l) => deletableChip(A.abilityLanguage, l, LANGUAGES, l, specFavStar(l)))),
     el("div", { class: "subhead" }, "Schriften"),
-    el("div", { class: "chips chips-fill" }, SCRIPTS.map((s) => deletableChip(A.abilityLanguage, s, SCRIPTS, s))),
+    el("div", { class: "chips chips-fill" }, SCRIPTS.map((s) => deletableChip(A.abilityLanguage, s, SCRIPTS, s, specFavStar(s)))),
   ]);
 
   return el("div", {}, [
-    buildAttrTiles(),
+    // Issue #85: Kacheln nur beim Bearbeiten/Steigern, im Spielmodus die Würfelleiste wie auf allen Reitern.
+    sheetMode() === "play" ? null : buildAttrTiles(),
     buildAttrDetailPanel(),
     el("div", { class: "grid-2" }, [
       el("div", { class: "col-gap" }, [traitsPanel, specialsPanel, imprintPanel, languagesPanel]),
@@ -1923,11 +1940,10 @@ function advanceCharge(item) {
 }
 
 function magicIcon(item) {
-  if (!item.extensions && !(item.LZ > 1)) return el("img", { src: item.img, alt: "" });
+  if (!(item.LZ > 1)) return el("img", { src: item.img, alt: "" });
   const charging = item.LZ > 1 && item.progress < item.LZ;
   const wrap = el("div", { class: "magic-icon" }, [
     el("img", { src: item.img, alt: "" }),
-    item.extensions ? el("span", { class: "ext-badge", role: "img", tabindex: "0", title: `Zaubererweiterung gelernt: ${item.extensions}`, "aria-label": `Zaubererweiterung gelernt: ${item.extensions}` }, "✦") : null,
     item.LZ > 1
       ? (() => {
           const pct = Math.min(100, (item.progress / item.LZ) * 100);
@@ -1985,6 +2001,44 @@ function rowActionsCell(list, item, lead = null) {
 // Spalten für alle vier Proben-Listen: Bild/Name/Probe/FW(+/-)/Kosten/Wirkungsdauer/Reichweite. FW direkt
 // editierbar UND per AP-gekoppeltem Stepper steigerbar (item.stf, echt aus dem Kompendium bzw. den vorgefertigten
 // Akteuren der dsa5-magic-*-Module ausgelesen, siehe SPELLS-Kommentar in data.js), analog zu Talenten/Kampftalenten.
+// Gelernte Erweiterungen aufklappen (#84, 2026-11-16): Knopf „✦ n“ mit +/− hinter dem Namen, aufgeklappt stehen die
+// Erweiterungen des Helden mit Beschreibung unter der Zeile; Klick auf den Namen öffnet die Erweiterung (Modul:
+// itemEdit). Der Zustand gilt je Zauber und bleibt beim Neuzeichnen erhalten (Modul: im Bogen gemerkt wie die
+// Unterreiter). Ersetzt das ✦-Abzeichen am Bild mit Tooltip.
+const EXT_OPEN = new Set();
+
+function extToggle(item) {
+  const open = EXT_OPEN.has(item.name);
+  const n = item.extensions.length;
+  const label = `${n} ${n === 1 ? "Erweiterung" : "Erweiterungen"} ${open ? "zuklappen" : "aufklappen"}`;
+  const btn = el("button", { type: "button", class: "ext-toggle", "aria-expanded": String(open), title: label, "aria-label": label }, [
+    el("span", { class: "ext-star", "aria-hidden": "true" }, "✦"),
+    el("span", {}, String(n)),
+    el("span", { class: "ext-sign", "aria-hidden": "true" }, open ? "−" : "+"),
+  ]);
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (open) EXT_OPEN.delete(item.name);
+    else EXT_OPEN.add(item.name);
+    renderContent();
+  });
+  return btn;
+}
+
+function extList(item) {
+  return el("div", { class: "ext-list" }, item.extensions.map((ext) =>
+    el("div", { class: "ext-item" }, [
+      el("span", { class: "ext-star", "aria-hidden": "true" }, "✦"),
+      (() => {
+        const b = el("button", { type: "button", class: "ext-name", title: "Erweiterung öffnen" }, ext.name);
+        b.addEventListener("click", (e) => { e.stopPropagation(); openItemWindow({ name: ext.name, img: item.img, rule: ext.desc }); });
+        return b;
+      })(),
+      el("span", { class: "ext-desc" }, ext.desc),
+    ])
+  ));
+}
+
 function magicRow(item, list) {
   const mode = document.querySelector(".sheet").getAttribute("data-mode");
   const [minus, plus] = advanceStepper(() => item.fw, (v) => { item.fw = v; }, item.stf, 0, () => { renderContent(); renderHeader(); }, item.name);
@@ -1992,7 +2046,7 @@ function magicRow(item, list) {
   if (mode === "edit") makeEditable(fwSpan, item.fw, (v) => { item.fw = v; renderContent(); renderHeader(); }, { type: "number", min: 0, max: 99 });
   return el("div", { class: "row magic-row" }, [
     magicIcon(item),
-    el("span", { class: "left" }, item.name),
+    el("span", { class: "left magic-name" }, [el("span", {}, item.name), item.extensions ? extToggle(item) : null]),
     probeDice(item.probe, item.name),
     el("span", { class: "skill-fw" }, [minus, fwSpan, plus]),
     el("span", { class: "center" }, String(item.cost)),
@@ -2003,14 +2057,19 @@ function magicRow(item, list) {
   ]);
 }
 
+function magicRows(item, list) {
+  const row = magicRow(item, list);
+  return item.extensions && EXT_OPEN.has(item.name) ? [row, extList(item)] : [row];
+}
+
 function magicTable(title, items) {
   // Legende nur, wenn überhaupt ein Eintrag das ✦ trägt (UI/UX-Review 2026-09-25: Zeichen zugänglich erklären).
   const hasExt = items.some((it) => it.extensions);
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, title),
     el("div", { class: "row-head magic-row" }, head("", "Name", "Probe", "FW", "Kosten", "Aktionsdauer", "Reichweite", "", "")),
-    ...items.map((it) => magicRow(it, items)),
-    hasExt ? el("div", { class: "table-legend" }, [el("span", { class: "ext-badge-inline", "aria-hidden": "true" }, "✦"), " = Zaubererweiterung gelernt (Zeichen antippen oder mit der Maus darauf zeigen für Details)"]) : null,
+    ...items.flatMap((it) => magicRows(it, items)),
+    hasExt ? el("div", { class: "table-legend" }, [el("span", { class: "ext-badge-inline", "aria-hidden": "true" }, "✦"), " = gelernte Erweiterungen, „+“ klappt sie unter dem Eintrag auf"]) : null,
   ]);
 }
 
@@ -3215,7 +3274,15 @@ function collectFavorites() {
     specials: [...SPECIALS, ...COMBAT_SPECIALS, ...MAGIC_SPECIALS, ...RELIGION_SPECIALS]
       .flatMap((g) => g.items).filter((n) => FAV_SPECIALS.has(n))
       .map((n) => ({ name: n, img: A.abilityGeneral, rule: SPEC_RULES[n] || "Kein Regeltext hinterlegt." })),
+    // Issues #81, #82: Vor-/Nachteile sowie Sprachen und Schriften, Stufe als Wert (römische Ziffer am Namensende).
+    traits: [...ADVANTAGES.map((n) => rankEntry(n, A.advantage)), ...DISADVANTAGES.map((n) => rankEntry(n, A.disadvantage))].filter((e) => FAV_SPECIALS.has(e.key)),
+    languages: [...LANGUAGES, ...SCRIPTS].map((n) => rankEntry(n, A.abilityLanguage)).filter((e) => FAV_SPECIALS.has(e.key)),
   };
+}
+
+function rankEntry(key, img) {
+  const m = key.match(/^(.*?)\s([IVX]+)$/);
+  return { key, name: m ? m[1] : key, rank: m ? m[2] : "", img };
 }
 
 // Favoriten-Zeile (Paket E, UI/UX-Review 2026-09-25 Punkt 5 + GitHub-Issue #5): statt unterschiedlich langer
@@ -3254,6 +3321,9 @@ function favCard(item, kind) {
     }
     roll = el("span", { class: "fav-card-roll" }, [use]);
     value = el("span", { class: "fav-card-value", title: "Anzahl" }, `×${item.qty}`);
+  } else if (kind === "rank") {
+    roll = el("span", { class: "fav-card-roll" });
+    value = el("span", { class: "fav-card-value" }, item.rank);
   } else if (kind === "special") {
     roll = el("span", { class: "fav-card-roll" }, [onUseBtn(item.name)]);
     value = el("span", { class: "fav-card-value" });
@@ -3264,7 +3334,7 @@ function favCard(item, kind) {
     roll = el("span", { class: "fav-card-roll" }, [dice]);
   }
   // Reihenfolge Name | Probe | Wert | Stern (Nutzer-Feedback 2026-09-28); Waffen: AT/FK-Würfel als Probe, TP als Wert.
-  const star = kind === "special" ? specFavStar(item.name) : favStar(item);
+  const star = kind === "special" ? specFavStar(item.name) : kind === "rank" ? specFavStar(item.key) : favStar(item);
   // Hausregel Wundeinschätzung: Herz neben Heilkunde Wunden auch hier (Rückmeldung 2026-10-05).
   const nameCell = el("span", { class: "fav-card-name-cell" }, [name, kind === "talent" ? woundCheckHint(item, true) : null]);
   return el("div", { class: "fav-card" }, [icon, nameCell, roll, value, star]);
@@ -3299,13 +3369,15 @@ function favoritesPanel() {
     { label: "Liturgien", items: fav.liturgies, kind: "liturgy" },
     { label: "Ausrüstung", items: fav.equipment, kind: "equipment" },
     { label: "Sonderfertigkeiten", items: fav.specials, kind: "special" },
+    { label: "Vor- & Nachteile", items: fav.traits, kind: "rank" },
+    { label: "Sprache und Schrift", items: fav.languages, kind: "rank" },
   ];
   const active = groups.filter((g) => g.items.length);
   return el("div", { class: "panel" }, [
     el("div", { class: "panel-title" }, "Favoriten"),
     ...(active.length
       ? active.flatMap((g) => [el("div", { class: "subhead" }, g.label), el("div", { class: "fav-grid" }, g.items.map((it) => favCard(it, g.kind)))])
-      : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern, Liturgien, Ausrüstung oder Sonderfertigkeiten anklicken")]),
+      : [el("div", { class: "drop-zone" }, "Noch keine Favoriten markiert — Stern bei Talenten, Waffen, Zaubern, Liturgien, Ausrüstung, Sonderfertigkeiten, Vor- und Nachteilen oder Sprachen anklicken")]),
   ]);
 }
 
@@ -3375,8 +3447,97 @@ function fatePointsRow() {
     });
     wrap.appendChild(btn);
   }
+  if (!GOD_COUNT) return wrap;
+  // Je Gott ein Symbol mit „verfügbar/gesamt“; Klick gibt einen aus, Rechtsklick stellt einen wieder her.
+  GODS().forEach((g) => {
+    const label = `${g.name}-Schips: ${g.current} von ${g.value}. Klick gibt einen aus, Rechtsklick stellt einen wieder her`;
+    const btn = el("button", { type: "button", class: "fate-point-btn god-count", title: label, "aria-label": label }, [godImg(g, g.current > 0), el("small", {}, `${g.current}/${g.value}`)]);
+    btn.addEventListener("click", () => { if (g.current > 0) g.current -= 1; rerenderGods(); });
+    btn.addEventListener("contextmenu", (e) => { e.preventDefault(); if (g.current < g.value) g.current += 1; rerenderGods(); });
+    wrap.appendChild(btn);
+  });
+  const more = el("button", { type: "button", class: "fate-point-btn god-more", hidden: "", "aria-haspopup": "dialog" }, "");
+  more.addEventListener("click", (e) => { e.stopPropagation(); openGodOverview(more, true); });
+  more.addEventListener("mouseenter", () => { if (matchMedia("(hover: hover)").matches && !godPop?.pinned) openGodOverview(more, false); });
+  more.addEventListener("mouseleave", () => { if (!godPop?.pinned) setTimeout(() => { if (!godPop?.pinned && !godPop?.node.matches(":hover")) closeGodOverview(); }, 150); });
+  wrap.appendChild(more);
+  // Erst im Dokument lässt sich messen; bei jeder Größenänderung neu verteilen.
+  requestAnimationFrame(() => fitGodSchips(wrap));
+  godObservers = godObservers.filter(([w, ro]) => (w.isConnected ? true : (ro.disconnect(), false)));
+  const ro = new ResizeObserver(() => fitGodSchips(wrap));
+  ro.observe(wrap);
+  godObservers.push([wrap, ro]);
   return wrap;
 }
+
+let godObservers = [];
+const godImg = (g, full) => el("img", { src: "../../../systems/dsa5/icons/schip.webp", alt: "", class: full ? "" : "dim", style: `filter: hue-rotate(${g.hue}deg) saturate(1.8)${full ? "" : " grayscale(1)"}` });
+function rerenderGods() {
+  renderHeader();
+  renderContent();
+  if (godPop?.pinned) refreshGodOverview();
+}
+
+// Platz reicht nicht (Plakette im Kopf, Schips-Zeile im Titelblatt): hintere Götter ausblenden, „+n“ zeigt wie viele.
+// Die eigenen Schips bleiben immer sichtbar. Modul: dieselbe Messung nach dem Rendern (ResizeObserver).
+function fitGodSchips(wrap) {
+  if (!wrap.isConnected) return;
+  const gods = [...wrap.querySelectorAll(".god-count")];
+  const more = wrap.querySelector(".god-more");
+  gods.forEach((b) => { b.hidden = false; });
+  more.hidden = true;
+  const over = () => wrap.scrollWidth > wrap.clientWidth + 1;
+  let hidden = 0;
+  while (over() && hidden < gods.length) {
+    gods[gods.length - 1 - hidden].hidden = true;
+    hidden += 1;
+    more.hidden = false;
+    more.textContent = `+${hidden}`;
+  }
+  const list = GODS().map((g) => `${g.name} ${g.current}/${g.value}`).join(", ");
+  more.setAttribute("aria-label", `${hidden} weitere Götter. Übersicht aller Götterschips: ${list}`);
+}
+
+// Übersicht aller Götterschips: beim Überfahren als Tooltip, per Klick/Tippen angeheftet mit − / + je Gott.
+let godPop = null;
+function openGodOverview(anchor, pin) {
+  if (godPop && godPop.pinned && pin) return closeGodOverview();
+  closeGodOverview();
+  const node = el("div", { class: "god-pop", role: "dialog", "aria-label": "Götterschips" });
+  node.addEventListener("mouseleave", () => { if (!godPop?.pinned) closeGodOverview(); });
+  node.addEventListener("click", (e) => e.stopPropagation());
+  document.body.append(node);
+  godPop = { node, anchor, pinned: pin };
+  refreshGodOverview();
+}
+function refreshGodOverview() {
+  const { node, anchor, pinned } = godPop;
+  const step = (g, d) => {
+    const b = el("button", { type: "button", class: "god-step", "aria-label": `${g.name}: ${d < 0 ? "einen ausgeben" : "einen wiederherstellen"}` }, d < 0 ? "−" : "+");
+    if ((d < 0 && !g.current) || (d > 0 && g.current >= g.value)) b.disabled = true;
+    b.addEventListener("click", () => { g.current += d; rerenderGods(); });
+    return b;
+  };
+  node.replaceChildren(...[
+    el("div", { class: "god-pop-title" }, "Götterschips"),
+    ...GODS().map((g) => el("div", { class: "god-pop-row" }, [godImg(g, g.current > 0), el("span", { class: "god-pop-name" }, g.name),
+      pinned ? step(g, -1) : null, el("b", {}, `${g.current}/${g.value}`), pinned ? step(g, 1) : null])),
+    pinned ? null : el("small", { class: "god-pop-hint" }, "Klicken heftet an, dann − / + je Gott"),
+  ].filter(Boolean));
+  // Anker kann nach dem Neu-Rendern ersetzt sein: neuen „+n“-Knopf suchen.
+  const a = anchor.isConnected ? anchor : document.querySelector(".god-more:not([hidden])");
+  if (!a) return closeGodOverview();
+  godPop.anchor = a;
+  const r = a.getBoundingClientRect();
+  node.style.top = `${r.bottom + 6}px`;
+  node.style.left = `${Math.max(8, Math.min(innerWidth - node.offsetWidth - 8, r.right - node.offsetWidth))}px`;
+}
+function closeGodOverview() {
+  godPop?.node.remove();
+  godPop = null;
+}
+document.addEventListener("click", () => { if (godPop?.pinned) closeGodOverview(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeGodOverview(); });
 
 // Porträt-Medaillon (#portrait): Bild in der gewählten Form (PORTRAIT_SHAPE: eckig mit Goldfassung oder rund mit
 // Goldring, Kopf-Varianten A/B 2026-10-19), darunter das AP-Band (Element aus Variante B) mit AP-Wert und freien AP —
@@ -3634,26 +3795,111 @@ function renderQuests() {
   ]);
 }
 
+// Personen-Reiter (#91, 2026-11-16): Suche (Name, Untertitel, Fraktion), Filter Alle/Wichtige/Verborgene (Verborgene
+// nur für die SL), Gruppen nach Fraktion (Schalter) und Ansicht Kacheln/Liste. Die Werkzeugleiste klebt oben wie die
+// Talentsuche; die Einstellungen gelten für beide Abschnitte (Dramatis Personae, Bestiarium). Modul: Zustand im Bogen
+// gemerkt wie die Unterreiter, Daten aus loadPersonae() (faction/important/hidden liegen dort schon vor).
+let personaeQuery = "";
+let personaeFilter = "all";
+let personaeByFaction = true;
+let personaeView = "tiles";
+const NO_FACTION = "Ohne Fraktion";
+
 function personaCard(p) {
-  const card = el("button", { type: "button", class: "almanac-tile persona-card", title: p.name }, [
-    el("img", { src: p.img, alt: "" }),
-    el("span", { class: "tile-text" }, [
-      el("strong", {}, [p.name, p.important ? el("span", { class: "persona-important", title: "Wichtig" }, " ★") : null]),
-      p.subtitle ? el("small", {}, p.subtitle) : null,
-    ]),
-  ]);
+  // ★ vor dem Namen und „verborgen“ vor dem Untertitel, damit die Kürzung mit „…“ sie nicht verschluckt.
+  const star = p.important ? el("span", { class: "persona-important", title: "Wichtig" }, "★ ") : null;
+  const hiddenMark = p.hidden ? el("span", { class: "persona-hidden", title: "Für Spieler nicht freigegeben" }, "verborgen") : null;
+  const sub = [hiddenMark, hiddenMark && p.subtitle ? " · " : null, p.subtitle || null];
+  const list = personaeView === "list";
+  const card = el("button", { type: "button", class: (list ? "persona-row" : "almanac-tile persona-card") + (p.hidden ? " is-hidden" : ""), title: p.name }, list
+    ? [
+        el("img", { src: p.img, alt: "" }),
+        el("strong", {}, [star, p.name]),
+        el("small", {}, sub),
+        personaeByFaction ? null : el("small", { class: "persona-faction" }, p.faction || ""),
+      ]
+    : [
+        el("img", { src: p.img, alt: "" }),
+        el("span", { class: "tile-text" }, [el("strong", {}, [star, p.name]), p.subtitle || p.hidden ? el("small", {}, sub) : null]),
+      ]);
   card.addEventListener("click", () => openInAlmanac(p.type ? "Bestiarium" : "Dramatis Personae", p.name));
   return card;
 }
 
+function personaeMatches(p) {
+  if (p.hidden && AS_PLAYER) return false;
+  if (personaeFilter === "important" && !p.important) return false;
+  if (personaeFilter === "hidden" && !p.hidden) return false;
+  const q = personaeQuery.trim().toLowerCase();
+  return !q || [p.name, p.subtitle, p.faction].some((v) => (v || "").toLowerCase().includes(q));
+}
+
+function personaeCollection(people) {
+  const grid = (items) => el("div", { class: personaeView === "list" ? "persona-list" : "tile-grid" }, items.map(personaCard));
+  if (!personaeByFaction) return grid(people);
+  const groups = new Map();
+  for (const p of people) {
+    const key = p.faction || NO_FACTION;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  }
+  const keys = [...groups.keys()].sort((a, b) => (a === NO_FACTION) - (b === NO_FACTION) || a.localeCompare(b, "de"));
+  return el("div", {}, keys.map((k) => el("div", { class: "persona-group" }, [
+    el("div", { class: "persona-group-title" }, [k, el("span", { class: "muted" }, ` (${groups.get(k).length})`)]),
+    grid(groups.get(k)),
+  ])));
+}
+
+function segmented(label, options, value, onChange) {
+  return el("div", { class: "seg-group", role: "group", "aria-label": label }, options.map(([v, text]) => {
+    const btn = el("button", { type: "button", class: "seg-btn", "aria-pressed": String(v === value) }, text);
+    btn.addEventListener("click", () => { onChange(v); renderContent(); });
+    return btn;
+  }));
+}
+
 function renderPersonae() {
-  const list = (type) => el("div", { class: "tile-grid" }, PERSONAE.filter((p) => p.type === type).map(personaCard));
   const almanac = el("button", { type: "button", class: "almanac-btn" }, "📖 Almanach öffnen");
   almanac.addEventListener("click", () => openInAlmanac("Reiter", "Dramatis Personae"));
+  if (AS_PLAYER && personaeFilter === "hidden") personaeFilter = "all";
+
+  const search = el("input", { type: "search", id: "personaeSearch", placeholder: "Name, Fraktion …", value: personaeQuery, "aria-label": "Personen durchsuchen" });
+  search.addEventListener("input", () => {
+    personaeQuery = search.value;
+    const pos = search.selectionStart;
+    renderContent();
+    const fresh = document.getElementById("personaeSearch");
+    fresh.focus();
+    fresh.setSelectionRange(pos, pos);
+  });
+  const factionSwitch = el("button", { type: "button", class: "filter-switch" + (personaeByFaction ? " on" : ""), role: "switch", "aria-checked": String(personaeByFaction) }, [
+    el("span", { class: "filter-switch-track", "aria-hidden": "true" }, [el("span", { class: "filter-switch-thumb" })]),
+    "Nach Fraktion",
+  ]);
+  factionSwitch.addEventListener("click", () => { personaeByFaction = !personaeByFaction; renderContent(); });
+  const filters = [["all", "Alle"], ["important", "★ Wichtige"]];
+  if (!AS_PLAYER) filters.push(["hidden", "Verborgene"]);
+  const tools = el("div", { class: "search-bar personae-tools" }, [
+    search,
+    segmented("Filter", filters, personaeFilter, (v) => { personaeFilter = v; }),
+    factionSwitch,
+    segmented("Ansicht", [["tiles", "Kacheln"], ["list", "Liste"]], personaeView, (v) => { personaeView = v; }),
+  ]);
+
+  const block = (key, title, type) => {
+    const all = PERSONAE.filter((p) => p.type === type && (!p.hidden || !AS_PLAYER));
+    const shown = all.filter(personaeMatches).sort((a, b) => (!!b.important - !!a.important) || a.name.localeCompare(b.name, "de"));
+    const count = shown.length === all.length ? `${all.length}` : `${shown.length} von ${all.length}`;
+    const body = shown.length
+      ? personaeCollection(shown)
+      : el("p", { class: "persona-empty" }, personaeQuery.trim() ? `Keine Treffer für „${personaeQuery.trim()}“.` : "Keine Einträge für diesen Filter.");
+    return section(key, [el("div", { class: "panel" }, [el("div", { class: "panel-title flex" }, [el("span", {}, title), el("small", { class: "panel-count" }, count)]), body])]);
+  };
   return el("div", {}, [
     el("div", { class: "almanac-bar" }, [el("small", { class: "muted" }, "Freigegebene Personen und Wesen. Notizen der Gruppe im Almanach."), almanac]),
-    section("dramatis", [el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Dramatis Personae"), list(0)])]),
-    section("bestiary", [el("div", { class: "panel" }, [el("div", { class: "panel-title" }, "Bestiarium"), list(1)])]),
+    tools,
+    block("dramatis", "Dramatis Personae", 0),
+    block("bestiary", "Bestiarium", 1),
   ]);
 }
 
@@ -3722,15 +3968,14 @@ function flashChanged() {
 }
 
 // Befüllt #attrOverlay (siehe index.html) mit denselben Werten wie buildAttrTiles(), nur kompakter
-// (.attr-die-mini) — auf jedem Tab sichtbar AUSSER dem Eigenschaften-Tab selbst (dort stehen die Eigenschaften
-// bereits fest als volle Kacheln, Nutzer-Feedback 2026-09-15: "Baue die Eigenschaftswürfel überall ein, nur auf
-// der Eigenschaftenseite nicht"). Auf dem Titelblatt bekommt #attrOverlay über
+// (.attr-die-mini) — auf jedem Tab sichtbar; auf dem Eigenschaften-Tab nur im Spielmodus, beim Bearbeiten und
+// Steigern stehen dort die vollen Kacheln (Issue #85, 2026-11-15; vorher fehlte die Leiste dort ganz). Auf dem Titelblatt bekommt #attrOverlay über
 // [data-tab="cover"] #attrOverlay{grid-area:attrbar} (style.css) eine eigene Grid-Zeile zwischen Kopf und
 // Tab-Titel, sonst würde es dort in die Grid-Spalte von #coverSidebar rutschen.
 function renderAttrOverlay() {
   const host = document.getElementById("attrOverlay");
   if (!host) return;
-  const show = currentTab !== "main";
+  const show = currentTab !== "main" || sheetMode() === "play";
   host.classList.toggle("show", show);
   host.innerHTML = "";
   if (!show) return;
@@ -3791,7 +4036,7 @@ function setMode(mode) {
   // Mehrere Editierbarkeiten hängen vom Modus ab (Name in der Kopfzeile, Mod/Zukauf/Trefferzone/Löschen im
   // Content-Bereich) und müssen beim Umschalten sofort neu gerendert werden, nicht erst beim nächsten Klick.
   renderHeader();
-  renderContent();
+  renderContent();  renderAttrOverlay();
 }
 
 function initModeSwitch() {

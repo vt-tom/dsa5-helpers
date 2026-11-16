@@ -475,6 +475,13 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top .dsa5h-name { flex: 1 1 aut
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top .dsa5h-name input { text-align: left; padding: 0; height: auto; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-fate-points { align-self: flex-end; gap: 0; margin: 0 0 2px; padding: 2px 4px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fate-points .dsa5h-fatepoint { flex-basis: 22px; width: 22px; height: 22px; background-size: 20px 20px; margin: 0; }
+/* Götterschips (#89): Symbol 20 px wie die eigenen Schips; Zeile darf schrumpfen, „+n“ und Übersicht fingergroß. */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-fate-points { flex: 0 0 auto; min-width: 0; max-width: 55%; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fate-points .dsa5h-god-schip { height: 22px; margin: 0; padding: 0 3px 0 1px; font-size: 11px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fate-points .dsa5h-god-ico { width: 20px; height: 20px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-fate-points .dsa5h-god-more { height: 22px; min-width: 30px; font-size: 12px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-god-pop-row { min-height: 48px; font-size: 16px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-god-step { width: 44px; height: 44px; font-size: 20px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ident { grid-column: 2; grid-row: 2; align-self: start; gap: 0 5px; padding-top: 2px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head-top > .dsa5h-name { padding-bottom: 0; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-head .dsa5h-ident input { font-size: 12px; letter-spacing: .08em; }
@@ -762,6 +769,16 @@ body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(5):not(:empty)::after { content: '\a0' attr(data-dsa5h-unit); }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6)::before { content: '\a0·\a0' attr(data-dsa5h-label) '\a0'; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(7):not(:empty)::before { content: '\a0·\a0'; }
+/* Gelernte Erweiterungen (#84): Knopf und Namen fingerfreundlich, Liste auf die Namensspalte eingerückt. */
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ext-toggle { height: auto; min-height: 32px; padding: 0 10px; border-radius: 16px; font-size: 14px; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ext-item { grid-template-columns: 12px minmax(0, 1fr); padding: 2px 0 4px; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ext-item .dsa5h-ext-desc { grid-column: 2; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-ext-name { display: inline-flex; align-items: center; min-height: 30px; font-size: 15px; }
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-ext-list { padding-left: 52px; }
+/* Personen-Reiter (#91): am Smartphone keine Ansichtswahl (Kacheln stehen dort ohnehin einspaltig), Bedienelemente 40 px. */
+body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-persona-views { display: none; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-personae-tools input { flex-basis: 100%; min-height: 40px; }
+body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-seg > button { min-height: 40px; padding: 0 14px; font-size: 15px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(6) button { height: 28px; margin-left: 4px; padding: 0 6px; font-size: 13px; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :is(:nth-child(3), :nth-child(4), :nth-child(8)) { grid-row: 1 / span 2; }
 body.dsa5h-phone .dsa5-helpers-sheet .dsa5h-content .dsa5h-spell-row.item > :nth-child(3) { grid-column: 5; margin-left: 6px; }

@@ -3,7 +3,8 @@
     Talente/Zauber/Liturgien: Fertigkeitswert + 3W20-Probe (probe.hbs); Waffen: AT- bzw. FK-Würfel mit sichtbarem
     Kürzel + Schadenswurf mit "TP"-Kürzel. Dieselben System-Aktionen wie auf den Fachreitern (skillSelect/chRollCombat).
     Ausrüstung (Issue #30): „Verbrauchen“ bei Verbrauchsgegenständen (wie im Kontextmenü des Systems), sonst der
-    OnUse-Würfel; Anzahl als Wert. Sonderfertigkeiten: OnUse-Würfel, kein Wert. }}
+    OnUse-Würfel; Anzahl als Wert. Sonderfertigkeiten: OnUse-Würfel, kein Wert. Vor-/Nachteile und Sprachen
+    (Issues #81, #82): Stufe als Wert, kein Wurf. }}
 {{#if weapon}}
 {{#if (or (eq item.type 'rangeweapon') (eq item.system.traitType.value 'rangeAttack'))}}
 <span class="dsa5h-fav-card-roll dsa5h-fav-card-weapon"><small>{{localize 'DSA5HELPERS.RangedAttackShort'}}</small><button type="button" class="dsa5h-probe-die dsa5h-die-attack" data-action="chRollCombat" data-mode="attack" title="{{localize 'DSA5HELPERS.RangedAttackShort'}}" aria-label="{{localize 'DSA5HELPERS.RollRangedWith' name=item.name}}">{{item.attack}}</button></span>
@@ -14,7 +15,7 @@
 {{else if equipment}}
 <span class="dsa5h-fav-card-roll">{{#if item.dsa5hConsumable}}<button type="button" class="dsa5h-fav-use" data-action="dsa5hConsume" aria-label="{{localize 'DSA5HELPERS.ConsumeItemOf' name=item.name}}">{{localize 'DSA5HELPERS.Consume'}}</button>{{else if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}</span>
 <span class="dsa5h-fav-card-value" title="{{localize 'quantity'}}">×{{item.system.quantity.value}}</span>
-{{else if special}}
+{{else if rank}}<span class="dsa5h-fav-card-roll"></span><span class="dsa5h-fav-card-value">{{item.dsa5hLevel}}</span>{{else if special}}
 <span class="dsa5h-fav-card-roll">{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}</span>
 <span class="dsa5h-fav-card-value"></span>
 {{else}}

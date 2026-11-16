@@ -10,7 +10,7 @@ import { initTouchContext } from './touch-context.js';
 import { initChat } from './chat.js';
 import { initJournal } from './journal.js';
 import { isFoundry13 } from '../compat/runtime.js';
-import { setPowerCharge } from '../compat/powersource-dialog.js';
+import { setPowerCharge, stackedPowerSources } from '../compat/powersource-dialog.js';
 import { isRollDialog, setupRollDialog } from './roll-dialog.js';
 import { initRollResult } from './roll-result.js';
 import { openAlmanac, QUEST_PLACEHOLDER } from '../sheets/almanac.js';
@@ -85,6 +85,7 @@ function openPowerSheet(el, app) {
   const loc = key => game.i18n.localize(`DSA5HELPERS.PowerSources.${key}`);
   const esc = foundry.utils.escapeHTML;
   const values = segments.map(s => s.value);
+  const stacked = stackedPowerSources(actor, segments);
   let queue = Promise.resolve();
   const wrap = document.createElement('div');
   wrap.className = 'dsa5h-m-more-backdrop dsa5h-m-power-backdrop';
@@ -101,6 +102,7 @@ function openPowerSheet(el, app) {
           <span class="dsa5h-m-power-meter" aria-hidden="true"><span style="width:${s.max ? values[i] / s.max * 100 : 0}%"></span></span>
         </div>`;
       }).join('')}</div>
+      ${stacked.map(entry => `<p class="dsa5h-m-power-hint">${esc(game.i18n.format('DSA5HELPERS.PowerSources.Stacked', entry))}</p>`).join('')}
       <p class="dsa5h-m-power-hint">${esc(loc('SavedAtOnce'))}</p>
     </div>`;
   };

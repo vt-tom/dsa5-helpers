@@ -101,6 +101,7 @@ body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-famil
       <div class="bar"><span>Kraftspeicher<small data-sum></small></span><button type="button" class="icon" data-close aria-label="Schließen">✕</button></div>
       <div class="content">
         <div data-rows></div>
+        <p class="hint">Edelsteine (Anzahl 3) zählt als ein einziger Speicher. Für jeden weiteren Speicher einen eigenen Gegenstand anlegen.</p>
         <p class="hint">Änderungen werden sofort gespeichert.</p>
       </div>
     </div>
@@ -109,7 +110,7 @@ body { margin: 0; padding: 16px; background: #1b1714; color: #f4e8d6; font-famil
 </div>
 
 <script>
-const sources = [{ name: 'Kraftspeicher', item: 'Ring der Ahnen', value: 3, max: 10 }, { name: 'Kraftspeicher 2', item: 'Stab', value: 8, max: 10 }];
+const sources = [{ name: 'Kraftspeicher', item: 'Ring der Ahnen', value: 3, max: 10 }, { name: 'Kraftspeicher 2', item: 'Edelsteine', value: 8, max: 10 }];
 const $ = s => document.querySelector(s);
 const total = () => sources.reduce((a, s) => a + s.value, 0) + ' / ' + sources.reduce((a, s) => a + s.max, 0);
 const pct = s => (s.value / s.max * 100) + '%';

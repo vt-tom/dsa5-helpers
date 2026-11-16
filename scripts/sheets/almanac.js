@@ -113,6 +113,23 @@ export async function loadPersonae(user = game.user) {
   return { dramatis: lists[0].sort(order), bestiary: lists[1].sort(order) };
 }
 
+/**
+ * Personen-Reiter (#91): eine Liste nach Fraktion gruppieren (Fraktionen alphabetisch, „Ohne Fraktion“ zuletzt; in der
+ * Gruppe bleibt die Reihenfolge von loadPersonae, wichtige zuerst) oder ungeteilt als eine Gruppe ohne Überschrift.
+ */
+export function groupPersonae(list, byFaction, lang = globalThis.game?.i18n?.lang) {
+  if (!byFaction) return list.length ? [{ label: '', items: list }] : [];
+  const groups = new Map();
+  for (const entry of list) {
+    const key = entry.faction || '';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(entry);
+  }
+  return [...groups.keys()]
+    .sort((a, b) => (!a) - (!b) || a.localeCompare(b, lang, { sensitivity: 'base' }))
+    .map(key => ({ label: key, noFaction: !key, items: groups.get(key) }));
+}
+
 /** Almanach öffnen, optional am Eintrag (tab: 'questlog' | 'personae'). */
 export async function openAlmanac(tab, pageUuid, entryKey) {
   const widget = game.dsa5?.apps?.CalendarWidget?.constructor;

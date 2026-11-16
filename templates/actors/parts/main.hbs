@@ -1,5 +1,6 @@
       <div class="dsa5h-tab" data-tab-panel="main" {{#unless (eq dsa5h.currentTab "main")}}hidden{{/unless}}>
         
+        {{#if dsa5h.advanceMode}}
         <div class="dsa5h-attr-tiles">
           {{#each prepare.mentalAttrs as |ch|}}
           <div class="dsa5h-attr-tile"><button type="button" class="dsa5h-attr-roll" data-action="chValue" data-char="{{ch}}" data-tooltip="{{concat 'FORMULA.attr.' ch}}" aria-label="{{localize 'DSA5HELPERS.RollAttribute' name=(localize (concatUp 'CHAR.' ch))}}">
@@ -16,6 +17,7 @@
           </div>
           {{/each}}
         </div>
+        {{/if}}
 
         <div class="grid-2">
           <div class="col-gap">
@@ -25,13 +27,13 @@
               <div class="subhead flex"><span>{{localize "advantages"}}</span>{{#unless @root.dsa5h.legacySystem}}<button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp 'advantage'}}" aria-label="{{localize 'advantages'}}">i</button>{{/unless}}</div>
               <div class="chips dsa5h-chips-fill">
                 {{#each prepare.advantages as |item|}}
-                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span>{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}<span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.advanceMode}}hidden{{/unless}} data-tooltip="DSA5HELPERS.DeleteRefund" aria-label="{{localize 'DSA5HELPERS.DeleteRefund'}}">×</button></span></span>
+                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span>{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}<span class="chip-actions">{{> "modules/dsa5-helpers/templates/actors/parts/favorite.hbs" item=item chip=true}}<button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.advanceMode}}hidden{{/unless}} data-tooltip="DSA5HELPERS.DeleteRefund" aria-label="{{localize 'DSA5HELPERS.DeleteRefund'}}">×</button></span></span>
                 {{/each}}
               </div>
               <div class="subhead flex"><span>{{localize "disadvantages"}}</span>{{#unless @root.dsa5h.legacySystem}}<button type="button" class="dsa5h-spec-help-btn" data-tooltip-html="{{specCategoryHelp 'disadvantage'}}" aria-label="{{localize 'disadvantages'}}">i</button>{{/unless}}</div>
               <div class="chips dsa5h-chips-fill">
                 {{#each prepare.disadvantages as |item|}}
-                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span>{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}<span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.advanceMode}}hidden{{/unless}} data-tooltip="DSA5HELPERS.DeleteRefund" aria-label="{{localize 'DSA5HELPERS.DeleteRefund'}}">×</button></span></span>
+                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}{{roman item.system.step.value item.system.max.value}}</a></span>{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}<span class="chip-actions">{{> "modules/dsa5-helpers/templates/actors/parts/favorite.hbs" item=item chip=true}}<button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.advanceMode}}hidden{{/unless}} data-tooltip="DSA5HELPERS.DeleteRefund" aria-label="{{localize 'DSA5HELPERS.DeleteRefund'}}">×</button></span></span>
                 {{/each}}
               </div>
             </div>
@@ -77,7 +79,7 @@
               </div>
               <div class="chips dsa5h-chips-fill">
                 {{#each (lookup prepare.specAbs "language") as |item|}}
-                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span>{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}<span class="chip-actions"><button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.advanceMode}}hidden{{/unless}} data-tooltip="DSA5HELPERS.DeleteRefund" aria-label="{{localize 'DSA5HELPERS.DeleteRefund'}}">×</button></span></span>
+                <span class="chip item" data-item-id="{{item._id}}"><img src="{{item.img}}" alt="" /><span class="withContext"><a data-action="itemEdit">{{item.name}}</a></span>{{#if item.OnUseEffect}}{{> "modules/dsa5-helpers/templates/actors/parts/onuse.hbs" name=item.name}}{{/if}}<span class="chip-actions">{{> "modules/dsa5-helpers/templates/actors/parts/favorite.hbs" item=item chip=true}}<button type="button" class="chip-action-btn" data-action="postItem" data-tooltip="SHEET.PostItem" aria-label="{{localize 'SHEET.PostItem'}}">{{> "modules/dsa5-helpers/templates/actors/parts/icon-chat.hbs"}}</button><button type="button" class="chip-action-btn dsa5h-chip-delete" data-action="deleteItem" {{#unless @root.dsa5h.advanceMode}}hidden{{/unless}} data-tooltip="DSA5HELPERS.DeleteRefund" aria-label="{{localize 'DSA5HELPERS.DeleteRefund'}}">×</button></span></span>
                 {{/each}}
               </div>
             </div>

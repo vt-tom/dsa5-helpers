@@ -7,7 +7,7 @@
       <div class="dsa5h-banner"{{#if dsa5h.banner}} style="background-image:url('{{dsa5h.banner}}')"{{/if}}></div>
       {{#if dsa5h.editMode}}
       <div class="dsa5h-banner-tools">
-        <button type="button" data-action="dsa5hBannerPick" data-tooltip="DSA5HELPERS.BannerPick" aria-label="{{localize 'DSA5HELPERS.BannerPick'}}"><i class="fas fa-image" inert></i></button>
+        <button type="button" data-action="dsa5hBannerPick" data-tooltip="DSA5HELPERS.BannerPickHint" aria-label="{{localize 'DSA5HELPERS.BannerPick'}}"><i class="fas fa-image" inert></i></button>
         {{#if dsa5h.banner}}<button type="button" data-action="dsa5hBannerClear" data-tooltip="DSA5HELPERS.BannerClear" aria-label="{{localize 'DSA5HELPERS.BannerClear'}}"><i class="fas fa-times" inert></i></button>{{/if}}
       </div>
       {{/if}}
@@ -35,6 +35,14 @@
             {{#each prepare.schips as |item|}}
             <button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="schipUpdate" data-val="{{item.value}}" data-tooltip="fatePoints" aria-label="{{localize 'DSA5HELPERS.FatePointSet' value=item.value current=../document.system.status.fatePoints.value max=../document.system.status.fatePoints.max}}"></button>
             {{/each}}
+            {{!-- Götterschips (#89, Variante C): je Gott ein Symbol mit „verfügbar/gesamt“ (god-schips.js), bei Platzmangel
+                  hintere Götter hinter „+n“ mit Übersicht. Bild und Leer-Darstellung bringt das liefernde Modul mit. --}}
+            {{#each dsa5h.godSchips as |god|}}
+            <button type="button" class="dsa5h-god-schip{{#if god.empty}} empty{{/if}}" data-action="dsa5hGodSchip" data-path="{{god.path}}" data-tooltip="{{god.tooltip}}" data-tooltip-class="{{god.tooltipClass}}" aria-label="{{localize 'DSA5HELPERS.GodSchipLabel' name=god.name current=god.current max=god.max}}"><span class="dsa5h-god-ico" style="{{god.style}}"></span><small>{{god.current}}/{{god.max}}</small></button>
+            {{/each}}
+            {{#if dsa5h.godSchips.length}}
+            <button type="button" class="dsa5h-god-more" data-action="dsa5hGodOverview" aria-haspopup="dialog" aria-expanded="false" hidden></button>
+            {{/if}}
           </div>
         </div>
 

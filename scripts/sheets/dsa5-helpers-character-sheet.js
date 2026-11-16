@@ -1,11 +1,12 @@
 /** Alternative presentation; all rule actions and actor updates are inherited from DSA5. */
 import { systemApi, isFoundry13, contextMenuEntries } from '../compat/runtime.js';
-import { openPowerSourceDialog } from '../compat/powersource-dialog.js';
+import { openPowerSourceDialog, stackedPowerSources } from '../compat/powersource-dialog.js';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
-import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
+import { bannerPath, canBrowseFiles, cssUrlPath, uploadBannerFromComputer } from '../banner-upload.js';
 import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, distractFoe, maneuverSheetData, defenseChoices, setDefenseMode } from '../house-rules/rules.js';
 import { openHouseRules } from '../apps/house-rules.js';
-import { almanacTabEnabled, loadQuests, loadPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
+import { almanacTabEnabled, loadQuests, loadPersonae, groupPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
+import { groupGodSchips, changeGodSchip, fitGodSchips, openGodOverview, closeGodOverview, renderGodOverview, godOverviewOpenFor } from './god-schips.js';
 import { buildSuggestions, suggestionCount, suggestionsCollapsed, COLLAPSED_SETTING, COUNT_FLAG, COUNT_MIN, COUNT_MAX } from '../skill-suggestions/context.js';
 const MODULE_ID = 'dsa5-helpers';
 // Unter dieser Inhaltsbreite (px) zeigt der Desktop-Bogen das Titelblatt einspaltig wie auf dem Smartphone.
@@ -26,6 +27,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     position: { width: 770, height: 740 },
     actions: {
       dsa5hPowerSources: this._showPowerSources,
+      dsa5hOpenBag: this._openBag,
       dsa5hSetTab: this._setTab,
       dsa5hSetSubTab: this._setSubTab,
       dsa5hOpenAlmanac: this._openAlmanac,
@@ -33,6 +35,10 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       dsa5hToggleCompanionTab: this._toggleCompanionTab,
       dsa5hFavorite: this._toggleFavorite,
       dsa5hToggleHappyTalents: this._toggleHappyTalents,
+      dsa5hToggleExtensions: this._toggleExtensions,
+      dsa5hPersonaeFilter: this._personaeFilter,
+      dsa5hPersonaeFaction: this._personaeFaction,
+      dsa5hPersonaeView: this._personaeView,
       dsa5hToggleSuggestions: this._toggleSuggestions,
       dsa5hSuggestionCount: this._changeSuggestionCount,
       dsa5hOnlyLearned: this._toggleOnlyLearned,
@@ -73,6 +79,10 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     ownerActions: {
       dsa5hEditPowerSources: this._editPowerSources,
       schipUpdate: this._schipUdate,
+      // Issue #89: Zusatz-Schips anderer Module (Hook dsa5.prepareActorSchips, z. B. Götterschips) je Gott mit Zahl;
+      // Klick gibt einen aus, Rechtsklick stellt einen wieder her; „+n“ öffnet die Übersicht (god-schips.js).
+      dsa5hGodSchip: { handler: this._godSchip, buttons: [0, 2] },
+      dsa5hGodOverview: this._godOverview,
       startCharacterBuilder: this._startCharacterBuilder,
       deleteItem: this._deleteItemAction,
       // advanceWrapper bewusst NICHT hier: ActorSheetDsa5 deklariert ihn selbst und ApplicationV2 führt die
@@ -146,7 +156,9 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // Reiter im Kasten der Titelblatt-Leiste: 'conditions' | 'details' (Variante G, Issues #27/#31).
   _coverSideTab = 'conditions';
   _subtabs = { skills: 'body', combat: 'body', magic: 'spells', religion: 'spells', notes: 'details', personae: 'dramatis' };
-  _search = { talent: '', gear: '', combatskill: '' };
+  _search = { talent: '', gear: '', combatskill: '', personae: '' };
+  // Personen-Reiter (#91): Filter all|important|hidden, Gruppen nach Fraktion, Ansicht tiles|list — nur auf der Instanz.
+  _personae = { filter: 'all', byFaction: true, view: 'tiles' };
   _favoritePending = false;
   // Wohlgefällige Talente (Religion-Tab) starten eingeklappt im Spielmodus, Klick blendet den vollen Text ein —
   // Nutzerentscheidung 2026-09-19 nach Click-Dummy-Vergleich dreier Varianten ("B · Einklappbar" gewählt, nahm
@@ -154,6 +166,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // _subtabs auf der Instanz gehalten und über _applyCurrentTab() ins DOM übertragen, statt für einen simplen
   // Auf/Zu-Klick das ganze Sheet neu zu rendern.
   _happyTalentsExpanded = false;
+  // Aufgeklappte Erweiterungen je Zauber/Liturgie (#84), wie _happyTalentsExpanded nur auf der Instanz gemerkt.
+  _openExtensions = new Set();
   // "Nur gesteigerte" (Talente): blendet FW-0-Talente aus wie der Filter im System (actor-talents.hbs .notLearned),
   // aber über row.hidden statt der System-Klasse — .notLearned ist im System-CSS global display:none.
   _onlyLearned = false;
@@ -194,7 +208,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   // Fensteranfang, mehrfaches +/− per Tastatur wäre unmöglich (UI/UX-Review 2026-09-25, Punkt 4). Gemerkt wird
   // die Aktion plus die Daten, die das Element eindeutig machen (Item, Zustand, Eigenschaft, Wert …), nach dem
   // Rendern wird das passende neue Element wieder fokussiert.
-  static RIGHT_CLICK_ACTIONS = ['loadWeapon', 'quantityClick', 'chargeSpell', 'conditionValue', 'statusAdd', 'rollAggregatedProbe', 'traditionPayCost', 'onUseItem', 'dsa5hEquip']
+  static RIGHT_CLICK_ACTIONS = ['dsa5hGodSchip', 'loadWeapon', 'quantityClick', 'chargeSpell', 'conditionValue', 'statusAdd', 'rollAggregatedProbe', 'traditionPayCost', 'onUseItem', 'dsa5hEquip']
     .map(action => `[data-action="${action}"]`).join(', ');
   // Alles, was im Kopf selbst bedienbar ist, startet kein Fenster-Ziehen (siehe pointerdown in _onRender).
   static DRAG_EXCLUDE = 'button, a, input:not([disabled]), select, textarea, label, details, [data-action], [contenteditable], [draggable="true"]';
@@ -325,6 +339,13 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const equipment = withChildren(Object.values(prepare.inventory ?? {}).flatMap(section => section?.items ?? []))
       .filter(item => !['meleeweapon', 'rangeweapon'].includes(item.type))
       .map(item => Object.assign(item, { dsa5hConsumable: ['consumable', 'plant'].includes(item.type) }));
+    // Stufe wie der roman-Helfer des Systems: nur bei mehrstufigen Einträgen (Vorteile max, Sonderfertigkeiten maxRank).
+    const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+    const withLevel = items => items.map(item => {
+      const max = Number(item.system?.maxRank?.value ?? item.system?.max?.value);
+      const level = Number.isFinite(max) && max < 2 ? '' : ROMAN[Number(item.system?.step?.value) - 1] ?? '';
+      return Object.assign(item, { dsa5hLevel: level });
+    });
     const favoriteGroups = [
       { label: 'skills', items: skillGroups.flatMap(group => group.items) },
       { label: 'DSA5HELPERS.Weapons', weapon: true, items: [...weaponGroups.flatMap(group => group.items), ...(body?.others ?? []).map(other => other.item)] },
@@ -332,6 +353,9 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       { label: 'liturgies', items: [...(magic.liturgy ?? []), ...(magic.ceremony ?? [])] },
       { label: 'DSA5HELPERS.Tabs.inventory', equipment: true, items: equipment },
       { label: 'DSA5HELPERS.SpecialAbilities', special: true, items: Object.values(specs).flatMap(groups => groups.flatMap(group => group.items)) },
+      // Issues #81, #82: Vor-/Nachteile sowie Sprachen und Schriften mit Stufe, ohne Wurf.
+      { label: 'DSA5HELPERS.AdvantagesDisadvantages', rank: true, items: withLevel([...(prepare.advantages ?? []), ...(prepare.disadvantages ?? [])]) },
+      { label: 'SpecCategory.language', rank: true, items: withLevel(prepare.specAbs?.language ?? []) },
     ].map(group => ({ ...group, items: unique(group.items.filter(item => favorites[item._id])) })).filter(group => group.items.length);
     // Talent-Vorschläge (Titelblatt, parts/suggestions.hbs): nur für Owner, die letzte Liste wirkt als leichter Bonus,
     // damit Karten nicht bei jedem Neuzeichnen springen.
@@ -399,8 +423,10 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       // Traglast wie im Ausrüstungs-Reiter.
       statusTiles: phone ? ['inpain', 'encumbered'].map(id => ({ id, value: (context.conditions ?? []).find(c => c.descriptor === id)?.value ?? 0 })) : [],
       currentTab: this._currentTab,
+      godSchips: groupGodSchips(prepare.extraSchips, this.actor),
       // Kopf „Wappenbanner“ (2026-10-19): Bannerbild und Porträtform je Held als Actor-Flags.
-      banner: this.actor.getFlag?.(MODULE_ID, 'bannerImg') || '',
+      // Pfad CSS-sicher (#87): Apostroph im Dateinamen ließ das Banner leer.
+      banner: cssUrlPath(this.actor.getFlag?.(MODULE_ID, 'bannerImg') || ''),
       portraitRound: this.actor.getFlag?.(MODULE_ID, 'portraitShape') === 'round',
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
       // Drei Modi (Issue #34): Schloss des Systems zu = Spielen; offen = Steigern oder Bearbeiten (Actor-Flag sheetMode).
@@ -467,8 +493,20 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     // The original sheet prepares this only for its separate companion part.
     if (!limited && typeof this.prepareCompanionTab === 'function') await this.prepareCompanionTab(context);
     // Aufträge/Personen (#39): Listen aus den Almanach-Journalen, nur wenn der Reiter da ist.
+    // Gelernte Erweiterungen je Zauber/Ritual/Liturgie/Zeremonie (#84) zum Aufklappen unter der Zeile.
+    context.dsa5h.spellExtensions = limited ? {} : await this._spellExtensions();
     if (tabs.some(tab => tab.id === QUESTS_TAB)) context.dsa5h.quests = await loadQuests();
-    if (tabs.some(tab => tab.id === PERSONAE_TAB)) context.dsa5h.personae = await loadPersonae();
+    if (tabs.some(tab => tab.id === PERSONAE_TAB)) {
+      const personae = await loadPersonae();
+      const byFaction = this._personae.byFaction;
+      context.dsa5h.personae = {
+        ...personae,
+        byFaction,
+        canSeeHidden: !!game.user?.isGM,
+        sections: [['dramatis', 'DSA5HELPERS.Personae.Dramatis'], ['bestiary', 'DSA5HELPERS.Personae.Bestiary']]
+          .map(([id, label]) => ({ id, label, total: personae[id].length, groups: groupPersonae(personae[id], byFaction) })),
+      };
+    }
     // Daten des Planer-Reiters (plannerSections/-TotalCost/-AvailableXP) direkt vom Planer; `tabs` braucht sein
     // Template für die Klasse `active` (parts/planner.hbs).
     if (planner) {
@@ -496,6 +534,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     this._updateModeButton(context.dsa5h.mode);
     this.element.dataset.theme = game.settings.get(MODULE_ID, 'theme');
     this._applyCurrentTab();
+    this._observeGodSchips();
     // Kraftspeicher-Rundmenü nur per Klick oder Pfeil nach unten, nicht beim Überfahren (#73: verdeckte sonst den Bogen).
     const sourceAnchor = this.element.querySelector('.dsa5h-power-satellite');
     sourceAnchor?.addEventListener('keydown', event => {
@@ -562,7 +601,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
         if (!select) return;
         event.stopPropagation();
         const hand = select.dataset.dsa5hHand;
-        if (select.value) this._takeOutOfContainer(select.value).then(() => this.actor.equipWeaponToHand(select.value, { hand, equip: true }));
+        const id = select.value;
+        if (id) this._takeOutOfContainer(id).then(() => this.actor.equipWeaponToHand(id, { hand, equip: true })).then(() => this._rememberHand(id, hand));
         else if (select.dataset.current) this.actor.equipWeaponToHand(select.dataset.current, { equip: false });
       }, { capture: true });
       // Zauber-/Liturgie-Dialog im Reiter „Körper“: showModal() legt ihn in den Top-Layer über alles, auch über Foundrys
@@ -602,8 +642,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       this.attachCompanionTabListeners(companion);
       this._labelCompanionButtons(companion);
     }
-    const searchHandlers = { talent: () => this._applyCurrentTab(), gear: () => this._applyGearSearch(), combatskill: () => this._applyCombatSkillSearch() };
-    for (const [kind, selector] of Object.entries({ talent: '.talentSearch', gear: '.gearSearch', combatskill: '.combatSkillSearch' })) {
+    const searchHandlers = { talent: () => this._applyCurrentTab(), gear: () => this._applyGearSearch(), combatskill: () => this._applyCombatSkillSearch(), personae: () => this._applyPersonae() };
+    for (const [kind, selector] of Object.entries({ talent: '.talentSearch', gear: '.gearSearch', combatskill: '.combatSkillSearch', personae: '.personaeSearch' })) {
       const input = this.element.querySelector(selector);
       if (!input) continue;
       input.value = this._search[kind];
@@ -717,9 +757,16 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       ? (RuleChaos ? RuleChaos.isWieldedTwohanded(item) : !!item.wieldedTwoHand)
       : item.system?.worn?.requiresBothHands !== false;
     const worn = [...(prepare.wornMeleeWeapons ?? []), ...(prepare.wornRangedWeapons ?? [])];
-    const main = worn.find(w => !w.system?.worn?.offHand) ?? null;
+    // Mit „Handbeschränkung ignorieren“ können mehrere Waffen in derselben Hand angelegt sein: dann zuerst die zuletzt
+    // für diese Hand gewählte (Issue #79, _rememberHand), sonst wie bisher die erste.
+    const choice = this.actor.getFlag?.(MODULE_ID, 'handChoice') ?? {};
+    const inHand = (offHand, exclude) => {
+      const candidates = worn.filter(w => w !== exclude && !!w.system?.worn?.offHand === offHand);
+      return candidates.find(w => w._id === choice[offHand ? 'offhand' : 'main']) ?? candidates[0] ?? null;
+    };
+    const main = inHand(false);
     const mainTwoHanded = !!main && twoHanded(this.actor.items.get(main._id) ?? main);
-    const off = mainTwoHanded ? null : worn.find(w => w !== main && w.system?.worn?.offHand) ?? null;
+    const off = mainTwoHanded ? null : inHand(true, main);
     const weapons = [...(this.actor.items?.values?.() ?? [])].filter(item => ['meleeweapon', 'rangeweapon'].includes(item.type))
       .sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang));
     // Griffwechsel ein-/beidhändig an der Hand (Rückmeldung 2026-10-05): nur Nahkampfwaffen, die das System umschalten
@@ -853,6 +900,18 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     });
   }
 
+  // Behälter-Kachel (Issue #80): öffnet das Item gleich auf dem System-Reiter „Behältnis“ (EquipmentSheet, Reiter
+  // containerContent, Gruppe sheet) statt auf „Beschreibung“; geöffnet wird über den unveränderten System-Handler.
+  static _openBag(event, target) {
+    const item = this.actor.items.get(this._getItemId(target));
+    const sheet = item?.system?.isBagWithContents ? item.sheet : null;
+    if (sheet?.tabGroups) {
+      if (sheet.rendered) sheet.changeTab('containerContent', 'sheet');
+      else sheet.tabGroups.sheet = 'containerContent';
+    }
+    return this.constructor._itemEdit.call(this, event, target);
+  }
+
   static async _editPowerSources() {
     return openPowerSourceDialog(this);
   }
@@ -892,6 +951,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
 
   async close(options) {
     this._closePowerSources();
+    this._godObserver?.disconnect();
+    if (godOverviewOpenFor(this)) closeGodOverview();
     return super.close(options);
   }
 
@@ -979,6 +1040,17 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       pager.style.top = `${Math.max(8, Math.min(innerHeight - 48, pagerY)) - (cy - 150)}px`;
       panel.append(pager);
     }
+    const stacked = stackedPowerSources(this.actor, sources.segments);
+    if (stacked.length) {
+      const hint = make('p', 'dsa5h-power-stack-hint', stacked.map(entry => loc('Stacked', entry)).join(' '));
+      const hintX = Math.max(8, Math.min(innerWidth - 252, cx - 122));
+      // Unter dem Kreis (und unter dem Blätterband), am unteren Rand darüber.
+      const below = cy <= innerHeight - 260;
+      const hintY = below ? cy + 128 + (pages > 1 ? 40 : 0) : cy - 214 - (pages > 1 ? 40 : 0);
+      hint.style.left = `${hintX - (cx - 150)}px`;
+      hint.style.top = `${Math.max(8, Math.min(innerHeight - 80, hintY)) - (cy - 150)}px`;
+      panel.append(hint);
+    }
     this.element.append(panel);
     panel.showPopover();
     panel.style.left = `${cx - 150}px`;
@@ -1027,6 +1099,21 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   async _takeOutOfContainer(itemId) {
     const item = this.actor.items.get(itemId);
     if (this._containerOf(item)) await item.update({ 'system.parent_id': '' });
+  }
+
+  // Issue #79: Mit der Akteur-Einstellung „Handbeschränkung ignorieren“ (system.config.ignoreWeaponHandLimits; gilt im
+  // System auch für Akteure ohne Helden-Datenvorbereitung) legt equipWeaponToHand die bisherige Waffe nicht ab — beide
+  // stehen dann in derselben Hand, und der Bogen zeigte weiter die alte. Die Einstellung erlaubt mehrere angelegte
+  // Waffen bewusst; daher bleibt die alte angelegt („Ebenfalls angelegt“), die gewählte merkt sich der Bogen für die Hand.
+  async _rememberHand(itemId, hand) {
+    // DSA7 (v13) kennt _ignoresWeaponHandLimits nicht, nur die Einstellung selbst (7.0.1).
+    const ignores = typeof this.actor._ignoresWeaponHandLimits === 'function'
+      ? this.actor._ignoresWeaponHandLimits()
+      : !!this.actor.system?.config?.ignoreWeaponHandLimits;
+    if (!ignores) return;
+    const key = hand === 'offhand' ? 'offhand' : 'main';
+    const choice = { ...(this.actor.getFlag(MODULE_ID, 'handChoice') ?? {}), [key]: itemId };
+    await this.actor.setFlag(MODULE_ID, 'handChoice', choice);
   }
 
   // Freie Stelle im dunklen Kopf oder oberes Rahmenband: beide verschieben das Fenster / minimieren per Doppelklick.
@@ -1172,6 +1259,37 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     await this.actor.setFlag(MODULE_ID, 'bodyFigure', target.dataset.figure === 'portrait' ? 'portrait' : 'placeholder');
   }
 
+  // Götterschips (#89): Zeile nach jedem Rendern und bei jeder Größenänderung einpassen (Kopf, Titelblatt-Leiste und
+  // Smartphone haben unterschiedlich Platz; die Zeile wandert mit dem Reiter), offene Übersicht nachziehen. Überfahren
+  // von „+n“ zeigt die Übersicht ohne Knöpfe (nur mit Maus), Klick heftet sie an (Aktion dsa5hGodOverview).
+  _observeGodSchips() {
+    this._godObserver?.disconnect();
+    const row = this.element?.querySelector('.dsa5h-fate-points');
+    const more = row?.querySelector('.dsa5h-god-more');
+    if (!more) {
+      if (godOverviewOpenFor(this)) closeGodOverview();
+      return;
+    }
+    fitGodSchips(row);
+    this._godObserver = new ResizeObserver(() => fitGodSchips(row));
+    this._godObserver.observe(row);
+    if (godOverviewOpenFor(this)) renderGodOverview(this);
+    more.addEventListener('mouseenter', () => {
+      if (globalThis.matchMedia?.('(hover: hover)').matches && !godOverviewOpenFor(this)) openGodOverview(this, more, false);
+    });
+    more.addEventListener('mouseleave', () => setTimeout(() => {
+      if (godOverviewOpenFor(this, { pinned: false }) && !document.querySelector('.dsa5h-god-pop:hover')) closeGodOverview();
+    }, 150));
+  }
+
+  static async _godSchip(event, target) {
+    await changeGodSchip(this.actor, target.dataset.path, event.button === 2 ? 1 : -1);
+  }
+
+  static _godOverview(event, target) {
+    openGodOverview(this, target, true);
+  }
+
   // Bannerbild im Kopf (2026-10-19): Pfad als Actor-Flag bannerImg. Kein mitgeliefertes Bild — ohne eigenes Bild bleibt
   // der dunkle Kopf (Systemgrafiken wie das DSA5-Banner sind © Ulisses und nicht für uns gedacht). Issue #46: wer den
   // Foundry-Dateibrowser öffnen darf (SL, Spieler mit Recht), wählt zwischen Hochladen vom Rechner und Dateibrowser;
@@ -1250,7 +1368,10 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const item = this.actor.items.get(this._getItemId(target));
     if (!this.actor.isOwner || item?.type !== 'meleeweapon') return;
     await item.system.swapNumberWeaponHands();
-    if (item.system.worn.value && systemApi().apps.RuleChaos.isWieldedTwohanded(item)) await this.actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
+    if (item.system.worn.value && systemApi().apps.RuleChaos.isWieldedTwohanded(item)) {
+      await this.actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
+      await this._rememberHand(item.id, 'main');
+    }
   }
 
   // Charakterbauer (#10): wie im System, merkt sich aber die bisherige Bogenwahl ('' = Standard), die der
@@ -1341,6 +1462,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       if (twoHanded && gripSwitchable) await item.system.swapNumberWeaponHands();
       if (worn) await actor.swapWeaponHandSlot(item.id, hand);
       else await actor.equipWeaponToHand(item.id, { hand, equip: true });
+      await this._rememberHand(item.id, hand);
     };
     const icon = (active, fallback) => `<i class="fas fa-${active ? 'check' : fallback} fa-fw"></i>`;
     const menu = new foundry.applications.ux.ContextMenu(this.element, '', contextMenuEntries([
@@ -1352,6 +1474,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
           await this._takeOutOfContainer(item.id);
           if (!twoHanded) await item.system.swapNumberWeaponHands();
           if (!worn) await actor.equipWeaponToHand(item.id, { hand: 'auto', equip: true });
+          await this._rememberHand(item.id, 'main');
         },
       },
       { label: 'SHEET.UnEquipItem', icon: '<i class="fas fa-xmark fa-fw"></i>', visible: worn, onClick: () => actor.equipWeaponToHand(item.id, { equip: false }) },
@@ -1498,7 +1621,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   }
 
   _jumpStickyOffset(tab, content) {
-    return tab === 'skills' ? content.querySelector('[data-tab-panel="skills"] > .dsa5h-search-bar')?.offsetHeight ?? 0 : 0;
+    // Klebende Werkzeugleisten (Talente, Personen #91) verdecken sonst das Sprungziel.
+    return ['skills', 'personae'].includes(tab) ? content.querySelector(`[data-tab-panel="${tab}"] > .dsa5h-search-bar`)?.offsetHeight ?? 0 : 0;
   }
 
   _jumpTo(tab, id) {
@@ -1586,6 +1710,100 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     this.render();
   }
 
+  /**
+   * Erweiterungen je Zauber-Item (#84): wie SpellExtension.forSource des Systems (Typ spellextension, system.source =
+   * Name, system.category = Typ; sortiert nach FW-Voraussetzung, dann Name), Beschreibung des Items angereichert.
+   */
+  async _spellExtensions() {
+    const extensions = this.actor.items.filter(item => item.type === 'spellextension');
+    if (!extensions.length) return {};
+    const TextEditor = globalThis.foundry?.applications?.ux?.TextEditor?.implementation ?? globalThis.TextEditor;
+    const enrich = (html, ext) => TextEditor?.enrichHTML ? TextEditor.enrichHTML(html, { relativeTo: ext, secrets: this.actor.isOwner }) : html;
+    const result = {};
+    for (const spell of this.actor.items) {
+      if (!['spell', 'ritual', 'liturgy', 'ceremony'].includes(spell.type)) continue;
+      const own = extensions.filter(ext => ext.system.source === spell.name && ext.system.category === spell.type)
+        .sort((a, b) => (Number(a.system.talentValue) || 0) - (Number(b.system.talentValue) || 0) || a.name.localeCompare(b.name, game.i18n.lang));
+      if (!own.length) continue;
+      result[spell.id] = await Promise.all(own.map(async ext => ({
+        id: ext.id,
+        name: ext.name,
+        description: await enrich(ext.system.description?.value ?? '', ext),
+      })));
+    }
+    return result;
+  }
+
+  static _toggleExtensions(event, target) {
+    const id = target.dataset.extFor;
+    if (this._openExtensions.has(id)) this._openExtensions.delete(id);
+    else this._openExtensions.add(id);
+    this._applyExtensions();
+  }
+
+  _applyExtensions() {
+    const root = this.element;
+    if (!root) return;
+    root.querySelectorAll('[data-ext-for]').forEach(button => {
+      const open = this._openExtensions.has(button.dataset.extFor);
+      button.setAttribute('aria-expanded', String(open));
+      const sign = button.querySelector('.dsa5h-ext-sign');
+      if (sign) sign.textContent = open ? '−' : '+';
+    });
+    root.querySelectorAll('[data-ext-list]').forEach(list => { list.hidden = !this._openExtensions.has(list.dataset.extList); });
+  }
+
+  static _personaeFilter(event, target) {
+    this._personae.filter = target.dataset.personaFilter || 'all';
+    this._applyPersonae();
+  }
+
+  static _personaeView(event, target) {
+    this._personae.view = target.dataset.personaViewChoice === 'list' ? 'list' : 'tiles';
+    this._applyPersonae();
+  }
+
+  static _personaeFaction() {
+    this._personae.byFaction = !this._personae.byFaction;
+    this.render();
+  }
+
+  /** Personen-Reiter (#91): Suche (Name, Untertitel, Fraktion), Filter und Ansicht ohne Neuzeichnen; Zähler je Abschnitt. */
+  _applyPersonae() {
+    const tab = this.element?.querySelector('[data-tab-panel="personae"]');
+    if (!tab) return;
+    const { filter, view } = this._personae;
+    tab.dataset.personaView = view;
+    tab.querySelectorAll('[data-persona-filter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.personaFilter === filter)));
+    tab.querySelectorAll('[data-persona-view-choice]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.personaViewChoice === view)));
+    const raw = this._search.personae.trim();
+    const query = raw.toLowerCase();
+    tab.querySelectorAll('[data-persona-section]').forEach(section => {
+      const cards = [...section.querySelectorAll('.dsa5h-persona-card')];
+      let shown = 0;
+      for (const card of cards) {
+        const visible = (filter !== 'important' || card.hasAttribute('data-persona-important'))
+          && (filter !== 'hidden' || card.hasAttribute('data-persona-hidden'))
+          && (!query || (card.dataset.personaSearch ?? '').toLowerCase().includes(query));
+        card.hidden = !visible;
+        if (visible) shown++;
+      }
+      section.querySelectorAll('[data-persona-group]').forEach(group => {
+        const count = group.querySelectorAll('.dsa5h-persona-card:not([hidden])').length;
+        group.hidden = !count;
+        const label = group.querySelector('[data-group-count]');
+        if (label) label.textContent = `(${count})`;
+      });
+      const counter = section.querySelector('[data-persona-count]');
+      if (counter) counter.textContent = cards.length && shown !== cards.length ? game.i18n.format('DSA5HELPERS.Personae.Count', { shown, total: cards.length }) : String(cards.length);
+      const noMatch = section.querySelector('[data-persona-nomatch]');
+      if (noMatch) {
+        noMatch.hidden = !cards.length || !!shown;
+        noMatch.textContent = raw ? game.i18n.format('DSA5HELPERS.Personae.NoMatch', { query: raw }) : game.i18n.localize('DSA5HELPERS.Personae.NoneForFilter');
+      }
+    });
+  }
+
   static _toggleHappyTalents() {
     this._happyTalentsExpanded = !this._happyTalentsExpanded;
     this._applyCurrentTab();
@@ -1627,9 +1845,13 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     }
     const happyField = root.querySelector('[data-happy-talents-field]');
     if (happyField) happyField.hidden = !happyExpanded;
+    this._applyExtensions();
+    this._applyPersonae();
     root.querySelectorAll('[data-side-tab]').forEach(el => el.setAttribute('aria-selected', String(el.dataset.sideTab === this._coverSideTab)));
     root.querySelectorAll('[data-side-panel]').forEach(el => { el.hidden = el.dataset.sidePanel !== this._coverSideTab; });
-    root.querySelector('[data-attr-overlay]')?.toggleAttribute('hidden', this._currentTab === 'main');
+    // Issue #85: im Spielmodus überall dieselbe Würfelleiste, auch auf dem Eigenschaften-Reiter; dessen Kacheln
+    // (mit Steigern/Senken) nur beim Bearbeiten und Steigern.
+    root.querySelector('[data-attr-overlay]')?.toggleAttribute('hidden', this._currentTab === 'main' && root.dataset.mode !== 'play');
     // Move the same controls, so the overview never duplicates named form fields. Smartphone (Mobile Support): Porträt,
     // Ressourcen und Schips bleiben auf allen Reitern im Kopf (MOBILE.md 14, Ü2).
     // Schmales Fenster am Desktop ebenso (_applyNarrow).

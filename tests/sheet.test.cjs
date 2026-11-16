@@ -70,7 +70,7 @@ function houseRulesUrl(){return dataUrl(read('scripts/house-rules/rules.js').rep
 function houseRulesAppUrl(){return dataUrl(read('scripts/apps/house-rules.js').replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())));}
 // Echter Anzeigehelfer aus der installierten Rüstkammer II, keine nachgebaute Berechnung.
 function energyZonesUrl(){const dir=path.join(dataRoot,'modules/dsa5-armory2/modules');if(!fs.existsSync(path.join(dir,'energyzones.js')))return 'file:///unavailable-armory-test-module.js';return dataUrl(fs.readFileSync(path.join(dir,'energyzones.js'),'utf8').replace(/['"]\.\/hitlocation\.js['"]/,JSON.stringify(dataUrl(fs.readFileSync(path.join(dir,'hitlocation.js'),'utf8')))));}
-async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={release:{generation:targetGeneration},i18n:{localize,has:key=>(lookup(own,key)??lookup(de,key))!==undefined},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};if(targetGeneration===13)delete global.dsa5.sheets.ActorSheetdsa5Character.prototype.prepareCompanionTab;({Dsa5HelpersCharacterSheet:Sheet,createCharacterSheet:createSheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/powersource-dialog.js'",JSON.stringify(dataUrl(read('scripts/compat/powersource-dialog.js')))).replace("foundry.utils.getRoute('modules/dsa5-armory2/modules/energyzones.js')",JSON.stringify(energyZonesUrl())).replace("'../skill-suggestions/context.js'",JSON.stringify(suggestionsUrl())).replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'./almanac.js'",JSON.stringify(dataUrl(read('scripts/sheets/almanac.js')))).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
+async function loadSheet(){if(Sheet)return Sheet;global.ResizeObserver??=class{observe(){}};global.document??={fonts:{ready:Promise.resolve()}};global.game={release:{generation:targetGeneration},i18n:{localize,has:key=>(lookup(own,key)??lookup(de,key))!==undefined},settings:{get:()=> 'light'}};global.dsa5={sheets:{ActorSheetdsa5Character:class{tabGroups={};_getHeaderControls(){return [{action:'system'}];}async _prepareContext(){return this.context;}showLimited(){return !!this.limited;}async prepareCompanionTab(){this.companionPrepared=true;}}}};if(targetGeneration===13)delete global.dsa5.sheets.ActorSheetdsa5Character.prototype.prepareCompanionTab;({Dsa5HelpersCharacterSheet:Sheet,createCharacterSheet:createSheet}=await import(dataUrl(read('scripts/sheets/dsa5-helpers-character-sheet.js').replace("'../compat/powersource-dialog.js'",JSON.stringify(dataUrl(read('scripts/compat/powersource-dialog.js')))).replace("foundry.utils.getRoute('modules/dsa5-armory2/modules/energyzones.js')",JSON.stringify(energyZonesUrl())).replace("'../skill-suggestions/context.js'",JSON.stringify(suggestionsUrl())).replace("'../compat/steigerungsplaner.js'",JSON.stringify(dataUrl(read('scripts/compat/steigerungsplaner.js')))).replace("'../house-rules/rules.js'",JSON.stringify(houseRulesUrl())).replace("'./almanac.js'",JSON.stringify(dataUrl(read('scripts/sheets/almanac.js')))).replace("'./god-schips.js'",JSON.stringify(dataUrl(read('scripts/sheets/god-schips.js')))).replace("'../banner-upload.js'",JSON.stringify(dataUrl(read('scripts/banner-upload.js')))).replace("'../apps/house-rules.js'",JSON.stringify(houseRulesAppUrl())))));return Sheet;}
 async function prepare(){const C=await loadSheet(),f=fixture(),sheet=new C();Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});return {sheet,context:await sheet._prepareContext({}),actor:f.actor};}
 function elements(html,predicate){return dom.findAll(predicate,parseDocument(html).children);}
 test('all templates and CSS parse',()=>{for(const p of modulePaths)H.precompile(read(p));postcss.parse(read('styles/dsa5-helpers-character-sheet.css'));});
@@ -161,6 +161,10 @@ test('three modes (#34): lock closed = play, open = advance or edit (actor flag)
 test('banner upload (#46): hints without folder or GM, the GM client uploads for owners only and sets the flag',async()=>{
  const saved={game:global.game,ui:global.ui,foundry:global.foundry,fetch:global.fetch,File:global.File};
  const B=await import(dataUrl(read('scripts/banner-upload.js')));
+ // #87: Apostroph u. a. im Dateinamen dürfen url('…') im style-Attribut nicht beenden
+ assert.equal(B.cssUrlPath("worlds/x/Al'Anfa (2) bild.webp"),'worlds/x/Al%27Anfa%20%282%29%20bild.webp');
+ assert.equal(B.cssUrlPath('worlds/x/held%20eins.webp'),'worlds/x/held%20eins.webp','schon kodierte Pfade bleiben');assert.equal(B.cssUrlPath(undefined),'');
+ assert(/banner: cssUrlPath\(/.test(read('scripts/sheets/dsa5-helpers-character-sheet.js')),'Bogen setzt den Bannerpfad CSS-sicher ein');
  const notes=[];let handler=null;const emitted=[];const uploads=[];let flag=null;
  const actor={id:'a1',name:'Wulf',testUserPermission:(u,l)=>u.id==='owner'&&l==='OWNER',setFlag:async(m,k,v)=>{flag=[m,k,v];}};
  let path='';const gm={id:'gm',isGM:true};
@@ -202,14 +206,26 @@ test('every static action exists in module, Foundry or DSA5 action tables',()=>{
 test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');const bundle=fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8'):'';const inSchema=field=>{if(field==='systemFields.happyTalents.fields.value')return /happyTalents:new \w+\(\{value:new \w+\(\{initial:""/.test(bundle);const m=field.match(/^systemFields\.(tradition|guidevalue|energyfactor)\.fields\.(magical|clerical)$/);return !!m&&new RegExp(m[1]+':new \\w+\\(\\{magical:new \\w+\\(\\{initial:[^}]*label:"'+m[1]+'"[^}]*\\}\\),clerical:').test(bundle);};for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field)||inSchema(field),'unverified system schema path: '+field);});
 test('localization keys used by nonempty hero resolve',async()=>{missing.clear();const {context}=await prepare();render(context);const unresolved=[...missing].filter(k=>k && !['Swords','Test coin'].includes(k));assert.deepEqual(unresolved,[]);});
 
+test('spell extensions are matched like SpellExtension.forSource (#84)',async()=>{
+ const {sheet}=await prepare();
+ const items=[{id:'s1',type:'spell',name:'Spell A'},{id:'l1',type:'liturgy',name:'Spell A'},
+  {id:'e1',type:'spellextension',name:'B ext',system:{source:'Spell A',category:'spell',talentValue:12,description:{value:'<p>b</p>'}}},
+  {id:'e2',type:'spellextension',name:'A ext',system:{source:'Spell A',category:'spell',talentValue:8,description:{value:'<p>a</p>'}}},
+  {id:'e3',type:'spellextension',name:'Lit ext',system:{source:'Spell A',category:'liturgy',description:{value:''}}},
+  {id:'e4',type:'spellextension',name:'Other',system:{source:'Spell B',category:'spell',description:{value:''}}}];
+ const ext=await sheet._spellExtensions.call({actor:{isOwner:true,items}});
+ assert.deepEqual(ext.s1.map(e=>e.id),['e2','e1'],'nach FW-Voraussetzung sortiert, nur passende Kategorie');
+ assert.deepEqual(ext.l1.map(e=>e.id),['e3']);assert.equal(Object.keys(ext).length,2);
+ assert.deepEqual(await sheet._spellExtensions.call({actor:{isOwner:true,items:[items[0]]}}),{});
+});
 test('ranged weapons, charged magic, tradition items and companions render populated',async()=>{
  const {sheet}=await prepare();const p=sheet.context.prepare;
  const ranged=item('ranged','rangeweapon');ranged.LZ=3;ranged.progress=1;ranged.ammo=[{pickId:'ammo-id',name:'Bolts',selected:true}];p.wornMeleeWeapons=[];p.wornRangedWeapons=[ranged];
- const spell=p.magic.spellList[0];spell.LZ=2;spell.progress=1;spell.extensions='Test extension';
+ const spell=p.magic.spellList[0];spell.LZ=2;spell.progress=1;spell.extensions='Test extension';sheet._spellExtensions=async()=>({[spell._id]:[{id:'ext-id',name:'Test extension',description:'<p>Extension text</p>'}]});
  p.magic.ritualList=[item('ritual','ritual')];p.magic.ceremony=[item('ceremony','ceremony')];
  const artifact=item('staff','specialability');artifact.system.artifact='staff';artifact.abilities=[{...item('ability','specialability'),AEpayable:true,OnUseEffect:true}];p.traditionArtifacts=[artifact];
  sheet.context.companionSections=[{visible:true,label:'COMPANIONS.Companion',contents:[{uuid:'Actor.companion',name:'Companion',img:'icons/svg/pawprint.svg',system:sheet.actor.system,prepareCompanion:{}}]}];sheet.context.hasCompanions=true;
- const html=render(await sheet._prepareContext({}));assert(html.includes(targetGeneration===13?'class="ammo-selector"':'data-ammo-id="ammo-id"'));assert(html.includes('data-action="chargeSpell"'));assert(html.includes('data-action="traditionPayCost"'));assert.equal(html.includes('data-action="memberCardLink"'),targetGeneration>=14);assert(html.includes('Test extension'));
+ const html=render(await sheet._prepareContext({}));assert(html.includes(targetGeneration===13?'class="ammo-selector"':'data-ammo-id="ammo-id"'));assert(html.includes('data-action="chargeSpell"'));assert(html.includes('data-action="traditionPayCost"'));assert.equal(html.includes('data-action="memberCardLink"'),targetGeneration>=14);assert(html.includes('Test extension'));assert(html.includes('data-action="dsa5hToggleExtensions"'),'#84 Knopf');assert(html.includes('data-ext-list="'+spell._id+'"')&&html.includes('Extension text'),'#84 Liste mit Beschreibung');
 });
 test('body sub-tab: hands from worn weapons, a two-handed main weapon hides the off hand, figure flag and cast dialogs',async()=>{
  const {sheet,actor}=await prepare();const p=sheet.context.prepare;
@@ -319,6 +335,52 @@ test('favorites render as grid cards with value, roll and star; weapon damage is
  for(const card of cards){assert(card.attribs['data-item-id']);assert.equal(dom.findAll(el=>el.attribs?.['data-action']==='dsa5hFavorite',card.children).length,1);}
  const damage=elements(html,el=>el.attribs?.['data-mode']==='damage');assert(damage.length>=2);for(const b of damage)assert(String(b.attribs.class).includes('dsa5h-damage'));
 });
+test('god schips (#89, variant C): extra schips of other modules grouped per deity with count, overflow "+n" and overview',async()=>{
+ const C=await loadSheet(),f=fixture(),sheet=new C();
+ f.context.prepare.schips=[{value:1,cssClass:'fullSchip'}];
+ const pip=(god,val,full)=>({val,path:`flags.dsa5.specialPoints.${god}.current`,tooltip:`GodsMenu.GodSchip.${god}.Description`,tooltipClass:'gods-rules-tooltip',cssClass:`${full?'fullSchip':'emptySchip'} gods-schip`,style:`background-image: url('${god}.webp');${full?'':' filter: grayscale(100%);'}`});
+ f.context.prepare.extraSchips=[pip('Praios',1,true),pip('Praios',2,false),pip('Phex',1,false)];
+ f.actor.flags={...(f.actor.flags??{}),dsa5:{specialPoints:{Praios:{value:2,current:1},Phex:{value:1,current:0}}}};
+ Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});
+ const context=await sheet._prepareContext({});
+ assert.deepEqual(context.dsa5h.godSchips.map(g=>[g.name,g.current,g.max,g.empty]),[['Praios',1,2,false],['Phex',0,1,true]]);
+ const html=render(context);
+ const gods=elements(html,el=>el.attribs?.['data-action']==='dsa5hGodSchip');assert.equal(gods.length,2,'one button per deity');
+ assert.equal(gods[0].attribs['data-path'],'flags.dsa5.specialPoints.Praios.current');
+ const text=n=>(n.children??[]).map(c=>c.data??text(c)).join('');assert.equal(text(gods[0]).trim(),'1/2');
+ const icons=elements(html,el=>String(el.attribs?.class).includes('dsa5h-god-ico'));assert.doesNotMatch(icons[0].attribs.style,/grayscale/);assert.match(icons[1].attribs.style,/grayscale/,'empty image from the module');
+ for(const b of gods)assert(String(b.parent.attribs.class).includes('dsa5h-fate-points'),'same row as the own schips');
+ const more=elements(html,el=>el.attribs?.['data-action']==='dsa5hGodOverview');assert.equal(more.length,1);assert('hidden' in more[0].attribs,'"+n" only when space runs out');
+ assert.equal(elements(html,el=>el.attribs?.['data-action']==='extraSchipUpdate').length,0,'no single pips any more');
+ const js=read('scripts/sheets/dsa5-helpers-character-sheet.js');assert.match(js,/dsa5hGodSchip: \{ handler: this\._godSchip, buttons: \[0, 2\] \}/);assert.match(js,/RIGHT_CLICK_ACTIONS = \['dsa5hGodSchip'/);
+ const mod=read('scripts/sheets/god-schips.js');assert.match(mod,/export function fitGodSchips/);assert.match(mod,/scrollWidth > row\.clientWidth/);
+ const none=render(await (async()=>{f.context.prepare.extraSchips=[];return sheet._prepareContext({});})());assert.equal(elements(none,el=>el.attribs?.['data-action']==='dsa5hGodOverview').length,0,'no "+n" without god schips');
+});
+test('attribute bar (#85): in play mode the attributes tab uses the same dice bar as all other tabs, tiles only when editing',async()=>{
+ const {sheet,context}=await prepare();assert.equal(context.dsa5h.mode,'edit');
+ const tiles=html=>elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-attr-tiles')).length;
+ assert.equal(tiles(render(context)),1,'edit mode keeps the tiles with their advance buttons');
+ sheet.context.prepare.sheetLocked=true;try{const play=await sheet._prepareContext({});assert.equal(play.dsa5h.mode,'play');assert.equal(tiles(render(play)),0);}finally{sheet.context.prepare.sheetLocked=false;}
+ assert.match(read('scripts/sheets/dsa5-helpers-character-sheet.js'),/\[data-attr-overlay\]'\)\?\.toggleAttribute\('hidden', this\._currentTab === 'main' && root\.dataset\.mode !== 'play'\)/);
+});
+test('favorites for advantages, disadvantages and languages (#81, #82): stars on the chips, cover group with level, no roll',async()=>{
+ const C=await loadSheet(),f=fixture(),sheet=new C();
+ const adv=Object.assign(item('adv','advantage'),{name:'Dunkelsicht',system:{step:{value:2},max:{value:2}}});
+ const dis=Object.assign(item('dis','disadvantage'),{name:'Pech',system:{step:{value:1},max:{value:3}}});
+ const lang=Object.assign(item('lang','specialability'),{name:'Sprache (Garethi)',system:{step:{value:3},maxRank:{value:3},category:{value:'language'}}});
+ f.context.prepare.advantages=[adv];f.context.prepare.disadvantages=[dis];f.context.prepare.specAbs={...f.context.prepare.specAbs,language:[lang]};
+ for(const i of [adv,dis,lang])f.actor.items.set(i._id,i);
+ f.actor.flags.favorites=['adv','lang'];Object.assign(sheet,{context:f.context,actor:f.actor,isEditable:true});
+ const context=await sheet._prepareContext({});const groups=Object.fromEntries(context.dsa5h.favoriteGroups.map(g=>[g.label,g]));
+ assert.deepEqual(groups['DSA5HELPERS.AdvantagesDisadvantages'].items.map(i=>i._id),['adv']);assert.equal(groups['DSA5HELPERS.AdvantagesDisadvantages'].rank,true);
+ assert.deepEqual(groups['SpecCategory.language'].items.map(i=>i._id),['lang']);
+ assert.equal(groups['DSA5HELPERS.SpecialAbilities']?.items.some(i=>i._id==='lang')??false,false,'languages are not doubled under special abilities');
+ const html=render(context);
+ for(const id of ['adv','dis','lang'])assert.equal(elements(html,el=>el.attribs?.['data-action']==='dsa5hFavorite'&&el.attribs['data-item-id']===id&&String(el.attribs.class).includes('dsa5h-chip-fav')).length,1,id);
+ const card=id=>elements(html,el=>String(el.attribs?.class??'').split(' ').includes('dsa5h-fav-card')&&el.attribs['data-item-id']===id)[0];
+ for(const [id,level] of [['adv','II'],['lang','III']]){const c=card(id);assert(c,id);const value=dom.findOne(el=>String(el.attribs?.class??'').includes('dsa5h-fav-card-value'),c.children);assert.equal(dom.textContent(value).trim(),level);
+  assert.equal(dom.findAll(el=>['skillSelect','chRollCombat','dsa5hConsume'].includes(el.attribs?.['data-action']),c.children).length,0,'no roll on trait cards');}
+});
 test('favorites for equipment and special abilities (#30): stars on inventory rows and SF chips, consume via the system, names open the item sheet',async()=>{
  const C=await loadSheet(),f=fixture(),sheet=new C();
  const potion=item('potion','consumable');f.context.prepare.inventory.consumables={show:true,dataType:'consumable',items:[potion]};f.actor.items.set('potion',potion);for(const i of [f.context.prepare.inventory.tools.items[0],...Object.values(f.context.prepare.specAbs).flat()])f.actor.items.set(i._id,i);
@@ -413,6 +475,24 @@ test('body tab: a free off hand renders compactly below the main hand, its tile 
  const select=dom.findAll(el=>el.name==='select'&&el.attribs['data-dsa5h-hand']==='offhand',free.children);assert.equal(select.length,1);assert(select[0].attribs['aria-label']);
  const off=item('off','meleeweapon');off.system.worn={value:true,offHand:true};p.wornMeleeWeapons=[main,off];actor.items.set('off',off);
  context=await sheet._prepareContext({});html=render(context);assert(!context.dsa5h.body.offFree);assert(!html.includes('dsa5h-hand-free'));
+});
+
+test('body tab (#79): with ignored hand limits the hand shows the weapon chosen last, the other stays worn',async()=>{
+ const {sheet,actor}=await prepare();const p=sheet.context.prepare;
+ const a=item('a','meleeweapon');a.system.worn={value:true,offHand:false};const b=item('b','rangeweapon');b.system.worn={value:true,offHand:false,requiresBothHands:true};
+ p.wornMeleeWeapons=[a];p.wornRangedWeapons=[b];actor.items.set('a',a);actor.items.set('b',b);
+ let body=(await sheet._prepareContext({})).dsa5h.body;assert.equal(body.hands[0].item._id,'a','without a choice the first worn weapon');
+ actor.flags.handChoice={main:'b'};body=(await sheet._prepareContext({})).dsa5h.body;
+ assert.equal(body.hands[0].item._id,'b','chosen weapon in the hand');assert(body.alsoWorn.some(w=>w.item._id==='a'),'previous weapon stays worn');
+ actor.saved=undefined;actor._ignoresWeaponHandLimits=()=>false;await sheet._rememberHand('a','main');assert.equal(actor.saved,undefined,'nothing stored with normal hand limits');
+ actor._ignoresWeaponHandLimits=()=>true;await sheet._rememberHand('a','offhand');assert.deepEqual(actor.saved.value,{main:'b',offhand:'a'});
+ delete actor._ignoresWeaponHandLimits;actor.system.config={ignoreWeaponHandLimits:true};actor.saved=undefined;await sheet._rememberHand('c','main');assert.deepEqual(actor.saved?.value?.main,'c','DSA7 (v13): Einstellung ohne Hilfsmethode');
+});
+test('bag tiles open the bag on its content tab (#80)',async()=>{
+ const {context}=await prepare();const html=render(context);const open=elements(html,el=>String(el.attribs?.class??'').includes('dsa5h-bag-open'))[0];
+ assert.equal(open.attribs['data-action'],'dsa5hOpenBag');const C=await loadSheet();assert.equal(typeof C.DEFAULT_OPTIONS.actions.dsa5hOpenBag,'function');
+ let opened=0;const sheetStub={tabGroups:{},rendered:false};const self={actor:{items:new Map([['bag',{system:{isBagWithContents:true},sheet:sheetStub}]])},_getItemId:()=>'bag',constructor:{_itemEdit(){opened++;}}};
+ C.DEFAULT_OPTIONS.actions.dsa5hOpenBag.call(self,{},{});assert.equal(sheetStub.tabGroups.sheet,'containerContent');assert.equal(opened,1);
 });
 
 test('character builder button replaces the species field only when the system allows building (issue #10)',async()=>{
@@ -1094,7 +1174,7 @@ test('Aufträge und Personen (#39): Almanach-Journale, Sichtbarkeit wie im Syste
   const html=render(await sheet._prepareContext({}));
   for(const t of ['quests','personae'])assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']===t).length,1,t);
   const cards=elements(html,el=>el.attribs?.['data-action']==='dsa5hOpenAlmanac'&&el.attribs['data-entry-key']);assert.deepEqual(cards.map(c=>c.attribs['data-entry-key']),['a','b','c','x','y']);
-  assert(cards.every(c=>c.attribs.class.includes('dsa5h-almanac-tile')),'gleich große Kacheln');assert(!html.includes('Gratenfels')&&!html.includes('>Haus<'),'nur das Nötigste: kein Ort, keine Fraktion');
+  assert(cards.every(c=>c.attribs.class.includes('dsa5h-almanac-tile')),'gleich große Kacheln');assert(!html.includes('Gratenfels'),'nur das Nötigste: kein Ort');assert(html.includes('dsa5h-persona-group-title')&&/>Haus <span/.test(html),'#91: Fraktion als Gruppenüberschrift');assert(html.includes('class="personaeSearch"')&&html.includes('data-action="dsa5hPersonaeFaction"')&&html.includes('data-persona-view-choice="list"'),'#91: Werkzeugleiste');assert(!html.includes('data-persona-filter="hidden"')||game.user.isGM,'#91: Verborgene nur für die SL');for(const a of ['dsa5hPersonaeFilter','dsa5hPersonaeFaction','dsa5hPersonaeView'])assert.equal(typeof Sheet.DEFAULT_OPTIONS.actions[a],'function',a);assert.deepEqual(A.groupPersonae([{name:'a',faction:'Z'},{name:'b'},{name:'c',faction:'A'},{name:'d',faction:'Z'}],true,'de').map(g=>[g.label,g.items.map(i=>i.name)]),[['A',['c']],['Z',['a','d']],['',['b']]],'#91: Fraktionen alphabetisch, ohne zuletzt');assert.deepEqual(A.groupPersonae([{name:'a',faction:'Z'}],false).map(g=>g.label),[''],'#91: ungeteilt');assert.deepEqual(A.groupPersonae([],false),[]);
   assert(html.includes('data-sub-panel="personae:dramatis"')&&html.includes('data-sub-panel="personae:bestiary"'));assert.equal(typeof Sheet.DEFAULT_OPTIONS.actions.dsa5hOpenAlmanac,'function');
   settings.questsTab=false;const off=render(await sheet._prepareContext({}));assert.equal(elements(off,el=>el.attribs?.['data-tab-panel']==='quests').length,0,'Reiter abgeschaltet');
   const st=read('scripts/apps/sheet-settings.js');assert(st.includes("'questsTab'")&&st.includes("'personaeTab'"),'im Untermenü Heldenbogen');
@@ -1160,6 +1240,20 @@ test('#47: real armory display data, capability gate, independent edit controls 
  } finally {global.game=saved;global.foundry=savedFoundry;}
 });
 
+
+test('#86: stacked power source items are named in a hint (one item counts as one store)',async()=>{
+ const {stackedPowerSources}=await import(dataUrl(read('scripts/compat/powersource-dialog.js')));
+ const items=new Map([['gems',{name:'Edelsteine',system:{quantity:{value:3}}}],['ring',{name:'Ring',system:{quantity:{value:1}}}]]);
+ const actor={items};
+ const segments=[{itemId:'gems',effectId:'a'},{itemId:'gems',effectId:'b'},{itemId:'ring',effectId:'c'},{itemId:'gone',effectId:'d'}];
+ assert.deepEqual(stackedPowerSources(actor,segments),[{name:'Edelsteine',count:3}],'each stacked item once, single items and missing items ignored');
+ assert.deepEqual(stackedPowerSources(actor,[]),[]);
+ const de=JSON.parse(read('lang/de.json')).DSA5HELPERS.PowerSources.Stacked,en=JSON.parse(read('lang/en.json')).DSA5HELPERS.PowerSources.Stacked;
+ for(const text of [de,en])assert(text.includes('{name}')&&text.includes('{count}'));
+ const sheetJs=read('scripts/sheets/dsa5-helpers-character-sheet.js'),mobileJs=read('scripts/mobile/mobile.js');
+ assert.match(sheetJs,/stackedPowerSources\(this\.actor, sources\.segments\)[\s\S]*?loc\('Stacked', entry\)/,'desktop radial shows the hint');
+ assert.match(mobileJs,/stackedPowerSources\(actor, segments\)[\s\S]*?PowerSources\.Stacked/,'mobile sheet shows the hint');
+});
 
 test('#50: charge updates distinguish identical effect IDs on different items',async()=>{
  const {powerSourceUpdates}=await import(dataUrl(read('scripts/compat/powersource-dialog.js')));
@@ -1471,12 +1565,41 @@ test('passive defense (#56): d20 against chosen or best defense, per-actor mode 
  assert.deepEqual(pd.bestDefense(opts),{id:'shield',value:14},'highest, no sum or average');assert.equal(pd.bestDefense([]),null);
  assert.equal(pd.chooseDefense(opts,'dodge').id,'dodge','chosen option');assert.equal(pd.chooseDefense(opts,'best').id,'shield');
  assert.equal(pd.chooseDefense(opts,'gone').id,'shield','abgelegte Waffe: beste erlaubte');
+ // Raufen gegen Waffen (#90): Hinweis mit Schadensknopf, wie OpposeDSA.#s/#t des Systems
+ const brawlItem={type:'meleeweapon',system:{combatskill:{value:'brawl'}}},sword={type:'meleeweapon',system:{combatskill:{value:'swords'}}},isB=i=>i?.system?.combatskill?.value==='brawl';
+ assert.equal(pd.brawlCase(sword,{id:'parryWeaponless',item:{type:'combatskill'}},isB),'parryHurts','waffenlose Parade gegen Schwert');
+ assert.equal(pd.brawlCase(sword,{id:'x',item:brawlItem},isB),'parryHurts','Raufwaffe pariert Schwert');
+ assert.equal(pd.brawlCase(sword,{id:'x',item:{...brawlItem,system:{...brawlItem.system,preventsBrawlParryDamage:true}}},isB),null,'Raufwaffe, die Waffen parieren darf');
+ assert.equal(pd.brawlCase(brawlItem,{id:'s',item:sword},isB),'attackHurts','Raufen-AT gegen Schwert-PA');
+ assert.equal(pd.brawlCase({...brawlItem,system:{...brawlItem.system,preventsBrawlAttackDamage:true}},{id:'s',item:sword},isB),null);
+ assert.equal(pd.brawlCase(sword,{id:'s',item:sword},isB),null,'Waffe gegen Waffe');
+ assert.equal(pd.brawlCase(brawlItem,{id:'dodge',item:{type:'dodge'}},isB),null,'Ausweichen');
+ assert.equal(pd.isBrawlWeapon(brawlItem,k=>k==='LocalizedCTs.brawl'?'Brawling':k),true);
+ {// Zulässige Verteidigung (#90, Kodex des Schwertes): Größe des Angreifers, Kampftechnik-Besonderheiten
+ const ct=i=>i?.ct??null,opt=(id,ct)=>({id,item:ct?{ct}:{type:'combatskill'}});
+ const dodge=opt('dodge'),shield=opt('s','Shields'),swordOpt=opt('w','Swords'),dagger=opt('d','Daggers'),chain=opt('c','Chain Weapons'),whip=opt('p','Whips'),fist=opt('parryWeaponless');
+ assert.equal(pd.blockedReason(dodge,{attackerSize:'giant'},ct),null,'Ausweichen geht immer');
+ assert.equal(pd.blockedReason(shield,{attackerSize:'giant'},ct),'giant');assert.equal(pd.blockedReason(shield,{attackerSize:'big'},ct),null,'groß: Schild geht');
+ assert.equal(pd.blockedReason(swordOpt,{attackerSize:'big'},ct),'big');assert.equal(pd.blockedReason(fist,{attackerSize:'big'},ct),'big');
+ assert.equal(pd.blockedReason(swordOpt,{attackerSize:'average'},ct),null);
+ assert.equal(pd.blockedReason(chain,{},ct),'noParry');assert.equal(pd.blockedReason(whip,{},ct),'noParry');
+ assert.equal(pd.blockedReason(dagger,{attackTechnique:'Two-Handed Swords'},ct),'heavy');assert.equal(pd.blockedReason(dagger,{attackTechnique:'Swords'},ct),null);
+ assert.equal(pd.blockedReason(opt('f','Fencing Weapons'),{attackTechnique:'Polearms'},ct),'heavy');
+ assert.equal(pd.blockedReason(swordOpt,{ranged:true,attackerSize:'giant'},ct),null,'Fernkampf regelt baseOptions');
+ // Hinweis auf der Karte auch bei „beste Verteidigung“ (Rückmeldung 2026-11-16)
+ const sw={id:'w',name:'Schwert',value:14,blocked:'big'},dg={id:'dodge',name:'Ausweichen',value:8,blocked:null},sh={id:'s',name:'Schild',value:10,blocked:null};
+ assert.deepEqual(pd.blockedNote([sw,dg],dg,'best'),{option:'Schwert',reason:'big',chosen:'Ausweichen'},'beste wäre gesperrt gewesen');
+ assert.deepEqual(pd.blockedNote([sw,dg],dg,'w'),{option:'Schwert',reason:'big',chosen:'Ausweichen'},'fest gewählt und gesperrt');
+ assert.equal(pd.blockedNote([sw,sh,dg],sh,'dodge'),null,'fest gewählte Option zulässig: kein Hinweis');
+ assert.equal(pd.blockedNote([{...sw,value:6},sh,dg],sh,'best'),null,'beste war ohnehin zulässig');
+ assert.equal(pd.blockedNote([sw,dg],null,'best'),null);
+ const src=read('scripts/house-rules/passive-defense.js');assert(src.includes("type: 'passiveManual'")&&src.includes('opposeUpdateData'),'#90 B: Rücknahme über SL und Wartezustand des Systems');}
  const actor=(type,flag)=>({type,getFlag:(_m,k)=>k==='autoDefense'?flag:undefined});
  assert.deepEqual(['character','npc','creature'].map(t=>pd.defenseMode(actor(t))),['manual','best','best'],'Vorbelegung je Typ');
  assert.equal(pd.defenseMode(actor('character','best')),'best');assert.equal(pd.defenseMode(actor('npc','manual')),'manual');
  assert.deepEqual([actor('character'),actor('npc'),actor('creature','dodge'),actor('vehicle')].map(pd.appliesTo),[false,true,true,false]);
 });
-test('bag window (#72): slots become draggable with system drag data, left click opens on click',async()=>{
+test('bag window (#72, #80): slots show their name, become draggable with system drag data, left click opens on click',async()=>{
  const template=fs.readFileSync(path.join(dataRoot,'systems/dsa5/templates/items/item-containercontent.hbs'),'utf8');
  assert.match(template,/class='slot[^']*'\s+data-item-id=/,'System renders bag contents as .slot[data-item-id]');
  let hook;const prevHooks=global.Hooks;global.Hooks={on:(name,fn)=>{if(name==='renderItemSheetV2')hook=fn;}};
@@ -1484,14 +1607,20 @@ test('bag window (#72): slots become draggable with system drag data, left click
   (await import(dataUrl(read('scripts/compat/bag-drag.js')))).initBagDrag();
   assert.equal(typeof hook,'function');
   const el=()=>{const l={};return {l,dataset:{},addEventListener:(t,f,c)=>{(l[t]??=[]).push({f,c});}};};
-  const slot=Object.assign(el(),{dataset:{itemId:'i1'},draggable:false,closest:sel=>sel.startsWith('.slot')?slot:null});
-  const root=Object.assign(el(),{querySelectorAll:()=>[slot]});
+  const kids=[];const slot=Object.assign(el(),{dataset:{itemId:'i1',name:'Seil (10 Schritt)'},draggable:false,closest:sel=>sel.startsWith('.slot')?slot:null,querySelector:()=>kids[0]??null,append:k=>kids.push(k)});
+  const bagsCls=new Set();const bags={classList:{add:c=>bagsCls.add(c)}};
+  const root=Object.assign(el(),{querySelectorAll:sel=>sel==='.bags'?[bags]:[slot]});
   global.HTMLElement??=class{};
   let opened=0;const item={toDragData:()=>({type:'Item',uuid:'Actor.a.Item.i1'}),sheet:{render:()=>opened++}};
   const ours=class{static DEFAULT_OPTIONS={classes:['dsa5-helpers-sheet']}};
   const actor={isOwner:true,_getSheetClass:()=>ours,items:{get:id=>id==='i1'?item:null}};
-  const prevDoc=global.document;global.document={querySelectorAll:()=>[]};
+  const prevDoc=global.document;global.document={querySelectorAll:()=>[],createElement:()=>({dataset:{}})};
   hook({item:{actor,system:{isBagWithContents:true}}},[root]);
+  assert(bagsCls.has('dsa5h-bag-names'),'#80: bag list gets the name layout');
+  assert.equal(kids.length,1);assert.equal(kids[0].className,'dsa5h-slot-name');assert.equal(kids[0].textContent,'Seil (10 Schritt)');
+  hook({item:{actor,system:{isBagWithContents:true}}},[root]);assert.equal(kids.length,1,'re-render adds no second name');
+  const css=read('styles/dsa5-helpers-character-sheet.css');
+  assert.match(css,/\.bags\.dsa5h-bag-names \.dsa5h-slot-name \{[^}]*-webkit-line-clamp: 2;/,'#80: names are cut to two lines');
   assert.equal(slot.draggable,true);
   const data={};slot.l.dragstart[0].f({dataTransfer:{setData:(k,v)=>data[k]=v}});
   assert.deepEqual(JSON.parse(data['text/plain']),{type:'Item',uuid:'Actor.a.Item.i1'});
