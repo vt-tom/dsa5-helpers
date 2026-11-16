@@ -94,6 +94,17 @@ export function chooseDefense(options, mode) {
   return options.find(option => option.id === mode) ?? bestDefense(options);
 }
 
+/**
+ * Hinweis für die Karte (#90), wenn die Verteidigung ohne die Zulässigkeitsprüfung eine andere gewesen wäre: bei fest
+ * gewählter Option diese, sonst die beste aller Optionen (Rückmeldung 2026-11-16: bei „beste Verteidigung“ fehlte der
+ * Grund). Ohne Abweichung null.
+ */
+export function blockedNote(options, chosen, mode) {
+  const wanted = options.find(option => option.id === mode) ?? bestDefense(options);
+  if (!wanted?.blocked || !chosen || wanted === chosen) return null;
+  return { option: wanted.name, reason: wanted.blocked, chosen: chosen.name };
+}
+
 /** 'manual' | 'best' | Options-ID; ohne Wahl Spielercharaktere manuell, alle anderen 'best'. */
 export function defenseMode(actor) {
   return actor?.getFlag?.(MODULE_ID, ACTOR_FLAG) || (actor?.type === 'character' ? 'manual' : 'best');
@@ -223,13 +234,13 @@ export async function evaluate(startMessage, { reroll = false } = {}) {
   if (previous?.manual) return;
   if (postData.successLevel > 0) {
     options = await defenseOptions(actor, speaker, attackMessage);
-    // Unzulässige Optionen (#90) fallen weg; war die fest gewählte darunter, nennt die Karte den Grund.
+    // Unzulässige Optionen (#90) fallen weg; wäre sonst eine davon genommen worden (fest gewählt oder die beste), nennt
+    // die Karte den Grund.
     const context = attackContext(attackMessage);
     for (const option of options) option.blocked = blockedReason(option, context);
     const allowed = options.filter(option => !option.blocked);
-    const wanted = options.find(option => option.id === defenseMode(actor));
     chosen = chooseDefense(allowed, defenseMode(actor));
-    if (wanted?.blocked && chosen) note = { option: wanted.name, reason: wanted.blocked, chosen: chosen.name };
+    note = blockedNote(options, chosen, defenseMode(actor));
     const roll = (await new Roll('1d20').evaluate()).total;
     result = resolveDefense({ successLevel: postData.successLevel, roll, defense: chosen?.value ?? 0 });
     // Verbraucht, wenn die AT gelungen ist (Nutzer 2026-10-28) — wie im System, wo man nur gelungene Angriffe abwehrt.

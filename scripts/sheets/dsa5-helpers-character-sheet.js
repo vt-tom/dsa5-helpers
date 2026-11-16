@@ -2,7 +2,7 @@
 import { systemApi, isFoundry13, contextMenuEntries } from '../compat/runtime.js';
 import { openPowerSourceDialog, stackedPowerSources } from '../compat/powersource-dialog.js';
 import { getPlannerTab, PLANNER_TAB_ID } from '../compat/steigerungsplaner.js';
-import { bannerPath, canBrowseFiles, uploadBannerFromComputer } from '../banner-upload.js';
+import { bannerPath, canBrowseFiles, cssUrlPath, uploadBannerFromComputer } from '../banner-upload.js';
 import { isRuleActive, runWoundCheck, findTreatWounds, helpAction, toggleStance, aimRound, recognizeWeakPoints, distractFoe, maneuverSheetData, defenseChoices, setDefenseMode } from '../house-rules/rules.js';
 import { openHouseRules } from '../apps/house-rules.js';
 import { almanacTabEnabled, loadQuests, loadPersonae, groupPersonae, openAlmanac, QUESTS_TAB, PERSONAE_TAB } from './almanac.js';
@@ -421,7 +421,8 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       statusTiles: phone ? ['inpain', 'encumbered'].map(id => ({ id, value: (context.conditions ?? []).find(c => c.descriptor === id)?.value ?? 0 })) : [],
       currentTab: this._currentTab,
       // Kopf „Wappenbanner“ (2026-10-19): Bannerbild und Porträtform je Held als Actor-Flags.
-      banner: this.actor.getFlag?.(MODULE_ID, 'bannerImg') || '',
+      // Pfad CSS-sicher (#87): Apostroph im Dateinamen ließ das Banner leer.
+      banner: cssUrlPath(this.actor.getFlag?.(MODULE_ID, 'bannerImg') || ''),
       portraitRound: this.actor.getFlag?.(MODULE_ID, 'portraitShape') === 'round',
       currentTabLabel: tabs.find(tab => tab.id === this._currentTab)?.label,
       // Drei Modi (Issue #34): Schloss des Systems zu = Spielen; offen = Steigern oder Bearbeiten (Actor-Flag sheetMode).
