@@ -29,11 +29,17 @@ nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
 - **[nur v14]** Gruppenbogen ([#55](https://github.com/vt-tom/dsa5-helpers/issues/55)): Schicksal und Verdammnis steht in der linken Spalte unter den Gruppen-Schips – je Mitglied eine Zeile mit den Götter- und Erzdämonen-Schips (bei Platzmangel „+n“, der Tooltip nennt die übrigen), dazu der Knopf „Schips zuweisen“ (SL) bzw. „Schip tauschen anfragen“ (Spieler) für den Helfer von „Götter Aventuriens 2“. In den Kacheln stehen nur noch die eigenen Schips, in einer Zeile ohne Umbruch. Zustände sind in „Klein“ und „Mittel“ eine Zähl-Plakette mit Tooltip aller Zustände, ein Klick öffnet den Bogen des Mitglieds auf dem Reiter Status; im Bearbeiten-Modus liegen ⋮ und ✕ nicht mehr über „Bogen öffnen“.
 - **[nur v14]** Tablet: Die Fensterknöpfe der Helfer-Bögen oben rechts (Spieleransicht, Sperre, Thema, Bogen wechseln, ⋮, ✕) sind jetzt fingergroß, etwa doppelt so groß wie bisher ([#76](https://github.com/vt-tom/dsa5-helpers/issues/76)). Am Desktop bleibt alles wie gehabt.
 
+## [8.0.2] — unveröffentlicht
+
+### Behoben
+
+- **[nur v14]** DSA5 8.2.2 ([#100](https://github.com/vt-tom/dsa5-helpers/issues/100)): Das System hat die Felder Tradition, Leiteigenschaft, Energiefaktor und Glückliche Talente am Helden aus dem Datenmodell entfernt (sie werden aus der Traditions-Sonderfertigkeit berechnet). Magie- und Götter-Reiter zeigen sie jetzt als reine Anzeige, statt beim Bearbeiten ins Leere zu schreiben. Bis 8.2.1 bleibt alles wie bisher.
+
 ## [8.0.1] — 2026-11-16
 
 ### Behoben
 
-- **[nur v14]** DSA5 8.2.2: Das System hat die Felder Tradition, Leiteigenschaft, Energiefaktor und Glückliche Talente am Helden aus dem Datenmodell entfernt (sie werden aus der Traditions-Sonderfertigkeit berechnet). Magie- und Götter-Reiter zeigen sie jetzt als reine Anzeige, statt beim Bearbeiten ins Leere zu schreiben. Bis 8.2.1 bleibt alles wie bisher.
+- **[nur v14]** DSA5 8.2.2 ([#100](https://github.com/vt-tom/dsa5-helpers/issues/100)): Das System hat die Felder Tradition, Leiteigenschaft, Energiefaktor und Glückliche Talente am Helden aus dem Datenmodell entfernt (sie werden aus der Traditions-Sonderfertigkeit berechnet). Magie- und Götter-Reiter zeigen sie jetzt als reine Anzeige, statt beim Bearbeiten ins Leere zu schreiben. Bis 8.2.1 bleibt alles wie bisher.
 - **[v13/v14]** Waffenwechsel an der Hand (Kampf › Körper, [#79](https://github.com/vt-tom/dsa5-helpers/issues/79)): Bei Helden mit der Einstellung „Handbeschränkung ignorieren“ (Kampf-Reiter des Systembogens) blieb nach dem Wechsel die alte Waffe in der Hand stehen, die neue landete unter „Ebenfalls angelegt“. Jetzt zeigt die Hand die gewählte Waffe; die bisherige bleibt, wie die Einstellung es erlaubt, angelegt und steht unter „Ebenfalls angelegt“. Gilt für die Handauswahl, das Rechtsklick-Menü am Ausrüsten-Schild und den Griffwechsel.
 - **[v13/v14]** Bannerbild blieb leer ([#87](https://github.com/vt-tom/dsa5-helpers/issues/87)): Enthielt der Dateiname ein Apostroph oder Klammern (etwa „Al'Anfa.webp“, über den Foundry-Dateibrowser gewählt), zeigte der Kopf statt des Bildes nur den dunklen Hintergrund. Jetzt erscheint das Bild unabhängig vom Dateinamen.
 
