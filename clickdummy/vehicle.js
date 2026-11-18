@@ -5,17 +5,18 @@
    anderen Helfer-Bögen zusätzlich ein Titelblatt; Kopf ohne Kugeln, Schips und Eigenschaftswürfel (ein Fahrzeug hat
    keine), dafür links der Überblick mit Strukturpunkten, Besatzung und den wichtigsten Werten.
 
-   Titelblatt in zwei Varianten (Menü › Diese Seite, ?titel=a|b), weil offen ist, wofür Fahrzeuge am Tisch genutzt werden:
-     A Seekampf: Aktionen der Helden, Bordwaffen, Rammen, Fortbewegung – alles mit Würfeln.
-     B Reise und Ladung: Tempo und Reisearten, Ladung mit Füllstand, Besatzung als Porträts.
+   Aufbau (Rückmeldung 2026-11-18): Seekampf und Reise sind Reiter im selben Bogen, statt zweier Titelblatt-Varianten.
+   Jeder Reiter beginnt mit einem kurzen Satz, was er am Tisch tut (Hinweiszeile in Foundry, damit die Community
+   beurteilen kann, was sie braucht):
+     Titelblatt: Überblick, die häufigsten Aktionen und wer an Bord ist.
+     Seekampf: Aktionen der Helden, Bordwaffen, Rammen, Fortbewegung, Rumpfschutz – alles mit Würfeln.
+     Reise: Tempo und Reisearten, Ladung mit Füllstand, Besatzung als Porträts.
    Aktionen, Würfe, Besatzung per Ziehen und alle Werte kommen im Modul vom System (navalHeroAction, navalBoarding,
    navalBroadside, navalRam, chRollCombat, assignWeaponCrew, prepare.*); der Dummy zeigt nur die Bedienung.
 
    Aufruf: index.html?actor=fahrzeug. Wird vor actor-types.js geladen; actor-types.js übernimmt VEHICLE_TYPE in
    ACTOR_TYPES. Alle Namen, Werte und Texte sind frei erfundene Platzhalter, keine Regeltexte. */
 
-const VEHICLE_VARIANT_PARAM = new URLSearchParams(location.search).get("titel");
-let VEHICLE_VARIANT = ["a", "b"].includes(VEHICLE_VARIANT_PARAM) ? VEHICLE_VARIANT_PARAM : "a";
 const VEHICLE_IMG = `${ICONS}/talents/BootSchifffe.webp`;
 
 const VEHICLE = {
@@ -143,19 +144,28 @@ function vehicleLocomotionPanel() {
 }
 
 /* ---------------------------------------------------------- Titelblatt ---- */
-function vehicleCoverA() {
-  return el("div", {}, [
-    vehicleActionsPanel(),
-    vehicleWeaponsPanel("Bordwaffen", [...VEHICLE.ranged, ...VEHICLE.melee], "at", "Fern- und Nahkampf"),
-    vehicleWeaponsPanel("Rammen", [VEHICLE.ram], "ram"),
-    vehicleLocomotionPanel(),
+// Kurzer Satz am Anfang jedes Reiters: was er am Tisch tut.
+const vehicleIntro = (text) => el("p", { class: "muted vehicle-intro" }, text);
+
+function vehicleCrewPanel() {
+  return el("div", { class: "panel" }, [
+    el("div", { class: "panel-title flex" }, [el("span", {}, "An Bord"), el("small", {}, `${crewAvailable()} von ${VEHICLE.crew.initial} einsatzbereit`)]),
+    el("div", { class: "vehicle-crew-strip" }, VEHICLE.crewMembers.map((m) => el("span", { class: "vehicle-crew-op", title: `${m.name} · ${m.ident}${m.role ? ` · ${m.role}` : ""}` }, [groupPortrait(m, "round"), el("small", {}, m.name.split(" ")[0])]))),
   ]);
 }
 
-function vehicleCoverB() {
+function renderVehicleCover() {
+  return el("div", {}, [
+    vehicleIntro("Überblick am Tisch: Zustand des Fahrzeugs links, hier die Aktionen, die fast jede Runde gebraucht werden, und wer an Bord ist. Kampf und Reise haben eigene Reiter."),
+    vehicleActionsPanel(),
+    vehicleCrewPanel(),
+  ]);
+}
+
+function renderVehicleTravel() {
   const pct = Math.round(VEHICLE.cargo.used / VEHICLE.cargo.capacity * 100);
   const travel = el("div", { class: "panel" }, [
-    el("div", { class: "panel-title" }, "Reise"),
+    el("div", { class: "panel-title" }, "Tempo und Reisearten"),
     el("div", { class: "vehicle-travel" }, [
       ...[["Grundtempo", VEHICLE.speed.base], ["zu Wasser", VEHICLE.speed.water], ["in der Luft", VEHICLE.speed.air || "–"], ["Rammtempo", VEHICLE.speed.ram]]
         .map(([l, v]) => el("div", { class: "creature-stat" }, [el("b", {}, String(v)), el("small", {}, l)])),
@@ -165,20 +175,15 @@ function vehicleCoverB() {
   const cargo = el("div", { class: "panel" }, [
     el("div", { class: "panel-title flex" }, [el("span", {}, "Ladung"), el("small", {}, `${String(VEHICLE.cargo.used).replace(".", ",")} von ${VEHICLE.cargo.capacity} Stein · ${pct} %`)]),
     el("div", { class: "vehicle-cargo-track" }, el("span", { style: `width:${pct}%` })),
-    ...VEHICLE.cargoItems.slice(0, 3).map((i) => el("div", { class: "row vehicle-cargo-row" }, [el("img", { src: i.img, alt: "" }), el("span", { class: "left" }, i.name), el("span", { class: "muted center" }, `× ${i.qty}`)])),
+    ...VEHICLE.cargoItems.slice(0, 3).map((i) => el("div", { class: "row vehicle-cargo-row" }, [el("img", { src: i.img, alt: "" }), el("span", { class: "left" }, i.name), el("span", { class: "muted center" }, `× ${i.qty}`), el("span", {})])),
   ]);
   const more = el("button", { type: "button", class: "show-all-btn" }, "Ganze Ladung → Ladung");
   more.addEventListener("click", () => setTab("inventory"));
   cargo.append(more);
-  const crew = el("div", { class: "panel" }, [
-    el("div", { class: "panel-title flex" }, [el("span", {}, "An Bord"), el("small", {}, `${crewAvailable()} von ${VEHICLE.crew.initial} einsatzbereit`)]),
-    el("div", { class: "vehicle-crew-strip" }, VEHICLE.crewMembers.map((m) => el("span", { class: "vehicle-crew-op", title: `${m.name} · ${m.ident}${m.role ? ` · ${m.role}` : ""}` }, [groupPortrait(m, "round"), el("small", {}, m.name.split(" ")[0])]))),
+  return el("div", {}, [
+    vehicleIntro("Für Fahrten über längere Strecken: wie schnell das Fahrzeug unterwegs ist, wo es fahren kann, wie voll es beladen ist und wer an Bord ist."),
+    travel, cargo, vehicleCrewPanel(),
   ]);
-  return el("div", {}, [travel, cargo, crew]);
-}
-
-function renderVehicleCover() {
-  return VEHICLE_VARIANT === "b" ? vehicleCoverB() : vehicleCoverA();
 }
 
 // Linke Spalte: Leisten Strukturpunkte und Besatzung (System im Kopf), darunter die Werte, die man im Spiel sucht.
@@ -219,6 +224,7 @@ function vehicleStatsPanels() {
 
 function renderVehicleCombat() {
   return el("div", {}, [
+    vehicleIntro("Für den Kampf zwischen Fahrzeugen: die Aktionen der Helden, Bordwaffen und Rammen mit Würfeln, Geschützkunde, Fortbewegung und Rumpfschutz."),
     vehicleActionsPanel(),
     vehicleWeaponsPanel("Bordwaffen Fernkampf", VEHICLE.ranged, "at"),
     vehicleWeaponsPanel("Rammen", [VEHICLE.ram], "ram"),
@@ -243,6 +249,7 @@ function renderVehicleCrew() {
     el("small", { class: "muted" }, `Spieler: ${m.owner}`),
   ]);
   return el("div", {}, [
+    vehicleIntro("Wer das Fahrzeug bemannt: Sollstärke, verwundete und einsatzbereite Besatzung sowie die Mitglieder mit ihrem Posten."),
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title" }, "Stärke"),
       el("div", { class: "creature-stats" }, [
@@ -263,6 +270,7 @@ function renderVehicleCrew() {
 function renderVehicleCargo() {
   const pct = Math.round(VEHICLE.cargo.used / VEHICLE.cargo.capacity * 100);
   return el("div", {}, [
+    vehicleIntro("Alles, was geladen ist, mit Gewicht und Füllstand gegenüber der Ladekapazität."),
     el("div", { class: "panel" }, [
       el("div", { class: "panel-title flex" }, [el("span", {}, "Ladung"), el("small", {}, `${String(VEHICLE.cargo.used).replace(".", ",")} von ${VEHICLE.cargo.capacity} Stein · ${pct} %`)]),
       el("div", { class: "vehicle-cargo-track" }, el("span", { style: `width:${pct}%` })),
@@ -275,7 +283,8 @@ function renderVehicleCargo() {
 /* ---------------------------------------------------------------- Setup ---- */
 const VEHICLE_TABS = [
   { id: "cover", label: "Titelblatt", icon: A.tabCover, title: "Titelblatt", hint: "" },
-  { id: "combat", label: "Kampf", icon: A.tabCombat, title: "Kampf", hint: "" },
+  { id: "combat", label: "Seekampf", icon: A.tabCombat, title: "Seekampf", hint: "" },
+  { id: "travel", label: "Reise", icon: VEHICLE_IMG, title: "Reise", hint: "" },
   { id: "crew", label: "Besatzung", icon: `${ICONS}/categories/ability_command.webp`, title: "Besatzung", hint: "" },
   { id: "inventory", label: "Ladung", icon: A.tabInventory, title: "Ladung", hint: "" },
   { id: "status", label: "Status", icon: A.tabStatus, title: "Status", hint: "" },
@@ -294,6 +303,7 @@ function vehicleSetup() {
   nonHeroSetup();
   RENDERERS.cover = renderVehicleCover;
   RENDERERS.combat = renderVehicleCombat;
+  RENDERERS.travel = renderVehicleTravel;
   RENDERERS.crew = renderVehicleCrew;
   RENDERERS.inventory = renderVehicleCargo;
   delete SECTION_TABS.combat;
@@ -303,18 +313,6 @@ function vehicleSetup() {
     textSection("description", "Beschreibung", "Platzhalter: Bauart, Geschichte und Eigenheiten des Fahrzeugs.", "Sichtbar für alle, die den Bogen sehen dürfen."),
   ]);
   ["onlyLepToggle", "armorOneToggle", "merchantModeToggle"].forEach((id) => { const n = document.getElementById(id); if (n) n.hidden = true; });
-  // Titelblatt-Varianten (Menü › Diese Seite, ?titel=a|b)
-  const variants = el("fieldset", { "data-group": "titel" }, [el("legend", {}, "Titelblatt (Fahrzeug)"),
-    ...[["a", "A · Seekampf"], ["b", "B · Reise und Ladung"]].map(([v, label]) => el("button", { type: "button", "data-v": v, "aria-pressed": String(v === VEHICLE_VARIANT) }, label))]);
-  variants.addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-v]");
-    if (!b) return;
-    VEHICLE_VARIANT = b.dataset.v;
-    variants.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-    if (currentTab !== "cover") setTab("cover");
-    else renderContent();
-  });
-  document.querySelector(".toolbar")?.append(variants);
 }
 
 function vehicleBadges(wrap) {

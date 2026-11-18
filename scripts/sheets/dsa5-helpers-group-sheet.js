@@ -8,9 +8,12 @@
 import { openDiceStats } from '../apps/dice-stats.js';
 import { openHouseRules } from '../apps/house-rules.js';
 import { bindItemTooltips } from './item-tooltips.js';
+import { groupGodSchips, fitGodSchips } from './god-schips.js';
 import { openRequests, pendingRequest, sendRequestDialog, executeRequest, declineRequest } from './group-requests.js';
 
 const MODULE_ID = 'dsa5-helpers';
+// Helfer „Schicksal und Verdammnis“ des Inhaltsmoduls „Götter Aventuriens 2“ (GroupAPI.registerHelper, nur SL).
+const FATE_HELPER = 'dsa5-godsofaventuria2.godsmenu';
 const ICONS = 'systems/dsa5/icons/categories/';
 // Reiter (System: members, skills, inventory, travel, gmTools, notes). Das Titelblatt zeigt die Mitglieder, die
 // Funktionen der SL stehen in „Spielleitung“, die Helfer der Inhaltsmodule in „Lager“ (im System beides gmTools).
@@ -43,6 +46,7 @@ export function groupVisibility(actor) {
   return { identity: !actor.system?.privacy?.hideForeignIdentity, lep: !!flag.lep, pools: !!flag.pools, cond: !!flag.cond };
 }
 
+const escapeHtml = text => String(text ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const percent = (value, max) => (Number(max) > 0 ? Math.max(0, Math.min(100, Math.round(Number(value) / Number(max) * 100))) : 0);
 
 // Zustände eines Mitglieds (Statuseffekte mit Stufe), wie sie der Systembogen im Kopf zeigt.
@@ -66,6 +70,7 @@ export function memberView(member, vis, actor = null) {
   };
   const details = member.system?.details ?? {};
   const identity = member.type === 'creature' ? [member.system?.creatureClass] : [details.species, details.culture, details.career];
+  const shownSchips = member.canViewForeignIdentity ? member.schips ?? [] : [];
   const conditionsVisible = own || vis.cond;
   const conditions = conditionsVisible ? memberConditions(actor) : [];
   const pools = [
@@ -84,7 +89,8 @@ export function memberView(member, vis, actor = null) {
     ownerName: member.ownerName,
     own,
     ident: identity.filter(Boolean).join(' · '),
-    schips: member.canViewForeignIdentity ? member.schips ?? [] : [],
+    schips: shownSchips.filter(entry => !entry.path),
+    gods: actor ? groupGodSchips(shownSchips.filter(entry => entry.path), actor) : [],
     showSchips: !!member.canViewForeignIdentity,
     pools,
     lep: pools.find(entry => entry.key === 'wounds') ?? null,
@@ -93,6 +99,8 @@ export function memberView(member, vis, actor = null) {
     conditionsVisible,
     conditions,
     conditionText: conditions.map(entry => entry.level ? `${entry.name} ${entry.level}` : entry.name).join(', '),
+    // Tooltip der Zähl-Plakette: ein Zustand je Zeile (HTML, Namen maskiert).
+    conditionTip: conditions.map(entry => escapeHtml(entry.level ? `${entry.name} ${entry.level}` : entry.name)).join('<br>'),
   };
 }
 
@@ -111,6 +119,7 @@ export function createGroupSheet(BaseGroupSheet) {
         dsa5hAskGm: this._askGm,
         dsa5hRequestExecute: this._executeRequest,
         dsa5hRequestDecline: this._declineRequest,
+        dsa5hMemberConditions: this._openMemberConditions,
         dsa5hDiceStats: () => openDiceStats(),
         dsa5hHouseRules: () => openHouseRules(),
       },
@@ -184,7 +193,18 @@ export function createGroupSheet(BaseGroupSheet) {
           const icon = helper.icon ?? '';
           return { id, label: helper.label, hint: helper.hint, icon, iconIsImg: icon.includes('/') || /\.(webp|png|jpg|jpeg|svg|gif)$/i.test(icon), pending: !!pendingRequest(actor, id) };
         });
+      // Schicksal und Verdammnis (#55, Variante A): Götter-/Erzdämonen-Schips der Mitglieder in der linken Spalte; die Knöpfe
+      // dazu sind der Helfer des Inhaltsmoduls (SL: öffnen, Spieler: bei der SL anfragen).
+      const fateHelper = helpers?.get?.(FATE_HELPER);
+      const fateRows = members.filter(member => member.gods.length).map(member => ({ uuid: member.uuid, name: member.firstName, full: member.name, gods: member.gods, own: member.own }));
+      const fate = fateRows.length || fateHelper ? {
+        rows: fateRows,
+        helper: fateHelper ? FATE_HELPER : '',
+        label: fateHelper ? game.i18n.localize(isGM ? 'DSA5HELPERS.Group.Fate.Assign' : 'DSA5HELPERS.Group.Fate.Ask') : '',
+        pending: !isGM && !!pendingRequest(actor, FATE_HELPER),
+      } : null;
       context.dsa5h = {
+        fate,
         group: true,
         isGM,
         tabs,
@@ -242,6 +262,7 @@ export function createGroupSheet(BaseGroupSheet) {
       this._applyCurrentTab();
       // Zustände der Mitglieder: Karte des Systems beim Überfahren (#52).
       bindItemTooltips(this);
+      this._observeMemberSchips();
       if (this._pendingScrollTop) this.element.querySelector('.dsa5h-content')?.scrollTo({ top: this._pendingScrollTop });
       // LeP/AsP/KaP eigener Mitglieder direkt ändern (Kacheln): am Mitglied speichern, nicht am Gruppenakteur.
       for (const input of this.element.querySelectorAll('input[data-dsa5h-member-pool]')) {
@@ -272,6 +293,22 @@ export function createGroupSheet(BaseGroupSheet) {
           }));
         });
       }
+    }
+
+    // Götter-Schips je Mitglied in der linken Spalte in einer Zeile: hintere Götter verschwinden hinter „+n“ (Tooltip
+    // nennt sie), bei jeder Größenänderung neu gemessen (#55).
+    _observeMemberSchips() {
+      this._schipObserver?.disconnect();
+      const rows = [...this.element.querySelectorAll('.dsa5h-group-fate-schips')].filter(row => row.querySelector('.dsa5h-god-more'));
+      if (!rows.length) return;
+      const fit = row => {
+        fitGodSchips(row);
+        const more = row.querySelector('.dsa5h-god-more');
+        const hidden = [...row.querySelectorAll('.dsa5h-god-schip[hidden]')].map(el => escapeHtml(el.getAttribute('aria-label') ?? ''));
+        if (more) more.dataset.tooltip = hidden.join('<br>');
+      };
+      this._schipObserver = new ResizeObserver(entries => entries.forEach(entry => fit(entry.target)));
+      rows.forEach(row => { fit(row); this._schipObserver.observe(row); });
     }
 
     // Reiter ohne Neuzeichnen umschalten (wie der Heldenbogen); Porträt wandert auf dem Titelblatt in die linke Spalte.
@@ -319,6 +356,16 @@ export function createGroupSheet(BaseGroupSheet) {
       this._currentTab = id;
       this._applyCurrentTab();
       this.element.querySelector('.dsa5h-content')?.scrollTo({ top: 0 });
+    }
+
+    // Zähl-Plakette der Zustände: Bogen des Mitglieds auf dem Reiter Status öffnen (Rückmeldung 2026-11-17).
+    static async _openMemberConditions(_event, target) {
+      const uuid = target.closest('[data-uuid]')?.dataset.uuid;
+      const sheet = uuid ? fromUuidSync(uuid)?.sheet : null;
+      if (!sheet) return;
+      if (sheet.constructor.HELPER_TABS?.some(tab => tab.id === 'status')) sheet._currentTab = 'status';
+      await sheet.render({ force: true });
+      sheet.bringToFront?.();
     }
 
     static async _setTileSize(_event, target) {

@@ -1,0 +1,19 @@
+{{!-- Besitzeransicht im Reiter „Laden“/„Schatz“ (#77/#78): Bestand · Einstellungen · Zugang mit den Vorlagen des Systems
+      (merchant-commerce.hbs), der Unterreiter-Wechsel ist die Aktion tab des Systems. Spieler als Besitzer sehen nur den
+      Bestand. Click-Dummy: clickdummy/merchant.js renderShopOwner. --}}
+{{#if isGM}}
+{{> systems/dsa5/templates/system/dsatabs.hbs tabs=merchantTabs}}
+<div class="tab merchant-subtab gap5px {{merchantTabs.stock.cssClass}}" data-tab="stock" data-group="merchant">
+  {{> systems/dsa5/templates/actors/merchant/merchant-stock.hbs}}
+</div>
+{{#if merchantTabs.shop}}
+<div class="tab merchant-subtab gap5px {{merchantTabs.shop.cssClass}}" data-tab="shop" data-group="merchant">
+  {{> systems/dsa5/templates/actors/merchant/merchant-shop-config.hbs}}
+</div>
+{{/if}}
+<div class="tab merchant-subtab gap5px {{merchantTabs.access.cssClass}}" data-tab="access" data-group="merchant">
+  {{> systems/dsa5/templates/actors/merchant/merchant-access.hbs}}
+</div>
+{{else}}
+{{> systems/dsa5/templates/actors/merchant/merchant-stock.hbs}}
+{{/if}}

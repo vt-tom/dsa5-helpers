@@ -1,0 +1,102 @@
+{{!-- Ladenansicht für Kunden (Issues #77/#78, Variante C „Ware und Beutel“, Click-Dummy clickdummy/merchant.js
+      renderShopCustomer): Ware des Ladens links, Beutel des Käufers rechts. Alle Daten und Aktionen kommen vom
+      Händlerbogen des Systems (stall.*, tradeFriend, tradeWrapper, setShopChip …); die Vorlage hängt bewusst nur an
+      diesem Kontext, damit sie auch im Fahrzeug-Händlerbogen (ohne Helfer-Kontext) läuft. --}}
+{{#*inline "dsa5hShopRow"}}
+<div class="dsa5h-shop-row item{{#if tile.featured}} featured{{/if}}{{#if tile.unaffordable}} poor{{/if}}" data-item-id="{{tile.id}}" data-price-label="{{tile.priceLabel}}">
+  <img src="{{tile.img}}" alt="" />
+  <span class="dsa5h-shop-name">{{#if stall.allowItemDetails}}<a data-action="itemEdit">{{tile.name}}</a>{{else}}{{tile.name}}{{/if}}{{#if tile.hook}}<small>{{tile.hook}}</small>{{/if}}</span>
+  <span class="dsa5h-shop-qty">×{{tile.qty}}</span>
+  {{#unless stall.isLoot}}<span class="dsa5h-shop-price">{{tile.priceLabel}}</span>{{/unless}}
+  <button type="button" class="dsa5h-shop-act" data-action="tradeWrapper" data-fct="{{fct}}" data-price="{{tile.price}}" data-tooltip="{{localize tooltip}}">{{localize label}}</button>
+</div>
+{{/inline}}
+<div class="dsa5h-shop">
+  {{#if epic}}
+  <div class="dsa5h-shop-epic">
+    <img src="{{document.img}}" alt="" />
+    <h2>{{document.name}}</h2>
+    <p>{{document.system.details.career.value}}</p>
+    {{#if document.system.merchant.garadan}}<span class="dsa5h-shop-garadan" style="background-image:url(systems/dsa5/icons/Garadan{{document.system.merchant.garadan}}.webp)" aria-hidden="true"></span>{{/if}}
+  </div>
+  {{else}}
+  <section class="panel dsa5h-shop-parties">
+    <div class="dsa5h-shop-party">
+      <img src="{{document.img}}" alt="" data-action="editImage" />
+      <div><b>{{shopTitle}}</b>{{#if showShopOwner}}<small>{{shopOwnerName}}</small>{{/if}}
+        {{#if stall.isLoot}}<small>{{#if document.system.merchant.locked}}{{localize 'DSA5HELPERS.Merchant.Locked'}}{{else}}{{localize 'DSA5HELPERS.Merchant.Open'}}{{/if}}</small>
+        {{else}}{{> systems/dsa5/templates/actors/merchant/parts/shop-purse.hbs purse=stall.merchantPurse}}{{/if}}</div>
+    </div>
+    <div class="dsa5h-shop-party buyer">
+      {{#if stall.hasBuyer}}
+      <img src="{{tradeFriend.img}}" alt="" />
+      <div><b>{{#if isGM}}<a data-action="openTradeFriendSheet">{{tradeFriend.name}}</a>{{else}}{{tradeFriend.name}}{{/if}}</b>
+        {{> systems/dsa5/templates/actors/merchant/parts/shop-purse.hbs purse=stall.buyerPurse}}</div>
+      {{else}}
+      <img src="icons/svg/mystery-man.svg" alt="" />
+      <div><b>{{localize 'MERCHANT.tradeFriend'}}</b><small>{{localize 'MERCHANT.stall.noBuyerHint'}}</small></div>
+      {{/if}}
+      {{#if hasOtherTradeFriend}}
+      <button type="button" class="dsa5h-shop-small" data-action="removeOtherTradeFriend" data-tooltip="MERCHANT.removeTradeFriend">{{localize 'DSA5HELPERS.Merchant.OwnHero'}}</button>
+      {{else}}
+      <button type="button" class="dsa5h-shop-small" data-action="choseTradefriend" data-tooltip="MERCHANT.stall.changeBuyer">{{localize 'DSA5HELPERS.Merchant.ChangeBuyer'}}</button>
+      {{/if}}
+    </div>
+  </section>
+  {{#each stall.blockers as |block|}}<p class="dsa5h-notice" role="note">{{#if block.html}}{{{block.label}}}{{else}}{{block.label}}{{/if}}</p>{{/each}}
+
+  {{#if stall.presentationMode}}
+  {{> systems/dsa5/templates/actors/merchant/parts/shop-presentation-body.hbs}}
+  {{else}}
+  <div class="dsa5h-shop-toolbar">
+    <div class="dsa5h-shop-toolbar-row">
+      <input type="search" class="dsa5h-shop-search" placeholder="{{localize 'gearSearch'}}" aria-label="{{localize 'gearSearch'}}" />
+      <select data-shop-control="setShopSort" aria-label="{{localize 'MERCHANT.stall.sort'}}">
+        <option value="featured" {{#if (eq stall.filter.sort 'featured')}}selected{{/if}}>{{localize 'MERCHANT.stall.sortFeatured'}}</option>
+        <option value="name" {{#if (eq stall.filter.sort 'name')}}selected{{/if}}>{{localize 'MERCHANT.stall.sortName'}}</option>
+        {{#unless stall.isLoot}}
+        <option value="priceAsc" {{#if (eq stall.filter.sort 'priceAsc')}}selected{{/if}}>{{localize 'MERCHANT.stall.sortPriceAsc'}}</option>
+        <option value="priceDesc" {{#if (eq stall.filter.sort 'priceDesc')}}selected{{/if}}>{{localize 'MERCHANT.stall.sortPriceDesc'}}</option>
+        {{/unless}}
+      </select>
+      {{#unless stall.isLoot}}
+      <span class="dsa5h-shop-seg" role="group" aria-label="{{localize 'MERCHANT.stall.viewMode'}}">
+        <button type="button" data-action="setShopViewMode" data-view="cards" aria-pressed="{{#if stall.isLog}}false{{else}}true{{/if}}">{{localize 'DSA5HELPERS.Merchant.ViewGoods'}}</button>
+        <button type="button" data-action="setShopViewMode" data-view="log" aria-pressed="{{#if stall.isLog}}true{{else}}false{{/if}}">{{localize 'MERCHANT.stall.viewLog'}}</button>
+      </span>
+      {{/unless}}
+    </div>
+    {{#unless stall.isLog}}
+    <div class="dsa5h-shop-chips" role="group">
+      <button type="button" class="dsa5h-shop-chip" data-action="setShopChip" data-chip="all" aria-pressed="{{#if (eq stall.filter.category 'all')}}true{{else}}false{{/if}}">{{localize 'MERCHANT.stall.all'}}</button>
+      {{#each stall.chips as |chip|}}<button type="button" class="dsa5h-shop-chip" data-action="setShopChip" data-chip="{{chip.key}}" aria-pressed="{{#if (eq ../stall.filter.category chip.key)}}true{{else}}false{{/if}}">{{localize chip.label}}</button>{{/each}}
+      {{#unless stall.isLoot}}<button type="button" class="dsa5h-shop-chip" data-action="toggleShopAffordable" aria-pressed="{{#if stall.filter.affordable}}true{{else}}false{{/if}}">{{localize 'MERCHANT.stall.affordable'}}</button>{{/unless}}
+      {{#if stall.hasSpecials}}<button type="button" class="dsa5h-shop-chip" data-action="toggleShopSpecials" aria-pressed="{{#if stall.filter.specials}}true{{else}}false{{/if}}">{{localize 'MERCHANT.stall.specials'}}</button>{{/if}}
+    </div>
+    {{/unless}}
+  </div>
+
+  {{#if stall.isLog}}
+  {{> systems/dsa5/templates/actors/merchant/parts/shop-trade-log.hbs}}
+  {{else}}
+  <div class="dsa5h-shop-split">
+    <section class="dsa5h-shop-col">
+      <h3>{{#if stall.isLoot}}{{localize 'DSA5HELPERS.Merchant.InLoot'}}{{else}}{{localize 'DSA5HELPERS.Merchant.Goods'}}{{/if}}</h3>
+      {{#if stall.empty}}<p class="dsa5h-empty">{{localize 'MERCHANT.stall.empty'}}</p>{{/if}}
+      {{#each stall.specials as |tile|}}{{> dsa5hShopRow tile=tile fct="buyItem" label=(ifThen ../stall.isLoot "DSA5HELPERS.Merchant.Take" "MERCHANT.buy") tooltip=(ifThen ../stall.isLoot "MERCHANT.stall.transferTooltip" "MERCHANT.buyTooltip") stall=../stall}}{{/each}}
+      {{#each stall.tiles as |tile|}}{{> dsa5hShopRow tile=tile fct="buyItem" label=(ifThen ../stall.isLoot "DSA5HELPERS.Merchant.Take" "MERCHANT.buy") tooltip=(ifThen ../stall.isLoot "MERCHANT.stall.transferTooltip" "MERCHANT.buyTooltip") stall=../stall}}{{/each}}
+      {{#each stall.services as |tile|}}{{> dsa5hShopRow tile=tile fct="buyItem" label="MERCHANT.buy" tooltip="MERCHANT.buyTooltip" stall=../stall}}{{/each}}
+    </section>
+    <section class="dsa5h-shop-col">
+      <h3>{{#if stall.hasBuyer}}{{#if stall.isLoot}}{{localize 'MERCHANT.stall.inventoryOf' name=tradeFriend.name}}{{else}}{{localize 'DSA5HELPERS.Merchant.Bag' name=tradeFriend.name}}{{/if}}{{else}}{{localize 'DSA5HELPERS.Merchant.OwnBag'}}{{/if}}</h3>
+      {{#unless stall.hasBuyer}}<p class="dsa5h-empty">{{localize 'MERCHANT.stall.noBuyer'}}</p>
+      {{else}}
+      {{#each stall.sellTiles as |tile|}}{{> dsa5hShopRow tile=tile fct="sellItem" label=(ifThen ../stall.isLoot "DSA5HELPERS.Merchant.PutIn" "MERCHANT.stall.sell") tooltip=../stall.sellActionTooltip stall=../stall}}
+      {{else}}<p class="dsa5h-empty">{{localize 'DSA5HELPERS.Merchant.NothingToSell'}}</p>{{/each}}
+      {{/unless}}
+    </section>
+  </div>
+  {{/if}}
+  {{/if}}
+  {{/if}}
+</div>

@@ -203,7 +203,7 @@ test('favorites use actor flags, remove missing items and enforce ownership',asy
 test('empty character still renders every tab',async()=>{const {sheet}=await prepare();sheet.context.prepare={};sheet.context.conditions=[];const html=render(await sheet._prepareContext({}));assert.equal(elements(html,el=>el.attribs?.['data-tab-panel']).length,targetGeneration===13?9:10);assert(html.includes(localize('DSA5HELPERS.NoFavorites')));});
 test('companion context is prepared for the custom root',async()=>{const {sheet}=await prepare();assert.equal(!!sheet.companionPrepared,targetGeneration>=14);});
 test('every static action exists in module, Foundry or DSA5 action tables',()=>{const sources=[read('scripts/sheets/dsa5-helpers-character-sheet.js'),read('scripts/sheets/dsa5-helpers-npc-sheet.js'),...systemJs(['actor/actor-sheet.js','actor/character-sheet.js',...(targetGeneration>=14?['actor/companions/companion-handler-class.js']:[])]),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');for(const p of modulePaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');});
-test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');const bundle=fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8'):'';const inSchema=field=>{if(field==='systemFields.happyTalents.fields.value')return /happyTalents:new \w+\(\{value:new \w+\(\{initial:""/.test(bundle);const m=field.match(/^systemFields\.(tradition|guidevalue|energyfactor)\.fields\.(magical|clerical)$/);return !!m&&new RegExp(m[1]+':new \\w+\\(\\{magical:new \\w+\\(\\{initial:[^}]*label:"'+m[1]+'"[^}]*\\}\\),clerical:').test(bundle);};for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field)||inSchema(field),'unverified system schema path: '+field);});
+test('form field paths are present in installed system templates',()=>{const gather=dir=>fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?gather(path.join(dir,e.name)):e.name.endsWith('.hbs')?[fs.readFileSync(path.join(dir,e.name),'utf8')]:[]);const refs=gather(path.join(dataRoot,'systems/dsa5/templates')).join('\n');const bundle=fs.existsSync(systemBundle)?fs.readFileSync(systemBundle,'utf8'):'';const inSchema=field=>{if(field==='systemFields.happyTalents.fields.value')return /happyTalents:new \w+\(\{value:new \w+\(\{initial:""/.test(bundle);const m=field.match(/^systemFields\.(tradition|guidevalue|energyfactor|happyTalents)\.fields\.(magical|clerical)$/);return !!m&&new RegExp(m[1]+':new \\w+\\(\\{magical:new \\w+\\(\\{initial:[^}]*label:"'+m[1]+'"[^}]*\\}\\),clerical:').test(bundle);};for(const source of modulePaths.map(read))for(const [field]of source.matchAll(/systemFields\.[\w.]+/g))assert(refs.includes(field)||inSchema(field)||(/^systemFields\.(tradition|guidevalue|energyfactor|happyTalents)\./.test(field)&&source.includes(field.split('.').slice(0,2).join('.')+')}}')||source.includes(field.split('.').slice(0,2).join('.')+'}}')),'unverified system schema path: '+field);});
 test('localization keys used by nonempty hero resolve',async()=>{missing.clear();const {context}=await prepare();render(context);const unresolved=[...missing].filter(k=>k && !['Swords','Test coin'].includes(k));assert.deepEqual(unresolved,[]);});
 
 test('spell extensions are matched like SpellExtension.forSource (#84)',async()=>{
@@ -1781,7 +1781,7 @@ test('Gruppenbogen (#55): Kacheln S/M/L, Rechte wie im System, Freigaben der SL,
  const reqStub=dataUrl('export const openRequests=()=>[];export const pendingRequest=()=>null;export const sendRequestDialog=()=>{};export const executeRequest=()=>{};export const declineRequest=()=>{};');
  const savedGame=global.game;global.game={...(savedGame??{}),i18n:{localize,has:()=>true,lang:'de'},user:{isGM:false}};
  try {
-  const G=await import(dataUrl(read('scripts/sheets/dsa5-helpers-group-sheet.js').replace("'../apps/dice-stats.js'",JSON.stringify(stub)).replace("'../apps/house-rules.js'",JSON.stringify(stub)).replace("'./group-requests.js'",JSON.stringify(reqStub)).replace("'./item-tooltips.js'",JSON.stringify(dataUrl(read('scripts/sheets/item-tooltips.js'))))));
+  const G=await import(dataUrl(read('scripts/sheets/dsa5-helpers-group-sheet.js').replace("'../apps/dice-stats.js'",JSON.stringify(stub)).replace("'../apps/house-rules.js'",JSON.stringify(stub)).replace("'./group-requests.js'",JSON.stringify(reqStub)).replace("'./god-schips.js'",JSON.stringify(dataUrl(read('scripts/sheets/god-schips.js')))).replace("'./item-tooltips.js'",JSON.stringify(dataUrl(read('scripts/sheets/item-tooltips.js'))))));
   const raw=(own,identity)=>({key:'k'+own,uuid:'Actor.'+own,id:String(own),name:'Alrik Grimmwald',img:'x.webp',type:'character',ownerName:'Ben',canViewPrivateDetails:own,canViewForeignIdentity:identity,schips:[{value:1,cssClass:'fullSchip'}],system:{status:{wounds:{value:20,max:40},astralenergy:{value:5,max:10},karmaenergy:{value:0,max:0}},isMage:true,isPriest:false,details:{species:'Mensch',culture:identity?'Mittelreicher':'',career:identity?'Söldner':''}}});
   const vis={identity:true,lep:false,pools:false,cond:false};
   const mine=G.memberView(raw(true,true),vis,{effects:[{statuses:new Set(['inpain']),disabled:false,name:'Schmerz',getFlag:()=>2,img:'p.webp'}]});
@@ -1801,6 +1801,14 @@ test('Gruppenbogen (#55): Kacheln S/M/L, Rechte wie im System, Freigaben der SL,
   for(const part of ['data-tab-panel="gm"','data-action="rollGroupCheck"','data-action="requestAttributeRoll"','data-action="changeGroupSchip"','data-action="dsa5hGroupVis"','data-action="removeMember"','data-action="dsa5hRequestExecute"'])assert(!playerHtml.includes(part),'Spieler ohne '+part);
   assert(playerHtml.includes('data-action="dsa5hAskGm"')&&playerHtml.includes('aria-disabled="true"'),'Spieler fragt an, offene Anfrage gesperrt');
   assert(playerHtml.includes('dsa5h-group-tile size-s'));
+  // Schicksal und Verdammnis (#55, Variante A): Liste in der linken Spalte, Knopf je nach Rolle, nicht in den Kacheln
+  const fateCtx=gm=>{const b=base(gm);b.dsa5h.fate={helper:'dsa5-godsofaventuria2.godsmenu',label:gm?'Schips zuweisen':'Schip tauschen anfragen',pending:false,rows:[{uuid:'Actor.1',name:'Alrik',full:'Alrik Grimmwald',gods:[{path:'flags.dsa5.specialPoints.Rondra.current',name:'Rondra',current:1,max:2,style:'',tooltip:'t',tooltipClass:''}]}]};return b;};
+  const fateGm=renderGroup(fateCtx(true)),fatePlayer=renderGroup(fateCtx(false));
+  for(const part of ['dsa5h-group-fate-row','dsa5h-god-schip','dsa5h-god-more','dsa5h-group-fate"'])assert(fateGm.includes(part),'Liste Schicksal und Verdammnis: '+part);
+  assert(fateGm.includes('data-action="groupHelperAction" data-group-helper="dsa5-godsofaventuria2.godsmenu"'),'SL öffnet den Helfer');
+  assert(fatePlayer.includes('data-action="dsa5hAskGm" data-group-helper="dsa5-godsofaventuria2.godsmenu"')&&!fatePlayer.includes('data-action="groupHelperAction" data-group-helper="dsa5-godsofaventuria2'),'Spieler fragt bei der SL an');
+  assert(!renderGroup(base(true)).includes('dsa5h-group-fate-row'),'ohne Helfer und ohne Götter-Schips kein Block');
+  assert(!/dsa5h-group-member-schips[^]*?dsa5h-god-schip/.test(fateGm.split('dsa5h-group-fate')[0]),'Kacheln ohne Götter-Schips');
   // Jede Aktion in den Gruppenvorlagen gibt es im Modul oder im Gruppenbogen des Systems.
   const sources=[read('scripts/sheets/dsa5-helpers-group-sheet.js'),...systemJs([]),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');
   for(const p of groupPaths)for(const [,action]of read(p).matchAll(/data-action="([\w-]+)"/g))assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' has no registered handler');
@@ -1840,9 +1848,9 @@ test('Tooltips im Bogen (#52): Karte des Systems an Namen und Zuständen, Einste
  } finally { global.game=savedGame; }
  const js=read('scripts/sheets/item-tooltips.js');
  assert(/pointerType === 'touch'/.test(js)&&js.includes("'dsa5h-phone'")&&js.includes("'dsa5h-tablet'"),'Touch, Tablet und Smartphone ohne Tooltips');
- assert(/scope: 'user'/.test(js)&&/default: true/.test(js),'Benutzer-Einstellung, Standard an');
+ assert(/scope: 'user'/.test(js)&&/default: false/.test(js),'Benutzer-Einstellung, Standard aus (Opt-in)');
  assert(js.includes("game.settings.get(MODULE_ID, TOOLTIP_SETTING)"),'zur Laufzeit geprüft (sofort, ohne Neuladen)');
- assert(js.includes('GlobalToolTipHandler')&&!/innerHTML\s*=/.test(js),'Karte des Systems, keine eigenen Texte');
+ assert(js.includes('GlobalToolTipHandler')&&(js.match(/innerHTML\s*=/g)||[]).length===1&&js.includes('enrichHTML')&&js.includes('appendDetails'),'Karte des Systems; Regel und Beschreibung nur aus den Daten des Items, bereinigt');
  if(fs.existsSync(systemBundle)){const b=fs.readFileSync(systemBundle,'utf8');assert(b.includes('GlobalToolTipHandler:pa')||/GlobalToolTipHandler:\w+/.test(b),'Systemvertrag: dsa5.apps.GlobalToolTipHandler');assert(b.includes('static async handleTooltip(e,t)'),'Systemvertrag: handleTooltip(event, actor)');}
  for(const p of ['scripts/sheets/dsa5-helpers-character-sheet.js','scripts/sheets/dsa5-helpers-group-sheet.js'])assert(read(p).includes('bindItemTooltips(this);'),p);
  const {DISPLAY_SETTINGS}=await import(dataUrl(read('scripts/apps/sheet-settings.js')));
@@ -1858,4 +1866,62 @@ test('Tooltips im Bogen (#52): Karte des Systems an Namen und Zuständen, Einste
  const at=css.indexOf('/* --- Tooltips im Bogen (#52)');
  assert(at>css.indexOf('6. Inhaltsbereich & gemeinsame Bausteine')&&at<css.indexOf('   7. Titelblatt\n'),'CSS in Abschnitt 6');
  assert(/#tooltip\.dsa5h-tt > :first-child,\n\.locked-tooltip\.dsa5h-tt > :first-child \{\n  max-height: 60vh;/.test(css),'Höhe begrenzt');
+});
+
+test('Sprachen (#95): Beherrschungsgrad als Plakette hinter dem Namen, Muttersprache als MS, Tooltip ausgeschrieben', () => {
+ const main=read('templates/actors/parts/main.hbs');
+ const languages=main.slice(main.indexOf('(lookup prepare.specAbs "language") as |item|'));
+ assert(/dsa5h-chip-level" data-tooltip="\{\{item\.dsa5hLevelTip\}\}">\{\{item\.dsa5hLevel\}\}/.test(languages),'Plakette im Sprachen-Chip');
+ const js=read('scripts/sheets/dsa5-helpers-character-sheet.js');
+ assert(js.includes("step === 4 && max >= 4")&&js.includes("'MS'"),'Stufe 4 = MS');
+ assert(read('styles/dsa5-helpers-character-sheet.css').includes('.dsa5h-chip-level'));
+ for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;assert(j.NativeTongue&&j.LevelOf.includes('{level}'),l);}
+});
+
+test('Probendialog (#96): einmaliger Hinweis am Desktop mit Verweis auf die Einstellung, je Benutzer gemerkt', () => {
+ const js=read('scripts/mobile/roll-dialog.js');
+ assert(js.includes("'rollDialogHintSeen'")&&js.includes('showDesktopHint();')&&js.includes('permanent: true'),'Hinweis nur einmal, bleibt stehen');
+ assert(/rollDialogHintSeen', \{ scope: 'client'/.test(js),'Merker je Benutzer (client)');
+ for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Settings.RollDialogDesktop;for(const k of ['HintNotice','HintGm','HintPlayer'])assert(j[k],l+' '+k);assert(j.HintNotice.includes('{where}'),l);}
+});
+
+test('Händler- und Schatzbogen (#77/#78): Ladenansicht, Aktionen des Systems, Registrierung, Rückweg', async () => {
+ const shop=read('templates/actors/merchant/shop.hbs');
+ // Jede Aktion der Ladenansicht und der Besitzer-Vorlage gibt es im Händlerbogen des Systems (oder im Bogen selbst)
+ const sources=[...systemJs([]),fs.readFileSync(path.join(app,'client/applications/api/document-sheet.mjs'),'utf8')].join('\n');
+ for(const file of ['templates/actors/merchant/shop.hbs','templates/actors/merchant/merchant-admin.hbs'])
+  for(const [,action] of read(file).matchAll(/data-action="([\w-]+)"/g)) if(fs.existsSync(systemBundle)) assert(new RegExp('\\b'+action+'\\s*:').test(sources),action+' ohne Handler');
+ for(const part of ['dsa5h-shop-split','dsa5h-shop-row','tradeWrapper','data-fct="{{fct}}"','sellItem','buyItem','dsa5h-shop-search','stall.sellTiles','stall.tiles'])assert(shop.includes(part),'shop.hbs: '+part);
+ assert(!shop.includes('class="gearSearch"'),'Suche des Systems hängt an dessen Inventarlisten (Fehler _filterGear), eigene Suche');
+ // Ladenansicht als Zweig der Hauptvorlage, Besitzeransicht im Inventar-Reiter
+ const main=read('templates/actors/dsa5-helpers-character-sheet.hbs');
+ assert(main.indexOf('dsa5h.shop')>-1&&main.indexOf('dsa5h.shop')<main.indexOf('dsa5h.limited'),'Ladenansicht vor „eingeschränkt“');
+ assert(read('templates/actors/parts/inventory.hbs').includes('dsa5h.merchantAdmin'));
+ // Klasse: Mixin des Systems über dem Helfer-Bogen, ein Wurzelteil, Registrierung im ready-Hook mit Vorlagen des Systems
+ const js=read('scripts/sheets/dsa5-helpers-merchant-sheet.js');
+ assert(js.includes('MerchantSheetMixin')&&js.includes('static PARTS = helper ?')&&js.includes('loadTemplates')&&js.includes("types: [type]"),'Mixin, ein Wurzelteil, Vorlagen laden, Registrierung');
+ for(const type of ['character','npc','creature','vehicle'])assert(js.includes(type+':'),type);
+ const entry=read('scripts/dsa5-helpers.js');
+ assert(entry.includes('await registerMerchantSheets();')&&entry.includes('merchant/shop.hbs')&&entry.includes('merchant/merchant-admin.hbs'));
+ for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Merchant;for(const k of ['SheetLabel','TabShop','TabLoot','Goods','InLoot','Bag','OwnBag','Take','PutIn','NothingToSell','ViewGoods','ChangeBuyer','OwnHero','Locked','Open'])assert(j[k],l+' '+k);}
+ // Rückweg-Hook: Typwechsel ohne Bogenwechsel des Systems (Helfer-Bogen bleibt stehen) → unser Händlerbogen und zurück
+ const savedFoundry=global.foundry;
+ const get=(o,k)=>k.split('.').reduce((a,p)=>a?.[p],o);
+ const set=(o,k,v)=>{const ps=k.split('.');let a=o;for(const p of ps.slice(0,-1))a=a[p]??={};a[ps.at(-1)]=v;};
+ class ForcedDeletion {}
+ global.foundry={utils:{getProperty:get,setProperty:set,hasProperty:(o,k)=>get(o,k)!==undefined},data:{operators:{ForcedDeletion}}};
+ try {
+  const {applyMerchantReturn}=await esm('scripts/compat/merchant-return.js');
+  const actor=(type,core,stored,merchantType='none')=>({type,system:{merchant:{merchantType}},getFlag:(scope,key)=>scope==='core'?core:(key==='sheetBeforeMerchant'?stored:undefined)});
+  let ch={system:{merchant:{merchantType:'loot'}}};
+  assert.equal(applyMerchantReturn(actor('creature','dsa5-helpers.Dsa5HelpersCreatureSheet'),ch),'remember');
+  assert.equal(ch.flags.core.sheetClass,'dsa5-helpers.Dsa5HelpersCreatureMerchantSheet');assert.equal(ch.flags['dsa5-helpers'].sheetBeforeMerchant,'dsa5-helpers.Dsa5HelpersCreatureSheet');
+  ch={system:{merchant:{merchantType:'none'}}};
+  assert.equal(applyMerchantReturn(actor('creature','dsa5-helpers.Dsa5HelpersCreatureMerchantSheet','dsa5-helpers.Dsa5HelpersCreatureSheet','loot'),ch),'restore');
+  assert.equal(ch.flags.core.sheetClass,'dsa5-helpers.Dsa5HelpersCreatureSheet');assert(ch.flags['dsa5-helpers'].sheetBeforeMerchant instanceof ForcedDeletion);
+  // Fremder oder Systembogen: nichts anfassen
+  ch={system:{merchant:{merchantType:'loot'}}};assert.equal(applyMerchantReturn(actor('npc','dsa5.ActorSheetdsa5NPC'),ch),undefined);assert.equal(ch.flags,undefined);
+  // System schreibt bei unserem Standard seinen Händlerbogen → unserer
+  ch={flags:{core:{sheetClass:'dsa5.MerchantSheetDSA5'}}};assert.equal(applyMerchantReturn(actor('npc',undefined),ch,{},true),'remember');assert.equal(ch.flags.core.sheetClass,'dsa5-helpers.Dsa5HelpersNpcMerchantSheet');
+ } finally { global.foundry=savedFoundry; }
 });

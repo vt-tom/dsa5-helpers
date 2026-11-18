@@ -360,9 +360,13 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
     const withLevel = items => items.map(item => {
       const max = Number(item.system?.maxRank?.value ?? item.system?.max?.value);
-      const level = Number.isFinite(max) && max < 2 ? '' : ROMAN[Number(item.system?.step?.value) - 1] ?? '';
-      return Object.assign(item, { dsa5hLevel: level });
+      const step = Number(item.system?.step?.value);
+      // Sprachen (#95): Stufe 4 ist die Muttersprache (MS), sonst I–III; Schriften ohne Stufen bleiben leer.
+      const native = item.system?.category?.value === 'language' && step === 4 && max >= 4;
+      const level = native ? 'MS' : Number.isFinite(max) && max < 2 ? '' : ROMAN[step - 1] ?? '';
+      return Object.assign(item, { dsa5hLevel: level, dsa5hLevelTip: native ? localize('DSA5HELPERS.NativeTongue') : level ? game.i18n.format('DSA5HELPERS.LevelOf', { level }) : '' });
     });
+    const languages = withLevel(prepare.specAbs?.language ?? []);
     const favoriteGroups = [
       { label: 'skills', items: skillGroups.flatMap(group => group.items) },
       { label: 'DSA5HELPERS.Weapons', weapon: true, items: [...weaponGroups.flatMap(group => group.items), ...(body?.others ?? []).map(other => other.item)] },
@@ -372,7 +376,7 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
       { label: 'DSA5HELPERS.SpecialAbilities', special: true, items: Object.values(specs).flatMap(groups => groups.flatMap(group => group.items)) },
       // Issues #81, #82: Vor-/Nachteile sowie Sprachen und Schriften mit Stufe, ohne Wurf.
       { label: 'DSA5HELPERS.AdvantagesDisadvantages', rank: true, items: withLevel([...(prepare.advantages ?? []), ...(prepare.disadvantages ?? [])]) },
-      { label: 'SpecCategory.language', rank: true, items: withLevel(prepare.specAbs?.language ?? []) },
+      { label: 'SpecCategory.language', rank: true, items: languages },
     ].map(group => ({ ...group, items: unique(group.items.filter(item => favorites[item._id])) })).filter(group => group.items.length);
     // Talent-Vorschläge (Titelblatt, parts/suggestions.hbs): nur für Owner, die letzte Liste wirkt als leichter Bonus,
     // damit Karten nicht bei jedem Neuzeichnen springen.

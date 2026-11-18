@@ -13,6 +13,20 @@
     <span class="dsa5h-group-side-label">{{localize 'DSA5HELPERS.Group.GroupSchips'}} <span class="dsa5h-group-gm-tag" data-tooltip="DSA5HELPERS.Group.GmTagHint">{{localize 'DSA5HELPERS.Group.GmTag'}}</span></span>
     <span class="dsa5h-group-schips">{{#each groupSchips as |item|}}<button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="changeGroupSchip" data-val="{{item.value}}" aria-label="{{localize 'DSA5HELPERS.Group.GroupSchip' value=item.value}}"></button>{{/each}}<button type="button" class="dsa5h-step" data-action="addGroupSchipCount" data-value="-1" data-tooltip="SHEET.removeSchip" aria-label="{{localize 'SHEET.removeSchip'}}">−</button><button type="button" class="dsa5h-step" data-action="addGroupSchipCount" data-value="1" data-tooltip="SHEET.addSchip" aria-label="{{localize 'SHEET.addSchip'}}">+</button></span>
   </div>
+  {{/if}}
+  {{#if dsa5h.fate}}
+  <div class="dsa5h-group-side-block dsa5h-group-fate">
+    <span class="dsa5h-group-side-label">{{localize 'DSA5HELPERS.Group.Fate.Title'}}</span>
+    {{#each dsa5h.fate.rows as |row|}}
+    <div class="dsa5h-group-fate-row" data-uuid="{{row.uuid}}"><span class="dsa5h-group-fate-name" data-tooltip="{{row.full}}">{{row.name}}</span><span class="dsa5h-group-fate-schips">{{#each row.gods as |god|}}<span class="dsa5h-god-schip{{#if god.empty}} empty{{/if}}" data-tooltip="{{god.tooltip}}" data-tooltip-class="{{god.tooltipClass}}" aria-label="{{localize 'DSA5HELPERS.GodSchipLabel' name=god.name current=god.current max=god.max}}"><span class="dsa5h-god-ico" style="{{god.style}}"></span><small>{{god.current}}/{{god.max}}</small></span>{{/each}}<span class="dsa5h-god-more" hidden></span></span></div>
+    {{else}}<span class="dsa5h-muted">{{localize 'DSA5HELPERS.Group.Fate.None'}}</span>{{/each}}
+    {{#if dsa5h.fate.helper}}
+    {{#if dsa5h.isGM}}<button type="button" class="dsa5h-group-btn" data-action="groupHelperAction" data-group-helper="{{dsa5h.fate.helper}}">{{dsa5h.fate.label}}</button>
+    {{else}}<button type="button" class="dsa5h-group-btn" data-action="dsa5hAskGm" data-group-helper="{{dsa5h.fate.helper}}"{{#if dsa5h.fate.pending}} aria-disabled="true"{{/if}}>{{dsa5h.fate.label}}</button>{{/if}}
+    {{/if}}
+  </div>
+  {{/if}}
+  {{#if dsa5h.isGM}}
   <div class="dsa5h-group-side-block">
     <span class="dsa5h-group-side-label">{{localize 'DSA5HELPERS.Group.RequestRoll'}} <span class="dsa5h-group-gm-tag" data-tooltip="DSA5HELPERS.Group.GmTagHint">{{localize 'DSA5HELPERS.Group.GmTag'}}</span></span>
     <span class="dsa5h-group-attr-rolls">{{#each characteristics as |ch|}}<button type="button" class="dsa5h-group-attr-die" data-action="requestAttributeRoll" data-attr="{{ch.key}}" style="background-image:url('systems/dsa5/icons/dice/d20{{ch.key}}.svg')" data-tooltip="{{localize 'DSA5HELPERS.Group.RequestAttribute' name=ch.name}}" aria-label="{{localize 'DSA5HELPERS.Group.RequestAttribute' name=ch.name}}">{{ch.abbr}}</button>{{/each}}</span>

@@ -2114,7 +2114,23 @@ button {
   max-width: 100%;
 }
 
-.chips-fill > .chip .chip-delete {
+.chips-fill > .chip /* Beherrschungsgrad der Sprachen (Issue #95): Plakette vor dem Favoriten-Stern */
+.chip-tail {
+  display: contents;
+}
+
+.chip-level {
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: help;
+}
+
+.chip-delete {
   margin-left: auto;
 }
 
@@ -6941,60 +6957,14 @@ button.fav-chip-roll {
   border-radius: 12px;
 }
 
-.shop-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px;
-  margin-bottom: 12px;
-}
 
-.shop-specials .shop-grid {
-  margin: 8px;
-}
 
-.shop-tile {
-  display: grid;
-  grid-template-columns: 36px 1fr auto;
-  grid-template-rows: auto auto;
-  gap: 2px 8px;
-  align-items: center;
-  padding: 6px 8px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  background: var(--panel);
-}
 
-.shop-tile.featured {
-  border-color: var(--accent);
-}
 
-.shop-tile.poor {
-  opacity: .6;
-}
 
-.shop-tile img {
-  grid-row: span 2;
-  width: 36px;
-  height: 36px;
-}
 
-.shop-tile-body {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
 
-.shop-tile-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  font-size: var(--fs-small);
-}
 
-.shop-tile .shop-btn {
-  grid-column: 2 / 4;
-  justify-self: end;
-}
 
 .shop-name {
   padding: 0;
@@ -7052,9 +7022,6 @@ button.fav-chip-roll {
   font-weight: normal;
 }
 
-.shop-drawer .shop-grid {
-  margin: 8px;
-}
 
 .shop-log-row {
   grid-template-columns: 90px 1fr 90px;
@@ -10262,7 +10229,7 @@ button.fav-chip-roll {
   cursor: default;
 }
 
-/* Schicksal und Verdammnis (Platzsuche 2026-11-13, Varianten A/B/C, actor-types.js GROUP_SCHIP_VARIANT): Götter-Schips mit
+/* Schicksal und Verdammnis (Nutzerentscheidung 2026-11-17, Variante A): Götter-Schips mit
    goldenem, Erzdämonen-Schips mit rotem Ring; verbrauchte blass wie die Schips des Helden. */
 .group-special {
   display: inline-flex;
@@ -10290,27 +10257,9 @@ button.fav-chip-roll {
   width: 16px;
   height: 16px;
 }
-.group-schips-with-special {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 6px;
-}
-.group-schips-with-special .group-special {
-  flex-wrap: nowrap;
-}
 .group-tile,
 .group-tile > * {
   min-width: 0;
-}
-.group-tile-foot:has(.group-schips-with-special) .group-cond {
-  flex: 1 1 0;
-  min-width: 0;
-  text-align: right;
-}
-.group-schips-with-special .group-special {
-  padding-left: 6px;
-  border-left: 1px solid var(--line);
 }
 .group-special-row {
   display: flex;
@@ -10329,35 +10278,6 @@ button.fav-chip-roll {
   border-color: rgba(224, 192, 128, .4);
   background: rgba(255, 255, 255, .06);
   color: #f4e8d6;
-}
-.group-fate-body {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px 16px;
-  align-items: start;
-  padding: 8px 10px;
-}
-.group-fate-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.group-side-label.dark {
-  color: var(--accent);
-}
-.group-fate-members {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px 16px;
-}
-.group-fate-members:only-child,
-.group-fate-body > .group-fate-members:first-child {
-  grid-column: 1 / -1;
-}
-.group-fate-foot {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: flex-end;
 }
 /* Kachelgröße wählt die Gruppe selbst (Umschalter über den Kacheln) */
 .group-size-switch {
@@ -10770,6 +10690,11 @@ button.fav-chip-roll {
 .vehicle-probe {
   display: inline-flex;
   gap: 4px;
+}
+
+.vehicle-intro {
+  margin: 0 0 8px;
+  font-size: var(--fs-small);
 }
 
 .vehicle-travel {

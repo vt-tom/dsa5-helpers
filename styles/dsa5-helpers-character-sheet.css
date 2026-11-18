@@ -2130,6 +2130,19 @@
 
 /* Immer sichtbar statt nur bei Hover/Fokus (Nutzer-Feedback: das plötzliche Einblenden beim Hover ließ die Chip-
    Breite springen und dadurch die ganze Zeile umbrechen, sobald sie schon fast voll war — "Umbrucheffekt"). */
+/* Beherrschungsgrad der Sprachen (Issue #95): Plakette hinter dem Namen, Tooltip nennt ihn ausgeschrieben */
+.dsa5-helpers-sheet .dsa5h-content .dsa5h-chip-level {
+  flex: none;
+  padding: 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: help;
+}
+
 .dsa5-helpers-sheet .dsa5h-content .chip-actions {
   display: flex;
   align-items: center;
@@ -2641,6 +2654,24 @@
 
 .locked-tooltip.dsa5h-tt .dsa5h-tt-more {
   display: none;
+}
+
+/* Regel und Beschreibung unter der Karte des Systems (Talente, Sonderfertigkeiten, Vor- und Nachteile) */
+.dsa5h-tt .dsa5h-tt-details {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #8a7058;
+}
+
+.dsa5h-tt .dsa5h-tt-details h2 {
+  margin: 4px 0 2px;
+  font-size: 12px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.dsa5h-tt .dsa5h-tt-details p {
+  margin: 0 0 4px;
 }
 
 /* ==========================================================================
@@ -3349,6 +3380,51 @@
   text-transform: uppercase;
 }
 
+/* Schicksal und Verdammnis in der linken Spalte (#55, Variante A): je Mitglied eine Zeile mit Götter-Schips, hintere
+   Götter verschwinden hinter „+n“ (fitGodSchips, Messung am Zeilenelement). */
+.dsa5h-group .dsa5h-group-fate-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dsa5h-group .dsa5h-group-fate-name {
+  flex: none;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-small);
+}
+
+.dsa5h-group .dsa5h-group-fate-schips {
+  display: flex;
+  flex: 1 1 0;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.dsa5h-group .dsa5h-group-fate-schips .dsa5h-god-schip {
+  height: 22px;
+  margin: 0;
+  cursor: default;
+}
+
+.dsa5h-group .dsa5h-group-fate-schips .dsa5h-god-more {
+  height: 22px;
+  margin: 0;
+  cursor: help;
+}
+
+.dsa5h-group .dsa5h-group-fate .dsa5h-group-btn {
+  align-self: flex-start;
+}
+
 .dsa5h-group .dsa5h-group-side-link {
   align-self: flex-start;
   padding: 0;
@@ -3626,6 +3702,7 @@
 
 .dsa5h-group .dsa5h-group-tile-main {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
   min-width: 0;
 }
@@ -3668,15 +3745,34 @@
   min-height: 22px;
 }
 
+/* Platzhalter „–“ im Fuß nimmt nur seine Breite, sonst drückt er die Schips-Zeile auf null. */
+.dsa5h-group .dsa5h-group-tile-foot > .dsa5h-group-pool {
+  flex: none;
+  width: auto;
+}
+
+/* Schips in einer Zeile, nie umbrechen (Rückmeldung 2026-11-17): Zustände sind nur noch eine Zähl-Plakette. */
 .dsa5h-group .dsa5h-group-member-schips {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 1px;
+  display: flex;
+  flex: 1 1 0;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .dsa5h-group .dsa5h-group-member-schips .dsa5h-fatepoint {
-  width: 18px;
-  height: 18px;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  margin: 0;
+  background-size: 20px 20px;
+}
+
+.dsa5h-group .dsa5h-group-member-schips .dsa5h-fatepoint:is(span) {
+  cursor: default;
 }
 
 .dsa5h-group .dsa5h-group-mini-pools {
@@ -3717,13 +3813,17 @@
 
 .dsa5h-group .dsa5h-group-cond-count {
   display: inline-grid;
+  flex: none;
   place-items: center;
   min-width: 22px;
   height: 22px;
+  padding: 0 5px;
   border: 1px solid var(--line);
   border-radius: 11px;
+  background: none;
+  color: var(--ink);
   font-size: var(--fs-meta);
-  cursor: help;
+  cursor: pointer;
 }
 
 .dsa5h-group .dsa5h-group-conds {
@@ -3746,6 +3846,15 @@
   width: 18px;
   height: 18px;
   border: 0;
+}
+
+/* Bearbeiten-Modus: Platz für ⋮ und × oben rechts, damit sie nicht über „Bogen öffnen“ bzw. dem Namen liegen. */
+.dsa5h-group .dsa5h-group-tile.size-l.has-tools .dsa5h-group-tile-head {
+  padding-right: 54px;
+}
+
+.dsa5h-group .dsa5h-group-tile.size-m.has-tools .dsa5h-group-member {
+  padding-right: 54px;
 }
 
 .dsa5h-group .dsa5h-group-tile-tools {
@@ -3900,6 +4009,12 @@
   outline-offset: 1px;
 }
 
+.dsa5h-group .dsa5h-group-cond-count:focus-visible,
+.dsa5h-group .dsa5h-group-member-schips button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 .dsa5h-group .dsa5h-group-attr-die:focus-visible {
   transform: scale(1.3);
 }
@@ -3921,6 +4036,10 @@
 
   .dsa5h-group .dsa5h-group-tile-tools button:hover {
     color: var(--ink);
+  }
+
+  .dsa5h-group .dsa5h-group-cond-count:hover {
+    border-color: var(--accent);
   }
 }
 
@@ -6913,11 +7032,11 @@
 }
 
 .dsa5-helpers-sheet .dsa5h-money-panel {
-  flex: 0 0 330px;
+  flex: 1 1 330px;
 }
 
 .dsa5-helpers-sheet .dsa5h-carry-panel {
-  flex: 1;
+  flex: 1 1 220px;
   min-width: 0;
 }
 
@@ -6966,12 +7085,13 @@
    Bild (öffnet das Item) + großer Wert + Kürzel. Der volle Münzname steht im Tooltip am label. */
 .dsa5-helpers-sheet .dsa5h-coins {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0,1fr);
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 1px;
   margin: 12px;
   border: 1px solid var(--line);
   border-radius: 4px;
-  background: var(--field);
+  background: var(--line);
+  overflow: hidden;
 }
 
 .dsa5-helpers-sheet .dsa5h-coins label {
@@ -6981,10 +7101,7 @@
   gap: 4px;
   min-width: 0;
   padding: 6px;
-}
-
-.dsa5-helpers-sheet .dsa5h-coins label + label {
-  border-left: 1px solid var(--line);
+  background: var(--field);
 }
 
 .dsa5-helpers-sheet .dsa5h-coins label a {
@@ -7244,6 +7361,233 @@
   overflow-wrap: anywhere;
   hyphens: auto;
   background: none;
+}
+
+/* --- Laden und Schatz (Issues #77/#78, Variante C „Ware und Beutel“, Vorlage merchant/shop.hbs) --- */
+.dsa5-helpers-sheet .dsa5h-shop-window,
+.dsa5-helpers-sheet .dsa5h-merchant-admin {
+  min-width: 0;
+}
+
+/* Container für die Breitenregel „Ware und Beutel untereinander“ (Abschnitt 18) */
+.dsa5-helpers-sheet .dsa5h-shop-window {
+  container-type: inline-size;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  color: var(--ink);
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-parties {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  padding: 10px;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-party {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-party > img {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-party > div {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-party small {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-small,
+.dsa5-helpers-sheet .dsa5h-shop-act,
+.dsa5-helpers-sheet .dsa5h-shop-seg button,
+.dsa5-helpers-sheet .dsa5h-shop-chip {
+  min-height: var(--hit-sm);
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+  color: var(--ink);
+  font-size: var(--fs-small);
+  cursor: pointer;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-small {
+  flex: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-chip {
+  border-radius: 14px;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop :is(.dsa5h-shop-seg button, .dsa5h-shop-chip)[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--onaccent, #fff);
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-toolbar-row input[type="search"] {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-seg {
+  display: inline-flex;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-seg button + button {
+  border-left-width: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-col h3 {
+  margin: 0 0 2px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--fs-meta);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-row[hidden] {
+  display: none;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-row > img {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  object-fit: contain;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-row.featured {
+  border-color: var(--accent);
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-row.poor .dsa5h-shop-price {
+  color: #a8501a;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-small);
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-name small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-qty,
+.dsa5-helpers-sheet .dsa5h-shop-price {
+  color: var(--muted);
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-price {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-epic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-epic > img {
+  max-width: 50%;
+  border: 0;
+}
+
+.dsa5-helpers-sheet .dsa5h-shop-garadan {
+  width: 48px;
+  height: 48px;
+  background: center / contain no-repeat;
+}
+
+.dsa5-helpers-sheet :is(.dsa5h-shop-small, .dsa5h-shop-act, .dsa5h-shop-seg button, .dsa5h-shop-chip):focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+@media (hover: hover) {
+  .dsa5-helpers-sheet :is(.dsa5h-shop-small, .dsa5h-shop-act, .dsa5h-shop-seg button, .dsa5h-shop-chip):hover {
+    border-color: var(--accent);
+  }
 }
 
 /* ==========================================================================
@@ -7921,6 +8265,12 @@
 
   .dsa5-helpers-sheet .dsa5h-attr-tiles {
     grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+@container (max-width: 640px) {
+  .dsa5-helpers-sheet .dsa5h-shop-split {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

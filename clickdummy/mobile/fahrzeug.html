@@ -6,7 +6,7 @@
 <title>Fahrzeug mobil</title>
 <!-- Fahrzeugbogen auf Smartphone und Tablet (Issue #93, Konzept, Click-Dummy Runde 1, 2026-11-16). Gleiche Inhalte wie
      der Desktop-Dummy (../index.html?actor=fahrzeug, vehicle.js): Reiter des Systembogens (Kampf, Besatzung, Ladung,
-     Status, Beschreibung) plus Titelseite in zwei Varianten (Menü › Diese Seite, ?titel=a|b): A Seekampf, B Reise und
+     Status, Beschreibung) plus Reiter Reise (statt zweier Titelseiten-Varianten, 2026-11-18) und je Reiter einem Satz, was er am Tisch tut; vorher: Titelseite A Seekampf, B Reise und
      Ladung. Kopf ohne Kugeln, Schips und Eigenschaftswürfel; statt dessen die Leisten Strukturpunkte und Besatzung
      (Smartphone im Kopf, Tablet in der linken Spalte mit dem Überblick). Besatzung per Ziehen gibt es am Touchgerät
      nicht: „+ Besatzung“ und „+ Bediener“ öffnen eine Auswahl. Aktionen und Würfe kommen im Modul vom System
@@ -81,6 +81,7 @@ button { font: inherit; }
 .row { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px; border-top: 1px solid var(--line); font-size: 16px; }
 .row .grow { flex: 1; min-width: 0; }
 .row .grow small { display: block; color: var(--ink2); font-size: 13px; }
+.intro { margin: 0 0 8px; color: var(--muted, #6b5f50); font-size: 13px; }
 .row .v { min-width: 34px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
 .row img.ico { width: 32px; height: 32px; flex: none; border-radius: 3px; }
 .row.unloaded { background: rgba(163, 34, 26, .05); }
@@ -145,7 +146,7 @@ button { font: inherit; }
 </head>
 <body>
 <div class="switch">
-  <fieldset data-group="titel"><legend>Titelseite</legend><button data-v="a" aria-pressed="true">A · Seekampf</button><button data-v="b">B · Reise und Ladung</button></fieldset>
+  
   <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
 </div>
 <p class="note">Konzept, wartet auf Rückmeldung der Community (#93). Kopf mit den Leisten Strukturpunkte und Besatzung (− / +), Würfel und TP antippen würfelt, Aktionen öffnen den Dialog des Systems. Am Smartphone wie bei den anderen Bögen nur der Spielmodus.</p>
@@ -180,8 +181,8 @@ const V = {
   ],
   cargoItems: [['Fass Trinkwasser', 6, '3,0', ICON('Equipment')], ['Proviant (Woche)', 2, '1,5', ICON('consumable')], ['Ersatzsegel', 1, '1,0', ICON('Armor')], ['Bolzen für Hornisse', 12, '0,1', ICON('Rangeweapon')]],
 };
-const TABS = [['cover', 'Titelseite', 'Spellextension'], ['combat', 'Kampf', 'ability_combat'], ['crew', 'Besatzung', 'ability_command'], ['inventory', 'Ladung', 'Equipment'], ['status', 'Status', 'ability_ceremonial'], ['notes', 'Beschreibung', 'Ability_Language']];
-const state = { titel: 'a', device: 'phone', tab: 'cover' };
+const TABS = [['cover', 'Titelseite', 'Spellextension'], ['combat', 'Seekampf', 'ability_combat'], ['travel', 'Reise', 'Spellextension'], ['crew', 'Besatzung', 'ability_command'], ['inventory', 'Ladung', 'Equipment'], ['status', 'Status', 'ability_ceremonial'], ['notes', 'Beschreibung', 'Ability_Language']];
+const state = { device: 'phone', tab: 'cover' };
 const available = () => Math.max(0, V.crew.value - V.crew.wounded);
 const pct = (a, b) => Math.round(100 * a / b);
 const num = n => String(n).replace('.', ',');
@@ -204,36 +205,38 @@ const overviewRows = () => [['einsatzbereit', `${available()} von ${V.crew.initi
 const avatar = m => `<button type="button" class="op" style="--c:${m.c}" data-toast="${esc(m.name)} · ${m.ident}${m.role ? ` · ${m.role}` : ''}"><img src="${m.img}" alt="">${esc(m.name.split(' ')[0])}</button>`;
 
 /* ---------------------------------------------------------- Titelseite ---- */
+const intro = t => `<p class="intro">${t}</p>`;
 function cover() {
-  // Smartphone ohne linke Spalte: der Überblick steht oben als Werte-Kasten (wie beim NSC).
   const overview = state.device === 'phone' ? panel('Werte', `<div class="stats">${[['RS', V.hullArmor], ['Tempo', V.speed.base], ['INI', V.initiative], ['bereit', `${available()}/${V.crew.initial}`], ['verwundet', V.crew.wounded], ['Ladung', `${pct(V.cargo.used, V.cargo.capacity)} %`]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div>`) : '';
-  if (state.titel === 'a') {
-    const right = weapons('Rammen', [V.ram]) + locomotion();
-    return overview + actions() + weapons('Bordwaffen', [...V.ranged, ...V.melee], 'Fern- und Nahkampf') + (state.device === 'tablet' ? `<div class="cols"><div>${weapons('Rammen', [V.ram])}</div><div>${locomotion()}</div></div>` : right);
-  }
+  const crew = panel('An Bord', `<div class="crewstrip">${V.crewMembers.map(avatar).join('')}</div>`, `${available()} von ${V.crew.initial} einsatzbereit`);
+  return overview + intro('Überblick am Tisch: Zustand des Fahrzeugs, die Aktionen, die fast jede Runde gebraucht werden, und wer an Bord ist. Kampf und Reise haben eigene Reiter.') + actions() + crew;
+}
+function travelTab() {
   const travel = panel('Reise', `<div class="stats">${[['Grundtempo', V.speed.base], ['zu Wasser', V.speed.water], ['in der Luft', V.speed.air || '–'], ['Rammtempo', V.speed.ram]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div><div class="modes">${V.travelModes.map(([l, on]) => `<span class="mode${on ? '' : ' off'}">${l}</span>`).join('')}</div>`);
   const cargo = panel('Ladung', `<div class="cargo" style="--p:${pct(V.cargo.used, V.cargo.capacity)}%"><i></i></div>${V.cargoItems.slice(0, 3).map(([n, q, , img]) => `<div class="row"><img class="ico" src="${img}" alt=""><span class="grow">${n}</span><span class="v">× ${q}</span></div>`).join('')}<button type="button" class="more" data-tab="inventory">Ganze Ladung</button>`, `${num(V.cargo.used)} von ${V.cargo.capacity} Stein`);
   const crew = panel('An Bord', `<div class="crewstrip">${V.crewMembers.map(avatar).join('')}</div>`, `${available()} von ${V.crew.initial} einsatzbereit`);
-  return overview + (state.device === 'tablet' ? `<div class="cols"><div>${travel}${crew}</div><div>${cargo}</div></div>` : travel + cargo + crew);
+  const lead = intro('Für Fahrten über längere Strecken: Tempo, Reisearten, Ladung und wer an Bord ist.');
+  return lead + (state.device === 'tablet' ? `<div class="cols"><div>${travel}${crew}</div><div>${cargo}</div></div>` : travel + cargo + crew);
 }
 
 /* -------------------------------------------------------------- Reiter ---- */
 const statPanel = (title, rows) => panel(title, rows.map(([k, v]) => `<div class="row"><span class="grow">${k}</span><span class="v">${v}</span></div>`).join(''));
 function combat() {
+  const lead = intro('Für den Kampf zwischen Fahrzeugen: Aktionen der Helden, Bordwaffen und Rammen, Geschützkunde, Fortbewegung, Rumpfschutz.');
   const values = [statPanel('Einstufung', [['Antrieb', V.propulsion], ['Größenkategorie', V.size]]), statPanel('Tempo', [['Grundtempo', V.speed.base], ['Rammtempo', V.speed.ram], ['zu Wasser', V.speed.water], ['in der Luft', V.speed.air]]),
     statPanel('Kampf', [['Geschützkunde', V.gunnery], ['Initiative', V.initiative], ['Aktionen', V.actions], ['Distanz (RE)', V.distance]]), statPanel('Logistik', [['Ladekapazität', `${V.cargo.capacity} Stein`], ['Preis', V.price]])];
   const gun = panel('Geschützkunde', `<div class="row"><span class="grow">Geschütze</span>${cdie(V.gunnery, 'mu', 'Geschützkunde')}</div>`);
   const hull = panel('Rumpfschutz', V.armor.map(a => `<div class="row"><span class="grow">${a.name}</span><span class="v">RS ${a.rs}</span></div>`).join(''), `RS ${V.hullArmor}`);
-  const main = actions() + weapons('Bordwaffen Fernkampf', V.ranged) + weapons('Rammen', [V.ram]) + weapons('Bordwaffen Nahkampf', V.melee);
+  const main = lead + actions() + weapons('Bordwaffen Fernkampf', V.ranged) + weapons('Rammen', [V.ram]) + weapons('Bordwaffen Nahkampf', V.melee);
   if (state.device === 'tablet') return main + `<div class="cols"><div>${gun}${hull}${locomotion()}</div><div>${values.join('')}</div></div>`;
   return main + gun + hull + locomotion() + values.join('');
 }
-const crew = () => panel('Stärke', `<div class="stats" style="grid-template-columns:repeat(4,minmax(0,1fr))">${[['Sollstärke', V.crew.initial], ['an Bord', V.crew.value], ['verwundet', V.crew.wounded], ['einsatzbereit', available()]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div>`)
+const crew = () => intro('Wer das Fahrzeug bemannt: Sollstärke, verwundete und einsatzbereite Besatzung, Mitglieder mit Posten.') + panel('Stärke', `<div class="stats" style="grid-template-columns:repeat(4,minmax(0,1fr))">${[['Sollstärke', V.crew.initial], ['an Bord', V.crew.value], ['verwundet', V.crew.wounded], ['einsatzbereit', available()]].map(([k, v]) => `<div><b>${v}</b><small>${k}</small></div>`).join('')}</div>`)
   + panel('Mitglieder der Besatzung', `<div class="cards">${V.crewMembers.map(m => `<div class="card" style="--c:${m.c}"><img src="${m.img}" alt=""><b>${esc(m.name)}</b><small>${m.ident} · ${m.role ? `bedient: ${m.role}` : 'ohne Posten'} · Spieler: ${m.owner}</small></div>`).join('')}</div><button type="button" class="add" data-toast="Auswahl öffnet sich: Charakter, NSC oder Kreatur (am Touchgerät statt Ziehen)">+ Besatzung hinzufügen</button>`);
 const inventory = () => panel('Ladung', `<div class="cargo" style="--p:${pct(V.cargo.used, V.cargo.capacity)}%"><i></i></div><div class="sub">Gegenstand · Anzahl · Gewicht</div>${V.cargoItems.map(([n, q, w, img]) => `<div class="row"><img class="ico" src="${img}" alt=""><span class="grow">${n}</span><span class="v">${q}</span><span style="min-width:40px;text-align:right;color:var(--ink2)">${w}</span></div>`).join('')}`, `${num(V.cargo.used)} von ${V.cargo.capacity} Stein · ${pct(V.cargo.used, V.cargo.capacity)} %`);
 const status = () => panel('Zustände und Effekte', '<p>Keine aktiven Effekte. Wie im Heldenbogen: Zustände mit − / +, Effekte des Systems als Liste.</p>');
 const notes = () => panel('Beschreibung', '<p>Platzhalter: Bauart, Geschichte und Eigenheiten des Fahrzeugs.</p>');
-const TAB = { cover, combat, crew, inventory, status, notes };
+const TAB = { cover, combat, travel: travelTab, crew, inventory, status, notes };
 
 /* --------------------------------------------------------------- Rahmen ---- */
 function head() {
@@ -270,7 +273,6 @@ document.addEventListener('click', ev => {
   if (group) {
     state[group] = b.dataset.v;
     b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    if (group === 'titel') state.tab = 'cover';
     return render();
   }
   if (b.dataset.toast) return toast(b.dataset.toast);

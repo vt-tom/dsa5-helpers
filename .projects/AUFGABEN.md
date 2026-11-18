@@ -10,7 +10,7 @@ Redaktioneller Kurzstand für die Projektübersicht. Bestehende Aufgaben, Entsch
 
 ## Bei dir offen
 
-Du: NSC- und Gruppenbogen in Foundry testen (erste Fassung, 13.11.); Platz für Schicksal und Verdammnis im Click-Dummy wählen; Nachtest „Bogen unabhängig vom DSA-Design“.
+Du: Austausch zum Probendialog (#96); Hausregeln #69/#70 entscheiden; Video zu 8.1.0 planen. KI: Umsetzung der Einträge unter „Bereit zur Umsetzung“.
 
 ## Wartet auf
 
@@ -36,60 +36,57 @@ Zwei Branches aus dem Tag `v8.0.0` (Nutzerentscheidung 12.11.2026): `release/8.1
 
 ## 1. Ausdefinieren
 
-- Du: **Gruppenbogen: Platz für Schicksal und Verdammnis** · #55 — Click-Dummy `?actor=gruppe`, Menü › Diese Seite: A linke Spalte,
-  B in den Kacheln (Vorschlag: im System schon angelegt), C eigenes Panel. Variante wählen; erst danach Foundry.
-- Du: **Reiter „Lager“ im Gruppenbogen** · #55 — in Foundry vorerst nur Helfer der Inhaltsmodule plus Würfelstatistik/Hausregelbuch;
-  Vorschläge (Rasten, Wetter, Wache, Kräutersuche) noch nicht gebaut. Auswahl prüfen, Rückmeldung der Runde einholen.
-
-- Du: **Händler- und Schatzbogen** · #77 #78 — Click-Dummy Desktop `?actor=haendler|schatz`, Tablet/Smartphone `mobile/haendler-schatz.html` (16.11.):
-  Rolle Spieler → Laden, SL → Reiter „Laden“; Menü › Diese Seite: A Kacheln, B Liste, C Ware und Beutel. Variante wählen, dann Foundry.
-
-- Du: **Fahrzeugbogen (Konzept)** · #93 — Click-Dummy Desktop `?actor=fahrzeug`, Tablet/Smartphone `mobile/fahrzeug.html` (16.11.), Menü › Diese
-  Seite: Titelblatt A Seekampf, B Reise und Ladung. Ansehen, Issue in der Community teilen; Foundry erst nach deren Rückmeldung.
+- Du: **Fahrzeugbogen (Konzept)** · #93 — Click-Dummy (`?actor=fahrzeug`, `mobile/fahrzeug.html`): Reiter Seekampf und Reise im selben Bogen, je Reiter ein Satz, was er am Tisch tut. Ansehen, Rückmeldung; Foundry erst nach Rückmeldung der Community.
+- Du: **Audio mobil** · #98 — Click-Dummy `mobile/app.html`: Konto-Knopf oben → Regler Musik/Umgebung/Oberfläche mit Stumm-Knopf je Kanal. Ansehen, Rückmeldung; dann Foundry.
+  - Sieht gut aus, so umsetzen
 
 ## 2. Bereit zur Umsetzung
 
-
 ## 3. Umgesetzt – testen
 
-- [ ] Du: **Tooltips im Bogen** · #52 · Desktop — Maus kurz auf Namen (Talente, Zauber, Inventar, Titelblatt, Zustände, Hände, Wappenschild; NSC,
-  Kreatur, Gruppe) → Karte des Systems neben dem Fenster, Mittelklick heftet an; Einstellung „Tooltips beim Überfahren“ aus → keine.
-- [ ] Du: **NSC-Bogen in Foundry** · #53 — NSC → Bogen-Umschalter „DSA5 Helfer-NSC-Bogen“, Desktop/Tablet/Handy → Titelblatt mit Angriffen,
-  Talenten (− / +) und Favoriten, links Werte · Status · Person, Würfe gehen; als Händler/Schatz und zurück → wieder Helfer-Bogen.
-- [ ] Du: **Gruppenbogen in Foundry** · #55 — Gruppe → „DSA5 Helfer-Gruppenbogen“, als SL und Spieler: Kacheln S/M/L, Freigaben (Bearbeiten
-  bzw. Spielleitung), Gruppenprobe/Anfordern, Kasse, Schips; Spieler fragt Lager-Helfer an → SL „Ausführen“. Inventar/Reise = Systemansicht.
-
-- [X] Du: **Hinweis Händler/Schatz im Helfer-Bogen** · #54 — Schatz-Kreatur per Umschalter in den Helfer-Bogen holen → Hinweisleiste über dem
-  Reiter-Titel (Desktop, Tablet, Handy; Spieler mit eingeschränkter Sicht über dem Porträt); der genannte Weg führt in den Schatzbogen.
-- [X] Du: **Rückweg aus Schatz** · #54 — Kreatur im Helfer-Bogen, Token markieren → „In Schatz umwandeln“ → Schatzbogen; nochmal → wieder
-  Helfer-Bogen (auch mit „Standard-Bogen für Kreaturen“ und ohne eigene Wahl); Umschalter zeigt keinen Händlerbogen mehr.
-- [X] Du: **Tablet: Fensterknöpfe größer** · #76 — Tablet, Helden- und Kreaturbogen (Spielen und Bearbeiten, auch minimiert) → Knöpfe oben rechts
-  fingergroß und gut zu treffen, Plakette verdeckt nichts im Kopf (Schips, Banner-Knöpfe); Desktop unverändert.
-- [X] Du: **Kreaturbogen: Spielen/Bearbeiten** · #54 — gewöhnliche Kreatur (Wolf, Ork) im Helfer-Bogen → Schloss in der Titelleiste da,
-  Auswahl Spielen · Bearbeiten wirkt (vorher fehlte das Schloss, Bogen blieb im Bearbeiten-Modus).
-- [X] Du: **Kreaturbogen** · #54 — Kreatur (z. B. Wolf, Ork, Shruuf) → Bogen-Umschalter „DSA5 Helfer-Kreaturbogen“, alle Reiter am Desktop,
-  Tablet, Handy → Werte wie im Systembogen, Würfe gehen; Rückmeldungen hier eintragen. Offen: Beute schlicht oder volle Ausrüstung? Reiter „Besitzer“ bei Vertrauten?
-- [X] Du: **Standard-Bogen für Kreaturen** · #54 — Einstellungen → „Heldenbogen einrichten“ → Haken setzen, speichern, neu laden →
-  Kreaturen ohne eigene Bogenwahl öffnen im Helfer-Kreaturbogen; Haken weg → wieder Systembogen.
-- [X] Du: **Journal-Browser mobil, Runde 2** (MOBILE.md 16.6) — Tablet/Handy als SL mit Abenteuer: Bücher als Knöpfe, „Bibliothek“ oben links im Kopf
-  (in der Übersicht weg), „‹ Titel“ → Startseite, SL-Knöpfe und Einklapp-Pfeil fingergroß, ‹ › blättern (auf Start-/Vorbereitungsseite gesperrt, war dort wirkungslos).
-- [X] Du: **Click-Dummy: ein Menü, aufgeräumt** — `clickdummy/start-server.bat`: ab 1280 px Breite steht das Menü links offen (einklappbar,
-  gemerkt), schmaler per Knopf; Bogen × Gerät, Ansicht, Testdaten wirken; Handy-Heldenbogen: Kugel, KS und Anzahl öffnen ihre Felder.
+- [ ] Du: **Händler- und Schatzbogen** · #77 #78 · Desktop, Tablet, Handy — NSC/Kreatur/Held mit Helfer-Bogen auf Händler bzw. Schatz stellen → Bogen wechselt selbst auf „Händler/Schatz“ des Moduls, Reiter „Laden“/„Schatz“ mit Bestand/Einstellungen/Zugang; als Spieler (eingeschränkter Zugriff, SL online) → Ware links, Beutel rechts, Kaufen/Verkaufen/Nehmen/Hineinlegen, Kassenbuch; zurückstellen → alter Bogen.
+  Live in Testinstanz geprüft: NSC-Händler (SL, Spieler kauft Seil), Kreatur-Schatz, Held-Händler, Garadan, Fahrzeug (Kundensicht), Smartphone. Nicht geprüft: Verkaufen/Nehmen/Hineinlegen, Tablet, Präsentationsmodus, Held mit Spieler als Besitzer. Fahrzeug: Händlerbogen nur über „Bogen anpassen“ wählbar (kein Helfer-Fahrzeugbogen).
+- [ ] Du: **Tooltips nachbessern** · #52 · Desktop — Tooltips sind jetzt standardmäßig aus; unter „Darstellung und Geräte“ einschalten, Maus auf Talent/SF/Vor-/Nachteil → Karte mit Regel und Beschreibung darunter.
+  Nur statisch geprüft; Felder `system.rule`/`system.description` des Items angenommen, bitte an echten Daten prüfen.
+  - [ ] Passt die Option nicht besser in die Einstellungen für den Bogen?
+  - [ ] Vor, Nachteile, Sonderfertigkeiten: Beschreibung hat einen Transparenten Hintergrund und ist nicht in den Tooltip integriert
+  - [ ] Talente: Beschreibung fehlt noch komplett im Tooltip
+  - [X] Aus und Einschalten des Features klappt
+- [X] Du: **Währungsanzeige unter Beute** · #94 · Desktop — Held mit eigenen Währungen, Reiter Beute, Bogen breiter/schmaler ziehen → alle Münzen bleiben sichtbar (Zeilenumbruch).
+  Nur statisch geprüft; liegt im Arbeitsstand von 8.1.0, noch nicht auf `release/8.0.2` (Commit dort wartet auf deinen Auftrag).
+- [ ] Du: **Sprachen: Beherrschungsgrad** · #95 · Desktop — Held mit Sprache „Muttersprache“ und einer Stufe I–III, Panel „Sprache und Schrift“ → Plakette MS bzw. I–III hinter dem Namen, Tooltip ausgeschrieben.
+  Nur statisch geprüft; Annahme: Muttersprache ist Stufe 4 im System, bitte mit echten Daten bestätigen.
+  - [ ] Muttersprache sollte mit MS und nicht mit IV gekennzeichnet sein. Wobei ich mich frage wie man die Muttersprache in Foundry überhaupt festlegt.
+- [ ] Du: **Hinweis Probendialog** · #96 · Desktop — als neuer Benutzer (oder Einstellung „rollDialogHintSeen“ zurücksetzen) erste Probe öffnen → einmal ein bleibender Hinweis, danach nie wieder.
+  Nur statisch geprüft.
+  - [ ] Dieser Hinweis ist sehr unscheinbar. Ich denke wir sollten dieses Issue vielleicht mit dem Issue 97 verbinden. Wenn ein neuer User bei der Einrichtung an die Hand genommen wird, dann sollte sich das erledigt haben.
+- [ ] Du: **Schicksal und Verdammnis im Gruppenbogen** · #55 · Desktop — Gruppenbogen mit „Götter Aventuriens 2“: links unter den Gruppen-Schips eine Zeile je Mitglied → Götter-Schips mit „+n“; Knopf öffnet als SL den Helfer, als Spieler die Anfrage.
+  Nur statisch geprüft; Kacheln zeigen nur noch eigene Schips (Götter wandern aus den Kacheln in die Spalte).
 
 ## 4. Fertig für Release
 
 Erst als **Beta** (Pre-release `v8.1.0`, Kanal `foundry-v14-beta`), nach Rückmeldung dasselbe Release zum normalen erklären; Korrekturen als
 neue Pre-release `v8.1.1`. Nur v14 (kein 7.1.0), nur nach Auftrag; Ablauf in [RELEASE.md](../docs/RELEASE.md).
 
+- **NSC-Bogen in Foundry** · #53
+- **Gruppenbogen in Foundry** · #55
+- **Hinweis Händler/Schatz im Helfer-Bogen** · #54
+- **Rückweg aus Schatz** · #54
+- **Tablet: Fensterknöpfe größer** · #76
+- **Kreaturbogen** · #54
+- **Kreaturbogen: Spielen/Bearbeiten** · #54
+- **Standard-Bogen für Kreaturen** · #54
+- **Journal-Browser mobil, Runde 2**
+- **Click-Dummy: ein Menü, aufgeräumt**
 - Du: **Video zu 8.1.0** — Inhalte aus CHANGELOG `[8.1.0]` plus alle 8.0.x-Abschnitte (ab 8.0.1); planen mit `/vttom-video-workflow`,
   sobald 8.1.0 steht. Szenen, Testdaten und Beispielhelden dabei festlegen.
 
 ## Bugfixes 8.0.x
 
 [8.0.1](https://github.com/vt-tom/dsa5-helpers/releases/tag/v8.0.1) und [7.0.1](https://github.com/vt-tom/dsa5-helpers/releases/tag/v7.0.1)
-am 16.11.2026 veröffentlicht (#79–#91, v13 nur #79 und #87), Issues und Meilenstein 8.0.1 geschlossen, `main` nachgezogen.
-Hauptordner seit 16.11. auf `release/8.1.0`. Nächste Fehlerkorrekturen auf `release/8.0.2` (bei Bedarf eigener Arbeitsordner):
-Fix dort committen, dann in `release/8.1.0` per `git merge --no-ff release/8.0.2` übernehmen.
+am 16.11.2026 veröffentlicht, Issues und Meilenstein geschlossen, `main` nachgezogen. Hauptordner seit 16.11. auf `release/8.1.0`.
+Nächste Fehlerkorrekturen auf `release/8.0.2` (eigener Branch, bei Bedarf eigener Arbeitsordner): Fix dort committen,
+dann in `release/8.1.0` per `git merge --no-ff release/8.0.2` übernehmen.
 
 ## Später
 
@@ -99,10 +96,12 @@ Fix dort committen, dann in `release/8.1.0` per `git merge --no-ff release/8.0.2
   gebundene SF (z. B. Stabzauber) beim Freigeben automatisch entfernen oder von Hand? Danach KI: umsetzen.
 - Du: **Hausregel „Sitzungs-Schips“** · #70 — Antworten da (Obergrenze gilt, Automatik erwünscht, alle vorausgewählt). Entscheiden: Sitzungsbeginn
   automatisch erkennen (≥ 8 h seit letztem Start) oder nur Frage beim SL-Login? Danach KI: umsetzen.
+- Du: **Probendialog überarbeiten** · #96 — Konzeptbild im Issue (Symbolknöpfe statt Ausklappbereichen, Würfeln fest unten). Zuerst kritischer
+  Austausch mit der KI (Sinn, Alternativen, Umfang); bis dahin kein Click-Dummy.
 
 ### Wartet auf Dritte
 
-- **Bannerbild** — Rückmeldungen der Nutzer zu Tablet/Handy und The Forge (`forgevtt`); ein Fehler wird ein neues Issue.
+- **Bannerbild** · #87 — Rückmeldungen der Nutzer zu Tablet/Handy und The Forge (`forgevtt`); ein Fehler wird ein neues Issue.
 - **Fahrzeugbogen** · #93 — Rückmeldung der Community: wofür Fahrzeuge am Tisch genutzt werden (Seekampf, Reise, Lager); danach Variante wählen.
 
 ### Ideen
@@ -111,8 +110,8 @@ Fix dort committen, dann in `release/8.1.0` per `git merge --no-ff release/8.0.2
 - **Kampf-Aktionen** · #60 — Schnellzugriff im Kampf ohne Bogen (Angriffe, waffenlos, Zauber, Liturgien, Gegenstände, Zug verschieben). Offen: Umfang, nur mobil oder auch Desktop.
 - **Dunkles Thema mobil** · #61 — echtes dunkles Thema für Systemfenster, Dialoge und Panels (seit 0.6.3 mobil immer hell). Ausgangspunkt: MOBILE.md 15.5.
 - **Geldbörse erweitern** · #57 — weitere Währungen mit Umrechnen. Offen: Herkunft der Währungen (Rechte), Datenmodell.
-- **v13: Helfen und Grundmanöver** · #66 — machbar über nachgebildeten Modifikator-Hook (Hülle um `DiceDSA5.setupDialog`, braucht deine Freigabe); Grundmanöver aufwendig,
-  weil DSA7 je Modifikator nur einen Wert kennt. v13 bekommt seit 12.11.2026 nur noch Bugfixes; nur bei ausdrücklichem Bedarf.
+- **Einrichtungsassistent** · #97 — beim ersten Aktivieren Funktionen wählen. Offen: nur SL oder auch Spieler, pro Welt oder Nutzer, Bezug zu `lastSeenVersion`.
+- **Lager-Reiter, Vorschläge** · #55 — Rasten, Wetter, Wache, Kräutersuche; bewusst nicht gebaut, nur bei Bedarf der Runde.
 - **Mobil, später** — „Neu“-Markierung im Journal, eigene Tablet-Bogenansicht, Steigern/Bearbeiten auf dem Handy.
 
 ---
@@ -121,59 +120,49 @@ Fix dort committen, dann in `release/8.1.0` per `git merge --no-ff release/8.0.2
 
 ## Überblick (erzeugt)
 
-_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-16T10:00:41.540Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
+_Automatisch erzeugt aus GitHub (`vt-tom/dsa5-helpers`, Abruf 2026-11-18T13:19:38.322Z) und den Abschnitten oben. Nur zur Information, keine Beauftragung. Nicht von Hand bearbeiten._
 
-| Abschnitt | Du | KI | Einträge |
-|---|---|---|---|
-| Bestehende Aufgaben im Detail | – | – | 5 |
-| Ausdefinieren | 5 | – | 5 |
-| Bereit zur Umsetzung | – | – | 0 |
-| Umgesetzt – testen | 11 | – | 11 |
-| Fertig für Release | – | – | 0 |
-| Bugfixes 8.0.x | 18 | – | 18 |
-| Später – Nächste Version | 2 | – | 2 |
-| Später – Wartet auf Dritte | – | – | 2 |
-| Später – Ideen | – | – | 6 |
+| Abschnitt                     | Du | KI | Einträge |
+| ----------------------------- | -- | -- | --------- |
+| Bestehende Aufgaben im Detail | – | – | 5         |
+| Ausdefinieren                 | 2  | – | 2         |
+| Bereit zur Umsetzung          | – | – | 0         |
+| Umgesetzt – testen           | 6  | – | 6         |
+| Fertig für Release           | 1  | – | 11        |
+| Später – Nächste Version   | 3  | – | 3         |
+| Später – Wartet auf Dritte  | – | – | 2         |
+| Später – Ideen              | – | – | 7         |
 
-**Offene Issues (24)**
+**Offene Issues (23)**
 
-| # | Titel | Meilenstein | Labels | In der Liste |
-|---|---|---|---|---|
-| [#52](https://github.com/vt-tom/dsa5-helpers/issues/52) | feat: Tooltips | 8.1.0 | – | Umgesetzt – testen |
-| [#53](https://github.com/vt-tom/dsa5-helpers/issues/53) | feat: NSC Sheet im DSA Helpers Design | 8.1.0 | – | Nächster Einstieg, Umgesetzt – testen |
-| [#54](https://github.com/vt-tom/dsa5-helpers/issues/54) | feat: Kreatur Sheet im DSA Helpers Design | 8.1.0 | – | Nächster Einstieg, Umgesetzt – testen |
-| [#55](https://github.com/vt-tom/dsa5-helpers/issues/55) | feat: Gruppen Sheet im DSA Helpers Design | 8.1.0 | – | Nächster Einstieg, Ausdefinieren, Umgesetzt – testen |
-| [#57](https://github.com/vt-tom/dsa5-helpers/issues/57) | feat: Geldbörse erweitern | – | – | Später – Ideen |
-| [#60](https://github.com/vt-tom/dsa5-helpers/issues/60) | feat: Kampf-Aktionen – Schnellzugriff im Kampf ohne Heldenbogen | – | enhancement | Später – Ideen |
-| [#61](https://github.com/vt-tom/dsa5-helpers/issues/61) | feat: Dunkles Thema für Mobil-Fenster | – | enhancement | Später – Ideen |
-| [#69](https://github.com/vt-tom/dsa5-helpers/issues/69) | feat: Hausregel „Gebundene AP“ – AP verlorener Begleiter und Gegenstände bleiben zweckgebunden | – | enhancement | Später – Nächste Version |
-| [#70](https://github.com/vt-tom/dsa5-helpers/issues/70) | feat: Hausregel „Sitzungs-Schips“ – mindestens ein Schip zu Sitzungsbeginn | – | enhancement | Später – Nächste Version |
-| [#76](https://github.com/vt-tom/dsa5-helpers/issues/76) | feat: Tablet – Fensterknöpfe der Bögen größer | 8.1.0 | enhancement | Umgesetzt – testen |
-| [#77](https://github.com/vt-tom/dsa5-helpers/issues/77) | feat: Händlerbogen im DSA Helpers Design | 8.1.0 | enhancement | Ausdefinieren |
-| [#78](https://github.com/vt-tom/dsa5-helpers/issues/78) | feat: Schatzbogen im DSA Helpers Design | 8.1.0 | enhancement | Ausdefinieren |
-| [#79](https://github.com/vt-tom/dsa5-helpers/issues/79) | Kampfkarte (Fehlermeldung) | 8.0.1 | – | Bugfixes 8.0.x |
-| [#80](https://github.com/vt-tom/dsa5-helpers/issues/80) | Behältnisse (Optimierungwunsch) | 8.0.1 | – | Bugfixes 8.0.x |
-| [#81](https://github.com/vt-tom/dsa5-helpers/issues/81) | Vor- & Nachteile (Optimierungswunsch) | 8.0.1 | – | Bugfixes 8.0.x |
-| [#82](https://github.com/vt-tom/dsa5-helpers/issues/82) | Sprachen (Optimierungswunsch) | 8.0.1 | – | Bugfixes 8.0.x |
-| [#84](https://github.com/vt-tom/dsa5-helpers/issues/84) | Magie (Optimierungswunsch) | 8.0.1 | – | Bugfixes 8.0.x |
-| [#85](https://github.com/vt-tom/dsa5-helpers/issues/85) | Optik (Optimierungswunsch) | 8.0.1 | – | Bugfixes 8.0.x |
-| [#86](https://github.com/vt-tom/dsa5-helpers/issues/86) | Kraftspeicher (Optimierungswunsch) | 8.0.1 | – | Bugfixes 8.0.x |
-| [#89](https://github.com/vt-tom/dsa5-helpers/issues/89) | feat: Götterschips unterstützung | 8.0.1 | – | Ausdefinieren, Bugfixes 8.0.x · Achtung: Meilenstein 8.1.0 fehlt |
-| [#90](https://github.com/vt-tom/dsa5-helpers/issues/90) | Automatische Parade - Verbesserung | 8.0.1 | – | Bugfixes 8.0.x |
-| [#91](https://github.com/vt-tom/dsa5-helpers/issues/91) | Dramatis Personae Tab - Verbesserungen | 8.0.1 | – | Bugfixes 8.0.x |
-| [#92](https://github.com/vt-tom/dsa5-helpers/issues/92) | Grundmanöver statt gleichwertiger Sonderfertigkeiten (Optimierungswunsch) | – | – | Bugfixes 8.0.x, Später – Ideen |
-| [#93](https://github.com/vt-tom/dsa5-helpers/issues/93) | feat: Fahrzeugbogen im DSA Helpers Design | – | enhancement | Ausdefinieren, Später – Wartet auf Dritte · Achtung: Meilenstein 8.1.0 fehlt |
-
-**Geschlossen, aber noch in der Liste**
-
-| #                                                      | Titel                                                                            | Meilenstein | Labels      | In der Liste                                                |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------- | ----------- | ----------- | ----------------------------------------------------------- |
-| [#66](https://github.com/vt-tom/dsa5-helpers/issues/66) | feat: Grundmanöver „Stören und Ablenken“ (Paladose)                          | 0.6.3       | enhancement | Später – Ideen · Achtung: geschlossen, steht noch hier   |
-| [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) | feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) | –          | enhancement | Nächster Einstieg · Achtung: geschlossen, steht noch hier |
-| [#87](https://github.com/vt-tom/dsa5-helpers/issues/87) | Bannerbild (Frage)                                                               | 8.0.1       | –          | Bugfixes 8.0.x · Achtung: geschlossen, steht noch hier     |
+| #                                                        | Titel                                                                                               | Meilenstein | Labels      | In der Liste                                                                                        |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ----------- | ----------- | --------------------------------------------------------------------------------------------------- |
+| [#52](https://github.com/vt-tom/dsa5-helpers/issues/52)   | feat: Tooltips                                                                                      | 8.1.0       | –          | Umgesetzt – testen                                                                                 |
+| [#53](https://github.com/vt-tom/dsa5-helpers/issues/53)   | feat: NSC Sheet im DSA Helpers Design                                                               | 8.1.0       | –          | Nächster Einstieg, Fertig für Release                                                             |
+| [#54](https://github.com/vt-tom/dsa5-helpers/issues/54)   | feat: Kreatur Sheet im DSA Helpers Design                                                           | 8.1.0       | –          | Nächster Einstieg, Fertig für Release                                                             |
+| [#55](https://github.com/vt-tom/dsa5-helpers/issues/55)   | feat: Gruppen Sheet im DSA Helpers Design                                                           | 8.1.0       | –          | Nächster Einstieg, Umgesetzt – testen, Fertig für Release, Später – Ideen                      |
+| [#57](https://github.com/vt-tom/dsa5-helpers/issues/57)   | feat: Geldbörse erweitern                                                                          | –          | –          | Später – Ideen                                                                                    |
+| [#60](https://github.com/vt-tom/dsa5-helpers/issues/60)   | feat: Kampf-Aktionen – Schnellzugriff im Kampf ohne Heldenbogen                                    | –          | enhancement | Später – Ideen                                                                                    |
+| [#61](https://github.com/vt-tom/dsa5-helpers/issues/61)   | feat: Dunkles Thema für Mobil-Fenster                                                              | –          | enhancement | Später – Ideen                                                                                    |
+| [#69](https://github.com/vt-tom/dsa5-helpers/issues/69)   | feat: Hausregel „Gebundene AP“ – AP verlorener Begleiter und Gegenstände bleiben zweckgebunden  | –          | enhancement | Bei dir offen, Später – Nächste Version                                                          |
+| [#70](https://github.com/vt-tom/dsa5-helpers/issues/70)   | feat: Hausregel „Sitzungs-Schips“ – mindestens ein Schip zu Sitzungsbeginn                       | –          | enhancement | Später – Nächste Version                                                                         |
+| [#76](https://github.com/vt-tom/dsa5-helpers/issues/76)   | feat: Tablet – Fensterknöpfe der Bögen größer                                                  | 8.1.0       | enhancement | Fertig für Release                                                                                 |
+| [#77](https://github.com/vt-tom/dsa5-helpers/issues/77)   | feat: Händlerbogen im DSA Helpers Design                                                           | 8.1.0       | enhancement | Umgesetzt – testen                                                                                 |
+| [#78](https://github.com/vt-tom/dsa5-helpers/issues/78)   | feat: Schatzbogen im DSA Helpers Design                                                             | 8.1.0       | enhancement | Umgesetzt – testen                                                                                 |
+| [#87](https://github.com/vt-tom/dsa5-helpers/issues/87)   | Bannerbild (Frage)                                                                                  | –          | –          | Später – Wartet auf Dritte                                                                        |
+| [#92](https://github.com/vt-tom/dsa5-helpers/issues/92)   | Grundmanöver statt gleichwertiger Sonderfertigkeiten (Optimierungswunsch)                          | –          | –          | Später – Ideen                                                                                    |
+| [#93](https://github.com/vt-tom/dsa5-helpers/issues/93)   | feat: Fahrzeugbogen im DSA Helpers Design                                                           | 8.1.0       | enhancement | Ausdefinieren, Später – Wartet auf Dritte                                                         |
+| [#94](https://github.com/vt-tom/dsa5-helpers/issues/94)   | Währungsanzeuge unter Beute (Optimierungswunsch)                                                   | 8.0.2       | –          | Umgesetzt – testen · Achtung: Meilenstein 8.1.0 fehlt                                             |
+| [#95](https://github.com/vt-tom/dsa5-helpers/issues/95)   | Sprachen: Beherrschungsgrad neben dem Favoriten-Stern anzeigen                                      | 8.1.0       | –          | Umgesetzt – testen                                                                                 |
+| [#96](https://github.com/vt-tom/dsa5-helpers/issues/96)   | Probendialog (Kampf): Modifikatoren auf einen Blick, Würfeln-Knopf ohne Scrollen                   | –          | –          | Bei dir offen, Umgesetzt – testen, Später – Nächste Version · Achtung: Meilenstein 8.1.0 fehlt |
+| [#97](https://github.com/vt-tom/dsa5-helpers/issues/97)   | Einrichtungsassistent beim ersten Aktivieren: Funktionen wählen                                    | –          | –          | Später – Ideen                                                                                    |
+| [#98](https://github.com/vt-tom/dsa5-helpers/issues/98)   | feat: Smartphone/Tablet – Audio-Einstellungen verfügbar machen                                    | 8.1.0       | –          | Ausdefinieren                                                                                       |
+| [#99](https://github.com/vt-tom/dsa5-helpers/issues/99)   | Titelblatt: Sprachen und Schriften unter Persönliche Daten abbilden                                | 8.1.0       | enhancement | Achtung: fehlt in der Liste                                                                         |
+| [#100](https://github.com/vt-tom/dsa5-helpers/issues/100) | DSA5 8.2.2: Tradition, Leiteigenschaft, Energiefaktor und Glückliche Talente fehlen im Datenmodell | 8.0.2       | bug         | Achtung: fehlt in der Liste                                                                         |
+| [#101](https://github.com/vt-tom/dsa5-helpers/issues/101) | Gruppenbogen: Darstellung mit dunklen Designs fehlerhaft (Reise-Tabelle)                            | 8.1.0       | bug         | Achtung: fehlt in der Liste                                                                         |
 
 **Kürzlich geschlossen (14 Tage: 16)**
 
-[#87](https://github.com/vt-tom/dsa5-helpers/issues/87) Bannerbild (Frage) (erledigt, 16.11.) · [#83](https://github.com/vt-tom/dsa5-helpers/issues/83) Hausregeln (Feedback) (erledigt, 16.11.) · [#88](https://github.com/vt-tom/dsa5-helpers/issues/88) NSC- und Kreaturenbögen (Optimierungswunsch) (geschlossen (nicht geplant), 16.11.) · [#75](https://github.com/vt-tom/dsa5-helpers/issues/75) Einstellung „Talent-Vorschläge auf dem Titelblatt“ gehört unter „Heldenbogen einrichten“ (erledigt, 12.11.) · [#74](https://github.com/vt-tom/dsa5-helpers/issues/74) bug: Tablet und Smartphone - Munitionsauswahl kann nicht verwendet werden, Auswahl nicht sichtbar. (erledigt, 12.11.) · [#73](https://github.com/vt-tom/dsa5-helpers/issues/73) bug: Kraftspeicher öffnet sich immer beim Mouseover (erledigt, 12.11.) · [#68](https://github.com/vt-tom/dsa5-helpers/issues/68) feat: Getrennte Versionslinien je Foundry-Generation (7.x v13, 8.x v14, 9.x v15) (erledigt, 12.11.) · [#72](https://github.com/vt-tom/dsa5-helpers/issues/72) fix: Gegenstände lassen sich nicht aus einem Behälter verschieben (erledigt, 02.11.) · … und 8 weitere
+[#91](https://github.com/vt-tom/dsa5-helpers/issues/91) Dramatis Personae Tab - Verbesserungen (erledigt, 16.11.) · [#90](https://github.com/vt-tom/dsa5-helpers/issues/90) Automatische Parade - Verbesserung (erledigt, 16.11.) · [#89](https://github.com/vt-tom/dsa5-helpers/issues/89) feat: Götterschips unterstützung (erledigt, 16.11.) · [#86](https://github.com/vt-tom/dsa5-helpers/issues/86) Kraftspeicher (Optimierungswunsch) (erledigt, 16.11.) · [#85](https://github.com/vt-tom/dsa5-helpers/issues/85) Optik (Optimierungswunsch) (erledigt, 16.11.) · [#84](https://github.com/vt-tom/dsa5-helpers/issues/84) Magie (Optimierungswunsch) (erledigt, 16.11.) · [#82](https://github.com/vt-tom/dsa5-helpers/issues/82) Sprachen (Optimierungswunsch) (erledigt, 16.11.) · [#81](https://github.com/vt-tom/dsa5-helpers/issues/81) Vor- & Nachteile (Optimierungswunsch) (erledigt, 16.11.) · … und 8 weitere
 
 <!-- GITHUB-ISSUES:END -->

@@ -578,21 +578,11 @@ const groupOrb = (m, k, label) => {
 };
 const groupSchipsOnly = (m) => (!groupSees(m, "identity") ? el("span", { class: "group-pool empty", title: groupHiddenTitle }, "–") : m.schips ? el("span", { class: "group-schips", title: `Schicksalspunkte ${m.schips[0] - m.schips[1]} von ${m.schips[0]}` },
   Array.from({ length: m.schips[0] }, (_, i) => el("img", { src: `${ICONS}/${i >= m.schips[0] - m.schips[1] ? "gray_schip" : "schip"}.webp`, alt: "" }))) : el("span", { class: "group-pool empty" }, "–"));
-// Variante B: Götter-/Erzdämonen-Schips direkt hinter den eigenen Schips (wie sie das System in Foundry schon anhängt).
-const groupSchips = (m) => {
-  const own = groupSchipsOnly(m);
-  const special = GROUP_SCHIP_VARIANT === "b" ? groupSpecial(m) : null;
-  return special ? el("span", { class: "group-schips-with-special" }, [own, special]) : own;
-};
-/* Schicksal und Verdammnis (Platzsuche 2026-11-13, kommt noch nicht nach Foundry): Götter- und Erzdämonen-Schips aus
-   „Götter Aventuriens 2“ (dsa5-godsofaventuria2, Flag flags.dsa5.specialPoints.<Name> = {value, current} am Helden). Das
-   System hängt sie in Foundry schon an die Schips des Helden an (Hook dsa5.prepareActorSchips → schipsWithExtras), der
-   Gruppenbogen bekommt sie dort also ohne eigenen Code. Drei Plätze zum Vergleich (Menü › Diese Seite, ?schips=a|b|c):
-   A linke Spalte unter den Gruppen-Schips, B in den Kacheln neben den Schips des Helden, C eigenes Panel über den
-   Kacheln. Bilder: im Modul die Schips des Inhaltsmoduls; hier Götter aus systems/dsa5/icons/months, Erzdämonen mit
-   einem Zaubersymbol des Systems als Platzhalter. Sichtbar wie die Schips: eigene Helden immer, fremde mit der Freigabe
-   „Kultur, Profession und Schips“. */
-let GROUP_SCHIP_VARIANT = "b";
+/* Schicksal und Verdammnis (Nutzerentscheidung 2026-11-17, Variante A): Götter- und Erzdämonen-Schips aus „Götter
+   Aventuriens 2“ (dsa5-godsofaventuria2, Flag flags.dsa5.specialPoints.<Name> = {value, current} am Helden) stehen je Mitglied
+   in der linken Spalte unter den Gruppen-Schips, nicht in den Kacheln. Bilder: im Modul die Schips des Inhaltsmoduls; hier
+   Götter aus systems/dsa5/icons/months, Erzdämonen mit einem Zaubersymbol des Systems als Platzhalter. Sichtbar wie die
+   Schips: eigene Helden immer, fremde mit der Freigabe „Kultur, Profession und Schips“. */
 const DEMONS = ["Agrimoth", "Amazeroth", "Aphasmayra", "Aphestadil", "Asfaloth", "Belhalhar", "Belkelel", "Blakharaz", "Charyptoroth", "Heskatet", "Lolgramoth", "Mishkara", "Nagrach", "Tasfarel", "Thargunitoth"];
 const specialImg = (key) => (DEMONS.includes(key) ? `${ICONS}/spellicons/spells/pandaemonium.webp` : `${ICONS}/months/${key}.webp`);
 const specialTitle = (key, max, cur) => `${DEMONS.includes(key) ? "Verdammnis-Schip" : "Schicksals-Schip"} ${DEMONS.includes(key) ? "des Erzdämons" : "der Gottheit"} ${key}: ${cur} von ${max}`;
@@ -601,7 +591,7 @@ function groupSpecial(m, cls = "") {
   return el("span", { class: "group-special " + cls }, m.special.flatMap(([key, max, cur]) => Array.from({ length: max }, (_, i) =>
     el("img", { src: specialImg(key), alt: "", class: (i < cur ? "" : "used ") + (DEMONS.includes(key) ? "demon" : "god"), title: specialTitle(key, max, cur) }))));
 }
-// Gruppen-Schips als Knöpfe (linke Spalte bzw. Panel in Variante C)
+// Gruppen-Schips als Knöpfe (linke Spalte)
 function groupSchipButtons() {
   return el("span", { class: "group-schips large" }, Array.from({ length: GROUP.schips.max }, (_, i) => {
     const used = i >= GROUP.schips.max - GROUP.schips.used;
@@ -610,7 +600,7 @@ function groupSchipButtons() {
     return b;
   }));
 }
-// Liste „Wer hat welche Götter-/Erzdämonen-Schips“ (Varianten A und C)
+// Liste „Wer hat welche Götter-/Erzdämonen-Schips“
 function groupSpecialRows(compact) {
   const rows = GROUP.members.map((m) => {
     const icons = groupSpecial(m, compact ? "small" : "");
@@ -624,16 +614,6 @@ function groupFateAction() {
   b.addEventListener("click", () => (gm ? groupToast("Schicksal und Verdammnis: Fenster des Inhaltsmoduls") : groupAskDialog("Schicksal und Verdammnis")));
   return b;
 }
-function groupFatePanel() {
-  return el("div", { class: "panel group-fate-panel" }, [
-    el("div", { class: "panel-title flex" }, [el("span", {}, "Schicksal und Verdammnis"), el("small", {}, "Götter Aventuriens 2")]),
-    el("div", { class: "group-fate-body" }, [
-      groupIsGM() ? el("div", { class: "group-fate-group" }, [el("span", { class: "group-side-label dark" }, ["Gruppen-Schips ", gmTag()]), groupSchipButtons()]) : null,
-      el("div", { class: "group-fate-members" }, groupSpecialRows(false)),
-      el("div", { class: "group-fate-foot" }, [groupFateAction()]),
-    ]),
-  ]);
-}
 
 const groupIdent = (m) => (groupSees(m, "identity") ? m.ident : m.ident.split(" · ")[0]);
 const groupName = (m) => {
@@ -644,7 +624,6 @@ const groupName = (m) => {
 const groupCondCount = (m) => (!groupSees(m, "cond") ? el("span", { class: "group-pool empty", title: groupHiddenTitle }, "–") : m.cond.length
   ? el("span", { class: "group-cond-count", title: groupCondText(m) }, String(m.cond.length))
   : el("span", { class: "group-pool empty", title: "keine Zustände" }, "–"));
-const groupCondLine = (m) => (groupSees(m, "cond") ? el("span", { class: "group-cond" + (m.cond.length ? " on" : "") }, groupCondText(m)) : el("span", { class: "group-cond" }, ""));
 const groupAnyValues = (m) => groupOwn(m) || GROUP.vis.lep || GROUP.vis.pools;
 
 // S: klein, drei Spalten – Porträt, Name, LeP, Zustände als Zahl
@@ -658,12 +637,12 @@ const groupTileS = (m) => el("div", { class: "group-tile size-s" }, [
   ]),
 ]);
 
-// M: mittel, zwei Spalten – Name mit Herkunft, LeP/AsP/KaP nebeneinander, Schips und Zustände als Text
+// M: mittel, zwei Spalten – Name mit Herkunft, LeP/AsP/KaP nebeneinander, Schips und Zustände als Zähl-Plakette (Tooltip nennt sie, Klick öffnet den Bogen auf Status)
 const groupTileM = (m) => el("div", { class: "group-tile size-m" }, [
   el("div", { class: "group-member" }, [groupPortrait(m), groupName(m)]),
   groupAnyValues(m) ? el("div", { class: "group-tile-pools" }, GROUP_POOLS.map(([k, l]) => el("div", {}, [el("small", {}, l), groupPool(m, k, l)])))
     : el("div", { class: "group-tile-pools hidden-values" }, el("small", {}, "Werte für Spieler nicht freigegeben")),
-  el("div", { class: "group-tile-foot" }, [groupSchips(m), groupCondLine(m)]),
+  el("div", { class: "group-tile-foot" }, [groupSchipsOnly(m), groupCondCount(m)]),
 ]);
 
 // L: groß, eine Spalte – großes Porträt, Kugeln wie im Heldenbogen, Zustände als Chips, Knöpfe
@@ -675,7 +654,7 @@ function groupTileL(m) {
     groupPortrait(m, "large"),
     el("div", { class: "group-tile-main" }, [
       el("div", { class: "group-tile-head" }, [el("div", { class: "group-name" }, [el("b", {}, m.name), el("small", {}, `${groupIdent(m)} · Spieler: ${m.owner}`)]), open]),
-      el("div", { class: "group-tile-orbs" }, [...(orbs.length ? orbs : [el("span", { class: "muted" }, "Werte für Spieler nicht freigegeben")]), groupSchips(m)]),
+      el("div", { class: "group-tile-orbs" }, [...(orbs.length ? orbs : [el("span", { class: "muted" }, "Werte für Spieler nicht freigegeben")]), groupSchipsOnly(m)]),
       !groupSees(m, "cond") ? null : el("div", { class: "group-conds" }, m.cond.length ? m.cond.map(([n, l]) => el("span", { class: "chip" }, `${n} ${["", "I", "II", "III", "IV"][l]}`)) : [el("span", { class: "muted" }, "keine Zustände")]),
     ]),
   ]);
@@ -711,7 +690,6 @@ function renderGroupCover() {
   document.getElementById("tabHint").replaceChildren(groupSizeSwitch());
   return el("div", {}, [
     groupVisibilityPanel(),
-    GROUP_SCHIP_VARIANT === "c" ? groupFatePanel() : null,
     el("div", { class: `group-tiles size-${GROUP_VARIANT}` }, GROUP.members.map(tile)),
     el("p", { class: "muted group-drop" }, "Charakter, NSC oder Kreatur hierher ziehen, um ihn zur Gruppe hinzuzufügen."),
   ]);
@@ -736,9 +714,9 @@ function groupOverview() {
     ["Schips der Helden", `${heroes.reduce((a, m) => a + m.schips[0] - m.schips[1], 0)} / ${heroes.reduce((a, m) => a + m.schips[0], 0)}`], ["Ø AP", "1 290"]] : [])];
   return [
     block("Gruppenkasse", purse),
-    groupIsGM() && GROUP_SCHIP_VARIANT !== "c" ? el("div", { class: "group-side-block" }, [el("span", { class: "group-side-label" }, ["Gruppen-Schips ", gmTag()]), schips]) : null,
-    // Variante A: Götter- und Erzdämonen-Schips der Mitglieder direkt unter den Gruppen-Schips
-    GROUP_SCHIP_VARIANT === "a" ? el("div", { class: "group-side-block" }, [el("span", { class: "group-side-label" }, "Schicksal und Verdammnis"), ...groupSpecialRows(true), groupFateAction()]) : null,
+    groupIsGM() ? el("div", { class: "group-side-block" }, [el("span", { class: "group-side-label" }, ["Gruppen-Schips ", gmTag()]), schips]) : null,
+    // Götter- und Erzdämonen-Schips der Mitglieder direkt unter den Gruppen-Schips
+    el("div", { class: "group-side-block" }, [el("span", { class: "group-side-label" }, "Schicksal und Verdammnis"), ...groupSpecialRows(true), groupFateAction()]),
     groupIsGM() ? el("div", { class: "group-side-block" }, [el("span", { class: "group-side-label" }, ["Probe anfordern ", gmTag()]), groupAttrRolls()]) : null,
     block("Reisetempo", travel),
     el("dl", { class: "side-details" }, rows.map(([k, v]) => el("div", {}, [el("dt", {}, k), el("dd", {}, v)]))),
@@ -942,17 +920,6 @@ function groupSetup() {
   nonHeroSetup();
   const params = new URLSearchParams(location.search);
   if (["s", "m", "l"].includes(params.get("variante"))) GROUP_VARIANT = params.get("variante");
-  // Platz für Schicksal und Verdammnis (Varianten A/B/C, pages.js zeigt den Umschalter unter „Diese Seite“ und setzt ?schips=)
-  const fate = el("fieldset", { "data-group": "schips" }, [el("legend", {}, "Schicksal und Verdammnis"),
-    ...[["a", "A · Linke Spalte"], ["b", "B · In den Kacheln"], ["c", "C · Eigenes Panel"]].map(([v, label]) => el("button", { type: "button", "data-v": v, "aria-pressed": String(v === GROUP_SCHIP_VARIANT) }, label))]);
-  fate.addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-v]");
-    if (!b) return;
-    GROUP_SCHIP_VARIANT = b.dataset.v;
-    fate.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-    renderContent();
-  });
-  document.querySelector(".toolbar")?.append(fate);
   RENDERERS.cover = renderGroupCover;
   RENDERERS.skills = renderGroupSkills;
   RENDERERS.inventory = renderGroupDepots;

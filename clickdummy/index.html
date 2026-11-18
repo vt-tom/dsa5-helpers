@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DSA5-Helpers · Heldenbogen Click-Dummy</title>
-<link rel="stylesheet" href="style.css?v=277">
+<link rel="stylesheet" href="style.css?v=281">
 </head>
 <body>
 
@@ -47,7 +47,7 @@
   <button type="button" id="diceConsentBtn">Zustimmung (Dialog)</button>
   <button type="button" id="themeToggle">Dunkles Thema</button>
   <!-- #52: Benutzer-Einstellung „Tooltips beim Überfahren“, siehe item-tooltips.js. -->
-  <button type="button" id="tooltipToggle" aria-pressed="false">Tooltips aus (Benutzer)</button>
+  <button type="button" id="tooltipToggle" aria-pressed="true">Tooltips an (Benutzer)</button>
   <!-- Issue #89, Götterschips Variante C (2026-11-16), Testdaten: Anzahl der Götter; siehe fatePointsRow()/fitGodSchips(). -->
   <fieldset data-group="godschips"><legend>Götterschips</legend><button type="button" data-v="0" aria-pressed="true">Keine</button><button type="button" data-v="3" aria-pressed="false">3 Götter</button><button type="button" data-v="7" aria-pressed="false">7 Götter (zu breit)</button></fieldset>
 </div>
@@ -154,15 +154,15 @@
      (führt zu einem leeren Content-Bereich, weil script.js dann Datenformen aus data.js erwartet, die die
      gecachte alte data.js noch nicht hat). Bei Problemen zusätzlich Hard-Refresh (Strg+Umschalt+R). -->
 <script src="assets-map.js?v=19"></script>
-<script src="data.js?v=44"></script>
-<script src="merchant.js?v=2"></script>
-<script src="vehicle.js?v=1"></script>
-<script src="actor-types.js?v=26"></script>
+<script src="data.js?v=45"></script>
+<script src="merchant.js?v=3"></script>
+<script src="vehicle.js?v=2"></script>
+<script src="actor-types.js?v=28"></script>
 <script src="pages.js?v=26"></script>
 <script src="preview-062.js?v=13"></script>
 <script src="hud-preview.js?v=2" defer></script>
-<script src="item-tooltips.js?v=4" defer></script>
-<script src="script.js?v=187"></script>
+<script src="item-tooltips.js?v=5" defer></script>
+<script src="script.js?v=188"></script>
 <script type="module" src="dice-stats.js?v=7"></script>
 <script type="module" src="house-rules.js?v=8"></script>
 </body>

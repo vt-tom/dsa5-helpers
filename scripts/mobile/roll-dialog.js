@@ -33,6 +33,8 @@ export function initRollDialogs(mobileMode) {
     scope: 'world', config: false, restricted: true, type: String, default: 'module', requiresReload: true,
     choices: { module: 'DSA5HELPERS.Settings.RollDialogDesktop.Module', system: 'DSA5HELPERS.Settings.RollDialogDesktop.System' },
   });
+  // Hinweis beim ersten Öffnen am Desktop (#96): einmal je Benutzer, auch wenn die Einstellung später geändert wird.
+  game.settings.register(MODULE_ID, 'rollDialogHintSeen', { scope: 'client', config: false, type: Boolean, default: false });
   if (mobileMode) {
     document.body.classList.add('dsa5h-rd-on');
     return;
@@ -43,6 +45,7 @@ export function initRollDialogs(mobileMode) {
     const el = element instanceof HTMLElement ? element : element?.[0];
     if (!el || !isRollDialog(app, el)) return;
     setupRollDialog(el, app);
+    showDesktopHint();
     // Einmal schmaler und dabei mittig bleiben; danach behält das Fenster, was der Nutzer einstellt
     if (el.dataset.dsa5hRdSized) return;
     el.dataset.dsa5hRdSized = '1';
@@ -55,6 +58,16 @@ export function initRollDialogs(mobileMode) {
   };
   Hooks.on('renderApplicationV2', onRender);
   Hooks.on('renderApplication', onRender);
+}
+
+/** Einmaliger Hinweis (#96): Der Dialog stammt vom Modul; die SL kann auf die Dialoge des Systems zurückschalten. */
+function showDesktopHint() {
+  try {
+    if (game.settings.get(MODULE_ID, 'rollDialogHintSeen')) return;
+    game.settings.set(MODULE_ID, 'rollDialogHintSeen', true);
+  } catch { return; }
+  const where = game.i18n.localize(game.user.isGM ? 'DSA5HELPERS.Settings.RollDialogDesktop.HintGm' : 'DSA5HELPERS.Settings.RollDialogDesktop.HintPlayer');
+  ui.notifications.info(game.i18n.format('DSA5HELPERS.Settings.RollDialogDesktop.HintNotice', { where }), { permanent: true });
 }
 
 /**

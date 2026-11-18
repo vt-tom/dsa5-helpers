@@ -777,7 +777,12 @@ function renderMain() {
       LANGUAGE_POINTS ? el("small", {}, `Sprachpunkte ${LANGUAGE_POINTS.used}/${LANGUAGE_POINTS.value}`) : null,
     ]),
     el("div", { class: "subhead" }, "Sprachen"),
-    el("div", { class: "chips chips-fill" }, LANGUAGES.map((l) => deletableChip(A.abilityLanguage, l, LANGUAGES, l, specFavStar(l)))),
+    el("div", { class: "chips chips-fill" }, LANGUAGES.map((l) => {
+      // Issue #95: Beherrschungsgrad (MS, I–III) als Plakette vor dem Favoriten-Stern; der Tooltip nennt ihn ausgeschrieben.
+      const { name, rank } = rankEntry(l, A.abilityLanguage);
+      const badge = rank ? el("span", { class: "chip-level", title: rank === "MS" ? "Muttersprache" : `Stufe ${rank}` }, rank) : null;
+      return deletableChip(A.abilityLanguage, name, LANGUAGES, l, el("span", { class: "chip-tail" }, [badge, specFavStar(l)]));
+    })),
     el("div", { class: "subhead" }, "Schriften"),
     el("div", { class: "chips chips-fill" }, SCRIPTS.map((s) => deletableChip(A.abilityLanguage, s, SCRIPTS, s, specFavStar(s)))),
   ]);
@@ -3283,7 +3288,7 @@ function collectFavorites() {
 }
 
 function rankEntry(key, img) {
-  const m = key.match(/^(.*?)\s([IVX]+)$/);
+  const m = key.match(/^(.*?)\s([IVX]+|MS)$/);
   return { key, name: m ? m[1] : key, rank: m ? m[2] : "", img };
 }
 

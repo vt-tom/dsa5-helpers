@@ -13,6 +13,10 @@
 {{#*inline "dsa5hSchips"}}
 {{#if member.showSchips}}{{#if member.schips.length}}<span class="dsa5h-group-member-schips">{{#each member.schips as |item|}}{{#if ../member.own}}<button type="button" class="dsa5h-fatepoint {{item.cssClass}}" data-action="heroSchip" data-val="{{item.value}}"{{#if item.path}} data-path="{{item.path}}"{{/if}}{{#if item.tooltip}} data-tooltip="{{item.tooltip}}"{{/if}}{{#if item.tooltipClass}} data-tooltip-class="{{item.tooltipClass}}"{{/if}}{{#if item.style}} style="{{item.style}}"{{/if}} aria-label="{{localize 'fatePoints'}} {{item.value}}"></button>{{else}}<span class="dsa5h-fatepoint {{item.cssClass}}"{{#if item.tooltip}} data-tooltip="{{item.tooltip}}"{{/if}}{{#if item.tooltipClass}} data-tooltip-class="{{item.tooltipClass}}"{{/if}}{{#if item.style}} style="{{item.style}}"{{/if}}></span>{{/if}}{{/each}}</span>{{else}}<span class="dsa5h-group-pool empty">–</span>{{/if}}{{else}}<span class="dsa5h-group-pool empty" data-tooltip="DSA5HELPERS.Group.Hidden">–</span>{{/if}}
 {{/inline}}
+{{!-- Zustände als Zähl-Plakette (S und M, Rückmeldung 2026-11-17): Tooltip nennt alle Zustände, Klick öffnet den Bogen des Mitglieds auf dem Reiter Status. --}}
+{{#*inline "dsa5hCondCount"}}
+{{#if member.conditionsVisible}}{{#if member.conditions.length}}<button type="button" class="dsa5h-group-cond-count" data-action="dsa5hMemberConditions" data-tooltip="{{{member.conditionTip}}}" aria-label="{{localize 'DSA5HELPERS.Group.ConditionsOpen' name=member.name}}">{{member.conditions.length}}</button>{{else}}<span class="dsa5h-group-pool empty" data-tooltip="DSA5HELPERS.Group.NoConditions">–</span>{{/if}}{{else}}<span class="dsa5h-group-pool empty" data-tooltip="DSA5HELPERS.Group.Hidden">–</span>{{/if}}
+{{/inline}}
 <div class="dsa5h-tab" data-tab-panel="cover" hidden>
   {{!-- Smartphone und schmales Fenster: Kasse, Schips, Proben und Reisetempo hier statt in der linken Spalte (_applyCompact). --}}
   <div data-group-overview-slot></div>
@@ -26,14 +30,14 @@
   {{#if dsa5h.members.length}}
   <div class="dsa5h-group-tiles size-{{dsa5h.size}}">
     {{#each dsa5h.members as |member|}}
-    <div class="dsa5h-group-tile size-{{@root.dsa5h.size}}" data-member-key="{{member.key}}" data-uuid="{{member.uuid}}" data-id="{{member.id}}">
+    <div class="dsa5h-group-tile size-{{@root.dsa5h.size}}{{#if @root.dsa5h.editMode}} has-tools{{/if}}" data-member-key="{{member.key}}" data-uuid="{{member.uuid}}" data-id="{{member.id}}">
       {{#if (eq @root.dsa5h.size 's')}}
       <span class="dsa5h-group-portrait round" style="background-image:url('{{member.img}}')" data-tooltip="{{member.name}}{{#if member.ownerName}} · {{localize 'DSA5HELPERS.Group.Player' name=member.ownerName}}{{/if}}"></span>
       <button type="button" class="dsa5h-group-name center" data-action="heroLink" data-tooltip="{{member.name}}{{#if member.ident}} · {{member.ident}}{{/if}}"><b>{{member.firstName}}</b></button>
       {{#if member.lep}}{{> dsa5hPool pool=member.lep uuid=member.uuid name=member.name}}{{else}}<span class="dsa5h-group-pool empty">–</span>{{/if}}
       <span class="dsa5h-group-tile-foot">
         <span class="dsa5h-group-mini-pools">{{#each member.extraPools as |pool|}}{{#if pool.visible}}<span class="dsa5h-group-mini {{pool.key}}" data-tooltip="{{pool.abbr}} {{pool.value}} / {{pool.max}}">{{pool.abbr}} {{pool.value}}</span>{{/if}}{{/each}}</span>
-        {{#if member.conditionsVisible}}{{#if member.conditions.length}}<span class="dsa5h-group-cond-count" data-tooltip="{{member.conditionText}}">{{member.conditions.length}}</span>{{else}}<span class="dsa5h-group-pool empty" data-tooltip="DSA5HELPERS.Group.NoConditions">–</span>{{/if}}{{else}}<span class="dsa5h-group-pool empty" data-tooltip="DSA5HELPERS.Group.Hidden">–</span>{{/if}}
+        {{> dsa5hCondCount member=member}}
       </span>
       {{else if (eq @root.dsa5h.size 'l')}}
       <span class="dsa5h-group-portrait large" style="background-image:url('{{member.img}}')"></span>
@@ -47,7 +51,7 @@
       <div class="dsa5h-group-member"><span class="dsa5h-group-portrait" style="background-image:url('{{member.img}}')" data-tooltip="{{member.name}}{{#if member.ownerName}} · {{localize 'DSA5HELPERS.Group.Player' name=member.ownerName}}{{/if}}"></span><button type="button" class="dsa5h-group-name" data-action="heroLink" data-tooltip="DSA5HELPERS.Group.OpenSheet"><b>{{member.name}}</b><small>{{member.ident}}</small></button></div>
       {{#if member.anyValues}}<div class="dsa5h-group-tile-pools">{{#each member.pools as |pool|}}<div><small>{{pool.abbr}}</small>{{> dsa5hPool pool=pool uuid=member.uuid name=member.name}}</div>{{/each}}</div>
       {{else}}<div class="dsa5h-group-tile-pools hidden-values"><small>{{localize 'DSA5HELPERS.Group.ValuesHidden'}}</small></div>{{/if}}
-      <div class="dsa5h-group-tile-foot">{{> dsa5hSchips member=member}}{{#if member.conditionsVisible}}<span class="dsa5h-group-cond{{#if member.conditions.length}} on{{/if}}">{{#if member.conditions.length}}{{member.conditionText}}{{else}}{{localize 'DSA5HELPERS.Group.NoConditions'}}{{/if}}</span>{{/if}}</div>
+      <div class="dsa5h-group-tile-foot">{{> dsa5hSchips member=member}}{{> dsa5hCondCount member=member}}</div>
       {{/if}}
       {{#if @root.dsa5h.editMode}}<span class="dsa5h-group-tile-tools"><button type="button" data-action="memberContextMenu" data-tooltip="DSA5HELPERS.Group.MemberMenu" aria-label="{{localize 'DSA5HELPERS.Group.MemberMenu'}}"><i class="fas fa-ellipsis-vertical" inert></i></button><button type="button" data-action="removeMember" data-tooltip="DSA5HELPERS.Group.RemoveMember" aria-label="{{localize 'DSA5HELPERS.Group.RemoveMember'}}"><i class="fas fa-times" inert></i></button></span>{{/if}}
     </div>

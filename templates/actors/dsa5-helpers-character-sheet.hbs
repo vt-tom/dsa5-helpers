@@ -1,6 +1,8 @@
 <div>
 {{! One root part; partials keep each tab independently maintainable. }}
-{{#if dsa5h.limited}}
+{{#if dsa5h.shop}}
+<div class="dsa5h-shop-window">{{> "modules/dsa5-helpers/templates/actors/merchant/shop.hbs" epic=dsa5h.shop.epic}}</div>
+{{else if dsa5h.limited}}
 <div class="dsa5h-limited">{{#if dsa5h.merchantNotice}}<p class="dsa5h-notice" role="note">{{dsa5h.merchantNotice}}</p>{{/if}}<img src="{{document.img}}" alt="{{document.name}}"><h1>{{document.name}}</h1><div>{{#if dsa5h.creature}}{{{enrichedDescription}}}{{else}}{{{enrichedBiography}}}{{/if}}</div></div>
 {{else}}
 <nav class="dsa5h-rail" aria-label="{{localize 'DSA5HELPERS.Navigation'}}">

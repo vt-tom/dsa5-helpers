@@ -14,6 +14,7 @@ import { initHud } from './hud.js';
 import { registerAlmanacTabs } from './sheets/almanac.js';
 import { getHouseRulesApp, openHouseRules } from './apps/house-rules.js';
 import { initSheetSwitcher } from './sheet-switcher.js';
+import { registerMerchantSheets } from './sheets/dsa5-helpers-merchant-sheet.js';
 import { initMerchantReturn } from './compat/merchant-return.js';
 import { initBagDrag } from './compat/bag-drag.js';
 import { initMobile, mobileMode } from './mobile/mobile.js';
@@ -125,6 +126,16 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/group/skills.hbs",
   "modules/dsa5-helpers/templates/actors/group/gm.hbs",
   "modules/dsa5-helpers/templates/actors/group/camp.hbs",
+  "modules/dsa5-helpers/templates/actors/merchant/shop.hbs",
+  "modules/dsa5-helpers/templates/actors/merchant/shop-tab.hbs",
+  "modules/dsa5-helpers/templates/actors/merchant/merchant-admin.hbs",
+  "systems/dsa5/templates/actors/merchant/parts/shop-purse.hbs",
+  "systems/dsa5/templates/actors/merchant/parts/shop-trade-log.hbs",
+  "systems/dsa5/templates/actors/merchant/parts/shop-presentation-body.hbs",
+  "systems/dsa5/templates/actors/merchant/merchant-stock.hbs",
+  "systems/dsa5/templates/actors/merchant/merchant-shop-config.hbs",
+  "systems/dsa5/templates/actors/merchant/merchant-access.hbs",
+  "systems/dsa5/templates/system/dsatabs.hbs",
   "modules/dsa5-helpers/templates/actors/group/notes.hbs",
   // Inventar und Reise des Gruppenbogens zeigen vorerst die Vorlagen des Systems in unserem Rahmen.
   "systems/dsa5/templates/actors/group/group-inventory.hbs",
@@ -193,8 +204,10 @@ export function registerGroupSheet() {
   else console.warn('DSA5 Helpers | Gruppenbogen des Systems nicht gefunden, eigener Gruppenbogen nicht verfügbar.');
 }
 
-Hooks.once('ready', () => {
+Hooks.once('ready', async () => {
   registerGroupSheet();
+  // Händler- und Schatzbögen (#77/#78): wie der Gruppenbogen erst hier, die Klassen des Systems stehen vorher nicht bereit.
+  await registerMerchantSheets();
   initBannerSocket();
   showChangelogIfUpdated();
   readyDiceStats();

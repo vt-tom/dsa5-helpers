@@ -9,7 +9,7 @@
   const TARGETS = ".name, .fav-card-name, .weapon-name, .armor-name, .suggest-name, .cs-name, .hand-name, .armor-crest-name, .chip, .group-chip";
   const SHORT = "Platzhalter für den Effekttext aus dem Inhaltsmodul. In Foundry steht hier die Beschreibung des Systems.";
   const LONG = Array.from({ length: 14 }, (_, i) => `Absatz ${i + 1}: ${SHORT}`);
-  let enabled = true;
+  let enabled = false; // Standard aus (Opt-in je Spieler), Schalter unten
   let tip = null;
   let anchor = null;
 
@@ -25,6 +25,9 @@
 .dummy-tt .dummy-tt-stats { display: flex; gap: 6px; padding: 6px 10px 0; flex-wrap: wrap; }
 .dummy-tt .dummy-tt-stats span { padding: 1px 6px; border: 1px solid rgba(188,136,111,.42); border-radius: 8px; background: rgba(225,211,198,.06); font-size: 12px; }
 .dummy-tt p { margin: 6px 10px; }
+.dummy-tt-details { margin: 6px 10px 0; padding-top: 6px; border-top: 1px solid #8a7058; }
+.dummy-tt-details h2 { margin: 4px 0 2px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+.dummy-tt-details p { margin: 0 0 4px; }
 .dummy-tt-more { margin: 0; padding: 3px 8px; border-top: 1px solid #8a7058; background: #16110d; font-size: 12px; font-style: italic; text-align: center; }`;
   document.head.append(style);
 
@@ -52,6 +55,14 @@
       const p = document.createElement("p");
       p.textContent = text;
       body.append(p);
+    }
+    // Talente, Sonderfertigkeiten, Vor- und Nachteile: Regel und Beschreibung des Eintrags unter der Karte (Platzhalter).
+    if (!target.matches(".weapon-name, .armor-name, .hand-name, .armor-crest-name, .group-chip")) {
+      const details = document.createElement("div");
+      details.className = "dummy-tt-details";
+      details.innerHTML = "<h2>Regel</h2><p></p><h2>Beschreibung</h2><p></p>";
+      details.querySelectorAll("p").forEach((p) => { p.textContent = "Platzhalter für den Text aus den Daten des Eintrags."; });
+      body.append(details);
     }
     tip.append(body);
     document.body.append(tip);
@@ -108,10 +119,14 @@
 
   // Schalter „Tooltips“ (Menü › Ansicht): Benutzer-Einstellung an/aus.
   const toggle = document.getElementById("tooltipToggle");
-  toggle?.addEventListener("click", () => {
-    enabled = !enabled;
+  const syncToggle = () => {
     toggle.setAttribute("aria-pressed", String(!enabled));
     toggle.textContent = enabled ? "Tooltips aus (Benutzer)" : "Tooltips an (Benutzer)";
+  };
+  if (toggle) syncToggle();
+  toggle?.addEventListener("click", () => {
+    enabled = !enabled;
+    syncToggle();
     hide();
   });
 })();

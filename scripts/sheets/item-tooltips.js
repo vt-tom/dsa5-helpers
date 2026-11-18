@@ -39,7 +39,8 @@ export function registerItemTooltipSetting() {
     scope: 'user',
     config: false,
     type: Boolean,
-    default: true,
+    // Seit 8.1.0 standardmäßig aus (Opt-in je Spieler): die Karten sind groß und verdecken sonst die Liste.
+    default: false,
     // Abgelegte Namens-Tooltips (siehe onOver) kommen beim Neuzeichnen aus der Vorlage zurück.
     onChange: () => {
       for (const app of foundry.applications.instances.values()) if (app.rendered && app.element?.classList.contains('dsa5-helpers-sheet')) app.render();
@@ -50,7 +51,7 @@ export function registerItemTooltipSetting() {
 function enabled() {
   const body = globalThis.document?.body;
   if (body?.classList.contains('dsa5h-phone') || body?.classList.contains('dsa5h-tablet')) return false;
-  try { return game.settings.get(MODULE_ID, TOOLTIP_SETTING) !== false; } catch { return true; }
+  try { return game.settings.get(MODULE_ID, TOOLTIP_SETTING) === true; } catch { return false; }
 }
 
 /** Was soll das Element zeigen? → { actor, category, id } oder null. */
@@ -134,6 +135,37 @@ function markOverflow(tooltip) {
   tooltip.append(hint);
 }
 
+// Regel und Beschreibung des Items unter der Karte des Systems (Talente, Sonderfertigkeiten, Vor- und Nachteile): Texte
+// kommen aus den Daten des Items (Inhaltsmodul), das Modul bringt keine eigenen mit. Was die Karte schon enthält, entfällt.
+const DETAIL_CATEGORIES = new Set(['skill', 'specialability', 'advantage', 'disadvantage']);
+async function appendDetails(tooltip, target) {
+  if (!tooltip || !DETAIL_CATEGORIES.has(target.category)) return;
+  const item = target.actor?.items?.get(target.id);
+  const enrich = foundry.applications?.ux?.TextEditor?.implementation?.enrichHTML;
+  if (!item || !enrich) return;
+  const plain = html => String(html ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const existing = plain(tooltip.textContent);
+  const parts = [['rule', 'DSA5HELPERS.Tooltip.Rule'], ['description', 'DSA5HELPERS.Tooltip.Description']];
+  const box = document.createElement('div');
+  box.className = 'dsa5h-tt-details';
+  for (const [field, label] of parts) {
+    const raw = item.system?.[field]?.value;
+    const text = plain(raw);
+    if (!text || existing.includes(text.slice(0, 60))) continue;
+    const section = document.createElement('section');
+    const heading = document.createElement('h2');
+    heading.textContent = game.i18n.localize(label);
+    const body = document.createElement('div');
+    body.innerHTML = await enrich(String(raw), { secrets: false, async: true });
+    section.append(heading, body);
+    box.append(section);
+  }
+  if (!box.childElementCount) return;
+  (tooltip.firstElementChild ?? tooltip).append(box);
+  tooltip.querySelector(':scope > .dsa5h-tt-more')?.remove();
+  markOverflow(tooltip);
+}
+
 async function onOver(sheet, root, event) {
   if (event.pointerType === 'touch') return;
   const el = event.target?.closest?.(TOOLTIP_TARGETS);
@@ -158,6 +190,7 @@ async function onOver(sheet, root, event) {
   wrapActivate(tm);
   try {
     await Handler.handleTooltip({ currentTarget: el }, target.actor);
+    if (tm.element === el && tm.tooltip?.classList.contains('dsa5h-tt')) await appendDetails(tm.tooltip, target);
     // Erst danach platzieren: das System verschiebt die Karte nach dem Aktivieren noch selbst (bei `.tab.scrollable`).
     if (tm.element && root.contains(tm.element) && tm.tooltip?.classList.contains('dsa5h-tt')) placeBesideSheet(tm.tooltip, tm.element);
   } catch (err) {

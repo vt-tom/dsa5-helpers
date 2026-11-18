@@ -7,7 +7,7 @@
 <!-- Händler- und Schatzbogen auf Smartphone und Tablet (Issues #77/#78, Click-Dummy Runde 1, 2026-11-16).
      Gleiche Bedienung wie der Desktop-Dummy (../index.html?actor=haendler bzw. ?actor=schatz, merchant.js):
        - Kunde (Spieler mit eingeschränktem Zugriff oder SL in der Kundensicht): nur der Laden bzw. die Schatzkiste,
-         Kundensicht in drei Varianten (Menü › Diese Seite, ?laden=a|b|c): A Kacheln, B Liste, C Ware und Beutel
+         Kundensicht: Variante C „Ware und Beutel“ gewählt (Nutzerentscheidung 2026-11-17, umgesetzt in Foundry 2026-11-18; verworfen: A Kacheln, B Liste mit Verkaufen-Schublade)
          (Smartphone: Umschalter Ware | Mein Beutel, Tablet: nebeneinander).
        - SL/Besitzer: der gewohnte NSC- bzw. Kreaturbogen (nsc-kreatur.html), nur der Inventar-Reiter wird „Laden“ bzw.
          „Schatz“ mit den Abschnitten Bestand · Einstellungen (nur Händler) · Zugang.
@@ -193,7 +193,6 @@ button, input, select { font: inherit; }
 <div class="switch">
   <fieldset data-group="kind"><legend>Bogen</legend><button data-v="haendler" aria-pressed="true">Händler</button><button data-v="schatz">Schatz</button></fieldset>
   <fieldset data-group="rolle"><legend>Rolle</legend><button data-v="kunde" aria-pressed="true">Spieler (Kunde)</button><button data-v="sl">SL (Besitzer)</button></fieldset>
-  <fieldset data-group="laden"><legend>Kundensicht</legend><button data-v="a" aria-pressed="true">A · Kacheln</button><button data-v="b">B · Liste</button><button data-v="c">C · Ware und Beutel</button></fieldset>
   <fieldset data-group="device"><legend>Gerät</legend><button data-v="phone" aria-pressed="true">Smartphone</button><button data-v="tablet">Tablet</button></fieldset>
 </div>
 <p class="note">Spieler sehen nur den Laden bzw. die Schatzkiste, die SL den gewohnten NSC- oder Kreaturbogen mit dem Reiter „Laden“ bzw. „Schatz“ (Bestand · Einstellungen · Zugang). Kundensicht wie am Desktop in drei Varianten. Antippen eines Namens öffnet den Gegenstand, „Kaufen“ / „Nehmen“ gibt ein Stück.</p>
@@ -251,7 +250,7 @@ const SHOP = { wallet: { d: 4, s: 37, h: 12, k: 5 }, priceTier: 3, buyTier: 2, p
   categories: [['Waffen', true], ['Rüstungen', true], ['Werkzeug', true], ['Kleidung', false], ['Proviant', true], ['Alchimie', false], ['Kräuter', false], ['Bücher', false]],
   log: [['Gestern', 'Yasmina kauft Wurfmesser (2)', '−1 S 6 H'], ['Gestern', 'Gerion verkauft Wolfsfell', '+4 S'], ['Vor 3 Tagen', 'Alrik kauft Seil, 10 Schritt', '−4 S 5 H']] };
 
-const state = { kind: 'haendler', rolle: 'kunde', laden: 'a', device: 'phone', tab: 'shop', ctab: 'shop', section: 'stock', side: 'ware', sell: false, chip: 'all', q: '', sort: 'featured', affordable: false, playerView: false };
+const state = { kind: 'haendler', rolle: 'kunde', device: 'phone', tab: 'shop', ctab: 'shop', section: 'stock', chip: 'all', q: '', sort: 'featured', affordable: false, playerView: false };
 const S = () => SHOPS[state.kind];
 const loot = () => state.kind === 'schatz';
 const customer = () => state.rolle === 'kunde' || state.playerView;
@@ -289,12 +288,6 @@ function visibleGoods() {
 }
 const nameBtn = g => SHOP.allowDetails ? `<span data-open="${esc(g.name)}">${esc(g.name)}</span>` : esc(g.name);
 const actLabel = give => give ? (loot() ? 'Hineinlegen' : 'Verkaufen') : (loot() ? 'Nehmen' : 'Kaufen');
-function tile(g, give, i) {
-  const price = loot() ? null : give ? buyPrice(g) : shopPrice(g);
-  const poor = !give && price !== null && price > silverOf(BUYER.wallet);
-  return `<div class="tile${g.featured && !give ? ' featured' : ''}${poor ? ' poor' : ''}"><img src="${g.img}" alt=""><div class="nm">${nameBtn(g)}${g.hook ? `<small>${g.hook}</small>` : ''}</div>`
-    + `<div class="meta">${price !== null ? `<b>${money(price)}</b>` : '<span></span>'}<span>×${g.qty}</span></div><button type="button" class="btn small" data-${give ? 'give' : 'take'}="${i}">${actLabel(give)}</button></div>`;
-}
 function listRow(g, give, i) {
   const price = loot() ? null : give ? buyPrice(g) : shopPrice(g);
   return `<div class="row${g.featured && !give ? ' featured' : ''}"><img class="ico" src="${g.img}" alt=""><span class="grow">${nameBtn(g)}<small>×${g.qty} · ${g.weight} Stein</small></span>${price !== null ? `<span class="price">${money(price)}</span>` : ''}<button type="button" class="btn small" data-${give ? 'give' : 'take'}="${i}">${actLabel(give)}</button></div>`;
@@ -302,7 +295,6 @@ function listRow(g, give, i) {
 function goodsBlock(list, give, layout) {
   const src = give ? BAG : S().goods;
   if (!list.length) return `<div class="empty">${give ? 'Nichts dabei' : loot() ? 'Der Schatz ist leer' : 'Keine passende Ware'}</div>`;
-  if (layout === 'tiles') return `<div class="tiles">${list.map(g => tile(g, give, src.indexOf(g))).join('')}</div>`;
   const cats = [...new Set(list.map(g => g.cat))];
   return `<div class="goods">${cats.map(c => `<section class="panel"><h3>${c}</h3>${list.filter(g => g.cat === c).map(g => listRow(g, give, src.indexOf(g))).join('')}</section>`).join('')}</div>`;
 }
@@ -324,19 +316,11 @@ function shopCustomer() {
   const goods = visibleGoods();
   const bag = BAG.filter(g => g.qty > 0);
   const bagTitle = loot() ? 'Hineinlegen aus deinem Beutel' : 'Verkaufen aus deinem Beutel';
-  if (state.laden === 'c') {
-    // C: Tablet nebeneinander, Smartphone Umschalter Ware | Mein Beutel.
-    if (state.device === 'tablet') return head + filters() + `<div class="split"><div><h3 class="coltitle">${loot() ? 'Im Schatz' : 'Ware des Ladens'}</h3>${goodsBlock(goods, false, 'list')}</div><div><h3 class="coltitle">${bagTitle}</h3>${goodsBlock(bag, true, 'list')}</div></div>`;
-    const seg = `<div class="seg" role="group" aria-label="Ansicht"><button type="button" data-side="ware" aria-pressed="${state.side === 'ware'}">${loot() ? 'Im Schatz' : 'Ware'}</button><button type="button" data-side="beutel" aria-pressed="${state.side === 'beutel'}">Mein Beutel (${bag.length})</button></div>`;
-    return head + seg + (state.side === 'ware' ? filters() + goodsBlock(goods, false, 'list') : goodsBlock(bag, true, 'list'));
-  }
-  const layout = state.laden === 'b' ? 'list' : 'tiles';
-  const sellBtn = `<div class="tools"><button type="button" class="btn" style="flex:1" data-sell aria-pressed="${state.sell}">${state.sell ? 'Zurück zur Ware' : loot() ? 'Hineinlegen …' : 'Verkaufen …'}</button></div>`;
-  if (state.sell) return head + sellBtn + `<h3 class="coltitle">${bagTitle}</h3>` + goodsBlock(bag, true, layout);
-  const specials = layout === 'tiles' && state.chip === 'all' ? goods.filter(g => g.featured) : [];
-  return head + filters() + sellBtn
-    + (specials.length ? `<section class="panel"><h3>Angebote</h3>${goodsBlock(specials, false, 'tiles')}</section>` : '')
-    + goodsBlock(specials.length ? goods.filter(g => !g.featured) : goods, false, layout);
+  // Tablet nebeneinander, Smartphone untereinander (Foundry: Container-Regel unter 640 px).
+  const ware = `<h3 class="coltitle">${loot() ? 'Im Schatz' : 'Ware des Ladens'}</h3>${goodsBlock(goods, false, 'list')}`;
+  const beutel = `<h3 class="coltitle">${bagTitle}</h3>${goodsBlock(bag, true, 'list')}`;
+  if (state.device === 'tablet') return head + filters() + `<div class="split"><div>${ware}</div><div>${beutel}</div></div>`;
+  return head + filters() + ware + beutel;
 }
 const shopLog = () => `<section class="panel log"><h3>Kassenbuch</h3>${SHOP.log.map(([w, what, sum]) => `<div class="row"><span class="when">${w}</span><span class="grow">${esc(what)}</span><span class="v">${sum}</span></div>`).join('')}</section>`;
 const shopNotes = () => `<section class="panel"><h3>Notizen</h3><p>Platzhalter: was der Händler erzählt, Öffnungszeiten, Gerüchte.</p></section>`;
@@ -482,7 +466,7 @@ document.addEventListener('click', ev => {
   if (group) {
     state[group] = d.v;
     b.parentElement.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    state.sell = false; state.playerView = false; state.chip = 'all';
+    state.playerView = false; state.chip = 'all';
     if (group === 'kind' || group === 'rolle') { state.tab = 'shop'; state.ctab = 'shop'; state.section = 'stock'; }
     return render();
   }
@@ -492,10 +476,8 @@ document.addEventListener('click', ev => {
   if (d.tab) { state.tab = d.tab; return render(); }
   if (d.ctab) { state.ctab = d.ctab; return render(); }
   if (d.section) { state.section = d.section; return render(); }
-  if (d.side) { state.side = d.side; return render(true); }
   if (d.chip) { state.chip = d.chip; return render(true); }
   if ('afford' in d) { state.affordable = !state.affordable; return render(true); }
-  if ('sell' in d) { state.sell = !state.sell; return render(); }
   if ('playerview' in d) { state.playerView = !state.playerView; state.ctab = 'shop'; return render(); }
   if ('present' in d) { SHOP.presentation = !SHOP.presentation; return render(true); }
   if (d.qty) { const g = S().goods[d.qty]; g.qty = Math.max(0, g.qty + Number(d.d)); return render(true); }

@@ -116,6 +116,25 @@
     "ConditionLevel": "Level {value} of {max}",
     "FatePointSet": "Set fate points to {value} ({current} of {max} available)",
     "GodSchips": "Divine schips",
+    "NativeTongue": "Native tongue",
+    "LevelOf": "Level {level}",
+    "Merchant": {
+      "SheetLabel": "DSA5 Helpers: Merchant and loot",
+      "TabShop": "Shop",
+      "TabLoot": "Loot",
+      "Goods": "Shop's goods",
+      "InLoot": "In the loot",
+      "OwnBag": "My bag",
+      "Bag": "{name}'s bag",
+      "Take": "Take",
+      "PutIn": "Put in",
+      "NothingToSell": "Nothing to offer",
+      "ViewGoods": "Goods",
+      "ChangeBuyer": "Change",
+      "OwnHero": "Own hero",
+      "Locked": "locked",
+      "Open": "open"
+    },
     "GodSchipLabel": "{name}: {current} of {max}. Click spends one, right-click restores one",
     "GodSchipsMore": "{count} more – overview of all divine schips",
     "GodSchipSpend": "{name}: spend one",
@@ -190,6 +209,9 @@
       "RollDialogDesktop": {
         "Name": "Roll dialogs on desktop",
         "Hint": "The module's tidy roll dialogs or those of the DSA5 system, e.g. when another module extends them. Applies to everyone; tablet and phone always use the module.",
+        "HintNotice": "You are seeing the roll dialog of DSA5 Helpers. {where}",
+        "HintGm": "Back to the DSA5 system dialogs: Settings › Modules › DSA5 Helpers › Display and devices › “Roll dialogs on desktop”.",
+        "HintPlayer": "The GM can switch back to the DSA5 system dialogs in the module settings (Display and devices › “Roll dialogs on desktop”).",
         "Module": "Module (new layout)",
         "System": "DSA5 system"
       },
@@ -237,7 +259,7 @@
       },
       "ItemTooltips": {
         "Name": "Tooltips on hover",
-        "Hint": "Hovering a name on the sheet (skills, spells, equipment, conditions …) shows the system's card. Applies only to you; there are no tooltips on tablet and phone."
+        "Hint": "Hovering a name on the sheet (skills, spells, equipment, conditions …) shows the system's card. Off by default, each player switches them on for themselves. Skills, special abilities and advantages/disadvantages also show the entry's rule and description below the card. There are no tooltips on tablet and phone."
       }
     },
     "Changelog": {
@@ -985,6 +1007,13 @@
       "ValuesHidden": "Values not shared with players",
       "NoConditions": "no conditions",
       "Player": "Player: {name}",
+      "Fate": {
+        "Title": "Fate and Damnation",
+        "Assign": "Assign chips …",
+        "Ask": "Ask GM to swap a chip …",
+        "None": "no god or arch-demon chips"
+      },
+      "ConditionsOpen": "Open conditions of {name}",
       "OpenSheet": "Open sheet",
       "MemberMenu": "Member: more actions",
       "RemoveMember": "Remove from group",
@@ -1033,6 +1062,8 @@
       "RandomMemberHint": "Pick a random member; right-click without bad-luck magnet, Shift shows the result to everyone"
     },
     "Tooltip": {
+      "Rule": "Rule",
+      "Description": "Description",
       "More": "More text: middle-click pins, click opens everything"
     }
   }

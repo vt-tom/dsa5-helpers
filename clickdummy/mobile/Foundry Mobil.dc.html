@@ -617,6 +617,18 @@ input::placeholder{color:var(--ink3)}
             <sc-if value="{{ g.hasNote }}" hint-placeholder-val="{{ false }}"><span style="padding-left:110px;font-size:12px;line-height:1.35;color:var(--ink2)">{{ g.note }}</span></sc-if>
           </div>
         </sc-for>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:14px;color:var(--ink2)">Audio</span>
+          <sc-for list="{{ audio }}" as="a" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="flex:none;width:92px;font-size:14px;color:var(--ink2)">{{ a.label }}</span>
+              <input type="range" min="0" max="100" step="5" value="{{ a.value }}" onChange="{{ a.onChange }}" aria-label="{{ a.aria }}" style="flex:1;min-width:0;height:42px;accent-color:var(--accent)"></input>
+              <span style="flex:none;width:50px;text-align:right;font-size:14px;font-weight:{{ a.weight }};font-variant-numeric:tabular-nums;color:{{ a.color }}">{{ a.text }}</span>
+              <button onClick="{{ a.onMute }}" aria-pressed="{{ a.muted }}" aria-label="{{ a.muteAria }}" style="flex:none;height:42px;min-width:62px;border:1px solid var(--line2);border-radius:4px;font:inherit;font-size:14px;font-weight:700;cursor:pointer;background:{{ a.bg }};color:{{ a.fg }}">{{ a.muteLabel }}</button>
+            </div>
+          </sc-for>
+          <span style="padding-left:100px;font-size:12px;line-height:1.35;color:var(--ink2)">Gilt nur für dieses Gerät. „Stumm“ merkt sich die letzte Lautstärke.</span>
+        </div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <button onClick="{{ toDesktop }}" style="height:48px;border:1px solid var(--line2);border-radius:4px;background:var(--field);color:var(--ink);font:inherit;font-size:15px;font-weight:700;cursor:pointer">Zur vollständigen Foundry-Oberfläche</button>
           <button onClick="{{ logout }}" style="height:48px;border:1px solid var(--danger);border-radius:4px;background:var(--dangerbg);color:var(--dangertext);font:inherit;font-size:15px;font-weight:700;cursor:pointer">Abmelden</button>
@@ -643,7 +655,7 @@ class Component extends DCLogic {
     ui: 'auto', scene: true, sceneFull: false, paused: false, hint: true, chatOpen: false,
     cam: null, toks: {}, drag: null, hold: null, pings: [], bubble: null, openF: {},
     fate: null, req: null, inc: null, schips: { own: 2, group: 3 }, targets: {}, combat: false, turn: 0, layIni: null,
-    msgs: [], rollMode: 'public', wTo: {}, fmtOpen: false, free: { n: 1, d: 20, mod: 0 }, jq: '', page: 0, pagesOpen: false
+    audio: { music: 70, env: 60, ui: 80 }, audioLast: {}, msgs: [], rollMode: 'public', wTo: {}, fmtOpen: false, free: { n: 1, d: 20, mod: 0 }, jq: '', page: 0, pagesOpen: false
   };
 
   constructor(p) {
@@ -1190,6 +1202,15 @@ class Component extends DCLogic {
     const myTurn = !isGM && cur && cur.t.id === 'lay';
     const cbt = order.map((o, i) => ({ ini: (o.t.short || o.t.name)[0], val: o.v ?? '–', bg: o.t.hero ? o.t.bg : 'radial-gradient(circle at 40% 35%,#5a4e44,#2a231d)',
       ring: i === s.turn % order.length ? '#e0c48c' : o.t.hero ? (o.t.mine && !isGM ? '#b99a5c' : 'rgba(244,232,214,.35)') : '#b3241a', glow: i === s.turn % order.length ? '0 0 0 3px rgba(224,196,140,.5)' : 'none' }));
+    const AUDIO = [['music', 'Musik'], ['env', 'Umgebung'], ['ui', 'Oberfläche']];
+    const audio = AUDIO.map(([k, l]) => {
+      const v = s.audio[k], muted = v === 0;
+      return { label: l, value: v, muted, text: muted ? 'stumm' : v + ' %', weight: muted ? '700' : '400', color: muted ? 'var(--danger)' : 'var(--ink)',
+        aria: 'Lautstärke ' + l, muteAria: l + (muted ? ' wieder laut' : ' stumm schalten'), muteLabel: muted ? 'Laut' : 'Stumm',
+        bg: muted ? 'var(--accent)' : 'var(--field)', fg: muted ? 'var(--onaccent)' : 'var(--ink)',
+        onChange: e => { const n = Number(e.target.value); set({ audio: { ...s.audio, [k]: n }, audioLast: n > 0 ? { ...s.audioLast, [k]: n } : { ...s.audioLast, [k]: s.audio[k] || s.audioLast[k] } }); },
+        onMute: () => set(muted ? { audio: { ...s.audio, [k]: s.audioLast[k] || 50 } } : { audio: { ...s.audio, [k]: 0 }, audioLast: { ...s.audioLast, [k]: v } }) };
+    });
     const settings = [
       { label: 'Darstellung', opts: [opt('Hell', theme === 'light', () => set({ theme: 'light' })), opt('Dunkel', theme === 'dark', () => set({ theme: 'dark' }))] },
       { label: 'Oberfläche', opts: [opt('Automatisch', s.ui === 'auto', () => set({ ui: 'auto', cam: null })), opt('Smartphone', s.ui === 'phone', () => set({ ui: 'phone', cam: null })), opt('Tablet', s.ui === 'tablet', () => set({ ui: 'tablet', cam: null }))],
@@ -1211,7 +1232,7 @@ class Component extends DCLogic {
       showBack: v !== 'home', showLogo: v === 'home', onBackBtn: () => set({ view: v === 'entry' ? 'journal' : 'home', cam: null }),
       barTitle: (titles[v] || titles.home)[0], barSub: (titles[v] || titles.home)[1],
       meInitial: me.initial, meName: me.name, meRole: me.role,
-      openProfile: () => set({ profile: true }), closeProfile: () => set({ profile: false }), profileOpen: s.profile, settings,
+      openProfile: () => set({ profile: true }), closeProfile: () => set({ profile: false }), profileOpen: s.profile, settings, audio,
       toDesktop: () => { set({ profile: false }); this.flash('Wechselt zur Desktop-Oberfläche'); }, logout: () => { set({ profile: false }); this.flash('Abgemeldet (Demo)'); },
       showLeft: (isTablet || v !== 'chat') && v !== 'sheet', showChat: chatShown,
       showRow: v !== 'sheet' || (isTablet && chatShown), rowFlex: v === 'sheet' ? 'none' : '1', rowW: v === 'sheet' ? '400px' : 'auto',

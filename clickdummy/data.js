@@ -232,7 +232,7 @@ const IMPRINT = [];
 // unverbrauchte Punkte da sind, sonst (wie hier) null/kein Zähler.
 // Innerhalb der Tabelle getrennt nach Sprachen/Schriften, analog zu Vorteile/Nachteile.
 const LANGUAGE_POINTS = null;
-const LANGUAGES = ["Sprache (Garethi) II", "Sprache (Isdira) III"];
+const LANGUAGES = ["Sprache (Garethi) MS", "Sprache (Isdira) III"];
 const SCRIPTS = ["Schrift (Isdira- und Asdharia-Zeichen)"];
 
 // Vollständig aus dem Talent-Kompendium des Systems (packs/skills) übernommen: 5 Gruppen, 59 Talente insgesamt.

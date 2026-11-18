@@ -7,8 +7,9 @@
        stock/shop/access in merchant-commerce.hbs). Bei uns Sprungmarken wie in allen Reitern (Issue #32).
      - Kunde (Spieler mit eingeschränktem Zugriff, oder SL mit Schalter „Kundensicht“, System playerView): nur
        Laden (+ Notizen beim Händler), System merchant_limited_header.hbs + merchant-limited.hbs bzw. -loot.hbs.
-   Kundensicht in drei Varianten (Menü › Diese Seite, ?laden=a|b|c): A Kacheln wie im System, B Liste wie unser
-   Inventar, C Ware und eigener Beutel nebeneinander. Kaufen, Verkaufen, Preise, Füllen und Ladentag kommen im
+   Kundensicht: Variante C „Ware und Beutel“ (Nutzerentscheidung 2026-11-17, umgesetzt in Foundry am 2026-11-18,
+   templates/actors/merchant/shop.hbs): Ware links, Beutel des Käufers rechts, beides als Liste; verworfen: A Kacheln
+   wie im System, B Liste mit „Verkaufen“-Schublade. Kaufen, Verkaufen, Preise, Füllen und Ladentag kommen im
    Modul vom System (tradeWrapper, fillStock, applyDailyHide …); der Dummy zeigt nur die Bedienung.
 
    Aufruf: index.html?actor=haendler bzw. ?actor=schatz; Rolle (Menü › Ansicht) schaltet auf die Kundensicht.
@@ -16,8 +17,6 @@
    Texte sind frei erfundene Platzhalter. */
 
 const MERCHANT_KIND = { haendler: "merchant", schatz: "loot" }[new URLSearchParams(location.search).get("actor")] || null;
-const MERCHANT_VARIANT_PARAM = new URLSearchParams(location.search).get("laden");
-let MERCHANT_VARIANT = ["a", "b", "c"].includes(MERCHANT_VARIANT_PARAM) ? MERCHANT_VARIANT_PARAM : "a";
 
 const SHOP_IMG = (file) => `${ICONS}/categories/${file}`;
 const MERCHANT = {
@@ -37,7 +36,6 @@ const MERCHANT = {
   specials: false,
   sort: "featured",
   query: "",
-  sellMode: false, // Verkaufen bzw. beim Schatz „Hineinlegen“ (System: sellMode / setLootInventory)
   wallet: { d: 4, s: 37, h: 12, k: 5 },
   buyer: { name: "Alrik Grimmwald", img: `${ICONS}/categories/Weltliche.webp`, wallet: { d: 1, s: 14, h: 6, k: 0 } },
   players: [["Spieler 1 (Alrik)", "Begrenzt"], ["Spieler 2 (Yasmina)", "Begrenzt"], ["Spieler 3 (Gerion)", "Keine"]],
@@ -206,30 +204,13 @@ function shopFilters() {
     .map(([v, label]) => el("option", { value: v, ...(MERCHANT.sort === v ? { selected: "" } : {}) }, label)));
   sort.addEventListener("change", () => { MERCHANT.sort = sort.value; renderContent(); });
   const views = isLoot() ? null : el("div", { class: "seg", role: "group", "aria-label": "Ansicht" }, [["cards", "Ware"], ["log", "Kassenbuch"]]
-    .map(([v, label]) => shopBtn(label, () => { MERCHANT.view = v; MERCHANT.sellMode = false; renderContent(); }, { pressed: MERCHANT.view === v })));
+    .map(([v, label]) => shopBtn(label, () => { MERCHANT.view = v; renderContent(); }, { pressed: MERCHANT.view === v })));
   const cats = [...new Set(MERCHANT_GOODS.filter((g) => g.qty && !g.tradeLocked).map((g) => g.cat))];
   const chip = (key, label) => shopBtn(label, () => { MERCHANT.chip = key; renderContent(); }, { cls: "shop-chip", pressed: MERCHANT.chip === key });
   const chips = el("div", { class: "shop-chips" }, [chip("all", "Alle"), ...cats.map((c) => chip(c, c)),
     isLoot() ? null : shopBtn("Bezahlbar", () => { MERCHANT.affordable = !MERCHANT.affordable; renderContent(); }, { cls: "shop-chip", pressed: MERCHANT.affordable }),
     MERCHANT_GOODS.some((g) => g.featured) ? shopBtn("Angebote", () => { MERCHANT.specials = !MERCHANT.specials; renderContent(); }, { cls: "shop-chip", pressed: MERCHANT.specials }) : null]);
-  // Verkaufen (Händler) bzw. „Hineinlegen“ (Schatz); in Variante C stehen beide Seiten ohnehin nebeneinander.
-  const sell = MERCHANT_VARIANT === "c" || MERCHANT.view === "log" ? null
-    : shopBtn(isLoot() ? "Hineinlegen" : "Verkaufen", () => { MERCHANT.sellMode = !MERCHANT.sellMode; renderContent(); }, { pressed: MERCHANT.sellMode });
-  // Beim Verkaufen gelten Suche und Filter nicht (System: shop-filters nur ohne sellMode).
-  if (MERCHANT.sellMode) return el("div", { class: "shop-toolbar" }, [el("div", { class: "shop-toolbar-row" }, [views, sell])]);
-  return el("div", { class: "shop-toolbar" }, [el("div", { class: "shop-toolbar-row" }, [el("div", { class: "search-bar" }, [search]), sort, views, sell]), chips]);
-}
-
-function tile(g, give) {
-  const price = isLoot() ? null : give ? buyPrice(g) : shopPrice(g);
-  const poor = !give && price !== null && price > walletSilver(MERCHANT.buyer.wallet);
-  const act = shopBtn(give ? (isLoot() ? "Hineinlegen" : "Verkaufen") : (isLoot() ? "Nehmen" : "Kaufen"), () => (give ? giveItem(g) : takeItem(g)), { cls: "small" });
-  return el("div", { class: "shop-tile" + (g.featured && !give ? " featured" : "") + (poor ? " poor" : "") }, [
-    el("img", { src: g.img, alt: "" }),
-    el("div", { class: "shop-tile-body" }, [goodName(g), g.hook ? el("small", { class: "muted" }, g.hook) : null]),
-    el("div", { class: "shop-tile-meta" }, [price !== null ? el("b", {}, money(price)) : null, el("span", { class: "muted" }, `×${g.qty}`)]),
-    act,
-  ]);
+  return el("div", { class: "shop-toolbar" }, [el("div", { class: "shop-toolbar-row" }, [el("div", { class: "search-bar" }, [search]), sort, views]), chips]);
 }
 
 function goodsRow(g, give) {
@@ -253,10 +234,9 @@ function goodsList(list, give) {
   ]));
 }
 
-function goodsBlock(list, give, layout) {
+function goodsBlock(list, give) {
   if (!list.length) return el("div", { class: "drop-zone" }, give ? "Nichts dabei" : isLoot() ? "Der Schatz ist leer" : "Keine passende Ware");
-  if (layout === "list") return el("div", {}, goodsList(list, give));
-  return el("div", { class: "shop-grid" }, list.map((g) => tile(g, give)));
+  return el("div", {}, goodsList(list, give));
 }
 
 function shopLog() {
@@ -275,24 +255,11 @@ function renderShopCustomer() {
   const goods = visibleGoods();
   const mine = BUYER_GOODS.filter((g) => g.qty > 0);
   const giveTitle = isLoot() ? `Hineinlegen aus dem Beutel von ${MERCHANT.buyer.name}` : `Verkaufen: Beutel von ${MERCHANT.buyer.name}`;
-  if (MERCHANT_VARIANT === "c") {
-    // C: Ware links, eigener Beutel rechts, beides als kompakte Liste.
-    return el("div", {}, [...parts, el("div", { class: "shop-split" }, [
-      el("div", {}, [el("h3", { class: "shop-col-title" }, isLoot() ? "Im Schatz" : "Ware des Ladens"), goodsBlock(goods, false, "list")]),
-      el("div", {}, [el("h3", { class: "shop-col-title" }, giveTitle), goodsBlock(mine, true, "list")]),
-    ])]);
-  }
-  const layout = MERCHANT_VARIANT === "b" ? "list" : "cards";
-  if (MERCHANT.sellMode) {
-    return el("div", {}, [...parts, el("div", { class: "panel shop-drawer" }, [
-      el("div", { class: "panel-title flex" }, [el("span", {}, giveTitle), shopBtn("Zurück zur Ware", () => { MERCHANT.sellMode = false; renderContent(); }, { cls: "small" })]),
-      goodsBlock(mine, true, layout),
-    ])]);
-  }
-  const specials = layout === "cards" && !MERCHANT.specials && MERCHANT.chip === "all" ? goods.filter((g) => g.featured) : [];
-  return el("div", {}, [...parts,
-    specials.length ? el("div", { class: "panel shop-specials" }, [el("div", { class: "panel-title" }, "Angebote"), goodsBlock(specials, false, "cards")]) : null,
-    goodsBlock(specials.length ? goods.filter((g) => !g.featured) : goods, false, layout)]);
+  // Ware links, eigener Beutel rechts, beides als kompakte Liste (am Smartphone untereinander).
+  return el("div", {}, [...parts, el("div", { class: "shop-split" }, [
+    el("div", {}, [el("h3", { class: "shop-col-title" }, isLoot() ? "Im Schatz" : "Ware des Ladens"), goodsBlock(goods, false)]),
+    el("div", {}, [el("h3", { class: "shop-col-title" }, giveTitle), goodsBlock(mine, true)]),
+  ])]);
 }
 
 /* ------------------------------------------------------- SL-Ansicht ---- */
@@ -462,18 +429,6 @@ function merchantSetup() {
   currentSection.inventory = "stock";
   MERCHANT_OWNER_TABS = [...TABS];
   document.getElementById("merchantModeToggle").hidden = true;
-  // Varianten der Kundensicht (Menü › Diese Seite, ?laden=a|b|c)
-  const variants = el("fieldset", { "data-group": "laden" }, [el("legend", {}, "Kundensicht (Laden)"),
-    ...[["a", "A · Kacheln"], ["b", "B · Liste"], ["c", "C · Ware und Beutel"]].map(([v, label]) => el("button", { type: "button", "data-v": v, "aria-pressed": String(v === MERCHANT_VARIANT) }, label))]);
-  variants.addEventListener("click", (e) => {
-    const b = e.target.closest("button[data-v]");
-    if (!b) return;
-    MERCHANT_VARIANT = b.dataset.v;
-    MERCHANT.sellMode = false;
-    variants.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
-    renderContent();
-  });
-  document.querySelector(".toolbar")?.append(variants);
   document.getElementById("asPlayerToggle").addEventListener("click", () => setTimeout(applyMerchantRole));
   // Start im Laden-Reiter (Kopf erst nach renderHeader im nächsten Takt).
   setTimeout(() => { if (!new URLSearchParams(location.search).get("tab")) applyMerchantRole(); });

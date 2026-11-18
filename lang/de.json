@@ -116,6 +116,25 @@
     "ConditionLevel": "Stufe {value} von {max}",
     "FatePointSet": "Schicksalspunkte auf {value} setzen ({current} von {max} verfügbar)",
     "GodSchips": "Götterschips",
+    "NativeTongue": "Muttersprache",
+    "LevelOf": "Stufe {level}",
+    "Merchant": {
+      "SheetLabel": "DSA5 Helfer: Händler und Schatz",
+      "TabShop": "Laden",
+      "TabLoot": "Schatz",
+      "Goods": "Ware des Ladens",
+      "InLoot": "Im Schatz",
+      "OwnBag": "Mein Beutel",
+      "Bag": "Beutel von {name}",
+      "Take": "Nehmen",
+      "PutIn": "Hineinlegen",
+      "NothingToSell": "Nichts dabei",
+      "ViewGoods": "Ware",
+      "ChangeBuyer": "Wechseln",
+      "OwnHero": "Eigener Held",
+      "Locked": "verschlossen",
+      "Open": "offen"
+    },
     "GodSchipLabel": "{name}: {current} von {max}. Klick gibt einen aus, Rechtsklick stellt einen wieder her",
     "GodSchipsMore": "{count} weitere – Übersicht aller Götterschips",
     "GodSchipSpend": "{name}: einen ausgeben",
@@ -190,6 +209,9 @@
       "RollDialogDesktop": {
         "Name": "Probendialoge am Desktop",
         "Hint": "Aufgeräumte Probendialoge des Moduls oder die des DSA5-Systems, etwa wenn ein anderes Modul diese erweitert. Gilt für alle; Tablet und Smartphone nutzen immer das Modul.",
+        "HintNotice": "Du siehst den Probendialog von DSA5 Helpers. {where}",
+        "HintGm": "Zurück zu den Dialogen des DSA5-Systems: Einstellungen › Module › DSA5 Helpers › Darstellung und Geräte › „Probendialoge am Desktop“.",
+        "HintPlayer": "Die SL kann in den Moduleinstellungen auf die Dialoge des DSA5-Systems zurückschalten (Darstellung und Geräte › „Probendialoge am Desktop“).",
         "Module": "Modul (neues Design)",
         "System": "DSA5-System"
       },
@@ -237,7 +259,7 @@
       },
       "ItemTooltips": {
         "Name": "Tooltips beim Überfahren",
-        "Hint": "Zeigt beim Überfahren eines Namens im Bogen (Talente, Zauber, Ausrüstung, Zustände …) die Karte des Systems. Gilt nur für dich; auf Tablet und Smartphone gibt es keine Tooltips."
+        "Hint": "Zeigt beim Überfahren eines Namens im Bogen (Talente, Zauber, Ausrüstung, Zustände …) die Karte des Systems. Standardmäßig aus, jeder schaltet sie für sich ein. Bei Talenten, Sonderfertigkeiten sowie Vor- und Nachteilen stehen unter der Karte Regel und Beschreibung des Eintrags. Auf Tablet und Smartphone gibt es keine Tooltips."
       }
     },
     "Changelog": {
@@ -985,6 +1007,13 @@
       "ValuesHidden": "Werte für Spieler nicht freigegeben",
       "NoConditions": "keine Zustände",
       "Player": "Spieler: {name}",
+      "Fate": {
+        "Title": "Schicksal und Verdammnis",
+        "Assign": "Schips zuweisen …",
+        "Ask": "Schip tauschen anfragen …",
+        "None": "keine Götter- oder Erzdämonen-Schips"
+      },
+      "ConditionsOpen": "Zustände von {name} öffnen",
       "OpenSheet": "Bogen öffnen",
       "MemberMenu": "Mitglied: weitere Aktionen",
       "RemoveMember": "Aus der Gruppe entfernen",
@@ -1033,6 +1062,8 @@
       "RandomMemberHint": "Ein Mitglied zufällig wählen; Rechtsklick ohne Pechmagnet, Umschalt zeigt das Ergebnis allen"
     },
     "Tooltip": {
+      "Rule": "Regel",
+      "Description": "Beschreibung",
       "More": "Weiterer Text: Mittelklick heftet an, Klick öffnet alles"
     }
   }
