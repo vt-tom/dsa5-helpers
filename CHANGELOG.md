@@ -7,6 +7,12 @@ Kennzeichnung: **[v13/v14]** gilt für Foundry v13 und v14, **[nur v14]** bzw. *
 Ab 7.0.0/8.0.0 gibt es getrennte Linien: **8.x für Foundry v14**, **7.x für Foundry v13**. Das installierte Modul zeigt
 nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
 
+## [8.0.2] — unveröffentlicht
+
+### Behoben
+
+- **[nur v14]** DSA5 8.2.2 ([#100](https://github.com/vt-tom/dsa5-helpers/issues/100)): Das System hat die Felder Tradition, Leiteigenschaft, Energiefaktor und Glückliche Talente am Helden aus dem Datenmodell entfernt (sie werden aus der Traditions-Sonderfertigkeit berechnet). Magie- und Götter-Reiter zeigen sie jetzt als reine Anzeige, statt beim Bearbeiten ins Leere zu schreiben. Bis 8.2.1 bleibt alles wie bisher.
+
 ## [8.0.1] — 2026-11-16
 
 ### Behoben
