@@ -6,6 +6,7 @@
     "CreatureSheetLabel": "DSA5 Helpers Creature Sheet",
     "NpcSheetLabel": "DSA5 Helpers NPC Sheet",
     "GroupSheetLabel": "DSA5 Helpers Group Sheet",
+    "VehicleSheetLabel": "DSA5 Helpers Vehicle Sheet",
     "Free": "free",
     "AdvantagesDisadvantages": "Advantages & Disadvantages",
     "BaseValues": "Base Values",
@@ -117,6 +118,8 @@
     "FatePointSet": "Set fate points to {value} ({current} of {max} available)",
     "GodSchips": "Divine schips",
     "NativeTongue": "Native tongue",
+    "Languages": "Languages",
+    "Scripts": "Scripts",
     "LevelOf": "Level {level}",
     "Merchant": {
       "SheetLabel": "DSA5 Helpers: Merchant and loot",
@@ -209,19 +212,28 @@
       "RollDialogDesktop": {
         "Name": "Roll dialogs on desktop",
         "Hint": "The module's tidy roll dialogs or those of the DSA5 system, e.g. when another module extends them. Applies to everyone; tablet and phone always use the module.",
-        "HintNotice": "You are seeing the roll dialog of DSA5 Helpers. {where}",
-        "HintGm": "Back to the DSA5 system dialogs: Settings › Modules › DSA5 Helpers › Display and devices › “Roll dialogs on desktop”.",
-        "HintPlayer": "The GM can switch back to the DSA5 system dialogs in the module settings (Display and devices › “Roll dialogs on desktop”).",
         "Module": "Module (new layout)",
         "System": "DSA5 system"
       },
       "DefaultSheet": {
         "Name": "Default sheet for heroes",
-        "Hint": "Makes the DSA5 Helpers sheet the default for all heroes. Heroes with an explicitly chosen sheet keep it. Foundry reloads after changing this."
+        "Hint": "Makes the DSA5 Helpers sheet the default for all heroes. Heroes with an explicitly chosen sheet keep it. On tablet and smartphone the DSA5 Helpers sheet is always used. Foundry reloads after changing this."
       },
       "DefaultCreatureSheet": {
         "Name": "Default sheet for creatures",
-        "Hint": "Makes the DSA5 Helpers creature sheet the default for all creatures. Creatures with an explicitly chosen sheet keep it. Foundry reloads after changing this."
+        "Hint": "Makes the DSA5 Helpers creature sheet the default for all creatures. Creatures with an explicitly chosen sheet keep it. On tablet and smartphone the DSA5 Helpers sheet is always used. Foundry reloads after changing this."
+      },
+      "DefaultNpcSheet": {
+        "Name": "Default sheet for NPCs",
+        "Hint": "Makes the DSA5 Helpers NPC sheet the default for all NPCs. Explicitly chosen sheets stay. On tablet and smartphone the DSA5 Helpers sheet is always used. Foundry reloads after changing this."
+      },
+      "DefaultGroupSheet": {
+        "Name": "Default sheet for groups",
+        "Hint": "Makes the DSA5 Helpers group sheet the default for all groups. Explicitly chosen sheets stay. On tablet and smartphone the DSA5 Helpers sheet is always used. Foundry reloads after changing this."
+      },
+      "DefaultVehicleSheet": {
+        "Name": "Default sheet for vehicles",
+        "Hint": "Makes the DSA5 Helpers vehicle sheet the default for all vehicles. Explicitly chosen sheets stay. On tablet and smartphone the DSA5 Helpers sheet is always used. Foundry reloads after changing this."
       },
       "PlayersMayEdit": {
         "Name": "Players: change values without AP (edit mode)",
@@ -241,7 +253,7 @@
       "SheetMenu": {
         "Title": "Hero sheet",
         "Label": "Configure hero sheet",
-        "Hint": "Default sheet for heroes and creatures, edit mode for players, folder for banner images and skill suggestions on the cover page.",
+        "Hint": "Default sheet for heroes and creatures, edit mode for players, folder for banner images, skill suggestions on the cover page and tooltips.",
         "Save": "Save"
       },
       "QuestsTab": {
@@ -731,6 +743,19 @@
       "On": "On",
       "Off": "Off",
       "SceneHint": "Off: no scene, saves battery and data. Applies to this device only.",
+      "Audio": {
+        "Title": "Audio",
+        "music": "Music",
+        "env": "Environment",
+        "ui": "Interface",
+        "Muted": "muted",
+        "Mute": "Mute",
+        "Unmute": "Unmute",
+        "Volume": "{name} volume",
+        "MuteNamed": "Mute {name}",
+        "UnmuteNamed": "Unmute {name}",
+        "Hint": "Applies to this device only. “Mute” remembers the last volume."
+      },
       "FoundrySettings": "Foundry settings",
       "ToDesktop": "Switch to the full Foundry interface",
       "Logout": "Log out",
@@ -965,6 +990,53 @@
       "TalentCount": "Number of skills",
       "TalentsFewer": "Fewer skills",
       "TalentsMore": "More skills"
+    },
+    "Vehicle": {
+      "Tabs": {
+        "cover": "Cover",
+        "combat": "Naval combat",
+        "travel": "Travel",
+        "crew": "Crew",
+        "inventory": "Cargo",
+        "status": "Status",
+        "notes": "Description"
+      },
+      "Intro": {
+        "cover": "Overview at the table: the vehicle's condition on the left, here the actions you need almost every round, and who is on board. Combat and travel have their own tabs.",
+        "combat": "For combat between vehicles: hero actions, board weapons and ramming with dice, gunnery, locomotion and hull armor.",
+        "travel": "For longer journeys: how fast the vehicle moves, where it can travel, how full it is loaded and who is on board.",
+        "crew": "Who crews the vehicle: required strength, wounded and ready crew, and the members.",
+        "inventory": "Everything that is loaded, with weight and fill level against the cargo capacity."
+      },
+      "Stat": {
+        "Available": "ready",
+        "Wounded": "wounded",
+        "Hull": "Hull armor",
+        "Speed": "Speed",
+        "Initiative": "Initiative",
+        "Actions": "Actions",
+        "Distance": "Distance",
+        "Cargo": "Cargo"
+      },
+      "Speed": {
+        "Base": "Base speed",
+        "Water": "on water",
+        "Air": "in the air",
+        "Ram": "Ram speed"
+      },
+      "Ram": "ramming {value}",
+      "SizeLabel": "Size {size}",
+      "Actions": "Hero actions",
+      "ActionsHint": "rolled by the hero using the sheet",
+      "OnBoard": "On board",
+      "Ready": "{count} of {total} ready",
+      "NoCrew": "No crew yet.",
+      "TravelTitle": "Speed and travel modes",
+      "ModeOn": "Travel mode possible",
+      "ModeOff": "Travel mode not possible",
+      "Cargo": "Cargo",
+      "CargoOf": "{used} of {capacity} stone · {pct} %",
+      "CargoAll": "Full cargo → Cargo"
     },
     "Group": {
       "Tabs": {

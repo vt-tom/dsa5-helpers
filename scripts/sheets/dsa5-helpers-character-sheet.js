@@ -16,6 +16,18 @@ const MODULE_ID = 'dsa5-helpers';
 // Unter dieser Inhaltsbreite (px) zeigt der Desktop-Bogen das Titelblatt einspaltig wie auf dem Smartphone.
 const NARROW_WIDTH = 560;
 
+/**
+ * Zeilen „Sprachen“ und „Schriften“ für die Persönlichen Daten auf dem Titelblatt (#99). Eintragsnamen wie
+ * „Sprache (Garethi)“ werden auf den Namen in Klammern gekürzt, bei Sprachen folgt die Stufe (I–III, MS). Schriften sind
+ * die Einträge ohne Stufen (Höchststufe 0 bzw. keine).
+ */
+export function languageDetails(items) {
+  const short = item => String(item.name ?? '').replace(/^[^(]*\(([^)]*)\)\s*$/, '$1').trim();
+  const isScript = item => !(Number(item.system?.maxRank?.value ?? item.system?.max?.value) > 0);
+  const row = (label, list) => ({ label: game.i18n.localize(label), value: list.map(item => [short(item), item.dsa5hLevel].filter(Boolean).join(' ')).join(', ') });
+  return [row('DSA5HELPERS.Languages', items.filter(item => !isScript(item))), row('DSA5HELPERS.Scripts', items.filter(isScript))].filter(entry => entry.value);
+}
+
 export function createCharacterSheet(BaseCharacterSheet = systemApi()?.sheets?.ActorSheetdsa5Character) {
 const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
   static DEFAULT_OPTIONS = {
@@ -361,8 +373,9 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
     const withLevel = items => items.map(item => {
       const max = Number(item.system?.maxRank?.value ?? item.system?.max?.value);
       const step = Number(item.system?.step?.value);
-      // Sprachen (#95): Stufe 4 ist die Muttersprache (MS), sonst I–III; Schriften ohne Stufen bleiben leer.
-      const native = item.system?.category?.value === 'language' && step === 4 && max >= 4;
+      // Sprachen (#95): Stufe 4 ist die Muttersprache (MS), sonst I–III; Schriften ohne Stufen bleiben leer. Das System kennt
+      // keine eigene Kennzeichnung; die Höchststufe der Sprache liegt je nach Inhaltsmodul bei 3, daher zählt nur die Stufe.
+      const native = item.system?.category?.value === 'language' && step >= 4;
       const level = native ? 'MS' : Number.isFinite(max) && max < 2 ? '' : ROMAN[step - 1] ?? '';
       return Object.assign(item, { dsa5hLevel: level, dsa5hLevelTip: native ? localize('DSA5HELPERS.NativeTongue') : level ? game.i18n.format('DSA5HELPERS.LevelOf', { level }) : '' });
     });
@@ -498,7 +511,9 @@ const Sheet = BaseCharacterSheet ? class extends BaseCharacterSheet {
           const value = choices ? (raw ? choices[raw] ?? '' : '') : String(raw ?? '').trim();
           return { label: localize(label), value };
         })
-        .filter(field => field.value).map(field => ({ ...field, value: localize(field.value) })),
+        .filter(field => field.value).map(field => ({ ...field, value: localize(field.value) }))
+        // Sprachen und Schriften (#99): „Sprache (Garethi)“ → „Garethi MS“; Schriften sind die Einträge ohne Stufen.
+        .concat(languageDetails(languages)),
       happyTalentsExpanded: this._happyTalentsExpanded,
       // Hausregel Wundeinschätzung: Hinweis am Talent Heilkunde Wunden, nur wenn die SL die Regel eingeschaltet hat.
       woundCheckSkill: !limited && isRuleActive('woundCheck') ? findTreatWounds(this.actor)?.id ?? null : null,

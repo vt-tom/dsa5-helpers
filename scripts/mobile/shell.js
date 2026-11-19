@@ -171,6 +171,12 @@ function toggleFull() {
   els.fullBtn.querySelector('i').className = `fa-solid ${state.full ? 'fa-compress' : 'fa-expand'}`;
 }
 
+/** Dunkles Thema gewählt? Modul-Einstellung „theme“ (je Gerät, auch vom Bogen genutzt). Foundrys eigenes Farbschema bleibt
+ *  unberührt: DSA5 fragt bei jeder Änderung von core.uiConfig nach dem passenden Skin (promptFixCombination). */
+export function isDarkScheme() {
+  return game.settings.get(MODULE_ID, 'theme') === 'dark';
+}
+
 // ----- Konto-Menü
 function closeAccount() { els.sheet?.remove(); els.sheet = null; }
 
@@ -179,12 +185,55 @@ async function setAndReload(scope, key, value) {
   foundry.utils.debouncedReload();
 }
 
+// Audio (#98): drei Kanäle mit den Lautstärke-Einstellungen von Foundry (core), je Gerät. Der Regler läuft wie in Foundrys
+// Playlist-Leiste über AudioHelper (Eingabe 0–1 → Lautstärke, nicht linear); „Stumm“ setzt 0 und merkt den vorigen Wert.
+const AUDIO_CHANNELS = [['music', 'globalPlaylistVolume'], ['env', 'globalAmbientVolume'], ['ui', 'globalInterfaceVolume']];
+const audioHelper = () => foundry.audio.AudioHelper;
+const audioPercent = volume => Math.round(audioHelper().volumeToInput(Number(volume) || 0) * 20) * 5; // Schritte wie der Regler (5)
+
+function audioRowsHtml() {
+  return AUDIO_CHANNELS.map(([id, key]) => {
+    const pct = audioPercent(game.settings.get('core', key));
+    const label = L(`Audio.${id}`);
+    return `<div class="dsa5h-m-audio-row" data-audio="${id}" data-key="${key}">
+      <span>${esc(label)}</span>
+      <input type="range" min="0" max="100" step="5" value="${pct}" aria-label="${esc(game.i18n.format('DSA5HELPERS.Mobile.Audio.Volume', { name: label }))}">
+      <output></output>
+      <button type="button" data-do="mute"></button>
+    </div>`;
+  }).join('');
+}
+
+/** Wert und Stumm-Knopf einer Zeile nach dem Stand des Reglers (0 = stumm) zeichnen. */
+function paintAudioRow(row) {
+  const pct = Number(row.querySelector('input').value);
+  const muted = pct === 0;
+  const label = L(`Audio.${row.dataset.audio}`);
+  const out = row.querySelector('output');
+  out.textContent = muted ? L('Audio.Muted') : `${pct} %`;
+  out.classList.toggle('muted', muted);
+  const btn = row.querySelector('button');
+  btn.textContent = muted ? L('Audio.Unmute') : L('Audio.Mute');
+  btn.setAttribute('aria-pressed', String(muted));
+  btn.setAttribute('aria-label', game.i18n.format(muted ? 'DSA5HELPERS.Mobile.Audio.UnmuteNamed' : 'DSA5HELPERS.Mobile.Audio.MuteNamed', { name: label }));
+}
+
+/** Regler bewegt oder Stumm-Knopf: in die Foundry-Einstellung schreiben, den vorigen Wert für „Laut“ merken. */
+async function setAudioChannel(row, percent) {
+  const { key } = row.dataset;
+  const volume = audioHelper().inputToVolume(percent / 100);
+  const current = Number(game.settings.get('core', key)) || 0;
+  if (percent === 0 && current > 0) await game.settings.set(MODULE_ID, 'audioLast', { ...game.settings.get(MODULE_ID, 'audioLast'), [key]: current });
+  row.querySelector('input').value = String(percent);
+  paintAudioRow(row);
+  await game.settings.set('core', key, percent === 0 ? 0 : volume);
+}
+
 function openAccount() {
   closeAccount();
   const ui_ = game.settings.get(MODULE_ID, 'uiMode');
   const noCanvas = game.settings.get('core', 'noCanvas');
-  const uiConfig = game.settings.get('core', 'uiConfig');
-  const dark = (uiConfig.colorScheme?.applications || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark';
+  const dark = isDarkScheme();
   const opt = (group, value, label, on) => `<button type="button" data-group="${group}" data-value="${value}" aria-pressed="${on}">${esc(label)}</button>`;
   const detected = L(`Mode.${state.info.detected}`);
   const wrap = document.createElement('div');
@@ -200,19 +249,33 @@ function openAccount() {
     <div class="dsa5h-m-setting"><span>${esc(L('Scene'))}</span><div class="dsa5h-m-seg">
       ${opt('canvas', 'on', L('On'), !noCanvas)}${opt('canvas', 'off', L('Off'), noCanvas)}</div>
       <small>${esc(L('SceneHint'))}</small></div>
+    <div class="dsa5h-m-audio"><span class="dsa5h-m-audio-title">${esc(L('Audio.Title'))}</span>${audioRowsHtml()}
+      <small>${esc(L('Audio.Hint'))}</small></div>
     <button type="button" class="dsa5h-m-wide" data-do="settings"><i class="fa-solid fa-gears" inert></i> ${esc(L('FoundrySettings'))}</button>
     <button type="button" class="dsa5h-m-wide" data-do="desktop"><i class="fa-solid fa-display" inert></i> ${esc(L('ToDesktop'))}</button>
     <button type="button" class="dsa5h-m-wide danger" data-do="logout"><i class="fa-solid fa-right-from-bracket" inert></i> ${esc(L('Logout'))}</button>
   </div>`;
+  wrap.querySelectorAll('.dsa5h-m-audio-row').forEach(paintAudioRow);
+  wrap.addEventListener('input', ev => { const row = ev.target.closest('.dsa5h-m-audio-row'); if (row) paintAudioRow(row); });
+  wrap.addEventListener('change', ev => { const row = ev.target.closest('.dsa5h-m-audio-row'); if (row) setAudioChannel(row, Number(ev.target.value)); });
   wrap.addEventListener('click', ev => {
     if (ev.target === wrap) return closeAccount();
     const b = ev.target.closest('button');
     if (!b) return;
+    if (b.dataset.do === 'mute') {
+      const row = b.closest('.dsa5h-m-audio-row');
+      if (Number(row.querySelector('input').value) > 0) return setAudioChannel(row, 0);
+      const last = Number(game.settings.get(MODULE_ID, 'audioLast')?.[row.dataset.key]) || audioHelper().inputToVolume(.5);
+      return setAudioChannel(row, Math.max(5, audioPercent(last)));
+    }
     if (b.dataset.group === 'mode') return b.dataset.value !== ui_ && setAndReload(MODULE_ID, 'uiMode', b.dataset.value);
     if (b.dataset.group === 'theme') {
-      const cfg = foundry.utils.deepClone(uiConfig);
-      cfg.colorScheme = { ...(cfg.colorScheme ?? {}), applications: b.dataset.value, interface: b.dataset.value };
-      return game.settings.set('core', 'uiConfig', cfg).then(openAccount);
+      // Ein Schalter für alles (#61): Oberfläche, Panels, Systemfenster, Dialoge und der Bogen folgen derselben Einstellung.
+      return game.settings.set(MODULE_ID, 'theme', b.dataset.value).then(() => {
+        document.body.classList.toggle('dsa5h-m-dark', isDarkScheme());
+        for (const app of foundry.applications.instances.values()) if (app.rendered && app.options?.classes?.includes('dsa5-helpers-sheet')) app.render();
+        openAccount();
+      });
     }
     if (b.dataset.group === 'canvas') { const off = b.dataset.value === 'off'; return off !== noCanvas && setAndReload('core', 'noCanvas', off); }
     if (b.dataset.do === 'settings') { closeAccount(); return openPanel('settings'); }

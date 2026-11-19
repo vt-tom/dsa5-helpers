@@ -1,0 +1,14 @@
+{{!-- Aktionen der Helden (Aktionen des Systems: navalHeroAction, navalBoarding, navalBroadside); wie im Systembogen
+      würfelt der Held, der den Bogen benutzt. „Segeln“ bzw. „Lenken“ je nach Antrieb. --}}
+<section class="panel">
+  <div class="panel-title flex"><span>{{localize 'DSA5HELPERS.Vehicle.Actions'}}</span><small>{{localize 'DSA5HELPERS.Vehicle.ActionsHint'}}</small></div>
+  <div class="dsa5h-vehicle-actions">
+    <button type="button" data-action="navalHeroAction" data-hero-action="repair" data-tooltip="VEHICLE.mkr.repairTooltip">{{localize 'VEHICLE.mkr.action.repair'}}</button>
+    {{#if dsa5h.showSail}}<button type="button" data-action="navalHeroAction" data-hero-action="sail" data-tooltip="VEHICLE.mkr.sailTooltip">{{localize 'VEHICLE.mkr.action.sail'}}</button>{{/if}}
+    {{#if dsa5h.showDrive}}<button type="button" data-action="navalHeroAction" data-hero-action="drive" data-tooltip="VEHICLE.mkr.driveTooltip">{{localize 'VEHICLE.mkr.action.drive'}}</button>{{/if}}
+    <button type="button" data-action="navalHeroAction" data-hero-action="commands" data-tooltip="VEHICLE.mkr.commandsTooltip">{{localize 'VEHICLE.mkr.action.commands'}}</button>
+    <button type="button" data-action="navalHeroAction" data-hero-action="heal" data-tooltip="VEHICLE.mkr.healTooltip">{{localize 'VEHICLE.mkr.action.heal'}}</button>
+    <button type="button" data-action="navalBoarding" data-tooltip="VEHICLE.mkr.boardingActionTooltip">{{localize 'VEHICLE.mkr.boardingAction'}}</button>
+    <button type="button" data-action="navalBroadside" data-tooltip="VEHICLE.mkr.broadsideTooltip">{{localize 'VEHICLE.mkr.broadside'}}</button>
+  </div>
+</section>

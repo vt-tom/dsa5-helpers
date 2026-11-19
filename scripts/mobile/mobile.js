@@ -4,7 +4,7 @@
 //   oder Notausgang ?dsa5h-ui=auto|phone|tablet|foundry. Keine Abfrage, kein Umhüllen von setupGame:
 //   init läuft vor initializeUI, Body-Klasse und CONFIG.ui-Einträge reichen.
 // - „Spielfeld aus“ ist einfach Foundrys Client-Einstellung core.noCanvas (gilt nur für dieses Gerät).
-import { initShell, toggleChat, refreshBadges } from './shell.js';
+import { initShell, toggleChat, refreshBadges, isDarkScheme } from './shell.js';
 import { initCanvasTouch } from './canvas-touch.js';
 import { initTouchContext } from './touch-context.js';
 import { initChat } from './chat.js';
@@ -50,15 +50,14 @@ function openMenuSheet(el, app) {
   const wrap = document.createElement('div');
   wrap.className = 'dsa5h-m-more-backdrop';
   const theme = el.querySelector('.header-control[data-action="dsa5hTheme"]');
-  const playerView = el.querySelector('.header-control[data-action="playerview"]');
   const visible = c => (typeof c.visible === 'function' ? c.visible.call(app) : c.visible ?? true);
-  const controls = (app?._getHeaderControls?.() ?? []).filter(c => c.action !== 'detach' && visible(c));
+  // „Ansicht mit Beschränkt-Rechten“ (playerview) fehlt mobil bewusst (#102): die Ansicht blendet hier Kopfleiste und Menü aus, man käme nicht zurück.
+  const controls = (app?._getHeaderControls?.() ?? []).filter(c => c.action !== 'detach' && c.action !== 'playerview' && visible(c));
   const esc = foundry.utils.escapeHTML;
   wrap.innerHTML = `<div class="dsa5h-m-more-sheet" role="dialog" aria-label="${game.i18n.localize('DSA5HELPERS.Mobile.Menu')}">
     <div class="dsa5h-m-grip"></div>
     <div class="dsa5h-m-more-actions">
       ${theme ? `<button type="button" data-do="theme"><i class="${theme.querySelector('i')?.className ?? theme.className.replace(/header-control|icon/g, '')}" inert></i> ${game.i18n.localize('DSA5HELPERS.Theme')}</button>` : ''}
-      ${playerView ? `<button type="button" data-do="playerview"><i class="${playerView.className.match(/fa-toggle-\w+/) ? `fas ${playerView.className.match(/fa-toggle-\w+/)[0]}` : 'fas fa-toggle-off'}" inert></i> ${game.i18n.localize('SHEET.switchLimited')}</button>` : ''}
     </div>
     ${controls.length ? `<div class="dsa5h-m-more-list">${controls.map(c => `<button type="button" data-action="${esc(c.action)}"><i class="${esc(c.icon ?? '')} fa-fw" inert></i> ${esc(game.i18n.localize(c.label))}</button>`).join('')}</div>` : ''}
     </div>`;
@@ -68,7 +67,6 @@ function openMenuSheet(el, app) {
     if (ev.target === wrap || b) setTimeout(() => wrap.remove(), 0);
     if (!b) return;
     if (b.dataset.do === 'theme') theme?.click();
-    else if (b.dataset.do === 'playerview') playerView?.click();
   });
   el.append(wrap);
 }
@@ -639,6 +637,8 @@ export function initMobile() {
     name: 'DSA5HELPERS.Mobile.Settings.RollResult.Name', hint: 'DSA5HELPERS.Mobile.Settings.RollResult.Hint',
     scope: 'client', config: false, type: Boolean, default: true,
   });
+  // Audio im Konto-Menü (#98): zuletzt gemerkte Lautstärke je Kanal, damit „Laut“ den vorigen Wert wiederherstellt.
+  game.settings.register(MODULE_ID, 'audioLast', { scope: 'client', config: false, type: Object, default: {} });
   if (!hybrid) return;
 
   const chosen = chosenMode();
@@ -669,9 +669,15 @@ export function initMobile() {
   // Anwendungen immer hell (Nutzerentscheidung 2026-10-28): DSA5 hängt seine dunklen Farben an body.theme-dark, auf
   // dem Pergament ist der Text dann kaum lesbar (auch am Desktop). Foundry setzt die Klasse bei jeder Änderung von
   // core.uiConfig neu, daher danach erneut. Die Oberfläche (Seitenleiste, Panels) hat ein eigenes Thema.
-  const lightApps = () => document.body.classList.replace('theme-dark', 'theme-light');
+  // Dunkles Thema (#61, 2026-11-18): Die Wahl „Dunkel“ im Konto-Menü (Modul-Einstellung theme, wie beim Bogen) setzt
+  // `dsa5h-m-dark` am Body; das CSS (Abschnitt 15) färbt Oberfläche, Panels, Systemfenster und Dialoge mit eigener Palette.
+  // Das Pergament des Systems bleibt im hellen Thema (lightApps) und wird nur überdeckt.
+  const lightApps = () => {
+    document.body.classList.replace('theme-dark', 'theme-light');
+    document.body.classList.toggle('dsa5h-m-dark', isDarkScheme());
+  };
   Hooks.once('ready', lightApps);
-  Hooks.on('clientSettingChanged', key => { if (key === 'core.uiConfig') setTimeout(lightApps, 0); });
+  Hooks.on('clientSettingChanged', key => { if (key === 'core.uiConfig' || key === `${MODULE_ID}.theme`) setTimeout(lightApps, 0); });
   Hooks.once('ready', () => {
     initShell(mode, { chosen, detected: detectMode() });
     // „Desktop-Website“ (Chrome/Android u. a.): Der Browser ignoriert die Viewport-Angabe und baut die Seite ~980 px
@@ -694,6 +700,8 @@ export function initMobile() {
       el.classList.remove('theme-dark');
       el.classList.add('themed', 'theme-light');
     }
+    // Wer die Beschränkt-Ansicht am PC eingeschaltet hat, säße mobil fest (ohne Kopfleiste, #102): zurücksetzen.
+    if ((mode === 'phone' || mode === 'tablet') && el.classList.contains('dsa5-helpers-sheet') && app.document?.isOwner && app.document.system?.playerView) app.document.update({ 'system.playerView': false });
     if (isRollDialog(app, el)) setupRollDialog(el, app);
     if (mode === 'phone' && el.classList.contains('dsa5-helpers-sheet')) setupPhoneSheet(el, app);
     if (mode === 'tablet' && el.classList.contains('dsa5-helpers-sheet')) setupTabletSheet(el, app);

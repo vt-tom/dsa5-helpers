@@ -12,7 +12,7 @@
  *  Der Mixin ersetzt `static PARTS` und tauscht für Kunden ganze Teilsätze (`MERCHANTPARTS`); beides gilt bei uns nicht,
  *  weil unser Bogen nur ein Wurzelteil hat – die Ladenansicht ist ein Zweig in dessen Vorlage.
  *
- *  Fahrzeug: einen Helfer-Fahrzeugbogen gibt es noch nicht (#93). Dort erbt die Klasse vom Händlerbogen des Systems und
+ *  Fahrzeug: Der Helfer-Fahrzeugbogen (#93) hat keinen Händlermodus; dort erbt die Klasse vom Händlerbogen des Systems und
  *  ersetzt nur die Kundenteile durch dieselbe Ladenansicht.
  */
 import { systemApi } from '../compat/runtime.js';

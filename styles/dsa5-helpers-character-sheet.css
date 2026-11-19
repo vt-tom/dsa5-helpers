@@ -2659,7 +2659,7 @@
 /* Regel und Beschreibung unter der Karte des Systems (Talente, Sonderfertigkeiten, Vor- und Nachteile) */
 .dsa5h-tt .dsa5h-tt-details {
   margin-top: 6px;
-  padding-top: 6px;
+  padding: 6px 10px 8px;
   border-top: 1px solid #8a7058;
 }
 
@@ -3976,20 +3976,49 @@
 }
 
 /* Inventar und Reise: Vorlagen des Systems im Rahmen des Bogens; .tab wäre sonst ohne „active“ versteckt. */
-.dsa5h-group .dsa5h-group-system > .tab {
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) > .tab {
   display: block;
   overflow: visible;
 }
 
 /* Überschriften der Systemvorlagen sind für dunkle Designs hell gesetzt; im hellen Bogen dunkel wie unsere Panels. */
-.dsa5h-group .dsa5h-group-system .table-title,
-.dsa5h-group .dsa5h-group-system .table-title .dsadesignbutton,
-.dsa5h-group .dsa5h-group-system .table-title a {
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) .table-title,
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) .table-title .dsadesignbutton,
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) .table-title a {
   color: var(--ink);
 }
 
-.dsa5h-group .dsa5h-group-system .groupbox > .table-title {
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) .groupbox > .table-title {
   background: var(--title);
+}
+
+/* Reise-Tabelle und weitere Zeilen der Systemvorlagen (#101): mit dunklen Foundry-Designs kämen Zeilen- und Textfarben
+   des Themes durch (dunkel auf dunkel); Zeilen, Text und Eingabefelder folgen den Tokens des Bogens. */
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) .row-section {
+  background: transparent;
+  color: var(--ink);
+}
+
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) .row-section.tableOdd:nth-child(odd) {
+  background: var(--panel);
+}
+
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) .row-section :is(b, span, label, div, i) {
+  color: var(--ink);
+}
+
+/* Beschriftungen von Formularfeldern und Namen in Mitgliederkarten (Besatzung): sonst dunkel auf dunkel im dunklen Bogen. */
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) :is(.form-group > label, .vehicle-stat-field label, h1, h2, h3, h4):not(.table-title *, .healthbar *) {
+  color: var(--ink);
+}
+
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) input:is([type="number"], [type="text"]),
+:is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) select {
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink);
+  min-height: var(--hit-sm);
 }
 
 .dsa5h-group .dsa5h-group-note .editor,
@@ -4063,6 +4092,266 @@
 .dsa5h-request-card .dsa5h-request-actions {
   display: flex;
   gap: 6px;
+}
+
+/* --- Fahrzeugbogen (#93) ---
+   Gerüst wie Gruppenbogen (Rail, Kopf, linke Spalte, ein Inhaltsbereich); Seekampf, Besatzung, Ladung, Status und
+   Beschreibung sind Vorlagen des Systems (.dsa5h-vehicle-system, Regeln oben bei den Systemvorlagen des Gruppenbogens). */
+.dsa5h-vehicle .dsa5h-cover-sidebar .dsa5h-vehicle-overview {
+  display: flex;
+  flex-direction: column;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(224, 192, 128, .2);
+  color: var(--headink);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-side-label {
+  color: #d6bd8a;
+  font-size: var(--fs-meta);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-bar-track {
+  position: relative;
+  height: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(224, 192, 128, .45);
+  border-radius: 11px;
+  background: rgba(0, 0, 0, .35);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #7a5a2e;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-bar.crew .dsa5h-vehicle-bar-fill {
+  background: #3f6a8a;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-bar-track b {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 100%;
+  font-size: var(--fs-small);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-bar-track input {
+  width: 44px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: right;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-stats {
+  display: grid;
+  margin: 0;
+  padding: 6px 10px 10px;
+  gap: 2px;
+  color: var(--headink);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-stats > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: var(--fs-small);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-stats dt {
+  color: #d6bd8a;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-stats dd {
+  margin: 0;
+  color: var(--headink);
+  font-weight: 700;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-type input {
+  min-width: 120px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-type input::placeholder {
+  color: var(--headmuted);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-intro {
+  margin: 0 0 8px;
+  font-size: var(--fs-small);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 10px;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-actions button {
+  min-height: var(--hit-md);
+  padding: 2px 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-crew-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 10px;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-crew-op {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-crew-op small {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-portrait {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #b99a5c;
+  border-radius: 50%;
+  background: #e8dcc6 center / cover no-repeat;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-travel {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--field);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-stat b {
+  font-size: var(--fs-panel-title);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-stat small {
+  color: var(--muted);
+  font-size: var(--fs-meta);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 10px 8px;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-mode {
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--field);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-mode.off {
+  opacity: .45;
+  text-decoration: line-through;
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-cargo-track {
+  height: 10px;
+  margin: 8px 10px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--field);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-cargo-track > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-link {
+  margin: 0 10px 8px;
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+}
+
+/* Smartphone und schmales Fenster (.dsa5h-vehicle-compact, _applyCompact()): Übersicht oben im Titelblatt auf hellem Grund. */
+.dsa5h-vehicle.dsa5h-vehicle-compact [data-vehicle-overview-slot] .dsa5h-vehicle-overview {
+  --headink: var(--ink);
+  margin: 0 0 10px;
+}
+
+.dsa5h-vehicle.dsa5h-vehicle-compact [data-vehicle-overview-slot] .dsa5h-vehicle-bar {
+  border-bottom-color: var(--line);
+}
+
+.dsa5h-vehicle.dsa5h-vehicle-compact [data-vehicle-overview-slot] :is(.dsa5h-vehicle-side-label, .dsa5h-vehicle-stats dt) {
+  color: var(--accent);
+}
+
+.dsa5h-vehicle.dsa5h-vehicle-compact [data-vehicle-overview-slot] .dsa5h-vehicle-bar-track {
+  border-color: var(--line);
+  background: var(--field);
+}
+
+.dsa5h-vehicle .dsa5h-vehicle-bar-track:focus-within,
+.dsa5h-vehicle .dsa5h-vehicle-actions button:focus-visible,
+.dsa5h-vehicle .dsa5h-vehicle-crew-op:focus-visible,
+.dsa5h-vehicle .dsa5h-vehicle-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) {
+  .dsa5h-vehicle .dsa5h-vehicle-actions button:hover,
+  .dsa5h-vehicle .dsa5h-vehicle-link:hover {
+    background: var(--field);
+  }
 }
 
 /* ==========================================================================
@@ -7372,6 +7661,10 @@
 /* Container für die Breitenregel „Ware und Beutel untereinander“ (Abschnitt 18) */
 .dsa5-helpers-sheet .dsa5h-shop-window {
   container-type: inline-size;
+  /* Im Fenster scrollen statt über den Rand hinauszuragen (lange Beutel, live 2026-11-18 mit 20 Gegenständen). */
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .dsa5-helpers-sheet .dsa5h-shop {

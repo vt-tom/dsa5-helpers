@@ -1,0 +1,16 @@
+{{!-- Linke Spalte des Titelblatts (Click-Dummy vehicleOverview): Leisten Strukturpunkte und Besatzung wie im Kopf des
+      Systembogens (Felder status.structurePoints.value / status.crew.value, Änderung speichert das System), darunter die
+      Werte, die man im Spiel sucht. Smartphone und schmales Fenster: dieselbe Übersicht oben im Titelblatt. --}}
+<section class="panel dsa5h-vehicle-overview">
+  <div class="dsa5h-vehicle-bar stp" data-tooltip="VEHICLE.structurePoints">
+    <span class="dsa5h-vehicle-side-label">{{localize 'VEHICLE.structurePoints'}}</span>
+    <div class="dsa5h-vehicle-bar-track"><span class="dsa5h-vehicle-bar-fill" style="width:{{dsa5h.sp.pct}}%"></span>
+      <b>{{formInput systemFields.status.fields.structurePoints.fields.value value=document.system.status.structurePoints.value disabled=(not owner)}} / {{dsa5h.sp.max}}</b></div>
+  </div>
+  <div class="dsa5h-vehicle-bar crew" data-tooltip="VEHICLE.crewCurrent">
+    <span class="dsa5h-vehicle-side-label">{{localize 'VEHICLE.crewCurrent'}}</span>
+    <div class="dsa5h-vehicle-bar-track"><span class="dsa5h-vehicle-bar-fill" style="width:{{dsa5h.crewBar.pct}}%"></span>
+      <b>{{formInput systemFields.status.fields.crew.fields.value value=document.system.status.crew.value disabled=(not owner)}} / {{dsa5h.crewBar.max}}</b></div>
+  </div>
+  <dl class="dsa5h-vehicle-stats">{{#each dsa5h.stats}}<div><dt>{{label}}</dt><dd>{{value}}</dd></div>{{/each}}</dl>
+</section>

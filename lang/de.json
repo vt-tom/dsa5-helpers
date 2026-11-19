@@ -6,6 +6,7 @@
     "CreatureSheetLabel": "DSA5 Helfer-Kreaturbogen",
     "NpcSheetLabel": "DSA5 Helfer-NSC-Bogen",
     "GroupSheetLabel": "DSA5 Helfer-Gruppenbogen",
+    "VehicleSheetLabel": "DSA5 Helfer-Fahrzeugbogen",
     "Free": "frei",
     "AdvantagesDisadvantages": "Vor- & Nachteile",
     "BaseValues": "Grundwerte",
@@ -117,6 +118,8 @@
     "FatePointSet": "Schicksalspunkte auf {value} setzen ({current} von {max} verfügbar)",
     "GodSchips": "Götterschips",
     "NativeTongue": "Muttersprache",
+    "Languages": "Sprachen",
+    "Scripts": "Schriften",
     "LevelOf": "Stufe {level}",
     "Merchant": {
       "SheetLabel": "DSA5 Helfer: Händler und Schatz",
@@ -209,19 +212,28 @@
       "RollDialogDesktop": {
         "Name": "Probendialoge am Desktop",
         "Hint": "Aufgeräumte Probendialoge des Moduls oder die des DSA5-Systems, etwa wenn ein anderes Modul diese erweitert. Gilt für alle; Tablet und Smartphone nutzen immer das Modul.",
-        "HintNotice": "Du siehst den Probendialog von DSA5 Helpers. {where}",
-        "HintGm": "Zurück zu den Dialogen des DSA5-Systems: Einstellungen › Module › DSA5 Helpers › Darstellung und Geräte › „Probendialoge am Desktop“.",
-        "HintPlayer": "Die SL kann in den Moduleinstellungen auf die Dialoge des DSA5-Systems zurückschalten (Darstellung und Geräte › „Probendialoge am Desktop“).",
         "Module": "Modul (neues Design)",
         "System": "DSA5-System"
       },
       "DefaultSheet": {
         "Name": "Standard-Bogen für Helden",
-        "Hint": "Macht den DSA5-Helpers-Bogen zum Standard für alle Helden. Helden, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Nach dem Ändern wird Foundry neu geladen."
+        "Hint": "Macht den DSA5-Helpers-Bogen zum Standard für alle Helden. Helden, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Auf Tablet und Smartphone gilt immer der Bogen von DSA5 Helpers. Nach dem Ändern wird Foundry neu geladen."
       },
       "DefaultCreatureSheet": {
         "Name": "Standard-Bogen für Kreaturen",
-        "Hint": "Macht den DSA5-Helpers-Kreaturbogen zum Standard für alle Kreaturen. Kreaturen, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Nach dem Ändern wird Foundry neu geladen."
+        "Hint": "Macht den DSA5-Helpers-Kreaturbogen zum Standard für alle Kreaturen. Kreaturen, bei denen ausdrücklich ein anderer Bogen gewählt ist, behalten ihn. Auf Tablet und Smartphone gilt immer der Bogen von DSA5 Helpers. Nach dem Ändern wird Foundry neu geladen."
+      },
+      "DefaultNpcSheet": {
+        "Name": "Standard-Bogen für NSC",
+        "Hint": "Macht den DSA5-Helpers-NSC-Bogen zum Standard für alle NSC. Ausdrücklich gewählte Bögen bleiben. Auf Tablet und Smartphone gilt immer der Bogen von DSA5 Helpers. Nach dem Ändern wird Foundry neu geladen."
+      },
+      "DefaultGroupSheet": {
+        "Name": "Standard-Bogen für Gruppen",
+        "Hint": "Macht den DSA5-Helpers-Gruppenbogen zum Standard für alle Gruppen. Ausdrücklich gewählte Bögen bleiben. Auf Tablet und Smartphone gilt immer der Bogen von DSA5 Helpers. Nach dem Ändern wird Foundry neu geladen."
+      },
+      "DefaultVehicleSheet": {
+        "Name": "Standard-Bogen für Fahrzeuge",
+        "Hint": "Macht den DSA5-Helpers-Fahrzeugbogen zum Standard für alle Fahrzeuge. Ausdrücklich gewählte Bögen bleiben. Auf Tablet und Smartphone gilt immer der Bogen von DSA5 Helpers. Nach dem Ändern wird Foundry neu geladen."
       },
       "PlayersMayEdit": {
         "Name": "Spieler: Werte ohne AP ändern (Bearbeiten-Modus)",
@@ -241,7 +253,7 @@
       "SheetMenu": {
         "Title": "Heldenbogen",
         "Label": "Heldenbogen einrichten",
-        "Hint": "Standard-Bogen für Helden und Kreaturen, Bearbeiten-Modus für Spieler, Ordner für Bannerbilder und Talent-Vorschläge auf dem Titelblatt.",
+        "Hint": "Standard-Bogen für Helden und Kreaturen, Bearbeiten-Modus für Spieler, Ordner für Bannerbilder, Talent-Vorschläge auf dem Titelblatt und Tooltips.",
         "Save": "Speichern"
       },
       "QuestsTab": {
@@ -731,6 +743,19 @@
       "On": "An",
       "Off": "Aus",
       "SceneHint": "Aus: ohne Szene, spart Akku und Datenvolumen. Gilt nur für dieses Gerät.",
+      "Audio": {
+        "Title": "Audio",
+        "music": "Musik",
+        "env": "Umgebung",
+        "ui": "Oberfläche",
+        "Muted": "stumm",
+        "Mute": "Stumm",
+        "Unmute": "Laut",
+        "Volume": "Lautstärke {name}",
+        "MuteNamed": "{name} stumm schalten",
+        "UnmuteNamed": "{name} wieder laut",
+        "Hint": "Gilt nur für dieses Gerät. „Stumm“ merkt sich die letzte Lautstärke."
+      },
       "FoundrySettings": "Foundry-Einstellungen",
       "ToDesktop": "Zur vollständigen Foundry-Oberfläche",
       "Logout": "Abmelden",
@@ -965,6 +990,53 @@
       "TalentCount": "Anzahl der Talente",
       "TalentsFewer": "Weniger Talente",
       "TalentsMore": "Mehr Talente"
+    },
+    "Vehicle": {
+      "Tabs": {
+        "cover": "Titelblatt",
+        "combat": "Seekampf",
+        "travel": "Reise",
+        "crew": "Besatzung",
+        "inventory": "Ladung",
+        "status": "Status",
+        "notes": "Beschreibung"
+      },
+      "Intro": {
+        "cover": "Überblick am Tisch: Zustand des Fahrzeugs links, hier die Aktionen, die fast jede Runde gebraucht werden, und wer an Bord ist. Kampf und Reise haben eigene Reiter.",
+        "combat": "Für den Kampf zwischen Fahrzeugen: die Aktionen der Helden, Bordwaffen und Rammen mit Würfeln, Geschützkunde, Fortbewegung und Rumpfschutz.",
+        "travel": "Für Fahrten über längere Strecken: wie schnell das Fahrzeug unterwegs ist, wo es fahren kann, wie voll es beladen ist und wer an Bord ist.",
+        "crew": "Wer das Fahrzeug bemannt: Sollstärke, verwundete und einsatzbereite Besatzung sowie die Mitglieder.",
+        "inventory": "Alles, was geladen ist, mit Gewicht und Füllstand gegenüber der Ladekapazität."
+      },
+      "Stat": {
+        "Available": "einsatzbereit",
+        "Wounded": "verwundet",
+        "Hull": "Rumpfschutz",
+        "Speed": "Tempo",
+        "Initiative": "Initiative",
+        "Actions": "Aktionen",
+        "Distance": "Distanz",
+        "Cargo": "Ladung"
+      },
+      "Speed": {
+        "Base": "Grundtempo",
+        "Water": "zu Wasser",
+        "Air": "in der Luft",
+        "Ram": "Rammtempo"
+      },
+      "Ram": "Rammen {value}",
+      "SizeLabel": "Größe {size}",
+      "Actions": "Aktionen der Helden",
+      "ActionsHint": "würfelt der Held, der den Bogen benutzt",
+      "OnBoard": "An Bord",
+      "Ready": "{count} von {total} einsatzbereit",
+      "NoCrew": "Noch keine Besatzung.",
+      "TravelTitle": "Tempo und Reisearten",
+      "ModeOn": "Reiseart möglich",
+      "ModeOff": "Reiseart nicht möglich",
+      "Cargo": "Ladung",
+      "CargoOf": "{used} von {capacity} Stein · {pct} %",
+      "CargoAll": "Ganze Ladung → Ladung"
     },
     "Group": {
       "Tabs": {

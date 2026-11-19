@@ -1,0 +1,82 @@
+<div>
+{{!-- Fahrzeugbogen (Issue #93, Click-Dummy index.html?actor=fahrzeug): Gerüst des Heldenbogens – Reiterleiste, Kopf, linke
+      Spalte auf dem Titelblatt, ein Inhaltsbereich mit allen Reitern (der aktive ohne hidden, scripts/sheets/
+      dsa5-helpers-vehicle-sheet.js _applyCurrentTab). Daten und Aktionen kommen aus dem Fahrzeugbogen des Systems;
+      Seekampf, Besatzung, Ladung, Status und Beschreibung sind dessen Vorlagen. Jeder Reiter beginnt mit einem Satz,
+      was er am Tisch tut. --}}
+{{#if dsa5h.limited}}
+{{!-- Eingeschränkter Zugriff: wie beim Heldenbogen nur Bild, Name und Beschreibung. --}}
+<div class="dsa5h-limited"><img src="{{document.img}}" alt="{{document.name}}"><h1>{{document.name}}</h1><div>{{{enrichedDescription}}}</div></div>
+{{else}}
+<nav class="dsa5h-rail" aria-label="{{localize 'DSA5HELPERS.Navigation'}}">
+{{#each dsa5h.tabs}}<button type="button" class="dsa5h-rail-btn" data-action="dsa5hSetTab" data-tab="{{id}}" data-tab-rail-target="{{id}}" aria-label="{{label}}"><img src="{{icon}}" alt=""><span class="dsa5h-rail-label" aria-hidden="true">{{label}}</span></button>{{/each}}
+</nav>
+<div class="dsa5h-main">
+  <aside class="dsa5h-cover-sidebar dsa5h-vehicle-side" data-cover-sidebar>
+    <div data-cover-slot="portrait"></div>
+    {{> "modules/dsa5-helpers/templates/actors/vehicle/overview.hbs"}}
+  </aside>
+  <header class="dsa5h-head">
+    <div class="dsa5h-banner"></div>
+    <span data-header-slot="portrait" hidden></span><div class="dsa5h-portrait-medal shape-round" data-cover-move="portrait">
+      <div class="dsa5h-portrait">
+        <div class="dsa5h-portrait-inner"><img class="charimg" data-action="editImage" data-edit="img" src="{{document.img}}" alt="{{document.name}}" /></div>
+      </div>
+    </div>
+    <div class="dsa5h-head-main">
+      <div class="dsa5h-head-top">
+        <h1 class="dsa5h-name" data-tooltip="{{document.name}}">{{formInput fields.name value=document.name placeholder=(localize 'Name') disabled=(not isOwner)}}</h1>
+      </div>
+      <div class="dsa5h-head-band">
+        <div class="dsa5h-ident dsa5h-vehicle-badges">
+          <span class="dsa5h-ident-text dsa5h-vehicle-type">{{formInput systemFields.details.fields.vehicleType value=document.system.details.vehicleType placeholder=(localize 'VEHICLE.vehicleType') disabled=(not owner)}}</span>
+          {{#if dsa5h.size}}<span class="dsa5h-ident-sep" aria-hidden="true">·</span><span class="dsa5h-ident-text">{{localize 'DSA5HELPERS.Vehicle.SizeLabel' size=dsa5h.size}}</span>{{/if}}
+          {{#if dsa5h.propulsion}}<span class="dsa5h-ident-sep" aria-hidden="true">·</span><span class="dsa5h-ident-text">{{dsa5h.propulsion}}</span>{{/if}}
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="dsa5h-tab-title"><span data-tab-title-label>{{dsa5h.currentTabLabel}}</span><span class="dsa5h-rule"></span></div>
+  <div class="dsa5h-content">
+    <div class="dsa5h-tab" data-tab-panel="cover" hidden>
+      <p class="dsa5h-muted dsa5h-vehicle-intro">{{localize 'DSA5HELPERS.Vehicle.Intro.cover'}}</p>
+      <div data-vehicle-overview-slot></div>
+      {{> "modules/dsa5-helpers/templates/actors/vehicle/actions.hbs"}}
+      {{> "modules/dsa5-helpers/templates/actors/vehicle/crew-strip.hbs"}}
+    </div>
+    <div class="dsa5h-tab dsa5h-vehicle-system" data-tab-panel="combat" hidden>
+      <p class="dsa5h-muted dsa5h-vehicle-intro">{{localize 'DSA5HELPERS.Vehicle.Intro.combat'}}</p>
+      {{> "systems/dsa5/templates/actors/vehicle/vehicle-combat.hbs"}}
+    </div>
+    <div class="dsa5h-tab" data-tab-panel="travel" hidden>
+      <p class="dsa5h-muted dsa5h-vehicle-intro">{{localize 'DSA5HELPERS.Vehicle.Intro.travel'}}</p>
+      <section class="panel">
+        <div class="panel-title">{{localize 'DSA5HELPERS.Vehicle.TravelTitle'}}</div>
+        <div class="dsa5h-vehicle-travel">{{#each dsa5h.speeds}}<div class="dsa5h-vehicle-stat"><b>{{value}}</b><small>{{label}}</small></div>{{/each}}</div>
+        <div class="dsa5h-vehicle-modes">{{#each dsa5h.modes}}<span class="dsa5h-vehicle-mode{{#unless on}} off{{/unless}}" data-tooltip="{{#if on}}DSA5HELPERS.Vehicle.ModeOn{{else}}DSA5HELPERS.Vehicle.ModeOff{{/if}}">{{label}}</span>{{/each}}</div>
+      </section>
+      <section class="panel">
+        <div class="panel-title flex"><span>{{localize 'DSA5HELPERS.Vehicle.Cargo'}}</span><small>{{#if dsa5h.cargo.has}}{{localize 'DSA5HELPERS.Vehicle.CargoOf' used=dsa5h.cargo.used capacity=dsa5h.cargo.capacity pct=dsa5h.cargo.pct}}{{else}}{{dsa5h.cargo.used}} {{localize 'stone'}}{{/if}}</small></div>
+        {{#if dsa5h.cargo.has}}<div class="dsa5h-vehicle-cargo-track"><span style="width:{{dsa5h.cargo.pct}}%"></span></div>{{/if}}
+        <button type="button" class="dsa5h-vehicle-link" data-action="dsa5hSetTab" data-tab="inventory">{{localize 'DSA5HELPERS.Vehicle.CargoAll'}}</button>
+      </section>
+      {{> "modules/dsa5-helpers/templates/actors/vehicle/crew-strip.hbs"}}
+    </div>
+    <div class="dsa5h-tab dsa5h-vehicle-system" data-tab-panel="crew" hidden>
+      <p class="dsa5h-muted dsa5h-vehicle-intro">{{localize 'DSA5HELPERS.Vehicle.Intro.crew'}}</p>
+      {{> "systems/dsa5/templates/actors/vehicle/vehicle-crew.hbs"}}
+    </div>
+    <div class="dsa5h-tab dsa5h-vehicle-system" data-tab-panel="inventory" hidden>
+      <p class="dsa5h-muted dsa5h-vehicle-intro">{{localize 'DSA5HELPERS.Vehicle.Intro.inventory'}}</p>
+      {{> "systems/dsa5/templates/actors/actor-equipment.hbs"}}
+    </div>
+    <div class="dsa5h-tab dsa5h-vehicle-system" data-tab-panel="status" hidden>
+      {{> "systems/dsa5/templates/actors/parts/status_effects.hbs"}}
+    </div>
+    <div class="dsa5h-tab dsa5h-vehicle-system" data-tab-panel="notes" hidden>
+      {{> "systems/dsa5/templates/actors/vehicle/vehicle-notes.hbs"}}
+    </div>
+  </div>
+</div>
+{{/if}}
+</div>

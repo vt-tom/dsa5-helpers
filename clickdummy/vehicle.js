@@ -1,4 +1,4 @@
-/* Fahrzeugbogen (Issue #93, Click-Dummy Runde 1, 2026-11-16) – Konzept, wartet auf Rückmeldung der Community.
+/* Fahrzeugbogen (Issue #93, Click-Dummy Runde 1, 2026-11-16) – in Foundry umgesetzt am 18.11.2026 (erste Fassung, Feedback aus der Beta folgt).
 
    Vorbild ist der Fahrzeugbogen des Systems (DSA5 8.2, Akteurtyp „vehicle“): Reiter Kampf · Besatzung · Ausrüstung ·
    Status · Beschreibung, im Kopf Fahrzeugtyp sowie die Leisten Strukturpunkte und Besatzung. Bei uns wie bei den

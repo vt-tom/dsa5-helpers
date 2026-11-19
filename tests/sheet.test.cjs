@@ -1853,8 +1853,10 @@ test('Tooltips im Bogen (#52): Karte des Systems an Namen und Zuständen, Einste
  assert(js.includes('GlobalToolTipHandler')&&(js.match(/innerHTML\s*=/g)||[]).length===1&&js.includes('enrichHTML')&&js.includes('appendDetails'),'Karte des Systems; Regel und Beschreibung nur aus den Daten des Items, bereinigt');
  if(fs.existsSync(systemBundle)){const b=fs.readFileSync(systemBundle,'utf8');assert(b.includes('GlobalToolTipHandler:pa')||/GlobalToolTipHandler:\w+/.test(b),'Systemvertrag: dsa5.apps.GlobalToolTipHandler');assert(b.includes('static async handleTooltip(e,t)'),'Systemvertrag: handleTooltip(event, actor)');}
  for(const p of ['scripts/sheets/dsa5-helpers-character-sheet.js','scripts/sheets/dsa5-helpers-group-sheet.js'])assert(read(p).includes('bindItemTooltips(this);'),p);
- const {DISPLAY_SETTINGS}=await import(dataUrl(read('scripts/apps/sheet-settings.js')));
- assert(DISPLAY_SETTINGS.some(s=>s.key==='itemTooltips'&&s.kind==='checkbox'),'unter Darstellung und Geräte');
+ assert(js.includes("SKILLdescr")&&js.includes("Combatskilldescr")&&js.includes("querySelector('.dsa-item-card')"),'Talent-Beschreibung aus der Übersetzung des Systems, Zusatz innerhalb der Karte');
+ const {SHEET_SETTINGS,DISPLAY_SETTINGS}=await import(dataUrl(read('scripts/apps/sheet-settings.js')));
+ assert(SHEET_SETTINGS.some(s=>s.key==='itemTooltips'&&s.kind==='checkbox'),'unter Heldenbogen einrichten');
+ assert(!DISPLAY_SETTINGS.some(s=>s.key==='itemTooltips'),'nicht mehr unter Darstellung und Geräte');
  assert(read('scripts/dsa5-helpers.js').includes('registerItemTooltipSetting();'));
  for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;assert(j.Settings.ItemTooltips.Name&&j.Settings.ItemTooltips.Hint&&j.Tooltip.More,l);}
  // Markierung an allen Orten: Zustände mit data-id, Wappenschild-Name, Zustände im Gruppenbogen
@@ -1873,16 +1875,64 @@ test('Sprachen (#95): Beherrschungsgrad als Plakette hinter dem Namen, Mutterspr
  const languages=main.slice(main.indexOf('(lookup prepare.specAbs "language") as |item|'));
  assert(/dsa5h-chip-level" data-tooltip="\{\{item\.dsa5hLevelTip\}\}">\{\{item\.dsa5hLevel\}\}/.test(languages),'Plakette im Sprachen-Chip');
  const js=read('scripts/sheets/dsa5-helpers-character-sheet.js');
- assert(js.includes("step === 4 && max >= 4")&&js.includes("'MS'"),'Stufe 4 = MS');
+ assert(js.includes("step >= 4")&&js.includes("'MS'"),'ab Stufe 4 = MS, unabhängig von der Höchststufe');
+ {const sheetJs=read('scripts/sheets/dsa5-helpers-character-sheet.js');assert(sheetJs.includes('export function languageDetails')&&sheetJs.includes('.concat(languageDetails(languages))'),'Sprachen und Schriften unter Persönliche Daten (#99)');for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;assert(j.Languages&&j.Scripts,l);}}
  assert(read('styles/dsa5-helpers-character-sheet.css').includes('.dsa5h-chip-level'));
  for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS;assert(j.NativeTongue&&j.LevelOf.includes('{level}'),l);}
 });
 
-test('Probendialog (#96): einmaliger Hinweis am Desktop mit Verweis auf die Einstellung, je Benutzer gemerkt', () => {
+test('Probendialog (#96): kein Einmal-Hinweis mehr (Ersatz folgt mit dem Einrichtungsassistenten #97)', () => {
  const js=read('scripts/mobile/roll-dialog.js');
- assert(js.includes("'rollDialogHintSeen'")&&js.includes('showDesktopHint();')&&js.includes('permanent: true'),'Hinweis nur einmal, bleibt stehen');
- assert(/rollDialogHintSeen', \{ scope: 'client'/.test(js),'Merker je Benutzer (client)');
- for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Settings.RollDialogDesktop;for(const k of ['HintNotice','HintGm','HintPlayer'])assert(j[k],l+' '+k);assert(j.HintNotice.includes('{where}'),l);}
+ assert(!js.includes('rollDialogHintSeen')&&!js.includes('showDesktopHint'),'Hinweis entfernt');
+ for(const l of ['de','en']){const j=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Settings.RollDialogDesktop;for(const k of ['HintNotice','HintGm','HintPlayer'])assert(!(k in j),l+' '+k);}
+});
+
+test('Fahrzeugbogen (#93): erbt vom Systembogen, Reiter und Vorlagen des Systems, Registrierung, Texte', () => {
+ const js=read('scripts/sheets/dsa5-helpers-vehicle-sheet.js');
+ const tpl=read('templates/actors/dsa5-helpers-vehicle-sheet.hbs');
+ assert(js.includes('extends BaseVehicleSheet')&&js.includes('static LIMITEDPARTS = null'),'erbt vom Fahrzeugbogen des Systems');
+ const tabs=[...js.matchAll(/\{ id: '(\w+)', icon/g)].map(m=>m[1]);
+ assert.deepEqual(tabs,['cover','combat','travel','crew','inventory','status','notes']);
+ for(const id of tabs)assert(tpl.includes(`data-tab-panel="${id}"`),'Reiter '+id);
+ // Vorlagen des Systems statt Nachbau
+ for(const part of ['vehicle/vehicle-combat.hbs','vehicle/vehicle-crew.hbs','actor-equipment.hbs','parts/status_effects.hbs','vehicle/vehicle-notes.hbs'])assert(tpl.includes('systems/dsa5/templates/actors/'+part),part);
+ for(const part of ['vehicle/vehicle-combat.hbs','vehicle/vehicle-crew.hbs','actor-equipment.hbs','parts/status_effects.hbs','vehicle/vehicle-notes.hbs'])assert(fs.existsSync(path.join(dataRoot,'systems/dsa5/templates/actors/'+part)),'im System: '+part);
+ // Aktionen des Systems
+ const actions=read('templates/actors/vehicle/actions.hbs');
+ for(const a of ['navalHeroAction','navalBoarding','navalBroadside'])assert(actions.includes(`data-action="${a}"`),a);
+ const main=read('scripts/dsa5-helpers.js');
+ assert(main.includes('registerVehicleSheet')&&main.includes("'dsa5.ActorSheetdsa5Vehicle'")&&main.includes("types: ['vehicle'], makeDefault: false"),'zusätzlich wählbar, Systembogen bleibt Standard');
+ for(const t of ['dsa5-helpers-vehicle-sheet.hbs','vehicle/overview.hbs','vehicle/actions.hbs','vehicle/crew-strip.hbs'])assert(main.includes('templates/actors/'+t),'vorgeladen: '+t);
+ // Texte: jeder verwendete Schlüssel DSA5HELPERS.Vehicle.* in de und en
+ const used=new Set([...(js+tpl+actions+read('templates/actors/vehicle/crew-strip.hbs')+read('templates/actors/vehicle/overview.hbs')).matchAll(/DSA5HELPERS\.Vehicle\.([\w.]+)/g)].map(m=>m[1]));
+ for(const l of ['de','en']){const V=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Vehicle;for(const key of used)if(!key.endsWith('.'))assert(key.split('.').reduce((o,k)=>o?.[k],V)!==undefined,l+' '+key);for(const id of tabs)assert(V.Tabs[id],l+' Tab '+id);for(const id of ['cover','combat','travel','crew','inventory'])assert(V.Intro[id],l+' Intro '+id);assert(JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.VehicleSheetLabel);}
+});
+
+test('Händlerbogen: Ladenansicht scrollt im Fenster; Systemvorlagen im dunklen Bogen lesbar (#101)', () => {
+ const css=read('styles/dsa5-helpers-character-sheet.css');
+ assert(/\.dsa5h-shop-window \{[^}]*min-height: 0;[^}]*overflow-y: auto;/.test(css),'Ladenansicht scrollt');
+ assert(css.includes(':is(.dsa5h-group, .dsa5h-vehicle) :is(.dsa5h-group-system, .dsa5h-vehicle-system) .row-section :is(b, span, label, div, i)'),'Zeilen der Systemvorlagen folgen den Tokens');
+ assert(css.includes('.healthbar *'),'Leisten der Besatzungskarten bleiben hell beschriftet');
+});
+
+test('Dunkles Thema mobil (#61): eine Einstellung, Klasse am Body, Palette und Fenster im CSS', () => {
+ const shell=read('scripts/mobile/shell.js'),mob=read('scripts/mobile/mobile.js'),css=read('styles/dsa5-helpers-mobile.css');
+ assert(shell.includes('export function isDarkScheme')&&shell.includes("game.settings.get(MODULE_ID, 'theme') === 'dark'"),'Quelle: Modul-Einstellung theme');
+ assert(!/set\('core', 'uiConfig'/.test(shell),'Foundrys Farbschema bleibt unberührt (DSA5 fragt sonst nach dem Skin)');
+ assert(mob.includes("classList.toggle('dsa5h-m-dark', isDarkScheme())")&&mob.includes('`${MODULE_ID}.theme`'),'Klasse am Body, folgt der Einstellung');
+ for(const v of ['--dsa5h-m-paper','--dsa5h-m-ink','--dsa5h-m-surface','--dsa5h-m-dangertext','--dsa5h-m-accenttext'])assert(new RegExp('body\.dsa5h-mobile\.dsa5h-m-dark \{[^}]*'+v+':').test(css),'dunkle Variable '+v);
+ assert(css.includes('.dsa5h-m-dark .dsa5h-m-window:not(.dsa5-helpers-sheet)')&&css.includes('--color-text-primary: var(--dsa5h-m-ink)'),'Systemfenster dunkel');
+ assert(!/rgba\(255, 250, 238/.test(css.replace(/--dsa5h-m-sheen1: rgba\(255, 250, 238, \.85\);/,'')),'keine festen hellen Verläufe mehr');
+});
+
+test('Standard-Bögen: Einstellung je Bogentyp (NSC, Gruppe, Fahrzeug), mobil immer der Helfer-Bogen', async () => {
+ const main=read('scripts/dsa5-helpers.js');
+ for(const key of ['defaultNpcSheet','defaultGroupSheet','defaultVehicleSheet'])assert(main.includes(`'${key}'`),key);
+ assert(main.includes('export function applyDefaultSheets')&&main.includes('let wanted = !!mobileMode')&&main.indexOf('await registerVehicleSheet();')<main.indexOf('applyDefaultSheets();', main.indexOf('await registerVehicleSheet();')),'nach der Registrierung, mobil immer');
+ const {SHEET_SETTINGS}=await import(dataUrl(read('scripts/apps/sheet-settings.js')));
+ for(const key of ['defaultSheet','defaultCreatureSheet','defaultNpcSheet','defaultGroupSheet','defaultVehicleSheet'])assert(SHEET_SETTINGS.some(s=>s.key===key&&s.kind==='checkbox'),key);
+ for(const l of ['de','en']){const S=JSON.parse(read(`lang/${l}.json`)).DSA5HELPERS.Settings;for(const k of ['DefaultSheet','DefaultCreatureSheet','DefaultNpcSheet','DefaultGroupSheet','DefaultVehicleSheet'])assert(S[k].Name&&S[k].Hint,l+' '+k);}
+ assert(read('scripts/compat/merchant-return.js').includes("dsa5h-mobile"),'Rückweg aus Händlermodus mobil in den Helfer-Bogen');
 });
 
 test('Händler- und Schatzbogen (#77/#78): Ladenansicht, Aktionen des Systems, Registrierung, Rückweg', async () => {

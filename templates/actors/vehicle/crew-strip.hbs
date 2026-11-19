@@ -1,0 +1,8 @@
+{{!-- „An Bord“: Besatzungsmitglieder als Porträts (Daten prepare.crewMembers des Systems; Hinzufügen per Ziehen im Reiter Besatzung). --}}
+<section class="panel">
+  <div class="panel-title flex"><span>{{localize 'DSA5HELPERS.Vehicle.OnBoard'}}</span><small>{{localize 'DSA5HELPERS.Vehicle.Ready' count=dsa5h.available total=dsa5h.crewTotal}}</small></div>
+  <div class="dsa5h-vehicle-crew-strip">
+    {{#each dsa5h.members}}<button type="button" class="dsa5h-vehicle-crew-op item" data-action="heroLink" data-uuid="{{uuid}}" data-tooltip="{{name}}{{#if ident}} · {{ident}}{{/if}}"><span class="dsa5h-vehicle-portrait" style="background-image:url('{{img}}')"></span><small>{{firstName}}</small></button>
+    {{else}}<span class="dsa5h-muted">{{localize 'DSA5HELPERS.Vehicle.NoCrew'}}</span>{{/each}}
+  </div>
+</section>

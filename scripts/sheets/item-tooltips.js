@@ -146,10 +146,14 @@ async function appendDetails(tooltip, target) {
   const plain = html => String(html ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   const existing = plain(tooltip.textContent);
   const parts = [['rule', 'DSA5HELPERS.Tooltip.Rule'], ['description', 'DSA5HELPERS.Tooltip.Description']];
+  // Talente und Kampftechniken: Der Text steht im System als Übersetzung (SKILLdescr.<Name>, Combatskilldescr.<Name>),
+  // das Item selbst hat meist keine Beschreibung; die Karte im Tooltip ist die kompakte ohne Beschreibung.
+  const LOCALIZED = { skill: 'SKILLdescr', combatskill: 'Combatskilldescr' };
+  const localizedKey = LOCALIZED[item.type] ? `${LOCALIZED[item.type]}.${item.name}` : null;
   const box = document.createElement('div');
   box.className = 'dsa5h-tt-details';
   for (const [field, label] of parts) {
-    const raw = item.system?.[field]?.value;
+    const raw = field === 'description' && localizedKey && game.i18n.has(localizedKey) ? game.i18n.localize(localizedKey) : item.system?.[field]?.value;
     const text = plain(raw);
     if (!text || existing.includes(text.slice(0, 60))) continue;
     const section = document.createElement('section');
@@ -161,7 +165,8 @@ async function appendDetails(tooltip, target) {
     box.append(section);
   }
   if (!box.childElementCount) return;
-  (tooltip.firstElementChild ?? tooltip).append(box);
+  // In die Karte selbst (article.dsa-item-card trägt Hintergrund und Rahmen), sonst läge der Text außerhalb auf dem Spielfeld.
+  (tooltip.querySelector('.dsa-item-card') ?? tooltip.firstElementChild ?? tooltip).append(box);
   tooltip.querySelector(':scope > .dsa5h-tt-more')?.remove();
   markOverflow(tooltip);
 }

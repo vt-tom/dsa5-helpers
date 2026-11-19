@@ -30,6 +30,9 @@ body.dsa5h-mobile {
   --dsa5h-m-line: rgba(43, 39, 33, .14);
   --dsa5h-m-line2: rgba(43, 39, 33, .28);
   --dsa5h-m-field: rgba(255, 255, 255, .64);
+  --dsa5h-m-surface: #f7f1e6;
+  --dsa5h-m-sheen1: rgba(255, 250, 238, .85);
+  --dsa5h-m-sheen2: rgba(236, 226, 210, .45);
   --dsa5h-m-accent: #8b6f3f;
   --dsa5h-m-onaccent: #fff8ec;
   --dsa5h-m-gold: #b99a5c;
@@ -234,7 +237,7 @@ body.dsa5h-mobile #combat:has(.dsa5h-m-turncard) .combat-controls:not(:has(butto
   padding: 12px;
   border: 1px solid var(--dsa5h-m-line2);
   border-radius: 12px;
-  background: #f7f1e6;
+  background: var(--dsa5h-m-surface);
   color: var(--dsa5h-m-ink);
   font-family: 'GentiumBasic', Georgia, serif;
 }
@@ -404,7 +407,21 @@ body.dsa5h-mobile .application .dsa5h-maneuver-hint { font-size: 14px; }
   height: 48px; margin: 0; border: 1px solid var(--dsa5h-m-line2); border-radius: 4px; background: var(--dsa5h-m-field);
   color: var(--dsa5h-m-ink); font: inherit; font-size: 15px; font-weight: 700;
 }
-.dsa5h-m-sheet .dsa5h-m-wide.danger { border-color: var(--dsa5h-m-danger); background: rgba(179, 36, 26, .08); color: #8e1d15; }
+.dsa5h-m-sheet .dsa5h-m-wide.danger { border-color: var(--dsa5h-m-danger); background: rgba(179, 36, 26, .08); color: var(--dsa5h-m-dangertext, #8e1d15); }
+/* Audio (#98): Regler je Kanal, Wert, Stumm-Knopf; Fingerhöhe 42 px wie die Umschalter darüber. */
+.dsa5h-m-audio { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.dsa5h-m-audio-title { color: var(--dsa5h-m-ink2); }
+.dsa5h-m-audio > small { padding-left: 100px; font-size: 12px; line-height: 1.35; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-audio-row { display: flex; align-items: center; gap: 8px; }
+.dsa5h-m-audio-row > span { flex: none; width: 92px; color: var(--dsa5h-m-ink2); }
+.dsa5h-m-audio-row input[type="range"] { flex: 1; min-width: 0; height: 42px; margin: 0; accent-color: var(--dsa5h-m-accent); }
+.dsa5h-m-audio-row output { flex: none; width: 50px; text-align: right; font-variant-numeric: tabular-nums; color: var(--dsa5h-m-ink); }
+.dsa5h-m-audio-row output.muted { font-weight: 700; color: var(--dsa5h-m-danger); }
+.dsa5h-m-sheet .dsa5h-m-audio-row button {
+  flex: none; height: 42px; min-width: 62px; margin: 0; padding: 0 6px; border: 1px solid var(--dsa5h-m-line2); border-radius: 4px;
+  background: var(--dsa5h-m-field); color: var(--dsa5h-m-ink); font: inherit; font-size: 14px; font-weight: 700;
+}
+.dsa5h-m-sheet .dsa5h-m-audio-row button[aria-pressed="true"] { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
 
 /* 10. Szene: Token ziehen, Namen ------------------------------------------- */
 .dsa5h-m-drag { position: fixed; inset: 0; z-index: 35; pointer-events: none; }
@@ -660,7 +677,7 @@ body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-resource-frame .dsa5h-orb-val input
   padding: 10px;
   border: 1px solid var(--dsa5h-m-line2);
   border-radius: 12px;
-  background: #f7f1e6;
+  background: var(--dsa5h-m-surface);
   color: var(--dsa5h-m-ink);
   font-family: 'GentiumBasic', Georgia, serif;
   box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
@@ -675,7 +692,7 @@ body.dsa5h-mobile .dsa5-helpers-sheet .dsa5h-resource-frame .dsa5h-orb-val input
   transform: rotate(45deg);
   border-left: 1px solid var(--dsa5h-m-line2);
   border-top: 1px solid var(--dsa5h-m-line2);
-  background: #f7f1e6;
+  background: var(--dsa5h-m-surface);
 }
 .dsa5h-m-res-pop-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font-family: 'Andalus', serif; font-size: 17px; }
 .dsa5h-m-res-pop-head small { font-family: 'GentiumBasic', Georgia, serif; font-size: 14px; color: var(--dsa5h-m-ink2); }
@@ -1121,7 +1138,7 @@ body.dsa5h-mobile {
   --dsa5h-m-whisper: rgba(110, 70, 140, .1);
   --dsa5h-m-whisperline: #7a4f96;
   --dsa5h-m-whispertext: #5c3a73;
-  --dsa5h-m-card: linear-gradient(170deg, rgba(255, 250, 238, .85), rgba(236, 226, 210, .45)), var(--dsa5h-m-paper);
+  --dsa5h-m-card: linear-gradient(170deg, var(--dsa5h-m-sheen1), var(--dsa5h-m-sheen2)), var(--dsa5h-m-paper);
 }
 body.dsa5h-mobile[data-dsa5h-panel="chat"] #sidebar,
 body.dsa5h-mobile:is([data-dsa5h-panel="journal"], [data-dsa5h-panel="actors"]) #sidebar { background: var(--dsa5h-m-paper); }
@@ -1233,7 +1250,7 @@ body.dsa5h-mobile #chat .chat-form {
   position: relative; flex: none; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px 44px; align-items: end; gap: 6px;
   grid-template-areas: "modes modes modes modes" "to to to to" "aa input dice send" "panel panel panel panel";
   margin: 0; padding: 6px 10px calc(10px + var(--dsa5h-m-safe-b)); border: 0; border-top: 1px solid rgba(185, 154, 92, .55);
-  background: linear-gradient(180deg, rgba(255, 250, 238, .6), transparent 40px), var(--dsa5h-m-paper);
+  background: linear-gradient(180deg, var(--dsa5h-m-sheen1), transparent 40px), var(--dsa5h-m-paper);
   font-family: 'GentiumBasic', Georgia, serif; color: var(--dsa5h-m-ink);
 }
 body.dsa5h-mobile #chat .chat-form > #chat-controls { display: none; }
@@ -1272,7 +1289,7 @@ body.dsa5h-mobile.dsa5h-m-panel-open #sidebar:has(#chat.active) { padding-bottom
 body.dsa5h-mobile #chat .chat-form > #chat-message {
   grid-area: input; min-width: 0; height: auto; min-height: 44px; max-height: 32vh; margin: 0; padding: 0 14px; box-sizing: border-box;
   display: flex; flex-direction: column; overflow-y: auto;
-  border: 1px solid rgba(185, 154, 92, .6); border-radius: 22px; background: rgba(255, 255, 255, .7);
+  border: 1px solid rgba(185, 154, 92, .6); border-radius: 22px; background: var(--dsa5h-m-field);
   color: var(--dsa5h-m-ink); font-family: inherit; font-size: 16px; line-height: 1.35;
 }
 body.dsa5h-mobile #chat .chat-form > #chat-message .editor-content { flex: 1; min-height: 0; padding: 11px 0; }
@@ -1381,7 +1398,7 @@ body.dsa5h-tablet .dsa5h-m-journal .journal-sidebar .action-buttons:not(:has(.cr
 body.dsa5h-mobile .dsa5h-m-journal .journal-entry-content {
   flex: 1; width: auto; min-width: 0; margin: 8px; padding: 0; overflow: hidden; color: var(--dsa5h-m-ink);
   border: 1px solid rgba(185, 154, 92, .6); border-radius: 6px;
-  background: linear-gradient(175deg, rgba(255, 250, 238, .9), rgba(236, 226, 210, .5)), var(--dsa5h-m-paper);
+  background: linear-gradient(175deg, var(--dsa5h-m-sheen1), var(--dsa5h-m-sheen2)), var(--dsa5h-m-paper);
   box-shadow: inset 0 0 0 3px var(--dsa5h-m-paper), inset 0 0 0 4px rgba(185, 154, 92, .35);
   font-family: 'GentiumBasic', Georgia, serif;
 }
@@ -1418,7 +1435,7 @@ body.dsa5h-mobile .dsa5h-m-jnav > button:disabled { opacity: .4; }
 body.dsa5h-phone .dsa5h-m-jnav > [data-dir] { flex: 0 0 52px; padding: 0; font-size: 26px; line-height: 1; }
 body.dsa5h-phone .dsa5h-m-jnav > .dsa5h-m-jpick {
   display: flex; align-items: center; justify-content: center; gap: 8px; border-color: rgba(185, 154, 92, .6); border-radius: 22px;
-  background: rgba(255, 255, 255, .6); font-size: 15px;
+  background: var(--dsa5h-m-field); font-size: 15px;
 }
 .dsa5h-m-jpick > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Seitenliste als Blatt */
@@ -1531,7 +1548,107 @@ body.dsa5h-mobile .dsa5h-m-jbnav > button {
 body.dsa5h-mobile .dsa5h-m-jbnav > button:disabled { opacity: .4; }
 body.dsa5h-mobile .dsa5h-m-jbnav > .dsa5h-m-jbtoc {
   flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px;
-  border-color: rgba(185, 154, 92, .6); border-radius: 22px; background: rgba(255, 255, 255, .6); font-size: 15px;
+  border-color: rgba(185, 154, 92, .6); border-radius: 22px; background: var(--dsa5h-m-field); font-size: 15px;
 }
 .dsa5h-m-jbtoc > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.dsa5h-mobile .dsa5h-m-jbnav > .dsa5h-m-jbtoc[aria-expanded="true"] { background: var(--dsa5h-m-accent); color: var(--dsa5h-m-onaccent); }
+
+/* 15. Dunkles Thema (#61, 2026-11-18) ---------------------------------------
+   Gilt, wenn im Konto-Menü „Dunkel“ gewählt ist (Klasse dsa5h-m-dark am Body, mobile.js lightApps). Das System bringt sein
+   dunkles Thema nur ohne Pergament mit; mobil bleibt es daher im hellen Thema und wird hier mit der Palette des dunklen
+   Bogens (--paper/--ink im Bogen-CSS) überdeckt: zuerst die Variablen der Oberfläche, dann die Fenster des Systems. */
+body.dsa5h-mobile.dsa5h-m-dark {
+  --dsa5h-m-paper: #272320;
+  --dsa5h-m-ink: #e9dfcd;
+  --dsa5h-m-ink2: rgba(233, 223, 205, .72);
+  --dsa5h-m-line: rgba(255, 255, 255, .14);
+  --dsa5h-m-line2: rgba(255, 255, 255, .28);
+  --dsa5h-m-field: rgba(255, 255, 255, .08);
+  --dsa5h-m-surface: #322d29;
+  --dsa5h-m-sheen1: rgba(255, 255, 255, .07);
+  --dsa5h-m-sheen2: rgba(255, 255, 255, .02);
+  --dsa5h-m-accent: #c9a766;
+  --dsa5h-m-onaccent: #1c1917;
+  --dsa5h-m-danger: #e0685c;
+  --dsa5h-m-ok: #7fbf73;
+  --dsa5h-m-dangertext: #ff9d93;
+  --dsa5h-m-sub: rgba(255, 255, 255, .06);
+  --dsa5h-m-accenttext: #d6bd8a;
+  --dsa5h-m-okbg: rgba(127, 191, 115, .14);
+  --dsa5h-m-oktext: #a6dd9c;
+  --dsa5h-m-dangerbg: rgba(224, 104, 92, .14);
+  --dsa5h-m-whisper: rgba(180, 138, 208, .14);
+  --dsa5h-m-whispertext: #d4b6ea;
+  --dsa5h-m-whisperline: #b48ad0;
+  --dsa5h-m-phead: linear-gradient(90deg, rgba(201, 167, 102, .35), rgba(201, 167, 102, .04));
+}
+
+/* Fenster des Systems und von Foundry (Dialoge, Item-Bögen, Journal, Einstellungen): statt Pergamentbild und -tinte die
+   dunkle Fläche der Oberfläche. Die Textfarben des Systems hängen an --color-text-*, die Flächen an Hintergrundbildern. */
+body.dsa5h-mobile.dsa5h-m-dark .dsa5h-m-window:not(.dsa5-helpers-sheet) {
+  --color-text-primary: var(--dsa5h-m-ink);
+  --color-text-emphatic: #fff8ec;
+  --color-text-secondary: var(--dsa5h-m-ink2);
+  --color-text-subtle: var(--dsa5h-m-ink2);
+  --color-text-dark-primary: var(--dsa5h-m-ink);
+  --color-text-dark-secondary: var(--dsa5h-m-ink2);
+  --color-text-dark-inactive: var(--dsa5h-m-ink2);
+  --color-text-light-primary: var(--dsa5h-m-ink);
+  --bg-contrast-color: var(--dsa5h-m-ink);
+  --color-form-label: var(--dsa5h-m-ink2);
+  --color-form-hint: var(--dsa5h-m-ink2);
+  --color-border-light-primary: var(--dsa5h-m-line2);
+  --color-border-light-secondary: var(--dsa5h-m-line);
+  --color-border-dark: var(--dsa5h-m-line2);
+  --input-background-color: var(--dsa5h-m-field);
+  --input-border-color: var(--dsa5h-m-line2);
+  --input-text-color: var(--dsa5h-m-ink);
+  --button-background-color: var(--dsa5h-m-field);
+  --button-text-color: var(--dsa5h-m-ink);
+  --button-border-color: var(--dsa5h-m-line2);
+  background: var(--dsa5h-m-paper);
+  color: var(--dsa5h-m-ink);
+}
+
+body.dsa5h-mobile.dsa5h-m-dark .dsa5h-m-window:not(.dsa5-helpers-sheet) > .window-content {
+  background: var(--dsa5h-m-paper);
+  color: var(--dsa5h-m-ink);
+}
+
+body.dsa5h-mobile.dsa5h-m-dark .dsa5h-m-window:not(.dsa5-helpers-sheet) :is(h1, h2, h3, h4, h5, p, label, legend, li, td, th, dt, dd, b, strong, em, i:not(.fas, .fa-solid), small, a:not(.button)) {
+  color: var(--dsa5h-m-ink);
+  text-shadow: none;
+}
+
+body.dsa5h-mobile.dsa5h-m-dark .dsa5h-m-window:not(.dsa5-helpers-sheet) :is(input, select, textarea, prose-mirror, .editor-content, .ProseMirror) {
+  border-color: var(--dsa5h-m-line2);
+  background: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink);
+}
+
+body.dsa5h-mobile.dsa5h-m-dark .dsa5h-m-window:not(.dsa5-helpers-sheet) :is(header, .item-header, .sheet-header, .groupbox, .table-title, .row-section, .navWrapper, nav.tabs, .tabs) {
+  background-image: none;
+}
+
+body.dsa5h-mobile.dsa5h-m-dark .dsa5h-m-window:not(.dsa5-helpers-sheet) :is(.item-header, .sheet-header, .groupbox, .table-title) {
+  background-color: var(--dsa5h-m-surface);
+}
+
+body.dsa5h-mobile.dsa5h-m-dark .dsa5h-m-window:not(.dsa5-helpers-sheet) :is(.editor, .editor-content) {
+  background: transparent;
+}
+
+body.dsa5h-mobile.dsa5h-m-dark .dsa5h-m-window:not(.dsa5-helpers-sheet) :is(button, .button):not(.default, .primary, [data-action="close"]) {
+  border-color: var(--dsa5h-m-line2);
+  background-color: var(--dsa5h-m-field);
+  color: var(--dsa5h-m-ink);
+}
+
+/* Gewählte Knöpfe waren dunkel auf hell (#272320 auf Papier); im dunklen Thema Akzentfläche. */
+body.dsa5h-mobile.dsa5h-m-dark .dsa5h-m-ci .dsa5h-m-chip[aria-pressed="true"]:not([data-tone="whisper"]),
+body.dsa5h-phone.dsa5h-m-dark .dsa5-helpers-sheet .dsa5h-m-chips button[aria-pressed="true"],
+body.dsa5h-phone.dsa5h-m-dark .dsa5-helpers-sheet .dsa5h-sub-tabs button.active {
+  border-color: var(--dsa5h-m-accent);
+  background: var(--dsa5h-m-accent);
+  color: var(--dsa5h-m-onaccent);
+}

@@ -3,7 +3,7 @@
 // die Karte (Kopf, Bild, Kernwerte, Effekttext aus dem Inhaltsmodul) kommt vom System. Der Dummy zeigt dieselbe Form
 // mit Platzhaltertext (keine Regeltexte): Höhe begrenzt auf 60 % der Fensterhöhe, darunter der Hinweis bei
 // abgeschnittenem Text; Mittelklick heftet an (dann scrollbar, Rechtsklick schließt). Schalter „Tooltips“ im Menü
-// (Ansicht) entspricht der Benutzer-Einstellung unter „Darstellung und Geräte“. Nur Desktop: die Mobil-Dummys haben
+// (Ansicht) entspricht der Benutzer-Einstellung unter „Heldenbogen einrichten“. Nur Desktop: die Mobil-Dummys haben
 // keine Tooltips.
 (function () {
   const TARGETS = ".name, .fav-card-name, .weapon-name, .armor-name, .suggest-name, .cs-name, .hand-name, .armor-crest-name, .chip, .group-chip";

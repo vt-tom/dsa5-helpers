@@ -2804,7 +2804,12 @@ function renderNotes() {
 // weiter unter Notizen bearbeitet. Verworfen: A Steckbrief-Kasten über den Favoriten (zu viel Platz),
 // B Porträt-Rückseite, C Datenzeile im Kopf, D Titelblatt-Unterreiter, E Hover-Karte am Porträt, F eigener Reiter „Held“.
 // Modul: parts/cover-sidebar.hbs, _coverSideTab/_applyCurrentTab, dsa5h.personalDetails.
-const filledAppearance = () => APPEARANCE.filter((a) => String(a.v ?? "").trim());
+// Sprachen und Schriften (#99): „Sprache (Garethi) MS“ → „Garethi MS“; Modul: languageDetails() im Heldenbogen.
+const languageAppearance = () => {
+  const short = (n) => n.replace(/^[^(]*\(([^)]*)\)\s*(.*)$/, (_m, name, level) => [name, level].filter(Boolean).join(" "));
+  return [{ k: "Sprachen", v: LANGUAGES.map(short).join(", ") }, { k: "Schriften", v: SCRIPTS.map(short).join(", ") }].filter((e) => e.v);
+};
+const filledAppearance = () => [...APPEARANCE.filter((a) => String(a.v ?? "").trim()), ...languageAppearance()];
 let COVER_SIDE_TAB = "conditions";
 
 function coverResourcesCompact() {

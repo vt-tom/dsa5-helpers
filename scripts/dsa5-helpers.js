@@ -3,8 +3,9 @@ import { Dsa5HelpersCharacterSheet as ImportedCharacterSheet, createCharacterShe
 import { Dsa5HelpersCreatureSheet as ImportedCreatureSheet, createCreatureSheet } from './sheets/dsa5-helpers-creature-sheet.js';
 import { Dsa5HelpersNpcSheet as ImportedNpcSheet, createNpcSheet } from './sheets/dsa5-helpers-npc-sheet.js';
 import { createGroupSheet } from './sheets/dsa5-helpers-group-sheet.js';
+import { createVehicleSheet } from './sheets/dsa5-helpers-vehicle-sheet.js';
 import { initGroupRequests } from './sheets/group-requests.js';
-import { clearCharacterBuilderFlag } from './compat/runtime.js';
+import { clearCharacterBuilderFlag, isFoundry13 } from './compat/runtime.js';
 import { getChangelogApp, showChangelogIfUpdated } from './apps/changelog.js';
 import { initSteigerungsplaner } from './compat/steigerungsplaner.js';
 import { registerDiceStatsSettings, readyDiceStats } from './dice-stats/settings.js';
@@ -53,6 +54,11 @@ Hooks.once('init', async () => {
   game.settings.register('dsa5-helpers', 'defaultSheet', { name: 'DSA5HELPERS.Settings.DefaultSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultSheet.Hint', scope: 'world', config: false, restricted: true, type: Boolean, default: false, requiresReload: true });
   // Standard-Bogen für Kreaturen (#54, Nutzerwunsch 2026-11-13): wie beim Helden nur über makeDefault, nur v14 hat den Kreaturbogen.
   game.settings.register('dsa5-helpers', 'defaultCreatureSheet', { name: 'DSA5HELPERS.Settings.DefaultCreatureSheet.Name', hint: 'DSA5HELPERS.Settings.DefaultCreatureSheet.Hint', scope: 'world', config: false, restricted: true, type: Boolean, default: false, requiresReload: true });
+  // Standard-Bögen für NSC, Gruppen und Fahrzeuge (Nutzerwunsch 2026-11-18, wie bei Helden und Kreaturen: für alle Bögen eine
+  // Option). Angewendet bei „ready“ (applyDefaultSheets), denn diese Bögen stehen erst dann bereit; nur v14.
+  for (const [key, name] of [['defaultNpcSheet', 'DefaultNpcSheet'], ['defaultGroupSheet', 'DefaultGroupSheet'], ['defaultVehicleSheet', 'DefaultVehicleSheet']]) {
+    game.settings.register('dsa5-helpers', key, { name: `DSA5HELPERS.Settings.${name}.Name`, hint: `DSA5HELPERS.Settings.${name}.Hint`, scope: 'world', config: false, restricted: true, type: Boolean, default: false, requiresReload: true });
+  }
   // Bannerbild ohne Dateibrowser (Issue #46): Standardordner der SL für Bilder der Spieler.
   registerBannerSettings();
   // Drei Modi (Issue #34): dürfen Spieler den Bearbeiten-Modus nutzen (Werte ohne AP ändern)? Die SL darf immer.
@@ -79,7 +85,7 @@ Hooks.once('init', async () => {
   initMobile();
   // Probendialoge im Modul-Design (mobil und Desktop, Issue #63)
   initRollDialogs(mobileMode);
-  // Tooltips im Bogen (#52): Benutzer-Einstellung unter „Darstellung und Geräte“.
+  // Tooltips im Bogen (#52): Benutzer-Einstellung unter „Heldenbogen einrichten“.
   registerItemTooltipSetting();
   // Bogen-Umschalter in der Titelleiste aller Heldenbögen, auch des Systembogens.
   initSheetSwitcher();
@@ -126,6 +132,10 @@ Hooks.once('init', async () => {
   "modules/dsa5-helpers/templates/actors/group/skills.hbs",
   "modules/dsa5-helpers/templates/actors/group/gm.hbs",
   "modules/dsa5-helpers/templates/actors/group/camp.hbs",
+  "modules/dsa5-helpers/templates/actors/dsa5-helpers-vehicle-sheet.hbs",
+  "modules/dsa5-helpers/templates/actors/vehicle/overview.hbs",
+  "modules/dsa5-helpers/templates/actors/vehicle/actions.hbs",
+  "modules/dsa5-helpers/templates/actors/vehicle/crew-strip.hbs",
   "modules/dsa5-helpers/templates/actors/merchant/shop.hbs",
   "modules/dsa5-helpers/templates/actors/merchant/shop-tab.hbs",
   "modules/dsa5-helpers/templates/actors/merchant/merchant-admin.hbs",
@@ -204,8 +214,39 @@ export function registerGroupSheet() {
   else console.warn('DSA5 Helpers | Gruppenbogen des Systems nicht gefunden, eigener Gruppenbogen nicht verfügbar.');
 }
 
+// Fahrzeugbogen (#93, nur v14): wie der Gruppenbogen erst bei „ready“. Die Vorlagen des Systembogens (Bordwaffen,
+// Besatzung, Ausrüstung, Status, Beschreibung) bindet unser Bogen ein; sie werden hier geladen, damit ihre Teilvorlagen
+// auch dann bereitstehen, wenn der Systembogen nie geöffnet wurde.
+export async function registerVehicleSheet() {
+  if (isFoundry13()) return;
+  const SystemVehicleSheet = CONFIG.Actor.sheetClasses?.vehicle?.['dsa5.ActorSheetdsa5Vehicle']?.cls;
+  const Dsa5HelpersVehicleSheet = createVehicleSheet(SystemVehicleSheet);
+  if (!Dsa5HelpersVehicleSheet) return console.warn('DSA5 Helpers | Fahrzeugbogen des Systems nicht gefunden, eigener Fahrzeugbogen nicht verfügbar.');
+  const templates = Object.values(SystemVehicleSheet.PARTS ?? {}).flatMap(part => [part?.template, ...(part?.templates ?? [])]).filter(Boolean);
+  await foundry.applications.handlebars.loadTemplates(templates);
+  foundry.applications.apps.DocumentSheetConfig.registerSheet(foundry.documents.Actor, 'dsa5-helpers', Dsa5HelpersVehicleSheet, { types: ['vehicle'], makeDefault: false, label: 'DSA5HELPERS.VehicleSheetLabel' });
+}
+
+// Standard-Bogen je Akteurtyp (Nutzerentscheidung 2026-11-18): auf Tablet und Smartphone immer unser Bogen, sonst nach der
+// Welt-Einstellung des Typs. Wirkt nur im Register dieses Clients (CONFIG), ausdrücklich gewählte Bögen am Akteur bleiben.
+const DEFAULT_SHEET_SETTINGS = { character: 'defaultSheet', creature: 'defaultCreatureSheet', npc: 'defaultNpcSheet', group: 'defaultGroupSheet', vehicle: 'defaultVehicleSheet' };
+export function applyDefaultSheets() {
+  if (isFoundry13()) return;
+  for (const [type, setting] of Object.entries(DEFAULT_SHEET_SETTINGS)) {
+    const sheets = CONFIG.Actor.sheetClasses?.[type];
+    if (!sheets) continue;
+    const ours = Object.entries(sheets).find(([id]) => id.startsWith('dsa5-helpers.') && !id.includes('Merchant'))?.[0];
+    let wanted = !!mobileMode;
+    try { wanted ||= !!game.settings.get('dsa5-helpers', setting); } catch { /* Einstellung fehlt */ }
+    if (!ours || !wanted) continue;
+    for (const [id, entry] of Object.entries(sheets)) entry.default = id === ours;
+  }
+}
+
 Hooks.once('ready', async () => {
   registerGroupSheet();
+  await registerVehicleSheet();
+  applyDefaultSheets();
   // Händler- und Schatzbögen (#77/#78): wie der Gruppenbogen erst hier, die Klassen des Systems stehen vorher nicht bereit.
   await registerMerchantSheets();
   initBannerSocket();

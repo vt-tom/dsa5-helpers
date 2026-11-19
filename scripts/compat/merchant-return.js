@@ -10,7 +10,7 @@ import { HELPER_MERCHANT_SHEETS } from '../sheets/dsa5-helpers-merchant-sheet.js
 const FLAG = 'sheetBeforeMerchant';
 const MERCHANT_KINDS = new Set(['merchant', 'loot', 'epic']);
 const SYSTEM_SHEETS = { character: 'dsa5.ActorSheetdsa5Character', npc: 'dsa5.ActorSheetdsa5NPC', creature: 'dsa5.ActorSheetdsa5Creature' };
-const DEFAULT_SETTINGS = { character: 'defaultSheet', creature: 'defaultCreatureSheet' };
+const DEFAULT_SETTINGS = { character: 'defaultSheet', creature: 'defaultCreatureSheet', npc: 'defaultNpcSheet', vehicle: 'defaultVehicleSheet' };
 
 // Rückgabe nur für Tests: 'remember' | 'restore' | undefined.
 // Seit #77/#78 gibt es unseren Händlerbogen je Typ (HELPER_MERCHANT_SHEETS): Wer vorher einen Helfer-Bogen nutzt (oder
@@ -69,7 +69,7 @@ export function applyMerchantReturn(actor, changes, options = {}, ourDefault = f
 export function initMerchantReturn() {
   Hooks.on('preUpdateActor', (actor, changes, options) => {
     const setting = DEFAULT_SETTINGS[actor.type];
-    const ourDefault = !!setting && !!game.settings.settings.get(`dsa5-helpers.${setting}`) && !!game.settings.get('dsa5-helpers', setting);
+    const ourDefault = (!!setting && !!game.settings.settings.get(`dsa5-helpers.${setting}`) && !!game.settings.get('dsa5-helpers', setting)) || !!document.body?.classList.contains('dsa5h-mobile');
     applyMerchantReturn(actor, changes, options, ourDefault);
   });
 }
