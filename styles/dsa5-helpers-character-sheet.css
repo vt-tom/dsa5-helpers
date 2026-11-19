@@ -6065,11 +6065,11 @@
 }
 
 .dsa5-helpers-sheet .dsa5h-money-panel {
-  flex: 0 0 330px;
+  flex: 1 1 330px;
 }
 
 .dsa5-helpers-sheet .dsa5h-carry-panel {
-  flex: 1;
+  flex: 1 1 220px;
   min-width: 0;
 }
 
@@ -6118,12 +6118,13 @@
    Bild (öffnet das Item) + großer Wert + Kürzel. Der volle Münzname steht im Tooltip am label. */
 .dsa5-helpers-sheet .dsa5h-coins {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0,1fr);
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: 1px;
   margin: 12px;
   border: 1px solid var(--line);
   border-radius: 4px;
-  background: var(--field);
+  background: var(--line);
+  overflow: hidden;
 }
 
 .dsa5-helpers-sheet .dsa5h-coins label {
@@ -6133,10 +6134,7 @@
   gap: 4px;
   min-width: 0;
   padding: 6px;
-}
-
-.dsa5-helpers-sheet .dsa5h-coins label + label {
-  border-left: 1px solid var(--line);
+  background: var(--field);
 }
 
 .dsa5-helpers-sheet .dsa5h-coins label a {
