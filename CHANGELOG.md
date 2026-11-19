@@ -7,6 +7,14 @@ Kennzeichnung: **[v13/v14]** gilt für Foundry v13 und v14, **[nur v14]** bzw. *
 Ab 7.0.0/8.0.0 gibt es getrennte Linien: **8.x für Foundry v14**, **7.x für Foundry v13**. Das installierte Modul zeigt
 nur die Abschnitte seiner eigenen Linie und die gemeinsamen 0.x-Versionen.
 
+## [8.0.2] — 2026-11-19
+
+### Behoben
+
+- **[nur v14]** Smartphone und Tablet ([#102](https://github.com/vt-tom/dsa5-helpers/issues/102)): Der Schalter „Ansicht mit Beschränkt-Rechten“ steht im Menü „⋮“ nicht mehr zur Wahl. Die Ansicht blendet dort Kopfleiste und Menü aus, man kam nicht mehr zurück, auch nicht nach erneutem Anmelden. Wer sie schon eingeschaltet hat, bekommt sie beim Öffnen des Bogens auf Smartphone und Tablet automatisch ausgeschaltet.
+- **[v13/v14]** Beute-Reiter ([#94](https://github.com/vt-tom/dsa5-helpers/issues/94)): Das Geld-Panel schrumpft nicht mehr, wenn der Bogen größer gezogen wird; eigene Währungen brechen in weitere Zeilen um, so bleibt jede Münze sichtbar.
+- **[nur v14]** DSA5 8.2.2 ([#100](https://github.com/vt-tom/dsa5-helpers/issues/100)): Das System hat die Felder Tradition, Leiteigenschaft, Energiefaktor und Glückliche Talente am Helden aus dem Datenmodell entfernt (sie werden aus der Traditions-Sonderfertigkeit berechnet). Magie- und Götter-Reiter zeigen sie jetzt als reine Anzeige, statt beim Bearbeiten ins Leere zu schreiben. Bis 8.2.1 bleibt alles wie bisher.
+
 ## [8.0.1] — 2026-11-16
 
 ### Behoben
@@ -325,6 +333,7 @@ Erste Version, installierbar über die Manifest-URL.
 - **[v13/v14]** Magie/Religion nur bei passender Fähigkeit sichtbar.
 - **[v13/v14]** Deutsch und Englisch.
 
+[8.0.2]: https://github.com/vt-tom/dsa5-helpers/compare/v8.0.1...v8.0.2
 [8.0.1]: https://github.com/vt-tom/dsa5-helpers/compare/v8.0.0...v8.0.1
 [8.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v0.6.3...v8.0.0
 [7.0.0]: https://github.com/vt-tom/dsa5-helpers/compare/v13-0.6.3...v7.0.0
